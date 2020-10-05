@@ -170,8 +170,7 @@ public class VaPeerStatusServlet extends HttpServlet {
             if (!isPublishingToVa(publisher)) {
                 continue;
             }
-            final boolean vaIsOutOfSync = publisherHasItemInQueue(publisherId);
-            if (!vaIsOutOfSync) {
+            if (!publisherHasItemInQueue(publisherId)) {
                 atLeastOneVaInSync = true;
                 continue;
             }
