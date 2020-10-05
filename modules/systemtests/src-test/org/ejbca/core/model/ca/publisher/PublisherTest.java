@@ -41,7 +41,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.peerconnector.publisher.PeerPublisher;
-import org.ejbca.ui.web.pub.VaStatusServlet;
+import org.ejbca.ui.web.pub.VaPeerStatusServlet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -332,7 +332,7 @@ public class PublisherTest extends RoleUsingTestCase {
     @Test
 	public void testPublisherClassNames() {
 		Assert.assertEquals("Hold on mate! The class name of " + PeerPublisher.class.getCanonicalName() + " has changed. " +
-				"Please update the code in " + VaStatusServlet.class.getCanonicalName() + " and then make me pass.",
+				"Please update the code in " + VaPeerStatusServlet.class.getCanonicalName() + " and then make me pass.",
 				"PeerPublisher", PeerPublisher.class.getSimpleName());
 	}
 }
