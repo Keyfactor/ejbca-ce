@@ -158,8 +158,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.
- *
- * @version $Id$
  */
 public class X509CAImpl extends CABase implements Serializable, X509CA {
     
@@ -1235,7 +1233,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (certProfile.getAllowDNOverrideByEndEntityInformation() && ei!=null && ei.getRawSubjectDn()!=null) {
                 final String stripped = StringTools.strip(ei.getRawSubjectDn());
                 // Since support for multi-value RDNs in EJBCA 7.0.0, see ECA-3934, we don't automatically escape + signs anymore
-                //final String escapedPluses = CertTools.handleUnescapedPlus(stripped);
                 final String emptiesRemoved = DNFieldsUtil.removeAllEmpties(stripped);
                 final X500Name subjectDNNameFromEei = CertTools.stringToUnorderedX500Name(emptiesRemoved, CeSecoreNameStyle.INSTANCE);
                 if (subjectDNNameFromEei.toString().length()>0) {
@@ -1273,7 +1270,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (log.isDebugEnabled()) {
                 log.debug("Using subject DN also as issuer DN, because it is a root CA");
             }
-            if(linkCertificate && caNameChange){
+            if (linkCertificate && caNameChange){
                 List<Certificate> renewedCertificateChain = getRenewedCertificateChain();
                 if(renewedCertificateChain == null || renewedCertificateChain.isEmpty()){
                     //"Should not happen" error
@@ -1281,7 +1278,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     throw new CertificateCreateException("CA name change is in process but renewed (old) certificates chain is empty");
                 }
                 issuerDNName = X500Name.getInstance(((X509Certificate)renewedCertificateChain.get(renewedCertificateChain.size()-1)).getSubjectX500Principal().getEncoded());
-            }else{
+            } else{
                 issuerDNName = subjectDNName;
             }
         } else {
@@ -1317,11 +1314,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (ei != null) {
             final List<String> permittedNC = ei.getNameConstraintsPermitted();
             final List<String> excludedNC = ei.getNameConstraintsExcluded();
-            if ((permittedNC != null && !permittedNC.isEmpty()) ||
-                (excludedNC != null && !excludedNC.isEmpty())) {
-                if (!certProfile.getUseNameConstraints()) {
-                    throw new CertificateCreateException("Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
-                }
+            if (!certProfile.getUseNameConstraints() && (permittedNC != null && !permittedNC.isEmpty()) || (excludedNC != null && !excludedNC.isEmpty())) {
+                throw new CertificateCreateException("Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
             }
         }
 
@@ -2191,8 +2185,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     @Override
     public void upgrade() {
+        final Float previousVersion = getVersion();
         super.upgrade();
-        if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
+        if (Float.compare(LATEST_VERSION, previousVersion) != 0) {
             // New version of the class, upgrade
             log.info("Upgrading X509CA with version " + getVersion());
             if (data.get(DEFAULTOCSPSERVICELOCATOR) == null) {
