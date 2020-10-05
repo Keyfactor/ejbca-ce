@@ -37,14 +37,36 @@ import java.io.Writer;
 import java.util.AbstractMap;
 
 /**
- * <p>Servlet used to check which VAs are in sync with the CA. A VA is defined as out of sync if the peer publisher
- * has at least one item in the queue older than X seconds where X is configured in the GUI.</p>
+ * <p>Servlet used to check which VAs are in sync with the CA. Can be used by a load balancer to divert traffic from
+ * OCSP responders which do not have the latest information.</p>
  *
- * <p>Can be used by a load balancer to divert traffic from OCSP responders which do not have the latest
- * information.</p>
+ * <p>A VA is defined as out of sync if the peer publisher has at least one item in the queue older than X seconds
+ * where X is configured in the GUI.</p>
+ *
+ * <p>X should be configured according to the formula <code>X < policyTime - monPollTime - monTimeout</code> where
+ * <code>policyTime</code> is the maximum time is should take for an OCSP responder to be aware of revocation information
+ * according to CP/CPS, <code>monPollTime</code> is how often the monitoring system is polling the CA, and
+ * <code>monTimeout</code> is the timeout for a status request.</p>
+ *
+ * <p>Minimum recommended values for <code>monPollTime</code> and <code>monTimeout</code> is 5 seconds.</p>
  *
  * <p>If all peer publishers have items queued, the servlet returns an empty response to prevent the load
  * balancer from taking all OCSP responders out of operation at the same time.</p>
+ *
+ * <p>A request to the servlet performs executes the following database queries:</p>
+ * <ul>
+ *     <li>
+ *         To look up healthcheck configuration for access control (this query may not be performed if EJBCA gets a cache-hit):
+ *          <code>SELECT * FROM GlobalConfigurationData WHERE configurationId = ?</code>
+ *     </li>
+ *     <li>To determine which publishers are configured on the system:
+ *          <code>SELECT * FROM PublisherData</code>
+ *     </li>
+ *     <li>For every peer publisher on the system:
+ *          <code>SELECT c FROM (SELECT 0 AS ORDERING, COUNT(*) AS c FROM PublisherQueueData WHERE publisherId = ?
+ *          AND publishStatus = 20 AND timeCreated < (timeNow - X) tmp ORDER BY tmp.ordering</code>
+ *     </li>
+ * </ul>
  *
  * <p>Example of request and response:</p>
  * <pre>
@@ -60,6 +82,16 @@ import java.util.AbstractMap;
  * </pre>
  *
  * <p>Authentication to the servlet is controlled by the property <code>healthcheck.authorizedips</code>.
+ *
+ * <p>The servlet is responding with the following HTTP status codes:</p>
+ * <ul>
+ *     <li>HTTP status code 200 (OK) if the requested publisher queue(s) are empty.</li>
+ *     <li>HTTP status code 401 (Not Authorized) if the IP address of the requester is not authorized according to
+ *     <code>healthcheck.authorizedips.</code></li>
+ *     <li>HTTP status code 500 (Internal Server Error) if an exception was thrown when determining the status.</li>
+ *     <li>HTTP status code 503 (Service Unavailable) if at least one publisher queue is <i>not</i> empty (VA out of
+ *     sync).</li>
+ * </ul>
  */
 public class VaStatusServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(VaStatusServlet.class);
