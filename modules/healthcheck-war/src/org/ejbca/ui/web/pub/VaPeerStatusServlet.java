@@ -27,14 +27,15 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import javax.ejb.EJB;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>Servlet used to check which VAs are in sync with the CA. Can be used by a load balancer to divert traffic from
@@ -96,8 +97,6 @@ import java.util.AbstractMap;
 public class VaPeerStatusServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(VaPeerStatusServlet.class);
     private static final long serialVersionUID = 1L;
-    private String[] authIps = null;
-    private boolean anyIpAuthorized = false;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -106,51 +105,43 @@ public class VaPeerStatusServlet extends HttpServlet {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
-    public void init(final ServletConfig config) throws ServletException {
-        super.init(config);
-        authIps = EjbcaConfiguration.getHealthCheckAuthorizedIps().split(";");
-        if (ArrayUtils.contains(authIps, "ANY")) {
-            log.info("Any IP is authorized to the VA status servlet.");
-            anyIpAuthorized = true;
-        } else {
-            log.info("The following IPs are authorized to the VA status servlet: " + authIps);
-        }
-    }
-
-    @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         final long startTime = System.currentTimeMillis();
         response.setContentType("application/json");
         if (isAuthorized(request)) {
             try {
                 final AbstractMap.SimpleEntry<JSONObject, Integer> jsonAndResponseCode = createResponse(request.getParameter("name"));
-                try (final Writer responseToMonitoringSystem = response.getWriter()) {
-                    responseToMonitoringSystem.write(jsonAndResponseCode.getKey().toJSONString());
-                }
+                response.getWriter().write(jsonAndResponseCode.getKey().toJSONString());
                 response.setStatus(jsonAndResponseCode.getValue());
             } catch (final Throwable error) {
                 log.error("An unexpected error occurred when querying the VA status servlet: " + error.getMessage());
                 if (log.isDebugEnabled()) {
                     log.debug(error);
                 }
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        errorResponseFrom(error.getMessage()));
+                response.getWriter().write(errorResponseFrom(error.getMessage()));
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
             log.error("The IP " + request.getRemoteAddr() + " is not authorized.");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                    errorResponseFrom("Requests from " + request.getRemoteAddr() + " are not authorized."));
+            response.getWriter().write(errorResponseFrom("Requests from " + request.getRemoteAddr() + " are not authorized."));
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         if (log.isDebugEnabled()) {
-            logBenchmark(request, response, System.currentTimeMillis() - startTime);
+            logAdditionalInformation(request, response, System.currentTimeMillis() - startTime);
         }
     }
 
-    private void logBenchmark(final HttpServletRequest request,
-                              final HttpServletResponse response,
-                              final long processingTime) {
+    private void logAdditionalInformation(final HttpServletRequest request,
+                                          final HttpServletResponse response,
+                                          final long processingTime) {
+        final List<String> parameters = request.getParameterMap()
+                .entrySet()
+                .stream()
+                .map(x -> "(" + x.getKey() + ", " + Arrays.toString(x.getValue()) + ")")
+                .collect(Collectors.toList());
         log.debug("Created response for " + request.getRemoteAddr() + " in " + processingTime + " ms.");
-        log.debug("The request was: " + request.getQueryString() + ".");
+        log.debug("The request was: " + request.getMethod() + " " + request.getContextPath()
+                + " with "  + (parameters.isEmpty() ? "no parameters" : "parameters " + StringUtils.join(parameters, ", ")) + ".");
         log.debug("The HTTP status code sent to the client was: " + response.getStatus());
     }
 
@@ -162,7 +153,12 @@ public class VaPeerStatusServlet extends HttpServlet {
     }
     
     private boolean isAuthorized(final HttpServletRequest request) {
-        return anyIpAuthorized || ArrayUtils.contains(authIps, request.getRemoteAddr());
+        final String[] authorizedIps = EjbcaConfiguration.getHealthCheckAuthorizedIps().split(";");
+        if (log.isDebugEnabled()) {
+            log.debug("Performing authorisation check for " + request.getRemoteAddr() +
+                    ". The following IPs are authorized to this servlet: " + Arrays.toString(authorizedIps));
+        }
+        return ArrayUtils.contains(authorizedIps, "ANY") || ArrayUtils.contains(authorizedIps, request.getRemoteAddr());
     }
 
     /**
@@ -178,6 +174,11 @@ public class VaPeerStatusServlet extends HttpServlet {
         for (final AbstractMap.Entry<Integer, BasePublisher> entry : publisherSession.getAllPublishers().entrySet()) {
             final Integer publisherId = entry.getKey();
             final BasePublisher publisher = entry.getValue();
+            if (StringUtils.equals("ignore", publisher.getDescription())) {
+                // Make it possible to ignore specific publishers if running system tests
+                // on an existing installation
+                continue;
+            }
             if (!isPublishingToVa(publisher)) {
                 continue;
             }
@@ -194,7 +195,7 @@ public class VaPeerStatusServlet extends HttpServlet {
         // Sanity check, produce a log message on error level if the monitoring
         // system is querying the status of a VA using a publisher which does
         // not exist.
-        if (publisherName != null && !atLeastOneVaInSync && outOfSync.isEmpty()) {
+        if (publisherName != null && publisherSession.getPublisher(publisherName) == null) {
             log.error("The publisher with the name '" + publisherName + "' does not exist. I will return HTTP status " +
                     "code 200 for this request, but this may not be accurate. Please update the configuration for " +
                     "your monitoring system.");
