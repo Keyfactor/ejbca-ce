@@ -70,7 +70,7 @@ public class CryptokiManager {
             Security.addProvider(result);
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Did not found our provider: " + p);
+                LOG.debug("Did not find our provider: " + p);
             }
             result = new JackNJI11Provider();
             Security.addProvider(result);
