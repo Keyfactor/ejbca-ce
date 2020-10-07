@@ -252,58 +252,58 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testAdminWeb() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testAdminWeb() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("EJBCA Administration should be accessible", response.contains("EJBCA Administration"));
+        assertTrue("EJBCA Administration should be accessible. Actual response was: " + response, response.contains("EJBCA Administration"));
     }
 
     @Test
-    public void testAdminWebWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testAdminWebWithExpiredToken() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail", response.contains("Authentication failed using OAuth Bearer Token"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authentication failed using OAuth Bearer Token"));
     }
 
     @Test
-    public void testRaWeb() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testRaWeb() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/ra");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("EJBCA Administration should be accessible", response.contains("Logged in as " + OAUTH_SUB));
+        assertTrue("EJBCA Administration should be accessible. Actual response was: " + response, response.contains("Logged in as " + OAUTH_SUB));
     }
 
     @Test
-    public void testAdminRaWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testAdminRaWithExpiredToken() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/ra");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail", response.contains("Not logged in"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Not logged in"));
     }
 
     @Test
-    public void testRestApiWeb() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testRestApiWeb() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/ejbca-rest-api/v1/ca");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Should return JSON with ca list", response.contains("certificate_authorities"));
+        assertTrue("Should return JSON with ca list. Actual response was: " + response, response.contains("certificate_authorities"));
     }
 
     @Test
-    public void testAdminRestApiWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testAdminRestApiWithExpiredToken() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/ejbca-rest-api/v1/ca");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 403", 403, connection.getResponseCode());
         String response = getResponse(connection.getErrorStream());
         assertEquals("Authentication should fail", "Forbidden", connection.getResponseMessage());
-        assertTrue("Authentication should fail", response.contains("Authentication failed using OAuth Bearer Token"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authentication failed using OAuth Bearer Token"));
     }
 
     @Test
@@ -322,26 +322,26 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testJspPage() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testJspPage() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Search End Entities page should be accessible", response.contains("<h1>Search End Entities</h1>"));
+        assertTrue("Search End Entities page should be accessible. Actual response was: " + response, response.contains("<h1>Search End Entities</h1>"));
     }
 
     @Test
-    public void testJspPageWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testJspPageWithExpiredToken() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/listendentities.jsp");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail", response.contains("Authentication failed using OAuth Bearer Token"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authentication failed using OAuth Bearer Token"));
 
     }
 
     @Test
-    public void testServlet() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testServlet() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb//profilesexport?profileType=eep");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -350,13 +350,13 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testServletWithExpiredToken() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void testServletWithExpiredToken() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb//profilesexport?profileType=eep");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 403, connection.getResponseCode());
         String response = getResponse(connection.getErrorStream());
         assertEquals("Authentication should fail", "Forbidden", connection.getResponseMessage());
-        assertTrue("Authentication should fail", response.contains("Authorization Denied"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authorization Denied"));
     }
 
     private String getResponse(InputStream inputStream) throws IOException {
@@ -374,6 +374,7 @@ public class OAuthSystemTest {
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + token);
         connection.getDoOutput();
+        connection.setRequestProperty("Accept-Language", "en");
         connection.connect();
         connection.disconnect();
         return connection;
@@ -399,7 +400,7 @@ public class OAuthSystemTest {
         trustKeyStore.load(null);
         trustKeyStore.setCertificateEntry("caCert", serverCertificate);
         // we need to set properties for web service tests.
-        File trustKeyStoreFile = folder.newFile(OAUTH_KEY +".jks");
+        File trustKeyStoreFile = folder.newFile(OAUTH_KEY + ".jks");
         try (FileOutputStream fileOutputStream = new FileOutputStream(trustKeyStoreFile)) {
             trustKeyStore.store(fileOutputStream, PASSWORD.toCharArray());
         }
