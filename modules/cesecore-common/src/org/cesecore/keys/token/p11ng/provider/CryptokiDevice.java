@@ -72,6 +72,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
@@ -992,8 +993,21 @@ public class CryptokiDevice {
                 final LongRef privateKeyRef = new LongRef();
                 final CKM ckm;
                 if (oid.equals(EdECObjectIdentifiers.id_Ed25519) || oid.equals(EdECObjectIdentifiers.id_Ed448)) {
+                    // PKCS#11v3 section 2.3.10
+                    // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
+                    // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the 
+                    // public key using the curveName or the oID methods"
+                    // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
+                    // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
+                    final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
+                    final DERPrintableString str = new DERPrintableString(curve);
+                    publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
+                    }
                     ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
                 } else {
+                    LOG.trace("Using ECDSA_KEY_PAIR_GEN");
                     ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
                 }
                 c.GenerateKeyPair(session, ckm, toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
