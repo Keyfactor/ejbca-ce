@@ -151,7 +151,6 @@ public class JackNJI11Provider extends Provider {
     private static class MySignature extends SignatureSpi {
         private static final Logger log = Logger.getLogger(MySignature.class);
 
-        private final JackNJI11Provider provider;
         private String algorithm;
         private NJI11Object myKey;
         private long session;
@@ -168,10 +167,13 @@ public class JackNJI11Provider extends Provider {
         private final static int T_RAW = 3;
         
         
+        @SuppressWarnings("unused")
         public MySignature(Provider provider, String algorithm) {
             super();
-            this.provider = (JackNJI11Provider) provider;
             this.algorithm = algorithm;
+            if (log.isTraceEnabled()) {
+                log.info("Creating Signature provider for algorithm: " + algorithm + ", and provider: " + provider);
+            }
             if (algorithm.equals("NONEwithRSA") || algorithm.startsWith("Ed")) {
                 type = T_RAW;
             } else if (algorithm.contains("ECDSA")) {
@@ -361,6 +363,7 @@ public class JackNJI11Provider extends Provider {
     
     private static class MyAlgorithmParameters extends PSS {
         // Fall back on BC PSS parameter configuration. 
+        @SuppressWarnings("unused")
         public MyAlgorithmParameters(Provider provider, String algorithm) {
             super();
         }
@@ -370,6 +373,7 @@ public class JackNJI11Provider extends Provider {
         // While this MessageDigiest "implementation" doesn't do anything currently, it's required
         // in order for MGF1 Algorithms to work since BC performs a sanity check before
         // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)
+        @SuppressWarnings("unused")
         public MyMessageDigiest(Provider provider, String algorithm) {
             super();
         }
