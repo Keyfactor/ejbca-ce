@@ -52,9 +52,11 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -64,6 +66,8 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.MessageContext;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -101,6 +105,7 @@ public class OAuthSystemTest {
     private static final String CA = "OauthSystemTestCA";
     private static final String OAUTH_KEY = "OauthSystemTestKey";
     private static final String ROLENAME = "OauthSystemTestRole";
+    protected static final String PASSWORD = "foo123";
 
     private static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
             "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyiRvfMhXb1nLE+bQ8Dtg\n" +
@@ -159,6 +164,8 @@ public class OAuthSystemTest {
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
+    @ClassRule
+    public static TemporaryFolder folder = new TemporaryFolder();
 
     @BeforeClass
     public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException, AuthorizationDeniedException, RoleExistsException, CertificateException, OperatorCreationException, CryptoTokenOfflineException, KeyManagementException, KeyStoreException, IOException {
@@ -391,6 +398,14 @@ public class OAuthSystemTest {
         final KeyStore trustKeyStore = KeyStore.getInstance("JKS");
         trustKeyStore.load(null);
         trustKeyStore.setCertificateEntry("caCert", serverCertificate);
+        // we need to set properties for web service tests.
+        File trustKeyStoreFile = folder.newFile(OAUTH_KEY +".jks");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(trustKeyStoreFile)) {
+            trustKeyStore.store(fileOutputStream, PASSWORD.toCharArray());
+        }
+        System.setProperty("javax.net.ssl.trustStore", trustKeyStoreFile.getAbsolutePath());
+        System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
+
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(trustKeyStore);
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
