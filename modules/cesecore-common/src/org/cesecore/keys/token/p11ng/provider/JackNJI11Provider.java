@@ -209,12 +209,12 @@ public class JackNJI11Provider extends Provider {
                 byte[] param = MechanismNames.CKM_PARAMS.get(mechanism);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineInitSign: session: " + session + ", object: " +
-                            myKey.getObject() + ", sigAlgoValue: " + mechanism + ", param: " + StringTools.hex(param));
+                            myKey.getObject() + ", sigAlgoValue: 0x" + Long.toHexString(mechanism) + ", param: " + StringTools.hex(param));
                     debugStacktrace = new Exception();
                 }
                 myKey.getSlot().getCryptoki().SignInit(session, new CKM(mechanism, param),
                         myKey.getObject());
-                log.debug("C_SignInit with mechanism " + mechanism + " successful.");
+                log.debug("C_SignInit with mechanism 0x" + Long.toHexString(mechanism) + " successful.");
             } catch (Exception e) {
                 log.error("An exception occurred when calling C_SignInit: " + e.getMessage());
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
