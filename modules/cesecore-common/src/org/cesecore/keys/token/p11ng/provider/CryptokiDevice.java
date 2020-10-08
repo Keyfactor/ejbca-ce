@@ -70,8 +70,11 @@ import com.sun.jna.ptr.LongByReference;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -607,7 +610,27 @@ public class CryptokiDevice {
                             LOG.debug("Trying to decode public elliptic curve OID. The DER encoded parameters look like this: " 
                                     + StringTools.hex(ckaParams.getValue()) + ".");
                         }
-                        final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());
+                        ASN1ObjectIdentifier oid = null;
+                        try (ASN1InputStream ain = new ASN1InputStream(ckaParams.getValue())) {
+                            ASN1Primitive primitive = ain.readObject();
+                            // Here we have some specific things if the key is EdDSA, it can be either an OID or a String
+                            // PKCS#11v3 section 2.3.10
+                            // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
+                            // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the 
+                            // public key using the curveName or the oID methods"
+                            // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
+                            // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
+                            if (primitive instanceof ASN1String) {
+                                ASN1String string = (ASN1String) primitive;
+                                if ("curve25519".equalsIgnoreCase(string.getString())) {
+                                    oid = EdECObjectIdentifiers.id_Ed25519;
+                                } else if ("curve448".equalsIgnoreCase(string.getString())) {
+                                    oid = EdECObjectIdentifiers.id_Ed448;
+                                }
+                            } else {
+                                oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());                            
+                            }                            
+                        }
                         if (oid == null) {
                             LOG.warn("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
                             return null;
@@ -924,7 +947,8 @@ public class CryptokiDevice {
          * @param alias the CKA_LABEL of the key.
          * @throws IllegalStateException if a key with the specified alias already exists on the token.
          */
-        public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias) {
+        public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias,
+                final Map<Long, Object> overridePublic, final Map<Long, Object> overridePrivate) {
             Long session = null;
             try {
                 session = aquireSession();
@@ -964,6 +988,7 @@ public class CryptokiDevice {
 
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
+                privateKeyTemplate.put(CKA.DERIVE, false);
                 /* CK_TRUE if key is sensitive. */
                 privateKeyTemplate.put(CKA.SENSITIVE, true);
                 /* CK_TRUE if key supports decryption */
@@ -980,6 +1005,8 @@ public class CryptokiDevice {
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.4 - Storage objects
                 /* CK_TRUE if object is a token object or CK_FALSE if object is a session object. */
                 privateKeyTemplate.put(CKA.TOKEN, true);
+                /* By default the private key can not be accessed until the user is authenticated */
+                privateKeyTemplate.put(CKA.PRIVATE, true);
                 /* Description of the object (default empty). */
                 privateKeyTemplate.put(CKA.LABEL, ("priv-" + alias).getBytes(StandardCharsets.UTF_8));
 
@@ -989,6 +1016,10 @@ public class CryptokiDevice {
                  * a public key and its corresponding private key should be the same */
                 privateKeyTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
                 
+                // Override attributes
+                publicKeyTemplate.putAll(overridePublic);
+                privateKeyTemplate.putAll(overridePrivate);
+
                 final LongRef publicKeyRef = new LongRef();
                 final LongRef privateKeyRef = new LongRef();
                 final CKM ckm;
@@ -999,9 +1030,10 @@ public class CryptokiDevice {
                     // public key using the curveName or the oID methods"
                     // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
                     // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
+                    // TODO: Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
                     final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
-                    final DERPrintableString str = new DERPrintableString(curve);
-                    publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+//                    final DERPrintableString str = new DERPrintableString(curve);
+//                    publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
                     }
@@ -1061,6 +1093,7 @@ public class CryptokiDevice {
                 publicTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
 
                 final HashMap<Long, Object> privateTemplate = new HashMap<>();
+                privateTemplate.put(CKA.DERIVE, false);
                 privateTemplate.put(CKA.TOKEN, true);
                 privateTemplate.put(CKA.PRIVATE, true);
                 privateTemplate.put(CKA.SENSITIVE, true);
