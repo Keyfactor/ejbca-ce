@@ -32,7 +32,7 @@
         <war destfile="${mod.clearcache-war.war}" webxml="${clearcache-war.resources.dir}/WEB-INF/web.xml" basedir="${clearcache-war.build.dir}"/>
     </target>
 
-    <target name="ejbca-compile" depends="with.clover">
+    <target name="ejbca-compile" depends="">
     	<mkdir dir="${clearcache-war.build.dir}/WEB-INF/classes" />
         <javac srcdir="${clearcache-war.src.dir}" destdir="${clearcache-war.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath"/>
