@@ -14,10 +14,10 @@ import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
 
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.ejbca.config.GlobalConfiguration;
-import org.jboss.resteasy.client.ClientResponse;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -56,8 +56,8 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         final String expectedVersion = "1.0";
         final String expectedRevision = GlobalConfiguration.EJBCA_VERSION;
         // when
-        final ClientResponse<?> actualResponse = newRequest("/v1/ca/status").get();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Response actualResponse = newRequest("/v1/ca/status").request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
         // then
         assertEquals(Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -74,7 +74,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         // given
         disableRestProtocolConfiguration();
         // when
-        final ClientResponse<?> actualResponse = newRequest("/v1/ca/status").get();
+        final Response actualResponse = newRequest("/v1/ca/status").request().get();
         final int status = actualResponse.getStatus();
         // then
         assertEquals("Unexpected response after disabling protocol", 403, status);
