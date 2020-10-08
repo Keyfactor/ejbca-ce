@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.CesecoreConfiguration;
@@ -31,6 +30,7 @@ import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.util.StringTools;
 import org.ejbca.util.URIUtil;
+
 
 /**
  * This is a  class containing global configuration parameters.
@@ -129,9 +129,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
 
-    // Default OAuth Keys
-    private static final LinkedHashMap<Integer,OAuthKeyInfo> OAUTH_KEYS_DEFAULT = new LinkedHashMap<>();
-
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
 
@@ -199,8 +196,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String REPORTS_PATH        = "reports_path";
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
-
-    private static final   String OAUTH_KEYS          = "oauthkeys";
 
     private static final   String CTLOGS              = "ctlogs";
 

@@ -33,8 +33,6 @@ import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 
 /**
  * Holder for a modified ICrmfRequestMessage
- * @version $Id$
- *
  */
 public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
   
@@ -218,5 +216,18 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
     @Override
     public void setAdditionalExtraCertsCertificates(List<Certificate> certificates) {
         this.original.setAdditionalExtraCertsCertificates(certificates);
+    }
+    @Override
+    public void setUsername(String username) {
+        this.original.setUsername(username);
+    }
+    @Override
+    public void setPassword(String pwd) {
+        this.original.setPassword(pwd);
+        
+    }
+    @Override
+    public void setRequestValidityNotAfter(Date notAfter) {
+        this.original.setRequestValidityNotAfter(notAfter);
     }
 }

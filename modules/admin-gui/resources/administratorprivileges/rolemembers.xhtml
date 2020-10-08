@@ -95,6 +95,8 @@
 			                value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml">
                             <f:param name="serno" value="#{roleMember.tokenMatchValue}"/>
                             <f:param name="caid" value="#{roleMember.tokenIssuerId}"/>
+                            <f:param name="roleId" value="#{roleMember.roleId}"/>
+                            <f:param name="returnTo" value="5"/>
                             <h:outputText value="#{roleMember.tokenMatchValue}"/>
                         </h:outputLink>
                     </h:column>

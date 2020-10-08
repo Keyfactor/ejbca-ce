@@ -35,7 +35,6 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
@@ -55,7 +54,7 @@ import org.cesecore.util.StringTools;
 /**
  * Entity Bean for database persisted configurations
  *
- * @version $Id: GlobalConfigurationData.java 35111 2020-05-22 09:41:00Z mikekushner $
+ * @version $Id$
  */
 @Entity
 @Table(name = "GlobalConfigurationData")
@@ -76,7 +75,6 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             Hashtable.class,
             LinkedHashMap.class,
             LinkedHashSet.class,
-            OAuthKeyInfo.class,
             OcspKeyBinding.ResponderIdType.class,
             Properties.class,
             RaCssInfo.class,

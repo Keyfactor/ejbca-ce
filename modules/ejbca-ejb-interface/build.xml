@@ -33,7 +33,7 @@
     	<delete file="${mod.ejbca-ejb-interface.lib}"/>
     </target>
 
-    <target name="compile-ejb3" depends="with.clover">
+    <target name="compile-ejb3" depends="">
         <mkdir dir="${ejbca-interface.build.dir}" />
         <javac srcdir="${ejbca-interface.src.dir}" destdir="${ejbca-interface.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath">	

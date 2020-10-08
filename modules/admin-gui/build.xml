@@ -71,7 +71,7 @@
         </war>
     </target>
 
-    <target name="compile" depends="with.clover, setup">
+    <target name="compile" depends="setup">
         <javac srcdir="${admin-gui.src.dir}" destdir="${admin-gui.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
@@ -91,7 +91,7 @@
     	/>
     </target>
 
-    <target name="compile-tests" depends="with.clover, build">
+    <target name="compile-tests" depends="build">
 	     <mkdir dir="${admin-gui.build-test.dir}" />
 	     <javac srcdir="${admin-gui.src-test.dir}" destdir="${admin-gui.build-test.dir}" debug="on" includeantruntime="no"
 	         encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
@@ -102,7 +102,6 @@
 	     <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 	         <classpath>
 	             <path refid="test.classpath"/>
-	             <pathelement path="${clover.jar}"/>
 	         </classpath>
 	         <formatter type="xml" />
 	         <batchtest fork="yes" todir="${reports.dir}">
@@ -119,7 +118,6 @@
 	    <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 	        <classpath>
 	            <path refid="test.classpath"/>
-	            <pathelement path="${clover.jar}"/>
 	        </classpath>
 	        <formatter type="xml" />
 	        <batchtest fork="yes" todir="${reports.dir}">

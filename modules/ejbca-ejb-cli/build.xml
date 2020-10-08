@@ -56,7 +56,6 @@
     <path id="test.classpath">
         <path refid="compile-test.classpath"/>
         <path location="${ejbca-ejb-cli.build-test.dir}/resources-test"/>
-        <pathelement path="${clover.jar}"/>
     </path>
 
     <target name="build" description="Build this module" depends="compile">
@@ -98,7 +97,7 @@
     	<delete dir="${mod.ejbca-ejb-cli.dist}" />
     </target>
 	
-    <target name="compile" depends="setup, with.clover">
+    <target name="compile" depends="setup">
     	<mkdir dir="${ejbca-ejb-cli.build.dir}" />
         <javac srcdir="${ejbca-ejb-cli.src.dir}" destdir="${ejbca-ejb-cli.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}">
@@ -127,10 +126,6 @@
        		<path refid="lib.slf4jlog4j.classpath"/>
        		<path refid="lib.jacknji.classpath"/>
     	</copy>
-		<!-- clover.jar is needed if we compiled with clover (see modules/build.xml). Without this cli does not work when using clover -->
-    	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="false" failonerror="false">
-    		<fileset file="${clover.jar}" erroronmissingdir="false"/>
-		</copy>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
     		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
     		<fileset dir="${ejbca.home}/conf" includes="batchtool.properties"/>
@@ -141,7 +136,7 @@
     </target>
 
     <!-- Tests -->
-    <target name="compile-unit-tests" depends="build, with.clover">
+    <target name="compile-unit-tests" depends="build">
         <mkdir dir="${ejbca-ejb-cli.build-test.dir}" />
         <javac srcdir="${ejbca-ejb-cli.src-test.dir}" destdir="${ejbca-ejb-cli.build-test.dir}" debug="on" includeantruntime="no"
                encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>

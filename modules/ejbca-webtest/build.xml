@@ -71,7 +71,7 @@
 		<mkdir dir="${webtest.build.dir}/resources"/>
 	</target>
 
-	<target name="build" depends="make_directories, copyWindows, copyMac, copyLinux, with.clover">
+	<target name="build" depends="make_directories, copyWindows, copyMac, copyLinux">
         <javac srcdir="${webtest.src.dir}" destdir="${webtest.build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath"/>
         </javac>
@@ -99,7 +99,7 @@
 		</exec>
 	</target>
 
-    <target name="compile-tests" depends="build, with.clover">
+    <target name="compile-tests" depends="build">
     	<mkdir dir="${webtest.build-test.dir}"/>
 		<javac srcdir="${webtest.src-test.dir}" destdir="${webtest.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="test.classpath"/>
@@ -114,7 +114,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" enableTestListenerEvents="true">
 			<classpath>
         		<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -135,7 +134,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" enableTestListenerEvents="true">
 			<classpath>
         		<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
