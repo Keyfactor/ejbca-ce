@@ -54,7 +54,7 @@
 		<delete dir="${cli-util.build-test.dir}" />
     </target>
 	
-    <target name="compile" depends="setup, with.clover">
+    <target name="compile" depends="setup">
     	<mkdir dir="${cli-util.build.dir}" />
         <javac destdir="${cli-util.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
             <classpath>
@@ -72,7 +72,7 @@
     
     
     <!-- Tests -->
-    <target name="compile-tests" depends="build, with.clover">
+    <target name="compile-tests" depends="build">
     	<mkdir dir="${cli-util.build-test.dir}" />
     	
         <javac srcdir="${cli-util.src-test.dir}" destdir="${cli-util.build-test.dir}" debug="on" includeantruntime="no"
@@ -107,7 +107,6 @@
                 <path refid="lib.junit.classpath"/>
                 <path location="${cli-util.build.dir}" />
                 <path location="${cli-util.build-test.dir}" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -130,7 +129,6 @@
                 <path refid="lib.junit.classpath"/>
                 <path location="${cli-util.build.dir}" />
                 <path location="${cli-util.build-test.dir}" />
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">

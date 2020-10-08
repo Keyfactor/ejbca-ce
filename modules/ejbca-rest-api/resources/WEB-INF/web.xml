@@ -49,6 +49,14 @@
             <param-value>REST Crypto Token Management</param-value>  
         </init-param>
     </filter>
+    <filter>
+        <filter-name>EndEntityManagementFilter</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>REST End Entity Management</param-value>  
+        </init-param>
+    </filter>
     
     <filter-mapping>
         <filter-name>CertificateManagementFilter</filter-name>
@@ -63,6 +71,11 @@
         <filter-name>CryptoTokenManagementFilter</filter-name>
         <url-pattern>/v1/cryptotoken/*</url-pattern>
     </filter-mapping>
+    <filter-mapping>
+        <filter-name>EndEntityManagementFilter</filter-name>
+        <url-pattern>/v1/endentity/*</url-pattern>
+    </filter-mapping>
+    
 
 	<security-constraint>
 		<web-resource-collection>

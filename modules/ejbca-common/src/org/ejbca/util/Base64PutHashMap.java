@@ -21,8 +21,6 @@ import org.cesecore.util.StringTools;
 /** Only used for backwards compatibility with earlier versions of EJBCA
  * @see org.cesecore.util.Base64PutHashMap
  * @deprecated
- * 
- * @version $Id$
  */
 @Deprecated
 public class Base64PutHashMap extends HashMap<Object, Object> {
@@ -36,7 +34,8 @@ public class Base64PutHashMap extends HashMap<Object, Object> {
         super(m);
     }
 
-    public Object put(Object key, Object value) {
+    @Override
+    public Object put(final Object key, final Object value) {
         if (value == null) {
             return super.put(key, value);
         }
@@ -45,6 +44,15 @@ public class Base64PutHashMap extends HashMap<Object, Object> {
             return super.put(key, s);
         }
         return super.put(key, value);
+    }
+
+    @Override
+    public void putAll(Map<? extends Object, ? extends Object> map) {
+        // HashMap has an optimized putAll() method, which bypasses put()
+        // So we need to override it with the basic version.
+        for (final Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
+            put(entry.getKey(), entry.getValue());
+        }
     }
 
 }

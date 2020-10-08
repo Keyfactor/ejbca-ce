@@ -19,8 +19,6 @@ import java.util.Map;
 /**
  * An implementation of HashMap that base64 encodes all String's that you 'put', if it's not asciiPrintable, where Base64 encoding is not needed. 
  * It encodes (non asciiPrintable) to form "B64:<base64 encoded string>". It only encodes objects of type String.
- * 
- * @version $Id$
  */
 public class Base64PutHashMap extends LinkedHashMap<Object, Object> {
 
@@ -44,5 +42,14 @@ public class Base64PutHashMap extends LinkedHashMap<Object, Object> {
             return super.put(key, s);
         }
         return super.put(key, value);
+    }
+
+    @Override
+    public void putAll(Map<? extends Object, ? extends Object> map) {
+        // HashMap has an optimized putAll() method, which bypasses put()
+        // So we need to override it with the basic version.
+        for (final Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
+            put(entry.getKey(), entry.getValue());
+        }
     }
 }
