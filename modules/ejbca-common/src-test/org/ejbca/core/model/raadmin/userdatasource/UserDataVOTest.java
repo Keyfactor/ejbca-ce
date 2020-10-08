@@ -36,7 +36,7 @@ public class UserDataVOTest {
     private final static Logger log = Logger.getLogger(UserDataVOTest.class);
 
     @Test
-    public void testEncodeDecodeXml() throws Exception {
+    public void testEncodeDecodeXmlWithEndEntityInformation() throws Exception {
         final Date date = new Date();
         final EndEntityType endEntityType = new EndEntityType();
         endEntityType.addType(EndEntityTypes.ENDUSER);
@@ -55,11 +55,21 @@ public class UserDataVOTest {
         log.info(new String(baos.toByteArray()));
         final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
         final UserDataVO userDataVO = (UserDataVO) decoder.readObject();
-        assertTrue(userDataVO.getType().contains(EndEntityTypes.ENDUSER));
-        assertTrue(userDataVO.getType().contains(EndEntityTypes.KEYRECOVERABLE));
-        assertEquals("123", new String(Base64.decode(userDataVO.getExtendedinformation().
+        assertEquals(new BigInteger("123"), new BigInteger(Base64.decode(userDataVO.getExtendedinformation().
                 getMapData("CERTIFICATESERIALNUMBER").getBytes(StandardCharsets.US_ASCII))));
         assertEquals(date, userDataVO.getTimeCreated());
         assertTrue(userDataVO.getKeyRecoverable());
+    }
+
+    @Test
+    public void testBasicEncodeDecodeXml() throws Exception {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            final UserDataVO userDataVO = new UserDataVO();
+            encoder.writeObject(userDataVO);
+        }
+        log.info(new String(baos.toByteArray()));
+        final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
+        decoder.readObject();
     }
 }
