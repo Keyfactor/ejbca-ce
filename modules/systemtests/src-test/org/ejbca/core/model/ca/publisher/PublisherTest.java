@@ -57,8 +57,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests Publishers.
- *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PublisherTest extends RoleUsingTestCase {
