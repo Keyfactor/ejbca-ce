@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -86,7 +87,11 @@ public class OCSPResponseItem implements Serializable {
 
     public Extensions buildExtensions() {
         Collection<Extension> extensionValues = singleExtensions.values();
-        Extension[] extensions = extensionValues.toArray(new Extension[singleExtensions.size()]);
-        return new Extensions(extensions);
+        if (CollectionUtils.isNotEmpty(extensionValues)) {
+            Extension[] extensions = extensionValues.toArray(new Extension[singleExtensions.size()]);
+            return new Extensions(extensions);
+        } else {
+            return null;
+        }
     }
 }
