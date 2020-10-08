@@ -592,29 +592,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     @SuppressWarnings("unchecked")
-    public LinkedHashMap<Integer,OAuthKeyInfo> getOauthKeys() {
-        final Map<Integer,OAuthKeyInfo> ret = (Map<Integer,OAuthKeyInfo>)data.get(OAUTH_KEYS);
-        return (ret == null ? OAUTH_KEYS_DEFAULT : new LinkedHashMap<>(ret));
-    }
-
-    /** Sets the available OAuth keys */
-    public void setOauthKeys(LinkedHashMap<Integer,OAuthKeyInfo> oauthKeys) {
-        data.put(OAUTH_KEYS, oauthKeys);
-    }
-
-    public void addOauthKey(OAuthKeyInfo oauthKey) {
-        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
-        keys.put(oauthKey.getInternalId(), oauthKey);
-        setOauthKeys(keys);
-    }
-
-    public void removeOauthKey(int oauthKeyId) {
-        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
-        keys.remove(oauthKeyId);
-        setOauthKeys(keys);
-    }
-
-    @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
         final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
         return (ret == null ? CTLOGS_DEFAULT : new LinkedHashMap<>(ret));
