@@ -38,7 +38,7 @@
         <path location="${mod.cesecore-cvcca.lib}"/>
 	</path>
 
-	<target name="jar" depends="with.clover">
+	<target name="jar" depends="">
 		<mkdir dir="${cesecore-ejb.build.dir}/classes"/>
 		<javac srcdir="${cesecore-ejb.dir}/src" destdir="${cesecore-ejb.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="test.classpath"/>
@@ -59,7 +59,7 @@
 		<delete dir="${cesecore-ejb.build-test.dir}"/>
 	</target>
 
-	<target name="compile-tests" depends="jar, with.clover">
+	<target name="compile-tests" depends="jar">
 		<mkdir dir="${cesecore-ejb.build-test.dir}" />
 		<javac srcdir="${cesecore-ejb.src-test.dir}" destdir="${cesecore-ejb.build-test.dir}" debug="on" includeantruntime="no"
 		        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
@@ -77,7 +77,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-ejb.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -93,7 +92,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
