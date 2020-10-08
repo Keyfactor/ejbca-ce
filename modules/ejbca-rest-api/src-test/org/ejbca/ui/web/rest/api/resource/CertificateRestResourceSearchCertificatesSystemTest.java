@@ -9,6 +9,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
@@ -21,11 +25,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
@@ -66,9 +68,8 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CertificateStatus;
-import org.jboss.resteasy.client.ClientResponse;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -78,9 +79,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
@@ -142,7 +142,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
     }
 
     @After
-    public void tearDown() throws AuthorizationDeniedException {
+    public void tearDown() {
         for(X509Certificate certificate : certificates) {
             removeCertificate(CertTools.getFingerprintAsString(certificate));
         }
@@ -168,10 +168,10 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
@@ -218,10 +218,11 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
@@ -268,10 +269,10 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
@@ -326,10 +327,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(criterias)
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
@@ -377,10 +377,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         // added tmp logging to see why test mis-behaves
         log.error("actualJsonString:" + actualJsonString);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
@@ -451,10 +450,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(criterias)
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         assertNotNull("Returned certificate should not be null", actualCertificates);
@@ -525,10 +523,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(criterias)
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
@@ -594,10 +591,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(criterias)
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
@@ -647,10 +643,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(criterias)
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final boolean moreResults  = (Boolean) actualJsonObject.get("more_results");
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
@@ -673,10 +668,10 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+//                .post();
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
 
@@ -704,10 +699,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .criteria(criterias)
                 .build();
         //when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
-                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
-                .post();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
 
