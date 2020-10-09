@@ -33,4 +33,3 @@ and Ability to own new EJBCA installations";
 "SnakeYAML";                    "snakeyaml-1.27";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://bitbucket.org/asomov/snakeyaml";                           "Serialization of Java objects to/from YAML";
 "Google's Guava";               "guava-28.0";                                   "ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/google/guava";                                  "General purpose library, used in e.g. CAA, CT and WebTests.";
 "JCraft";                       "jsch-0.1.54.jar";                              "BSD";                  "LICENSE-BSD-JSCH";             "http://www.jcraft.com/jsch/";                                      "Used for SCP operations";
-"jboss-jaxrs-api_2.1_spec-2.0.1.Final.jar"; 									"EPLv2.0"; 				"LICENSE-EPL-2.0"; 				"https://github.com/jboss/jboss-jakarta-jaxrs-api_spec";
