@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -764,8 +765,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     private static <T extends Serializable> T getAsObject(final byte[] bytes, Class<T> type) {
         try (final LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(bytes))) {
             lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(type, LinkedHashMap.class, HashMap.class, HashSet.class, DynamicUiPropertyCallback.class, 
-                  AccessMatchType.class, UrlString.class, MultiLineString.class, String.class,
-                  PositiveIntegerValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
+                  AccessMatchType.class, UrlString.class, MultiLineString.class, String.class, Date.class,
+                  PositiveIntegerValidator.class, DateValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
                   Collections.emptyList().getClass().asSubclass(Serializable.class), 
                   Class.forName("org.cesecore.roles.RoleInformation").asSubclass(Serializable.class),
                   Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class),
@@ -837,9 +838,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         if (hasMultipleValues || type != Boolean.class) {
             // In this case, JSF made a spurious call and will throw away the return value, but it must be of expected type (boolean)
             return (T)Boolean.FALSE;
-        } else {
-            return getValue();
         }
+        return getValue();
     }
 
     /**
@@ -866,9 +866,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public String getValidatorType() {
         if (validator != null) {
             return validator.getValidatorType();
-        } else {
-            return "dummyValidator";
         }
+        return "dummyValidator";
     }
 
     /**
@@ -896,6 +895,14 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return Boolean.class.getName().equals(getType().getName());
     }
 
+    /**
+     * Returns true if the property type is java.util.Date (this method is used because of the lack of 'instanceof' operator in JSF EL).
+     * @return true if the property type is java.util.Date
+     */
+    public boolean isDateType() {
+        return Date.class.getName().equals(getType().getName());
+    }
+    
     /**
      * Returns true if the property type is java.lang.Integer (this method is used because of the lack of 'instanceof' operator in JSF EL).
      * @return true if the property type is java.lang.Integer.

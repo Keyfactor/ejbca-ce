@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.CesecoreConfiguration;
@@ -35,8 +34,6 @@ import org.ejbca.util.URIUtil;
 
 /**
  * This is a  class containing global configuration parameters.
- *
- * @version $Id: GlobalConfiguration.java 35186 2020-06-03 12:24:16Z serkano $
  */
 public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
@@ -115,11 +112,22 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTSESSIONTIMEOUT = false;
     private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
 
+    // Default values for healthcheck
+    /**
+     * The number of seconds an item can remain in a peer publisher queue
+     * before the corresponding VA is considered out of sync with the CA.
+     * Used by the VA peer status servlet.
+     *
+     * The default value was chosen as 4 hours, half the time required by the
+     * Baseline Requirements v1.7.2 section 4.9.10, for OCSP responses valid
+     * for less than 16 hours. This gives the CA administrator ample time
+     * to manually correct a problem with the publisher (4 hours) while
+     * remaining compliant with the BRs.
+     */
+    private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 14400;
+
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
-
-    // Default OAuth Keys
-    private static final LinkedHashMap<Integer,OAuthKeyInfo> OAUTH_KEYS_DEFAULT = new LinkedHashMap<>();
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
@@ -189,8 +197,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
 
-    private static final   String OAUTH_KEYS          = "oauthkeys";
-
     private static final   String CTLOGS              = "ctlogs";
 
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
@@ -204,6 +210,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
+    private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -558,27 +565,30 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public LinkedHashMap<Integer,OAuthKeyInfo> getOauthKeys() {
-        final Map<Integer,OAuthKeyInfo> ret = (Map<Integer,OAuthKeyInfo>)data.get(OAUTH_KEYS);
-        return (ret == null ? OAUTH_KEYS_DEFAULT : new LinkedHashMap<>(ret));
+    /**
+     * <p>Get the VA status time constraint for this CA in seconds.
+     *
+     * <p>The VA status time constraint is used by the VA peer status servlet.
+     * and defines the time an item can remain in the publisher queue before the corresponding
+     * VA is considered out of sync.
+     *
+     * <p>If no value has been specified by the CA administrator, the default value
+     * {@value DEFAULT_VA_STATUS_TIME_CONSTRAINT} is returned.
+     *
+     * @return the VA status time constraint in seconds.
+     * @since EJBCA 7.4.3
+     */
+    public int getVaStatusTimeConstraint() {
+         final Integer vaStatusTimeConstraint = (Integer) data.get(VA_STATUS_TIME_CONSTRAINT_KEY);
+         if (vaStatusTimeConstraint == null) {
+             return DEFAULT_VA_STATUS_TIME_CONSTRAINT;
+         } else {
+             return vaStatusTimeConstraint;
+         }
     }
 
-    /** Sets the available OAuth keys */
-    public void setOauthKeys(LinkedHashMap<Integer,OAuthKeyInfo> oauthKeys) {
-        data.put(OAUTH_KEYS, oauthKeys);
-    }
-
-    public void addOauthKey(OAuthKeyInfo oauthKey) {
-        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
-        keys.put(oauthKey.getInternalId(), oauthKey);
-        setOauthKeys(keys);
-    }
-
-    public void removeOauthKey(int oauthKeyId) {
-        LinkedHashMap<Integer,OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
-        keys.remove(oauthKeyId);
-        setOauthKeys(keys);
+    public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) {
+         data.put(VA_STATUS_TIME_CONSTRAINT_KEY, vaStatusTimeConstraint);
     }
 
     @SuppressWarnings("unchecked")
