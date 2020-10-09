@@ -130,6 +130,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     
     private void getStringFromSearchEndEntities() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
+        searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic();
         searchEndEntitiesHelper.fillSearchCriteria(END_ENTITY_NAME, null, "All", null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.triggerSearchResultUsernameRowSelect(END_ENTITY_COMMON_NAME);
@@ -147,7 +148,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
 
     private void waitToAvoidStaleElement(int millis) {
         try {
-            Thread.sleep(400);
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
