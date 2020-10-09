@@ -36,8 +36,6 @@ import java.util.TreeSet;
  * This is a helper classed that handles the serialization to and deserialization from XML.
  * 
  * Stored Strings in the input are stored as Base64 encoded strings, if not asciiPrintable, where Base64 encoding is not needed then it is stored as is.  
- * 
- * @version $Id$
  */
 public class XmlSerializer {
 
@@ -68,10 +66,7 @@ public class XmlSerializer {
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try (final XMLEncoder encoder = new XMLEncoder(baos)) {
     			final LinkedHashMap<Object,Object> linkedHashMap = encodeNonPrintableWithBase64 ? new Base64PutHashMap() : new LinkedHashMap<>();
-    			// Copy one by one through the get() method, so the values get transformed if needed
-    			for (String key : input.keySet()) {
-                    linkedHashMap.put(key, input.get(key));
-                }
+                linkedHashMap.putAll(input);
     			encoder.writeObject(linkedHashMap);
 			}
 			try {
