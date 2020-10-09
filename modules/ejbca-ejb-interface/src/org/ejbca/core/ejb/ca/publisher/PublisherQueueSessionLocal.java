@@ -66,7 +66,7 @@ public interface PublisherQueueSessionLocal {
     int getPendingEntriesCountForPublisher(int publisherId);
 
     /**
-     * Gets an array with the number of new pending entries for a publisher in each intervals specified by 
+     * Gets an array with the number of new pending entries for a publisher in each interval specified by
      * <i>lowerBounds</i> and <i>upperBounds</i>. 
      * 
      * The interval is defined as from lowerBounds[i] to upperBounds[i] and the unit is seconds from now. 
