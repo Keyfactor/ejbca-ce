@@ -140,7 +140,7 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/tjws-3.13.2.Final.jar"/>
     <classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-3.13.2.Final.jar"/>
     <classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
-    <classpathentry kind="lib" path="lib/ext/reactive-streams-1.0.3.jar"/>
+    <classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-api-3.141.59.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-firefox-driver-3.141.59.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-java-3.141.59.jar"/>
