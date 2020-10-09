@@ -15,6 +15,7 @@
 	<property name="healthcheck-war.resources.dir" location="${healthcheck-war.dir}/resources"/>
 
 	<path id="compile-common.classpath">
+		<path refid="lib.json-simple.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
@@ -46,13 +47,13 @@
         <war destfile="${mod.healthcheck-war.war}" webxml="${healthcheck-war.resources.dir}/WEB-INF/web-ejbca.xml" basedir="${healthcheck-war.build.dir}"/>
     </target>
 
-    <target name="ejbca-compile" depends="with.clover">
+    <target name="ejbca-compile" depends="">
     	<mkdir dir="${healthcheck-war.build.dir}/WEB-INF/classes" />
         <javac srcdir="${healthcheck-war.src.dir}" destdir="${healthcheck-war.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java, org/ejbca/ui/web/pub/OCSPHealthServlet.java" classpathref="compile-ejbca.classpath"/>
     </target>
 
-	<target name="compile-tests" depends="with.clover, ejbca-compile">
+	<target name="compile-tests" depends="ejbca-compile">
 		<mkdir dir="${healthcheck-war.build-test.dir}" />
 		<javac srcdir="${healthcheck-war.src-test.dir}" destdir="${healthcheck-war.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
@@ -63,7 +64,6 @@
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
