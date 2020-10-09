@@ -113,11 +113,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     public void testC_RaWebSaveP12() {
         raWebHelper.openPage(getRaWebUrl());
         // Use sleep to find element.
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        waitToAvoidStaleElement(200);
         raWebHelper.clickToEnrollUseUsername(webDriver);
         raWebHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
         raWebHelper.clickCheck();
@@ -134,6 +130,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     
     private void getStringFromSearchEndEntities() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
+        searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic();
         searchEndEntitiesHelper.fillSearchCriteria(END_ENTITY_NAME, null, "All", null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.triggerSearchResultUsernameRowSelect(END_ENTITY_COMMON_NAME);
@@ -141,9 +138,19 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         revokeButton.click();
         // Handles the CertificateView Popup-window.
         acceptAlert();
+        // Avoid stale element
+        waitToAvoidStaleElement(400);
         searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
         for (String windowHandle : webDriver.getWindowHandles()) {
             webDriver.switchTo().window(windowHandle);
+        }
+    }
+
+    private void waitToAvoidStaleElement(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
     
