@@ -87,8 +87,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
- *
- * @version $Id: CertificateRestResourceSystemTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
 
