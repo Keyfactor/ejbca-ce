@@ -69,6 +69,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.LongByReference;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -127,6 +128,7 @@ public class CryptokiDevice {
 
     private final CEi c;
     private final JackNJI11Provider provider;
+    private final String libName;
     private final ArrayList<Slot> slots = new ArrayList<>();
     private final HashMap<Long, Slot> slotMap = new HashMap<>();
     private final HashMap<String, Slot> slotLabelMap = new HashMap<>();
@@ -134,12 +136,13 @@ public class CryptokiDevice {
     private static final int SIGN_HASH_SIZE = 32;
     private static final int MAX_CHAIN_LENGTH = 100;
     
-    CryptokiDevice(CEi c, JackNJI11Provider provider) {
+    CryptokiDevice(CEi c, JackNJI11Provider provider, String libName) {
         if (c == null) {
             throw new NullPointerException("c must not be null");
         }
         this.c = c;
         this.provider = provider;
+        this.libName = libName;
         try {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("c.Initialize()");
@@ -1030,10 +1033,12 @@ public class CryptokiDevice {
                     // public key using the curveName or the oID methods"
                     // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
                     // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
-                    // TODO: Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
+                    // Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
                     final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
-//                    final DERPrintableString str = new DERPrintableString(curve);
-//                    publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+                    if (StringUtils.contains(libName, "cknfast")) { // only use String for nCipher
+                        final DERPrintableString str = new DERPrintableString(curve);
+                        publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+                    }
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
                     }
