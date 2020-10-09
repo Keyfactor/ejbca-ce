@@ -31,8 +31,6 @@ import org.cesecore.util.CertTools;
 
 /**
  * Holder for a modified Pkcs10RequestMessage
- * @version $Id: RequestMessageSubjectDnAdapter.java 28536 2018-03-21 11:48:07Z aminkh $
- *
  */
 public class Pkcs10RequestDnAdapter implements RequestMessage {
   
@@ -176,5 +174,18 @@ public class Pkcs10RequestDnAdapter implements RequestMessage {
     @Override
     public void setAdditionalExtraCertsCertificates(List<Certificate> certificates) {
         this.original.setAdditionalExtraCertsCertificates(certificates);
+    }
+    @Override
+    public void setUsername(String username) {
+        this.original.setUsername(username);
+    }
+    @Override
+    public void setPassword(String pwd) {
+        this.original.setPassword(pwd);
+        
+    }
+    @Override
+    public void setRequestValidityNotAfter(Date notAfter) {
+        this.original.setRequestValidityNotAfter(notAfter);
     }
 }

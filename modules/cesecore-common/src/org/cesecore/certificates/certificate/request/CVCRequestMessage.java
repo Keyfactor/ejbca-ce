@@ -42,8 +42,6 @@ import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Class to handle CVC request messages sent to the CA.
- *
- * @version $Id$
  */
 public class CVCRequestMessage implements RequestMessage {
     /**
@@ -67,7 +65,10 @@ public class CVCRequestMessage implements RequestMessage {
 
     /** manually set username */
     protected String username = null;
-    
+
+    /** Overriding the notAfter in the request */
+    protected Date notAfter = null;
+
     /** The cvc request message, not serialized. */
     protected transient CVCertificate cvcert = null;
 
@@ -96,6 +97,11 @@ public class CVCRequestMessage implements RequestMessage {
 		try {
 			CVCObject parsedObject;
 			parsedObject = CertificateParser.parseCVCObject(cvcmsg);
+			if (parsedObject == null) {
+			    final String msg = "Error in init for CVC request, data parses to null.";
+	            log.info(msg);
+	            throw new IllegalArgumentException(msg);
+			}
 			if (parsedObject instanceof CVCertificate) {
 				cvcert = (CVCertificate) parsedObject;
 			} else if (parsedObject instanceof CVCAuthenticatedRequest) {
@@ -103,7 +109,7 @@ public class CVCRequestMessage implements RequestMessage {
 				cvcert = authreq.getRequest();
 			}
 		} catch (ParseException | ConstructionException | NoSuchFieldException e) {
-            log.error("Error in init for CVC request: ", e);
+            log.info("Error in init for CVC request: ", e);
             throw new IllegalArgumentException(e);
 		}
     }
@@ -129,8 +135,7 @@ public class CVCRequestMessage implements RequestMessage {
         return pk;
     }
 
-    /** force a password
-     */
+    @Override
     public void setPassword(String pwd) {
         this.password = pwd;
     }
@@ -140,8 +145,7 @@ public class CVCRequestMessage implements RequestMessage {
     	return password;
     }
 
-    /** force a username, i.e. ignore the DN/username in the request
-     */
+    @Override
     public void setUsername(String username) {
         this.username = username;
     }
@@ -225,10 +229,22 @@ public class CVCRequestMessage implements RequestMessage {
 	
     @Override
 	public Date getRequestValidityNotAfter() {
-    	CardVerifiableCertificate cc = getCardVerifiableCertificate();
-        return CertTools.getNotAfter(cc);
+        if (notAfter == null) {
+            CardVerifiableCertificate cc = getCardVerifiableCertificate();
+            return CertTools.getNotAfter(cc);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Overriding Request validity notAfter with explicitly set: " + notAfter.toString());
+            }
+            return notAfter;
+        }
 	}
 	
+    @Override
+    public void setRequestValidityNotAfter(Date notAfter) {
+        this.notAfter = notAfter;
+    }
+
     @Override
 	public Extensions getRequestExtensions() {
 		return null;
@@ -384,4 +400,5 @@ public class CVCRequestMessage implements RequestMessage {
         }
     	return new CardVerifiableCertificate(cvcert);
     }
-} // PKCS10RequestMessage
+
+} // CVCRequestMessage
