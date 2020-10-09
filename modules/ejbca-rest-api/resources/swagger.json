@@ -14,6 +14,8 @@
             "name": "v1/certificate"
         }, {
             "name": "v1/cryptotoken"
+        }, {
+            "name": "v1/endentity"
         }
     ],
     "schemes": ["https"],
@@ -524,6 +526,155 @@
                     }
                 }
             }
+        },
+        "/v1/endentity/status": {
+            "get": {
+                "tags": ["v1/endentity"],
+                "summary": "Get the status of this REST Resource",
+                "description": "Returns status, API version and EJBCA version.",
+                "operationId": "status_3",
+                "produces": ["application/json"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/RestResourceStatusRestResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/endentity": {
+            "post": {
+                "tags": ["v1/endentity"],
+                "summary": "Add End Entity",
+                "description": "Adds a new end entity",
+                "operationId": "endentity",
+                "produces": ["application/json"],
+                "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/AddEndEntityRestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "successful operation"
+                    }
+                }
+            }
+        },
+        "/v1/endentity/search": {
+            "post": {
+                "tags": ["v1/endentity"],
+                "summary": "Searches for end entities with given criteria.",
+                "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchEndEntitiesCriteriaRestRequest model.",
+                "operationId": "searchCertificates",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "description": "Maximum number of results and collection of search criterias.",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/SearchEndEntitiesRestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/SearchEndEntitiesRestResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/endentity/{endentity_name}": {
+            "delete": {
+                "tags": ["v1/endentity"],
+                "summary": "Deletes an End Entity",
+                "description": "Deletes specified end entity and keeps certificate information untouched, if end entity does not exist success is still returned",
+                "operationId": "delete",
+                "produces": ["application/json"],
+                "parameters": [{
+                        "name": "endentity_name",
+                        "in": "path",
+                        "description": "Name of the end entity to delete",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "successful operation"
+                    }
+                }
+            }
+        },
+        "/v1/endentity/{endentity_name}/setstatus": {
+            "post": {
+                "tags": ["v1/endentity"],
+                "summary": "Set End Entity Status",
+                "description": "Edits status, password and keystore type of an end entity, in order to enroll end entity again",
+                "operationId": "setstatus",
+                "produces": ["application/json"],
+                "parameters": [{
+                        "name": "endentity_name",
+                        "in": "path",
+                        "description": "Name of the end entity to edit",
+                        "required": true,
+                        "type": "string"
+                    }, {
+                        "in": "body",
+                        "name": "body",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/SetEndEntityStatusRestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "successful operation"
+                    }
+                }
+            }
+        },
+        "/v1/endentity/{endentity_name}/revoke": {
+            "put": {
+                "tags": ["v1/endentity"],
+                "summary": "Revoke",
+                "description": "Revokes all certificates associated with given end entity name with specified reason code (see RFC 5280 Section 5.3.1), and optionally deletes the end entity",
+                "operationId": "revoke",
+                "produces": ["application/json"],
+                "parameters": [{
+                        "name": "endentity_name",
+                        "in": "path",
+                        "description": "Name of the end entity to revoke, and optionally delete",
+                        "required": true,
+                        "type": "string"
+                    }, {
+                        "in": "body",
+                        "name": "body",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/EndEntityRevocationRestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "successful operation"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -627,6 +778,47 @@
                     "type": "string"
                 },
                 "response_format": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndEntityRestResponse": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                },
+                "dn": {
+                    "type": "string"
+                },
+                "subject_alt_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "boolean"
+                },
+                "extension_data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExtendedInformationRestResponseComponent"
+                    }
+                }
+            }
+        },
+        "ExtendedInformationRestResponseComponent": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }
@@ -794,6 +986,69 @@
                 },
                 "key_spec": {
                     "type": "string"
+                }
+            }
+        },
+        "EndEntityRevocationRestRequest": {
+            "type": "object",
+            "properties": {
+                "reasonCode": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "delete": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "SearchEndEntitiesRestResponse": {
+            "type": "object",
+            "properties": {
+                "certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/EndEntityRestResponse"
+                    }
+                },
+                "more_results": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "SearchEndEntitiesCriteriaRestRequest": {
+            "type": "object",
+            "properties": {
+                "property": {
+                    "type": "string",
+                    "description": "A search property",
+                    "enum": ["QUERY", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "CA", "STATUS"]
+                },
+                "value": {
+                    "type": "string",
+                    "example": "'username', 'MyEndEntityProfile'",
+                    "description": "A search value. This could be string value, an appropriate string name of End Entity Profile or Certificate Profile or CA"
+                },
+                "operation": {
+                    "type": "string",
+                    "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY')",
+                    "enum": ["EQUALS", "LIKE"]
+                }
+            },
+            "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n"
+        },
+        "SearchEndEntitiesRestRequest": {
+            "type": "object",
+            "properties": {
+                "max_number_of_results": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "criteria": {
+                    "type": "array",
+                    "description": "A List of search criteria.",
+                    "items": {
+                        "$ref": "#/definitions/SearchEndEntitiesCriteriaRestRequest"
+                    }
                 }
             }
         }
