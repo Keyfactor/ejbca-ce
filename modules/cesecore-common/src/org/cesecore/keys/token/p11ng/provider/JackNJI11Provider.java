@@ -307,31 +307,6 @@ public class JackNJI11Provider extends Provider {
                     seq.close();
                     return baos.toByteArray();
                 } else {
-                    /*
-                    // Assuming that we can guess the resulting signature size (i.e. we know the hash algo)
-                    // We can optimize and make a single call to the HSM instead of 2 calls
-                    // 64 bytes is enough for a 512 bit signature, i.e. ECDSA or EdDSA with SHA512
-                    // For RSA we need to key length, i.e. 2048 bits == 256 bytes signature
-                    // TODO: make some more intelligent guesses here based on algorithm
-                    int sigBuffSize = 64;
-                    try {
-                        byte[] result = new byte[sigBuffSize];
-                        LongRef l = new LongRef(sigBuffSize);
-                        // Make a single call assuming that we know that the signature will not be longer than the above buffer
-                        // If the buffer is too small, we will get a org.pkcs11.jacknji11.CKRException: 0x00000150: BUFFER_TOO_SMALL
-                        // and can retry with the other, two-roundtrip, method
-                        myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray(), result, l);
-                        // Resize buffer, if the returned length is smaller than the buffer we provided
-                        myKey.getSlot().getCryptoki().resize(result,Long.valueOf(l.value()).intValue());
-                        return result;
-                    } catch (CKRException e) {
-                        // If the buffer was not too small, i.e. some real error, throw it
-                        if (e.getCKR() != CKR.BUFFER_TOO_SMALL) {
-                            throw e;
-                        }
-                    }
-                    log.debug(sigBuffSize + " was too small to hold the signature for algorithm " + algorithm + ", making another pass letting the HSM tell us the signature size.");
-                    */
                     return myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
                 }
             } catch (IOException e) {
