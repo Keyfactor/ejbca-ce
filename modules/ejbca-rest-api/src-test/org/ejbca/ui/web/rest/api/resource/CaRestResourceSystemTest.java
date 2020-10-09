@@ -26,8 +26,6 @@ import org.junit.Test;
 
 /**
  * A set of system tests for CaRestResource ('').
- *
- * @version $Id: CaRestResourceSystemTest.java 29137 2018-06-07 12:40:12Z andrey_s_helmes $
  */
 public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
