@@ -108,8 +108,6 @@ import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 
 /**
  * An intermediate class to support REST API system tests and setup the SSL connection/authentication.
- *
- * @version $Id$
  */
 public class RestResourceSystemTestBase {
 
