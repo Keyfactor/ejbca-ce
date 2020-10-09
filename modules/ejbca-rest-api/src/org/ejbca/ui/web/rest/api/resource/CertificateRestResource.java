@@ -104,8 +104,6 @@ import java.util.stream.Collectors;
 
 /**
  * JAX-RS resource handling certificate-related requests.
- *
- * @version $Id$
  */
 @Api(tags = {"v1/certificate"}, value = "Certificate REST Management API")
 @SwaggerDefinition(
@@ -420,7 +418,7 @@ public class CertificateRestResource extends BaseRestResource {
                         + " with user generated keys");
             }
             byte[] certificateBytes = raMasterApi.createCertificate(admin, endEntityInformation); // X509Certificate
-            X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
                 byte[] pemBytes = CertTools.getPemFromCertificateChain(Collections.singletonList((Certificate) certificate));
                 response = CertificateRestResponse.builder().setCertificate(pemBytes).
@@ -444,11 +442,11 @@ public class CertificateRestResource extends BaseRestResource {
 
             certificateBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
-                X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+                Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
                 response = CertificateRestResponse.builder().setCertificate(certificateBytes).
                         setSerialNumber(CertTools.getSerialNumberAsString(certificate)).setResponseFormat("PEM").build();
             } else if (responseFormat.equals(TokenDownloadType.DER.name())) {
-                final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+                final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
                 response = CertificateRestResponse.converter().toRestResponse(certificate);
             } else {
                 // JKS or PKCS12. Will be detected by content.

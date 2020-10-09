@@ -67,7 +67,6 @@
 		<path location="${mod.cesecore-entity.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-common-web.lib}"/>
-		<pathelement path="${clover.jar}"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="compile">
@@ -141,7 +140,7 @@
 	</target>
 
 	<!-- Tests -->
-	<target name="compile-tests" depends="build, with.clover">
+	<target name="compile-tests" depends="build">
 		<mkdir dir="${clientToolBox.build-test.dir}" />
 		<copy file="${log4j.test.file}" tofile="${clientToolBox.build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy file="${jndi.properties.file}" tofile="${clientToolBox.build-test.dir}/jndi.properties" failonerror="true"/>
