@@ -10,6 +10,12 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -18,10 +24,9 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -70,8 +75,6 @@ import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.After;
@@ -80,16 +83,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
-import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
- *
- * @version $Id: CertificateRestResourceSystemTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
 
@@ -158,8 +155,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String expectedVersion = "1.0";
         final String expectedRevision = GlobalConfiguration.EJBCA_VERSION;
         // when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/status").get();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Response actualResponse = newRequest("/v1/certificate/status").request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -185,9 +182,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
             String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
             // Attempt revocation through REST
-            final ClientRequest request = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE");
-            final ClientResponse<?> actualResponse = request.put();
-            final String actualJsonString = actualResponse.getEntity(String.class);
+            final Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
+            final String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
             final String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
@@ -224,12 +220,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
-        final ClientRequest request = newRequest("/v1/certificate/pkcs10enroll");
-        request.body(MediaType.APPLICATION_JSON, requestBody);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+        
         // Send request
         try {
-            final ClientResponse<?> actualResponse = request.post();
-            final String actualJsonString = actualResponse.getEntity(String.class);
+            final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+            final String actualJsonString = actualResponse.readEntity(String.class);
             // Verify response
             assertJsonContentType(actualResponse);
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
@@ -289,12 +285,11 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
-        final ClientRequest request = newRequest("/v1/certificate/pkcs10enroll");
-        request.body(MediaType.APPLICATION_JSON, requestBody);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         // Send request
         try {
-            final ClientResponse<?> actualResponse = request.post();
-            final String actualJsonString = actualResponse.getEntity(String.class);
+            final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+            final String actualJsonString = actualResponse.readEntity(String.class);
             // Verify response
             assertJsonContentType(actualResponse);
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
@@ -361,11 +356,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final FinalizeRestRequest requestObject = new FinalizeRestRequest("P12", "foo123");
             final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
             final String requestBody = objectMapper.writeValueAsString(requestObject);
-            final ClientRequest request = newRequest("/v1/certificate/" + requestId + "/finalize");
-            request.body(MediaType.APPLICATION_JSON, requestBody);
-
-            final ClientResponse<?> actualResponse = request.post();
-            final String actualJsonString = actualResponse.getEntity(String.class);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+            final Response actualResponse = newRequest("/v1/certificate/" + requestId + "/finalize").request().post(requestEntity);
+            final String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
             final String responseFormat = (String) actualJsonObject.get("response_format");
@@ -411,7 +404,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // given
         disableRestProtocolConfiguration();
         // when
-        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/status").get();
+        final Response actualResponse = newRequest("/v1/certificate/status").request().get();
         final int status = actualResponse.getStatus();
         // then
         assertEquals("Unexpected response after disabling protocol", 403, status);
