@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.beans.XMLEncoder;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -36,8 +37,6 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 
 /**
  * Representation of a publisher.
- * 
- * @version $Id$
  */
 @Entity
 @Table(name="PublisherData")
@@ -57,7 +56,6 @@ public class PublisherData extends ProtectedData implements Serializable {
 	/**
 	 * Entity Bean holding data of a publisher.
 	 *
-	 * @return null
 	 * @ejb.create-method view-type="local"
 	 */
 	public PublisherData(int id, String name, BasePublisher publisher) {
@@ -117,9 +115,9 @@ public class PublisherData extends ProtectedData implements Serializable {
         HashMap a = new Base64PutHashMap();
 		a.putAll((HashMap)publisher.saveData());
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-		encoder.writeObject(a);
-		encoder.close();
+		try (XMLEncoder encoder = new XMLEncoder(baos)) {
+		    encoder.writeObject(a);
+		}
         try {
             if (log.isDebugEnabled()) {
                 log.debug("Publisher data: \n" + baos.toString("UTF8"));
