@@ -29,8 +29,6 @@ import org.cesecore.util.CeSecoreNameStyle;
 
 /**
  * Class to handle simple requests from only a public key, all required parameters must be set.
- *
- * @version $Id$
  */
 public class SimpleRequestMessage implements RequestMessage {
 
@@ -311,5 +309,10 @@ public class SimpleRequestMessage implements RequestMessage {
     @Override
     public void setAdditionalExtraCertsCertificates(List<Certificate> additionalExtraCertsCertificates) {
         this.additionalExtraCertsCertificates = additionalExtraCertsCertificates;
+    }
+
+    @Override
+    public void setRequestValidityNotAfter(Date notAfter) {
+        this.validityNotAfter = notAfter;
     }
 } // SimpleRequestMessage
