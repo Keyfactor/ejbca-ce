@@ -301,11 +301,12 @@ public class CRLData extends ProtectedData implements Serializable {
      * @return the found entity instance or null if the entity does not exist.
      */
     public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
-        final StringBuilder builder = new StringBuilder(
-                "SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND " + getCrlPartitionIndexCondition(crlPartitionIndex));
-        final Query query = entityManager.createQuery(builder.toString());
+        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
+                + getCrlPartitionIndexCondition(crlPartitionIndex)
+                + " ORDER BY a.crlPartitionIndex");
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
+        query.setMaxResults(1);
         if (crlPartitionIndex > 0) {
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
         }
@@ -337,8 +338,10 @@ public class CRLData extends ProtectedData implements Serializable {
         if (deltaCRL) {
             final Query query = entityManager.createQuery(
                     "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex));
+                            + getCrlPartitionIndexCondition(crlPartitionIndex)
+                            + " ORDER BY a.crlPartitionIndex");
             query.setParameter("issuerDN", issuerDN);
+            query.setMaxResults(1);
             if (crlPartitionIndex > 0) {
                 query.setParameter("crlPartitionIndex", crlPartitionIndex);
             }
@@ -346,8 +349,10 @@ public class CRLData extends ProtectedData implements Serializable {
         } else {
             final Query query = entityManager.createQuery(
                     "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex));
+                            + getCrlPartitionIndexCondition(crlPartitionIndex)
+                            + " ORDER BY a.crlPartitionIndex");
             query.setParameter("issuerDN", issuerDN);
+            query.setMaxResults(1);
             if (crlPartitionIndex > 0) {
                 query.setParameter("crlPartitionIndex", crlPartitionIndex);
             }
@@ -391,8 +396,8 @@ public class CRLData extends ProtectedData implements Serializable {
     public static boolean crlExistsForCa(final EntityManager entityManager, final String issuerDn) {
         final Query query = entityManager
                 .createQuery("SELECT a.crlNumber FROM CRLData a WHERE a.issuerDN=:issuerDN");
-        query.setParameter("issuerDN", issuerDn).setMaxResults(1); // we only want to check if there is at least one, speed it up
-        return !query.getResultList().isEmpty(); // if the list is _not_ empty, return true
+        query.setParameter("issuerDN", issuerDn).setMaxResults(1);
+        return !query.getResultList().isEmpty();
     }
 
     //

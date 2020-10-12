@@ -338,11 +338,11 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
             sql.append(" AND publishStatus=");
             sql.append(PublisherConst.STATUS_PENDING);
             if(lowerBounds[i] > 0) {
-                sql.append(" AND timeCreated < ");
+                sql.append(" AND timeCreated > ");
                 sql.append(now - 1000 * lowerBounds[i]);
             }
             if(upperBounds[i] > 0) {
-                sql.append(" AND timeCreated > ");
+                sql.append(" AND timeCreated < ");
                 sql.append(now - 1000 * upperBounds[i]);
             }
             if(i < lowerBounds.length-1) {
