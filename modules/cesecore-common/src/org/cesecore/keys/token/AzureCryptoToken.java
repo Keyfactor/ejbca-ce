@@ -60,6 +60,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
@@ -408,8 +409,14 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // {"kty": "RSA-HSM", "key-size": 2048, "attributes": {"enabled": true}}
             // {"kty": "EC-HSM", "crv": "P-256", "attributes": {"enabled": true}}
             final StringBuilder str = new StringBuilder("{\"kty\": ");
+            final String formatCheckedkeySpec;
+            if (keySpec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                formatCheckedkeySpec = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+            } else {
+                formatCheckedkeySpec = keySpec;
+            }
             // If it is pure numeric, it is an RSA key length
-            if (NumberUtils.isNumber(keySpec)) {
+            if (NumberUtils.isNumber(formatCheckedkeySpec)) {
                 String kty = "RSA-HSM";
                 if (getKeyVaultType().equals("standard")) {
                     kty = "RSA";
