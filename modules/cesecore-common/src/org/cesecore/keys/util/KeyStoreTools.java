@@ -356,8 +356,14 @@ public class KeyStoreTools {
         } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
         } else {
+            final String formatCheckedKeySpec;
+            if (keySpec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                formatCheckedKeySpec = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+            } else {
+                formatCheckedKeySpec = keySpec;
+            }
             try {
-                generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
+                generateRSA(Integer.parseInt(formatCheckedKeySpec.trim()), keyEntryName);
             } catch (NumberFormatException e) {
                 generateEC(keySpec, keyEntryName);
             }
