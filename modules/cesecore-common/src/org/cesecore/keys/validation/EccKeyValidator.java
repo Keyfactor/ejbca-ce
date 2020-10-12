@@ -29,7 +29,6 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
-import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
@@ -40,7 +39,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A, who both originate from X9.62)
  * requirements. See: <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA-Browser Forum BR section 6.1.6 (PDF)</a>
  * 
- * @version $Id$
  */
 public class EccKeyValidator extends KeyValidatorBase {
 
@@ -86,8 +84,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     @Override
     @SuppressWarnings({"serial", "unchecked"})
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModel(data);
-        uiModel.add(new DynamicUiProperty<String>("settings"));
+        super.initDynamicUiModel();
         final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
         settingsTemplate.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
         settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());

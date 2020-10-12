@@ -33,7 +33,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.profiles.Profile;
-import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -96,8 +95,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     
     @Override
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModel(data);
-        uiModel.add(new DynamicUiProperty<String>("settings"));
+        super.initDynamicUiModel();
         final LinkedHashMap<String,String> labels = new LinkedHashMap<String,String>();
         labels.put("-1", "ALL");
         for (final String algorithm : AlgorithmTools.getAvailableKeyAlgorithms()) {
@@ -155,16 +153,14 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     @Override
     public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidationException {
         final List<String> messages = new ArrayList<String>();
-        messages.addAll(validateWithFingerprint(publicKey, PublicKeyBlacklistEntry.createFingerprint(publicKey), certificateProfile));
+        messages.addAll(validateWithFingerprint(publicKey, PublicKeyBlacklistEntry.createFingerprint(publicKey)));
         if (publicKey instanceof RSAPublicKey) {
-            messages.addAll(validateWithFingerprint(publicKey, PublicKeyBlacklistEntry.createDebianFingerprint((RSAPublicKey) publicKey),
-                    certificateProfile));
+            messages.addAll(validateWithFingerprint(publicKey, PublicKeyBlacklistEntry.createDebianFingerprint((RSAPublicKey) publicKey)));
         }
         return messages;
     }
 
-    public List<String> validateWithFingerprint(final PublicKey publicKey, final String fingerprint, final CertificateProfile certificateProfile)
-            throws ValidationException {
+    public List<String> validateWithFingerprint(final PublicKey publicKey, final String fingerprint) {
         List<String> messages = new ArrayList<String>();
         final int keyLength = KeyTools.getKeyLength(publicKey);
         final String keyAlgorithm = publicKey.getAlgorithm(); // AlgorithmTools.getKeyAlgorithm(publicKey);

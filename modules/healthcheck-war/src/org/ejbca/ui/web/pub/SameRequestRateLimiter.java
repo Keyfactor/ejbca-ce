@@ -10,17 +10,21 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.pub;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Helper class for use when multiple threads a requesting something that will end up with the same result.
+ * <p>Helper class for use when multiple threads a requesting something and will end up with the same result.
  * 
- * Instead of allowing each request to proceed, only the first will return a ticket where isFirst() is false.
- * Example use:
- * 
- * final static SameRequestRateLimiter<Object> srrl = new SameRequestRateLimiter<Object>();
+ * <p>Instead of allowing each request to proceed, only the first thread will return a result where
+ * {@link Result#isFirst()} is true.
+ *
+ * <p>Example use:
+ * <pre>
+ * {@code
+ * final static SameRequestRateLimiter<Object> srrl = new SameRequestRateLimiter<>();
  * ...
  * SameRequestRateLimiter<Object>.Result result = srrl.getResult();
  * if (result.isFirst()) {
@@ -33,11 +37,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * }
  * Object resultValue = result.getValue();
  * ...
- * 
- * @version $Id$
+ * }
+ * </pre>
  */
 public class SameRequestRateLimiter<T> {
-    
     /** Lock for keeping all but the first thread hanging and waiting for the first thread to calculate the result. */
     private final ReentrantLock rateLimiterLock = new ReentrantLock(false);
     /** Lock for modifying the current shared Result object. */

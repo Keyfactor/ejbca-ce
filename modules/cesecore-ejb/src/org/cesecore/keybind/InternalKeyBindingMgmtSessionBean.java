@@ -872,25 +872,31 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     private void checkForPreProductionAndNonceConflictBeforeImport(AuthenticationToken authenticationToken, final InternalKeyBinding internalKeyBinding,
             String certificateId) throws InternalKeyBindingNonceConflictException {
         if ("OcspKeyBinding".equals(internalKeyBinding.getImplementationAlias())) {
-            DynamicUiProperty<? extends Serializable> nonceProperty = internalKeyBinding.getProperty("enableNonce");
+            final DynamicUiProperty<? extends Serializable> nonceProperty = internalKeyBinding.getProperty("enableNonce");
             if (nonceProperty != null && "true".equals(nonceProperty.getValue().toString()) && certificateId != null) {
-                CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(certificateId);
+                final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(certificateId);
                 if (certificateDataWrapper != null)  {
-                    CertificateData certificateData = certificateDataWrapper.getCertificateData();
-                    String caFingerprint = certificateData.getCaFingerprint();
-                    CertificateDataWrapper caCertificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
-                    if (caCertificateDataWrapper != null)  {
-                        Certificate caCertificate = caCertificateDataWrapper.getCertificate();                        
-                        List<CAInfo> caInfos = caSession.getAuthorizedCaInfos(authenticationToken);
-                        for (CAInfo caInfo : caInfos) {
-                            if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
-                                Certificate caCert = caInfo.getCertificateChain().get(0);
-                                if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses()) {
-                                    throw new InternalKeyBindingNonceConflictException("Can not import certificate for OCSP Key Binding with nonce enabled in response when "
-                                            + "the associated CA has pre-production of OCSP responses enabled.");
-                                }                            
-                            }
-                        }
+                    final CertificateData certificateData = certificateDataWrapper.getCertificateData();
+                    final String caFingerprint = certificateData.getCaFingerprint();
+                    if (caFingerprint != null) {
+                        assertCaPreProductionNotUsed(authenticationToken, caFingerprint);
+                    }
+                }
+            }
+        }
+    }
+
+    private void assertCaPreProductionNotUsed(final AuthenticationToken authenticationToken, final String caFingerprint) throws InternalKeyBindingNonceConflictException {
+        final CertificateDataWrapper caCertificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
+        if (caCertificateDataWrapper != null)  {
+            final Certificate caCertificate = caCertificateDataWrapper.getCertificate();
+            final List<CAInfo> caInfos = caSession.getAuthorizedCaInfos(authenticationToken);
+            for (CAInfo caInfo : caInfos) {
+                if (CAInfo.CATYPE_X509 == caInfo.getCAType() && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
+                    final Certificate caCert = caInfo.getCertificateChain().get(0);
+                    if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses()) {
+                        throw new InternalKeyBindingNonceConflictException("Can not import certificate for OCSP Key Binding with nonce enabled in response when "
+                                + "the associated CA has pre-production of OCSP responses enabled.");
                     }
                 }
             }
