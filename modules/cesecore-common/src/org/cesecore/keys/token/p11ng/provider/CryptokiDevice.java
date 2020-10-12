@@ -88,6 +88,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
 import org.cesecore.keys.token.p11ng.CK_CP5_AUTH_DATA;
 import org.cesecore.keys.token.p11ng.CK_CP5_CHANGEAUTHDATA_PARAMS;
@@ -1002,13 +1003,8 @@ public class CryptokiDevice {
                 if (isAliasUsed(session, alias)) {
                     throw new IllegalArgumentException("Key with ID or label " + alias + " already exists");
                 }
-
-                final String formatCheckedKeySpec;
-                if (keySpec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                    formatCheckedKeySpec = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
-                } else {
-                    formatCheckedKeySpec = keySpec;
-                }
+                
+                final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
                 
                 final int keyLength = Integer.parseInt(formatCheckedKeySpec);
                 try {
