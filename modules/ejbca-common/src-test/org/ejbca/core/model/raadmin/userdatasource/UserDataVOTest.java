@@ -16,6 +16,7 @@ package org.ejbca.core.model.raadmin.userdatasource;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.util.Base64;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -34,6 +35,18 @@ import static junit.framework.TestCase.assertTrue;
 
 public class UserDataVOTest {
     private final static Logger log = Logger.getLogger(UserDataVOTest.class);
+
+    @Test
+    public void testBasicEncodeDecodeXml() throws Exception {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            final UserDataVO userDataVO = new UserDataVO();
+            encoder.writeObject(userDataVO);
+        }
+        log.info(new String(baos.toByteArray()));
+        final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
+        decoder.readObject();
+    }
 
     @Test
     public void testEncodeDecodeXmlWithEndEntityInformation() throws Exception {
@@ -62,14 +75,23 @@ public class UserDataVOTest {
     }
 
     @Test
-    public void testBasicEncodeDecodeXml() throws Exception {
+    public void testUserDataVOWithPSD2RoleOfPSPStatement() throws Exception {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (final XMLEncoder encoder = new XMLEncoder(baos)) {
             final UserDataVO userDataVO = new UserDataVO();
+            final PSD2RoleOfPSPStatement psd2RoleOfPSPStatement = new PSD2RoleOfPSPStatement();
+            psd2RoleOfPSPStatement.setName("foo");
+            psd2RoleOfPSPStatement.setOid("1.2.3.4");
+            final ExtendedInformation extendedInformation = new ExtendedInformation();
+            extendedInformation.getRawData().put("psd", psd2RoleOfPSPStatement);
+            userDataVO.setExtendedinformation(extendedInformation);
             encoder.writeObject(userDataVO);
         }
         log.info(new String(baos.toByteArray()));
         final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
-        decoder.readObject();
+        final UserDataVO userDataVO = (UserDataVO) decoder.readObject();
+        final PSD2RoleOfPSPStatement psd2RoleOfPSPStatement = (PSD2RoleOfPSPStatement) userDataVO.getExtendedinformation().getRawData().get("psd");
+        assertEquals("foo", psd2RoleOfPSPStatement.getName());
+        assertEquals("1.2.3.4", psd2RoleOfPSPStatement.getOid());
     }
 }
