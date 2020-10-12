@@ -409,12 +409,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // {"kty": "RSA-HSM", "key-size": 2048, "attributes": {"enabled": true}}
             // {"kty": "EC-HSM", "crv": "P-256", "attributes": {"enabled": true}}
             final StringBuilder str = new StringBuilder("{\"kty\": ");
-            final String formatCheckedkeySpec;
-            if (keySpec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                formatCheckedkeySpec = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
-            } else {
-                formatCheckedkeySpec = keySpec;
-            }
+            final String formatCheckedkeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
             // If it is pure numeric, it is an RSA key length
             if (NumberUtils.isNumber(formatCheckedkeySpec)) {
                 String kty = "RSA-HSM";

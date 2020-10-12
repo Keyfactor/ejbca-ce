@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.pkcs11.jacknji11.CKA;
 
 /**
@@ -138,6 +140,21 @@ public class KeyGenParams implements Serializable {
      */
     public String getKeySpecification() {
         return keySpecification;
+    }
+    
+    /**
+     * Get key specification as numeric string if RSA or left untouched
+     * 
+     * @return the key specification string 
+     */
+    public static String getKeySpecificationNumericIfRsa(final String keySpec) {
+        final String keySpecificationRsaNumeric;
+        if (StringUtils.startsWith(keySpec, AlgorithmConstants.KEYALGORITHM_RSA)) {
+            keySpecificationRsaNumeric = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+        } else {
+            keySpecificationRsaNumeric = keySpec;
+        }
+        return keySpecificationRsaNumeric;
     }
 
     /**

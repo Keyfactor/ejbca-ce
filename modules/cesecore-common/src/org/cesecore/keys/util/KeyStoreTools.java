@@ -72,6 +72,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.KeyCreationException;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
+import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.p11.PKCS11Utils;
 import org.cesecore.util.CertTools;
 
@@ -356,12 +357,7 @@ public class KeyStoreTools {
         } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
         } else {
-            final String formatCheckedKeySpec;
-            if (keySpec.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                formatCheckedKeySpec = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
-            } else {
-                formatCheckedKeySpec = keySpec;
-            }
+            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
             try {
                 generateRSA(Integer.parseInt(formatCheckedKeySpec.trim()), keyEntryName);
             } catch (NumberFormatException e) {
