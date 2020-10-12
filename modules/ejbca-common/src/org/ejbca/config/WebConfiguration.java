@@ -130,10 +130,7 @@ public class WebConfiguration {
 	
 	/**
 	 * Require administrator certificates to be available to access the Admin GUI
-     *
-     * @deprecated Since 7.5.0
 	 */
-	@Deprecated
 	private static boolean getRequireAdminCertificate() {
         // Anything but an explicit setting this configuration value to "false" will enforce the client certificate check
 	    return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERT));
@@ -155,6 +152,7 @@ public class WebConfiguration {
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQAUTH));
     }
 
+	
     /**
      * Require administrator certificates to be available in database for revocation checks.
      */

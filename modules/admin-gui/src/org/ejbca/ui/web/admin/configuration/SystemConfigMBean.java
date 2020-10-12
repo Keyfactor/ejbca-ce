@@ -136,6 +136,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
         private int sessionTimeoutTime;
+        private int vaStatusTimeConstraint;
 
         // Settings for the cleanup job for removing old OCSP responses created by the presigners.
         private boolean ocspCleanupUse;
@@ -181,6 +182,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
+                this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.oauthKeys = new ArrayList<>(globalConfig.getOauthKeys().values());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
@@ -262,6 +264,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableSessionTimeout(boolean enableSessionTimeout) { this.enableSessionTimeout = enableSessionTimeout;}
         public int getSessionTimeoutTime() {return sessionTimeoutTime;}
         public void setSessionTimeoutTime(int sessionTimeoutTime) {this.sessionTimeoutTime = sessionTimeoutTime;}
+        public int getVaStatusTimeConstraint() { return vaStatusTimeConstraint; }
+        public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) { this.vaStatusTimeConstraint = vaStatusTimeConstraint; }
 
         public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
         public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
@@ -396,7 +400,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             throw new AuthorizationDeniedException("Administrator was not authorized to any configuration.");
         }
     }
-    
+
     /**
      * Get an object which can be used to manage the OAuth Key configuration. This will create a new OAuth Key manager for
      * the OAuth Keys in the current configuration if no OAuth Key manager has been created, or the old OAuth Key manager
@@ -918,6 +922,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
+                globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
 
                 if (isValidOcspCleanupSettings()) {

@@ -271,9 +271,11 @@
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="geronimo-osgi-locator-1.1.jar"/>
+			<include name="jboss-jaxrs-api_2.1_spec-2.0.1.Final.jar"/>
+			<include name="reactive-streams-1.*.jar"/>
+			<include name="resteasy-client-3.*.jar"/>
 			<include name="resteasy-jackson2-provider-3.*.jar"/>
 			<include name="resteasy-jaxrs-3.*.jar"/>
-            <include name="resteasy-legacy-3.*.jar"/>
 			<include name="scannotation-1.0.3.jar"/>
 			<include name="tjws-3.*.jar"/>
 		</fileset>
