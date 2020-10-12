@@ -358,6 +358,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     case "org.signserver.common.AuthorizedClient":
                     case "org.cesecore.util.SecureXMLDecoderTest$MockEnum":
                     case "org.cesecore.util.SecureXMLDecoderTest$MockObject":
+                    case "org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement":
                         try {
                             // EJBCA, SignServer and test classes, so not available in CESeCore.
                             // In the long run we should make the whitelisted class names configurable, e.g. by subclassing (ECA-4916)
