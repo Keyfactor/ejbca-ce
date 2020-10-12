@@ -34,8 +34,6 @@ import org.ejbca.util.URIUtil;
 
 /**
  * This is a  class containing global configuration parameters.
- *
- * @version $Id$
  */
 public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
@@ -109,11 +107,25 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTENABLEEXTERNALSCRIPTS = false;
 
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
-    
+
     // Default values for session timeout
     private static final boolean DEFAULTSESSIONTIMEOUT = false;
     private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
-    
+
+    // Default values for healthcheck
+    /**
+     * The number of seconds an item can remain in a peer publisher queue
+     * before the corresponding VA is considered out of sync with the CA.
+     * Used by the VA peer status servlet.
+     *
+     * The default value was chosen as 4 hours, half the time required by the
+     * Baseline Requirements v1.7.2 section 4.9.10, for OCSP responses valid
+     * for less than 16 hours. This gives the CA administrator ample time
+     * to manually correct a problem with the publisher (4 hours) while
+     * remaining compliant with the BRs.
+     */
+    private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 14400;
+
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
 
@@ -184,7 +196,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String REPORTS_PATH        = "reports_path";
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
-    
+
     private static final   String CTLOGS              = "ctlogs";
 
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
@@ -198,7 +210,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
-    
+    private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
+
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -303,7 +316,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
                 Integer.parseInt((String) data.get(PUBLICPORT))
         );
     }
-    
+
     public String getAdminWebPath() {
         return getString(ADMINPATH, "adminweb");
     }
@@ -423,7 +436,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-    
+
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
@@ -530,11 +543,11 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public boolean getUseSessionTimeout() {
         return getBoolean(ENABLESESSIONTIMEOUT, DEFAULTSESSIONTIMEOUT);
     }
-    
+
     public void setUseSessionTimeout(final boolean value) {
         putBoolean(ENABLESESSIONTIMEOUT, value);
     }
-    
+
     public int getSessionTimeoutTime() {
         Object num = data.get(SESSIONTIMEOUTTIME);
         if(num == null){
@@ -543,7 +556,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
             return ((Integer) num).intValue();
         }
     }
-    
+
     public void setSessionTimeoutTime(int timeInMinutes) {
         if (timeInMinutes < SESSION_TIMEOUT_MIN || timeInMinutes > SESSION_TIMEOUT_MAX) {
             data.put(SESSIONTIMEOUTTIME, DEFAULTSESSIONTIMEOUTTIME);
@@ -551,7 +564,33 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
             data.put(SESSIONTIMEOUTTIME, timeInMinutes);
         }
     }
-    
+
+    /**
+     * <p>Get the VA status time constraint for this CA in seconds.
+     *
+     * <p>The VA status time constraint is used by the VA peer status servlet.
+     * and defines the time an item can remain in the publisher queue before the corresponding
+     * VA is considered out of sync.
+     *
+     * <p>If no value has been specified by the CA administrator, the default value
+     * {@value DEFAULT_VA_STATUS_TIME_CONSTRAINT} is returned.
+     *
+     * @return the VA status time constraint in seconds.
+     * @since EJBCA 7.4.3
+     */
+    public int getVaStatusTimeConstraint() {
+         final Integer vaStatusTimeConstraint = (Integer) data.get(VA_STATUS_TIME_CONSTRAINT_KEY);
+         if (vaStatusTimeConstraint == null) {
+             return DEFAULT_VA_STATUS_TIME_CONSTRAINT;
+         } else {
+             return vaStatusTimeConstraint;
+         }
+    }
+
+    public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) {
+         data.put(VA_STATUS_TIME_CONSTRAINT_KEY, vaStatusTimeConstraint);
+    }
+
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
         final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
