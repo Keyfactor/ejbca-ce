@@ -294,7 +294,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     public String getPublisherQueue() {
-        final int[] times = getPublisherQueueLength(new int[]{0, 1*60, 10*60, 60*60}, new int[]{1*60, 10*60, 60*60, -1});
+        final int[] times = getPublisherQueueLength(new int[]{1*60, 10*60, 60*60, -1}, new int[]{0, 1*60, 10*60, 60*60});
         return Arrays.stream(times).mapToObj(Integer::toString).collect(Collectors.joining(", "));
     }
     

@@ -13,15 +13,6 @@
 
 package org.ejbca.core.model.ca.publisher;
 
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,13 +31,24 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.peerconnector.publisher.PeerPublisher;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,8 +57,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests Publishers.
- *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PublisherTest extends RoleUsingTestCase {
@@ -325,4 +325,12 @@ public class PublisherTest extends RoleUsingTestCase {
         final boolean ret = publisherSession.storeCertificate(internalAdmin, publishers, cdw, "foo123", CertTools.getSubjectDN(testCertificate), null);
         assertTrue("Unable to store certificate for " + publishers.size() + " publishers in one call.", ret);
     }
+
+	@Test
+	public void testPublisherClassNames() {
+		Assert.assertEquals("The class name of " + PeerPublisher.class.getCanonicalName() + " has changed. " +
+						"Parts of EJBCA are using the name of the class when determining what type of publisher it is. " +
+						"Update these references and make me pass.",
+				"PeerPublisher", PeerPublisher.class.getSimpleName());
+	}
 }
