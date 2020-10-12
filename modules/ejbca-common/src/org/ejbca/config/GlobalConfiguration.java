@@ -35,7 +35,6 @@ import org.ejbca.util.URIUtil;
 
 /**
  * This is a  class containing global configuration parameters.
- *
  */
 public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
@@ -47,6 +46,9 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static final float LATEST_VERSION = 3f;
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
+
+    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
+    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();;
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
@@ -111,8 +113,25 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTSESSIONTIMEOUT = false;
     private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
 
+    // Default values for healthcheck
+    /**
+     * The number of seconds an item can remain in a peer publisher queue
+     * before the corresponding VA is considered out of sync with the CA.
+     * Used by the VA peer status servlet.
+     *
+     * The default value was chosen as 4 hours, half the time required by the
+     * Baseline Requirements v1.7.2 section 4.9.10, for OCSP responses valid
+     * for less than 16 hours. This gives the CA administrator ample time
+     * to manually correct a problem with the publisher (4 hours) while
+     * remaining compliant with the BRs.
+     */
+    private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 14400;
+
     private static final int SESSION_TIMEOUT_MIN = 1;
     private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
+
+    // Default OAuth Keys
+    private static final LinkedHashMap<Integer,OAuthKeyInfo> OAUTH_KEYS_DEFAULT = new LinkedHashMap<>();
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
@@ -198,6 +217,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
+    private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -219,15 +239,15 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
        String tempadminpath = adminpath.trim();
 
-        if (tempadminpath == null) {
-            tempadminpath = "";
-        }
-        if (!tempadminpath.endsWith("/") && !tempadminpath.equals("")) {
-            tempadminpath = tempadminpath + "/";   // Add ending '/'
-        }
-        if (tempadminpath.startsWith("/")) {
-            tempadminpath = tempadminpath.substring(1);   // Remove starting '/'
-        }
+       if(tempadminpath == null) {
+         tempadminpath = "";
+       }
+       if(!tempadminpath.endsWith("/") && !tempadminpath.equals("")){
+         tempadminpath = tempadminpath + "/";   // Add ending '/'
+       }
+       if(tempadminpath.startsWith("/")){
+         tempadminpath = tempadminpath.substring(1);   // Remove starting '/'
+       }
 
        data.put(ADMINPATH,tempadminpath);
        data.put(AVAILABLELANGUAGES,availablelanguages.trim());
@@ -448,7 +468,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     	   String ret = (String) data.get(AUTOENROLL_ADSERVER);
    		   return (ret == null ? AUTOENROLL_DEFAULT_ADSERVER : ret);
        }
-       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, caid); }
+       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, Integer.valueOf(caid)); }
        public int getAutoEnrollADPort() {
     	   Integer ret = (Integer) data.get(AUTOENROLL_ADPORT);
    		   return (ret == null ? AUTOENROLL_DEFAULT_ADPORT : ret);
@@ -458,7 +478,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     	   String ret = (String) data.get(AUTOENROLL_BASEDN_USER);
    		   return (ret == null ? AUTOENROLL_DEFAULT_BASEDN_USER : ret);
    	   }
-       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, caid); }
+       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, Integer.valueOf(caid)); }
        public int getAutoEnrollCA() {
     	   Integer ret = (Integer) data.get(AUTOENROLL_CA);
     	   return (ret == null ? AUTOENROLL_DEFAULT_CA : ret);
@@ -552,6 +572,19 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         }
     }
 
+    public int getVaStatusTimeConstraint() {
+        final Integer vaStatusTimeConstraint = (Integer) data.get(VA_STATUS_TIME_CONSTRAINT_KEY);
+        if (vaStatusTimeConstraint == null) {
+            return DEFAULT_VA_STATUS_TIME_CONSTRAINT;
+        } else {
+            return vaStatusTimeConstraint;
+        }
+    }
+   
+    public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) {
+        data.put(VA_STATUS_TIME_CONSTRAINT_KEY, vaStatusTimeConstraint);
+    }
+    
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,OAuthKeyInfo> getOauthKeys() {
         final Map<Integer,OAuthKeyInfo> ret = (Map<Integer,OAuthKeyInfo>)data.get(OAUTH_KEYS);

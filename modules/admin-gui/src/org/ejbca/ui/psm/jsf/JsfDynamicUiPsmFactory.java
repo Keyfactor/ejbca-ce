@@ -51,7 +51,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /**
  * Factory for PSM JSF 2 HTML components.
  *
- * @version $Id$
  */
 public class JsfDynamicUiPsmFactory {
 
@@ -150,6 +149,8 @@ public class JsfDynamicUiPsmFactory {
             } else if (DynamicUiProperty.RENDER_LABEL.equals(hint)) {
                 component = createLabelInstance(property);
             }
+        } else if (property.isDateType()) {
+            component = createTextFieldInstance(property);
         } else if (property.isIntegerType()) {
             if (DynamicUiProperty.RENDER_TEXTFIELD.equals(hint)) {
                 component = createIntegerTextFieldInstance(property);
