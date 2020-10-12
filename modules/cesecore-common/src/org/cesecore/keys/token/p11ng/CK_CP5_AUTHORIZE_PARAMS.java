@@ -17,9 +17,6 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 
 /**
- * 
- * @version $Id$
- *
  */
 public class CK_CP5_AUTHORIZE_PARAMS extends Structure {
     
