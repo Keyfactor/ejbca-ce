@@ -11,6 +11,7 @@
 	<property name="ra-gui.build.dir" location="${ra-gui.dir}/build"/>
 	<property name="ra-gui.src.dir" location="${ra-gui.dir}/src"/>
 	<property name="ra-gui.resources.dir" location="${ra-gui.dir}/resources"/>
+	<property name="ra-gui.js.dir" location="${ra-gui.dir}/js"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
@@ -48,6 +49,7 @@
     	<mkdir dir="${ra-gui.build.dir}/WEB-INF/classes"/>
         <javac srcdir="${ra-gui.src.dir}" destdir="${ra-gui.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
-    </target>
+		<copy file="${jquery.file}" todir="${ra-gui.js.dir}" failonerror="false"/>
+	</target>
 	
 </project>
