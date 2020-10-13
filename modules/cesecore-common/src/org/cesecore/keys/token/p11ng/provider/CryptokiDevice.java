@@ -1002,9 +1002,7 @@ public class CryptokiDevice {
                 if (isAliasUsed(session, alias)) {
                     throw new IllegalArgumentException("Key with ID or label " + alias + " already exists");
                 }
-                
                 final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
-                
                 final int keyLength = Integer.parseInt(formatCheckedKeySpec);
                 try {
                     long[] mechanisms = c.GetMechanismList(id);
