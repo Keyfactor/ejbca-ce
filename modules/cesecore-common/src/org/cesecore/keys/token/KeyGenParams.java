@@ -143,20 +143,20 @@ public class KeyGenParams implements Serializable {
     }
     
     /**
-     * Get key specification as numeric string if RSA or left untouched
+     * Get key specification as a numeric string if RSA, or left untouched
      * 
      * @return the key specification string 
      */
     public static String getKeySpecificationNumericIfRsa(final String keySpec) {
-        final String keySpecificationRsaNumeric;
+        final String keySpecificationNumericIfRsa;
         if (StringUtils.startsWith(keySpec, AlgorithmConstants.KEYALGORITHM_RSA)) {
-            keySpecificationRsaNumeric = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+            keySpecificationNumericIfRsa = keySpec.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
         } else {
-            keySpecificationRsaNumeric = keySpec;
+            keySpecificationNumericIfRsa = keySpec;
         }
-        return keySpecificationRsaNumeric;
+        return keySpecificationNumericIfRsa;
     }
-
+    
     /**
      * Get a map with PKCS #11 attributes for the public key.
      * 
