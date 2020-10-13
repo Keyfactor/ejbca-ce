@@ -213,6 +213,7 @@
     <property name="internal.properties.file" location="${ejbca.home}/src/internal.properties" />
     <property name="defaultvalues.properties.file" location="${ejbca.home}/src/java/defaultvalues.properties" />
 	<property name="systemtests.properties.file" location="${ejbca.home}/conf/systemtests.properties"/>
+	<property name="jquery.file" location="${ejbca.home}/lib/jquery/jquery.min.js" />
     
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath">
