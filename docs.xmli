@@ -58,7 +58,7 @@
     <!-- Build doc part                                                                                                                             -->
     <!-- =================================================================== -->
 	 <target name="doc.war" if="doc.war.enabled">
-	    <copy file="${jquery.file}" todir="${docs.dest}/assets/js"/>
+	    <copy file="${jquery.file}" todir="${docs.dist}/assets/js"/>
     	<antcall target="doc" inheritall="true" inheritrefs="true"/>  	
 		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${docs.dest}" />
@@ -120,7 +120,8 @@
 		<antcall target="doc-confluence-copy-local" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="doc-confluence-from-server" if="${update.from.confluence}">	
+	<target name="doc-confluence-from-server" if="${update.from.confluence}">
+	    <copy file="${jquery.file}" todir="${docs.dist}/assets/js"/>
 	    <delete dir="${docs.dest}" />
 	    <mkdir dir="${docs.dest}"/>
 	    
