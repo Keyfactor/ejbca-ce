@@ -1360,12 +1360,17 @@ SHA-256 checksum: ${cesecorebinSHA256}
 			<filterchain>
 				<linecontainsregexp>
 					<!-- Match SHA1 only. File main contain error message if Git command above failed -->
-					<regexp pattern="/\b([a-f0-9]{40})\b/"/>
+					<regexp pattern="\b([a-f0-9]{40})\b"/>
 				</linecontainsregexp>
+				<striplinebreaks/>
 			</filterchain>
 		</loadfile>
         <!-- If we failed to get the Git revision from the CLI command, use the specified one -->
         <property name="Revision" value="${release.revision}"/>
+		<condition property="invalid-revision">
+		    <matches pattern="\b([a-f0-9]{40})\b" string="${Revision}"/>
+		</condition>
+		<fail message="git.revision (SHA1) was not set" unless="invalid-revision"/>
 		<delete file="gitlog.out"/>
 		<antcall target="update-gitrev-updatefile" /> <!-- do update of file only if property is set -->
     </target>
