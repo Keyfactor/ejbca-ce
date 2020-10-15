@@ -382,7 +382,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
       data.put(HEADBANNER, fullHeadBannerPath(head));
     }
     public boolean isNonDefaultHeadBanner() {
-        return !fullHeadBannerPath(DEFAULTHEADBANNER).equals(data.get(HEADBANNER));
+        return !fullHeadBannerPath(DEFAULTHEADBANNER).equals(fullHeadBannerPath((String) data.get(HEADBANNER)));
     }
     private String fullHeadBannerPath(final String head) {
         return ((String) data.get(ADMINPATH)) + ((String) data.get(BANNERS_PATH)) + "/" +
