@@ -41,6 +41,7 @@ import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -93,6 +94,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.*;
 import static org.junit.Assert.*;
 
 
@@ -161,11 +163,14 @@ public class OAuthSystemTest {
     private static String token;
     private static String expiredToken;
     private static SSLSocketFactory defaultSocketFactory;
+    private static boolean isRestEnabled;
+    private static boolean isRaWebEnabled;
+    private static boolean isWsEnabled;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
     @ClassRule
-    public static TemporaryFolder folder = new TemporaryFolder();
+    public static final TemporaryFolder folder = new TemporaryFolder();
 
     @BeforeClass
     public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException, AuthorizationDeniedException, RoleExistsException, CertificateException, OperatorCreationException, CryptoTokenOfflineException, KeyManagementException, KeyStoreException, IOException {
@@ -184,6 +189,16 @@ public class OAuthSystemTest {
         oAuthKeyInfoInternalId = oAuthKeyInfo.getInternalId();
         globalConfiguration.addOauthKey(oAuthKeyInfo);
         globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
+
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
+                globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        isRestEnabled = availableProtocolsConfiguration.getProtocolStatus(REST_CERTIFICATE_MANAGEMENT.getName());
+        isRaWebEnabled = availableProtocolsConfiguration.getProtocolStatus(RA_WEB.getName());
+        isWsEnabled = availableProtocolsConfiguration.getProtocolStatus(WS.getName());
+        availableProtocolsConfiguration.setProtocolStatus(REST_CERTIFICATE_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(RA_WEB.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(WS.getName(), true);
+        globalConfigSession.saveConfiguration(authenticationToken, availableProtocolsConfiguration);
 
         final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         adminca = CaTestUtils.createTestX509CA("CN=" + CA, "foo123".toCharArray(), false, keyusage);
@@ -226,6 +241,12 @@ public class OAuthSystemTest {
             roleSession.deleteRoleIdempotent(authenticationToken, roleMember.getRoleId());
         }
         HttpsURLConnection.setDefaultSSLSocketFactory(defaultSocketFactory);
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
+                globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        availableProtocolsConfiguration.setProtocolStatus(REST_CERTIFICATE_MANAGEMENT.getName(), isRestEnabled);
+        availableProtocolsConfiguration.setProtocolStatus(RA_WEB.getName(), isRaWebEnabled);
+        availableProtocolsConfiguration.setProtocolStatus(WS.getName(), isWsEnabled);
+        globalConfigSession.saveConfiguration(authenticationToken, availableProtocolsConfiguration);
     }
 
     private static String encodeToken(final String headerJson, final String payloadJson, final PrivateKey key) {
