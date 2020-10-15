@@ -38,7 +38,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * JavaServer Faces Managed Bean for managing the configuration of a single CustomCertificateExtension
@@ -49,7 +49,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  */
 @ManagedBean
 @SessionScoped
-public class CustomCertExtensionMBean extends BaseManagedBean implements Serializable {
+public class CustomCertExtensionMBean extends CheckAdmin implements Serializable {
     
     private static final long serialVersionUID = 1L;
 

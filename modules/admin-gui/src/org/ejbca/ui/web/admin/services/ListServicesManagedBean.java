@@ -28,7 +28,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
@@ -41,7 +41,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  */
 @ManagedBean (name = "listServicesManagedBean")
 @SessionScoped
-public class ListServicesManagedBean extends BaseManagedBean {
+public class ListServicesManagedBean extends CheckAdmin {
 
 	private static final long serialVersionUID = 1L;
 	private final EjbLocalHelper ejb = new EjbLocalHelper();

@@ -28,12 +28,10 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.Flash;
 import javax.faces.context.PartialViewContext;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.SelectItemComparator;
@@ -51,28 +49,14 @@ public abstract class BaseManagedBean implements Serializable {
     private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<>();
 
     // Reference to AccessRulesConstants.* and StandardRules.*
-    private final String[] accessRulesConstantString;
-
+    final String[] accessRulesConstantString;
+    
     /**
      * Initializes authorization assuming authorization required to following resources.
      * @param resources Reference to AccessRulesConstants.* and StandardRules.*
      */
     public BaseManagedBean(final String... resources) {
         this.accessRulesConstantString = resources;
-    }
-    
-    /**
-     * Invoked on preRenderView
-     * @throws Exception 
-     */
-    public void authorizedResources() throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, accessRulesConstantString);
-        } else if (!getEjbcaWebBean().isAuthorizedNoLogSilent(accessRulesConstantString)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
-        }
     }
     
     protected EjbcaWebBean getEjbcaWebBean() {

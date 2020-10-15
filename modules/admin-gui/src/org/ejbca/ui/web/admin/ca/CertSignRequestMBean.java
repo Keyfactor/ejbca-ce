@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
@@ -38,7 +38,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  */
 @ManagedBean
 @ViewScoped
-public class CertSignRequestMBean extends BaseManagedBean implements Serializable {
+public class CertSignRequestMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

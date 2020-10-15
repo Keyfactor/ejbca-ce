@@ -39,7 +39,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  */
 @ManagedBean
 @ViewScoped
-public class CaErrorBean extends BaseManagedBean implements Serializable {
+public class CaErrorBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CaErrorBean.class);

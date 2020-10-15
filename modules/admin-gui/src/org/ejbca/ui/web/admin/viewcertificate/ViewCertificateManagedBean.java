@@ -37,7 +37,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
@@ -51,7 +51,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  */
 @ViewScoped
 @ManagedBean(name="viewCertificateMBean")
-public class ViewCertificateManagedBean extends BaseManagedBean implements Serializable {
+public class ViewCertificateManagedBean extends CheckAdmin implements Serializable {
     private static final Logger log = Logger.getLogger(ViewCertificateManagedBean.class);
 
     private static final long serialVersionUID = 1L;

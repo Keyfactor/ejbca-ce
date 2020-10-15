@@ -51,7 +51,7 @@ import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.RolloverWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.admin.CustomLoader;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.BaseEmailNotifyingWorkerType;
@@ -80,7 +80,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  */
 @ManagedBean(name = "editService")
 @SessionScoped
-public class EditServiceManagedBean extends BaseManagedBean {
+public class EditServiceManagedBean extends CheckAdmin {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);

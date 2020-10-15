@@ -41,7 +41,7 @@ import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.util.SelectItemComparator;
 
 /**
@@ -51,7 +51,7 @@ import org.ejbca.util.SelectItemComparator;
  */
 @ManagedBean
 @SessionScoped
-public class ScepConfigMBean extends BaseManagedBean implements Serializable {
+public class ScepConfigMBean extends CheckAdmin implements Serializable {
 
     /** GUI table representation of a SCEP alias that can be interacted with. */
     public class ScepAliasGuiInfo {

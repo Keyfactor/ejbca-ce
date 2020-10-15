@@ -97,7 +97,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.REQUEST;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
@@ -114,7 +114,7 @@ import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
  */
 @ManagedBean
 @ViewScoped
-public class EditCAsMBean extends BaseManagedBean implements Serializable {
+public class EditCAsMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditCAsMBean.class);

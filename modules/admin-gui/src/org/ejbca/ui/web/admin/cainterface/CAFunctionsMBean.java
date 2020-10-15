@@ -50,16 +50,15 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
-public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
+public class CAFunctionsMBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
 

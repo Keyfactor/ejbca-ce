@@ -28,10 +28,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.renderkit.html.util.AddResource;
@@ -69,7 +67,7 @@ import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.query.ApprovalMatch;
@@ -80,11 +78,10 @@ import org.ejbca.util.query.Query;
 /**
  * Session scoped bean for displaying information about an approval request.
  *
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean(name="approvalActionManagedBean")
-public class ApproveActionManagedBean extends BaseManagedBean {
+public class ApproveActionManagedBean extends CheckAdmin {
     private static final long serialVersionUID = 1940920496104779323L;
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
     private static final InternalResources intres = InternalResources.getInstance();

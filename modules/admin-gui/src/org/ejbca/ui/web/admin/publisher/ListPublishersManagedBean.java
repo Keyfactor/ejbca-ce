@@ -40,7 +40,7 @@ import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
 /**
@@ -51,7 +51,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  */
 @ManagedBean(name = "listPublishers")
 @SessionScoped
-public class ListPublishersManagedBean extends BaseManagedBean implements Serializable {
+public class ListPublishersManagedBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ListPublishersManagedBean.class);
