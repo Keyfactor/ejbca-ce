@@ -341,7 +341,6 @@ public class SecureXMLDecoder implements AutoCloseable {
                 case "org.ejbca.core.protocol.acme.storage.AcmeAccountImpl":
                 case "org.signserver.common.CertificateMatchingRule":
                 case "org.signserver.common.AuthorizedClient":
-                case "org.cesecore.util.SecureXMLDecoderTest$MockEnum":
                 case "org.cesecore.util.SecureXMLDecoderTest$MockObject":
                     try {
                         // EJBCA, SignServer and test classes, so not available in CESeCore.
@@ -363,48 +362,48 @@ public class SecureXMLDecoder implements AutoCloseable {
                     // Default values (the argument to the constructor) aren't preserved during serialization by XMLEncoder
                     value = parseMap(new Properties());
                     break;
-                case "java.lang.Enum":
+                case "java.lang.Enum": {
                     parser.getName();
-                    String enumType = readString();
-                    if (!enumType.startsWith("org.cesecore.") && !enumType.startsWith("org.ejbca.") && !enumType.startsWith("org.signserver.")) {
-                        throw new IOException(errorMessage("Instantation of enum type \"" + enumType + "\" not allowed"));
-                    }
+                    final String enumType = readString();
                     parser.nextTag();
                     parser.getName();
-                    String valueName = readString();
-                    if (valueName.endsWith("INSTANCE")) {
-                        throw new IOException(errorMessage("Not allowed to use singleton \"" + valueName + "\" from enum type \"" + enumType + "\""));
-                    }
-                    try {
-                        value = Enum.valueOf(Class.forName(enumType).asSubclass(Enum.class), valueName);
-                    } catch (ClassNotFoundException e) {
-                        throw new IOException(errorMessage("Enum class \"" + enumType + "\" was not found"), e);
-                    } catch (IllegalArgumentException e) {
-                        throw new IOException(errorMessage("Invalid enum value \"" + valueName + "\" for enum type \"" + enumType + "\""), e);
-                    }
+                    final String valueName = readString();
+                    value = toEnumValue(enumType, valueName);
                     method = null;
                     parser.nextTag();
                     break;
+                }
                 default:
-                    /*
-                     * We need to add support for plain Java objects that don't need special treatment. In EJBCA we need at least
-                     * org.cesecore.certificates.certificateprofile.CertificatePolicy and org.cesecore.keybind.InternalKeyBindingTrustEntry.
-                     * For these classes we need to construct an instance and then call the getters and setters. See ECA-4916.
-                     */
-                    throw new IOException(errorMessage("Deserialization of class \"" + className + "\" not supported or not allowed."));
-            }
-            if (method != null) {
-                throw new IOException(errorMessage("Method attribute on object element of class \"" + className + "\" is not supported or not allowed."));
-            }
-            
-            break;
-        case "array":
-            value = readArray();
-            break;
-        case "void":
-            throw new IOException(errorMessage("Unexpected <void> tag. Probably there was an earlier parse error."));
-        default:
-            throw new IOException(errorMessage("Unsupported tag \"" + tag + "\"."));
+                    // Special handling for enum serialized in Java 6
+                    if ("valueOf".equals(method) && !"java.lang.Enum".equals(className)) {
+                        final String nested = parser.getName();
+                        if (!"string".equals(nested)) {
+                            throw new IOException("Unexpected tag '" + nested + "'. Maybe not an enum?");
+                        }
+                        final String valueName = readString();
+                        parser.nextTag();
+                        value = toEnumValue(className, valueName);
+                        method = null;
+                    } else {
+                        /*
+                         * We need to add support for plain Java objects that don't need special treatment. In EJBCA we need at least
+                         * org.cesecore.certificates.certificateprofile.CertificatePolicy and org.cesecore.keybind.InternalKeyBindingTrustEntry.
+                         * For these classes we need to construct an instance and then call the getters and setters. See ECA-4916.
+                         */
+                        throw new IOException(errorMessage("Deserialization of class \"" + className + "\" not supported or not allowed."));
+                    }
+                }
+                if (method != null) {
+                    throw new IOException(errorMessage("Method attribute on object element of class \"" + className + "\" is not supported or not allowed."));
+                }
+                break;
+            case "array":
+                value = readArray();
+                break;
+            case "void":
+                throw new IOException(errorMessage("Unexpected <void> tag. Probably there was an earlier parse error."));
+            default:
+                throw new IOException(errorMessage("Unsupported tag \"" + tag + "\"."));
         }
         storeObjectById(id, value);
         
@@ -413,6 +412,31 @@ public class SecureXMLDecoder implements AutoCloseable {
             parser.nextTag();
         }
         return value;
+    }
+
+    /**
+     * Locates the gives enum value and returns it. Performs a checks that the class is
+     * allowed before loading it.
+     *
+     * @param enumType Fully qualified name of enum class.
+     * @param valueName Name of enum value.
+     * @return Enum value as a Java object
+     * @throws IOException On parse error, or if the class if not allowed.
+     */
+    private Object toEnumValue(final String enumType, final String valueName) throws IOException {
+        if (!enumType.startsWith("org.cesecore.") && !enumType.startsWith("org.ejbca.") && !enumType.startsWith("org.signserver.")) {
+            throw new IOException(errorMessage("Instantation of enum type \"" + enumType + "\" not allowed"));
+        }
+        if (valueName.endsWith("INSTANCE")) {
+            throw new IOException(errorMessage("Not allowed to use singleton \"" + valueName + "\" from enum type \"" + enumType + "\""));
+        }
+        try {
+            return Enum.valueOf(Class.forName(enumType).asSubclass(Enum.class), valueName);
+        } catch (ClassNotFoundException e) {
+            throw new IOException(errorMessage("Enum class \"" + enumType + "\" was not found"), e);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(errorMessage("Invalid enum value \"" + valueName + "\" for enum type \"" + enumType + "\""), e);
+        }
     }
     
     private void storeObjectById(final String id, final Object value) {
