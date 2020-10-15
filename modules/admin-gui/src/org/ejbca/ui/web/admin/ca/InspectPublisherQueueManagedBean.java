@@ -38,7 +38,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * Backing bean for the "Inspect Publisher Queue" page. 
@@ -47,7 +47,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  */
 @ManagedBean(name = "inspectPublisherQueue")
 @ViewScoped
-public class InspectPublisherQueueManagedBean extends BaseManagedBean {
+public class InspectPublisherQueueManagedBean extends CheckAdmin {
     private static final long serialVersionUID = 1L;
     private static final int MAX_RESULTS = 20;
     private static final int DESCRIPTION_MAX_LENGTH = 80;
