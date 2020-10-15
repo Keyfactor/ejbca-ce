@@ -61,7 +61,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
@@ -74,7 +74,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  * 
  * @version $Id$
  */
-public class AuditorManagedBean extends BaseManagedBean implements Serializable {
+public class AuditorManagedBean extends CheckAdmin implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(AuditorManagedBean.class);

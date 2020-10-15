@@ -25,14 +25,14 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * @version $Id$
  */
 @ManagedBean
 @SessionScoped
-public class EstConfigMBean extends BaseManagedBean implements Serializable {
+public class EstConfigMBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String selectedAlias;

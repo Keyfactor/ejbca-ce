@@ -41,14 +41,14 @@ import org.cesecore.keys.validation.Validator;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * Managed bean for edit validators page (editvalidators.xhtml).
  *
  * @version $Id$
  */
-public class ValidatorsBean extends BaseManagedBean {
+public class ValidatorsBean extends CheckAdmin {
 
     private static final long serialVersionUID = 1969611638716145216L;
 

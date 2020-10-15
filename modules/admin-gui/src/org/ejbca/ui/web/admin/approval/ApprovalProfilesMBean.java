@@ -40,16 +40,15 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * JSF MBean backing the approval profiles page.
- * @version $Id$
  *
  */
 @SessionScoped
 @ManagedBean(name="approvalProfilesMBean")
-public class ApprovalProfilesMBean extends BaseManagedBean implements Serializable {
+public class ApprovalProfilesMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = -2452049885728885525L;
         
