@@ -94,6 +94,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.*;
 import static org.junit.Assert.*;
 
 
@@ -191,12 +192,12 @@ public class OAuthSystemTest {
 
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        isRestEnabled = availableProtocolsConfiguration.getProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName());
-        isRaWebEnabled = availableProtocolsConfiguration.getProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.RA_WEB.getName());
-        isWsEnabled = availableProtocolsConfiguration.getProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.WS.getName());
-        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true);
-        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.RA_WEB.getName(), true);
-        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.WS.getName(), true);
+        isRestEnabled = availableProtocolsConfiguration.getProtocolStatus(REST_CERTIFICATE_MANAGEMENT.getName());
+        isRaWebEnabled = availableProtocolsConfiguration.getProtocolStatus(RA_WEB.getName());
+        isWsEnabled = availableProtocolsConfiguration.getProtocolStatus(WS.getName());
+        availableProtocolsConfiguration.setProtocolStatus(REST_CERTIFICATE_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(RA_WEB.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(WS.getName(), true);
         globalConfigSession.saveConfiguration(authenticationToken, availableProtocolsConfiguration);
 
         final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
@@ -242,9 +243,9 @@ public class OAuthSystemTest {
         HttpsURLConnection.setDefaultSSLSocketFactory(defaultSocketFactory);
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), isRestEnabled);
-        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.RA_WEB.getName(), isRaWebEnabled);
-        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocolsConfiguration.AvailableProtocols.WS.getName(), isWsEnabled);
+        availableProtocolsConfiguration.setProtocolStatus(REST_CERTIFICATE_MANAGEMENT.getName(), isRestEnabled);
+        availableProtocolsConfiguration.setProtocolStatus(RA_WEB.getName(), isRaWebEnabled);
+        availableProtocolsConfiguration.setProtocolStatus(WS.getName(), isWsEnabled);
         globalConfigSession.saveConfiguration(authenticationToken, availableProtocolsConfiguration);
     }
 
