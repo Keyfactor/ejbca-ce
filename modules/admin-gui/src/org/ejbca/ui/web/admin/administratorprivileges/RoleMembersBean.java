@@ -53,16 +53,15 @@ import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * Managed Bean for the Role Member manage/view page.
  * 
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean
-public class RoleMembersBean extends BaseManagedBean implements Serializable {
+public class RoleMembersBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RoleMembersBean.class);

@@ -52,7 +52,7 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * Managed Bean for the Role's access rules pages:
@@ -64,7 +64,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  */
 @ViewScoped
 @ManagedBean
-public class AccessRulesBean extends BaseManagedBean implements Serializable {
+public class AccessRulesBean extends CheckAdmin implements Serializable {
 
     /** Basic mode access rule holder */
     private static class AccessRule {
