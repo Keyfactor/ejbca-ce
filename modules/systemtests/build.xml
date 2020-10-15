@@ -73,6 +73,8 @@
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/>
+		<path refid="lib.json-smart.classpath"/>
 	</path>
 
 	<path id="common.classpath">
