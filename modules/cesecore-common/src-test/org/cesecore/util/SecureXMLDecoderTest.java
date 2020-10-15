@@ -26,6 +26,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -351,6 +352,37 @@ public class SecureXMLDecoderTest {
         log.trace("<testNotAllowedMethod");
     }
     
+    @Test
+    public void oldJava6EnumEncoding() throws IOException {
+        log.trace(">oldJava6EnumEncoding");
+        // Given
+        final String xml = "<java version=\"1.6.0_45\" class=\"java.beans.XMLDecoder\">\n" +
+                " <object class=\"java.util.HashMap\">\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>KEY1</string>\n" +
+                "   <object class=\"org.cesecore.util.SecureXMLDecoderTest$MockEnum\" method=\"valueOf\">\n" +
+                "    <string>FOO</string>\n" +
+                "   </object>\n" +
+                "  </void>\n" +
+                " </object>\n" +
+                "</java>\n";
+        // When
+        Object result = null;
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.US_ASCII)))) {
+            result = decoder.readObject();
+            decoder.readObject(); // Should trigger EOF
+            fail("Too many objects in stream?");
+        } catch (EOFException e) {
+            // NOPMD: Expected, happens when we reach the end
+        }
+        // Then
+        final Map<?,?> map = (Map<?,?>) result;
+        assertNotNull("Result was null.", map);
+        final Object value = map.get("KEY1");
+        assertSame("Wrong value was deserialized", MockEnum.FOO, value);
+        log.trace("<oldJava6EnumEncoding");
+    }
+
     private void decodeBad(final byte[] xml) {
         if (log.isTraceEnabled()) {
             log.trace(">decodeBad(" + new String(xml) + ")");
