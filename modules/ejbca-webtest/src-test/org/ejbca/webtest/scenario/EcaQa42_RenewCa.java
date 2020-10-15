@@ -88,7 +88,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(TestData.CA_NAME);
-        caHelper.setNextCaKey("– Generate new key using KeySequence –");
+        caHelper.setNextCaKey("- Generate new key using KeySequence -");
         caHelper.renewCaAndAssert(TestData.TEXT_CA_RENEWAL_ALERT_MESSAGE, true, TestData.TEXT_CA_RENEWAL_SUCCESS_MESSAGE, TestData.CA_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());

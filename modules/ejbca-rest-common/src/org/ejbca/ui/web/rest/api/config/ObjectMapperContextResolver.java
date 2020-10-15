@@ -38,7 +38,7 @@ public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper
     static {
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         //
         ejbcaDateModule.addSerializer(Date.class, new JsonDateSerializer());
         objectMapper.registerModule(ejbcaDateModule);
