@@ -84,7 +84,7 @@ org.ejbca.util.HTMLTools
 
 
   if (globalconfiguration.isNonDefaultHeadBanner()) { %>
-    <iframe id="topFrame" name="topFrame" scrolling="no" width="100%" height="100" src="<%= globalconfiguration.getHeadBanner() %>">
+    <iframe id="topFrame" name="topFrame" scrolling="no" width="100%" height="100" src="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getHeadBanner() %>">
         <h1>Administration</h1>
     </iframe>
 <% } else { %>
