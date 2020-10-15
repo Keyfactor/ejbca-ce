@@ -131,6 +131,12 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY); 
                                             rabean.initialize(ejbcawebbean);
+                                            
+  if(rabean.shouldRedirectToInitPKI()) {
+  	String redirectURL = request.getContextPath() + "/" + "initpki.xhtml";
+    response.sendRedirect(redirectURL);
+  }                                          
+                                            
   final String VIEWCERT_LINK            = ejbcawebbean.getAdminWebBaseUrl() + "viewcertificate.xhtml";
   
   final String VIEWUSER_LINK            = "viewendentity.jsp";

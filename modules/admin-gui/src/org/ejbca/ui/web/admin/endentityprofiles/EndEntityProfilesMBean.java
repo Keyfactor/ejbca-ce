@@ -56,7 +56,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 
@@ -67,7 +67,7 @@ import org.ejbca.util.HttpTools;
  */
 @ManagedBean
 @ViewScoped
-public class EndEntityProfilesMBean extends BaseManagedBean implements Serializable {
+public class EndEntityProfilesMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EndEntityProfilesMBean.class);

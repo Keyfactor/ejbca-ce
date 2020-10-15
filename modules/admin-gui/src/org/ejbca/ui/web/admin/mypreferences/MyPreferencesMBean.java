@@ -23,7 +23,7 @@ import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
 import org.ejbca.ui.web.configuration.exception.AdminExistsException;
@@ -32,9 +32,8 @@ import org.ejbca.ui.web.configuration.exception.AdminExistsException;
  * JavaServer Faces Managed Bean for managing MyPreferences.
  * Session scoped and will cache the user preferences.
  *
- * @version $Id$
  */
-public class MyPreferencesMBean extends BaseManagedBean implements Serializable {
+public class MyPreferencesMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 2L;
 

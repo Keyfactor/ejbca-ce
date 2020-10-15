@@ -43,17 +43,16 @@ import org.cesecore.keys.token.NullCryptoToken;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * JSF Managed Bean or the CA Activation page of the Admin GUI.
  *
- * @version $Id$
  */
 @ManagedBean
 @SessionScoped
-public class CAActivationMBean extends BaseManagedBean implements Serializable {
+public class CAActivationMBean extends CheckAdmin implements Serializable {
 
 	private static final Logger log = Logger.getLogger(CAActivationMBean.class);
 
