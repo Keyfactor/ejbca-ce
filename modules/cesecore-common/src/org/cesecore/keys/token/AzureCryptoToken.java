@@ -408,16 +408,17 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // {"kty": "RSA-HSM", "key-size": 2048, "attributes": {"enabled": true}}
             // {"kty": "EC-HSM", "crv": "P-256", "attributes": {"enabled": true}}
             final StringBuilder str = new StringBuilder("{\"kty\": ");
+            final String formatCheckedKeySpec = KeyGenParams.getKeySpecificationNumericIfRsa(keySpec);
             // If it is pure numeric, it is an RSA key length
-            if (NumberUtils.isNumber(keySpec)) {
+            if (NumberUtils.isNumber(formatCheckedKeySpec)) {
                 String kty = "RSA-HSM";
                 if (getKeyVaultType().equals("standard")) {
                     kty = "RSA";
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug("RSA keyspec is: " + keySpec + ", and key vault type is " + kty);
+                    log.debug("RSA keyspec is: " + formatCheckedKeySpec + ", and key vault type is " + kty);
                 }
-                str.append("\"").append(kty).append("\", \"key_size\": ").append(keySpec);
+                str.append("\"").append(kty).append("\", \"key_size\": ").append(formatCheckedKeySpec);
             } else {
                 // Must be EC?
                 String kty = "EC-HSM";
