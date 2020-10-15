@@ -93,7 +93,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -103,7 +103,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  *
  * @version $Id$
  */
-public class InternalKeyBindingMBean extends BaseManagedBean implements Serializable {
+public class InternalKeyBindingMBean extends CheckAdmin implements Serializable {
 
     private static final String OCSP_KEY_BINDING = "OcspKeyBinding";
     protected static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
