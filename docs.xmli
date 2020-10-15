@@ -58,6 +58,7 @@
     <!-- Build doc part                                                                                                                             -->
     <!-- =================================================================== -->
 	 <target name="doc.war" if="doc.war.enabled">
+	    <copy file="${jquery.file}" todir="${docs.dist}/assets/js"/>
     	<antcall target="doc" inheritall="true" inheritrefs="true"/>  	
 		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${docs.dest}" />
@@ -119,7 +120,8 @@
 		<antcall target="doc-confluence-copy-local" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="doc-confluence-from-server" if="${update.from.confluence}">	
+	<target name="doc-confluence-from-server" if="${update.from.confluence}">
+	    <copy file="${jquery.file}" todir="${docs.dist}/assets/js"/>
 	    <delete dir="${docs.dest}" />
 	    <mkdir dir="${docs.dest}"/>
 	    
@@ -247,8 +249,29 @@
 	       <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
 	      <doctitle><![CDATA[<h1>EJBCA and CESeCore Audit Log types</h1>]]></doctitle>
 	      <bottom><![CDATA[<i>2019 PrimeKey Solutions AB.</i>]]></bottom>
-	    </javadoc>        
+	    </javadoc>
+
+        <condition property="jquery.dir.exists" else="false"><available file="${docs.dest.ws}/jquery" type="dir" /></condition>
+        <echo message="Folder found: ${jquery.dir.exists}" />
+        <antcall target="replace-jquery" inheritall="true" inheritrefs="true" />
         <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
+    </target>
+
+    <target name="replace-jquery" if="${jquery.dir.exists}">
+        <delete file="${docs.dest.ws}/jquery/jquery-3.3.1.js" />
+        <delete file="${docs.dest.ws}/jquery/external/jquery/jquery.js" />
+        <delete file="${docs.dest.logtypes}/jquery/jquery-3.3.1.js" />
+        <delete file="${docs.dest.logtypes}/jquery/external/jquery/jquery.js" />
+        <copy file="${jquery.file}" todir="${docs.dest.ws}/jquery" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.ws}/jquery/external/jquery/" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.logtypes}/jquery" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.logtypes}/jquery/external/jquery/" failonerror="false"/>
+        <replace dir="${docs.dest.ws}" value="jquery.min.js">
+          <replacetoken>jquery-3.3.1.js</replacetoken>
+        </replace>
+        <replace dir="${docs.dest.logtypes}" value="jquery.min.js">
+          <replacetoken>jquery-3.3.1.js</replacetoken>
+        </replace>
     </target>
 
     <target name="doc-rest" if="${mod.rest-api.exists}">
