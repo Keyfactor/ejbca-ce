@@ -91,7 +91,7 @@ public class SessionBeans {
             if (raBean == null) {
                 raBean = getBeanInstance(RAInterfaceBean.class);
                 try {
-                    raBean.initialize(httpServletRequest, getEjbcaWebBean(httpServletRequest));
+                    raBean.initialize(getEjbcaWebBean(httpServletRequest));
                 } catch (Exception e) {
                     throw new ServletException("Cannot initialize RAInterfaceBean", e);
                 }
