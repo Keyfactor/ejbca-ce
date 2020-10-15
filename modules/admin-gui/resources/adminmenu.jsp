@@ -19,17 +19,17 @@ org.ejbca.util.HTMLTools
       
        final String THIS_FILENAME            =   "adminmenu.jsp";
        
-       final String MAIN_LINK                =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath();
+       final String MAIN_LINK                =   ejbcawebbean.getAdminWebBaseUrl();
 
-       final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approvalactions.xhtml";
+       final String APPROVAL_LINK            =   ejbcawebbean.getAdminWebBaseUrl() + "approval/approvalactions.xhtml";
        
-       final String APPROVAL_PROFILES_LINK	 =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/editapprovalprofiles.xhtml";
+       final String APPROVAL_PROFILES_LINK	 =   ejbcawebbean.getAdminWebBaseUrl() + "approval/editapprovalprofiles.xhtml";
        
        final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/editcas/managecas.xhtml";
        final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editpublishers/listpublishers.xhtml";
        final String EDITVALIDATORS_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editvalidators/editvalidators.xhtml";
 
-       final String CRYPTOTOKENS_LINK        =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotokens.xhtml";
+       final String CRYPTOTOKENS_LINK        =  ejbcawebbean.getAdminWebBaseUrl() + "cryptotoken/cryptotokens.xhtml";
 
        final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/cafunctions.xhtml";
        final String CA_ACTIVATION_LINK		=  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/caactivation.xhtml";   
@@ -40,14 +40,14 @@ org.ejbca.util.HTMLTools
        final String RA_ADDENDENTITYLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
        final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
        
-       final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
+       final String AUDIT_LINK                 =  ejbcawebbean.getAdminWebBaseUrl() + "audit/search.xhtml";
        final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()  + "/systemconfiguration.xhtml";
-       final String UPGRADE_LINK             =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "upgrade.xhtml";
+       final String UPGRADE_LINK             =  ejbcawebbean.getAdminWebBaseUrl() + "upgrade.xhtml";
        final String CMPCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/cmpaliases.xhtml";
        
-       final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml";
-       final String SERVICES_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.xhtml";
-       final String PEERCONNECTOR_LINK       = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
+       final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getAdminWebBaseUrl() + "keybind/keybindings.xhtml";
+       final String SERVICES_LINK            = ejbcawebbean.getAdminWebBaseUrl() + "services/listservices.xhtml";
+       final String PEERCONNECTOR_LINK       = ejbcawebbean.getAdminWebBaseUrl() + "peerconnector/peerconnectors.xhtml";
        
        final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() + "/roles.xhtml";
        
@@ -59,9 +59,9 @@ org.ejbca.util.HTMLTools
 	   final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
 	   final String RAWEB_LINK          = ejbcawebbean.getBaseUrl() + "ra/";
        
-       final String MYPREFERENCES_LINK     =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.xhtml";
+       final String MYPREFERENCES_LINK     =  ejbcawebbean.getAdminWebBaseUrl() + "mypreferences.xhtml";
 
-       final String LOGOUT_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "logout";
+       final String LOGOUT_LINK                =  ejbcawebbean.getAdminWebBaseUrl() + "logout";
 
 
        final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
@@ -90,7 +90,7 @@ org.ejbca.util.HTMLTools
 <% } else { %>
     <div id="header">
         <div id="banner">
-            <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>"><img src="<%= ejbcawebbean.getImagefileInfix("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
+            <a href="<%= ejbcawebbean.getAdminWebBaseUrl() %>"><img src="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagefileInfix("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
         </div>
 	</div>
 <% } %>

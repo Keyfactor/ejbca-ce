@@ -26,6 +26,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.util.HttpTools;
 
 /**
  * Web session authentication helper.
@@ -59,7 +60,8 @@ public class RaAuthenticationHelper implements Serializable {
             // Set the current TLS session 
             authenticationTokenTlsSessionId = currentTlsSessionId;
             final X509Certificate x509Certificate = getClientX509Certificate(httpServletRequest);
-            if (x509Certificate == null && x509AuthenticationTokenFingerprint!=null) {
+            final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+            if (x509Certificate == null && x509AuthenticationTokenFingerprint != null) {
                 log.warn("Suspected session hijacking attempt from " + httpServletRequest.getRemoteAddr() +
                         ". RA client presented no TLS certificate in HTTP session previously authenticated with client certificate.");
                 authenticationToken = null;
@@ -70,14 +72,12 @@ public class RaAuthenticationHelper implements Serializable {
                 if (log.isTraceEnabled()) {
                     log.trace("currentRequestFingerprint: "+fingerprint+", x509AuthenticationTokenFingerprint: "+x509AuthenticationTokenFingerprint);
                 }
-                if (x509AuthenticationTokenFingerprint!=null) {
-                    if (!StringUtils.equals(fingerprint, x509AuthenticationTokenFingerprint)) {
-                        log.warn("Suspected session hijacking attempt from " + httpServletRequest.getRemoteAddr() +
-                                ". RA client presented a different TLS certificate in the same HTTP session." +
-                                " new certificate had subject '" + CertTools.getSubjectDN(x509Certificate) + "'.");
-                        authenticationToken = null;
-                        x509AuthenticationTokenFingerprint = null;
-                    }
+                if (x509AuthenticationTokenFingerprint != null && !StringUtils.equals(fingerprint, x509AuthenticationTokenFingerprint)) {
+                    log.warn("Suspected session hijacking attempt from " + httpServletRequest.getRemoteAddr() +
+                            ". RA client presented a different TLS certificate in the same HTTP session." +
+                            " new certificate had subject '" + CertTools.getSubjectDN(x509Certificate) + "'.");
+                    authenticationToken = null;
+                    x509AuthenticationTokenFingerprint = null;
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("RA client presented client TLS certificate with subject DN '" + CertTools.getSubjectDN(x509Certificate) + "'.");
@@ -86,11 +86,16 @@ public class RaAuthenticationHelper implements Serializable {
                 if (authenticationToken==null) {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingClientCertificate(x509Certificate);
                 }
-                x509AuthenticationTokenFingerprint = authenticationToken==null ? null : fingerprint;
+                x509AuthenticationTokenFingerprint = authenticationToken == null ? null : fingerprint;
+            } else if (oauthBearerToken != null) {
+                authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                if (authenticationToken == null) {
+                    log.warn("Authentication failed using OAuth Bearer Token");
+                }
             }
             if (authenticationToken == null) {
                 // Instead of checking httpServletRequest.isSecure() (connection deemed secure by container), we check if a TLS session is present
-                final boolean confidentialTransport = currentTlsSessionId!=null;
+                final boolean confidentialTransport = currentTlsSessionId != null;
                 authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), confidentialTransport);
             }
         }
@@ -126,7 +131,7 @@ public class RaAuthenticationHelper implements Serializable {
     private String getTlsSessionId(final HttpServletRequest httpServletRequest) {
         final String sslSessionIdServletsStandard;
         final Object sslSessionIdServletsStandardObject = httpServletRequest.getAttribute("javax.servlet.request.ssl_session_id");
-        if (sslSessionIdServletsStandardObject!=null && sslSessionIdServletsStandardObject instanceof byte[]) {
+        if (sslSessionIdServletsStandardObject != null && sslSessionIdServletsStandardObject instanceof byte[]) {
             // Wildfly 9 stores the TLS sessions as a raw byte array. Convert it to a hex String.
             sslSessionIdServletsStandard = new String(Hex.encode((byte[]) sslSessionIdServletsStandardObject), StandardCharsets.UTF_8);
         } else {

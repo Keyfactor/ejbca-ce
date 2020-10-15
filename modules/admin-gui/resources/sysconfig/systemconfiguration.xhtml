@@ -514,12 +514,12 @@
 				<h:outputText value="#{protocolinfos.url}" escape="false"/>
 			</h:column>
 			<h:column>
-   			    <f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
-   				<div>
-   				    <h:graphicImage rendered="#{protocolinfos.enabled and protocolinfos.available}" url="#{adminMenuBean.adminWebUrl}images/status-ca-active.png" height="16" width="16" style="border-width:0;padding-right: 0.5em;"/>
-   				    <h:graphicImage rendered="#{!protocolinfos.enabled or !protocolinfos.available}" url="#{adminMenuBean.adminWebUrl}images/status-ca-offline.png" height="16" width="16" style="border-width:0;padding-right: 0.5em;"/>
-   				    <h:outputText value="#{protocolinfos.status}"/>
-   				</div>
+			    <f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
+				<div>
+				    <h:graphicImage rendered="#{protocolinfos.enabled and protocolinfos.available}" url="/images/status-ca-active.png" height="16" width="16" style="border-width:0;padding-right: 0.5em;"/>
+				    <h:graphicImage rendered="#{!protocolinfos.enabled or !protocolinfos.available}" url="/images/status-ca-offline.png" height="16" width="16" style="border-width:0;padding-right: 0.5em;"/>
+				    <h:outputText value="#{protocolinfos.status}"/>
+				</div>
 			</h:column>
 			<h:column>
    				<f:facet name="header">
@@ -573,6 +573,8 @@
 			</h:column>
 		</h:dataTable>
 	</h:form>
+
+	<!-- ECA-9514: Trusted OAuth Providers tab removed until full OAuth2 support in CA UI. -->
 
 	<!-- Certificate Transparency Logs -->
 
@@ -996,4 +998,3 @@
 	</ui:define>
 	</ui:composition>
 </html>
-
