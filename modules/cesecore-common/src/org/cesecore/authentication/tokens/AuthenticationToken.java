@@ -27,10 +27,10 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 /**
  * A token returned by the act of authentication. Ownership of such a token denotes that the caller has previously authenticated herself via the
  * Authentication session bean.
- * 
+ *
  * The Sets of Principals and credentials contained within this class will correspond to the subset of those found in the Subject class submitted for
  * authentication used for that process.
- * 
+ *
  * @version $Id$
  * 
  */

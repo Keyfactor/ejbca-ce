@@ -98,4 +98,24 @@ public class HttpToolsUnitTest {
         assertEquals("å.pdf", HttpTools.decodeRfc5987("UTF-8''%c3%a5.pdf"));
         assertEquals("Б.pdf", HttpTools.decodeRfc5987("UTF-8'en'%d0%91.pdf"));
     }
+
+    @Test
+    public void extractAuthorizationDataFromHeader() {
+        assertNull("Should be null with null parameter", HttpTools.extractAuthorizationOfScheme(null, HttpTools.AUTHORIZATION_SCHEME_BEARER));
+        assertNull("Should be null with blank parameter", HttpTools.extractAuthorizationOfScheme("", HttpTools.AUTHORIZATION_SCHEME_BEARER));
+        assertNull("Should be null with missing space", HttpTools.extractAuthorizationOfScheme("Bearer", HttpTools.AUTHORIZATION_SCHEME_BEARER));
+        assertNull("Should be null with wrong scheme", HttpTools.extractAuthorizationOfScheme("Other xyz", HttpTools.AUTHORIZATION_SCHEME_BEARER));
+        assertEquals("Should strip scheme name.", "xyz", HttpTools.extractAuthorizationOfScheme("Bearer xyz", HttpTools.AUTHORIZATION_SCHEME_BEARER));
+        assertEquals("Should strip scheme name with multiple spaces.", "xyz", HttpTools.extractAuthorizationOfScheme("Bearer   xyz", HttpTools.AUTHORIZATION_SCHEME_BEARER));
+        assertEquals("Should be case insensitive.", "xyz", HttpTools.extractAuthorizationOfScheme("bEaReR xyz", HttpTools.AUTHORIZATION_SCHEME_BEARER));
+        assertEquals("Should preserve case.", "XyZ", HttpTools.extractAuthorizationOfScheme("bEaReR XyZ", HttpTools.AUTHORIZATION_SCHEME_BEARER));
+    }
+
+    @Test
+    public void extractBearerToken() {
+        // extractBearerAuthorization uses extractAuthorizationOfScheme, so we only do some basic checks here
+        assertNull(HttpTools.extractBearerAuthorization(null));
+        assertNull(HttpTools.extractBearerAuthorization("Basic xyz")); // note: scheme is basic not bearer
+        assertEquals("aBcD.eFgH.iJk", HttpTools.extractBearerAuthorization("BeArEr   aBcD.eFgH.iJk"));
+    }
 }

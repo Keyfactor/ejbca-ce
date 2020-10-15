@@ -33,7 +33,7 @@
 		<path refid="lib.tomahawk.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
         <path refid="lib.json-smart.classpath"/>
-        <path refid="lib.ninbus-jose-jwt.classpath"/>
+        <path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.jackson2.classpath"/>

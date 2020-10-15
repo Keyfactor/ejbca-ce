@@ -33,6 +33,8 @@ import java.util.List;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.WebTarget;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -101,14 +103,11 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
-import org.jboss.resteasy.client.ClientExecutor;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 
 /**
  * An intermediate class to support REST API system tests and setup the SSL connection/authentication.
- *
- * @version $Id$
  */
 public class RestResourceSystemTestBase {
 
@@ -275,7 +274,7 @@ public class RestResourceSystemTestBase {
      *
      * @param uriPath a part of URL to make request on.
      *
-     * @return An instance of ClientRequest.
+     * @return An instance of WebTarget.
      * @throws NoSuchAlgorithmException 
      * @throws KeyStoreException 
      * @throws UnrecoverableKeyException 
@@ -283,7 +282,7 @@ public class RestResourceSystemTestBase {
      *
      * @see org.jboss.resteasy.client.ClientRequest
      */
-    ClientRequest newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
         // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -295,12 +294,15 @@ public class RestResourceSystemTestBase {
                 .setSSLContext(sslContext)
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
                 .build();
-
-        ClientExecutor clientExecutor = new ApacheHttpClient4Executor(client);
-        return new ClientRequest(getBaseUrl() + uriPath, clientExecutor);
+        
+        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(client);
+        Client newClient = new ResteasyClientBuilder().httpEngine(engine).build();
+        WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
+        
+        return webTarget;
     }
 
-    ClientRequest newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    WebTarget newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
         // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -312,11 +314,13 @@ public class RestResourceSystemTestBase {
                 .setSSLContext(sslContext)
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
                 .build();
-        ClientExecutor clientExecutor = new ApacheHttpClient4Executor(client);
-        return new ClientRequest(getBaseUrl() + uriPath, clientExecutor);
+        
+        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(client);
+        Client newClient = new ResteasyClientBuilder().httpEngine(engine).build();
+        WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
+        
+        return webTarget;
     }
-
-
 
     private static String getBaseUrl() {
         return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";

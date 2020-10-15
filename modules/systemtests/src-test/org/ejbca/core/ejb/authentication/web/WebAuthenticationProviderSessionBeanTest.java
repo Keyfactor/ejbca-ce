@@ -88,9 +88,6 @@ import org.junit.Test;
 
 /**
  * Tests the WebAuthenticationProviderSessionBean
- * 
- * @version $Id$
- *
  */
 public class WebAuthenticationProviderSessionBeanTest {
 

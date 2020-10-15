@@ -213,6 +213,7 @@
     <property name="internal.properties.file" location="${ejbca.home}/src/internal.properties" />
     <property name="defaultvalues.properties.file" location="${ejbca.home}/src/java/defaultvalues.properties" />
 	<property name="systemtests.properties.file" location="${ejbca.home}/conf/systemtests.properties"/>
+	<property name="jquery.file" location="${ejbca.home}/lib/jquery/jquery.min.js" />
     
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath">
@@ -271,11 +272,14 @@
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="geronimo-osgi-locator-1.1.jar"/>
+			<include name="reactive-streams-1.*.jar"/>
+			<include name="resteasy-client-3.*.jar"/>
 			<include name="resteasy-jackson2-provider-3.*.jar"/>
 			<include name="resteasy-jaxrs-3.*.jar"/>
-            <include name="resteasy-legacy-3.*.jar"/>
 			<include name="scannotation-1.0.3.jar"/>
+			<include name="json-patch-1.*.jar"/>
 			<include name="tjws-3.*.jar"/>
+			<include name="javax.ws.rs-api-2.*.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
 			<include name="jackson-jaxrs-base-2.*.jar"/>
@@ -343,7 +347,7 @@
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.json-simple.classpath"><fileset dir="${ejbca.home}/lib" includes="json-simple-*.jar"/></path>
 	<path id="lib.snakeyaml.classpath"><fileset dir="${ejbca.home}/lib" includes="snakeyaml*.jar"/></path>
-	<path id="lib.ninbus-jose-jwt.classpath"><fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/></path>
+	<path id="lib.nimbus-jose-jwt.classpath"><fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/></path>
 	<path id="lib.json-smart.classpath"><fileset dir="${ejbca.home}/lib/" includes="json-smart-*.jar"/></path>
 	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
 	<path id="lib.dnssecjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnssecjava-*.jar"/></path>

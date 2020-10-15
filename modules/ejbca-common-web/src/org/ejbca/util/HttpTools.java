@@ -33,6 +33,9 @@ public class HttpTools {
 
     private static final Logger log = Logger.getLogger(HttpTools.class);
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String AUTHORIZATION_SCHEME_BEARER = "Bearer";
+
     // For parsing parameters in the Content-Disposititon header (or possibly other headers) according to RFC 6266
     private static final String PARAM_NAME_REGEX = "[a-zA-Z0-9_+*-]++";
     private static final String PARAM_VALUE_REGEX = "\"(([^\\\\\"]|\\\\.)*)\"|([^\\s;\"]*+)";
@@ -154,6 +157,26 @@ public class HttpTools {
         } catch (UnsupportedEncodingException | IllegalArgumentException e) {
             return s;
         }
+    }
+
+    /**
+     * Checks if the given Authorization header value matches the given scheme, and returns the contents (except for the scheme name).
+     *
+     * @param authorizationHeader Value of the Authorization header, may be null.
+     * @param expectedScheme Scheme to check for.
+     * @return Header value without scheme part, or null if not matching the scheme.
+     */
+    public static String extractAuthorizationOfScheme(final String authorizationHeader, final String expectedScheme) {
+        if (StringUtils.startsWithIgnoreCase(authorizationHeader, expectedScheme+" ")) {
+            return authorizationHeader.split(" +", 2)[1];
+        } else {
+            return null;
+        }
+    }
+
+    /** Extracts the Bearer authorization from an OAuth Authorization header, or returns null if not matching */
+    public static String extractBearerAuthorization(final String authorizationHeader) {
+        return extractAuthorizationOfScheme(authorizationHeader, AUTHORIZATION_SCHEME_BEARER);
     }
 
 }
