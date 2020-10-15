@@ -30,14 +30,13 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
- * @version $Id$
  */
 //@ManagedBean
 //@ViewScoped
-public class UserDatasoucesMBean extends BaseManagedBean implements Serializable {
+public class UserDatasoucesMBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
     //private static final Logger log = Logger.getLogger(UserDatasoucesMBean.class);
 

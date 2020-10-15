@@ -32,7 +32,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * JSF MBean backing the import ca cert page.
@@ -41,7 +41,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  */
 @ManagedBean
 @ViewScoped
-public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
+public class ImportCaCertMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ImportCaCertMBean.class);

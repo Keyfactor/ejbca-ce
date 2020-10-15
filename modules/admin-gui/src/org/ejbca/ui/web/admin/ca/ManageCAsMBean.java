@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -26,14 +25,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
@@ -47,12 +46,12 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  */
 @ManagedBean
 @ViewScoped
-public class ManageCAsMBean extends BaseManagedBean implements Serializable {
+public class ManageCAsMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger log = Logger.getLogger(ManageCAsMBean.class);
 
-    @EJB
-    private CaSessionLocal caSession;
 
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
