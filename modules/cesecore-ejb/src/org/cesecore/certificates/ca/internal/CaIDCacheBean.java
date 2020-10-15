@@ -51,7 +51,7 @@ import org.cesecore.config.CesecoreConfiguration;
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class CaIDCacheBean {
 
-    private final Logger LOG = Logger.getLogger(CaIDCacheBean.class);
+    private final Logger log = Logger.getLogger(CaIDCacheBean.class);
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -71,7 +71,7 @@ public class CaIDCacheBean {
     
     @PostConstruct
     public void initialize() {
-        idNameCache = new HashMap<Integer, String>();
+        idNameCache = new HashMap<>();
         lock = new ReentrantLock(false);
 
         try {
@@ -79,7 +79,7 @@ public class CaIDCacheBean {
         } catch (RuntimeException e) {
             //We don't want to murder the entire deployment if the database happens to be unresponsive during startup, it's something we might 
             //recover from
-            LOG.error(e);
+            log.error(e);
         }
     }
 
@@ -88,7 +88,7 @@ public class CaIDCacheBean {
      * the cache can't reload until whatever transaction performing CRUD ops finishes.
      */
     public void forceCacheExpiration() {
-        LOG.debug("Flushing CA ID cache by forceCacheExpiration");
+        log.debug("Flushing CA ID cache by forceCacheExpiration");
         lastUpdate = 0;
     }
     
@@ -98,8 +98,8 @@ public class CaIDCacheBean {
      * @param force if true, this will force an update even if the cache is not yet invalid
      */
     private void updateCache(final boolean force) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(">updateCache");
+        if (log.isTraceEnabled()) {
+            log.trace(">updateCache");
         }
         final long cacheTime = CesecoreConfiguration.getCacheCaTimeInCaSession();
         final long now = System.currentTimeMillis();
@@ -116,17 +116,17 @@ public class CaIDCacheBean {
         } finally {
             lock.unlock();
         }
-        if (LOG.isDebugEnabled()) {
-        	LOG.debug("Loading CA ID cache from database");
+        if (log.isDebugEnabled()) {
+        	log.debug("Loading CA ID cache from database");
         }
-        final HashMap<Integer, String> cacheTemp = new HashMap<Integer, String>();
+        final HashMap<Integer, String> cacheTemp = new HashMap<>();
         final List<Object[]> idNames = findAllCaIdNames();
         for (Object[] objects : idNames) {
             cacheTemp.put((Integer)objects[0], (String)objects[1]);
         }
         idNameCache = cacheTemp;
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("<updateCache");
+        if (log.isTraceEnabled()) {
+            log.trace("<updateCache");
         }
     }
 
@@ -142,14 +142,14 @@ public class CaIDCacheBean {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Integer> getIdCacheContent() {
         updateCache(false);
-        return new ArrayList<Integer>(idNameCache.keySet());
+        return new ArrayList<>(idNameCache.keySet());
     }
 
     /** @return the latest List from the cache, which will be refreshed if needed. */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Map<Integer,String> getIdNameCacheContent() {
         updateCache(false);
-        return new HashMap<Integer,String>(idNameCache);
+        return new HashMap<>(idNameCache);
     }
 
 }
