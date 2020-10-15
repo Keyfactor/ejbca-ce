@@ -12,7 +12,7 @@ export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError
 echo '=================== CHECKING JAVA VERSION: ================================='
 java -version
 
-ant ziprelease -Dedition=ee -Dvariant=va -Ddoc.update=false -Drelease.revision=12345
+ant ziprelease -Dedition=ee -Dvariant=va -Ddoc.update=false -Drelease.revision=1d4b7b1ef8f8e23aefd49c45d903daee6c512d5a
 
 cd ..
 
