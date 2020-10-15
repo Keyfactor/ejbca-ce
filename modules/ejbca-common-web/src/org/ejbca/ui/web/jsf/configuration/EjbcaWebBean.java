@@ -102,7 +102,11 @@ public interface EjbcaWebBean extends Serializable {
      */
     boolean isAuthorizedNoLogSilent(final String... resources);
 
+    /** Returns a relative URL to the base of the EJBCA application, usually /ejbca/ */
     String getBaseUrl();
+
+    /** Returns a relative URL to the base of the EJBCA admin web, usually /ejbca/adminweb/ */
+    String getAdminWebBaseUrl();
 
     String getReportsPath();
 
@@ -146,10 +150,6 @@ public interface EjbcaWebBean extends Serializable {
 
     /** @return a more user friendly representation of a Date. */
     String formatAsISO8601(final Date date);
-
-    /** Parse a Date and reformat it as vailidation. */
-    // TODO seems to be unused. Remove this and implementation?
-    String validateDateFormat(final String value) throws ParseException;
 
     /** Check if the argument is a relative date/time in the form days:min:seconds. */
     boolean isRelativeDateTime(final String dateString);
