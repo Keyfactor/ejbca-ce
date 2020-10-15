@@ -49,9 +49,6 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 public class ManageCAsMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
-    private static final Logger log = Logger.getLogger(ManageCAsMBean.class);
-
 
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
