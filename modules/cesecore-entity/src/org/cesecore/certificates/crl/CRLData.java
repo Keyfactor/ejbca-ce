@@ -38,8 +38,6 @@ import java.util.List;
 
 /**
  * Representation of a CRL.
- * 
- * @version $Id$
  */
 @Entity
 @Table(name = "CRLData")
@@ -302,8 +300,7 @@ public class CRLData extends ProtectedData implements Serializable {
      */
     public static CRLData findByIssuerDNAndCRLNumber(final EntityManager entityManager, final String issuerDN, final int crlPartitionIndex, final int crlNumber) {
         final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND "
-                + getCrlPartitionIndexCondition(crlPartitionIndex)
-                + " ORDER BY a.crlPartitionIndex");
+                + getCrlPartitionIndexCondition(crlPartitionIndex));
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
         query.setMaxResults(1);
@@ -338,8 +335,7 @@ public class CRLData extends ProtectedData implements Serializable {
         if (deltaCRL) {
             final Query query = entityManager.createQuery(
                     "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex)
-                            + " ORDER BY a.crlPartitionIndex");
+                            + getCrlPartitionIndexCondition(crlPartitionIndex));
             query.setParameter("issuerDN", issuerDN);
             query.setMaxResults(1);
             if (crlPartitionIndex > 0) {
@@ -349,8 +345,7 @@ public class CRLData extends ProtectedData implements Serializable {
         } else {
             final Query query = entityManager.createQuery(
                     "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex)
-                            + " ORDER BY a.crlPartitionIndex");
+                            + getCrlPartitionIndexCondition(crlPartitionIndex));
             query.setParameter("issuerDN", issuerDN);
             query.setMaxResults(1);
             if (crlPartitionIndex > 0) {
