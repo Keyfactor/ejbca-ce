@@ -30,7 +30,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
@@ -41,7 +41,7 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
  */
 @ManagedBean
 @ViewScoped
-public class EditEstConfigMBean extends BaseManagedBean implements Serializable {
+public class EditEstConfigMBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 

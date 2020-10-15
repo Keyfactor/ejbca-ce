@@ -28,7 +28,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.ConfigurationCheckerConfiguration;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * Backing bean for the 'Configuration Checker' tab in the System Configuration.
@@ -37,7 +37,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  */
 @ManagedBean(name = "configurationCheckerSettings")
 @ViewScoped
-public class ConfigurationCheckerSettingsManagedBean extends BaseManagedBean {
+public class ConfigurationCheckerSettingsManagedBean extends CheckAdmin {
     private static final Logger log = Logger.getLogger(ConfigurationCheckerManagedBean.class);
     private static final long serialVersionUID = 1L;
     private boolean isConfigurationCheckerEnabled;

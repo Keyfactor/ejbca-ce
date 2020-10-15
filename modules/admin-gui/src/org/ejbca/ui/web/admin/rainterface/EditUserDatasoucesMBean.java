@@ -34,13 +34,12 @@ import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
- * @version $Id$
  */
-public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializable {
+public class EditUserDatasoucesMBean extends CheckAdmin implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditUserDatasoucesMBean.class);
