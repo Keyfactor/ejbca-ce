@@ -259,8 +259,17 @@
 
     <target name="replace-jquery" if="${jquery.dir.exists}">
         <delete file="${docs.dest.ws}/jquery/jquery-3.3.1.js" />
+        <delete file="${docs.dest.ws}/jquery/external/jquery/jquery.js" />
+        <delete file="${docs.dest.logtypes}/jquery/jquery-3.3.1.js" />
+        <delete file="${docs.dest.logtypes}/jquery/external/jquery/jquery.js" />
         <copy file="${jquery.file}" todir="${docs.dest.ws}/jquery" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.ws}/jquery/external/jquery/" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.logtypes}/jquery" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.logtypes}/jquery/external/jquery/" failonerror="false"/>
         <replace dir="${docs.dest.ws}" value="jquery.min.js">
+          <replacetoken>jquery-3.3.1.js</replacetoken>
+        </replace>
+        <replace dir="${docs.dest.logtypes}" value="jquery.min.js">
           <replacetoken>jquery-3.3.1.js</replacetoken>
         </replace>
     </target>
