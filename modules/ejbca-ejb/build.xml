@@ -22,6 +22,8 @@
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.quickserver.classpath"/>
 		<path refid="lib.intune.classpath"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/>
+		<path refid="lib.json-smart.classpath"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
