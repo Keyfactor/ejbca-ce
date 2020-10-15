@@ -47,7 +47,7 @@ import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CheckAdmin;
 
 /**
  * JSF MBean backing the certificate profiles pages.
@@ -57,7 +57,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 // Declarations in faces-config.xml
 //@javax.faces.bean.RequestScoped
 //@javax.faces.bean.ManagedBean(name="certProfilesBean")
-public class CertProfilesBean extends BaseManagedBean implements Serializable {
+public class CertProfilesBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfilesBean.class);
     
