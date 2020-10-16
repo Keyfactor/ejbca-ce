@@ -35,8 +35,6 @@ import org.cesecore.util.SecureXMLDecoder;
 
 /**
  * Implementation of the "ProfileData" table in the database
- * 
- * @version $Id$
  */
 @Entity
 @Table(name="ProfileData")
@@ -116,9 +114,9 @@ public class ProfileData extends ProtectedData implements Serializable {
             final LinkedHashMap<?, ?> a = new Base64PutHashMap();
             a.putAll((LinkedHashMap)dataMap);
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final XMLEncoder encoder = new XMLEncoder(baos);
-            encoder.writeObject(a);
-            encoder.close();
+            try (XMLEncoder encoder = new XMLEncoder(baos)) {
+                encoder.writeObject(a);
+            }
             final String data = baos.toString("UTF8");
             setRawData(data);
         } catch (UnsupportedEncodingException e) {
@@ -167,7 +165,7 @@ public class ProfileData extends ProtectedData implements Serializable {
     @SuppressWarnings("unchecked")
     @Transient
     public Profile getProfile() {
-        LinkedHashMap<Object, Object> datamap = (LinkedHashMap<Object, Object>)getDataMap();
+        LinkedHashMap<Object, Object> datamap = getDataMap();
         Class<? extends Profile> implementationClass = (Class<? extends Profile>) datamap.get(Profile.PROFILE_TYPE);
         if (implementationClass == null) {
             throw new IllegalStateException("No implementation class available for profile '"+profileName+"'");
