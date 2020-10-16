@@ -27,7 +27,7 @@
   </void>
   <void method="put">
    <string>extensiondata_foo</string>
-   <string>baråäö</string>
+   <string>B64:YmFyw6XDpMO2</string>
   </void>
   <void method="put">
    <string>extensiondata_bar</string>

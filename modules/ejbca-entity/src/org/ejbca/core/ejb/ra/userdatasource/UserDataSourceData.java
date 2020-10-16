@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import java.beans.XMLEncoder;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -118,9 +119,9 @@ public class UserDataSourceData extends ProtectedData implements Serializable {
         HashMap<Object, Object> a = new Base64PutHashMap();
         a.putAll((HashMap<Object, Object>)userdatasource.saveData());
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-        encoder.writeObject(a);
-        encoder.close();
+        try (XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(a);
+        }
         try {
             if (log.isDebugEnabled()) {
                 log.debug("Profiledata: \n" + baos.toString("UTF8"));
