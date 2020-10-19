@@ -10,8 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.core.model.services.workers;
 
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
+import org.ejbca.core.model.services.ServiceExecutionResult.Result;
+
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,20 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.services.BaseWorker;
-import org.ejbca.core.model.services.ServiceExecutionFailedException;
-import org.ejbca.core.model.services.ServiceExecutionResult;
-import org.ejbca.core.model.services.ServiceExecutionResult.Result;
-
 /**
  * Class managing the updating of CRLs. Loops through the list of CAs to check and generates CRLs and deltaCRLs if needed.
- * 
- * @version $Id$
  */
 public class CRLUpdateWorker extends BaseWorker {
 
@@ -43,16 +49,46 @@ public class CRLUpdateWorker extends BaseWorker {
      */
 	private static boolean running = false;
 
+    /**
+     * <p>Check if the {@link CRLUpdateWorker} can run on this node.
+     *
+     * <p>Checks if the CRL signing key for active CA(s) are accessible.
+     *
+     * @param ejbs A map between Local EJB interface classes and their injected stub.
+     * @throws ServiceExecutionFailedException if the worker cannot run on this node
+     */
     @Override
-    public void canWorkerRun(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
-        //Nothing to check here. 
+    public void canWorkerRun(final Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        final CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
+        final CryptoTokenManagementSessionLocal cryptoTokenSession = (CryptoTokenManagementSessionLocal) ejbs.get(CryptoTokenManagementSessionLocal.class);
+        Collection<Integer> caIds = getCAIdsToCheck(true);
+        if (caIds.contains(SecConst.ALLCAS)) {
+            caIds = caSession.getAllCaIds();
+        }
+        for (Integer caId : caIds) {
+            try {
+                final CAInfo caInfo = caSession.getCAInfo(getAdmin(), caId);
+                if (caInfo == null) {
+                    log.warn("CA with CA id " + caId + " not found.");
+                    continue;
+                }
+                if (caInfo.getStatus() != CAConstants.CA_ACTIVE) {
+                    continue;
+                }
+                cryptoTokenSession.testKeyPair(getAdmin(),
+                        caInfo.getCAToken().getCryptoTokenId(),
+                        caInfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
+            } catch (CryptoTokenOfflineException | AuthorizationDeniedException | InvalidKeyException e) {
+                throw new ServiceExecutionFailedException(e);
+            }
+        }
     }
 	
 	/**
 	 * Checks if there are any CRL that needs to be updated, and then does the creation.
-	 * @return 
+	 * @return a {@link ServiceExecutionResult} containing the result of the execution.
 	 * 
-	 * @see org.ejbca.core.model.services.IWorker#work()
+	 * {@see org.ejbca.core.model.services.IWorker#work()}
 	 */
     @Override
 	public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
@@ -104,6 +140,4 @@ public class CRLUpdateWorker extends BaseWorker {
         }
 
 	}
-
-
 }
