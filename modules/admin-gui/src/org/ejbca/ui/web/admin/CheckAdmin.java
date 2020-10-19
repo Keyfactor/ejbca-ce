@@ -72,12 +72,14 @@ public class CheckAdmin extends BaseManagedBean {
     
     private boolean isInitPkiPage(final String url) {
         final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        return url.endsWith(ec.getRequestContextPath() + "/" + INIT_PKI_PATH) 
-                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_NEW_PKI_PATH)
-                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_PKI_ADMIN_PATH)
-                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_PKI_SUMMARY_PATH)
-                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_EXISTING_PKI_PATH)
-                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_EXISTING_PKI_ROLE_PATH);
+        final String requestContextPath = ec.getRequestContextPath();
+        
+        return url.endsWith(requestContextPath + "/" + INIT_PKI_PATH) 
+                || url.endsWith(requestContextPath + "/" + INIT_NEW_PKI_PATH)
+                || url.endsWith(requestContextPath + "/" + INIT_PKI_ADMIN_PATH)
+                || url.endsWith(requestContextPath + "/" + INIT_PKI_SUMMARY_PATH)
+                || url.endsWith(requestContextPath + "/" + INIT_EXISTING_PKI_PATH)
+                || url.endsWith(requestContextPath + "/" + INIT_EXISTING_PKI_ROLE_PATH);
     }
 
     private void shouldRedirectToInitPKI() throws Exception {
