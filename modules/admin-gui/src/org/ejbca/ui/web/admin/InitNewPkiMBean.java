@@ -151,6 +151,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         // or if we have been there but yet no tokens exists.
         if (getCryptoTokenType().equals(CREATE_NEW_CRYPTO_TOKEN) && (!initNewPkiRedirect || getAvailableCryptoTokenList().isEmpty())) {
             initNewPkiRedirect = true;
+            // After redirect, go back to "Use existing" (assuming that one was created)
+            setCryptoTokenType(USE_EXISTING_CRYPTO_TOKEN);
             return CREATE_NEW_CRYPTO_TOKEN;
         }
         if (verifyCaFields()) {
@@ -239,7 +241,11 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCryptoTokenType() {
-        return StringUtils.isEmpty(cryptoTokenType) ? USE_EXISTING_CRYPTO_TOKEN : cryptoTokenType;
+        if (StringUtils.isEmpty(cryptoTokenType)) {
+            setCryptoTokenType(USE_EXISTING_CRYPTO_TOKEN);
+            return USE_EXISTING_CRYPTO_TOKEN;
+        }
+        return cryptoTokenType;
     }
 
     public void setCryptoTokenType(String cryptoTokenType) {
@@ -257,9 +263,12 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         this.initNewPkiRedirect = initNewPkiRedirect;
     }
     
+    public boolean isCryptoTokenAvailable() {
+        return !isRenderKeyOptions() && getCryptoTokenType().equals(USE_EXISTING_CRYPTO_TOKEN);
+    }
+    
     public boolean isRenderKeyOptions() {
-        return !getAvailableCryptoTokenList().isEmpty() && 
-               (isInitNewPkiRedirect() || StringUtils.equals(getCryptoTokenType(), USE_EXISTING_CRYPTO_TOKEN));
+        return !getAvailableCryptoTokenList().isEmpty() && StringUtils.equals(getCryptoTokenType(), USE_EXISTING_CRYPTO_TOKEN);
     }
     
     public List<SelectItem> getAvailableSigningAlgList() {
@@ -323,8 +332,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
 
     /** SuperAdmin Methods **/
-    
-    private String adminDn = "CN=SuperAdmin";
+    // TODO Change
+    private String adminDn = "CN=SuperAdmin" + (int)Math.ceil(Math.random()*1000);
     private String adminValidity = "2y";
     private String adminKeyStorePassword;
     private String adminKeyStorePasswordRepeated;
@@ -392,13 +401,15 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private byte[] createSuperAdmin() throws AuthorizationDeniedException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, 
             IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
         final int caId = caSession.getCAInfo(getAdmin(), getCaName()).getCAId();
-        endEntityManagementSession.addUser(getAdmin(), "superadmin", getAdminKeyStorePassword(), getAdminDn(), 
+        //TODO Change
+        String superadmin = "superadmin" + (int)Math.ceil(Math.random()*1000);
+        endEntityManagementSession.addUser(getAdmin(), superadmin, getAdminKeyStorePassword(), getAdminDn(), 
                 null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.TOKEN_SOFT_P12, caId);
         Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date());
         KeyStore keyStore = null;
         try {
-            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
+            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), superadmin, getAdminKeyStorePassword(), 
                     caId, "2048", "RSA", new Date(), notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         } catch (Exception e) {
             log.info("SuperAdmin Keystore could not be generated", e);
@@ -537,8 +548,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
                 resultList.add(new SelectItem(entry.getKey(), entry.getValue(), ""));
             }
             if (numSelected == 0) {
-                resultList.add(new SelectItem(caInfoDto.getCryptoTokenIdParam(), "-" + getEjbcaWebBean().getText("CRYPTOTOKEN_MISSING_OR_EMPTY") + " "
-                        + caInfoDto.getCryptoTokenIdParam() + "-"));
                 caInfoDto.setCryptoTokenIdParam(null);
                 currentCryptoTokenId = 0;
             }
