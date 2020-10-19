@@ -13,16 +13,13 @@
 package org.ejbca.ui.web.admin;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 import javax.ejb.EJB;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.resource.spi.IllegalStateException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -35,10 +32,13 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 public class CheckAdmin extends BaseManagedBean {
 
     private static final long serialVersionUID = 1L;
-
-    private static final Logger log = Logger.getLogger(CheckAdmin.class);
     
     private static final String INIT_PKI_PATH = "initpki.xhtml";
+    private static final String INIT_NEW_PKI_PATH = "initnewpki.xhtml";
+    private static final String INIT_PKI_ADMIN_PATH = "initpkiadmin.xhtml";
+    private static final String INIT_PKI_SUMMARY_PATH = "initpkisummary.xhtml";
+    private static final String INIT_EXISTING_PKI_PATH = "initexistingpki.xhtml";
+    private static final String INIT_EXISTING_PKI_ROLE_PATH = "initexistingpkirole.xhtml";
     
     @EJB
     public CaSessionLocal caSession;
@@ -71,19 +71,22 @@ public class CheckAdmin extends BaseManagedBean {
     }
     
     private boolean isInitPkiPage(final String url) {
-        Pattern pattern = Pattern.compile("(?=.initnewpki*)|(?=.initpki*)");
-        return pattern.matcher(url).find();
+        final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        return url.endsWith(ec.getRequestContextPath() + "/" + INIT_PKI_PATH) 
+                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_NEW_PKI_PATH)
+                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_PKI_ADMIN_PATH)
+                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_PKI_SUMMARY_PATH)
+                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_EXISTING_PKI_PATH)
+                || url.endsWith(ec.getRequestContextPath() + "/" + INIT_EXISTING_PKI_ROLE_PATH);
     }
 
     private void shouldRedirectToInitPKI() throws Exception {
-        final List<Integer> canames = caSession.getAllCaIds();
-        
-        if (canames.isEmpty()
+        if (caSession.getAllCaIds().isEmpty()
                 && getAdmin() instanceof OAuth2AuthenticationToken) {
             try {
                 redirectToInitPkiPage();
             } catch (IOException e) {
-                log.warn("Error while redirecting to init pki page.", e);
+                throw new IllegalStateException("Error while redirecting to init pki page.");
             }
         } else {
             checkAccess();
