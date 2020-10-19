@@ -36,8 +36,8 @@
 	
 		<h:panelGroup columns="1">
 			<h:selectOneRadio value="#{initPkiMBean.installationMode}" layout="pageDirection">
-           		<f:selectItem itemLabel="Create a New PKI" itemValue="newPkiMode" />
-           		<f:selectItem itemLabel="Integrate With Existing PKI" itemValue="existingPkiMode" />
+           		<f:selectItem itemLabel="Create a New CA" itemValue="newPkiMode" />
+           		<f:selectItem itemLabel="Import a CA from existing PKI" itemValue="existingPkiMode" />
 				<f:ajax render="initPkiForm" />
 			</h:selectOneRadio>
          	<h:outputText styleClass="smallHelp" value="Create a new Management CA and enroll SuperAdmin certificate" rendered="#{!initPkiMBean.installExistingPki}"/> 
