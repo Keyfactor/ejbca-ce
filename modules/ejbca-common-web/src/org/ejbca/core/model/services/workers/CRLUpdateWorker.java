@@ -15,6 +15,7 @@ package org.ejbca.core.model.services.workers;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -51,7 +52,7 @@ public class CRLUpdateWorker extends BaseWorker {
     /**
      * <p>Check if the {@link CRLUpdateWorker} can run on this node.
      *
-     * <p>Checks if the crypto token(s) containing the CRL sign keys are accessible.
+     * <p>Checks if the CRL signing key for active CA(s) are accessible.
      *
      * @param ejbs A map between Local EJB interface classes and their injected stub.
      * @throws ServiceExecutionFailedException if the worker cannot run on this node
@@ -68,7 +69,11 @@ public class CRLUpdateWorker extends BaseWorker {
             try {
                 final CAInfo caInfo = caSession.getCAInfo(getAdmin(), caId);
                 if (caInfo == null) {
-                    throw new ServiceExecutionFailedException("CA with ID " + caId + " not found.");
+                    log.warn("CA with CA id " + caId + " not found.");
+                    continue;
+                }
+                if (caInfo.getStatus() != CAConstants.CA_ACTIVE) {
+                    continue;
                 }
                 cryptoTokenSession.testKeyPair(getAdmin(),
                         caInfo.getCAToken().getCryptoTokenId(),
