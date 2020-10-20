@@ -35,18 +35,17 @@ import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.ParameterException;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * 
  * JSF MBean backing the import ca page.
  *
- * @version $Id$
  * 
  */
 @ManagedBean
 @ViewScoped
-public class ImportCaMBean extends CheckAdmin implements Serializable {
+public class ImportCaMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ImportCaMBean.class);
