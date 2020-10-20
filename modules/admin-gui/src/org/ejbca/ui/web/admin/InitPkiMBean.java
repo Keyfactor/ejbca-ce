@@ -61,4 +61,8 @@ public class InitPkiMBean extends BaseManagedBean implements Serializable {
     public String actionNext() {
         return getInstallationMode();
     }
+    
+    public String actionSkip() {
+        return "skip";
+    }
 }
