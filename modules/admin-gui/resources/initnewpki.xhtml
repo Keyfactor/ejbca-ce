@@ -52,9 +52,9 @@
 			<br/>
 		</h:panelGroup>
 		
-		<h:panelGroup rendered="#{empty initNewPkiMBean.availableCryptoTokenList and !initNewPkiMBean.cryptoTokenType eq 'createNewToken'}">
+		<h:panelGroup rendered="#{initNewPkiMBean.cryptoTokenAvailable}">
 			<h:outputText value="No Crypto Token available"/>
-			<br/>
+			<br/><br/>
 		</h:panelGroup>
 
 		<h:panelGrid columns="2" rendered="#{initNewPkiMBean.renderKeyOptions}">

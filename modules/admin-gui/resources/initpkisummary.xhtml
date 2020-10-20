@@ -26,6 +26,7 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{initNewPkiMBean}" />
     <ui:define name="content">
+    
 	<h:form id="initNewPkiForm">
 		
 		<h:panelGroup>
@@ -35,7 +36,7 @@
 			<br/>
 		</h:panelGroup>
 		
-		<h:panelGrid columns="2" cellpadding="2">
+		<h:panelGrid columns="2" cellpadding="2" rendered="#{!initNewPkiMBean.installed}">
 		
 			<h:outputText value="CA Settings" style="font-weight:bold"/>
 			<h:outputText value=""/>
@@ -78,13 +79,26 @@
 			<br/>
 		</h:panelGrid>
 	
-		<h:panelGroup id="nagivationGroup">
+		<h:panelGrid columns="2" cellpadding="2" rendered="#{initNewPkiMBean.installed}">
+			<h:outputText value="Management CA has been created and Super Administartor is ready for enrollment. Click 'Enroll' below in order to retrieve 
+				the Super Administrator keystore."/>
+			<br/><br/>
+			<h:commandButton id="Enroll" value="Enroll" action="#{initNewPkiMBean.enrollSuperAdmin}"/>
+			<br/>
+			<h:outputLink value="#{initNewPkiMBean.caCertificateDownloadLink}">
+				<h:outputText value="Download CA Certificate"/>
+			</h:outputLink>	
+		</h:panelGrid>
+		
+		<h:panelGroup id="nagivationGroup" rendered="#{!initNewPkiMBean.installed}">
 			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToAdminSettings}"/>
-			<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.install}"/>
-		</h:panelGroup>
+			<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.install}">
+				<f:ajax render="@form"/>
+			</h:commandButton>
 		<br/>
-		<h:outputText styleClass="smallHelp" value="'Install' will create the Management CA and your SuperAdmin Key Store will be downloaded.
+		<h:outputText styleClass="smallHelp" value="'Install' will create the Management CA and prepare SuperAdmin Key Store for download.
 			 The Key Store is used to authenticate the administrator through the CA's interfaces."/> 
+		</h:panelGroup>
 	
 	</h:form>
 	</ui:define>

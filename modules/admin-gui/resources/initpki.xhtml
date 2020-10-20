@@ -30,21 +30,24 @@
 		
 		<h:panelGroup id="informationGroup">
 			<h2><h:outputText value="Installation"/></h2>
-			<h:outputText value="This node is not initialized. Please select a setup procedure"/>
-			<br/>
+			<h:outputText value="This node is not initialized. Please select a setup procedure."/>
+			<br/><br/>
+			<h:outputText value="The wizard will create an Administrative CA (Management CA) and a Super Administrator with default setting. For advanced setup, this guide can be skipped."/>
+			<br/><br/>
 		</h:panelGroup>
 	
 		<h:panelGroup columns="1">
 			<h:selectOneRadio value="#{initPkiMBean.installationMode}" layout="pageDirection">
-           		<f:selectItem itemLabel="Create a New PKI" itemValue="newPkiMode" />
-           		<f:selectItem itemLabel="Integrate With Existing PKI" itemValue="existingPkiMode" />
+           		<f:selectItem itemLabel="Create a New CA" itemValue="newPkiMode" />
+           		<f:selectItem itemLabel="Import a CA from existing PKI" itemValue="existingPkiMode" />
 				<f:ajax render="initPkiForm" />
 			</h:selectOneRadio>
-         	<h:outputText styleClass="smallHelp" value="Create a new Management CA and enroll SuperAdmin certificate" rendered="#{!initPkiMBean.installExistingPki}"/> 
-         	<h:outputText styleClass="smallHelp" value="Import existing CA certificate and assign SuperAdmin role" rendered="#{initPkiMBean.installExistingPki}"/> 
+         	<h:outputText styleClass="smallHelp" value="Create a new Management CA and enroll SuperAdmin certificate." rendered="#{!initPkiMBean.installExistingPki}"/> 
+         	<h:outputText styleClass="smallHelp" value="Import existing CA certificate and assign SuperAdmin role." rendered="#{initPkiMBean.installExistingPki}"/> 
 			<br/><br/>
 		</h:panelGroup>
     
+    	<h:commandButton id="skipButton" value="#{web.text.SKIP}" action="#{initPkiMBean.actionSkip}"/>
     	<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initPkiMBean.actionNext}"/>    	
     	
     </h:form>

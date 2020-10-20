@@ -178,6 +178,10 @@
   		<from-outcome>existingPkiMode</from-outcome>
   		<to-view-id>/initexistingpki.xhtml</to-view-id>
   	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>skip</from-outcome>
+  		<to-view-id>/ca/editcas/managecas.xhtml</to-view-id>
+  	</navigation-case>
   </navigation-rule>
   
   <navigation-rule>
