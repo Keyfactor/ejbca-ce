@@ -127,7 +127,7 @@ public class CTLogHelper extends BaseHelper {
 
     public void assertIsTableRowsCorrectOrder(int rowNum, String rowData) {
         final List<WebElement> tableRows = findElements(Page.TABLE_ROW_DATA);
-        assertEquals(tableRows.get(rowNum).getText(), rowData);
+        assertEquals(rowData, tableRows.get(rowNum).getText());
     }
 
     public void pressArrowUpButton(final String label, final String text) {
