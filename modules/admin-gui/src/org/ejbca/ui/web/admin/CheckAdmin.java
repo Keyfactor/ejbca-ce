@@ -31,30 +31,26 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 public class CheckAdmin extends BaseManagedBean {
 
     private static final long serialVersionUID = 1L;
-    
+
     private static final String INIT_PKI_PATH = "initpki.xhtml";
-    
+
     @EJB
-    public CaSessionLocal caSession;
-    
+    private CaSessionLocal caSession;
+
     public CheckAdmin(final String... resources) {
         super(resources);
     }
-    
+
     /**
      * Invoked on preRenderView
      * @throws Exception 
      */
     @Override
     public void authorizedResources() throws Exception {
-        HttpServletRequest origRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        if (isInitPkiPage(origRequest.getRequestURL().toString())) {
-            checkAccess();
-        } else {
-            shouldRedirectToInitPKI();
-        }
+        checkAccess();
+        shouldRedirectToInitPKI();
     }
-    
+
     private void checkAccess() throws Exception {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -64,11 +60,7 @@ public class CheckAdmin extends BaseManagedBean {
             throw new AuthorizationDeniedException("You are not authorized to view this page.");
         }
     }
-    
-    private boolean isInitPkiPage(final String url) {
-        final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        return url.endsWith(ec.getRequestContextPath() + "/" + INIT_PKI_PATH);
-    }
+
 
     private void shouldRedirectToInitPKI() throws Exception {
         if (caSession.getAllCaIds().isEmpty()) {
@@ -77,14 +69,12 @@ public class CheckAdmin extends BaseManagedBean {
             } catch (IOException e) {
                 throw new IllegalStateException("Error while redirecting to init pki page.");
             }
-        } else {
-            checkAccess();
         }
     }
-    
+
     private void redirectToInitPkiPage() throws IOException {
         final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
         ec.redirect(ec.getRequestContextPath() + "/" + INIT_PKI_PATH);
     }
-    
+
 }
