@@ -630,7 +630,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public OAuthKeyInfo getOauthKeyByIdentifier(String oauthKeyIdentifier) {
-        for (OAuthKeyInfo key : getOauthKeyManager().getAllOauthKeys()) {
+        for (OAuthKeyInfo key : currentConfig.getOauthKeys()) {
             if (key.getKeyIdentifier().equals(oauthKeyIdentifier)) {
                 return key;
             }
