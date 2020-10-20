@@ -38,10 +38,9 @@ import org.openqa.selenium.WebDriver;
 public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 
     private static final String UNLABELED = "Unlabeled";
-    private static final String LOG_URL_BASE = "https://localhost:8443/ejbca/";
-    private static final String LOG_URL_A = LOG_URL_BASE + "adminweb/ct/v1/";
-    private static final String LOG_URL_B = LOG_URL_BASE + "doc/adminguide.html#Certificate%20Transparency%20%28Enterprise%20only%29/ct/v1/";
-    private static final String LOG_URL_C = LOG_URL_BASE + "ct/v1/";
+    private static final String LOG_URL_A = "/adminweb/ct/v1/";
+    private static final String LOG_URL_B = "/doc/adminguide.html#Certificate%20Transparency%20%28Enterprise%20only%29/ct/v1/";
+    private static final String LOG_URL_C =  "/ct/v1/";
     private static final String TIMEOUT_ONE = "60000";
     private static final String TIMEOUT_TWO = "30000";
 
@@ -57,18 +56,17 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
         WebDriver webDriver = getWebDriver();
         ctLogHelper = new CTLogHelper(webDriver);
         sysConfigHelper = new SystemConfigurationHelper(webDriver);
-
     }
 
     @AfterClass
     public static void exit() {
-        removeCertificateTransparencyLogs(LOG_URL_A, LOG_URL_B, LOG_URL_C);
+        removeCertificateTransparencyLogs(getBaseUrl() + LOG_URL_A, getBaseUrl() + LOG_URL_B,getBaseUrl() +  LOG_URL_C);
         afterClass();
     }
 
     @Test
     public void stepA_addCertificateTransparencyLog() throws IOException {
-        final String logUrl = "https://localhost:8443/ejbca/adminweb/ct/v1";
+        final String logUrl = getBaseUrl() + "/adminweb/ct/v1";
 
         goToSystemConfigurationPage();
 
@@ -83,7 +81,7 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 
     @Test
     public void stepB_addCertificateTransparencyLog() throws Exception {
-        final String logUrl = "https://localhost:8443/ejbca/doc/adminguide.html#Certificate%20Transparency%20%28Enterprise%20only%29";
+        final String logUrl = getBaseUrl() + "/doc/adminguide.html#Certificate%20Transparency%20%28Enterprise%20only%29";
 
         goToSystemConfigurationPage();
 
@@ -98,7 +96,7 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
 
     @Test
     public void stepC_addCertificateTransparencyLog() throws Exception {
-        final String logUrl = "https://localhost:8443/ejbca";
+        final String logUrl = getBaseUrl();
         final String label = "Test_EJBCA";
 
         goToSystemConfigurationPage();
@@ -115,38 +113,41 @@ public class EcaQa152_OrderOfCTLogs extends WebTestBase {
     @Test
     public void stepD_reloadCertificateTransparencyLogs() {
         goToSystemConfigurationPage();
-        ctLogHelper.assertIsTableRowsCorrectOrder(0, LOG_URL_C);
-        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
-        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
+        ctLogHelper.assertIsTableRowsCorrectOrder(0, getBaseUrl() +LOG_URL_C);
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, getBaseUrl() + LOG_URL_A);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, getBaseUrl() + LOG_URL_B);
     }
 
     @Test
     public void stepE_pressArrowsToChangeTheOrderOfTheCertificateTransparencyAuditLogs() {
         goToSystemConfigurationPage();
-        ctLogHelper.pressArrowDownButton(UNLABELED, LOG_URL_A);
-        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_B);
-        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_A);
-        ctLogHelper.pressArrowUpButton(UNLABELED, LOG_URL_A);
-        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
-        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
+        String fullLogUrlA = getBaseUrl() + LOG_URL_A;
+        ctLogHelper.pressArrowDownButton(UNLABELED, fullLogUrlA);
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, getBaseUrl() + LOG_URL_B);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, fullLogUrlA);
+        ctLogHelper.pressArrowUpButton(UNLABELED, fullLogUrlA);
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, fullLogUrlA);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, getBaseUrl() + LOG_URL_B);
     }
 
     @Test
     public void stepF_moveTheLogToTheBottomOfALogGroup() {
-        ctLogHelper.pressArrowDownButton(UNLABELED, LOG_URL_A);
+        String fullLogUrlA = getBaseUrl() + LOG_URL_A;
+        ctLogHelper.pressArrowDownButton(UNLABELED, fullLogUrlA);
 
-        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_B);
-        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_A);
-        ctLogHelper.isArrowDownButtonDisabled(UNLABELED, LOG_URL_A);
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, getBaseUrl() + LOG_URL_B);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, fullLogUrlA);
+        ctLogHelper.isArrowDownButtonDisabled(UNLABELED, fullLogUrlA);
     }
 
     @Test
     public void stepG_moveTheLogToTheTopOfALogGroup() {
-        ctLogHelper.pressArrowUpButton(UNLABELED, LOG_URL_A);
+        String fullLogUrlA = getBaseUrl() + LOG_URL_A;
+        ctLogHelper.pressArrowUpButton(UNLABELED, fullLogUrlA);
 
-        ctLogHelper.assertIsTableRowsCorrectOrder(1, LOG_URL_A);
-        ctLogHelper.assertIsTableRowsCorrectOrder(2, LOG_URL_B);
-        ctLogHelper.isArrowUpButtonDisabled(UNLABELED, LOG_URL_A);
+        ctLogHelper.assertIsTableRowsCorrectOrder(1, fullLogUrlA);
+        ctLogHelper.assertIsTableRowsCorrectOrder(2, getBaseUrl() +LOG_URL_B);
+        ctLogHelper.isArrowUpButtonDisabled(UNLABELED, fullLogUrlA);
     }
 
     private void goToSystemConfigurationPage() {
