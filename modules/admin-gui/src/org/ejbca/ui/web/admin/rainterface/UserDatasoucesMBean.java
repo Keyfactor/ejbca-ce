@@ -33,7 +33,6 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * @version $Id$
  */
 //@ManagedBean
 //@ViewScoped

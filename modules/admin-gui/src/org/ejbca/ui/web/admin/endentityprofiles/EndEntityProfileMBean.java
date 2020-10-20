@@ -69,7 +69,6 @@ import org.ejbca.util.mail.MailSender;
  *
  * JSF MBean backing end entity profile page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped

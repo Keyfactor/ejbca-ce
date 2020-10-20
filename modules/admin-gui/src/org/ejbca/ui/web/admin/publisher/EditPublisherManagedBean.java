@@ -60,7 +60,6 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
 /**
  * 
- * @version $Id$
  *
  */
 @ManagedBean(name = "editPublisher")

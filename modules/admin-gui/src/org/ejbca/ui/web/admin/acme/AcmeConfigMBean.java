@@ -40,7 +40,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * JavaServer Faces Managed Bean for managing ACME configuration.
  *
- * @version $Id: AcmeConfigMBean.java 28125 2018-01-29 16:41:28Z bastianf $
  */
 
 @ManagedBean
