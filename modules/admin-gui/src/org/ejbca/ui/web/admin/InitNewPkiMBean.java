@@ -17,11 +17,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -40,6 +43,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -48,14 +52,20 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -75,8 +85,12 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -111,6 +125,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private boolean initNewPkiRedirect = false;
     private String cryptoTokenType;
     private int currentCryptoTokenId = 0;
+    private boolean installed = false;
     
     @EJB
     private AuthorizationSystemSessionLocal authorizationSystemSession;
@@ -151,6 +166,8 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         // or if we have been there but yet no tokens exists.
         if (getCryptoTokenType().equals(CREATE_NEW_CRYPTO_TOKEN) && (!initNewPkiRedirect || getAvailableCryptoTokenList().isEmpty())) {
             initNewPkiRedirect = true;
+            // After redirect, go back to "Use existing" (assuming that one was created)
+            setCryptoTokenType(USE_EXISTING_CRYPTO_TOKEN);
             return CREATE_NEW_CRYPTO_TOKEN;
         }
         if (verifyCaFields()) {
@@ -182,6 +199,10 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     public boolean isSuitableCryptoTokenExists() {
         return suitableCryptoTokenExists;
+    }
+    
+    public boolean isInstalled() {
+        return installed;
     }
 
     public void setSuitableCryptoTokenExists(boolean suitableCryptoTokenExists) {
@@ -239,7 +260,11 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCryptoTokenType() {
-        return StringUtils.isEmpty(cryptoTokenType) ? USE_EXISTING_CRYPTO_TOKEN : cryptoTokenType;
+        if (StringUtils.isEmpty(cryptoTokenType)) {
+            setCryptoTokenType(USE_EXISTING_CRYPTO_TOKEN);
+            return USE_EXISTING_CRYPTO_TOKEN;
+        }
+        return cryptoTokenType;
     }
 
     public void setCryptoTokenType(String cryptoTokenType) {
@@ -257,9 +282,12 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         this.initNewPkiRedirect = initNewPkiRedirect;
     }
     
+    public boolean isCryptoTokenAvailable() {
+        return !isRenderKeyOptions() && getCryptoTokenType().equals(USE_EXISTING_CRYPTO_TOKEN);
+    }
+    
     public boolean isRenderKeyOptions() {
-        return !getAvailableCryptoTokenList().isEmpty() && 
-               (isInitNewPkiRedirect() || StringUtils.equals(getCryptoTokenType(), USE_EXISTING_CRYPTO_TOKEN));
+        return !getAvailableCryptoTokenList().isEmpty() && StringUtils.equals(getCryptoTokenType(), USE_EXISTING_CRYPTO_TOKEN);
     }
     
     public List<SelectItem> getAvailableSigningAlgList() {
@@ -323,7 +351,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
 
     /** SuperAdmin Methods **/
-    
+
     private String adminDn = "CN=SuperAdmin";
     private String adminValidity = "2y";
     private String adminKeyStorePassword;
@@ -361,10 +389,46 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         this.adminKeyStorePasswordRepeated = adminKeyStorePasswordRepeated;
     }
     
-    public void install() throws AuthorizationDeniedException, CADoesntExistsException, EndEntityExistsException, 
-            CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
-        createCa();
-        final byte[] keyStore = createSuperAdmin();
+    public String getCaCertificateDownloadLink() {
+        return getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getCaPath() + "/cafunctions.xhtml";
+    }
+    
+    public void install() {
+        try {
+            createCa();
+        } catch (CAExistsException e) {
+            addErrorMessage("CAALREADYEXISTS", getCaName());
+            log.error("CA " + getCaName() + " already exists.");
+            return;
+        } catch (CryptoTokenOfflineException e) {
+            addErrorMessage("CATOKENISOFFLINE");
+            log.error("Crypto token was unavailable: " + e.getMessage());
+            return;
+        } catch (InvalidAlgorithmException e) {
+            log.error("Algorithm was not valid: " + e.getMessage());
+            addErrorMessage("INVALIDSIGORKEYALGPARAM");
+            return;
+        } catch (AuthorizationDeniedException e) {
+            addErrorMessage("ACCESSRULES_ERROR_UNAUTH", getAdmin() + " not authorized to create CA");
+            log.error("Not authorized to create CA: " + e.getMessage());
+            return;
+        }
+        installed = true;
+    }
+    
+    public void enrollSuperAdmin() throws CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException,
+            CertificateSerialNumberException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException {
+        byte[] keyStore = null;
+        try {
+            keyStore = createSuperAdmin();
+        } catch (EndEntityExistsException | CertificateCreateException e) {
+            addErrorMessage("SuperAdmin already exists. In order to re-enroll keystore. edit the end enttiy, change status to 'New' and try again.");
+            return;
+        } catch (Exception e) {
+            log.info("SuperAdmin Keystore could not be generated", e);
+            addErrorMessage("SuperAdmin Keystore could not be generated");
+            return;
+        }
         downloadP12(keyStore);
     }
     
@@ -388,23 +452,20 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             log.info("Token " + fileName + " could not be downloaded", e);
         }
     }
-    
+
     private byte[] createSuperAdmin() throws AuthorizationDeniedException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, 
-            IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
+            IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, 
+            CertificateEncodingException, KeyStoreException, InvalidAlgorithmParameterException, IllegalKeyException, CertificateCreateException, CertificateRevokeException, 
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, 
+            AuthLoginException, NoSuchEndEntityException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateSignatureException {
         final int caId = caSession.getCAInfo(getAdmin(), getCaName()).getCAId();
         endEntityManagementSession.addUser(getAdmin(), "superadmin", getAdminKeyStorePassword(), getAdminDn(), 
                 null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.TOKEN_SOFT_P12, caId);
         Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date());
         KeyStore keyStore = null;
-        try {
-            keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
-                    caId, "2048", "RSA", new Date(), notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-        } catch (Exception e) {
-            log.info("SuperAdmin Keystore could not be generated", e);
-            addErrorMessage("SuperAdmin Keystore could not be generated");
-            return null;
-        }
+        keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
+                caId, "2048", "RSA", new Date(), notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             keyStore.store(outputStream, getAdminKeyStorePassword().toCharArray());
@@ -412,10 +473,10 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             log.error(e); 
         }
-        return null;
+        return ArrayUtils.EMPTY_BYTE_ARRAY;
     }
     
-    private void createCa() {
+    private void createCa() throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException {
         final String encodedValidity = getValidity();        
         final Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, caInfoDto.getCryptoTokenDefaultKey());
@@ -461,24 +522,11 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo caInfo = createX509CaInfo(getCaDn(), null, getCaName(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, encodedValidity, 
                 CAInfo.SELFSIGNED, caToken, null, extendedcaservices);
-        try {
-            caAdminSession.createCA(getAdmin(), caInfo);
-
-            authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(),
-                    CertTools.getCommonNameFromSubjectDn(getAdminDn()));
-        } catch (CAExistsException e) {
-            addErrorMessage("CAALREADYEXISTS", getCaName());
-            log.error("CA " + getCaName() + " already exists.");
-        } catch (CryptoTokenOfflineException e) {
-            addErrorMessage("CATOKENISOFFLINE");
-            log.error("Crypto token was unavailable: " + e.getMessage());
-        } catch (InvalidAlgorithmException e) {
-            log.error("Algorithm was not valid: " + e.getMessage());
-            addErrorMessage("INVALIDSIGORKEYALGPARAM");
-        } catch (AuthorizationDeniedException e) {
-            addErrorMessage("ACCESSRULES_ERROR_UNAUTH", getAdmin() + " not authorized to create CA");
-            log.error("Not authorized to create CA: " + e.getMessage());
-        }
+        
+        caAdminSession.createCA(getAdmin(), caInfo);
+        authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(),
+                CertTools.getCommonNameFromSubjectDn(getAdminDn()));
+        
     }
     
     private X509CAInfo createX509CaInfo(String dn, String subjectAltName, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
@@ -509,7 +557,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
 
         // Update caInfoDTO with a default algorithm
-        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.size() > 0){
+        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && !availableSigningAlgorithmSelectItems.isEmpty()) {
             caInfoDto.setSignatureAlgorithmParam(availableSigningAlgorithmSelectItems.get(0).getLabel());
         }
     }
@@ -537,8 +585,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
                 resultList.add(new SelectItem(entry.getKey(), entry.getValue(), ""));
             }
             if (numSelected == 0) {
-                resultList.add(new SelectItem(caInfoDto.getCryptoTokenIdParam(), "-" + getEjbcaWebBean().getText("CRYPTOTOKEN_MISSING_OR_EMPTY") + " "
-                        + caInfoDto.getCryptoTokenIdParam() + "-"));
                 caInfoDto.setCryptoTokenIdParam(null);
                 currentCryptoTokenId = 0;
             }
