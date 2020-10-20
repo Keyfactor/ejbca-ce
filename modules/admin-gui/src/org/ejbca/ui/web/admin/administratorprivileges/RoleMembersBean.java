@@ -58,7 +58,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Managed Bean for the Role Member manage/view page.
  * 
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean

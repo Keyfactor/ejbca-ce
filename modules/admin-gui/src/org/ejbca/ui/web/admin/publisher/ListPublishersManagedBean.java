@@ -46,7 +46,6 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 /**
  * Managed bean to back the list publisher xhtml page.
  * 
- * @version $Id$
  *
  */
 @ManagedBean(name = "listPublishers")
