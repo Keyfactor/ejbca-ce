@@ -43,6 +43,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -451,7 +452,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             log.info("Token " + fileName + " could not be downloaded", e);
         }
     }
-    
+
     private byte[] createSuperAdmin() throws AuthorizationDeniedException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, 
             IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, 
             CertificateEncodingException, KeyStoreException, InvalidAlgorithmParameterException, IllegalKeyException, CertificateCreateException, CertificateRevokeException, 
@@ -472,7 +473,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             log.error(e); 
         }
-        return null;
+        return ArrayUtils.EMPTY_BYTE_ARRAY;
     }
     
     private void createCa() throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException {
@@ -556,7 +557,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
 
         // Update caInfoDTO with a default algorithm
-        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.size() > 0){
+        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.isEmpty()) {
             caInfoDto.setSignatureAlgorithmParam(availableSigningAlgorithmSelectItems.get(0).getLabel());
         }
     }
