@@ -43,7 +43,7 @@ import org.cesecore.keys.token.NullCryptoToken;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
@@ -52,7 +52,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  */
 @ManagedBean
 @SessionScoped
-public class CAActivationMBean extends CheckAdmin implements Serializable {
+public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	private static final Logger log = Logger.getLogger(CAActivationMBean.class);
 

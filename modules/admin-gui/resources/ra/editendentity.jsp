@@ -107,11 +107,6 @@
     AccessRulesConstants.REGULAR_EDITENDENTITY);
     rabean.initialize(ejbcawebbean);
     
-    if(rabean.shouldRedirectToInitPKI()) {
-       	String redirectURL = request.getContextPath() + "/" + "initpki.xhtml";
-       	response.sendRedirect(redirectURL);
-    }
-    
     String THIS_FILENAME = "editendentity.jsp";
     String username = null;
     EndEntityProfile profile = null;
