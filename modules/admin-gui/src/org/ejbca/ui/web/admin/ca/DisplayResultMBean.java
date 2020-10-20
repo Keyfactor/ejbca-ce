@@ -34,7 +34,6 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * 
  * JSF MBean backing the displayresult xhtml page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped

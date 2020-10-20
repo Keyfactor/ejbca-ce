@@ -49,7 +49,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /**
  * JSF Managed Bean or the CA Activation page of the Admin GUI.
  *
- * @version $Id$
  */
 @ManagedBean
 @SessionScoped

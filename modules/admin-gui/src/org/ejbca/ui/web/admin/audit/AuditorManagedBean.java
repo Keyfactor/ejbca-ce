@@ -72,7 +72,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  * 
  * getConditions() will handle special cases when HTTP GET parameters are passed (e.g. show history for a username).
  * 
- * @version $Id$
  */
 public class AuditorManagedBean extends BaseManagedBean implements Serializable {
 

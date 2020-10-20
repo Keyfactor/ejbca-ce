@@ -39,11 +39,10 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 /**
  *  JSF Managed Bean or the index page in the Admin GUI.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
-public class AdminIndexMBean extends BaseManagedBean implements Serializable {
+public class AdminIndexMBean extends CheckAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
 
@@ -60,9 +59,9 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
 
     /** Backing object for main page list of CA and CRL statuses. */
     public class CaCrlStatusInfo {
-        final private String caName;
-        final private boolean caService;
-        final private boolean crlStatus;
+        private final String caName;
+        private final boolean caService;
+        private final boolean crlStatus;
         private CaCrlStatusInfo(final String caName, final boolean caService, final boolean crlStatus) {
             this.caName = caName;
             this.caService = caService;
@@ -130,7 +129,7 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
      * @return publisher queue length
      */
     public int getPublisherQueueLength(String publishername) {
-            return getPublisherQueueLength(publisherSession.getPublisherId(publishername));
+        return getPublisherQueueLength(publisherSession.getPublisherId(publishername));
     }
     
     private int getPublisherQueueLength(int publisherId) {
