@@ -35,17 +35,16 @@ import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JavaServer Faces Managed Bean for managing ACME configuration.
  *
- * @version $Id: AcmeConfigMBean.java 28125 2018-01-29 16:41:28Z bastianf $
  */
 
 @ManagedBean
 @SessionScoped
-public class AcmeConfigMBean extends CheckAdmin implements Serializable {
+public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AcmeConfigMBean.class);
     private ListDataModel<AcmeAliasGuiInfo> aliasGuiList = null;

@@ -26,12 +26,6 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY); 
                                             rabean.initialize(ejbcawebbean);
                                             cabean.initialize(ejbcawebbean);
-                                            
-                                            
-  if(rabean.shouldRedirectToInitPKI()) {
-  	String redirectURL = request.getContextPath() + "/" + "initpki.xhtml";
-  	response.sendRedirect(redirectURL);
-  }        
   
   String THIS_FILENAME                    = "viewendentity.jsp";
 

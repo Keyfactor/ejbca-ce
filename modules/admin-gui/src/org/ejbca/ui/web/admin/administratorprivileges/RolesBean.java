@@ -45,16 +45,15 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * Managed Bean for the Roles overview page.
  * 
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean
-public class RolesBean extends CheckAdmin implements Serializable {
+public class RolesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RolesBean.class);
 

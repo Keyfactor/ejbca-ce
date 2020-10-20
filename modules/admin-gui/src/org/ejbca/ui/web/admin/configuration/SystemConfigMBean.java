@@ -91,7 +91,7 @@ import org.ejbca.statedump.ejb.StatedumpImportResult;
 import org.ejbca.statedump.ejb.StatedumpObjectKey;
 import org.ejbca.statedump.ejb.StatedumpResolution;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
 
@@ -103,7 +103,7 @@ import com.nimbusds.jwt.SignedJWT;
  */
 @ManagedBean
 @SessionScoped
-public class SystemConfigMBean extends CheckAdmin implements Serializable {
+public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
