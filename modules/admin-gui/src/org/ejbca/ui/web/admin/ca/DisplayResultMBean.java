@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
@@ -34,11 +34,10 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * 
  * JSF MBean backing the displayresult xhtml page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
-public class DisplayResultMBean extends CheckAdmin implements Serializable {
+public class DisplayResultMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(DisplayResultMBean.class);
