@@ -35,7 +35,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * Bean used to display a summary of unexpected errors and debug log the cause.
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
