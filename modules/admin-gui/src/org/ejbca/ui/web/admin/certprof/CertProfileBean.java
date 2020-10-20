@@ -72,7 +72,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /**
  * JSF MBean backing the certificate profile pages.
  *
- * @version $Id$
  */
 // Declarations in faces-config.xml
 //@javax.faces.bean.ViewScoped

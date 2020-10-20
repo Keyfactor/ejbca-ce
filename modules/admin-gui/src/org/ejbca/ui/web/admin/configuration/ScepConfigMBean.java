@@ -47,7 +47,6 @@ import org.ejbca.util.SelectItemComparator;
 /**
  * JavaServer Faces Managed Bean for managing SCEP configuration.
  * 
- * @version $Id$
  */
 @ManagedBean
 @SessionScoped

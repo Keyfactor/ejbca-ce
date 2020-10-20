@@ -41,7 +41,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * 
  * JSF MBean backing the import ca page.
  *
- * @version $Id$
  * 
  */
 @ManagedBean

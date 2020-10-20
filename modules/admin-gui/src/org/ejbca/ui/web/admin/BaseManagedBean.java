@@ -51,8 +51,8 @@ public abstract class BaseManagedBean implements Serializable {
     private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<>();
 
     // Reference to AccessRulesConstants.* and StandardRules.*
-    private final String[] accessRulesConstantString;
-
+    final String[] accessRulesConstantString;
+    
     /**
      * Initializes authorization assuming authorization required to following resources.
      * @param resources Reference to AccessRulesConstants.* and StandardRules.*
@@ -66,9 +66,9 @@ public abstract class BaseManagedBean implements Serializable {
      * @throws Exception 
      */
     public void authorizedResources() throws Exception {
-        // Invoke on initial request only
+     // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             getEjbcaWebBean().initialize(request, accessRulesConstantString);
         } else if (!getEjbcaWebBean().isAuthorizedNoLogSilent(accessRulesConstantString)) {
             throw new AuthorizationDeniedException("You are not authorized to view this page.");

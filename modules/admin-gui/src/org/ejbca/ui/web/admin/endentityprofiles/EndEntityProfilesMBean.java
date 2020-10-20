@@ -63,7 +63,6 @@ import org.ejbca.util.HttpTools;
 /**
  * JSF MBean backing edit end entity profiles page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
