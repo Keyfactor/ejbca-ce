@@ -101,7 +101,6 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * JavaServer Faces Managed Bean for managing InternalKeyBindings.
  * Session scoped and will cache the list of tokens and keys.
  *
- * @version $Id$
  */
 public class InternalKeyBindingMBean extends BaseManagedBean implements Serializable {
 
