@@ -18,9 +18,7 @@ import javax.ejb.EJB;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.resource.spi.IllegalStateException;
-import javax.servlet.http.HttpServletRequest;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 
 /**
@@ -47,22 +45,11 @@ public class CheckAdmin extends BaseManagedBean {
      */
     @Override
     public void authorizedResources() throws Exception {
-        checkAccess();
+        super.authorizedResources();
         shouldRedirectToInitPKI();
     }
 
-    private void checkAccess() throws Exception {
-        // Invoke on initial request only
-        if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, accessRulesConstantString);
-        } else if (!getEjbcaWebBean().isAuthorizedNoLogSilent(accessRulesConstantString)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
-        }
-    }
-
-
-    private void shouldRedirectToInitPKI() throws Exception {
+    private void shouldRedirectToInitPKI() throws IllegalStateException {
         if (caSession.getAllCaIds().isEmpty()) {
             try {
                 redirectToInitPkiPage();
