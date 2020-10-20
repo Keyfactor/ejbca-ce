@@ -59,7 +59,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 import org.ejbca.util.PrinterManager;
@@ -69,11 +69,10 @@ import org.ejbca.util.mail.MailSender;
  *
  * JSF MBean backing end entity profile page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
-public class EndEntityProfileMBean extends CheckAdmin implements Serializable {
+public class EndEntityProfileMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EndEntityProfileMBean.class);
 

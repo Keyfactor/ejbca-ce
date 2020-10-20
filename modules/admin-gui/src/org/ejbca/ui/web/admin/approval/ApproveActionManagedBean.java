@@ -67,7 +67,7 @@ import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.query.ApprovalMatch;
@@ -81,7 +81,7 @@ import org.ejbca.util.query.Query;
  */
 @ViewScoped
 @ManagedBean(name="approvalActionManagedBean")
-public class ApproveActionManagedBean extends CheckAdmin {
+public class ApproveActionManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1940920496104779323L;
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
     private static final InternalResources intres = InternalResources.getInstance();

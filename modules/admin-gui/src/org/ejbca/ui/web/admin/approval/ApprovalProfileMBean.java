@@ -53,7 +53,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfilesFactory;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.mail.MailSender;
 
@@ -63,7 +63,7 @@ import org.ejbca.util.mail.MailSender;
  */
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
 @ManagedBean(name="approvalProfileMBean")
-public class ApprovalProfileMBean extends CheckAdmin implements Serializable {
+public class ApprovalProfileMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -3751383340600251434L;
     private static final InternalResources intres = InternalResources.getInstance();
