@@ -42,7 +42,6 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * 
  * JSF MBean backing the manage ca page.
  *
- * @version $Id$
  * 
  */
 @ManagedBean
@@ -50,7 +49,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    
     @EJB
     private CaSessionLocal caSession;
 

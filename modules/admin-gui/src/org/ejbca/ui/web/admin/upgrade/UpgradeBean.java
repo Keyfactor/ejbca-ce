@@ -35,7 +35,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * JSF Managed Bean for the post upgrade page.
  * 
- * @version $Id$
  */
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
 @ManagedBean

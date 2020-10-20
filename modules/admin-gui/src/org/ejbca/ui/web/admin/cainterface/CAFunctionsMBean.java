@@ -55,7 +55,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped

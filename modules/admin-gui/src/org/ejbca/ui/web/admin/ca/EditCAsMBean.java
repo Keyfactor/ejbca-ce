@@ -110,7 +110,6 @@ import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
  *
  * JSF MBean backing the edit ca page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
