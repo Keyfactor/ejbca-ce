@@ -51,7 +51,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @EJB
-    public CaSessionLocal caSession;
+    private CaSessionLocal caSession;
 
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
