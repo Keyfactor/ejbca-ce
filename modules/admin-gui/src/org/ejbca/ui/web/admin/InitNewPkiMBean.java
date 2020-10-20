@@ -557,7 +557,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
 
         // Update caInfoDTO with a default algorithm
-        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.isEmpty()) {
+        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && !availableSigningAlgorithmSelectItems.isEmpty()) {
             caInfoDto.setSignatureAlgorithmParam(availableSigningAlgorithmSelectItems.get(0).getLabel());
         }
     }
