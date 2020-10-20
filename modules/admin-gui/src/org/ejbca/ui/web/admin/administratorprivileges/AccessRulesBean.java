@@ -60,7 +60,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * - Advanced mode access rule configuration
  * - Advanced mode access rule summary
  *
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean

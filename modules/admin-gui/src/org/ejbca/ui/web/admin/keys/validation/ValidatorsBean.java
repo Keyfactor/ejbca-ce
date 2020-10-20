@@ -46,7 +46,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Managed bean for edit validators page (editvalidators.xhtml).
  *
- * @version $Id$
  */
 public class ValidatorsBean extends BaseManagedBean {
 

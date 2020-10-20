@@ -44,7 +44,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * JavaServer Faces Managed Bean for managing the configuration of a single CustomCertificateExtension
  * 
  * 
- * @version $Id$
  *
  */
 @ManagedBean

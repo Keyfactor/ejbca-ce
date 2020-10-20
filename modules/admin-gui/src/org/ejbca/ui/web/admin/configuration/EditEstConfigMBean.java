@@ -13,16 +13,16 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,14 +30,13 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
-import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 /**
  * Backing bean for edit EST alias view.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped

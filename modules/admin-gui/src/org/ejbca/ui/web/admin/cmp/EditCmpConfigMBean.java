@@ -42,7 +42,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JavaServer Faces Managed Bean for editing CMP alias.
- * @version $Id$
  *
  */
 @ManagedBean

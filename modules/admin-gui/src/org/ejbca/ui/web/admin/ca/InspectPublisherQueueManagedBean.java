@@ -43,7 +43,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Backing bean for the "Inspect Publisher Queue" page. 
  *
- * @version $Id$
  */
 @ManagedBean(name = "inspectPublisherQueue")
 @ViewScoped

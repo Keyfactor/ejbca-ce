@@ -50,7 +50,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Managed Bean for the Roles overview page.
  * 
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean

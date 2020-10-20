@@ -44,7 +44,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JSF MBean backing the approval profiles page.
- * @version $Id$
  *
  */
 @SessionScoped

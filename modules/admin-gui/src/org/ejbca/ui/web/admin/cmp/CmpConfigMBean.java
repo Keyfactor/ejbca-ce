@@ -33,7 +33,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JavaServer Faces Managed Bean for managing CMP configuration.
- * @version $Id$
  *
  */
 @ManagedBean

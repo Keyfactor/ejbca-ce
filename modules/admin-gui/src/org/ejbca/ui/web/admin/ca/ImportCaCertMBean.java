@@ -37,7 +37,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * JSF MBean backing the import ca cert page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped

@@ -109,7 +109,6 @@
     AccessRulesConstants.REGULAR_CREATEENDENTITY);
     rabean.initialize(ejbcawebbean);
     
-
     final String VIEWUSER_LINK = "viewendentity.jsp";
     final String EDITUSER_LINK = "editendentity.jsp";
 

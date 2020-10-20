@@ -39,7 +39,6 @@ import org.ejbca.util.query.TimeMatch;
 /**
  * Managed bean in the approvalactions.xhtml page.
  * 
- * @version $Id$
  */
 @ManagedBean
 @SessionScoped

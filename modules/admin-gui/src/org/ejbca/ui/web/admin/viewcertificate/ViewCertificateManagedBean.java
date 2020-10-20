@@ -47,7 +47,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  * JavaServer Faces Managed Bean for managing viewcertificate popup view.
  * View scoped
  *
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean(name="viewCertificateMBean")

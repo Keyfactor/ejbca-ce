@@ -30,7 +30,6 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
  * JSF backing bean for CA info popup view.
  * View scoped
  * 
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean(name="viewCAInfoMBean")

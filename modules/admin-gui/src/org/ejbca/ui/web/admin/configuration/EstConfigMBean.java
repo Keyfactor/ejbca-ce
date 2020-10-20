@@ -28,7 +28,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * @version $Id$
  */
 @ManagedBean
 @SessionScoped

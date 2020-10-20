@@ -28,10 +28,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.renderkit.html.util.AddResource;
@@ -80,7 +78,6 @@ import org.ejbca.util.query.Query;
 /**
  * Session scoped bean for displaying information about an approval request.
  *
- * @version $Id$
  */
 @ViewScoped
 @ManagedBean(name="approvalActionManagedBean")

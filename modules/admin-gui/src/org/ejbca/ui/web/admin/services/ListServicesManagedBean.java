@@ -37,7 +37,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * Contains and manages the available services
  * 
  *
- * @version $Id$
  */
 @ManagedBean (name = "listServicesManagedBean")
 @SessionScoped

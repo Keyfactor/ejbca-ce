@@ -81,7 +81,6 @@ import org.ejbca.util.SlotList;
  * JavaServer Faces Managed Bean for managing CryptoTokens.
  * Session scoped and will cache the list of tokens and keys.
  *
- * @version $Id$
  */
 @ManagedBean
 @SessionScoped

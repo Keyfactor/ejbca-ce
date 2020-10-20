@@ -76,7 +76,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 /**
  * Class used to manage the GUI editing of a Service Configuration
  *
- * @version $Id$
  */
 @ManagedBean(name = "editService")
 @SessionScoped

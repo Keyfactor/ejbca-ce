@@ -32,7 +32,6 @@ import org.ejbca.ui.web.configuration.exception.AdminExistsException;
  * JavaServer Faces Managed Bean for managing MyPreferences.
  * Session scoped and will cache the user preferences.
  *
- * @version $Id$
  */
 public class MyPreferencesMBean extends BaseManagedBean implements Serializable {
 

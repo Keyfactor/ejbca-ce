@@ -59,7 +59,6 @@ import org.ejbca.util.mail.MailSender;
 
 /**
  * JSF MBean backing the approval profile pages.
- * @version $Id$
  *
  */
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
