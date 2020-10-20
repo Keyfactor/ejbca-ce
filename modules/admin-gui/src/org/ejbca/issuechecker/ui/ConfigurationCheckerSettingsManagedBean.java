@@ -28,17 +28,16 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.ConfigurationCheckerConfiguration;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * Backing bean for the 'Configuration Checker' tab in the System Configuration.
  *
- * @version $Id: IssueTrackerSettingsManagedBean.java 31452 2019-02-08 18:35:25Z bastianf $
  */
 @ManagedBean(name = "configurationCheckerSettings")
 @ViewScoped
-public class ConfigurationCheckerSettingsManagedBean extends CheckAdmin {
-    private static final Logger log = Logger.getLogger(ConfigurationCheckerManagedBean.class);
+public class ConfigurationCheckerSettingsManagedBean extends BaseManagedBean {
+    private static final Logger log = Logger.getLogger(ConfigurationCheckerSettingsManagedBean.class);
     private static final long serialVersionUID = 1L;
     private boolean isConfigurationCheckerEnabled;
     private List<ConfigurationIssueSetStatus> allConfigurationIssueSetsAndTheirStatus;

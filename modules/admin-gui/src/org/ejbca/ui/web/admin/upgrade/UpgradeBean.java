@@ -30,16 +30,15 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeStatusSingletonLocal;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JSF Managed Bean for the post upgrade page.
  * 
- * @version $Id$
  */
 @ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
 @ManagedBean
-public class UpgradeBean extends CheckAdmin implements Serializable {
+public class UpgradeBean extends BaseManagedBean implements Serializable {
 
 	/** Wrapper of Log4J LoggingEvents for use in the GUI */
     public static class LogEvent {

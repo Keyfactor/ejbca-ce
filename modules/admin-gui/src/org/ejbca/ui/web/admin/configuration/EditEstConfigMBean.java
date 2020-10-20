@@ -13,16 +13,16 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,18 +30,17 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Backing bean for edit EST alias view.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
-public class EditEstConfigMBean extends CheckAdmin implements Serializable {
+public class EditEstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 

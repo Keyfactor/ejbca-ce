@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -30,8 +31,9 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
@@ -40,14 +42,16 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * 
  * JSF MBean backing the manage ca page.
  *
- * @version $Id$
  * 
  */
 @ManagedBean
 @ViewScoped
-public class ManageCAsMBean extends CheckAdmin implements Serializable {
+public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    @EJB
+    public CaSessionLocal caSession;
 
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;

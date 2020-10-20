@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
@@ -27,9 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -145,11 +141,6 @@ public class RAInterfaceBean implements Serializable {
     		log.debug("=initialize(): already initialized");
     	}
     	log.trace("<initialize()");
-    }
-    
-    public boolean shouldRedirectToInitPKI() throws Exception {
-            return Objects.nonNull(caSession) && caSession.getAuthorizedCaNamesToIds(administrator).isEmpty()
-                && administrator instanceof OAuth2AuthenticationToken;
     }
     
     private GlobalConfiguration getGlobalConfiguration() {

@@ -73,7 +73,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
@@ -84,7 +84,7 @@ import org.ejbca.util.SlotList;
  */
 @ManagedBean
 @SessionScoped
-public class CryptoTokenMBean extends CheckAdmin implements Serializable {
+public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     private static final String CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX = "CRYPTOTOKEN_LABEL_TYPE_";
 

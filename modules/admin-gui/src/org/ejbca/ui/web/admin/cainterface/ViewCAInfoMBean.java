@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 
 /**
@@ -33,7 +33,7 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
  */
 @ViewScoped
 @ManagedBean(name="viewCAInfoMBean")
-public class ViewCAInfoMBean extends CheckAdmin implements Serializable {
+public class ViewCAInfoMBean extends BaseManagedBean implements Serializable {
 		 
 	private static final long serialVersionUID = 109073226626366410L;
 

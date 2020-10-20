@@ -36,7 +36,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  */
 @RequestScoped
 @ManagedBean
-public class AdminMenuBean extends CheckAdmin implements Serializable {
+public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     private static final long serialVersionUID = 1L;
     

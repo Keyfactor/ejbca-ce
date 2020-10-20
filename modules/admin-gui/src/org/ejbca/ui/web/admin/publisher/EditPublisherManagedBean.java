@@ -55,17 +55,16 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
 /**
  * 
- * @version $Id$
  *
  */
 @ManagedBean(name = "editPublisher")
 @ViewScoped
-public class EditPublisherManagedBean extends CheckAdmin implements Serializable {
+public class EditPublisherManagedBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditPublisherManagedBean.class);

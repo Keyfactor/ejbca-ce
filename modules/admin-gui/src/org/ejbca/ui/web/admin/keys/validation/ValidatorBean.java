@@ -59,17 +59,16 @@ import org.cesecore.util.ui.DynamicUiModelException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.psm.jsf.JsfDynamicUiPsmFactory;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JSF MBean backing the edit key validators page.
  *
- * @version $Id$
  */
 // Declarations in faces-config.xml
 //@javax.faces.bean.ViewScoped
 //@javax.faces.bean.ManagedBean(name="validatorBean")
-public class ValidatorBean extends CheckAdmin implements Serializable {
+public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -2889613238729145716L;
 

@@ -35,7 +35,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 
 @ManagedBean
 @SessionScoped
-public class InitExistingPkiMBean extends CheckAdmin implements Serializable {
+public class InitExistingPkiMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(InitExistingPkiMBean.class);

@@ -29,16 +29,15 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JavaServer Faces Managed Bean for managing CMP configuration.
- * @version $Id$
  *
  */
 @ManagedBean
 @SessionScoped
-public class CmpConfigMBean extends CheckAdmin implements Serializable {
+public class CmpConfigMBean extends BaseManagedBean implements Serializable {
 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;

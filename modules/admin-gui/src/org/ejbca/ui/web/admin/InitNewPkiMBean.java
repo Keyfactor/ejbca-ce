@@ -87,7 +87,7 @@ import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
 @ManagedBean
 @SessionScoped
-public class InitNewPkiMBean extends CheckAdmin implements Serializable {
+public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     

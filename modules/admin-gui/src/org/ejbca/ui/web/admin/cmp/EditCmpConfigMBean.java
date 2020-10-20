@@ -38,16 +38,15 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
-import org.ejbca.ui.web.admin.CheckAdmin;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JavaServer Faces Managed Bean for editing CMP alias.
- * @version $Id$
  *
  */
 @ManagedBean
 @ViewScoped
-public class EditCmpConfigMBean extends CheckAdmin implements Serializable {
+public class EditCmpConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
