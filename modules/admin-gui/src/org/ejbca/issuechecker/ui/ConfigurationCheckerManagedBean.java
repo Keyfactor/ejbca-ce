@@ -33,7 +33,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * Backing bean for the Configuration checker displayed on the front screen. Some business logic is
  * dispatched to {@link ConfigurationCheckerSessionBean}.
  *
- * @version $Id: IssueTrackerManagedBean.java 31453 2019-02-10 11:20:44Z bastianf $
  */
 @ManagedBean(name = "configurationChecker")
 @SessionScoped
