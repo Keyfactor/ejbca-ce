@@ -193,6 +193,10 @@ public abstract class WebTestBase extends ExtentReportCreator {
         return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/adminweb";
     }
 
+    protected static String getBaseUrl() {
+        return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca";
+    }
+
     protected static String getRaWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/ra/";
     }
