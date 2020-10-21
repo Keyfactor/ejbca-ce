@@ -59,7 +59,7 @@ public class MechanismNames {
         CKM_PARAMS.put(CKM.SHA1_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA_1, CKG.MGF1_SHA1, 20}));
         CKM_PARAMS.put(CKM.SHA256_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA256, CKG.MGF1_SHA256, 32}));
         CKM_PARAMS.put(CKM.SHA384_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA384, CKG.MGF1_SHA384, 48}));
-        CKM_PARAMS.put(CKM.SHA512_RSA_PKCS_PSS, ULong.ulong2b(new long[] { CKM.SHA512, CKG.MGF1_SHA512, 64 }));
+        CKM_PARAMS.put(CKM.SHA512_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA512, CKG.MGF1_SHA512, 64}));
     }
 
     /**
