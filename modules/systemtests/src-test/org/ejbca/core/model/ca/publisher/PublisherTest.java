@@ -31,7 +31,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.peerconnector.publisher.PeerPublisher;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -93,6 +92,10 @@ public class PublisherTest extends RoleUsingTestCase {
 			+ "0EGU/RgM3AWhyTAps66tdyipRavKmH6MMrN4ypW/qbhsd4o8JE9pxxn9zsQaNxYZ"
 			+ "SNbXM2/YxkdoRSjkrbb9DUdCmCR/kEA=").getBytes());
 
+	// Not on classpath of EJBCA Community
+	private final static String PEER_PUBLISHER_CLASSPATH = "org.ejbca.peerconnector.publisher.PeerPublisher";
+    private final static String PEER_PUBLISHER_NAME= "PeerPublisher";
+	
 	private final static String cloneName = "TESTCLONEDUMMYCUSTOM";
 	private final static String orgName = "TESTDUMMYCUSTOM";
 	private final static String newName = "TESTNEWDUMMYCUSTOM";
@@ -328,9 +331,9 @@ public class PublisherTest extends RoleUsingTestCase {
 
 	@Test
 	public void testPublisherClassNames() {
-		Assert.assertEquals("The class name of " + PeerPublisher.class.getCanonicalName() + " has changed. " +
+		Assert.assertEquals("The class name of " + PEER_PUBLISHER_CLASSPATH + " has changed. " +
 						"Parts of EJBCA are using the name of the class when determining what type of publisher it is. " +
 						"Update these references and make me pass.",
-				"PeerPublisher", PeerPublisher.class.getSimpleName());
+				"PeerPublisher", PEER_PUBLISHER_NAME);
 	}
 }
