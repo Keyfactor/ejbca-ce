@@ -76,6 +76,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -696,7 +697,18 @@ public class CryptokiDevice {
         }
         /** Takes the EC point bytes from an EdDSA key and creates a keyspec that we can use to generate the public key object */ 
         private X509EncodedKeySpec createEdDSAPublicKeySpec(byte[] encPoint) throws IOException {
-            byte[] rawPoint = ASN1OctetString.getInstance(encPoint).getOctets();
+            final byte[] rawPoint;
+            // Turns out that different HSMs store this field differently, guess because P11v3 is not fully implemented yet
+            // SoftHSM2 uses OctetString, same as for ECDSA keys (I think this is what it should be in P11v3)
+            // nCipher (12.60.x) used BitString
+            ASN1Primitive asn1 = ASN1Primitive.fromByteArray(encPoint);
+            if (asn1 instanceof DERBitString) {
+                rawPoint = ((DERBitString) asn1).getOctets();
+            } else {
+                // If something else than ASN1OctetString we'll get an exception here, which will propagate well 
+                // and give us an informative error message
+                rawPoint = ((ASN1OctetString) asn1).getOctets();
+            }
             AlgorithmIdentifier algId;
             if (rawPoint.length == 32) {
                 algId = new AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed25519);
