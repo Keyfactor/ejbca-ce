@@ -1512,7 +1512,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      */
     private String updateOperationalStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo == null) {
-            return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+            return getEjbcaWebBean().getImagePath("status-ca-offline.png");
         }
         switch (currentKeyBindingInfo.getStatus()) {
         case ACTIVE:
@@ -1521,7 +1521,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             }
             return updateGenericKeyBindingStatus(currentKeyBindingInfo, cryptoTokenInfo);
         default:
-            return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+            return getEjbcaWebBean().getImagePath("status-ca-offline.png");
         }
     }
 
@@ -1533,9 +1533,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      */
     private String updateGenericKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
-            return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
+            return getEjbcaWebBean().getImagePath("status-ca-active.png");
         }
-        return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+        return getEjbcaWebBean().getImagePath("status-ca-offline.png");
     }
 
     /**
@@ -1549,11 +1549,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String updateKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
             if (hasOcspCacheEntry(currentKeyBindingInfo.getId())) {
-                return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
+                return getEjbcaWebBean().getImagePath("status-ca-active.png");
             }
-            return getEjbcaWebBean().getImagefileInfix("status-ca-pending.png");
+            return getEjbcaWebBean().getImagePath("status-ca-pending.png");
         } else {
-            return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+            return getEjbcaWebBean().getImagePath("status-ca-offline.png");
         }
     }
 
