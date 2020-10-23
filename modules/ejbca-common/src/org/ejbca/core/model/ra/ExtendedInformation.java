@@ -101,6 +101,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     // Public methods.
     /** Creates a new instance of EndEntity Profile */
     public ExtendedInformation() {
+        super();
     	setType(TYPE_BASIC);
     	data.put(SUBJECTDIRATTRIBUTES, "");
     	setMaxLoginAttempts(DEFAULT_MAXLOGINATTEMPTS);
