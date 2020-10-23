@@ -12,6 +12,10 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.reset;
+import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,8 +35,11 @@ import java.util.TimeZone;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo.X509CAInfoBuilder;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -43,6 +50,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
+import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,6 +64,8 @@ public class CertificateValidityTest {
 
     /** Class logger */
     private static final Logger LOG = Logger.getLogger(CertificateValidityTest.class);
+
+    private static String CA_SUBJECT_DN = "CN=cacert";
    
     private Date configToolLateExpireDate = CertificateValidity.getToolLateExpireDate();
     private KeyPair keyPair;
@@ -68,6 +78,7 @@ public class CertificateValidityTest {
     private Date tooLateExpireTestDate;
     private String relativeTimeString;
     private X509Certificate caCertificate;
+    private X509CAInfo caInfo;
     private X509Certificate shortLivingCaCertificate;
     
 	@Before
@@ -84,7 +95,8 @@ public class CertificateValidityTest {
 		caFrom = new Date( now.getTime() - 120 * SimpleTime.MILLISECONDS_PER_DAY);
 		caTo = new Date( now.getTime() + 500 * SimpleTime.MILLISECONDS_PER_DAY);
 		assertTrue("CA start date is before end date.", caFrom.before(caTo));
-        caCertificate = CertTools.genSelfCertForPurpose("CN=cacert", caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
+        caInfo = new X509CAInfoBuilder().setSubjectDn(CA_SUBJECT_DN).build();
+        caCertificate = CertTools.genSelfCertForPurpose(CA_SUBJECT_DN, caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign, null, null, "BC", true, null);
         shortLivingCaFrom = new Date( now.getTime() + 5 * SimpleTime.MILLISECONDS_PER_DAY);
         shortLivingCaTo = new Date( now.getTime() + 10 * SimpleTime.MILLISECONDS_PER_DAY);
@@ -113,7 +125,7 @@ public class CertificateValidityTest {
         profile.setUseCertificateValidityOffset(false);
         profile.setUseExpirationRestrictionForWeekdays(false);
         profile.setAllowValidityOverride(false);
-        validity = new CertificateValidity(now, subject, profile, null, null, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
         notAfter = absolulteTestDate;
         assertTrue("1. NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'", validity.getNotBefore().equals(notBefore));
@@ -122,7 +134,7 @@ public class CertificateValidityTest {
         // 2. Test validity with offset in certificate profile: '-1mo-2d-3h-4m-5s'.
         profile.setUseCertificateValidityOffset(true);
         profile.setCertificateValidityOffset("-1mo-2d-3h-4m-5s");
-        validity = new CertificateValidity(now, subject, profile, null, null, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + SimpleTime.parseMillies(profile.getCertificateValidityOffset()));
         notAfter = absolulteTestDate;
         assertTrue("2. NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'", validity.getNotBefore().getTime() == notBefore.getTime());
@@ -135,7 +147,7 @@ public class CertificateValidityTest {
         profile.setExpirationRestrictionWeekday(calendar.get(Calendar.DAY_OF_WEEK), true);
         // now the end date caused by relative times must be rolled on day forward, but not with absolute times.
         profile.setExpirationRestrictionForWeekdaysExpireBefore(false);
-        validity = new CertificateValidity(now, subject, profile, null, null, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + SimpleTime.parseMillies(profile.getCertificateValidityOffset()));
         notAfter = absolulteTestDate;
         assertTrue("3. NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'.", validity.getNotBefore().getTime() == notBefore.getTime());
@@ -154,7 +166,7 @@ public class CertificateValidityTest {
         subject.setExtendedInformation(extendedInformation);
         Date methodParmameterStartDate = new Date( now.getTime() + 2L * SimpleTime.MILLISECONDS_PER_DAY);
         Date methodParmameterEndDate = new Date( absolulteTestDate.getTime() - 2L * SimpleTime.MILLISECONDS_PER_DAY);
-        validity = new CertificateValidity(now, subject, profile, methodParmameterStartDate, methodParmameterEndDate, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, methodParmameterStartDate, methodParmameterEndDate, caCertificate, false, false);
         // seconds MUST be cut here!
         notBefore = ValidityDate.parseAsUTC(extendedInformationStartDate);
         notAfter = new Date((absolulteTestDate.getTime()/(60*1000))*60*1000);
@@ -165,7 +177,7 @@ public class CertificateValidityTest {
         // 5.2 Overwrite end date by method parameter
         subject.getExtendedInformation().setCustomData(ExtendedInformation.CUSTOM_STARTTIME, null); // First priority -> set to null.
         subject.getExtendedInformation().setCustomData(ExtendedInformation.CUSTOM_ENDTIME, null); // First priority -> set to null.
-        validity = new CertificateValidity(now, subject, profile, methodParmameterStartDate, methodParmameterEndDate, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, methodParmameterStartDate, methodParmameterEndDate, caCertificate, false, false);
         notBefore = methodParmameterStartDate;
         notAfter = methodParmameterEndDate;
         assertTrue("4.2 Start date '"+validity.getNotBefore()+"' was overwritten by method parameter start date'"+notBefore+"'.", equals(validity.getNotBefore(), notBefore));
@@ -177,7 +189,7 @@ public class CertificateValidityTest {
         final Date exceededEndDate = new Date(tooLateExpireTestDate.getTime() + 2L * SimpleTime.MILLISECONDS_PER_DAY);
         try {
             profile.setEncodedValidity(ValidityDate.formatAsISO8601(new Date(tooLateExpireTestDate.getTime() + 4L * SimpleTime.MILLISECONDS_PER_DAY), ValidityDate.TIMEZONE_SERVER));
-            validity = new CertificateValidity(now, subject, profile, null, exceededEndDate, null, false, false);
+            validity = new CertificateValidity(now, subject, caInfo, profile, null, exceededEndDate, null, false, false);
             fail("6. Exceeding the latest validity '"+tooLateExpireTestDate+"' with the end date '"+exceededEndDate+
                     "' MUST cause an IllegalValidityException! But may be the notAfter value was calculated wrong: '" + validity.getNotAfter() + "'");
         }
@@ -204,7 +216,7 @@ public class CertificateValidityTest {
         profile.setUseCertificateValidityOffset(false);
         profile.setUseExpirationRestrictionForWeekdays(false);
         final Date endDate = new Date(shortLivingCaTo.getTime() + 1L * SimpleTime.MILLISECONDS_PER_DAY);
-        validity = new CertificateValidity(now, subject, profile, null, endDate, shortLivingCaCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, null, endDate, shortLivingCaCertificate, false, false);
         notBefore = shortLivingCaFrom;
         notAfter = shortLivingCaTo;
         assertTrue("7. NotBefore '"+validity.getNotBefore()+"'matches CA notBefore'"+notBefore+"'.", equals( validity.getNotBefore(), notBefore));
@@ -228,9 +240,9 @@ public class CertificateValidityTest {
         profile.setUseCertificateValidityOffset(false); // use default offset '-10m'
         profile.setUseExpirationRestrictionForWeekdays(false);
         profile.setEncodedValidity(relativeTestTime);
-        validity = new CertificateValidity(now, subject, profile, null, null, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
-        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime));
+        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime) - 1000);
         assertTrue("1. NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'.", equals( validity.getNotBefore(), notBefore));
         assertTrue("1. NotAfter '"+validity.getNotAfter()+"' matches end date '"+notAfter+"'.", equals(validity.getNotAfter(), notAfter));
                 
@@ -243,9 +255,9 @@ public class CertificateValidityTest {
         setExpirationRestrictionForWeekdays(profile, calendar.get(Calendar.DAY_OF_WEEK));
         // now the relative time validity end date must be rolled on day forward
         profile.setExpirationRestrictionForWeekdaysExpireBefore(false);
-        validity = new CertificateValidity(now, subject, profile, null, null, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
-        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime));
+        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime) - 1000);
         calendar = new GregorianCalendar();
         calendar.setTime(notAfter);
         calendar.add(Calendar.DAY_OF_MONTH, 1); 
@@ -255,9 +267,9 @@ public class CertificateValidityTest {
         
         // 2.2 Roll backward("but expire" -> "Before")
         profile.setExpirationRestrictionForWeekdaysExpireBefore(true);
-        validity = new CertificateValidity(now, subject, profile, null, null, caCertificate, false, false);
+        validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
-        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime));
+        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime) - 1000);
         calendar = new GregorianCalendar();
         calendar.setTime(notAfter);
         calendar.add(Calendar.DAY_OF_MONTH, -1); 
@@ -265,6 +277,45 @@ public class CertificateValidityTest {
         assertTrue("3.1 NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'.", validity.getNotBefore().getTime() == notBefore.getTime());
         assertTrue("3.1 NotAfter '"+validity.getNotAfter()+"' matches end date '"+notAfter+"'.", equals(validity.getNotAfter(), notAfter));
         LOG.trace("<test05TestRealtiveValidityWithSecondsPrecision");
+    }
+
+    /**
+     * Tests date generation with inclusive and exclusive expiration time semantics.
+     * X.509 certificates use inclusive expiration times, and SSH certificates use exclusive expiration times.
+     */
+    @Test
+    public void expirationSecondInclusiveExclusive() throws Exception {
+        LOG.trace(">expirationSecondInclusiveExclusive");
+        final EndEntityInformation subject = new EndEntityInformation();
+        final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        final CAInfo mockedCaInfo = EasyMock.createStrictMock(CAInfo.class);
+        CertificateValidity validity;
+        profile.setEncodedValidity("10s");
+        Date notBefore;
+        Date notAfter;
+
+        // Inclusive expiration time semantics (e.g. X.509 / RFC 5280)
+        expect(mockedCaInfo.isExpirationInclusive()).andReturn(true).once();
+        replay(mockedCaInfo);
+        validity = new CertificateValidity(now, subject, mockedCaInfo, profile, null, null, caCertificate, false, false);
+        verify(mockedCaInfo);
+        notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
+        notAfter = new Date(notBefore.getTime() + 9_000); // this second is included, so we get the total validity of 10s
+        assertTrue("1.1. NotBefore '"+validity.getNotBefore()+"' should match expected notBefore '"+notBefore+"'.", equals(validity.getNotBefore(), notBefore));
+        assertTrue("1.2. NotAfter '"+validity.getNotAfter()+"' should match inclusive expiration time '"+notAfter+"'.", equals(validity.getNotAfter(), notAfter));
+        reset(mockedCaInfo);
+
+        // Exclusive expiration time semantics (e.g. SSH certificates)
+        expect(mockedCaInfo.isExpirationInclusive()).andReturn(false).once();
+        replay(mockedCaInfo);
+        validity = new CertificateValidity(now, subject, mockedCaInfo, profile, null, null, caCertificate, false, false);
+        verify(mockedCaInfo);
+        notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
+        notAfter = new Date(notBefore.getTime() + 10_000); // this second is excluded, so we get the total validity of 10s
+        assertTrue("2.1. NotBefore '"+validity.getNotBefore()+"' should match expected notBefore '"+notBefore+"'.", equals(validity.getNotBefore(), notBefore));
+        assertTrue("2.2. NotAfter '"+validity.getNotAfter()+"' should match exclusive expiration time '"+notAfter+"'.", equals(validity.getNotAfter(), notAfter));
+
+        LOG.trace("<expirationSecondInclusiveExclusive");
     }
 	
 	@Test
@@ -384,7 +435,7 @@ public class CertificateValidityTest {
         final Date caTo = new Date();
         caTo.setTime(caTo.getTime() + 100L*(24L * 60L * 60L * 1000L));
 
-    	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
+        final X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
     			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign,
     			null, null, "BC", true, null);
 
@@ -396,7 +447,7 @@ public class CertificateValidityTest {
     
     	// First see that when we don't have a specified time requested and validity override is not allowed, the end time should be ruled by the certificate profile.
     	
-    	CertificateValidity cv = new CertificateValidity(subject, cp, null, null, cacert, false, false);
+        CertificateValidity cv = new CertificateValidity(subject, caInfo, cp, null, null, cacert, false, false);
     	Date notBefore = cv.getNotBefore();
     	Date notAfter = cv.getNotAfter();
     	Date now = new Date();
@@ -413,7 +464,7 @@ public class CertificateValidityTest {
         requestNotBefore.add(Calendar.DAY_OF_MONTH, 2);
         Calendar requestNotAfter = Calendar.getInstance();
         requestNotAfter.add(Calendar.DAY_OF_MONTH, 25);
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
     	assertTrue(notBefore.before(now));
@@ -425,7 +476,7 @@ public class CertificateValidityTest {
     	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "10:0:0"); // days:hours:minutes
     	ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "30:0:0");
     	subject.setExtendedInformation(ei);
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
     	assertTrue(notBefore.before(now));
@@ -433,13 +484,13 @@ public class CertificateValidityTest {
     	assertTrue(notAfter.before(cal2.getTime()));
     	
         // Test link certificate and we should get what we pass as parameter to notAfter to CertificateValidity
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, true);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, true);
         notBefore = cv.getNotBefore();
         notAfter = cv.getNotAfter();
         assertTrue(notBefore.before(now));
         // Not after is the requested
         assertEquals(notAfter, requestNotAfter.getTime());
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
         notBefore = cv.getNotBefore();
         notAfter = cv.getNotAfter();
         assertTrue(notBefore.before(now));
@@ -450,7 +501,7 @@ public class CertificateValidityTest {
     	cp.setAllowValidityOverride(true);
     	
     	// Now we should get what's in the EndEntityInformation extended information
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
@@ -468,7 +519,7 @@ public class CertificateValidityTest {
     	
     	// Remove extended information from EndEntityInformation and we should get what we pass as parameters to CertificateValidity
     	subject.setExtendedInformation(null);
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
@@ -487,7 +538,7 @@ public class CertificateValidityTest {
     	// Check that we can not supersede the certificate profile end time
         requestNotAfter = Calendar.getInstance();
         requestNotAfter.add(Calendar.DAY_OF_MONTH, 200);
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
@@ -507,7 +558,7 @@ public class CertificateValidityTest {
 
     	// Check that we can not supersede the CA end time
     	cp.setEncodedValidity(400 + SimpleTime.TYPE_DAYS);
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
         // This will be the CA certificate's notAfter
@@ -519,7 +570,7 @@ public class CertificateValidityTest {
     	assertTrue(notAfter.before(cal2.getTime()));
 
     	// Unless it is a root CA, then we should be able to get a new validity after, to be able to update CA certificate
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, true, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, true, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
@@ -532,7 +583,7 @@ public class CertificateValidityTest {
     	// Check that we can request a validity time before "now" using requested notBefore (in the CSR)
         requestNotBefore = Calendar.getInstance();
         requestNotBefore.add(Calendar.DAY_OF_MONTH, -10);
-        cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
@@ -556,7 +607,7 @@ public class CertificateValidityTest {
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(cal1.getTime()));
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "200:0:0");
         subject.setExtendedInformation(ei);
-        cv = new CertificateValidity(subject, cp, null, null, cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, null, null, cacert, false, false);
         notBefore = cv.getNotBefore();
         notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
@@ -574,7 +625,7 @@ public class CertificateValidityTest {
         assertTrue(notAfter.before(cal2.getTime()));
         // See that it is not allowed when allowValidityOverride is set to false
         cp.setAllowValidityOverride(false);
-        cv = new CertificateValidity(subject, cp, null, null, cacert, false, false);
+        cv = new CertificateValidity(subject, caInfo, cp, null, null, cacert, false, false);
         notBefore = cv.getNotBefore();
         notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
@@ -592,7 +643,7 @@ public class CertificateValidityTest {
         CertificateValidity.setTooLateExpireDate(cal.getTime());
         boolean thrown = false;
         try {
-            cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);        	
+            cv = new CertificateValidity(subject, caInfo, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
         } catch (IllegalValidityException e) {
         	thrown = true;
         	//log.debug(e.getMessage());
