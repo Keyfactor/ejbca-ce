@@ -26,7 +26,7 @@ import javax.ejb.EJBException;
  * 
  * Implements a Map used for retrieving resources.
  * @version $Id$
- * @see org.ejbca.ui.web.jsf.configuration.EjbcaWebBean#getImagefileInfix(String)
+ * @see org.ejbca.ui.web.jsf.configuration.EjbcaWebBean#getImagePath(String)
  */
 public class EjbcaJSFImageResourceImpl implements EjbcaJSFImageResource {
 
@@ -42,8 +42,8 @@ public class EjbcaJSFImageResourceImpl implements EjbcaJSFImageResource {
     }
 
     @Override
-    public boolean containsKey(Object arg0) {      
-        return ejbcawebbean.getImagefileInfix((String) arg0) != null;
+    public boolean containsKey(Object key) {
+        return ejbcawebbean.getImagePath((String) key) != null;
     }
 
     @Override
@@ -57,8 +57,8 @@ public class EjbcaJSFImageResourceImpl implements EjbcaJSFImageResource {
     }
 
     @Override
-    public String get(Object arg0) {
-        return ejbcawebbean.getImagefileInfix((String) arg0);
+    public String get(Object key) {
+        return ejbcawebbean.getImagePath((String) key);
     }
 
     @Override
