@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @version $Id: EjbcaJSFImageResourceImpl.java 31509 2019-02-15 12:30:22Z andrey_s_helmes $
  *
- * @see EjbcaWebBean#getImagefileInfix(String)
+ * @see EjbcaWebBean#getImagePath(String)
  */
 public interface EjbcaJSFImageResource extends Map<String, String> {
 
