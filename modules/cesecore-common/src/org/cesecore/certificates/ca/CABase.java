@@ -422,7 +422,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
         final Date notAfter;
         if (StringUtils.isNotBlank(encodedValidity)) {
-            notAfter = ValidityDate.getDate(encodedValidity, notBefore);
+            notAfter = ValidityDate.getDate(encodedValidity, notBefore, getCAInfo().isExpirationInclusive());
         } else {
             notAfter = null;
         }
