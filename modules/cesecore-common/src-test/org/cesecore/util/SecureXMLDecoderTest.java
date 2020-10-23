@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+import org.junit.Test;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -42,15 +41,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificateprofile.CertificatePolicy;
-import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-/**
- * 
- * @version $Id$
- */
 public class SecureXMLDecoderTest {
 
     private static final Logger log = Logger.getLogger(SecureXMLDecoderTest.class);
