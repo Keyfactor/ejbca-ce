@@ -21,7 +21,6 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -67,8 +66,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * <li>The SecureXMLDecoder throws an IOException on error instead of using the ExceptionListener.</li>
  * <li>Throws EOFException instead of ArrayIndexOutOfBoundsException at end of file</li>
  * </ul>
- *
- * @version $Id$
  */
 public class SecureXMLDecoder implements AutoCloseable {
 
