@@ -12,6 +12,52 @@
  *************************************************************************/
 package org.cesecore.keys.util;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERBMPString;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509ExtensionUtils;
+import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
+import org.bouncycastle.crypto.ec.CustomNamedCurves;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
+import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
+import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.DecoderException;
+import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.internal.InternalResources;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.cvc.PublicKeyEC;
+
+import javax.crypto.interfaces.DHPrivateKey;
+import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -66,53 +112,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
-
-import javax.crypto.interfaces.DHPrivateKey;
-import javax.crypto.interfaces.DHPublicKey;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBMPString;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509ExtensionUtils;
-import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
-import org.bouncycastle.crypto.ec.CustomNamedCurves;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey;
-import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
-import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
-import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
-import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
-import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.bouncycastle.util.encoders.DecoderException;
-import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.cvc.PublicKeyEC;
 
 /**
  * Tools to handle common key and keystore operations.
@@ -711,6 +710,111 @@ public final class KeyTools {
     } // createP12
 
     /**
+     * Create a FIPS compliant PKCS#12 keystore. Uses Bouncy Castle's BCFKS.
+     *
+     * @param alias the alias to use for keystore entries.
+     * @param privateKey the private key to store in the keystore.
+     * @param certificate the user's certificate to store in the keystore.
+     * @param caCertificateChain the CA certificate chain to store in the keystore.
+     * @return a FIPS compliant PKCS#12 keystore as a {@link KeyStore} object.
+     *
+     * @throws CertificateEncodingException if the certificate could not be decoded.
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException if an algorithm is unavailable.
+     * @throws InvalidKeySpecException
+     */
+    public static KeyStore createFipsCompliantP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
+            throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createP12: alias=" + alias + ", privateKey, certificate=" + CertTools.getSubjectDN(certificate) + ", caCertificateChain.length="
+                    + ((caCertificateChain == null) ? 0 : caCertificateChain.length));
+        }
+        // Certificate chain
+        if (certificate == null) {
+            throw new IllegalArgumentException("Parameter certificate cannot be null.");
+        }
+        int len = 1;
+        if (caCertificateChain != null) {
+            len += caCertificateChain.length;
+        }
+        final Certificate[] chain = new Certificate[len];
+        // To not get a ClassCastException we need to generate a real new certificate with BC
+        final CertificateFactory cf = CertTools.getCertificateFactory();
+        chain[0] = cf.generateCertificate(new ByteArrayInputStream(certificate.getEncoded()));
+
+        if (caCertificateChain != null) {
+            for (int i = 0; i < caCertificateChain.length; i++) {
+                final X509Certificate tmpcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertificateChain[i].getEncoded()));
+                chain[i + 1] = tmpcert;
+            }
+        }
+        if (chain.length > 1) {
+            for (int i = 1; i < chain.length; i++) {
+                final X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(chain[i].getEncoded()));
+                // Set attributes on CA-certificate
+                try {
+                    final PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
+                    // We construct a friendly name for the CA, and try with some parts from the DN if they exist.
+                    String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+                    // On the ones below we +i to make it unique, O might not be otherwise
+                    if (cafriendly == null) {
+                        cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+                        if (cafriendly == null) {
+                            cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU");
+                            if (cafriendly == null) {
+                                cafriendly = "CA_unknown" + i;
+                            } else {
+                                cafriendly = cafriendly +i;
+                            }
+                        } else {
+                            cafriendly = cafriendly +i;
+                        }
+                    }
+                    caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(cafriendly));
+                } catch (ClassCastException e) {
+                    log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
+                }
+            }
+        }
+
+        // Set attributes on user-certificate
+        try {
+            final PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
+            certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
+            // in this case we just set the local key id to that of the public key
+            certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
+        } catch (ClassCastException e) {
+            log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
+        }
+        try {
+            //KeyStore store = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
+            KeyStore store = KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
+            store.load(null, null);
+            // "Clean" private key, i.e. remove any old attributes,
+            // As well as convert any EdDSA key to v1 format that is understood by openssl v1.1.1 and earlier
+            // EdDSA (Ed25519 or Ed448) keys have a v1 format, with only the private key, and a v2 format that includes both the private and public
+            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privateKey.getEncoded());
+            final PrivateKeyInfo v1PkInfo = new PrivateKeyInfo(pkInfo.getPrivateKeyAlgorithm(), pkInfo.parsePrivateKey());
+            final KeyFactory keyfact = KeyFactory.getInstance(privateKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
+            final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(v1PkInfo.getEncoded()));
+            // The PKCS#12 bag attributes PKCSObjectIdentifiers.pkcs_9_at_friendlyName and PKCSObjectIdentifiers.pkcs_9_at_localKeyId
+            // are set automatically by BC when setting the key entry
+            store.setKeyEntry(alias, pk, null, chain);
+            if (log.isTraceEnabled()) {
+                log.trace("<createP12: alias=" + alias + ", privateKey, certificate=" + CertTools.getSubjectDN(certificate) + ", caCertificateChain.length="
+                        + ((caCertificateChain == null) ? 0 : caCertificateChain.length));
+            }
+            return store;
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle provider was not found.", e);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("PKCS12 keystore type could not be instanced.", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("IOException should not be thrown when instancing an empty keystore.", e);
+        }
+    }
+
+    /**
      * Creates JKS-file that can be used with JDK. The alias for the private key is set to 'privateKey' and the private key password is null.
      * 
      * @param alias
@@ -822,8 +926,8 @@ public final class KeyTools {
     /**
      * Convert a KeyStore to PEM format.
      */
-    public static byte[] getSinglePemFromKeyStore(final KeyStore ks, final char[] password) throws KeyStoreException, CertificateEncodingException,
-    IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
+    public static byte[] getSinglePemFromKeyStore(final KeyStore ks, final char[] password) throws KeyStoreException,
+            CertificateEncodingException, IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Find the key private key entry in the keystore
@@ -1509,7 +1613,7 @@ public final class KeyTools {
         }
     }
 
-    /** Like {@link getBytesFromPublicKeyFile}, but allows for missing ----BEGIN... and END lines. */
+    /** Like {@link #getBytesFromCtLogKey(byte[])} , but allows for missing ----BEGIN... and END lines. */
     public static byte[] getBytesFromCtLogKey(final byte[] file) throws CertificateParsingException {
         try {
             return getBytesFromPublicKeyFile(file);
