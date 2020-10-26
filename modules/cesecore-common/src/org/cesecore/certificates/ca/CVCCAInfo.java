@@ -159,4 +159,10 @@ public class CVCCAInfo extends CAInfo {
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
         this.defaultCertificateProfileId = defaultCertprofileId;
 	}
+
+	@Override
+	public boolean isExpirationInclusive() {
+	    // CVC expiration dates do not have seconds, so this is not applicable. Return true to be safe.
+	    return true;
+	}
 }
