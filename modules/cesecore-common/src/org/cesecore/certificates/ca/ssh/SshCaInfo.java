@@ -77,6 +77,14 @@ public class SshCaInfo extends CAInfo {
         setApprovals(approvals);
     }
 
+    @Override
+    public boolean isExpirationInclusive() {
+        // SSH "valid before" is exclusive, because the definition of validity is:
+        //     valid after <= current time < valid before
+        // See https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys?annotate=HEAD
+        return false;
+    }
+
     public int getCaSerialNumberOctetSize() {
         return caSerialNumberOctetSize;
     }

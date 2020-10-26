@@ -129,6 +129,16 @@ public abstract class CAInfo implements Serializable {
     protected boolean acceptRevocationNonExistingEntry;
 
     /**
+     * Returns true if the expiration time is inclusive. If true, certificates are still valid at
+     * the second of the expiration time.
+     * <p>
+     * This depends on the CA type, so there is no setter. It is true for X.509 and CVC, false for SSH.
+     *
+     * @return True if the expiration time is inclusive.
+     */
+    public abstract boolean isExpirationInclusive();
+
+    /**
      * Returns the Subject DN of the CA, that will be used for issuing the CA certificate.
      * To get the Subject DN of the latest issued CA certificate, use {@link #getLatestSubjectDN}
      */

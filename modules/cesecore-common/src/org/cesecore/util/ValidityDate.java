@@ -181,24 +181,39 @@ public class ValidityDate {
 	@Deprecated
 	public static Date getDateBeforeVersion661(final long lEncoded, final Date firstDate) {
 		if (isDeltaTimeBeforeVersion661(lEncoded) ) {
-			return new Date(firstDate.getTime() + (lEncoded * 24 * 60 * 60 * 1000));
+			return new Date(firstDate.getTime() + (lEncoded * 24 * 60 * 60 * 1000) - 1000);
 		}
 		return new Date(lEncoded);
 	}
     
 	/**
      * Decodes encoded value to Date.
+     * <p>
+     * For relative dates, one second is subtracted to comply with RFC 5280 section 4.1.2.5,
+     * which states that the end date should be interpreted as inclusive (i.e. a certificate with
+     * exactly 1 year between the notBefore and notAfter would have 1 second too long validity).
+     * <p>
+     * Note that different certificate types have different semantics for the expiration time:
+     * <ul>
+     * <li>X.509: expiration time is inclusive
+     * <li>CVC: expiration does not have a time part, only date, so seconds are not relevant
+     * <li>SSH: expiration time is exclusive
+     * </ul>
+     *
      * @param encodedValidity a relative time string (SimpleTime) or a date in ISO8601 format.
      * @param firstDate date to be used if encoded validity is a relative time.
+     * @param notAfterIsInclusive whether the date is inclusive. Set to true for X.509/CVC and false for SSH.
      * @return the end date or null if a date or relative time could not be read.
      * @see org.cesecore.util.SimpleTime
      * @see org.cesecore.util.ValidityDate
+     * @see org.cesecore.certificates.ca.CAInfo#isExpirationInclusive()
      */
-	public static Date getDate(final String encodedValidity, final Date firstDate) {
+	public static Date getDate(final String encodedValidity, final Date firstDate, final boolean notAfterIsInclusive) {
 	    try {
 	        // We think this is the most common, so try this first, it's fail-fast
 	        final long millis = SimpleTime.parseMillies(encodedValidity);
-	        final Date endDate = new Date(firstDate.getTime() + millis);
+	        final long endSecond = notAfterIsInclusive ? 1000 : 0;
+	        final Date endDate = new Date(firstDate.getTime() + millis - endSecond);
 	        return endDate;
 	    } catch(NumberFormatException nfe) {
 	        if (log.isDebugEnabled()) {
