@@ -235,7 +235,7 @@ public class KeyToolsTest {
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey pk = keyFactory.generatePrivate(pkKeySpec);
-        KeyStore ks = KeyTools.createFipsCompliantP12("Foo", pk, cert, null);
+        KeyStore ks = KeyTools.createBcfks("Foo", pk, cert, null);
         assertNotNull("ks must not be null", ks);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // If password below is more than 7 chars, strong crypto is needed

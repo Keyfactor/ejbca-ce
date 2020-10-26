@@ -320,7 +320,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             if (log.isDebugEnabled()) {
                 log.debug("Generating FIPS compliant PKCS12 for user: " + username);
             }
-            ks = KeyTools.createFipsCompliantP12(alias, rsaKeys.getPrivate(), cert, cachain);
+            ks = KeyTools.createBcfks(alias, rsaKeys.getPrivate(), cert, cachain);
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Generating PKCS12 for user: "+ username);
