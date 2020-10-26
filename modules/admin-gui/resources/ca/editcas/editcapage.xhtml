@@ -138,9 +138,13 @@
 						<f:ajax listener="#{editCAsMBean.resetSigningAlgorithmTokenParam()}" render="@form"/>
 					</h:selectOneMenu>
 					<br />
-					<ui:repeat value="#{editCAsMBean.selectedCryptoTokenInfo}" var="info">
-						<h:outputLabel styleClass="help" value="#{info}" /> <br/>
-					</ui:repeat>
+
+					<h:panelGroup style="overflow-y: auto; width: 500px; height: auto; max-height:75px; margin-bottom: 5px; margin-top: 5px"
+								  layout="block">
+						<ui:repeat value="#{editCAsMBean.selectedCryptoTokenInfo}" var="info">
+							<h:outputLabel styleClass="help" value="#{info}" /> <br/>
+						</ui:repeat>
+					</h:panelGroup>
 
 					<h:outputLabel value="#{web.text.CRYPTOTOKEN_NEED_EXISTING_OR_GEN}"
 								   style="font-weight: bold;"
