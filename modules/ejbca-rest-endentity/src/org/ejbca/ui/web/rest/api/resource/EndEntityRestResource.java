@@ -214,7 +214,7 @@ public class EndEntityRestResource extends BaseRestResource {
         EndEntityInformation endEntityInformation = raMasterApiProxy.searchUser(admin, endEntityName);
         if (endEntityInformation == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Could not find  End Entity for the username='" + endEntityName + "'");
+                log.debug("Could not find end entity for the username '" + endEntityName + "'");
             }
             throw new NoSuchEndEntityException("Could not find  End Entity for the username='" + endEntityName + "'");
         } else {
@@ -230,7 +230,7 @@ public class EndEntityRestResource extends BaseRestResource {
         	}
         	boolean result = raMasterApiProxy.editUser(admin, endEntityInformation, false);
         	if (result) {
-        		log.info("End entity '" + endEntityName + "' successfuly edited by administrator " + admin.toString());
+        		log.info("End entity '" + endEntityName + "' successfully edited by administrator " + admin.toString());
             } else {
             	log.info("Error during end entity '" + endEntityName + "' edit by administrator " + admin.toString() +
             			" . Edit operation failed");
