@@ -176,6 +176,12 @@
 									rendered="#{enrollWithRequestIdBean.renderGenerateKeyStorePkcs12}"
 									styleClass="pure-button ra-button">
 								</h:commandButton>
+								<h:commandButton id="generateBcfks"
+									 value="#{msg.enroll_generate_bcfks}"
+									 action="#{enrollWithRequestIdBean.generateKeyStoreBcfks}"
+									 rendered="#{enrollWithRequestIdBean.renderGenerateKeyStoreBcfks}"
+									 styleClass="pure-button ra-button">
+								</h:commandButton>
 								<h:commandButton id="generateKeyStorePem"
 									value="#{msg.enroll_generate_pem}"
 									action="#{enrollWithRequestIdBean.generateKeyStorePem}"
