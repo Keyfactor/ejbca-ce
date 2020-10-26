@@ -683,7 +683,9 @@ public final class KeyTools {
         try {
             // Store the key and the certificate chain
             // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
-            final KeyStore store = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            KeyStore store = CesecoreConfiguration.useLegacyPkcs12Keystore()
+                    ? KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME)
+                    : KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
             store.load(null, null);            
             // "Clean" private key, i.e. remove any old attributes, 
             // As well as convert any EdDSA key to v1 format that is understood by openssl v1.1.1 and earlier
@@ -710,20 +712,20 @@ public final class KeyTools {
     } // createP12
 
     /**
-     * Create a FIPS compliant PKCS#12 keystore. Uses Bouncy Castle's BCFKS.
+     * Create a Bouncy Castle's BCFKS. See https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
      *
      * @param alias the alias to use for keystore entries.
      * @param privateKey the private key to store in the keystore.
      * @param certificate the user's certificate to store in the keystore.
      * @param caCertificateChain the CA certificate chain to store in the keystore.
-     * @return a FIPS compliant PKCS#12 keystore as a {@link KeyStore} object.
+     * @return a BCFKS keystore as a {@link KeyStore} object.
      *
      * @throws CertificateEncodingException if the certificate could not be decoded.
      * @throws CertificateException
      * @throws NoSuchAlgorithmException if an algorithm is unavailable.
      * @throws InvalidKeySpecException
      */
-    public static KeyStore createFipsCompliantP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
+    public static KeyStore createBcfks(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
             throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">createP12: alias=" + alias + ", privateKey, certificate=" + CertTools.getSubjectDN(certificate) + ", caCertificateChain.length="
@@ -787,8 +789,7 @@ public final class KeyTools {
             log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
         }
         try {
-            //KeyStore store = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
-            KeyStore store = KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
+            KeyStore store = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
             store.load(null, null);
             // "Clean" private key, i.e. remove any old attributes,
             // As well as convert any EdDSA key to v1 format that is understood by openssl v1.1.1 and earlier
