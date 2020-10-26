@@ -130,7 +130,17 @@ public interface EjbcaWebBean extends Serializable {
      * The parameter imagefilename should the wanted filename without language infix. For example: given imagefilename 'caimg.png' would return
      * 'caimg.en.png' if English was the users preferred language. It's important that all letters in imagefilename is lowercase.
      */
-    String getImagefileInfix(final String imagefilename);
+    String getImagePath(final String imagefilename);
+
+    /**
+     * Legacy version of getImagePath, that returns an URL including the adminweb base path.
+     *
+     * @param imagefilename Name of image
+     * @return Image URL including adminweb base path
+     * @deprecated Since EJBCA 7.4.3
+     */
+    @Deprecated
+    String getImagefileInfix(String imagefilename);
 
     String[] getAvailableLanguages();
 

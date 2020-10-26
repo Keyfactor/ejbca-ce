@@ -90,7 +90,7 @@ org.ejbca.util.HTMLTools
 <% } else { %>
     <div id="header">
         <div id="banner">
-            <a href="<%= ejbcawebbean.getAdminWebBaseUrl() %>"><img src="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagefileInfix("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
+            <a href="<%= ejbcawebbean.getAdminWebBaseUrl() %>"><img src="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png")%>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
         </div>
 	</div>
 <% } %>
