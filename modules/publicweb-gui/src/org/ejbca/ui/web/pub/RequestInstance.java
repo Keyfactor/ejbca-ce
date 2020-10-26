@@ -1,32 +1,5 @@
 package org.ejbca.ui.web.pub;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ejb.ObjectNotFoundException;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -80,6 +53,32 @@ import org.ejbca.ui.web.CertificateRequestResponse;
 import org.ejbca.ui.web.CertificateResponseType;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
+
+import javax.ejb.ObjectNotFoundException;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -356,7 +355,7 @@ public class RequestInstance {
 			        throw new IncomatibleTokenTypeException();
 			    }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_P12, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {
 					sendOpenVPNToken(ks, username, password, response);
 				} else {
@@ -370,7 +369,7 @@ public class RequestInstance {
                     throw new IncomatibleTokenTypeException();
                 }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_JKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendJKSToken(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_PEM){
@@ -380,7 +379,7 @@ public class RequestInstance {
                     throw new IncomatibleTokenTypeException();
                 }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_PEM, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendPEMTokens(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
