@@ -62,7 +62,7 @@ public final class EndEntityConstants {
     /** Indicates that a pem token should be generated. */
     public static final int TOKEN_SOFT_PEM = 4;
     /** Indicates that a FIPS compliant P12 should be generated */
-    public static final int TOKEN_SOFT_FIPS_P12 = 5;
+    public static final int TOKEN_SOFT_BCFKS = 5;
     /** All values equal or below this constant should be treated as a soft token. */
     public static final int TOKEN_SOFT = 100;
 

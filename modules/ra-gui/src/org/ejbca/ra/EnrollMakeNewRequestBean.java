@@ -267,13 +267,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
     /**
      * @return true if keystore download options in FIPS PKCS#12 format should be provided (e.g. keystore generation was used and no approvals are required)
      */
-    public boolean isGenerateFipsP12ButtonRendered() {
+    public boolean isgenerateBcfksButtonRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile == null) {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_FIPS_P12))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BCFKS))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -812,8 +812,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         downloadToken(token, APPLICATION_X_PKCS12, ".p12");
     }
 
-    public void addEndEntityAndGenerateFipsP12() {
-        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_FIPS_P12, null);
+    public void addEndEntityAndgenerateBcfks() {
+        byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_BCFKS, null);
         downloadToken(token, APPLICATION_X_PKCS12, ".p12");
     }
 
