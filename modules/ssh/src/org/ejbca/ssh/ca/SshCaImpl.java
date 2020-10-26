@@ -347,7 +347,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         // Check CA certificate PrivateKeyUsagePeriod if it exists (throws CAOfflineException if it exists and is not within this time)
         CertificateValidity.checkPrivateKeyUsagePeriod(cacert, checkDate);
         // Get certificate validity time notBefore and notAfter
-        final CertificateValidity validity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter, cacert, false, false);
+        final CertificateValidity validity = new CertificateValidity(endEntityInformation, getCAInfo(), certificateProfile, notBefore, notAfter, cacert, false, false);
 
         SshCertificateBase sshCertificate;
         if (publicKey instanceof ECPublicKey) {
@@ -418,7 +418,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         // Check CA certificate PrivateKeyUsagePeriod if it exists (throws CAOfflineException if it exists and is not within this time)
         CertificateValidity.checkPrivateKeyUsagePeriod(cacert, checkDate);
         // Get certificate validity time notBefore and notAfter
-        final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA, linkCertificate);
+        final CertificateValidity val = new CertificateValidity(subject, getCAInfo(), certProfile, notBefore, notAfter, cacert, isRootCA, linkCertificate);
 
         // Serialnumber is either random bits, where random generator is initialized by the serno generator.
         // Or a custom serial number defined in the end entity object
@@ -1125,31 +1125,38 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         return null;
     }
 
+    @Override
     public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) {
         return null;
     }
 
+    @Override
     public byte[] createPKCS7Rollover(CryptoToken cryptoToken) {
         return null;
     }
 
+    @Override
     public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert,
             int signatureKeyPurpose, CertificateProfile certificateProfile, AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         return null;
     }
 
+    @Override
     public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) {
         return null;
     }
 
+    @Override
     public String getCaImplType() {
         return "SSHCA";
     }
 
+    @Override
     public void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
             AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) {
     }
 
+    @Override
     public float getLatestVersion() {
         return 0.0F;
     }
