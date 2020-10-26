@@ -1238,7 +1238,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
                     ks = KeyTools.createJKS(alias, kp.getPrivate(), endEntity.getPassword(), cert, cachain);
                 } else if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_FIPS_P12) {
-                    ks = KeyTools.createFipsCompliantP12(alias, kp.getPrivate(), cert, cachain);
+                    ks = KeyTools.createBcfks(alias, kp.getPrivate(), cert, cachain);
                 } else {
                     ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
                 }
