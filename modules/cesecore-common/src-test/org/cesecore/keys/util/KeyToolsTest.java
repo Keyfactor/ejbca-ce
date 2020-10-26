@@ -45,6 +45,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -230,7 +231,7 @@ public class KeyToolsTest {
     }
 
     @Test
-    public void testCreateFipsCompliantP12() throws Exception {
+    public void testCreateBcfks() throws Exception {
         Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -243,11 +244,8 @@ public class KeyToolsTest {
         assertTrue("baos size must not be 0", baos.size() > 0);
         Certificate cert1 = ks.getCertificate("Foo");
         assertNotNull(cert1);
-        byte[] bytes = KeyTools.getSinglePemFromKeyStore(ks, "foo123".toCharArray());
-        assertNotNull(bytes);
-        String str = new String(bytes);
-        assertTrue(str.contains("-----BEGIN PRIVATE KEY-----"));
-        assertTrue(str.contains("-----BEGIN CERTIFICATE-----"));
+        Key privateKey = ks.getKey("Foo", "foo123".toCharArray());
+        assertNotNull(privateKey);
     }
 
     @Test
