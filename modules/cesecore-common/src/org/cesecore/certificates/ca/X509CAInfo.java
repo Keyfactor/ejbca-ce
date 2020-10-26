@@ -217,6 +217,12 @@ public class X509CAInfo extends CAInfo {
         setRequestPreProcessor(requestPreProcessor);
     }
 
+    @Override
+    public boolean isExpirationInclusive() {
+        // notAfter is inclusive. See RFC 5280 section 4.1.2.5
+        return true;
+    }
+
   public List<CertificatePolicy> getPolicies() {
 	  return this.policies;
   }
