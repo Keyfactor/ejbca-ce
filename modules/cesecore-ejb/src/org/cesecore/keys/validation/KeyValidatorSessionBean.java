@@ -469,7 +469,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             throws ValidationException, IllegalValidityException {
         boolean result = true;
         if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
-            final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter,
+            final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, ca.getCAInfo(), certificateProfile, notBefore, notAfter,
                     ca.getCACertificate(), false, false);
             if (log.isDebugEnabled()) {
                 log.debug("Validate " + publicKey.getAlgorithm() + " public key with " + publicKey.getFormat() + " format.");
