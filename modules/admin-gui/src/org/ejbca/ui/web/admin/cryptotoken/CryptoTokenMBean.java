@@ -121,11 +121,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getStatusImg() {
-            return getEjbcaWebBean().getImagefileInfix(isActive() ? "status-ca-active.png" : "status-ca-offline.png");
+            return getEjbcaWebBean().getImagePath(isActive() ? "status-ca-active.png" : "status-ca-offline.png");
         }
 
         public String getAutoActivationYesImg() {
-            return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
+            return getEjbcaWebBean().getImagePath("status-ca-active.png");
         }
 
         public Integer getCryptoTokenId() {
