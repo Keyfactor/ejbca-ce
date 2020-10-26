@@ -604,112 +604,32 @@ public final class KeyTools {
      * 
      * @param alias
      *            the alias used for the key entry
-     * @param privKey
+     * @param privateKey
      *            private key
-     * @param cert
+     * @param certificate
      *            user certificate
-     * @param cachain
+     * @param caCertificateChain
      *            CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
      * @return KeyStore containing PKCS12-keystore
      * @throws CertificateException if the certificate couldn't be parsed
      * @throws CertificateEncodingException if the encoded bytestream of the certificate couldn't be retrieved
      * @throws NoSuchAlgorithmException if the algorithm defined in privKey couldn't be found
      * @throws InvalidKeySpecException if the key specification defined in privKey couldn't be found
-
      */
-    public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate[] cachain)
+    public static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
             throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        if (log.isTraceEnabled()) {
-            log.trace(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
-                    + ((cachain == null) ? 0 : cachain.length));
-        }
-        // Certificate chain
-        if (cert == null) {
-            throw new IllegalArgumentException("Parameter cert cannot be null.");
-        }
-        int len = 1;
-        if (cachain != null) {
-            len += cachain.length;
-        }
-        final Certificate[] chain = new Certificate[len];
-        // To not get a ClassCastException we need to generate a real new certificate with BC
-        final CertificateFactory cf = CertTools.getCertificateFactory();
-        chain[0] = cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
-
-        if (cachain != null) {
-            for (int i = 0; i < cachain.length; i++) {
-                final X509Certificate tmpcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cachain[i].getEncoded()));
-                chain[i + 1] = tmpcert;
-            }
-        }
-        if (chain.length > 1) {
-            for (int i = 1; i < chain.length; i++) {
-                final X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(chain[i].getEncoded()));
-                // Set attributes on CA-cert
-                try {
-                    final PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
-                    // We construct a friendly name for the CA, and try with some parts from the DN if they exist.
-                    String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
-                    // On the ones below we +i to make it unique, O might not be otherwise
-                    if (cafriendly == null) {
-                        cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
-                        if (cafriendly == null) {
-                            cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU");
-                            if (cafriendly == null) {
-                                cafriendly = "CA_unknown" + i;
-                            } else {
-                                cafriendly = cafriendly +i;
-                            }
-                        } else {
-                            cafriendly = cafriendly +i;
-                        }
-                    }
-                    caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(cafriendly));
-                } catch (ClassCastException e) {
-                    log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
-                }
-            }
-        }
-
-        // Set attributes on user-cert
-        try {
-            final PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
-            certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
-            // in this case we just set the local key id to that of the public key
-            certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
-        } catch (ClassCastException e) {
-            log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
-        }
         try {
             // Store the key and the certificate chain
             // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
             KeyStore store = CesecoreConfiguration.useLegacyPkcs12Keystore()
                     ? KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME)
                     : KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
-            store.load(null, null);            
-            // "Clean" private key, i.e. remove any old attributes, 
-            // As well as convert any EdDSA key to v1 format that is understood by openssl v1.1.1 and earlier
-            // EdDSA (Ed25519 or Ed448) keys have a v1 format, with only the private key, and a v2 format that includes both the private and public
-            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
-            final PrivateKeyInfo v1PkInfo = new PrivateKeyInfo(pkInfo.getPrivateKeyAlgorithm(), pkInfo.parsePrivateKey());
-            final KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
-            final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(v1PkInfo.getEncoded()));
-            // The PKCS#12 bag attributes PKCSObjectIdentifiers.pkcs_9_at_friendlyName and PKCSObjectIdentifiers.pkcs_9_at_localKeyId 
-            // are set automatically by BC when setting the key entry
-            store.setKeyEntry(alias, pk, null, chain);
-            if (log.isTraceEnabled()) {
-                log.trace("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
-                        + ((cachain == null) ? 0 : cachain.length));
-            }
-            return store;
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle provider was not found.", e);
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException("PKCS12 keystore type could not be instanced.", e);
-        } catch (IOException e) {
-            throw new IllegalStateException("IOException should not be thrown when instancing an empty keystore.", e);
+            store.load(null, null);
+            return createP12(alias, privateKey, certificate, caCertificateChain, store);
+        } catch (IOException | KeyStoreException | NoSuchProviderException e) {
+            throw new IllegalStateException(e);
         }
-    } // createP12
+    }
 
     /**
      * Create a Bouncy Castle's BCFKS. See https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
@@ -726,7 +646,18 @@ public final class KeyTools {
      * @throws InvalidKeySpecException
      */
     public static KeyStore createBcfks(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
-            throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        try {
+            KeyStore store = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
+            store.load(null, null);
+            return createP12(alias, privateKey, certificate, caCertificateChain, store);
+        } catch (IOException | KeyStoreException | NoSuchProviderException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain, final KeyStore store)
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">createP12: alias=" + alias + ", privateKey, certificate=" + CertTools.getSubjectDN(certificate) + ", caCertificateChain.length="
                     + ((caCertificateChain == null) ? 0 : caCertificateChain.length));
@@ -789,8 +720,6 @@ public final class KeyTools {
             log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
         }
         try {
-            KeyStore store = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
-            store.load(null, null);
             // "Clean" private key, i.e. remove any old attributes,
             // As well as convert any EdDSA key to v1 format that is understood by openssl v1.1.1 and earlier
             // EdDSA (Ed25519 or Ed448) keys have a v1 format, with only the private key, and a v2 format that includes both the private and public
