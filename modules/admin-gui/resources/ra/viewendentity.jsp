@@ -45,7 +45,7 @@
 %>
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <link rel="shortcut icon" href="<%= ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath("favicon.png")%>" type="image/png" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%= ejbcawebbean.getBaseUrl() + ejbcawebbean.getCssFile() %>' />" />
   <script type="text/javascript" src="<%= ejbcawebbean.getAdminWebBaseUrl() %>ejbcajslib.js"></script>
 </head>
