@@ -604,6 +604,14 @@
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
+							<h:commandButton id="generateFipsP12"
+											 value="#{msg.enroll_generate_fips_p12}"
+											 action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateFipsP12}"
+											 rendered="#{enrollMakeNewRequestBean.generateFipsP12ButtonRendered}"
+											 disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
+											 styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
+							</h:commandButton>
 							<h:commandButton id="generateKeyStorePem"
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
