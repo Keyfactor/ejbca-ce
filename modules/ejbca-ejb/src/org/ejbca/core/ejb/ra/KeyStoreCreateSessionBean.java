@@ -316,7 +316,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 log.debug("Generating JKS for user: "+ username);
             }
     		ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
-    	} else if (keystoreType == SecConst.TOKEN_SOFT_FIPS_P12) {
+    	} else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
             if (log.isDebugEnabled()) {
                 log.debug("Generating FIPS compliant PKCS12 for user: " + username);
             }
