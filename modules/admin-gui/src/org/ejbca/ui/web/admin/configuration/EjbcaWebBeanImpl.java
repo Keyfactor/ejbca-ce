@@ -600,7 +600,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
 
     @Override
-    public String getImagefileInfix(final String imagefilename) {
+    public String getImagePath(final String imagefilename) {
         if (globalconfiguration == null) {
             return null;
         }
@@ -626,6 +626,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
         }
         return "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + postfix;
+    }
+
+    @Deprecated
+    @Override
+    public String getImagefileInfix(final String imagefilename) {
+        return getAdminWebBaseUrl() + getImagePath(imagefilename);
     }
 
     @Override
