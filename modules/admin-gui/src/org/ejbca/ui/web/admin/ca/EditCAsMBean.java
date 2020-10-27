@@ -984,6 +984,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
 
+        Collections.sort(keys);
         return keys;
     }
 
