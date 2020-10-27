@@ -69,6 +69,7 @@ import org.junit.Test;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -175,7 +176,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
             final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
                     "1024", "RSA", SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-            final KeyStore keyStore = KeyTools.createKeyStore(keyStoreBytes, "foo123");
+            final KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+            keyStore.load(new ByteArrayInputStream(keyStoreBytes), "foo123".toCharArray());
             String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
             String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
             String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
@@ -362,7 +364,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final String responseFormat = (String) actualJsonObject.get("response_format");
             final String base64Keystore = (String) actualJsonObject.get("certificate");
             final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
-            KeyStore keyStore = KeyTools.createKeyStore(keystoreBytes, "foo123");
+            KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+            keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
             // Verify results
             Enumeration<String> aliases = keyStore.aliases();
             assertEquals("Unexpected alias in keystore response", TEST_USERNAME, aliases.nextElement());

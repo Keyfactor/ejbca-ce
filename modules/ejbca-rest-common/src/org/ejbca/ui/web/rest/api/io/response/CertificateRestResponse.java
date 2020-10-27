@@ -11,6 +11,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.SecConst;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -131,10 +132,14 @@ public class CertificateRestResponse {
                     .build();
         }
         
-        public CertificateRestResponse toRestResponse(final KeyStore keyStore, final String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType, final String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
             return CertificateRestResponse.builder()
-                    .setCertificate(lockKeyStore(keyStore, password))
-                    .setResponseFormat(keyStore.getType())
+                    .setCertificate(keyStoreBytes)
+                    .setResponseFormat(
+                            keystoreType == SecConst.TOKEN_SOFT_JKS ? "JKS" :
+                            keystoreType == SecConst.TOKEN_SOFT_PEM ? "PEM" :
+                            keystoreType == SecConst.TOKEN_SOFT_P12 ? "P12" :
+                            keystoreType == SecConst.TOKEN_SOFT_BCFKS ? "BCFKS" : "UNKNOWN")
                     .build();
         }
 
