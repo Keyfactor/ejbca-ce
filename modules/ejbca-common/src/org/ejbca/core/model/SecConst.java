@@ -24,8 +24,6 @@ package org.ejbca.core.model;
  * byte):  unused bits 24-30 (4:th byte):  unused Constants for certificates are simple integer
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
- *
- * @version $Id$
  */
 public final class SecConst {
 
