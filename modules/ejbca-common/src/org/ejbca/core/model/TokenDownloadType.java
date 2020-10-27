@@ -17,12 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Representation of token download types
- * @version $Id$
- *
+ * Representation of token download types.
  */
 public enum TokenDownloadType {
-    PEM(1), PEM_FULL_CHAIN(2), PKCS7(3), P12(4), JKS(5), DER(6);
+    PEM(1), PEM_FULL_CHAIN(2), PKCS7(3), P12(4), JKS(5), DER(6), BCFKS(7);
     
     private int value;
     private static final Map<String, Integer> nameIdLookupMap = new HashMap<String, Integer>();
