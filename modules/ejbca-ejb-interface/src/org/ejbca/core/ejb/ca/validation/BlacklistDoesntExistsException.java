@@ -26,7 +26,7 @@ public class BlacklistDoesntExistsException extends Exception {
      * Creates a new instance.
      */
     public BlacklistDoesntExistsException() {
-        super( "Public key blacklist does not exist in datastore.");
+        super( "Public key block list does not exist in datastore.");
     }
 
     /**
