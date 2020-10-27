@@ -45,7 +45,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -244,8 +243,10 @@ public class KeyToolsTest {
         assertTrue("baos size must not be 0", baos.size() > 0);
         Certificate cert1 = ks.getCertificate("Foo");
         assertNotNull(cert1);
-        Key privateKey = ks.getKey("Foo", "foo123".toCharArray());
-        assertNotNull(privateKey);
+        KeyStore keyStore = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
+        keyStore.load(new ByteArrayInputStream(baos.toByteArray()), "foo123".toCharArray());
+        assertNotNull(keyStore);
+        log.info("Type of keystore: "  + keyStore.getType());
     }
 
     @Test
