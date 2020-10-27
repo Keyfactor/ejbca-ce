@@ -44,6 +44,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -96,6 +97,7 @@ import java.util.Map;
 
 import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -150,6 +152,7 @@ public class OAuthSystemTest {
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("OauthSystemTest"));
 
     private static GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
@@ -310,6 +313,7 @@ public class OAuthSystemTest {
 
     @Test
     public void testRestApiWeb() throws IOException {
+        assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         final URL url = new URL(HTTP_REQ_PATH + "/ejbca-rest-api/v1/ca");
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
@@ -319,6 +323,7 @@ public class OAuthSystemTest {
 
     @Test
     public void testAdminRestApiWithExpiredToken() throws IOException {
+        assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
         final URL url = new URL(HTTP_REQ_PATH + "/ejbca-rest-api/v1/ca");
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 403", 403, connection.getResponseCode());
