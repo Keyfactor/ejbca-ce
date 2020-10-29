@@ -270,6 +270,14 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "object":
                 final String className = parser.getAttributeValue(null, "class");
                 String method = parser.getAttributeValue(null, "method"); // used from java.util.Collections
+                if (parser.getAttributeCount() == 0) {
+                    // Special handling for broken encoding of PKIDisclosureStatement in EJBCA 7.4.0-7.4.2
+                    final PKIDisclosureStatement pkids = readBrokenPkiDisclosureStatement();
+                    if (pkids != null) { // fall back to code below if it's not a PKIDisclosureStatement
+                        value = pkids;
+                        break;
+                    }
+                }
                 parser.nextTag();
 
                 // If we need to support a lot of more classes here (or custom classes), we could instead load the
@@ -425,6 +433,23 @@ public class SecureXMLDecoder implements AutoCloseable {
             parser.nextTag();
         }
         return value;
+    }
+
+    /**
+     * Tries to read a corrupted encoding of PKIDisclosureStatement from EJBCA 7.4.0 - 7.4.2 (see ECA-9548).
+     * @return PKIDisclosureStatement, or null if it is something else.
+     * @throws XmlPullParserException On low level XML parse errors
+     * @throws IOException On not valid XMLEncoder XML
+     */
+    private PKIDisclosureStatement readBrokenPkiDisclosureStatement() throws XmlPullParserException, IOException {
+        final String encodedValue = readString();
+        if (!encodedValue.startsWith("{")) {
+            return null;
+        }
+        final String[] splitted = encodedValue.split("\\}", 2);
+        final String language = splitted[0].substring(1);
+        final String url = splitted[1];
+        return new PKIDisclosureStatement(url, language);
     }
 
     /**
