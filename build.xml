@@ -1068,7 +1068,6 @@
                 <exclude unless="edition.is.ee" name="modules/acme/**"/>
                 <exclude unless="edition.is.ee" name="lib/dnsjava-*.jar"/>
                 <exclude unless="edition.is.ee" name="lib/dnssecjava-*.jar"/>
-                <exclude unless="edition.is.ee" name="lib/nimbus-jose-jwt-*.jar"/>
                 <exclude unless="edition.is.ee" name="modules/est/**"/>
                 <exclude unless="edition.is.ee" name="modules/caa/**"/>
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/certificate/certextensions/BasicCVCertificateExtension.java"/>
