@@ -400,7 +400,7 @@ public class XmlSerializer {
                 ps.print(getIndent(indent + 2));
                 ps.println("<string>" + key + "</string>");
                 final Object value = p.get(key);
-                encodePrimitive(value, indent + 2, ps);
+                printObject(value, indent + 2, ps);
                 ps.print(getIndent(indent + 1));
                 ps.println("</void>");
             }
@@ -435,7 +435,7 @@ public class XmlSerializer {
             for (Object item : l) {
                 ps.print(getIndent(indent + 1));
                 ps.println("<void method=\"add\">");
-                encodePrimitive(item, indent + 2, ps);
+                printObject(item, indent + 2, ps);
                 ps.print(getIndent(indent + 1));
                 ps.println("</void>");
             }
