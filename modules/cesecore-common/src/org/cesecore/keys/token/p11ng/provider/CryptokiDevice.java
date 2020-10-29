@@ -979,7 +979,9 @@ public class CryptokiDevice {
                 publicKeyTemplate.put(CKA.VERIFY, true);
                 /* CK_TRUE if key supports verification where the data is recovered from the signature. */
                 // *Comment* ECDSA does not support data recovery on signature verification, but some other ECC signature schemes such as Abe-Okamoto does.
-                publicKeyTemplate.put(CKA.VERIFY_RECOVER, false);
+                // Some HSMs (Cavium/Marvell) does not work when specifying this flag but will fail with TEMPLATE_INCONSISTENT, as this 
+                // should be false by default on all sensible HSMs, leave it out completely
+                //publicKeyTemplate.put(CKA.VERIFY_RECOVER, false);
                 /* CK_TRUE if key supports wrapping (i.e., can be used to wrap other keys) */
                 publicKeyTemplate.put(CKA.WRAP, false);
 
@@ -1004,19 +1006,21 @@ public class CryptokiDevice {
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
                 privateKeyTemplate.put(CKA.DERIVE, false);
-                /* CK_TRUE if key is sensitive. */
-                privateKeyTemplate.put(CKA.SENSITIVE, true);
                 /* CK_TRUE if key supports decryption */
                 privateKeyTemplate.put(CKA.DECRYPT, false);
                 /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
                 privateKeyTemplate.put(CKA.SIGN, true);
                 /* CK_TRUE if key supports signatures where the data can be recovered from the signature. */
-                privateKeyTemplate.put(CKA.SIGN_RECOVER, false);
+                // Some HSMs (Cavium/Marvell) does not work when specifying this flag but will fail with TEMPLATE_INCONSISTENT, as this 
+                // should be false by default on all sensible HSMs, leave it out completely
+                //privateKeyTemplate.put(CKA.SIGN_RECOVER, false);
                 /* CK_TRUE if key supports unwrapping (i.e., can be used to unwrap other keys. */
                 privateKeyTemplate.put(CKA.UNWRAP, false);
+
+                /* CK_TRUE if key is sensitive. */
+                privateKeyTemplate.put(CKA.SENSITIVE, true);
                 /* CK_TRUE if key is extractable and can be wrapped. */
                 privateKeyTemplate.put(CKA.EXTRACTABLE, false);
-
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.4 - Storage objects
                 /* CK_TRUE if object is a token object or CK_FALSE if object is a session object. */
                 privateKeyTemplate.put(CKA.TOKEN, true);
