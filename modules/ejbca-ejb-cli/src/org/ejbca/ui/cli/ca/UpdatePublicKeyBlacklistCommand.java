@@ -89,12 +89,12 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
     @Override
     public String getMainCommand() {
-        return "updatepublickeyblacklist";
+        return "updatepublickeyblocklist";
     }
     
     @Override
     public Set<String> getMainCommandAliases() {
-        return new HashSet<String>(Arrays.asList("updatepublickeyblocklist"));
+        return new HashSet<String>(Arrays.asList("updatepublickeyblacklist"));
     }
 
     @Override
