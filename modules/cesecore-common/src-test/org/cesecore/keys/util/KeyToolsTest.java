@@ -681,7 +681,7 @@ public class KeyToolsTest {
         for (final String blackListedEcCurve : AlgorithmConstants.BLACKLISTED_EC_CURVES) {
             try {
                 KeyTools.genKeys(blackListedEcCurve, AlgorithmConstants.KEYALGORITHM_ECDSA);
-                fail("Blocklisted algorithm " + blackListedEcCurve + " now works. Please update blocklist.");
+                fail("Block listed algorithm " + blackListedEcCurve + " now works. Please update block list.");
             } catch (InvalidAlgorithmParameterException e) {
                 log.debug(e.getMessage(), e);
             }
