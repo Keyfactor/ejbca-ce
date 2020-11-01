@@ -210,7 +210,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 normalizer.initialize(data);
                 newNormalizers.add(normalizer);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                log.error("Failed to load Domain Blocklist Normalizer '" + normalizerName + "'.");
+                log.error("Failed to load Domain Block List Normalizer '" + normalizerName + "'.");
                 newInitializationFailure = true;
             }
         }
@@ -221,7 +221,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 final DomainBlacklistChecker checker = (DomainBlacklistChecker) checkerClass.newInstance();
                 newCheckers.add(checker);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                log.error("Failed to load Domain Blocklist Checker '" + checkerName + "'.");
+                log.error("Failed to load Domain Block List Checker '" + checkerName + "'.");
                 newInitializationFailure = true;
             }
         }
