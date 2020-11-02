@@ -669,7 +669,18 @@ public class CryptokiDevice {
                     } else {
                         final CKA publicExponent = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
                         final byte[] modulusBytes = modulus.getValue();
-                        final byte[] publicExponentBytes = publicExponent.getValue();
+                        // Cavium/Marvell/AWS CloudHSM have a bug (as of october 2020 still) that:
+                        // On first call to C_GetAttributeValue with pValue==null, it returns ulValueLen==8 bytes (saying 8 bytes is needed to hold the value)
+                        // On second call it fills only three bytes and returns ulValueLen==3 bytes
+                        // This seems to be against the specification of C_GetAttributeValue in
+                        // http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html
+                        // And we workaround it here
+                        final byte[] publicExponentBytes;
+                        if (publicExponent.pValue != null && publicExponent.ulValueLen < publicExponent.pValue.length) {
+                             publicExponentBytes = Arrays.copyOfRange(publicExponent.pValue, 0, (int)publicExponent.ulValueLen);
+                        } else {
+                            publicExponentBytes = publicExponent.getValue();
+                        }
 
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Trying to decode RSA modulus: " + StringTools.hex(modulusBytes) + " and public exponent: "
