@@ -352,7 +352,7 @@
 	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
 	<path id="lib.dnssecjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnssecjava-*.jar"/></path>
 	<path id="lib.guava.classpath"><fileset dir="${ejbca.home}/lib" includes="guava-*.jar"/></path>
-	<path id="lib.jacknji.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jacknji11-*.jar"/></path>
+	<path id="lib.jacknji.classpath"><fileset dir="${ejbca.home}/lib/" includes="jacknji11-*.jar"/></path>
 	<path id="lib.jna.classpath"><fileset dir="${ejbca.home}/lib/" includes="jna-*.jar"/></path>
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
