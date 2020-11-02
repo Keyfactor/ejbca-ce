@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import javax.management.openmbean.InvalidKeyException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERNull;
@@ -37,6 +39,7 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.EncryptedKey;
 import org.bouncycastle.asn1.crmf.EncryptedValue;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -755,7 +758,13 @@ public class CrmfRequestTest extends CmpTestCase {
                 //   new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
                 //   new JceCRMFEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
                 // myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                EncryptedKey encKey = certifiedKeyPair.getPrivateKey();
+                EncryptedValue encValue;
+                if (encKey.isEncryptedValue()) {
+                    encValue = (EncryptedValue)encKey.getValue();
+                } else {
+                    throw new InvalidKeyException("EJBCA only supports EncryptedKey type EncryptedValue at this point");
+                }
                 AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
@@ -802,7 +811,13 @@ public class CrmfRequestTest extends CmpTestCase {
                 final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
                 final CertResponse certResponse = certRepMessage.getResponse()[0];
                 final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                EncryptedKey encKey = certifiedKeyPair.getPrivateKey();
+                EncryptedValue encValue;
+                if (encKey.isEncryptedValue()) {
+                    encValue = (EncryptedValue)encKey.getValue();
+                } else {
+                    throw new InvalidKeyException("EJBCA only supports EncryptedKey type EncryptedValue at this point");
+                }
                 AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
@@ -926,7 +941,13 @@ public class CrmfRequestTest extends CmpTestCase {
                 final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
                 final CertResponse certResponse = certRepMessage.getResponse()[0];
                 final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                EncryptedKey encKey = certifiedKeyPair.getPrivateKey();
+                EncryptedValue encValue;
+                if (encKey.isEncryptedValue()) {
+                    encValue = (EncryptedValue)encKey.getValue();
+                } else {
+                    throw new InvalidKeyException("EJBCA only supports EncryptedKey type EncryptedValue at this point");
+                }
                 AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
@@ -1002,7 +1023,13 @@ public class CrmfRequestTest extends CmpTestCase {
                 final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
                 final CertResponse certResponse = certRepMessage.getResponse()[0];
                 final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                EncryptedKey encKey = certifiedKeyPair.getPrivateKey();
+                EncryptedValue encValue;
+                if (encKey.isEncryptedValue()) {
+                    encValue = (EncryptedValue)encKey.getValue();
+                } else {
+                    throw new InvalidKeyException("EJBCA only supports EncryptedKey type EncryptedValue at this point");
+                }
                 AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
