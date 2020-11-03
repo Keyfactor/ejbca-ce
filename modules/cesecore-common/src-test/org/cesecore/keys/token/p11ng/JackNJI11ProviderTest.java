@@ -33,6 +33,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.bsi.BSIObjectIdentifiers;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.eac.EACObjectIdentifiers;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.isara.IsaraObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
@@ -60,7 +61,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @version $Id$
+ * Test class for JackNJI11Provider signing with various algorithms.
  */
 public class JackNJI11ProviderTest {
 
@@ -103,6 +104,8 @@ public class JackNJI11ProviderTest {
         oids.put(OIWObjectIdentifiers.dsaWithSHA1, "SHA1WITHDSA");
         oids.put(NISTObjectIdentifiers.dsa_with_sha224, "SHA224WITHDSA");
         oids.put(NISTObjectIdentifiers.dsa_with_sha256, "SHA256WITHDSA");
+        oids.put(EdECObjectIdentifiers.id_Ed25519, "Ed25519");
+        oids.put(EdECObjectIdentifiers.id_Ed448, "Ed448");
 
         oids.put(OIWObjectIdentifiers.idSHA1, "SHA1");
         oids.put(NISTObjectIdentifiers.id_sha224, "SHA224");
@@ -132,6 +135,7 @@ public class JackNJI11ProviderTest {
         cryptoToken.activate(tokenpin.toCharArray());
         cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_2048, PKCS11TestUtils.RSA_TEST_KEY_1);
         cryptoToken.generateKeyPair("secp256r1", PKCS11TestUtils.ECC_TEST_KEY_1);
+        cryptoToken.generateKeyPair("Ed25519", PKCS11TestUtils.ECC_TEST_KEY_2);
     }
     
     @After
@@ -139,6 +143,7 @@ public class JackNJI11ProviderTest {
         // Delete created HSM keys. CryptoToken is never persiste.
         cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
         cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
+        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
     }
     
     @Test
@@ -162,7 +167,14 @@ public class JackNJI11ProviderTest {
         signWithProvider("SHA512withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA256withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
     }
-    
+
+    @Test
+    public void testSignatureEdEDSA() throws Exception {
+        signWithProvider("Ed25519", PKCS11TestUtils.ECC_TEST_KEY_2, cryptoToken.getSignProviderName());
+        // No HSM supports Ed448 as of October 2020
+        //signWithProvider("Ed448", PKCS11TestUtils.ECC_TEST_KEY_2, cryptoToken.getSignProviderName());
+    }
+
     @Test
     public void testPssParams() throws GeneralSecurityException, IOException {
         testDefaultPSSParams("SHA256withRSAandMGF1");
