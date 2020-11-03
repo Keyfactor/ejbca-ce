@@ -293,7 +293,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             PKIMessage revReq = protectPKIMessage(rev, false, pbeSecret, keyId, 567);
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();
-            ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req1);
+            ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
             checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
