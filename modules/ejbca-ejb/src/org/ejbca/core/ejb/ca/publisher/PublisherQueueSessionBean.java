@@ -169,9 +169,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         } catch (Exception e) {
             log.error(e);
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<removeQueueData()");
-        }
+        log.trace("<removeQueueData()");
     }
 
     @Override
