@@ -209,7 +209,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
      */
     public String getReasonWhyPublisherQueueProcessQueueCannotRun() {
         final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
-        if (idOfPublisherQueueProcessService.isEmpty()) {
+        if (!idOfPublisherQueueProcessService.isPresent()) {
             return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NO_SERVICE");
         }
         final String serviceName = serviceDataSession.findNameById(idOfPublisherQueueProcessService.get());
@@ -255,7 +255,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     public String republish() {
         log.info("Attempting to republish items in the queue with publisher ID " + getPublisherId() + ".");
         final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
-        if (idOfPublisherQueueProcessService.isEmpty()) {
+        if (!idOfPublisherQueueProcessService.isPresent()) {
             log.error("No PublishQueueProcessWorker available on this system.");
             return "";
         }
@@ -272,6 +272,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 .stream()
                 .map(idToName -> new AbstractMap.SimpleEntry<>(idToName.getKey(), serviceSession.getService(idToName.getValue())))
                 .filter(entry -> entry.getValue().getWorkerClassPath().endsWith("PublishQueueProcessWorker"))
+                .filter(entry -> entry.getValue().isActive())
                 .map(entry -> entry.getKey())
                 .findFirst();
     }
