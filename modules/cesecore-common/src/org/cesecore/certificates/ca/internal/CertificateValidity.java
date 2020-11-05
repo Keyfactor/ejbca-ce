@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -106,13 +107,13 @@ public class CertificateValidity {
     /** The certificates 'notBefore' value. */
     private Date firstDate;
    
-    public CertificateValidity(final EndEntityInformation subject, final CertificateProfile certProfile, 
+    public CertificateValidity(final EndEntityInformation subject, final CAInfo caInfo, final CertificateProfile certProfile,
             final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA, final boolean isLinkCertificate) throws IllegalValidityException {
-        this(new Date(), subject, certProfile, notBefore, notAfter, cacert, isRootCA, isLinkCertificate);
+        this(new Date(), subject, caInfo, certProfile, notBefore, notAfter, cacert, isRootCA, isLinkCertificate);
     }
    
     /** Constructor that injects the reference point (now). This constructor mainly is used for unit testing. */
-	public CertificateValidity(Date now, final EndEntityInformation subject, final CertificateProfile certProfile, 
+	public CertificateValidity(Date now, final EndEntityInformation subject, final CAInfo caInfo, final CertificateProfile certProfile,
 			final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA, final boolean isLinkCertificate) throws IllegalValidityException {
 		if (log.isDebugEnabled()) {
 		    log.debug("Requested notBefore: "+notBefore);
@@ -161,7 +162,7 @@ public class CertificateValidity {
         if (firstDate == null) {
         	firstDate = now;
         }
-        Date certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile));
+        Date certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(caInfo, certProfile));
         // Limit validity: ECA-5330 Apply expiration restriction for weekdays 
         if (certProfile.getUseExpirationRestrictionForWeekdays() && isRelativeTime(certProfile.getEncodedValidity())) {
             log.info("Applying expiration restrictions for weekdays: " + Arrays.asList(certProfile.getExpirationRestrictionWeekdays()));
@@ -208,7 +209,7 @@ public class CertificateValidity {
 			log.error(intres.getLocalizedMessage("createcert.errorbeforecurrentdate",firstDate,subject.getUsername()));
     		firstDate = now;
     		// Update valid length from the profile since the starting point has changed
-			certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(certProfile));
+			certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(caInfo, certProfile));
     		// Update lastDate if we use maximum validity
     	}
 
@@ -261,15 +262,16 @@ public class CertificateValidity {
 	/**
      * Gets the validity end date for the certificate using the certificate profiles encoded validity.
      * For relative dates, the date is based on the "notBefore" date of the this certificate.
+	 * @param caInfo The CA
      * @param profile the certificate profile
      * @return the encoded validity.
      */
 	@SuppressWarnings("deprecation")
-    private long getCertificateProfileValidtyEndDate(final CertificateProfile profile) {
+    private long getCertificateProfileValidtyEndDate(final CAInfo caInfo, final CertificateProfile profile) {
         final String encodedValidity = profile.getEncodedValidity();
         Date date = null;
         if (StringUtils.isNotBlank(encodedValidity)) {
-            date = ValidityDate.getDate( encodedValidity, firstDate);
+            date = ValidityDate.getDate(encodedValidity, firstDate, caInfo.isExpirationInclusive());
         } else {
             date = ValidityDate.getDateBeforeVersion661(profile.getValidity(),firstDate);
         }
