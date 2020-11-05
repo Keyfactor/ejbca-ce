@@ -370,7 +370,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             Enumeration<String> aliases = keyStore.aliases();
             assertEquals("Unexpected alias in keystore response", TEST_USERNAME, aliases.nextElement());
             assertEquals("Unexpected response format", "PKCS12", responseFormat);
-            assertEquals("Unexpected keystore format", "PKCS12", keyStore.getType());
+            assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
         } finally {
             // Clean up
             approvalSession.removeApprovalRequest(INTERNAL_ADMIN_TOKEN, approvalId);

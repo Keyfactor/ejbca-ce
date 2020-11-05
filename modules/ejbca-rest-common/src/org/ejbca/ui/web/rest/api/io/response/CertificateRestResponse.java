@@ -26,8 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * A class representing general information about certificate. Is used for REST services' responses.
- *
- * @version $Id: CertificateRestResponse.java 29010 2018-05-23 13:09:53Z andrey_s_helmes $
  */
 public class CertificateRestResponse {
     private byte[] certificate;
@@ -101,6 +99,16 @@ public class CertificateRestResponse {
             return this;
         }
 
+        public CertificateRestResponseBuilder setResponseFormat(int keystoreType) {
+            this.responseFormat =
+                    keystoreType == SecConst.TOKEN_SOFT_JKS ? "JKS" :
+                    keystoreType == SecConst.TOKEN_SOFT_PEM ? "PEM" :
+                    keystoreType == SecConst.TOKEN_SOFT_P12 ? "PKCS12" :
+                    keystoreType == SecConst.TOKEN_SOFT_BCFKS ? "BCFKS" :
+                            "UNKNOWN";
+            return this;
+        }
+
         public CertificateRestResponseBuilder setCertificateChain(final List<byte[]> certificateChain) {
             this.certificateChain = certificateChain;
             return this;
@@ -132,14 +140,10 @@ public class CertificateRestResponse {
                     .build();
         }
         
-        public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType, final String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
             return CertificateRestResponse.builder()
                     .setCertificate(keyStoreBytes)
-                    .setResponseFormat(
-                            keystoreType == SecConst.TOKEN_SOFT_JKS ? "JKS" :
-                            keystoreType == SecConst.TOKEN_SOFT_PEM ? "PEM" :
-                            keystoreType == SecConst.TOKEN_SOFT_P12 ? "PKCS12" :
-                            keystoreType == SecConst.TOKEN_SOFT_BCFKS ? "BCFKS" : "UNKNOWN")
+                    .setResponseFormat(keystoreType)
                     .build();
         }
 

@@ -207,7 +207,7 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType(), keyStoreRestRequest.getPassword());
+        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType());
         return Response.status(Status.CREATED).entity(response).build();
     }
 
@@ -450,7 +450,7 @@ public class CertificateRestResource extends BaseRestResource {
                 final Certificate certificate = CertTools.getCertfromByteArray(keyStoreBytes, Certificate.class);
                 response = CertificateRestResponse.converter().toRestResponse(certificate);
             } else {
-                response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType(), password);
+                response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType());
             }
         }
         return Response.status(Status.CREATED).entity(response).build();
