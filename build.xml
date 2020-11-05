@@ -1033,7 +1033,6 @@
                 <exclude unless="edition.is.ee" name="modules/cesecore-entity/src-test/org/cesecore/dbprotection/**"/>
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/ca/CvcEacCA.java"/>
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/certificates/ca/CVCCATest.java"/>
-		    	<exclude unless="edition.is.ee" name="modules/healthcheck-war/src/org/ejbca/ui/web/pub/VaPeerStatusServlet.java"/>
 		    	<exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/web/pub/cluster/VaPeerStatusServletSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/ws/EjbcaWSCVCTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/caadmin/CVCCAsTest.java"/>
@@ -1069,7 +1068,6 @@
                 <exclude unless="edition.is.ee" name="modules/acme/**"/>
                 <exclude unless="edition.is.ee" name="lib/dnsjava-*.jar"/>
                 <exclude unless="edition.is.ee" name="lib/dnssecjava-*.jar"/>
-                <exclude unless="edition.is.ee" name="lib/nimbus-jose-jwt-*.jar"/>
                 <exclude unless="edition.is.ee" name="modules/est/**"/>
                 <exclude unless="edition.is.ee" name="modules/caa/**"/>
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/certificate/certextensions/BasicCVCertificateExtension.java"/>
