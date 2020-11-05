@@ -40,7 +40,7 @@
                                  disabled="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"
                                  rendered="#{inspectPublisherQueue.items.size() gt 0}"
                                  action="#{inspectPublisherQueue.republish}">
-                    <f:ajax render=":resultsForm" />
+                    <f:ajax render=":resultsForm :messagesBlock" />
                 </h:commandButton>
                 <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH}"
                                  type="submit"
