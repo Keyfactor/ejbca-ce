@@ -130,8 +130,8 @@ public class ValidityDateTest {
         //testGetDateInternal(0, null, null);
         //testGetDateInternal(-1, now, null);
         // Test relative times (<Integer.MAX_VALUE)
-        getDateInternalBeforeVersion661(0, now, now);
-        getDateInternalBeforeVersion661(1, now, new Date(now.getTime()+24*3600*1000));
+        getDateInternalBeforeVersion661(0, now, new Date(now.getTime() - 1000));
+        getDateInternalBeforeVersion661(1, now, new Date(now.getTime() + 24*3600*1000 - 1000));
         // Test absolute time (==Integer.MAX_VALUE)
         getDateInternalBeforeVersion661(Integer.MAX_VALUE, now, new Date(Integer.MAX_VALUE));
         // Test absolute times (>Integer.MAX_VALUE)

@@ -12,6 +12,20 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,65 +50,52 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.reflect.MethodUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificateprofile.CertificatePolicy;
-import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-
 
 /**
  * <p>Implements a subset of XMLDecoder in a secure way, without allowing arbitrary classes to be loaded or methods to be invoked.
  * Only primitive types, Strings, Lists and Maps are allowed.</p>
- * 
+ *
  * <p>Currently unimplemented parts of the XML format:</p>
  * <ul>
  * <li>Non-Unicode characters in strings/chars</li>
  * <li>Uncommon or custom collection types</li>
  * </ul>
- * 
+ *
  * <p>Differences from XMLDecoder:</p>
  * <ul>
  * <li>The SecureXMLDecoder throws an IOException on error instead of using the ExceptionListener.</li>
  * <li>Throws EOFException instead of ArrayIndexOutOfBoundsException at end of file</li>
  * </ul>
- * 
- * @version $Id$
  */
 public class SecureXMLDecoder implements AutoCloseable {
-    
+
     private static final Logger log = Logger.getLogger(SecureXMLDecoder.class);
-    
+
     private final InputStream is;
     private final boolean ignoreErrors;
     private final XmlPullParser parser;
     private boolean seenHeader = false;
     private boolean closed = false;
-    /** Map of id-to-object. Used to handle id references (idref) in the XML */
-    private Map<String,Object> objectIdMap = new HashMap<>();
-    
+    /**
+     * Map of id-to-object. Used to handle id references (idref) in the XML
+     */
+    private Map<String, Object> objectIdMap = new HashMap<>();
+
     public static final class NoValueException extends IOException {
         private static final long serialVersionUID = 1L;
     }
 
     /**
      * Creates a SecureXMLDecoder. Errors when calling readObject() will generate an IOException.
+     *
      * @param is input stream.
      */
     public SecureXMLDecoder(final InputStream is) {
         this(is, false);
     }
-    
+
     /**
-     * @param is Input stream
+     * @param is           Input stream
      * @param ignoreErrors If recoverable errors should be ignored.
      */
     public SecureXMLDecoder(final InputStream is, final boolean ignoreErrors) {
@@ -122,12 +123,12 @@ public class SecureXMLDecoder implements AutoCloseable {
             throw new IllegalStateException(e);
         }
     }
-    
+
     /**
      * Reads the next object from the stream, and returns it.
-     * 
+     * <p>
      * Note: This implementation does not throw ArrayIndexOutOfBoundsException on EOF, but returns null instead.
-     * 
+     *
      * @return The deserialized object, or null when there are no more objects.
      * @throws IOException On parse error or IO error.
      */
@@ -156,8 +157,10 @@ public class SecureXMLDecoder implements AutoCloseable {
             throw new IOException(e);
         }
     }
-    
-    /** Reads the &lt;java version="xx" class="xx"&gt; header */
+
+    /**
+     * Reads the &lt;java version="xx" class="xx"&gt; header
+     */
     private void readHeader() throws XmlPullParserException, IOException {
         if (parser.getEventType() != XmlPullParser.START_DOCUMENT) {
             throw new IOException("Incorrect header of XML document");
@@ -168,7 +171,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         if (!"java".equals(parser.getName())) {
             throw new IOException("Expected <java> root element");
         }
-        
+
         final String className = parser.getAttributeValue(null, "class");
         if (!"java.beans.XMLDecoder".equals(className)) {
             throw new IOException("Unsupported decoder class. Only \"java.beans.XMLDecoder\" is supported");
@@ -176,17 +179,20 @@ public class SecureXMLDecoder implements AutoCloseable {
         parser.nextTag();
         seenHeader = true;
     }
-    
-    /** Reads an object, array or (boxed) elementary type value. */
+
+    /**
+     * Reads an object, array or (boxed) elementary type value.
+     */
     private Object readValue() throws XmlPullParserException, IOException {
         return readValue(true);
     }
-    
+
     /**
      * Reads an object, array or (boxed) elementary type value.
+     *
      * @throws XmlPullParserException On low level XML parse errors
-     * @throws IOException On not valid XMLEncoder XML
-     * @throws NoValueException If no value could be parsed
+     * @throws IOException            On not valid XMLEncoder XML
+     * @throws NoValueException       If no value could be parsed
      */
     private Object readValue(boolean disallowTextAfterElement) throws XmlPullParserException, IOException {
         final String tag = parser.getName();
@@ -264,135 +270,150 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "object":
                 final String className = parser.getAttributeValue(null, "class");
                 String method = parser.getAttributeValue(null, "method"); // used from java.util.Collections
+                if (parser.getAttributeCount() == 0) {
+                    // Special handling for broken encoding of PKIDisclosureStatement in EJBCA 7.4.0-7.4.2
+                    final PKIDisclosureStatement pkids = readBrokenPkiDisclosureStatement();
+                    if (pkids != null) { // fall back to code below if it's not a PKIDisclosureStatement
+                        value = pkids;
+                        break;
+                    }
+                }
                 parser.nextTag();
 
                 // If we need to support a lot of more classes here (or custom classes), we could instead load the
                 // classes dynamically with Class.forName (after checking the name whitelist). Then we could check
                 // which interface the class implements (Collection or Map) and use the appropriate parse method.
                 switch (className) {
-                case "java.util.ArrayList": {
-                    List<Object> list;
-                    if (isIntValue()) {
-                        int capacity = Integer.parseInt(readText());
-                        list = new ArrayList<>(capacity);
-                        parser.nextTag();
-                    } else {
-                        list = new ArrayList<>();
-                    }
-                    value = parseCollection(list);
-                    break; }
-                case "java.util.LinkedList":
-                    value = parseCollection(new LinkedList<>());
-                    break;
-                case "java.util.HashSet":
-                    value = parseCollection(new HashSet<>());
-                    break;
-                case "java.util.LinkedHashSet":
-                    value = parseCollection(new LinkedHashSet<>());
-                    break;
-                case "java.util.TreeSet":
-                    value = parseCollection(new TreeSet<>());
-                    break;
-                case "java.util.HashMap":
-                    value = parseMap(new HashMap<>());
-                    break;
-                case "java.util.LinkedHashMap":
-                    value = parseMap(new LinkedHashMap<>());
-                    break;
-                case "java.util.TreeMap":
-                    value = parseMap(new TreeMap<>());
-                    break;
-                case "java.util.concurrent.ConcurrentHashMap":
-                    value = parseMap(new ConcurrentHashMap<>());
-                    break;
-                case "org.cesecore.util.Base64PutHashMap":
-                case "org.ejbca.util.Base64PutHashMap": // old class name, lets upgrade to new one
-                    value = parseMap(new Base64PutHashMap());
-                    break;
-                case "org.cesecore.util.Base64GetHashMap":
-                case "org.ejbca.util.Base64GetHashMap": // old class name, lets upgrade to new one
-                    @SuppressWarnings("unchecked")
-                    Map<Object,Object> b64getmap = new Base64GetHashMap();
-                    value = parseMap(b64getmap);
-                    break;
-                case "org.cesecore.certificates.certificateprofile.CertificatePolicy":
-                case "org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy":
-                    value = parseObject(new CertificatePolicy());
-                    break;
-                case "org.cesecore.certificates.certificateprofile.PKIDisclosureStatement":
-                    value = parseObject(new PKIDisclosureStatement());
-                    break;
-                case "org.cesecore.certificates.endentity.EndEntityInformation":
-                    // End Entity Type is not exported correctly by XMLEncoder,
-                    // so we can't recover that property
-                    value = parseObject(new EndEntityInformation());
-                    break;
-                case "org.cesecore.certificates.endentity.ExtendedInformation":
-                    value = parseObject(new ExtendedInformation());
-                    break;
-                case "org.cesecore.keybind.InternalKeyBindingTrustEntry":
-                    value = parseObject(new InternalKeyBindingTrustEntry());
-                    break;
-                case "org.ejbca.core.model.ra.raadmin.UserNotification":
-                case "org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl":
-                case "org.ejbca.core.protocol.acme.logic.AcmeChallengeImpl":
-                case "org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl":
-                case "org.ejbca.core.protocol.acme.logic.AcmeOrderImpl":
-                case "org.ejbca.core.protocol.acme.storage.AcmeAccountImpl":
-                case "org.signserver.common.CertificateMatchingRule":
-                case "org.signserver.common.AuthorizedClient":
-                case "org.cesecore.util.SecureXMLDecoderTest$MockObject":
-                    try {
-                        // EJBCA, SignServer and test classes, so not available in CESeCore.
-                        // In the long run we should make the whitelisted class names configurable, e.g. by subclassing (ECA-4916)
-                        value = parseObject(Class.forName(className).getConstructor().newInstance());
-                    } catch (IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
-                        throw new IOException(errorMessage("Deserialization of class '" + className + "' failed: " + e.getMessage()), e);
-                    }
-                    break;
-                case "java.util.Collections":
-                    value = parseSpecialCollection(method);
-                    method = null; // value has been used, don't report error
-                    break;
-                case "java.util.Date":
-                    long dateLongValue = (long)readValue();
-                    value = new Date(dateLongValue);
-                    break;
-                case "java.util.Properties":
-                    // Default values (the argument to the constructor) aren't preserved during serialization by XMLEncoder
-                    value = parseMap(new Properties());
-                    break;
-                case "java.lang.Enum": {
-                    parser.getName();
-                    final String enumType = readString();
-                    parser.nextTag();
-                    parser.getName();
-                    final String valueName = readString();
-                    value = toEnumValue(enumType, valueName);
-                    method = null;
-                    parser.nextTag();
-                    break;
-                }
-                default:
-                    // Special handling for enum serialized in Java 6
-                    if ("valueOf".equals(method) && !"java.lang.Enum".equals(className)) {
-                        final String nested = parser.getName();
-                        if (!"string".equals(nested)) {
-                            throw new IOException("Unexpected tag '" + nested + "'. Maybe not an enum?");
+                    case "java.util.ArrayList": {
+                        List<Object> list;
+                        if (isIntValue()) {
+                            int capacity = Integer.parseInt(readText());
+                            list = new ArrayList<>(capacity);
+                            parser.nextTag();
+                        } else {
+                            list = new ArrayList<>();
                         }
-                        final String valueName = readString();
-                        parser.nextTag();
-                        value = toEnumValue(className, valueName);
-                        method = null;
-                    } else {
-                        /*
-                         * We need to add support for plain Java objects that don't need special treatment. In EJBCA we need at least
-                         * org.cesecore.certificates.certificateprofile.CertificatePolicy and org.cesecore.keybind.InternalKeyBindingTrustEntry.
-                         * For these classes we need to construct an instance and then call the getters and setters. See ECA-4916.
-                         */
-                        throw new IOException(errorMessage("Deserialization of class \"" + className + "\" not supported or not allowed."));
+                        value = parseCollection(list);
+                        break;
                     }
-                }
+                    case "java.util.LinkedList":
+                        value = parseCollection(new LinkedList<>());
+                        break;
+                    case "java.util.HashSet":
+                        value = parseCollection(new HashSet<>());
+                        break;
+                    case "java.util.LinkedHashSet":
+                        value = parseCollection(new LinkedHashSet<>());
+                        break;
+                    case "java.util.TreeSet":
+                        value = parseCollection(new TreeSet<>());
+                        break;
+                    case "java.util.HashMap":
+                        value = parseMap(new HashMap<>());
+                        break;
+                    case "java.util.LinkedHashMap":
+                        value = parseMap(new LinkedHashMap<>());
+                        break;
+                    case "java.util.TreeMap":
+                        value = parseMap(new TreeMap<>());
+                        break;
+                    case "java.util.concurrent.ConcurrentHashMap":
+                        value = parseMap(new ConcurrentHashMap<>());
+                        break;
+                    case "org.cesecore.util.Base64PutHashMap":
+                    case "org.ejbca.util.Base64PutHashMap": // old class name, lets upgrade to new one
+                        value = parseMap(new Base64PutHashMap());
+                        break;
+                    case "org.cesecore.util.Base64GetHashMap":
+                    case "org.ejbca.util.Base64GetHashMap": // old class name, lets upgrade to new one
+                        @SuppressWarnings("unchecked")
+                        Map<Object, Object> b64getmap = new Base64GetHashMap();
+                        value = parseMap(b64getmap);
+                        break;
+                    case "org.cesecore.certificates.certificateprofile.CertificatePolicy":
+                    case "org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy":
+                        value = parseObject(new CertificatePolicy());
+                        break;
+                    case "org.cesecore.certificates.certificateprofile.PKIDisclosureStatement":
+                        value = parseObject(new PKIDisclosureStatement());
+                        break;
+                    case "org.cesecore.certificates.endentity.EndEntityInformation":
+                        // End Entity Type is not exported correctly by XMLEncoder,
+                        // so we can't recover that property
+                        value = parseObject(new EndEntityInformation());
+                        break;
+                    case "":
+                    case "org.cesecore.certificates.endentity.ExtendedInformation":
+                        value = parseObject(new ExtendedInformation());
+                        break;
+                    case "org.cesecore.keybind.InternalKeyBindingTrustEntry":
+                        value = parseObject(new InternalKeyBindingTrustEntry());
+                        break;
+                    case "org.ejbca.core.model.ra.ExtendedInformation":
+                        value = parseLegacyExtendedInformation();
+                        break;
+                    case "org.ejbca.core.model.ra.raadmin.UserNotification":
+                    case "org.ejbca.core.model.ra.UserDataVO":
+                    case "org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl":
+                    case "org.ejbca.core.protocol.acme.logic.AcmeChallengeImpl":
+                    case "org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl":
+                    case "org.ejbca.core.protocol.acme.logic.AcmeOrderImpl":
+                    case "org.ejbca.core.protocol.acme.storage.AcmeAccountImpl":
+                    case "org.signserver.common.CertificateMatchingRule":
+                    case "org.signserver.common.AuthorizedClient":
+                    case "org.cesecore.util.SecureXMLDecoderTest$MockObject":
+                    case "org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement":
+                        try {
+                            // EJBCA, SignServer and test classes, so not available in CESeCore.
+                            // In the long run we should make the whitelisted class names configurable, e.g. by subclassing (ECA-4916)
+                            value = parseObject(Class.forName(className).getConstructor().newInstance());
+                        } catch (IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
+                            throw new IOException(errorMessage("Deserialization of class '" + className + "' failed: " + e.getMessage()), e);
+                        }
+                        break;
+                    case "java.util.Collections":
+                        value = parseSpecialCollection(method);
+                        method = null; // value has been used, don't report error
+                        break;
+                    case "java.util.Date":
+                        long dateLongValue = (long) readValue();
+                        value = new Date(dateLongValue);
+                        break;
+                    case "java.util.Properties":
+                        // Default values (the argument to the constructor) aren't preserved during serialization by XMLEncoder
+                        value = parseMap(new Properties());
+                        break;
+                    case "java.lang.Enum": {
+                        parser.getName();
+                        final String enumType = readString();
+                        parser.nextTag();
+                        parser.getName();
+                        final String valueName = readString();
+                        value = toEnumValue(enumType, valueName);
+                        method = null;
+                        parser.nextTag();
+                        break;
+                    }
+                    default:
+                        // Special handling for enum serialized in Java 6
+                        if ("valueOf".equals(method) && !"java.lang.Enum".equals(className)) {
+                            final String nested = parser.getName();
+                            if (!"string".equals(nested)) {
+                                throw new IOException("Unexpected tag '" + nested + "'. Maybe not an enum?");
+                            }
+                            final String valueName = readString();
+                            parser.nextTag();
+                            value = toEnumValue(className, valueName);
+                            method = null;
+                        } else {
+                            /*
+                             * We need to add support for plain Java objects that don't need special treatment. In EJBCA we need at least
+                             * org.cesecore.certificates.certificateprofile.CertificatePolicy and org.cesecore.keybind.InternalKeyBindingTrustEntry.
+                             * For these classes we need to construct an instance and then call the getters and setters. See ECA-4916.
+                             */
+                            throw new IOException(errorMessage("Deserialization of class \"" + className + "\" not supported or not allowed."));
+                        }
+                } // end of inner switch
                 if (method != null) {
                     throw new IOException(errorMessage("Method attribute on object element of class \"" + className + "\" is not supported or not allowed."));
                 }
@@ -406,12 +427,29 @@ public class SecureXMLDecoder implements AutoCloseable {
                 throw new IOException(errorMessage("Unsupported tag \"" + tag + "\"."));
         }
         storeObjectById(id, value);
-        
+
         expectEndTag(tag);
         if (disallowTextAfterElement) {
             parser.nextTag();
         }
         return value;
+    }
+
+    /**
+     * Tries to read a corrupted encoding of PKIDisclosureStatement from EJBCA 7.4.0 - 7.4.2 (see ECA-9548).
+     * @return PKIDisclosureStatement, or null if it is something else.
+     * @throws XmlPullParserException On low level XML parse errors
+     * @throws IOException On not valid XMLEncoder XML
+     */
+    private PKIDisclosureStatement readBrokenPkiDisclosureStatement() throws XmlPullParserException, IOException {
+        final String encodedValue = readString();
+        if (!encodedValue.startsWith("{")) {
+            return null;
+        }
+        final String[] splitted = encodedValue.split("\\}", 2);
+        final String language = splitted[0].substring(1);
+        final String url = splitted[1];
+        return new PKIDisclosureStatement(url, language);
     }
 
     /**
@@ -438,7 +476,7 @@ public class SecureXMLDecoder implements AutoCloseable {
             throw new IOException(errorMessage("Invalid enum value \"" + valueName + "\" for enum type \"" + enumType + "\""), e);
         }
     }
-    
+
     private void storeObjectById(final String id, final Object value) {
         if (id != null && value != null) {
             // The object (or getter) has an ID, so it can be referenced again later
@@ -457,7 +495,7 @@ public class SecureXMLDecoder implements AutoCloseable {
             throw new IOException(errorMessage(msg));
         }
     }
-    
+
     /**
      * Reads the text content between two tags. Stops if there are nested tags, e.g.
      * <code>&lt;text&gt;blabla&lt;nested/&gt;blabla&lt;/text&gt;</code>,
@@ -473,7 +511,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         }
         return text;
     }
-    
+
     /**
      * Reads a string, possibly containing &lt;char code="#xxx"/&gt; escapes.
      *
@@ -490,7 +528,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                 if (!(charvalue instanceof Character)) {
                     throw new IOException(errorMessage("Unexpected object element inside java string element"));
                 }
-                sb.append((char)charvalue);
+                sb.append((char) charvalue);
             } else if (eventType == XmlPullParser.END_TAG) {
                 break;
             } else {
@@ -499,13 +537,17 @@ public class SecureXMLDecoder implements AutoCloseable {
         }
         return sb.toString();
     }
-    
-    /** Checks if the next item is an <int> start tag */
+
+    /**
+     * Checks if the next item is an <int> start tag
+     */
     private boolean isIntValue() throws XmlPullParserException {
         return parser.getEventType() == XmlPullParser.START_TAG && "int".equals(parser.getName());
     }
-    
-    /** Reads an &lt;array class="xx" length="xx"&gt; element */
+
+    /**
+     * Reads an &lt;array class="xx" length="xx"&gt; element
+     */
     private Object readArray() throws XmlPullParserException, IOException {
         final String className = parser.getAttributeValue(null, "class");
         final String lengthStr = parser.getAttributeValue(null, "length");
@@ -514,49 +556,67 @@ public class SecureXMLDecoder implements AutoCloseable {
             if (className == null || lengthStr == null) {
                 throw new IOException(errorMessage("Missing attributes on array"));
             }
-            
+
             final Class<?> elemClass;
             switch (className) {
-            case "char": elemClass = Character.TYPE; break;
-            case "byte": elemClass = Byte.TYPE; break;
-            case "short": elemClass = Short.TYPE; break;
-            case "int": elemClass = Integer.TYPE; break;
-            case "long": elemClass = Long.TYPE; break;
-            case "float": elemClass = Float.TYPE; break;
-            case "double": elemClass = Double.TYPE; break;
-            case "boolean": elemClass = Boolean.TYPE; break;
-            default:
-                // Note that we do not instantiate or initialize the class, so this is OK security-wise
-                elemClass = Class.forName(className, false, getClass().getClassLoader());
+                case "char":
+                    elemClass = Character.TYPE;
+                    break;
+                case "byte":
+                    elemClass = Byte.TYPE;
+                    break;
+                case "short":
+                    elemClass = Short.TYPE;
+                    break;
+                case "int":
+                    elemClass = Integer.TYPE;
+                    break;
+                case "long":
+                    elemClass = Long.TYPE;
+                    break;
+                case "float":
+                    elemClass = Float.TYPE;
+                    break;
+                case "double":
+                    elemClass = Double.TYPE;
+                    break;
+                case "boolean":
+                    elemClass = Boolean.TYPE;
+                    break;
+                default:
+                    // Note that we do not instantiate or initialize the class, so this is OK security-wise
+                    elemClass = Class.forName(className, false, getClass().getClassLoader());
             }
-            
+
             final int length = Integer.parseInt(lengthStr);
             final Object arr = Array.newInstance(elemClass, length);
-            
+
             // Read the array elements
             while (true) {
                 // Read <void index="xx">
-                if (parser.getEventType() == XmlPullParser.END_TAG) { break; }
-                
+                if (parser.getEventType() == XmlPullParser.END_TAG) {
+                    break;
+                }
+
                 if (parser.getEventType() != XmlPullParser.START_TAG && !"void".equals(parser.getName())) {
                     throw new IOException(errorMessage("Expected <void> tag, not \"" + parser.getName() + "\"."));
                 }
-                
+
                 final String indexStr = parser.getAttributeValue(null, "index");
                 if (indexStr == null) {
                     throw new IOException(errorMessage("Missing index attribute on <void> tag."));
                 }
                 parser.nextTag();
-                
+
                 // Read value
                 final int index = Integer.parseInt(indexStr);
                 final Object value = readValue();
                 Array.set(arr, index, value); // Must set using reflection since it could be an array of a primitive type
-                
+
                 expectEndTag("void");
                 parser.nextTag();
             }
-            
+
             return arr;
         } catch (ClassNotFoundException e) {
             throw new IOException(errorMessage("Failed to load array class \"" + className + "\". "));
@@ -564,7 +624,7 @@ public class SecureXMLDecoder implements AutoCloseable {
             throw new IOException(errorMessage("Bad length or index \"" + lengthStr + "\"."));
         }
     }
-    
+
     /**
      * Reads a method call start tag, e.g. &lt;void method="add"&gt;.
      * The data inside the void element is the method arguments.
@@ -573,7 +633,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         if (parser.getEventType() != XmlPullParser.START_TAG || !"void".equals(parser.getName())) {
             throw new IOException(errorMessage("Expected <void> start tag."));
         }
-        
+
         final String method = parser.getAttributeValue(null, "method");
         if (method == null) {
             throw new IOException(errorMessage("Element <void> is missing a \"method\" attribute."));
@@ -581,57 +641,67 @@ public class SecureXMLDecoder implements AutoCloseable {
         parser.nextTag();
         return method;
     }
-    
-    /** Parses data for Collection objects, such as ArrayList, but also HashSet etc. */
+
+    /**
+     * Parses data for Collection objects, such as ArrayList, but also HashSet etc.
+     */
     private Object parseCollection(final Collection<Object> col) throws XmlPullParserException, IOException {
         while (true) {
             if (parser.getEventType() == XmlPullParser.END_TAG) {
                 break;
             }
-            
+
             final String method = readMethodCall();
             if (!method.equals("add")) {
                 throw new IOException(errorMessage("Method \"" + method + "\" not supported or not allowed on Lists."));
             }
-            
+
             final Object element = readValue();
             col.add(element);
-            
+
             expectEndTag("void");
             parser.nextTag();
         }
         return col;
     }
 
-    /** Parses data for Map objects */
-    private Object parseMap(final Map<Object,Object> map) throws XmlPullParserException, IOException {
+    /**
+     * Parses data for Map objects.
+     *
+     * @param map The map to put the parsed data in.
+     * @return the parsed map as an object.
+     */
+    private Object parseMap(final Map<Object, Object> map) throws XmlPullParserException, IOException {
         while (true) {
             if (parser.getEventType() == XmlPullParser.END_TAG) {
                 break;
             }
-            
+
             final String method = readMethodCall();
             if (!method.equals("put")) {
                 throw new IOException(errorMessage("Method \"" + method + "\" not supported or not allowed on Maps."));
             }
-            
+
             final Object key = readValue();
             final Object value = readValue();
             map.put(key, value);
-            
+
             expectEndTag("void");
             parser.nextTag();
         }
         return map;
     }
-    
+
     private Object parseSpecialCollection(final String method) throws XmlPullParserException, IOException {
         // We do not allow unmodifiable collections to be deserialized (since that could be cause a Denial of Service if used in the wrong place),
         // instead we deserialize them as their modifiable counterpart.
         switch (method) {
-            case "emptySet": return new HashSet<>();
-            case "emptyList": return new ArrayList<>();
-            case "emptyMap": return new HashMap<>();
+            case "emptySet":
+                return new HashSet<>();
+            case "emptyList":
+                return new ArrayList<>();
+            case "emptyMap":
+                return new HashMap<>();
             case "unmodifiableList":
                 final Object list = readValue();
                 if (!(list instanceof List)) {
@@ -659,31 +729,89 @@ public class SecureXMLDecoder implements AutoCloseable {
                 }
                 return col;
 
-            default: throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
+            default:
+                throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
         }
     }
-    
-    /** Parses an arbitrary object. Note that this method will allow any property to be set. */
+
+    /**
+     * <p>Parses the XML representation of <code>org.ejbca.core.model.ra.ExtendedInformation</code>.</p>
+     *
+     * <p><b>Implementation note:</b> Some data is lost during serialisation and will be recreated from the
+     * "default" data created during instantiation.</p>
+     *
+     * <p>Example of what it might look like:</p>
+     * <pre>
+     *     {@code
+     *      <object class="org.ejbca.core.model.ra.ExtendedInformation" id="ExtendedInformation0">
+     *        <void id="LinkedHashMap0" property="data">
+     *          <void method="put">
+     *            <string>CERTIFICATESERIALNUMBER</string>
+     *            <string>ew==</string>
+     *          </void>
+     *        </void>
+     *        <void property="data">
+     *          <object idref="LinkedHashMap0"/>
+     *        </void>
+     *      </object>
+     *     }
+     * </pre>
+     *
+     * @return the parsed object.
+     * @throws IOException if the object could not be parsed.
+     */
+    private Object parseLegacyExtendedInformation() throws IOException, XmlPullParserException {
+        try {
+            // Ignore <void id="LinkedHashMap0" property="data">
+            parser.nextTag();
+            final LinkedHashMap<Object, Object> parsedData = new LinkedHashMap<>();
+            parseMap(parsedData);
+            expectEndTag("void");
+            parser.nextTag();
+            final Object extendedInformation = Class.forName("org.ejbca.core.model.ra.ExtendedInformation")
+                    .getConstructor()
+                    .newInstance();
+            final LinkedHashMap<Object, Object> rawData = (LinkedHashMap<Object, Object>) MethodUtils.invokeMethod(extendedInformation, "getRawData");
+            rawData.putAll(parsedData);
+            // Skip
+            //   <void property="data">
+            //    <object idref="LinkedHashMap0"/>
+            //   </void>
+            // </object>
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            return extendedInformation;
+        } catch (IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
+            throw new IOException(errorMessage("Deserialization of class 'org.ejbca.core.model.ra.ExtendedInformation' failed: "
+                    + e.getMessage()), e);
+        }
+    }
+
+    /**
+     * Parses an arbitrary object. Note that this method will allow any property to be set.
+     */
     private Object parseObject(final Object obj) throws XmlPullParserException, IOException {
         while (true) {
             if (parser.getEventType() == XmlPullParser.END_TAG) {
                 break;
             }
-            
+
             if (parser.getEventType() != XmlPullParser.START_TAG || !"void".equals(parser.getName())) {
                 throw new IOException(errorMessage("Expected <void> start tag."));
             }
-            
+
             final String id = parser.getAttributeValue(null, "id");
             final String property = parser.getAttributeValue(null, "property");
             if (property == null) {
                 throw new IOException(errorMessage("Element <void> is missing a \"property\" attribute."));
             }
             parser.nextTag();
-            
+
             final String methodBase = property.substring(0, 1).toUpperCase(Locale.ROOT) + property.substring(1);
             final String setterName = "set" + methodBase;
-            
+
             if (parser.getEventType() != XmlPullParser.END_TAG) {
                 try {
                     final Object value = readValue(true);
@@ -719,13 +847,13 @@ public class SecureXMLDecoder implements AutoCloseable {
                     throwOrLog(errorMessage("Could not find a getter for " + property), e);
                 }
             }
-            
+
             expectEndTag("void");
             parser.nextTag();
         }
         return obj;
     }
-    
+
     private boolean methodExists(final Class<?> klass, final String methodName) {
         for (final Method method : klass.getMethods()) {
             if (methodName.equals(method.getName())) {

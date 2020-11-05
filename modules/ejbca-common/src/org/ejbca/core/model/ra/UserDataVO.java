@@ -37,7 +37,6 @@ import org.cesecore.util.StringTools;
  * NOTE! This class is not to be extended anymore. It is kept for backwards serialization compatibility only.
  * use class EndEntityInformation instead.
  *
- * @version $Id$
  * @deprecated Use org.cesecore.certificates.endentity.EndEntityInformation instead. Since EJBCA 5.0.0.
  */
 @Deprecated

@@ -1738,7 +1738,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 ei = new ExtendedInformation();
             }
             final String encodedValidity = ei.getCertificateEndTime();
-            final Date notAfter = encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date());
+            final Date notAfter = encodedValidity == null ? null :
+                ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(admin, // Authentication token
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
@@ -1777,6 +1778,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return null;
     }
 
+    private boolean isNotAfterInclusive(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity) throws AuthorizationDeniedException {
+        final CAInfo caInfo = caSession.getCAInfo(authenticationToken, endEntity.getCAId());
+        if (caInfo == null) {
+            log.warn("CA "+ endEntity.getCAId() + " was not found. Username: " + endEntity.getUsername());
+            return true; // Assume X.509
+        }
+        return caInfo.isExpirationInclusive();
+    }
+
     @Override
     public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException {
@@ -1789,7 +1799,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         req.setUsername(endEntityInformation.getUsername());
         req.setPassword(endEntityInformation.getPassword());
         final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
-        req.setRequestValidityNotAfter(encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date()));
+        req.setRequestValidityNotAfter(encodedValidity == null ? null :
+            ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
         try {
             ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
@@ -2715,7 +2726,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             final String encodedValidity = endEntity.getExtendedInformation().getCertificateEndTime();
-            final Date notAfter = encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date());
+            final Date notAfter = encodedValidity == null ? null :
+                ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntity));
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(authenticationToken,
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
@@ -2781,7 +2793,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         req.setUsername(endEntityInformation.getUsername());
         req.setPassword(endEntityInformation.getPassword());
         final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
-        req.setRequestValidityNotAfter(encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date()));
+        req.setRequestValidityNotAfter(encodedValidity == null ? null :
+            ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
         try {
             ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);

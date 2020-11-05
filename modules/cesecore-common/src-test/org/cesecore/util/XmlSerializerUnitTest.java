@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -176,8 +177,9 @@ public class XmlSerializerUnitTest {
         b64DataMap.put("linkedhashmap", linkedhashmap);
         b64DataMap.put("arraylist", arraylist);
         b64DataMap.put("pds", pds);
+        b64DataMap.put("arraypds", new ArrayList<>(Arrays.asList(new PKIDisclosureStatement("https://example.com/pds2åäö", "EN"))));
 
-        // Get XML from XmlSerializer
+        // Get XML from XmlSerializerlanguage
         final String xmlSerializerXmlString = XmlSerializer.encodeSimpleMapFast(b64DataMap);
         // Get XML from XMLEncoder
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
