@@ -76,7 +76,6 @@ public class EndEntityRestResource extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
-    
     private static final Logger log = Logger.getLogger(EndEntityRestResource.class);
 
     @GET
