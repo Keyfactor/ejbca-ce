@@ -12,21 +12,6 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -47,6 +32,20 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Backing bean for end entity details view.
@@ -331,7 +330,7 @@ public class RaEndEntityBean implements Serializable {
     /**
      * Sets the enrollment code (confirm) field
      * 
-     * @param enrollmentCode the new enrollment code (confirm)
+     * @param enrollmentCodeConfirm the new enrollment code (confirm)
      */
     public void setEnrollmentCodeConfirm(String enrollmentCodeConfirm) {
         this.enrollmentCodeConfirm = enrollmentCodeConfirm;
@@ -379,6 +378,8 @@ public class RaEndEntityBean implements Serializable {
                             raLocaleBean.getMessage("component_eedetails_tokentype_jks")),
                     new SelectItem(EndEntityConstants.TOKEN_SOFT_P12,
                             raLocaleBean.getMessage("component_eedetails_tokentype_pkcs12")),
+                    new SelectItem(EndEntityConstants.TOKEN_SOFT_BCFKS,
+                            raLocaleBean.getMessage("component_eedetails_tokentype_bcfks")),
                     new SelectItem(EndEntityConstants.TOKEN_SOFT_PEM,
                             raLocaleBean.getMessage("component_eedetails_tokentype_pem"))
             };
