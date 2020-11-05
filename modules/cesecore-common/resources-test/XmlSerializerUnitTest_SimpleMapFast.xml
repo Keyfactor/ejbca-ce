@@ -115,5 +115,20 @@
     </void>
    </object>
   </void>
+  <void method="put">
+   <string>arraypds</string>
+   <object class="java.util.ArrayList">
+    <void method="add">
+     <object class="org.cesecore.certificates.certificateprofile.PKIDisclosureStatement">
+      <void property="language">
+       <string>EN</string>
+      </void>
+      <void property="url">
+       <string>https://example.com/pds2åäö</string>
+      </void>
+     </object>
+    </void>
+   </object>
+  </void>
  </object>
 </java>

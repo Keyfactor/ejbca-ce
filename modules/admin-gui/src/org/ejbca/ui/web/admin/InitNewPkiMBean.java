@@ -458,11 +458,12 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             CertificateEncodingException, KeyStoreException, InvalidAlgorithmParameterException, IllegalKeyException, CertificateCreateException, CertificateRevokeException, 
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, 
             AuthLoginException, NoSuchEndEntityException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateSignatureException {
-        final int caId = caSession.getCAInfo(getAdmin(), getCaName()).getCAId();
+        final CAInfo caInfo = caSession.getCAInfo(getAdmin(), getCaName());
+        final int caId = caInfo.getCAId();
         endEntityManagementSession.addUser(getAdmin(), "superadmin", getAdminKeyStorePassword(), getAdminDn(), 
                 null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.TOKEN_SOFT_P12, caId);
-        Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date());
+        Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date(), caInfo.isExpirationInclusive());
         KeyStore keyStore = null;
         keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
                 caId, "2048", "RSA", new Date(), notAfter, SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);

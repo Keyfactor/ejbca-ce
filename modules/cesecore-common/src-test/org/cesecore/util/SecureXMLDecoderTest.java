@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+import org.junit.Test;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -42,15 +41,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificateprofile.CertificatePolicy;
-import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-/**
- * 
- * @version $Id$
- */
 public class SecureXMLDecoderTest {
 
     private static final Logger log = Logger.getLogger(SecureXMLDecoderTest.class);
@@ -381,6 +377,60 @@ public class SecureXMLDecoderTest {
         final Object value = map.get("KEY1");
         assertSame("Wrong value was deserialized", MockEnum.FOO, value);
         log.trace("<oldJava6EnumEncoding");
+    }
+
+    /**
+     * EJBCA 7.4.0 - 7.4.2 encoded PKI Disclosure Statements in Certificate Profiles incorrectly (see ECA-9548).
+     * We need to support decoding incorrectly encoded PKI Disclosure Statements from those versions,
+     * and that is what this test checks.
+     */
+    @Test
+    public void decodeCorruptPkiDSFromEjbca740() throws Exception {
+        log.trace(">decodeCorruptPkiDSFromEjbca740");
+        // Given
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<java version=\"11.0.9\" class=\"java.beans.XMLDecoder\">\n" +
+                " <object class=\"org.cesecore.util.Base64PutHashMap\">\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>msg</string>\n" +
+                "   <string>Edited certificateprofile tset.</string>\n" +
+                "  </void>\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>changed:useqcstatement</string>\n" +
+                "   <string>true</string>\n" +
+                "  </void>\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>addedvalue:qcetsipds</string>\n" +
+                "   <object class=\"java.util.ArrayList\">\n" +
+                "    <void method=\"add\">\n" +
+                "     <object>{en}https://cdn.vm.test/etsi_pds_en_server.pdf</object>\n" +
+                "    </void>\n" +
+                "   </object>\n" +
+                "  </void>\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>changed:approvals</string>\n" +
+                "   <string>{REVOCATION=-1, KEYRECOVER=-1, ADDEDITENDENTITY=-1}</string>\n" +
+                "  </void>\n" +
+                " </object>\n" +
+                "</java>\n";
+        // When
+        Object result = null;
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.US_ASCII)))) {
+            result = decoder.readObject();
+            decoder.readObject(); // Should trigger EOF
+            fail("Too many objects in stream?");
+        } catch (EOFException e) {
+            // NOPMD: Expected, happens when we reach the end
+        }
+        // Then
+        final Map<?,?> map = (Map<?,?>) result;
+        assertNotNull("Result was null.", map);
+        final List<?> pds = (List<?>) map.get("addedvalue:qcetsipds");
+        assertEquals("Wrong size of PDS list", 1, pds.size());
+        final PKIDisclosureStatement pkids = (PKIDisclosureStatement) pds.get(0);
+        assertEquals("Wrong PKI DS language", "en", pkids.getLanguage());
+        assertEquals("Wrong PKI DS URL", "https://cdn.vm.test/etsi_pds_en_server.pdf", pkids.getUrl());
+        log.trace("<decodeCorruptPkiDSFromEjbca740");
     }
 
     private void decodeBad(final byte[] xml) {
