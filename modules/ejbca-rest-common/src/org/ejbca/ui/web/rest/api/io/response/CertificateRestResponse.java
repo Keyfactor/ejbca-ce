@@ -138,7 +138,7 @@ public class CertificateRestResponse {
                     .setResponseFormat(
                             keystoreType == SecConst.TOKEN_SOFT_JKS ? "JKS" :
                             keystoreType == SecConst.TOKEN_SOFT_PEM ? "PEM" :
-                            keystoreType == SecConst.TOKEN_SOFT_P12 ? "P12" :
+                            keystoreType == SecConst.TOKEN_SOFT_P12 ? "PKCS12" :
                             keystoreType == SecConst.TOKEN_SOFT_BCFKS ? "BCFKS" : "UNKNOWN")
                     .build();
         }
