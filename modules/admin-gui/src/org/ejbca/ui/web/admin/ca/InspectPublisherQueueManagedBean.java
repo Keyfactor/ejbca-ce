@@ -261,7 +261,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         }
         log.info("Scheduling timer for PublishQueueProcessWorker with ID " + idOfPublisherQueueProcessService.get() + ".");
         serviceSession.runService(idOfPublisherQueueProcessService.get());
-        addInfoMessage("INSPECT_PUBLISHER_QUEUE_STARTED_SERVICE");
+        addInfoMessage("INSPECT_PUBLISHER_QUEUE_STARTED_SERVICE", serviceSession.getServiceName(idOfPublisherQueueProcessService.get()));
         return "";
     }
 
