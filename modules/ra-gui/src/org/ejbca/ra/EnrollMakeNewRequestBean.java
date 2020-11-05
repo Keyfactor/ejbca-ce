@@ -401,11 +401,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return raLocaleBean.getMessage("enroll_validity_help_empty");
         }
         final Date now = new Date();
-        final Date validityDate = ValidityDate.getDate(validity, now);
+        final Date validityDate = ValidityDate.getDate(validity, now, true);
         if (validityDate == null) {
             return raLocaleBean.getMessage("enroll_validity_help_unparsable");
         }
-        final Date maxDate = ValidityDate.getDate(getCertificateProfile().getEncodedValidity(), now);
+        final Date maxDate = ValidityDate.getDate(getCertificateProfile().getEncodedValidity(), now, true);
         if (validityDate.after(maxDate)) {
             return raLocaleBean.getMessage("enroll_validity_help_too_long");
         }
@@ -509,11 +509,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         final Date anchorDate = new Date();
         final String validityToCheck = validity;
-        final Date userDate = ValidityDate.getDate(validityToCheck, anchorDate);
+        final Date userDate = ValidityDate.getDate(validityToCheck, anchorDate, true);
         if (userDate == null) {
             return null;
         }
-        final Date maxDate = ValidityDate.getDate(getCertificateProfile().getEncodedValidity(), anchorDate);
+        final Date maxDate = ValidityDate.getDate(getCertificateProfile().getEncodedValidity(), anchorDate, true);
         if (userDate.after(maxDate)) {
             return null;
         }
