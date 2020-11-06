@@ -921,11 +921,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
         final IdNameHashMap<CertificateProfile> ret = new IdNameHashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 11) {
+            if (raMasterApi.isBackendAvailable()) {
                 try {
-                    final IdNameHashMap<CertificateProfile> result = raMasterApi.getAllAuthorizedCertificateProfiles(authenticationToken);
-                    if (result != null) {
-                        ret.putAll(result);
+                    if (raMasterApi.getApiVersion() >= 11) {
+
+                        final IdNameHashMap<CertificateProfile> result = raMasterApi.getAllAuthorizedCertificateProfiles(authenticationToken);
+                        if (result != null) {
+                            ret.putAll(result);
+                        }
+                    } else {
+                        final IdNameHashMap<CertificateProfile> result = raMasterApi.getAuthorizedCertificateProfiles(authenticationToken);
+                        if (result != null) {
+                            ret.putAll(result);
+                        }
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
