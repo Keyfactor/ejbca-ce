@@ -136,7 +136,7 @@ public class ValidatorsBean extends BaseManagedBean {
      * @param name the name.
      */
     public void setNewValidatorName(final String name) {
-        newValidatorName = name;
+        newValidatorName = name.trim();
     }
 
     /**
