@@ -13,34 +13,6 @@
 
 package org.ejbca.core.ejb.services;
 
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -92,6 +64,33 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Session bean that handles adding and editing services as displayed in EJBCA. This bean manages the service configuration as stored in the database,
@@ -457,6 +456,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">ejbTimeout");
         }
+        log.info("Timer was triggered. Trying to run service with ID " + timer.getInfo() + ".");
         final long startOfTimeOut = System.currentTimeMillis();
         long serviceInterval = IInterval.DONT_EXECUTE;
         Integer timerInfo = (Integer) timer.getInfo();
@@ -597,7 +597,19 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
         return true;
     }
-    
+
+    /**
+     * Schedule a service with the given service ID for immediate execution.
+     *
+     * @param serviceId the ID of the service
+     */
+    @Override
+    public void runService(int serviceId) {
+        final TimerConfig timerConfig = new TimerConfig();
+        timerConfig.setInfo(serviceId);
+        timerService.createSingleActionTimer(1, timerConfig);
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout) {
