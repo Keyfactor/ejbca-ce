@@ -16,7 +16,10 @@ package org.ejbca.ui.cli.ca;
 import java.io.File;
 import java.io.FileReader;
 import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -62,18 +65,18 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(COMMAND_KEY, "Command to execute", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Command to execute. Use " + COMMAND_ADD + ", " + COMMAND_REMOVE + " or " + COMMAND_GEN_SQL + "."));
         registerParameter(new Parameter(UPDATE_MODE_KEY, "Update mode", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Specifies the format of blacklist data. Possible values are" + System.lineSeparator() +
+                "Specifies the format of block list data. Possible values are" + System.lineSeparator() +
                 "    fingerprint       - If the input files shall be treated as CSV" + System.lineSeparator() +
                 "                        files, where the first column contains" + System.lineSeparator() +
                 "                        a SHA-256 hash of the DER encoded public" + System.lineSeparator() + 
                 "                        key modulus." + System.lineSeparator() +
                 "    debianfingerprint - If the input files shall be treated as a" + System.lineSeparator() +
-                "                        Debian weak key blacklists, where each line" + System.lineSeparator() +
+                "                        Debian weak key block lists, where each line" + System.lineSeparator() +
                 "                        is the fingerprint of a weak Debian key." + System.lineSeparator() +
                 "                        See https://wiki.debian.org/SSLkeys" + System.lineSeparator() +
                 "If not specified, the input files are treated as PEM-encoded public keys."));
         registerParameter(new Parameter(DIRECTORY_KEY, "Public key directory", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Directory with blacklist data."));
+                "Directory with block list data."));
         registerParameter(Parameter.createFlag(RESUME_ON_ERROR_KEY,
                 "Set if the command should resume in case of errors, or stop on first one. Default is stop."));
     }
@@ -86,7 +89,12 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
     @Override
     public String getMainCommand() {
-        return "updatepublickeyblacklist";
+        return "updatepublickeyblocklist";
+    }
+    
+    @Override
+    public Set<String> getMainCommandAliases() {
+        return new HashSet<String>(Arrays.asList("updatepublickeyblacklist"));
     }
 
     @Override
@@ -148,7 +156,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                     fingerprint = tokens[0];
                                     state = addPublicKeyFingerprintToBlacklist(fingerprint);
                                     if (STATUS_OK != state) {
-                                        log.info("Update public key blacklist failed on fingerprint: " + fingerprint); 
+                                        log.info("Update public key block list failed on fingerprint: " + fingerprint); 
                                         break;
                                     }
                                 }
@@ -189,14 +197,14 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                 tokens = line.split(CSV_SEPARATOR);
                                 if (tokens.length > 0) {
                                     fingerprint = tokens[0];
-                                    log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
+                                    log.info("Try to remove public key from public key block list (fingerprint=" + fingerprint + ").");
                                     try {
                                         state = removeFromBlacklist(PublicKeyBlacklistEntry.TYPE, fingerprint);
                                     } catch (BlacklistDoesntExistsException e) {
                                         // Do nothing, it was already printed to info
                                     }
                                     if (STATUS_OK != state) {
-                                        log.info("remove public key blacklist failed on fingerprint: " + fingerprint);                                        
+                                        log.info("remove public key block list failed on fingerprint: " + fingerprint);                                        
                                     }
                                 }
                             }
@@ -263,25 +271,25 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                         break;
                     }
                     if (!resumeOnError && STATUS_OK != state) {
-                        throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
+                        throw new Exception("Update public key block list aborted --resumeonerror=" + resumeOnError);
                     }
                 } catch (BlacklistExistsException e) {
-                    log.error("Update public key blacklist failed: " + e.getMessage());
+                    log.error("Update public key block list failed: " + e.getMessage());
                     if (!resumeOnError) {
                         return CommandResult.FUNCTIONAL_FAILURE;
                     }
                 } catch (BlacklistDoesntExistsException e) {
-                    log.info("Update public key blacklist failed: " + e.getMessage());
+                    log.info("Update public key block list failed: " + e.getMessage());
                     if (!resumeOnError) {
                         return CommandResult.FUNCTIONAL_FAILURE;
                     }
                 } catch (AuthorizationDeniedException e) {
-                    log.info("Not authorized to update blacklist: " + e.getMessage());
+                    log.info("Not authorized to update block list: " + e.getMessage());
                     if (!resumeOnError) {
                         return CommandResult.FUNCTIONAL_FAILURE;
                     }
                 } catch (Exception e) {
-                    log.info("Update public key blacklist failed: " + e.getMessage(), e);
+                    log.info("Update public key block list failed: " + e.getMessage(), e);
                     if (!resumeOnError) {
                         return CommandResult.FUNCTIONAL_FAILURE;
                     }
@@ -290,7 +298,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
             printSummary(importOk, readError, redundant, constraintViolation, generalImportError, command);
         } catch (Exception e) {
-            log.error("Update public key blacklist aborted: " + e.getMessage(), e);
+            log.error("Update public key block list aborted: " + e.getMessage(), e);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         log.trace("<execute()");
@@ -299,7 +307,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Updates the public key blacklist datastore.";
+        return "Updates the public key block list datastore.";
     }
 
     @Override
@@ -342,7 +350,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     private int addPublicKeyFingerprintToBlacklist(final String fingerprint) throws Exception {
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
         entry.setFingerprint(fingerprint.toLowerCase());
-        log.info("Blacklisting public key by fingerprint (fingerprint=" + fingerprint + ").");
+        log.info("Blocklisting public key by fingerprint (fingerprint=" + fingerprint + ").");
         return addToBlacklist(entry);
     }
 
@@ -357,7 +365,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         log.trace(">removePublicKeyFromBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final String fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
-        log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
+        log.info("Try to remove public key from public key block list (fingerprint=" + fingerprint + ").");
         result = removeFromBlacklist(PublicKeyBlacklistEntry.TYPE, fingerprint);
         log.trace("<removePublicKeyFromBlacklist()");
         return result;
@@ -379,15 +387,15 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             result = STATUS_OK;
         } catch (BlacklistExistsException e) {
             result = STATUS_CONSTRAINTVIOLATION;
-            log.info("Public key blacklist entry with public key fingerprint " + entry.getFingerprint() + " already exists.");
+            log.info("Public key block list entry with public key fingerprint " + entry.getFingerprint() + " already exists.");
             throw e;
         } catch (AuthorizationDeniedException e) {
             result = STATUS_GENERALIMPORTERROR;
-            log.info("Authorization denied to add public key to blacklist.");
+            log.info("Authorization denied to add public key to block list.");
             throw e;
         } catch (Exception e) {
             result = STATUS_GENERALIMPORTERROR;
-            log.info("Error while adding public key to blacklist: " + e.getMessage());
+            log.info("Error while adding public key to block list: " + e.getMessage());
             throw e;
         }
         log.trace("<addToBlacklist()");
@@ -410,15 +418,15 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             result = STATUS_OK;
         } catch (BlacklistDoesntExistsException e) {
             result = STATUS_CONSTRAINTVIOLATION;
-            log.info("Public key blacklist entry with public key fingerprint " + value + " does not exist.");
+            log.info("Public key block list entry with public key fingerprint " + value + " does not exist.");
             throw e;
         } catch (AuthorizationDeniedException e) {
             result = STATUS_GENERALIMPORTERROR;
-            log.info("Authorization denied to remove public key from blacklist.");
+            log.info("Authorization denied to remove public key from block list.");
             throw e;
         } catch (Exception e) {
             result = STATUS_GENERALIMPORTERROR;
-            log.info("Error while removing public key from blacklist: " + e.getMessage());
+            log.info("Error while removing public key from block list: " + e.getMessage());
             throw e;
         }
         log.trace("<removeFromBlacklist()");
@@ -438,18 +446,18 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             final int generalImportError, final String command) {
         // Print resulting statistics
         log.info("\n"+command+" summary:");
-        log.info(importOk + " public key blacklist entries were processed with success (STATUS_OK)");
+        log.info(importOk + " public key block list entries were processed with success (STATUS_OK)");
         if (readError > 0) {
-            log.info(readError + " public key blacklist entries could not be parsed (STATUS_READERROR)");
+            log.info(readError + " public key block list entries could not be parsed (STATUS_READERROR)");
         }
         if (redundant > 0) {
-            log.info(redundant + " public key blacklist entries were already present in the database (STATUS_REDUNDANT)");
+            log.info(redundant + " public key block list entries were already present in the database (STATUS_REDUNDANT)");
         }
         if (constraintViolation > 0) {
-            log.info(constraintViolation + " public key blacklist entries could not be stored (STATUS_CONSTRAINTVIOLATION)");
+            log.info(constraintViolation + " public key block list entries could not be stored (STATUS_CONSTRAINTVIOLATION)");
         }
         if (generalImportError > 0) {
-            log.info(generalImportError + " public key blacklist entries were not imported due to other errors (STATUS_GENERALIMPORTERROR)");
+            log.info(generalImportError + " public key block list entries were not imported due to other errors (STATUS_GENERALIMPORTERROR)");
         }
     }
 }
