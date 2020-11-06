@@ -428,7 +428,7 @@ public interface RaMasterApi {
 
     /**
      * @return map of authorized certificate profiles for the provided authentication token
-     * @since Initial RA Master API version (EJBCA 7.5.0)
+     * @since RA Master API version 11 (EJBCA 7.5.0)
      */
     public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken);
 
