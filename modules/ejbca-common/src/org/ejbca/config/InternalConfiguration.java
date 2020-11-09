@@ -64,6 +64,13 @@ public class InternalConfiguration {
 	public static String getAppVersion() {
 		return EjbcaConfigurationHolder.getExpandedString("app.version");
 	}
+	
+	/**
+     * Community application version
+     */
+    public static String getCommunityVersion() {
+        return EjbcaConfigurationHolder.getExpandedString("community.version");
+    }
 
 	public static String getDataSourceJndiNamePrefix(){
 		return EjbcaConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX);	// We need to return an empty string for WebLogic. "java:/" will be set anyway on JBoss.

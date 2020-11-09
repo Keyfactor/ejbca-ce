@@ -46,6 +46,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static final float LATEST_VERSION = 3f;
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
+    public static final String EJBCA_COMMUNITY_VERSION = InternalConfiguration.getCommunityVersion();
 
     public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
     public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();;
