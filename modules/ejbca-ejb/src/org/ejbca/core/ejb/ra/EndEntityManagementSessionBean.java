@@ -83,7 +83,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
-import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
@@ -192,7 +192,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private EndEntityAuthenticationSession endEntityAuthenticationSession;
+    private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration() {
