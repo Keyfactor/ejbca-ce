@@ -37,8 +37,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Set the SubjectDN for an end entity.
- *
- * @version $Id$
  */
 public class SetSubjectDNCommand extends BaseRaCommand {
 
@@ -103,7 +101,7 @@ public class SetSubjectDNCommand extends BaseRaCommand {
                 + "DC=<domain component>, C=<two letter ISO3166>, unstructuredAddress=<IP address>, "
                 + "unstructuredName=<domain name>, postalCode=<string>, businessCategory=<organization type>, "
                 + "dnQualifier=<string>, postalAddress=<the postal address>, telephoneNumber=<telephone number>, "
-                + "pseudonym=<string>, streetAddress=<string>, name=<string>, CIF=<tax ID code for companies in Spain>, "
+                + "pseudonym=<string>, streetAddress=<string>, name=<string>, role=<string>, CIF=<tax ID code for companies in Spain>, "
                 + "NIF=<tax ID number for companied in Spain>";
     }
 
