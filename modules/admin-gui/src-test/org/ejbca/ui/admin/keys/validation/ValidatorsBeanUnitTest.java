@@ -19,15 +19,27 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * A unit test for ValidatorsBean.
- *
- * @version $Id$
  */
 public class ValidatorsBeanUnitTest {
 
     @Test
-    public void testSetNewValidatorName() {
+    public void removePrecedingSpaces() {
         ValidatorsBean validatorsBean = new ValidatorsBean();
-        validatorsBean.setNewValidatorName(" abc  ");
-        assertEquals("abc", validatorsBean.getNewValidatorName());
+        validatorsBean.setNewValidatorName("  abc");
+        assertEquals("All spaces at the beginning should be removed.", "abc", validatorsBean.getNewValidatorName());
+    }
+
+    @Test
+    public void removeTrailingSpaces() {
+        ValidatorsBean validatorsBean = new ValidatorsBean();
+        validatorsBean.setNewValidatorName("abc  ");
+        assertEquals("All spaces at the end should be removed.", "abc", validatorsBean.getNewValidatorName());
+    }
+
+    @Test
+    public void keepSpacesInBetween() {
+        ValidatorsBean validatorsBean = new ValidatorsBean();
+        validatorsBean.setNewValidatorName("ab   cd");
+        assertEquals("All spaces in between letters must be kept. ", "ab   cd", validatorsBean.getNewValidatorName());
     }
 }
