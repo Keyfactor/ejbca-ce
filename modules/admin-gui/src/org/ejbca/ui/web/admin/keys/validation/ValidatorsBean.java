@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
@@ -137,9 +136,7 @@ public class ValidatorsBean extends BaseManagedBean {
      * @param name the name.
      */
     public void setNewValidatorName(final String name) {
-        newValidatorName = Optional.ofNullable(name)
-            .map(String::trim)
-            .orElseGet(String::new);
+        newValidatorName = name.trim();
     }
 
     /**
