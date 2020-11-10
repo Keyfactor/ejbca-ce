@@ -13,9 +13,7 @@
 package org.ejbca.ui.web.admin.ca;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -32,7 +30,15 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
@@ -53,13 +59,23 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CaSessionLocal caSession;
 
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSessionLocal;
+
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+
+    @EJB
+    private RoleSessionLocal roleSession;
+
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
     private CADataHandler cadatahandler;
     private Map<Integer, String> caidtonamemap;
-    
+
+
     public String getCreateCaName() {
         return createCaName;
     }
@@ -67,7 +83,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     public void setCreateCaName(String createCaName) {
         this.createCaName = createCaName;
     }
-    
+
     public ManageCAsMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
     }
@@ -83,7 +99,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         cadatahandler = caBean.getCADataHandler();
         caidtonamemap = caSession.getCAIdToNameMap();
     }
-    
+
     public Map<Integer, String> getListOfCas() {
         final Map<Integer, String> caMap = new LinkedHashMap<>();
         for (final String nameofca : canames.keySet()) {
@@ -97,11 +113,11 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         return caMap;
     }
-    
+
     public String getEditCAButtonValue() {
         return isAuthorized() ? getEjbcaWebBean().getText("VIEWCA") : getEjbcaWebBean().getText("EDITCA");
     }
-    
+
     private boolean isAuthorized() {
         boolean onlyView = false;
         if (getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAEDIT.resource())
@@ -111,52 +127,52 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         return onlyView;
     }
-    
+
     public int getSelectedCaId() {
         return selectedCaId;
     }
 
     public void setSelectedCaId(final int selectedCaId) {
         this.selectedCaId = selectedCaId;
-    }    
-    
+    }
+
     public boolean isCanRemoveResource() {
         return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAREMOVE.resource());
     }
-    
+
     public String getImportKeystoreText() {
         return getEjbcaWebBean().getText("IMPORTCA_KEYSTORE") + "...";
     }
-    
+
     public boolean isCanAddResource() {
         return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAADD.resource());
     }
-    
+
     public String getImportCertificateText() {
         return getEjbcaWebBean().getText("IMPORTCA_CERTIFICATE") + "...";
     }
-    
+
     public boolean isCanRenewResource() {
         return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CARENEW.resource());
     }
-    
+
     public boolean isCanAddOrEditResource() {
         return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAADD.resource())
                 || getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAEDIT.resource());
     }
-    
+
     public boolean isCanAddAndEditResource() {
         return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAADD.resource(), StandardRules.CAEDIT.resource());
     }
-    
+
     public String getCreateCaNameTitle() {
         return " : " + this.createCaName;
     }
-    
+
     public boolean isCanEditResource() {
         return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAEDIT.resource());
     }
-    
+
     public String getConfirmMessage() {
         if (selectedCaId != 0) {
             return getEjbcaWebBean().getText("AREYOUSURETODELETECA", true, caidtonamemap.get(selectedCaId));
@@ -174,35 +190,104 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", true);
         return EditCaUtil.EDIT_CA_NAV;
     }
-    
-    public String createCaPage() {   
+
+    public String createCaPage() {
         if (StringUtils.isBlank(createCaName)) {
             addErrorMessage("CA_NAME_EMPTY");
             return EditCaUtil.MANAGE_CA_NAV;
-        }     
+        }
         if (canames.containsKey(createCaName)) {
             addErrorMessage("CAALREADYEXISTS", createCaName);
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        
+
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createcaname", EditCaUtil.getTrimmedName(this.createCaName));
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", false);
         return EditCaUtil.EDIT_CA_NAV;
     }
-    
+
+    private List<String> certificateProfilesUsedByCa(int selectedCaId) {
+        final int anyCaForCertificateProfile = CertificateProfile.ANYCA;
+        final List<String> certificateProfileList = new ArrayList<>();
+        final Map<Integer, CertificateProfile> certificateProfileMap = certificateProfileSessionLocal.getAllCertificateProfiles();
+
+        for (Map.Entry<Integer, CertificateProfile> entry : certificateProfileMap.entrySet()) {
+            final List<Integer> availableCAs = entry.getValue().getAvailableCAs();
+
+            if (availableCAs.stream().anyMatch(e -> e == selectedCaId || e == anyCaForCertificateProfile)) {
+                certificateProfileList.add(certificateProfileSessionLocal.getCertificateProfileName(entry.getKey()));
+            }
+        }
+        return certificateProfileList;
+    }
+
+    /**
+     * @return a list with EndEntity names
+     * An assumption is made that if the CA-list is empty, the "Any CA" is chosen.
+     * The default EndEntity "Empty" is never added to the returned list.
+     */
+    private List<String> endEntitiesUsedByCa(int selectedCaId) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        final List<String> endEntitiesList = new ArrayList<>();
+        final Map<Integer, String> endEntityProfileMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
+
+        for (Map.Entry<Integer, String> entry : endEntityProfileMap.entrySet()) {
+            if (entry.getKey() == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
+                continue;
+            }
+            final Map<String, Integer> casInProfile = endEntityProfileSession.getAvailableCasInProfile(getAdmin(),
+                    endEntityProfileSession.getEndEntityProfileId(entry.getValue()));
+            if (casInProfile.isEmpty() || casInProfile.entrySet().stream().anyMatch(e -> (e.getValue() == selectedCaId))) {
+                endEntitiesList.add(endEntityProfileSession.getEndEntityProfileName(entry.getKey()));
+            }
+        }
+        return endEntitiesList;
+    }
+
+    private List<String> rolesUsedByCa(int selectedCaId) {
+        final List<String> rolesList = new ArrayList<>();
+
+        final List<Role> roles = roleSession.getAuthorizedRoles(getAdmin());
+
+        for (final Role role : roles) {
+            rolesList.addAll(getRolesUsedByCa(role, StandardRules.CAACCESS.resource(), selectedCaId));
+        }
+        return rolesList;
+    }
+
+    private List<String> getRolesUsedByCa(final Role role, final String baseResource, final Integer selectedCaId) {
+        final LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
+        final List<String> result = new ArrayList<>();
+
+        if (AccessRulesHelper.hasAccessToResource(accessRules, baseResource)) {
+            result.add(role.getName());
+        } else {
+            final String resource = AccessRulesHelper.normalizeResource(baseResource + selectedCaId);
+            if (AccessRulesHelper.hasAccessToResource(accessRules, resource)) {
+                result.add(role.getName());
+            }
+        }
+        return result;
+    }
+
     public String deleteCA() {
         try {
             if (!cadatahandler.removeCA(selectedCaId)) {
                 addErrorMessage("COULDNTDELETECA");
+                addErrorMessage("CA_INCERTIFICATEPROFILES");
+                addNonTranslatedErrorMessage(StringUtils.join(certificateProfilesUsedByCa(selectedCaId), ", "));
+                addErrorMessage("CA_INENDENTITIES");
+                addNonTranslatedErrorMessage(StringUtils.join(endEntitiesUsedByCa(selectedCaId), ", "));
+                addErrorMessage("CA_INROLES");
+                addNonTranslatedErrorMessage(StringUtils.join(rolesUsedByCa(selectedCaId), ", "));
             }
-        } catch (AuthorizationDeniedException e) {
+        } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
             addNonTranslatedErrorMessage(e.getMessage());
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
-    
+
     public String renameCA() {
-        if(StringUtils.isBlank(createCaName)) {            
+        if (StringUtils.isBlank(createCaName)) {
             addErrorMessage("CA_NAME_EMPTY");
             return EditCaUtil.MANAGE_CA_NAV;
         } else if (canames.containsKey(createCaName)) {
@@ -212,15 +297,15 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("SELECTCATORENAME");
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        
+
         try {
             caSession.renameCA(getAdmin(), caSession.getCAIdToNameMap().get(selectedCaId), createCaName);
         } catch (CAExistsException | CADoesntExistsException | AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e);
-        } 
+        }
         return EditCaUtil.MANAGE_CA_NAV;
     }
-    
+
     public String createAuthCertSignRequest() {
         if (selectedCaId != 0) {
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
