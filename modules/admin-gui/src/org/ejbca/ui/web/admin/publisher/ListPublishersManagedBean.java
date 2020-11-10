@@ -118,12 +118,6 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         List<String> caUsingPublisherResult = new ArrayList<>();
         final int publisherid=publisherSession.getPublisherId(selectedPublisherName);
         for (final Integer caid : caSession.getAllCaIds()) {
-            log.info("caId: '" + caid + "'");
-            if (caSession.getCAInfoInternal(caid) == null) {
-                log.info("CA Object was null");
-            } else if (caSession.getCAInfoInternal(caid).getCRLPublishers() == null) {
-                log.info("getCrlPublishers for '" + caid + "' is null");
-            }
             for (final Integer pubInt : caSession.getCAInfoInternal(caid).getCRLPublishers()) {
                 if (pubInt == publisherid) {
                     // We have found a match. No point in looking for more..
