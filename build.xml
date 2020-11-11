@@ -1645,7 +1645,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
                 <exclude name="cesecore-*/build/*"/>
                 
                 <!-- Exclude build system for now. When possible in the future, also include this. -->
-                <exclude name="cesecore-*/nbproject/**/*"/>
                 <exclude name="cesecore-*/build.xml"/>
             </fileset>
         </copy>
