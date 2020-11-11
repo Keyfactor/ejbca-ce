@@ -13,13 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,13 +35,14 @@ import java.util.Date;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -83,6 +77,13 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test to verify that CrmfRequestMessage can be properly Serialized.
@@ -167,12 +168,12 @@ public class CrmfRequestMessageTest {
         SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
         myCertTemplate.setPublicKey(keyInfo);    
 		ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-		DEROutputStream         dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
 		ExtensionsGenerator extgen = new ExtensionsGenerator();
 		int bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
 		X509KeyUsage ku = new X509KeyUsage(bcku);
 		bOut = new ByteArrayOutputStream();
-		dOut = new DEROutputStream(bOut);
+		dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
 		dOut.writeObject(ku);
 		byte[] value = bOut.toByteArray();
 		extgen.addExtension(Extension.keyUsage, false, new DEROctetString(value));
