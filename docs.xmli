@@ -41,10 +41,10 @@
    	<property file="src/doc.properties"/>
     <property name="confluence.url"  value="none" />
     <property name="confluence.port"  value="-1" />
-	<path id="jdoc.classpath">
-	   <fileset dir="${dist.dir}">
+    <path id="jdoc.classpath">
+       <fileset dir="${dist.dir}">
            <include name="ejbca-common.jar"/>
-        </fileset>	
+        </fileset>  
        <fileset dir="${ejbca.home}/lib">
            <include name="bcprov*.jar"/>
            <include name="bcpkix*.jar"/>
