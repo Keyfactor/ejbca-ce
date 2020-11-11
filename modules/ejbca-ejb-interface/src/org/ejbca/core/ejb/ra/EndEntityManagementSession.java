@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.util.Date;
-import java.util.List;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -34,26 +29,15 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-/** Session bean handling end entity administration, i.e. adding and editing end entities. 
- * 
- * @version $Id$
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.util.Date;
+import java.util.List;
+
+/** Session bean handling end entity administration, i.e. adding and editing end entities.
  */
 public interface EndEntityManagementSession {
-
     /**
-     * Check if user is authorized for specified an EE access rule for specified EEP.
-     * @param admin authenticationToken to be check for authorization
-     * @param profileid id of EEP for which operation authorization needs to be checked
-     * @param rights EE access rule to be checked (etc. AccessRulesConstants.DELETE_END_ENTITY...)
-     * @return true if user is authorized for specified EE access rules for specified EEP, false otherwise
-     */
-    boolean isAuthorizedToEndEntityProfile(final AuthenticationToken admin, final int profileid, final String rights);
-    
-    
-    /**
-     * Important: this method is old and shouldn't be used, use
-     * addUser(..EndEntityInformation...) instead.
-     * 
      * @param admin the administrator performing the action
      * @param username the unique user name.
      * @param password the password used for authentication.
@@ -77,6 +61,7 @@ public interface EndEntityManagementSession {
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      * @throws EndEntityExistsException if an end entity by the specified username already exists
+     * @deprecated use {@link #addUser(AuthenticationToken, EndEntityInformation, boolean)} instead.
      */
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int caid)
@@ -138,7 +123,6 @@ public interface EndEntityManagementSession {
      *            timemodified will not be used.
      * @param clearpwd true if the password will be stored in clear form in the
      *            db, otherwise it is hashed.
-     * @param approvalRequestID the unique ID of the approval request (not the hash)
      * @param lastApprovingAdmin The last administrator to have approved the request
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
@@ -181,7 +165,8 @@ public interface EndEntityManagementSession {
      */
     void changeUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException,
+            IllegalNameException, NoSuchEndEntityException, CustomFieldException;
 
     /**
      * Change user information.
@@ -322,7 +307,7 @@ public interface EndEntityManagementSession {
      * @param admin An authentication token 
      * @param username the unique username.
      * @param status the new status, from 'UserData'.
-     * @param approvalRequestId The ID of the approval request submitted to change the status
+     * @param approvalRequestID The ID of the approval request submitted to change the status
      * @param lastApprovingAdmin the last administrator to have approved the request
      * 
      * @throws ApprovalException if an approval already is waiting for specified action
@@ -357,20 +342,6 @@ public interface EndEntityManagementSession {
      * @throws NoSuchEndEntityException if the end entity was not found
      */
     void setClearTextPassword(AuthenticationToken admin, String username, String password) throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException;
-
-    /**
-     * Verifies a password for a user, decreasing the remaining login attempts if verification fails and if caller wants (and it is not set to unlimited).
-     * 
-     * @param admin the administrator performing the action
-     * @param username the unique username.
-     * @param password the password to be verified.
-     * @param decRemainingLoginAttemptsOnFailure if true and password verification fails, will try to decrease remaining login attempts (which can be unlimited)
-     * @return true if password was correct, false otherwise
-     * 
-     * @throws NoSuchEndEntityException if the end entity was not found
-     */
-    boolean verifyPassword(AuthenticationToken admin, String username, String password, boolean decRemainingLoginAttemptsOnFailure)
-            throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException;
     
     /** 
      * Revoke and then delete a user. 
@@ -427,14 +398,14 @@ public interface EndEntityManagementSession {
      * Method that revokes a user. Revokes all users certificates and then sets user status to revoked.
      * If user status is already revoked it still revokes all users certificates, ignoring the ones that are already revoked.
      * This method is called mainly when executing a RevocationApprovalRequest
-     * 
+     *
      * @param username the username to revoke.
      * @param reason revocation reason to use in certificate revocations
-     * @param approvalRequestId the ID of the approval request submitted to revoke the user
+     * @param approvalRequestID the ID of the approval request submitted to revoke the user
      * @param lastApprovingAdmin the last administrator to have approved the request
      * @throws AlreadyRevokedException if user is revoked and unrevocation is attempted by sending revocation reason NOTREVOKED or REMOVEFROMCRL
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
-     * 
+     *
      */
     void revokeUserAfterApproval(AuthenticationToken admin, String username, int reason, int approvalRequestID, AuthenticationToken lastApprovingAdmin) 
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
@@ -519,7 +490,7 @@ public interface EndEntityManagementSession {
      * @param reason the reason of revocation, one of the RevokedCertInfo.XX
      *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
      *            certificate on hold.
-     * @param approvalRequestId the ID of the approval request submitted to revoke the certificate
+     * @param approvalRequestID the ID of the approval request submitted to revoke the certificate
      * @param lastApprovingAdmin the last administrator to have approved the request
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws NoSuchEndEntityException
@@ -611,4 +582,18 @@ public interface EndEntityManagementSession {
      * @throws EndEntityExistsException the newUsername is already taken by another end entity
      */
     boolean renameEndEntity(AuthenticationToken admin, String currentUsername, String newUsername) throws AuthorizationDeniedException, EndEntityExistsException;
+
+
+    /**
+     * Set the status of a user to finished, called when a user has been
+     * successfully processed. If possible sets users status to
+     * UserData.STATUS_GENERATED, which means that the user cannot be
+     * authenticated anymore. NOTE: May not have any effect of user database is
+     * remote. User data may contain a counter with nr of requests before used
+     * should be set to generated. In this case this counter will be decreased,
+     * and if it reaches 0 status will be generated.
+     *
+     * @throws NoSuchEndEntityException if the user does not exist.
+     */
+    void finishUser(EndEntityInformation data) throws NoSuchEndEntityException;
 }

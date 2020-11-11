@@ -36,8 +36,6 @@ import org.cesecore.util.CeSecoreNameStyle;
  * This previously consisted of lots of different arrays spread out all over the place, now it's gathered here in order to be able to get a view of it.
  * The underlying implementations have not changed much though, in order to still have things working, therefore there are lots of different maps and arrays, with
  * seemingly similar contents. 
- * 
- * @version $Id$
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -80,6 +78,7 @@ public class DnComponents {
         oids.put("pseudonym", CeSecoreNameStyle.PSEUDONYM);
         oids.put("street", CeSecoreNameStyle.STREET);
         oids.put("name", CeSecoreNameStyle.NAME);
+        oids.put("role", CeSecoreNameStyle.ROLE);
         oids.put("description", CeSecoreNameStyle.DESCRIPTION);
         oids.put("jurisdictionlocality", CeSecoreNameStyle.JURISDICTION_LOCALITY);
         oids.put("jurisdictionstate", CeSecoreNameStyle.JURISDICTION_STATE);
@@ -90,7 +89,7 @@ public class DnComponents {
     /** Default values used when constructing DN strings that are put in the database
      * 
      */
-    private static String[] dNObjectsForward = { "description", "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "street", "pseudonym",
+    private static String[] dNObjectsForward = { "description", "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "role", "street", "pseudonym",
             "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e",
             "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "organizationidentifier", "o", "l", "st", "dc", "c" };
     // Default values    
@@ -128,6 +127,7 @@ public class DnComponents {
     public static final String PSEUDONYM = "PSEUDONYM";
     public static final String STREETADDRESS = "STREETADDRESS";
     public static final String NAME = "NAME";
+    public static final String ROLE = "ROLE";
     public static final String DESCRIPTION = "DESCRIPTION";
     public static final String JURISDICTIONLOCALITY = "JURISDICTIONLOCALITY";
     public static final String JURISDICTIONSTATE = "JURISDICTIONSTATE";

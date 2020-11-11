@@ -51,6 +51,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -63,7 +64,6 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -393,7 +393,7 @@ public abstract class CmpTestCase extends CaTestCase {
             // SubjectAltName
             // Some altNames
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            ASN1OutputStream dOut = new ASN1OutputStream(bOut);
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut);
             ExtensionsGenerator extgen = new ExtensionsGenerator();
             if (altNames != null) {
                 GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
@@ -445,7 +445,7 @@ public abstract class CmpTestCase extends CaTestCase {
             proofOfPossession = new ProofOfPossession();
         } else if (keys != null) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            DEROutputStream mout = new DEROutputStream(baos);
+            ASN1OutputStream mout = ASN1OutputStream.create(baos, ASN1Encoding.DER);
             mout.writeObject(certRequest);
             mout.close();
             byte[] popoProtectionBytes = baos.toByteArray();            
@@ -608,7 +608,7 @@ public abstract class CmpTestCase extends CaTestCase {
          proofOfPossession = new ProofOfPossession();
      } else {
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         DEROutputStream mout = new DEROutputStream(baos);
+         ASN1OutputStream mout = ASN1OutputStream.create(baos, ASN1Encoding.DER);
             try {
                 mout.writeObject(certRequest);
                 mout.close();

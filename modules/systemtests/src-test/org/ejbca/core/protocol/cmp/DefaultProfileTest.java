@@ -27,10 +27,11 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
@@ -243,7 +244,7 @@ public class DefaultProfileTest extends CmpTestCase {
             assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
         
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -273,7 +274,7 @@ public class DefaultProfileTest extends CmpTestCase {
             assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
         
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -320,7 +321,7 @@ public class DefaultProfileTest extends CmpTestCase {
             assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
         
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -351,7 +352,7 @@ public class DefaultProfileTest extends CmpTestCase {
             assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
         
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -411,7 +412,7 @@ public class DefaultProfileTest extends CmpTestCase {
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                final DEROutputStream out = new DEROutputStream(bao);
+                final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(msg);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
@@ -441,7 +442,7 @@ public class DefaultProfileTest extends CmpTestCase {
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                final DEROutputStream out = new DEROutputStream(bao);
+                final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(msg);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
@@ -497,7 +498,7 @@ public class DefaultProfileTest extends CmpTestCase {
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                final DEROutputStream out = new DEROutputStream(bao);
+                final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(msg);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
@@ -528,7 +529,7 @@ public class DefaultProfileTest extends CmpTestCase {
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                final DEROutputStream out = new DEROutputStream(bao);
+                final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(msg);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
@@ -593,7 +594,7 @@ public class DefaultProfileTest extends CmpTestCase {
             assertNotNull(req);
             
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Send request and receive response
