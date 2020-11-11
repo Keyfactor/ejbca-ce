@@ -13,9 +13,6 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -31,6 +28,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -41,6 +39,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collection;
+import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -76,6 +77,7 @@ public class EndEntityManagementTest extends CaTestCase {
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private EndEntityAuthenticationSessionRemote endEntityAuthenticationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
 
     @Override
     @Before
@@ -142,8 +144,8 @@ public class EndEntityManagementTest extends CaTestCase {
         assertTrue("wrong status", data2.getStatus() == EndEntityConstants.STATUS_NEW);
         log.debug("type=" + data2.getType());
         assertTrue("wrong type", data2.getType().isType(EndEntityTypes.INVALID));
-        assertTrue("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", false) == false);
-        assertTrue("wrong pwd " + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, false));
+        assertTrue("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", false) == false);
+        assertTrue("wrong pwd " + pwd, endEntityAuthenticationSession.verifyPassword(admin, username, pwd, false));
 
         // Change DN
         EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,O=AnaTom,OU=Engineering,CN=" + username,
@@ -169,8 +171,8 @@ public class EndEntityManagementTest extends CaTestCase {
         assertTrue("wrong status", data.getStatus() == EndEntityConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
-        assertTrue("wrong pwd foo123", endEntityManagementSession.verifyPassword(admin, username, "foo123", false));
-        assertTrue("wrong pwd (" + pwd + " works)" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, false) == false);
+        assertTrue("wrong pwd foo123", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", false));
+        assertTrue("wrong pwd (" + pwd + " works)" + pwd, endEntityAuthenticationSession.verifyPassword(admin, username, pwd, false) == false);
 
         // Use clear text pwd instead, new email, reverse DN again
         EndEntityInformation user = new EndEntityInformation(username,  "C=SE,O=AnaTom,CN=" + username,
@@ -195,9 +197,9 @@ public class EndEntityManagementTest extends CaTestCase {
         assertTrue("wrong status", data.getStatus() == EndEntityConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
-        assertTrue("wrong pwd foo234", endEntityManagementSession.verifyPassword(admin, username, "foo234", false));
+        assertTrue("wrong pwd foo234", endEntityAuthenticationSession.verifyPassword(admin, username, "foo234", false));
         assertEquals("wrong clear pwd foo234", data.getPassword(), "foo234");
-        assertTrue("wrong pwd (" + pwd + " works)", endEntityManagementSession.verifyPassword(admin, username, pwd, false) == false);
+        assertTrue("wrong pwd (" + pwd + " works)", endEntityAuthenticationSession.verifyPassword(admin, username, pwd, false) == false);
 
         endEntityManagementSession.setPassword(admin, username, "foo234");
         log.trace("<test03LookupChangedUser2()");
@@ -221,9 +223,9 @@ public class EndEntityManagementTest extends CaTestCase {
         log.debug("type=" + data2.getType());
         assertTrue("wrong type", data2.getType().isType(EndEntityTypes.INVALID));
         assertNull("We should have no extended information", data2.getExtendedInformation());
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", false));
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
-        assertTrue("right pwd should work" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, false));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", false));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
+        assertTrue("right pwd should work" + pwd, endEntityAuthenticationSession.verifyPassword(admin, username, pwd, false));
         data2 = endEntityAccessSession.findUser(admin, username);
         assertNull("We should still have no extended information", data2.getExtendedInformation());
 
@@ -236,8 +238,8 @@ public class EndEntityManagementTest extends CaTestCase {
         data2 = endEntityAccessSession.findUser(admin, username);
         assertNotNull("We should have extended information", data2.getExtendedInformation());
         assertEquals("Extended Information should be unlimited", -1, data2.getExtendedInformation().getRemainingLoginAttempts());
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", false));
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", false));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
         assertEquals("Extended Information should still be unlimited", -1, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
@@ -250,30 +252,30 @@ public class EndEntityManagementTest extends CaTestCase {
         assertNotNull("We should have extended information", data2.getExtendedInformation());
         assertEquals("Extended Information should be 5", 5, data2.getExtendedInformation().getRemainingLoginAttempts());
         // 1 with false as parameter, should not decrease counter, and one with true, should decrease counter
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", false));
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", false));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
         assertEquals("Extended Information should be 3", 3, data2.getExtendedInformation().getRemainingLoginAttempts());
         // Right password should reset counter, but not if we pass false to the method
-        assertTrue("right pwd should work" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, false));
+        assertTrue("right pwd should work" + pwd, endEntityAuthenticationSession.verifyPassword(admin, username, pwd, false));
         data2 = endEntityAccessSession.findUser(admin, username);
         assertEquals("Extended Information should still be 3", 3, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
         // The verifyPassword method does not reset the counter, so nothing should change. Resetting the counter is done deeper when a user is "really" authenticated
-        assertTrue("right pwd should work" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, true));
+        assertTrue("right pwd should work" + pwd, endEntityAuthenticationSession.verifyPassword(admin, username, pwd, true));
         data2 = endEntityAccessSession.findUser(admin, username);
         assertEquals("Extended Information should still be 3", 3, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
         // Send it all to the bottom...
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
         assertEquals("Extended Information should be 0", 0, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
         // One more failed attempt will reset the counter, but set user to GENERATED
-        assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
+        assertFalse("wrong pwd (foo123 works)", endEntityAuthenticationSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
         assertEquals("Extended Information should be 5 again", 5, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_GENERATED, data2.getStatus());
