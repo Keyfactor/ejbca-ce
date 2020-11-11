@@ -29,7 +29,9 @@ DROP INDEX publisherqueue_idx3 ON PublisherQueueData;
 
 DROP INDEX rolemember_idx1 ON RoleMemberData;
 
-DROP INDEX blacklist_idx1 ON BlacklistData;
+DROP INDEX blocklist_idx1 ON BlacklistData;
+-- If the index was created on an older version than EJBCA 7.5.0 then it should have the outmoded name. In that case use the line below instead.
+-- DROP INDEX blacklist_idx1 ON BlacklistData;
 
 DROP INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData;
 DROP INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData;

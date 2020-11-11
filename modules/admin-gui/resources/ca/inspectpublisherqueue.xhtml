@@ -29,13 +29,30 @@
         <ui:param name="resourceBean" value="#{inspectPublisherQueue}" />
         <ui:define name="content">
             <f:metadata>
-                <f:viewParam name="publisherId"
-                    value="#{inspectPublisherQueue.publisherId}" />
+                <f:viewParam name="publisherId" value="#{inspectPublisherQueue.publisherId}" />
             </f:metadata>
-            <h1>
-                <h:outputText
-                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_TITLE}" />
-            </h1>
+            <div class="commandButton">
+                <h1>
+                    <h:outputText value="#{web.text.INSPECT_PUBLISHER_QUEUE_TITLE}" />
+                </h1>
+                <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_PROCESS_QUEUE}"
+                                 type="submit"
+                                 disabled="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"
+                                 rendered="#{inspectPublisherQueue.items.size() gt 0}"
+                                 action="#{inspectPublisherQueue.republish}">
+                    <f:ajax render=":resultsForm :messagesBlock" />
+                </h:commandButton>
+                <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH}"
+                                 type="submit"
+                                 rendered="#{inspectPublisherQueue.items.size() gt 0}"
+                                 action="#{inspectPublisherQueue.flush}">
+                    <f:ajax render=":resultsForm" />
+                </h:commandButton>
+                <div>
+                    <h:outputText value="#{inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"
+                        rendered="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"/>
+                </div>
+            </div>
             <h:form id="resultsForm">
                 <div style="display: inline-block;">
                     <h:dataTable id="queuedItems"
@@ -98,6 +115,19 @@
                             <div>
                                 <h:outputText
                                     value="#{item.timeLastUpdated}" />
+                            </div>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="#{web.text.INSPECT_PUBLISHER_QUEUE_ACTIONS_HEADER}" />
+                            </f:facet>
+                            <div>
+                                <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH_ITEM}"
+                                                 type="submit"
+                                                 action="#{inspectPublisherQueue.flushItem(item)}">
+                                    <f:ajax render="@form" />
+                                </h:commandButton>
                             </div>
                         </h:column>
                     </h:dataTable>

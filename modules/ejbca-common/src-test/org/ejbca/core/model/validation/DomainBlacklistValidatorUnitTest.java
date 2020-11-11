@@ -116,7 +116,7 @@ public class DomainBlacklistValidatorUnitTest {
         validator.setFailedAction(KeyValidationFailedActions.LOG_INFO.getIndex());
         final Entry<Boolean,List<String>> result = validator.validate(null, "f0rbiclclen2.example.com");
         assertFalse("Domain should be blacklsted", result.getKey());
-        final String expectedMessage = "Domain 'f0rbiclclen2.example.com' is blacklisted. Matching domain on blacklist: 'forbidden2.example.com'";
+        final String expectedMessage = "Domain 'f0rbiclclen2.example.com' is block listed. Matching domain on block list: 'forbidden2.example.com'";
         assertEquals("Wrong exception message.", expectedMessage, result.getValue().get(0));
     }
 }
