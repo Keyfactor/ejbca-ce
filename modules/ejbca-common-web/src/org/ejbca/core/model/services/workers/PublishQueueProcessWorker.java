@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -27,6 +24,9 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class processing the publisher queue. Can only run on instance in one VM on
@@ -69,7 +69,6 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                 }
             }
         }
-
     }
     
     /**
