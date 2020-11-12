@@ -13,9 +13,6 @@
 
 package org.ejbca.core.ejb.ca.auth;
 
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -52,6 +49,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -224,7 +224,7 @@ public class AuthenticationSessionTest extends CaTestCase {
 
         // Now finish the user (The actual test)
         EndEntityInformation userdata = endEntityAccessSession.findUser(internalAdmin, username1);
-        authenticationSessionRemote.finishUser(userdata);
+        endEntityManagementSession.finishUser(userdata);
         // And se if the user is still marked
 
         assertTrue("Failure the users keyrecovery session should have been unmarked", !keyRecoverySession.isUserMarked(username1));

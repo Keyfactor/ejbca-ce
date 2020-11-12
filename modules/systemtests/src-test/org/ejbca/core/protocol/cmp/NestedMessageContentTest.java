@@ -38,12 +38,13 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -611,7 +612,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         {
             X509KeyUsage keyUsage = new X509KeyUsage(X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation);
             ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-            new DEROutputStream(bOut).writeObject(keyUsage);
+            ASN1OutputStream.create(bOut, ASN1Encoding.DER).writeObject(keyUsage);
             byte[] value = bOut.toByteArray();
             ExtensionsGenerator extgen = new ExtensionsGenerator();
             extgen.addExtension(Extension.keyUsage, false, new DEROctetString(value));
