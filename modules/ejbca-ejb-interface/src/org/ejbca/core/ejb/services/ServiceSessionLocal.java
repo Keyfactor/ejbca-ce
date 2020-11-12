@@ -12,15 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+import org.ejbca.core.model.services.IWorker;
+
+import javax.ejb.Local;
+import javax.ejb.Timer;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-
-import javax.ejb.Local;
-import javax.ejb.Timer;
-
-import org.ejbca.core.model.services.IWorker;
 
 /**
  * Local interface for ServiceSession.
@@ -80,4 +79,10 @@ public interface ServiceSessionLocal extends ServiceSession {
      */
     boolean canWorkerRun(final IWorker worker);
 
+	/**
+	 * Schedule a service with the given service ID for immediate execution.
+	 *
+	 * @param serviceId the ID of the service
+	 */
+	void runService(int serviceId);
 }
