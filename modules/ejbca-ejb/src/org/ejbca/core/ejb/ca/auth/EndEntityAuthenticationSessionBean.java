@@ -13,9 +13,34 @@
 
 package org.ejbca.core.ejb.ca.auth;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.apache.log4j.Logger;
+import org.cesecore.ErrorCode;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.dto.SecurityEventProperties;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.jndi.JndiConstants;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.UserData;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -24,50 +49,33 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import org.apache.log4j.Logger;
-import org.cesecore.ErrorCode;
-import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.enums.ModuleTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.UserData;
-import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Authenticates users towards a user database.
  * @see EndEntityAuthenticationSession
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityAuthenticationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticationSessionLocal, EndEntityAuthenticationSessionRemote {
-
     private static final Logger log = Logger.getLogger(EndEntityAuthenticationSessionBean.class);
-    
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSession;
-    @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
+
+    private GlobalConfiguration getGlobalConfiguration() {
+        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    }
     
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -87,7 +95,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
             ExtendedInformation ei = data.getExtendedInformation();
-           	eichange = EndEntityAuthenticationSessionBean.decRemainingLoginAttempts(data, ei);
+           	eichange = decRemainingLoginAttempts(data, ei);
            	boolean authenticated = false;
            	final int status = data.getStatus();
             if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
@@ -147,12 +155,12 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
      * already was zero the status for the user is set to
      * {@link EndEntityConstants#STATUS_GENERATED} if it wasn't that already.
      * This method does nothing if the counter value is set to UNLIMITED (-1).
-     * 
-     * @param ei
+     *
      * @param user the unique username of the user
+     * @param ei extended information of the user
      * @return true if the value was decremented or the status was changed, false if not
      */
-    public static boolean decRemainingLoginAttempts(UserData user, ExtendedInformation ei) {
+    public boolean decRemainingLoginAttempts(UserData user, ExtendedInformation ei) {
         if (log.isTraceEnabled()) {
             log.trace(">decRemainingLoginAttempts(" + user.getUsername()+ ")");
         }
@@ -197,28 +205,75 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     }
 
     @Override
-	public void finishUser(final EndEntityInformation data) throws NoSuchEndEntityException {
-		if (log.isTraceEnabled()) {
-			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
-		}
-		try {
-			
-			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter
-			final int counter = endEntityManagementSession.decRequestCounter(data.getUsername());
-			if (counter <= 0) {
-				log.info(intres.getLocalizedMessage("authentication.statuschanged", data.getUsername()));
-			} 
-			if (log.isTraceEnabled()) {
-				log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
-			}
-		} catch (NoSuchEndEntityException e) {
-			final String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-			log.info(msg);
-			throw new NoSuchEndEntityException(e.getMessage());
-        } catch (ApprovalException | WaitingForApprovalException e) {
-            // Should never happen
-            log.error("ApprovalException: ", e);
-            throw new EJBException(e);
+    public boolean verifyPassword(AuthenticationToken authenticationToken, String username, String password, boolean decRemainingLoginAttemptsOnFailure) throws NoSuchEndEntityException, AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">verifyPassword(" + username + ", hiddenpwd)");
         }
+        boolean ret;
+        // Find user
+        final UserData data = endEntityAccessSession.findByUsername(username);
+        if (data == null) {
+            throw new NoSuchEndEntityException("Could not find user " + username);
+        }
+        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+            // Check if administrator is authorized to edit user.
+            assertAuthorizedToEndEntityProfile(authenticationToken, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, data.getCaId());
+        }
+        assertAuthorizedToCA(authenticationToken, data.getCaId());
+        try {
+            ret = data.comparePassword(password);
+            if (!ret && decRemainingLoginAttemptsOnFailure) {
+                // If verification fails, and the caller want to, try to decrease remaining login attempts
+                final ExtendedInformation ei = data.getExtendedInformation();
+                if (decRemainingLoginAttempts(data, ei)) {
+                    data.setTimeModified(new Date().getTime());
+                    data.setExtendedInformation(ei);
+                }
+            }
+        } catch (NoSuchAlgorithmException nsae) {
+            log.debug("NoSuchAlgorithmException while verifying password for user " + username);
+            throw new EJBException(nsae);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<verifyPassword(" + username + ", hiddenpwd)");
+        }
+        return ret;
+    }
+
+    @Override
+    public boolean isAuthorizedToEndEntityProfile(AuthenticationToken admin, int profileId, String rights) {
+        return authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileId + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+    }
+
+    @Override
+    public void assertAuthorizedToEndEntityProfile(final AuthenticationToken authenticationToken, final int endEntityProfileId, final String accessRule, final int caId) throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorized(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + accessRule, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + accessRule)) {
+            final String msg = intres.getLocalizedMessage("ra.errorauthprofile", endEntityProfileId, authenticationToken.toString());
+            auditSession.log(
+                    EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
+                    EjbcaModuleTypes.RA, ServiceTypes.CORE,
+                    authenticationToken.toString(),
+                    String.valueOf(caId), null, null,
+                    SecurityEventProperties.builder().withMsg(msg).build().toMap()
+            );
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
+
+    @Override
+    public void assertAuthorizedToCA(final AuthenticationToken authenticationToken, final int caId) throws AuthorizationDeniedException {
+        if (!authorizedToCA(authenticationToken, caId)) {
+            final String msg = intres.getLocalizedMessage("ra.errorauthca", caId, authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
+
+    @Override
+    public boolean authorizedToCA(final AuthenticationToken authenticationToken, final int caId) {
+        boolean returnval = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId);
+        if (!returnval) {
+            log.info("Admin " + authenticationToken.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caId);
+        }
+        return returnval;
     }
 }
