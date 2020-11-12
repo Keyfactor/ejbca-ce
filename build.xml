@@ -1494,6 +1494,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="cmp-war" />
     </target>
 
+    <target name="msae.war">
+        <ant dir="modules" target="msae" />
+    </target>
+
     <target name="healthcheck.war">
     	<ant dir="modules" target="healthcheck-ejbca-war" />
     </target>
