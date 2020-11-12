@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
@@ -364,7 +365,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent(); 
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -384,7 +385,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, null, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(revReq);
             ba = bao.toByteArray();
             // Send request and receive response
@@ -475,7 +476,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -500,7 +501,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             ba = bao.toByteArray();
             // Send request and receive response
@@ -586,7 +587,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(revReq);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
@@ -598,12 +599,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             nonce = CmpMessageHelper.createSenderNonce();
             transid = CmpMessageHelper.createSenderNonce();
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             rev = genRevReq(cainfo.getSubjectDN(), new X500Name(userdata.getDN()), cert.getSerialNumber(), newCACert, nonce, transid, false, null, null);
             revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, ALIAS);
@@ -621,12 +622,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             nonce = CmpMessageHelper.createSenderNonce();
             transid = CmpMessageHelper.createSenderNonce();
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             rev = genRevReq(cainfo.getSubjectDN(), new X500Name(userdata.getDN()), cert.getSerialNumber(), newCACert, nonce, transid, false, null, null);
             revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, ALIAS);
@@ -664,7 +665,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent(); 
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -729,7 +730,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Wait 1 ms so the notBefore time of the CA becomes different from the current time, so we can check that validity override works
@@ -767,7 +768,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertNotNull(confirm);
             PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req1);
             ba = bao.toByteArray();
             // Send request and receive response
@@ -785,7 +786,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(revReq);
             ba = bao.toByteArray();
             // Send request and receive response
@@ -805,7 +806,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(revReq);
             ba = bao.toByteArray();
             // Send request and receive response
