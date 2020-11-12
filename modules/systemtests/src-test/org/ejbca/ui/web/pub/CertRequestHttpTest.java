@@ -38,7 +38,8 @@ import java.security.interfaces.RSAPublicKey;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -480,7 +481,7 @@ public class CertRequestHttpTest extends CaTestCase {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         final StringBuilder request = new StringBuilder();

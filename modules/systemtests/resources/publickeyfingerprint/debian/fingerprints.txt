@@ -2,6 +2,6 @@
 # modulus checksum:
 #   openssl rsa -noout -modulus -in /tmp/key.pem | sha1sum | cut -d ' ' -f 1)
 # with the first 20 characters removed (that is, the lower 80 bits of the
-# fingerprint). Unless these rules are followed, the blacklist will not work
+# fingerprint). Unless these rules are followed, the block list will not work
 # properly. See openssl-vulnkey(1).
 0504bb261ca99c3d392e
