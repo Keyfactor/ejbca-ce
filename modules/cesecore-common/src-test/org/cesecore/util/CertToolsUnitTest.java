@@ -101,9 +101,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Tests the CertTools class .
- * 
- * @version $Id$
+ * Tests the CertTools class
  */
 public class CertToolsUnitTest {
     private static Logger log = Logger.getLogger(CertToolsUnitTest.class);
@@ -1830,11 +1828,11 @@ public class CertToolsUnitTest {
     }
     
     @Test
-    public void testPseudonymAndName() throws Exception {
-        String dn1 = "c=SE,O=Prime,OU=Tech,TelephoneNumber=555-666,Name=Kalle,PostalAddress=footown,PostalCode=11122,Pseudonym=Shredder,cn=Tomas Gustavsson";
+    public void testPseudonymNameAndRole() throws Exception {
+        String dn1 = "c=SE,O=Prime,OU=Tech,Role=Roll,TelephoneNumber=555-666,Name=Kalle,PostalAddress=footown,PostalCode=11122,Pseudonym=Shredder,cn=Tomas Gustavsson";
         String bcdn1 = CertTools.stringToBCDNString(dn1);
         assertEquals(
-                "Pseudonym=Shredder,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,CN=Tomas Gustavsson,Name=Kalle,OU=Tech,O=Prime,C=SE",
+                "Role=Roll,Pseudonym=Shredder,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,CN=Tomas Gustavsson,Name=Kalle,OU=Tech,O=Prime,C=SE",
                 bcdn1);
     }
 

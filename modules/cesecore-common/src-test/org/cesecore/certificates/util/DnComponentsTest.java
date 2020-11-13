@@ -26,20 +26,19 @@ import org.junit.Test;
 
 /**
  * Tests the DnComponents class.
- * 
- * @version $Id$
  */
 public class DnComponentsTest {
 
     @Test
     public void test01CheckObjects() throws Exception {
         String[] s = DnComponents.getDnObjects(true);
-        assertEquals(33, s.length);
+        assertEquals(34, s.length);
         int i = 0;
         assertEquals("description", s[i++]);
         assertEquals("jurisdictioncountry", s[i++]);
         assertEquals("jurisdictionstate", s[i++]);
         assertEquals("jurisdictionlocality", s[i++]);
+        assertEquals("role", s[i++]);
         assertEquals("street", s[i++]);
         assertEquals("pseudonym", s[i++]);
         assertEquals("telephonenumber", s[i++]);
@@ -61,11 +60,12 @@ public class DnComponentsTest {
         assertEquals("c", s[i]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
-        assertEquals(33, s1.length);
-        assertEquals("description", s1[32]);
-        assertEquals("jurisdictioncountry", s1[31]);
-        assertEquals("jurisdictionstate", s1[30]);
-        assertEquals("jurisdictionlocality", s1[29]);
+        assertEquals(34, s1.length);
+        assertEquals("description", s1[33]);
+        assertEquals("jurisdictioncountry", s1[32]);
+        assertEquals("jurisdictionstate", s1[31]);
+        assertEquals("jurisdictionlocality", s1[30]);
+        assertEquals("role", s1[29]);
         assertEquals("street", s1[28]);
         assertEquals("telephonenumber", s1[26]);
         assertEquals("businesscategory", s1[24]);
@@ -80,10 +80,11 @@ public class DnComponentsTest {
         assertEquals("c", s1[0]);
 
         String[] s2 = DnComponents.getDnObjects(true);
-        assertEquals(33, s2.length);
+        assertEquals(34, s2.length);
         i = 0;
         assertEquals("description", s[i++]);
         i += 7;
+        assertEquals("postaladdress", s2[i++]);
         assertEquals("businesscategory", s2[i++]);
         assertEquals("postalcode", s2[i++]);
         assertEquals("unstructuredaddress", s2[i++]);

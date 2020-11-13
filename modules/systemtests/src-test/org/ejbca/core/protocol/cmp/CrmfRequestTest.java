@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.SignatureException;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import javax.management.openmbean.InvalidKeyException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -37,6 +40,7 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.EncryptedKey;
 import org.bouncycastle.asn1.crmf.EncryptedValue;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -51,9 +55,11 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.AsymmetricKeyUnwrapper;
+import org.bouncycastle.operator.OperatorException;
 import org.bouncycastle.operator.jcajce.JceAsymmetricKeyUnwrapper;
 import org.bouncycastle.operator.jcajce.JceInputDecryptorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.CaTestUtils;
 import org.cesecore.certificates.ca.CA;
@@ -109,8 +115,6 @@ import static org.junit.Assert.fail;
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL,
  * for example "-DhttpCmpProxyURL=http://proxy-ip:8080/cmpProxy-6.4.0", which can be set in Run Configurations if running the
  * test from Eclipse.
- *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrmfRequestTest extends CmpTestCase {
@@ -744,28 +748,9 @@ public class CrmfRequestTest extends CmpTestCase {
             fingerprint1 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
             {
-                final PKIBody pkiBody = pkiMessage.getBody();
-                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
-                final CertResponse certResponse = certRepMessage.getResponse()[0];
-                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
                 // certifiedKeyPair.getCertOrEncCert().getCertificate() is what we verified above in checkCmpCertRepMessage
                 // Now lets try to dig out the encrypted private key
-                // Created from:
-                // JcaEncryptedValueBuilder encBldr = new JcaEncryptedValueBuilder(
-                //   new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
-                //   new JceCRMFEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
-                // myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
-                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
-                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
-                // recover private key
-                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
-                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
-                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
-                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
-                // Verify that the private key returned matches the public key in the certificate we got
-                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
                 byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
                 byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data);
                 final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data, signedData);
@@ -798,22 +783,7 @@ public class CrmfRequestTest extends CmpTestCase {
             fingerprint2 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
             {
-                final PKIBody pkiBody = pkiMessage.getBody();
-                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
-                final CertResponse certResponse = certRepMessage.getResponse()[0];
-                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
-                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
-                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
-                // recover private key
-                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(
-                        new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
-                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
-                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
-                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
-                // Verify that the private key returned matches the public key in the certificate we got
-                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
                 byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
                 byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data);
                 final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data, signedData);
@@ -922,21 +892,7 @@ public class CrmfRequestTest extends CmpTestCase {
             fingerprint3 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
             {
-                final PKIBody pkiBody = pkiMessage.getBody();
-                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
-                final CertResponse certResponse = certRepMessage.getResponse()[0];
-                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
-                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
-                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
-                // recover private key
-                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
-                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
-                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
-                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
-                // Verify that the private key returned matches the public key in the certificate we got
-                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
                 byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
                 byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data);
                 final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data, signedData);
@@ -998,21 +954,7 @@ public class CrmfRequestTest extends CmpTestCase {
             fingerprint4 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
             {
-                final PKIBody pkiBody = pkiMessage.getBody();
-                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
-                final CertResponse certResponse = certRepMessage.getResponse()[0];
-                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
-                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
-                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
-                // recover private key
-                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
-                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
-                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
-                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
-                // Verify that the private key returned matches the public key in the certificate we got
-                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                final PrivateKey privKey = decryptPrivateKey(protocolEncKey.getPrivate(), pkiMessage);
                 byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
                 byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data);
                 final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data, signedData);
@@ -1045,6 +987,46 @@ public class CrmfRequestTest extends CmpTestCase {
             this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, backup);
         }
         log.trace("<test12ServerGeneratedKeys");
+    }
+
+    /** Extract an encrypted private key from a PKIMessage
+     * Created from:
+     * JcaEncryptedValueBuilder encBldr = new JcaEncryptedValueBuilder(
+     *   new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
+     *   new JceCRMFEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
+     * myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);
+     * 
+     * @param protocolEncKey the private key (RSA) that was used to encrypt the private key
+     * @param pkiMessage PKIMessage structure containing the encrypted private key in the CMP response message
+     * @return PrivateKey
+     * @throws OperatorException if unwrapping the symmetric encryption key fails
+     * @throws IOException if decoding keys fails
+     * @throws PKCSException if decrypting the key from the CMS message
+     */
+    private PrivateKey decryptPrivateKey(final PrivateKey protocolEncKey, final PKIMessage pkiMessage)
+            throws OperatorException, IOException, PKCSException {
+        final PKIBody pkiBody = pkiMessage.getBody();
+        final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+        final CertResponse certResponse = certRepMessage.getResponse()[0];
+        final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+        EncryptedKey encKey = certifiedKeyPair.getPrivateKey();
+        EncryptedValue encValue;
+        if (encKey.isEncryptedValue()) {
+            encValue = (EncryptedValue)encKey.getValue();
+        } else {
+            throw new InvalidKeyException("EJBCA only supports EncryptedKey type EncryptedValue at this point");
+        }
+        AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey);
+        byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
+        // recover private key
+        PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
+        PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
+        assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
+        // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
+        assertFalse(Arrays.areEqual(protocolEncKey.getEncoded(), keyInfo.getEncoded()));
+        // Verify that the private key returned matches the public key in the certificate we got
+        PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+        return privKey;
     }
 
 
