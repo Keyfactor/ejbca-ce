@@ -213,7 +213,7 @@ public final class CesecoreConfiguration {
      * Parameter to specify if retrieving PublicKeyBlacklist objects from PublicKeyBlacklistSession should be cached, and in that case for how long.
      */
     public static long getCachePublicKeyBlacklistTime() {
-        return getLongValue("blacklist.cachetime", 30000L, "milliseconds to cache public key blacklist entries");
+        return getLongValue("blacklist.cachetime", 30000L, "milliseconds to cache public key block list entries");
     }
 
     /**

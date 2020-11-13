@@ -13,17 +13,14 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -51,6 +48,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This will test that different PBE shared secrets can be used to authenticate the RA to different CAs.
@@ -267,7 +268,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            new DEROutputStream(bao).writeObject(req);
+            ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, this.configAlias);
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -281,7 +282,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             assertNotNull("Could not create confirmation message.", confirm);
             PKIMessage req1 = protectPKIMessage(confirm, false, pbeSecret, keyId, 567);
             bao = new ByteArrayOutputStream();
-            new DEROutputStream(bao).writeObject(req1);
+            ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req1);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
             checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -292,7 +293,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             PKIMessage revReq = protectPKIMessage(rev, false, pbeSecret, keyId, 567);
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();
-            new DEROutputStream(bao).writeObject(revReq);
+            ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, this.configAlias);
             checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
