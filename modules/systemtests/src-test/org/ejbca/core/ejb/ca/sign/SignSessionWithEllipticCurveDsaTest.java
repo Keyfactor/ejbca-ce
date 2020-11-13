@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -24,7 +19,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
@@ -49,6 +45,11 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @version $Id$
@@ -152,7 +153,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
@@ -229,7 +230,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
                 + ECDSA_USERNAME), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
@@ -309,7 +310,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
                     + ecDsaImplicitCaUserName), ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            DEROutputStream dOut = new DEROutputStream(bOut);
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             dOut.writeObject(req.toASN1Structure());
             dOut.close();
             PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
