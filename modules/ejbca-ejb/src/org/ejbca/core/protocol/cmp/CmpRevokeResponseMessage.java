@@ -27,8 +27,9 @@ import java.util.Collection;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
@@ -185,7 +186,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 	    byte[] resp = null;
 	    try {
 	        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	        final DEROutputStream mout = new DEROutputStream( baos );
+	        final ASN1OutputStream mout = ASN1OutputStream.create(baos, ASN1Encoding.DER);
 	        mout.writeObject( msg );
 	        mout.close();
 	        resp = baos.toByteArray();
