@@ -2781,7 +2781,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
 
     @Override
-    public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
+    public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
             throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
         }
@@ -2802,13 +2803,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
             throw new EndEntityProfileValidationRaException(e);
         }
-        PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
-        req.setUsername(endEntityInformation.getUsername());
-        req.setPassword(endEntityInformation.getPassword());
-        final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
-        req.setRequestValidityNotAfter(encodedValidity == null ? null :
-            ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
         try {
+            PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+            req.setUsername(endEntityInformation.getUsername());
+            req.setPassword(endEntityInformation.getPassword());
+            final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
+            req.setRequestValidityNotAfter(encodedValidity == null ? null :
+                    ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
             ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             return cert.getEncoded();
@@ -2817,8 +2818,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
                 | InvalidAlgorithmException | CertificateExtensionException e) {
             throw new EjbcaException(e);
-        } catch (CertificateParsingException | CertificateEncodingException e) {
-            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
+        } catch (CertificateParsingException | CertificateEncodingException | IOException e) {
+            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage", e);
         }
     }
 
