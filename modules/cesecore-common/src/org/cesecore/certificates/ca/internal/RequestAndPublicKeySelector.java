@@ -12,15 +12,16 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 
 /** Class used to select which request message and public key to use to issue a certificate, by looking
  * at the various input in priority order. 
@@ -64,13 +65,13 @@ public class RequestAndPublicKeySelector {
             debugPublicKeySource = "separately";
         }
         //Request inside endEntityInformation has priority over providedPublicKey and providedRequestMessage
-        if (endEntityInformation != null && endEntityInformation.getCertificateRequest() != null){
-            requestMessage = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getCertificateRequest());
+        if (endEntityInformation != null && endEntityInformation.getCertificateRequest() != null) {
             try {
+                requestMessage = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getCertificateRequest());
                 publicKey = requestMessage.getRequestPublicKey();
                 debugPublicKeySource = "from endEntity.extendedInformaion.certificateRequest";
                 debugRequestMessageSource = "from endEntity.extendedInformaion.certificateRequest";
-            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | IOException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Error occured with extracting public key from endEntityInformation.extendedInformation. Proceeding with one provided separately", e);
                 }
