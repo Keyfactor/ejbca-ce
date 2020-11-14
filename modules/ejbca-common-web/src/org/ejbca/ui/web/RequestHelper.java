@@ -13,33 +13,6 @@
  
 package org.ejbca.ui.web;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.regex.Pattern;
-
-import javax.ejb.ObjectNotFoundException;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -70,6 +43,32 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.HTMLTools;
+
+import javax.ejb.ObjectNotFoundException;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.regex.Pattern;
 
 /**
  * Helper class for handling certificate request from browsers or general PKCS#10
@@ -238,35 +237,39 @@ public class RequestHelper {
     public CertificateRequestResponse pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             CertificateResponseType resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
             CertificateEncodingException, CertificateException, CertificateExtensionException {
-        byte[] encoded = null;
-        X509Certificate cert = null;
-		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
-		req.setUsername(username);
-        req.setPassword(password);
-        ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
-        cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
-        switch (resulttype) {
-        case ENCODED_CERTIFICATE:            
-            encoded = Base64.encode(cert.getEncoded(), doSplitLines);
-            break;
-        case ENCODED_CERTIFICATE_CHAIN:
-            CAInfo caInfo = signsession.getCAFromRequest(administrator, req, false).getCAInfo();
-            LinkedList<Certificate> chain = new LinkedList<>(caInfo.getCertificateChain());
-            chain.addFirst(cert);
-            encoded = CertTools.getPemFromCertificateChain(chain);
-            break;
-        case ENCODED_PKCS7:
-            encoded = Base64.encode(signsession.createPKCS7(administrator, cert, true), doSplitLines);
-            break;
-        default:           
-            break;
+        try {
+            byte[] encoded = null;
+            X509Certificate cert = null;
+            PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
+            req.setUsername(username);
+            req.setPassword(password);
+            ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
+            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            switch (resulttype) {
+                case ENCODED_CERTIFICATE:
+                    encoded = Base64.encode(cert.getEncoded(), doSplitLines);
+                    break;
+                case ENCODED_CERTIFICATE_CHAIN:
+                    CAInfo caInfo = signsession.getCAFromRequest(administrator, req, false).getCAInfo();
+                    LinkedList<Certificate> chain = new LinkedList<>(caInfo.getCertificateChain());
+                    chain.addFirst(cert);
+                    encoded = CertTools.getPemFromCertificateChain(chain);
+                    break;
+                case ENCODED_PKCS7:
+                    encoded = Base64.encode(signsession.createPKCS7(administrator, cert, true), doSplitLines);
+                    break;
+                default:
+                    break;
+            }
+            log.debug("Created certificate (PKCS7) for " + username);
+            if (debug != null) {
+                debug.print("<h4>Generated certificate:</h4>");
+                debug.printInsertLineBreaks(cert.toString().getBytes());
+            }
+            return new CertificateRequestResponse(cert, encoded);
+        } catch (IOException e) {
+            throw new CertificateEncodingException(e);
         }
-        log.debug("Created certificate (PKCS7) for " + username);
-        if (debug != null) {
-            debug.print("<h4>Generated certificate:</h4>");
-            debug.printInsertLineBreaks(cert.toString().getBytes());
-        }
-        return new CertificateRequestResponse(cert, encoded);
     } //pkcs10CertReq
     
     /**
