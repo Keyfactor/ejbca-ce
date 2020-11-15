@@ -488,7 +488,9 @@
 										listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
 										render=":requestInfoForm:userCredentialsMessage" />
 									<f:validator validatorId="extendedRequiredValidator"/>
+									<f:attribute name="_required" value="true"/>
 								</h:inputText>
+								<h:message for="usernameField" id="usernameFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
 							<f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validatePassword}"/>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
