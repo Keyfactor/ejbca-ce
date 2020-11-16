@@ -190,6 +190,7 @@
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
 	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
 	<property name="mod.msae.path" location="${mod.path}/ejbca-msae" />
+	<property name="mod.msae.war" location="${mod.dist.path}/msae.war" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
@@ -605,6 +606,10 @@
 
 	<condition property="mod.ssh.exists">
 		<available file="${mod.ssh.path}/build.xml" />
+	</condition>
+	
+	<condition property="mod.msae.exists">
+		<available file="${mod.msae.path}/build.xml" />
 	</condition>
 	
     <condition property="mod.acme.exists">
