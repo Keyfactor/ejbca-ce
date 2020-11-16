@@ -1,23 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    
+    
+    <description><![CDATA[MSAE server]]></description>
+    
+    
+   <filter> 
+        <filter-name>ServiceControlFilter</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>MSAE</param-value>  
+        </init-param> 
+    </filter>
+
+    <filter-mapping>
+        <filter-name>ServiceControlFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>    
+    
     <servlet>
+        <description><![CDATA[MS auto enrollment servlet]]></description>
+        <display-name>MSAEServlet</display-name>
         <servlet-name>MSEnrollmentServlet</servlet-name>
-        <servlet-class>se.primekey.ejbca.autoenroll.MSEnrollmentServlet</servlet-class>
+        <servlet-class>org.ejbca.msae.MSEnrollmentServlet</servlet-class>
+        <load-on-startup>99</load-on-startup>
     </servlet>
+    
     <servlet-mapping>
         <servlet-name>MSEnrollmentServlet</servlet-name>
-        <url-pattern>/MSEnrollmentServlet</url-pattern>
+        <url-pattern>/msae/*</url-pattern>
     </servlet-mapping>
+    
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
+    
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-
-    <filter>
+    
+<filter>
         <filter-name>SpnegoHttpFilter</filter-name>
         <filter-class>net.sourceforge.spnego.SpnegoHttpFilter</filter-class>
         <!--
@@ -79,6 +104,7 @@
         <filter-name>SpnegoHttpFilter</filter-name>
         <url-pattern>/MSEnrollmentServlet</url-pattern>
     </filter-mapping>
+
 <!--
     <security-constraint>
         <display-name>Example Security Constraint</display-name>

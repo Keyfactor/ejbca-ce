@@ -499,6 +499,13 @@
 				replacement-context-root="/ejbca/acme"
 		/>
 		<war-replacement-in-module
+               	replacement-tag="!--@msae.war@-->"
+              	replacement-file="${eardd.src}/META-INF/application.xml"
+                replacement-enabled="${mod.msae.exists}"
+       	        replacement-web-uri="msae.war"
+				replacement-context-root="/ejbca/msae"
+		/>
+		<war-replacement-in-module
                 	replacement-tag="!--@est.war@-->"
                 	replacement-file="${eardd.src}/META-INF/application.xml"
 	                replacement-enabled="${mod.est.exists}"
@@ -633,6 +640,7 @@
             	<include name="acme.war" />
         		<include name="${in-test-mode-include}systemtests-common.jar"/>
             	<include name="ssh.war" />
+            	<include name="msae.war" />
             </fileset>
         	
         	<fileset dir="${ejbca.home}/lib/swagger">
@@ -1085,6 +1093,7 @@
                 <exclude unless="edition.is.ee" name="lib/ext/swagger/**"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ssh/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/msae/**"/>
 		    	<!-- List of modules to exclude from non-eIDAS editions -->
 		    	<exclude unless="build.contains.eidas" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
 		    	<exclude unless="build.contains.eidas" name="modules/p11ng-cli/**"/>

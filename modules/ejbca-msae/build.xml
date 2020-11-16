@@ -55,7 +55,7 @@
     	</copy>    	
     	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
     	<copy file="${resources.dir}/WEB-INF/log4j.properties" tofile="${build.dir}/WEB-INF/classes/log4j.properties"/>
-        <war destfile="${mod.ms-autoenroll.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}">
+        <war destfile="${mod.msae.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}">
         	<fileset dir="${resources.dir}" excludes="WEB-INF/web.xml"/>
         </war>
     	
