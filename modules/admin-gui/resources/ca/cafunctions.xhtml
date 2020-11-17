@@ -85,15 +85,15 @@
 							<h:panelGrid columns="6">
 								<h:outputText/>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
 									<h:outputText value="#{web.text.DOWNLOADIE}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
 									<h:outputText value="#{web.text.DOWNLOADNS}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex - 1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
 									<h:outputText value="#{web.text.DOWNLOADPEM}"/>
 								</h:outputLink>
 								<h:form>
@@ -101,7 +101,7 @@
 												   value="#{web.text.DOWNLOADJKS}"/>
 								</h:form>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getSshPublicKeyLink()}?level=#{table.rowCount - table.rowIndex - 1}&amp;name=#{caGuiInfo.name}"
+										value="#{cAFunctionsMBean.getSshPublicKeyLink()}?level=#{table.rowCount - table.rowIndex - 1}&amp;name=#{caGuiInfo.escapedName}"
 										rendered="#{caGuiInfo.caType == 'SSHCA'}">		
 									<h:outputText value="#{web.text.DOWNLOADSSH}"/>
 								</h:outputLink>
@@ -115,15 +115,15 @@
 							<h:panelGrid columns="5" >
 								<h:outputText />
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=iecacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
 									<h:outputText value="#{web.text.DOWNLOADIE}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=nscacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
 									<h:outputText value="#{web.text.DOWNLOADNS}"/>
 								</h:outputLink>
 								<h:outputLink
-										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.subjectdn}">
+										value="#{cAFunctionsMBean.getDownloadCertificateLink()}?cmd=cacert&amp;level=#{table.rowCount - table.rowIndex -1}&amp;issuer=#{caGuiInfo.escapedSubjectDn}">
 									<h:outputText value="#{web.text.DOWNLOADPEM}"/>
 								</h:outputLink>
 								<h:form>
