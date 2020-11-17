@@ -95,6 +95,7 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By INPUT_REQUIRED_SEND_NOTIFICATION = By.id("eeProfiles:sendNotificationRequiredCheckBox");
         static final By SELECT_DEFAULT_CERTIFICATE_PROFILE = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_AVAILABLE_CERTIFICATE_PROFILES = By.id("eeProfiles:availableCertProfiles");
+//        static final By SELECT_AVAILABLE_CA = By.id("eeProfiles:availableCA");
         static final By SELECT_ISSUANCE_REVOCATION_REASON = By.id("eeProfiles:revocationReasonMenu");
         static final By SELECT_DEFAULT_CP = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_DEFAULT_CA = By.id("eeProfiles:defaultCAMenu");
@@ -252,13 +253,13 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     /**
-     * Selects Available Certificate Profiles by single name.
+     * Selects Available CAs by single name.
      *
-     * @param cPName Certificate Profile name.
+     * @param caName Certificate Profile name.
      */
-    public void selectAvailableCp(String cPName) {
-        deselectOptions(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES);
-        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Collections.singletonList(cPName));
+    public void selectAvailableCa(String caName) {
+        deselectOptions(Page.SELECT_AVAILABLE_CAS);
+        selectOptionsByName(Page.SELECT_AVAILABLE_CAS, Collections.singletonList(caName));
     }
 
     /**
@@ -280,6 +281,15 @@ public class EndEntityProfileHelper extends BaseHelper {
         selectOptionByName(Page.SELECT_DEFAULT_CA, defaultCAName);
     }
 
+    /**
+     * Selects Available Certificate Profiles by single name.
+     *
+     * @param cPName Certificate Profile name.
+     */
+    public void selectAvailableCp(String cPName) {
+        deselectOptions(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES);
+        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Collections.singletonList(cPName));
+    }
     /**
      * Saves the End Entity Profile with success assertion.
      */
