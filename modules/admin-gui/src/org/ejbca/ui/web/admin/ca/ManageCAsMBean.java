@@ -13,7 +13,9 @@
 package org.ejbca.ui.web.admin.ca;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -207,14 +209,13 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private List<String> certificateProfilesUsedByCa(int selectedCaId) {
-        final int anyCaForCertificateProfile = CertificateProfile.ANYCA;
         final List<String> certificateProfileList = new ArrayList<>();
         final Map<Integer, CertificateProfile> certificateProfileMap = certificateProfileSessionLocal.getAllCertificateProfiles();
 
         for (Map.Entry<Integer, CertificateProfile> entry : certificateProfileMap.entrySet()) {
             final List<Integer> availableCAs = entry.getValue().getAvailableCAs();
 
-            if (availableCAs.stream().anyMatch(e -> e == selectedCaId || e == anyCaForCertificateProfile)) {
+            if (availableCAs.stream().anyMatch(e -> e == selectedCaId)) {
                 certificateProfileList.add(certificateProfileSessionLocal.getCertificateProfileName(entry.getKey()));
             }
         }
@@ -222,12 +223,12 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * @return a list with EndEntity names
-     * An assumption is made that if the CA-list is empty, the "Any CA" is chosen.
+     * @return a list with EndEntity Profile names
+     * If "Any" is chosen the CA is removable
      * The default EndEntity "Empty" is never added to the returned list.
      */
-    private List<String> endEntitiesUsedByCa(int selectedCaId) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
-        final List<String> endEntitiesList = new ArrayList<>();
+    private List<String> endEntityProfilesUsedByCa(int selectedCaId) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        final List<String> endEntityProfileList = new ArrayList<>();
         final Map<Integer, String> endEntityProfileMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
 
         for (Map.Entry<Integer, String> entry : endEntityProfileMap.entrySet()) {
@@ -237,10 +238,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             final Map<String, Integer> casInProfile = endEntityProfileSession.getAvailableCasInProfile(getAdmin(),
                     endEntityProfileSession.getEndEntityProfileId(entry.getValue()));
             if (casInProfile.isEmpty() || casInProfile.entrySet().stream().anyMatch(e -> (e.getValue() == selectedCaId))) {
-                endEntitiesList.add(endEntityProfileSession.getEndEntityProfileName(entry.getKey()));
+                endEntityProfileList.add(endEntityProfileSession.getEndEntityProfileName(entry.getKey()));
             }
         }
-        return endEntitiesList;
+        return endEntityProfileList;
     }
 
     private List<String> rolesUsedByCa(int selectedCaId) {
@@ -250,22 +251,28 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
         for (final Role role : roles) {
             rolesList.addAll(getRolesUsedByCa(role, StandardRules.CAACCESS.resource(), selectedCaId));
+            Collections.sort(rolesList);
         }
+
         return rolesList;
     }
 
     private List<String> getRolesUsedByCa(final Role role, final String baseResource, final Integer selectedCaId) {
         final LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
         final List<String> result = new ArrayList<>();
+        final String superAdmin = "Super Administrator Role";
 
-        if (AccessRulesHelper.hasAccessToResource(accessRules, baseResource)) {
+        final String resource = AccessRulesHelper.normalizeResource(baseResource + selectedCaId);
+
+
+        if (AccessRulesHelper.hasAccessToResource(accessRules, baseResource) && !role.getName().equals(superAdmin) ){
             result.add(role.getName());
         } else {
-            final String resource = AccessRulesHelper.normalizeResource(baseResource + selectedCaId);
-            if (AccessRulesHelper.hasAccessToResource(accessRules, resource)) {
+            if (AccessRulesHelper.hasAccessToResource(accessRules, resource) && !role.getName().equals(superAdmin))  {
                 result.add(role.getName());
             }
         }
+
         return result;
     }
 
@@ -273,12 +280,16 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         try {
             if (!cadatahandler.removeCA(selectedCaId)) {
                 addErrorMessage("COULDNTDELETECA");
-                addErrorMessage("CA_INCERTIFICATEPROFILES");
-                addNonTranslatedErrorMessage(StringUtils.join(certificateProfilesUsedByCa(selectedCaId), ", "));
-                addErrorMessage("CA_INENDENTITIES");
-                addNonTranslatedErrorMessage(StringUtils.join(endEntitiesUsedByCa(selectedCaId), ", "));
-                addErrorMessage("CA_INROLES");
-                addNonTranslatedErrorMessage(StringUtils.join(rolesUsedByCa(selectedCaId), ", "));
+                if (!certificateProfilesUsedByCa(selectedCaId).isEmpty()) {
+                    addErrorMessage("CA_INCERTIFICATEPROFILES");
+                    addNonTranslatedErrorMessage(StringUtils.join(certificateProfilesUsedByCa(selectedCaId), ", "));
+                }if(!endEntityProfilesUsedByCa(selectedCaId).isEmpty()){
+                    addErrorMessage("CA_INENDENTITYPROFILES");
+                    addNonTranslatedErrorMessage(StringUtils.join(endEntityProfilesUsedByCa(selectedCaId), ", "));
+                }if(!rolesUsedByCa(selectedCaId).isEmpty()) {
+                    addErrorMessage("CA_INROLES");
+                    addNonTranslatedErrorMessage(StringUtils.join(rolesUsedByCa(selectedCaId), ", "));
+                }
             }
         } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
             addNonTranslatedErrorMessage(e.getMessage());
