@@ -221,10 +221,10 @@ public class AdminRolesHelper extends BaseHelper {
             selectOptionByName(Page.SELECT_AUTHORIZED_CAS, caName);
         }
 
-        public void selectAvailableMultipleCa(List<String>listOfCas){
-            deselectOptions(Page.SELECT_AUTHORIZED_CAS);
-            selectOptionsByName(Page.SELECT_AUTHORIZED_CAS, listOfCas );
-        }
+    public void selectAvailableMultipleCa(List<String>listOfCas){
+        deselectOptions(Page.SELECT_AUTHORIZED_CAS);
+        selectOptionsByName(Page.SELECT_AUTHORIZED_CAS, listOfCas );
+    }
 
     public void setMatchValue(final String matchValue) {
         if(viewContext == ViewMode.VIEW_MODE_MEMBERS) {

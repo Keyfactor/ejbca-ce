@@ -95,7 +95,6 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By INPUT_REQUIRED_SEND_NOTIFICATION = By.id("eeProfiles:sendNotificationRequiredCheckBox");
         static final By SELECT_DEFAULT_CERTIFICATE_PROFILE = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_AVAILABLE_CERTIFICATE_PROFILES = By.id("eeProfiles:availableCertProfiles");
-//        static final By SELECT_AVAILABLE_CA = By.id("eeProfiles:availableCA");
         static final By SELECT_ISSUANCE_REVOCATION_REASON = By.id("eeProfiles:revocationReasonMenu");
         static final By SELECT_DEFAULT_CP = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_DEFAULT_CA = By.id("eeProfiles:defaultCAMenu");
