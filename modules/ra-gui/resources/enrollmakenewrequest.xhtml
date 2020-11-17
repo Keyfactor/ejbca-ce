@@ -480,7 +480,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollMakeNewRequestBean.usernameRendered}">
 								<h:outputLabel for="usernameField"
-									value="#{msg.enroll_username}" />
+									value="#{msg.enroll_username} *" />
 								<h:inputText id="usernameField"
 									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).required ? 'required-input' : ''}"
 									value="#{enrollMakeNewRequestBean.endEntityInformation.username}">
@@ -488,12 +488,14 @@
 										listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
 										render=":requestInfoForm:userCredentialsMessage" />
 									<f:validator validatorId="extendedRequiredValidator"/>
+									<f:attribute name="_required" value="true"/>
 								</h:inputText>
+								<h:message for="usernameField" id="usernameFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
 							<f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validatePassword}"/>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollMakeNewRequestBean.passwordRendered}">
-								<h:outputLabel for="passwordField" value="#{msg.enroll_password}" />
+								<h:outputLabel for="passwordField" value="#{msg.enroll_password} *" />
 								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>
@@ -501,7 +503,7 @@
 								<h:message for="passwordField" id="passwordFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
-								<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}" />
+								<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password} *" />
 								<h:inputSecret id="passwordConfirmField" binding="#{enrollMakeNewRequestBean.confirmPasswordComponent}" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>
