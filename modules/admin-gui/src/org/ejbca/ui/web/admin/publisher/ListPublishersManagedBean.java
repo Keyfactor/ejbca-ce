@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -118,10 +119,11 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         List<String> caUsingPublisherResult = new ArrayList<>();
         final int publisherid=publisherSession.getPublisherId(selectedPublisherName);
         for (final Integer caid : caSession.getAllCaIds()) {
-            for (final Integer pubInt : caSession.getCAInfoInternal(caid).getCRLPublishers()) {
-                if (pubInt == publisherid) {
-                    // We have found a match. No point in looking for more..
-                    caUsingPublisherResult.add(caSession.getCAInfoInternal(caid).getName());
+            if(caSession.getCAInfoInternal(caid).getCAType() == CAInfo.CATYPE_X509) {
+                for (final Integer pubInt : caSession.getCAInfoInternal(caid).getCRLPublishers()) {
+                    if (pubInt == publisherid) {
+                        caUsingPublisherResult.add(caSession.getCAInfoInternal(caid).getName());
+                    }
                 }
             }
         }
