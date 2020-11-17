@@ -34,9 +34,7 @@ import org.cesecore.config.ConfigurationHolder;
 import org.junit.Test;
 
 /**
- * Tests the StringTools class .
- *
- * @version $Id$
+ * Tests the StringTools class.
  */
 public class StringToolsTest {
     private static Logger log = Logger.getLogger(StringToolsTest.class);
@@ -651,6 +649,7 @@ public class StringToolsTest {
 
     @Test
     public void capitalizeCountryCode() {
+        assertEquals("CN=foo", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo"));
         assertEquals("CN=foo,O=bar,C=SE", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,C=SE"));
         assertEquals("CN=foo,O=bar,C=SE", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,C=se"));
         assertEquals("CN=foo, O=bar, C=SE", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo, O=bar, C=SE"));

@@ -57,8 +57,6 @@ import org.cesecore.config.ConfigurationHolder;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
- *
- * @version $Id$
  */
 public final class StringTools {
     private static final Logger log = Logger.getLogger(StringTools.class);
@@ -1300,18 +1298,20 @@ public final class StringTools {
     public static String capitalizeCountryCodeInSubjectDN(final String subjectDN) {
         String delimiter = "C=";
         int delimeterStartIndex = subjectDN.indexOf(delimiter);
-        int countryStartIndex = delimeterStartIndex + delimiter.length();
-        // This has to be either the first component, or prepended with a comma or space, so we don't capitalize DC=test -> DC=TEst
-        final boolean isC = (delimeterStartIndex == 0 || subjectDN.charAt(delimeterStartIndex-1) == ' ' || subjectDN.charAt(delimeterStartIndex-1) == ',');
-        if (delimeterStartIndex != -1 && isC) {
-            // Assume country code is 2 characters long. In special cases when it's longer and it's lowercase not all of it will be capitalized.
-            // In that case CA creation fails just like it always used to anyway.
-            int countryEndIndex = countryStartIndex + 2;
-            String replacement = subjectDN.substring(countryStartIndex, countryEndIndex).toUpperCase(Locale.ENGLISH);
-            String manipulatedSubjectDN = subjectDN.substring(0, countryStartIndex)
-                       + replacement
-                       + subjectDN.substring(countryEndIndex);
-            return manipulatedSubjectDN;
+        if (delimeterStartIndex > -1) {
+            int countryStartIndex = delimeterStartIndex + delimiter.length();
+            // This has to be either the first component, or prepended with a comma or space, so we don't capitalize DC=test -> DC=TEst
+            final boolean isC = (delimeterStartIndex == 0 || subjectDN.charAt(delimeterStartIndex-1) == ' ' || subjectDN.charAt(delimeterStartIndex-1) == ',');
+            if (delimeterStartIndex != -1 && isC) {
+                // Assume country code is 2 characters long. In special cases when it's longer and it's lowercase not all of it will be capitalized.
+                // In that case CA creation fails just like it always used to anyway.
+                int countryEndIndex = countryStartIndex + 2;
+                String replacement = subjectDN.substring(countryStartIndex, countryEndIndex).toUpperCase(Locale.ENGLISH);
+                String manipulatedSubjectDN = subjectDN.substring(0, countryStartIndex)
+                           + replacement
+                           + subjectDN.substring(countryEndIndex);
+                return manipulatedSubjectDN;
+            }
         }
         return subjectDN;
     }
