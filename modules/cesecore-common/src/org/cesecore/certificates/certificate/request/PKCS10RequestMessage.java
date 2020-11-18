@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.cesecore.certificates.certificate.request;
 
 import org.apache.log4j.Logger;
@@ -35,6 +36,7 @@ import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -82,6 +84,11 @@ public class PKCS10RequestMessage implements RequestMessage {
     private List<Certificate> additionalCaCertificates = new ArrayList<>();
     
     private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
+
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+    }
     
     /**
      * Constructs a new empty PKCS#10 message handler object.
@@ -124,7 +131,7 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException {
-        return pkcs10 == null ? null : pkcs10.getPublicKey();
+        return pkcs10.getPublicKey();
     }
 
     @Override
