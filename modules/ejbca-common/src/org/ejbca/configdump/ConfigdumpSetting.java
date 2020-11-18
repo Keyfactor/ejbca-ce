@@ -50,6 +50,7 @@ public class ConfigdumpSetting implements Serializable {
         OCSPCONFIG("ocsp-configuration", "OCSP Configuration"),
         PEERCONNECTOR("peer-connectors", "Peer Connector"),
         SCEPCONFIG("scep-config", "SCEPCONFIG"),
+        CMPCONFIG("cmp-config", "CMPCONFIG"),
         ESTCONFIG("est-config", "ESTCONFIG"),
         VALIDATOR("validators", "Validator"),
         CTLOG("ct-logs", "CT Log"),

@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.apache.myfaces.renderkit.html.util.AddResource;
 import org.apache.myfaces.renderkit.html.util.AddResourceFactory;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -683,25 +684,29 @@ public class ApproveActionManagedBean extends BaseManagedBean {
       * @param roleToUpdate
       * @return list of updated role infos.
       */
-     private List<RoleInformation> updateRoleMembers(final RoleInformation roleToUpdate) {
-         final List<Role> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
-         final List<RoleInformation> roleRepresentations = new ArrayList<>();
-         for (final Role role : allAuthorizedRoles) {
-             if (role.getRoleId() == roleToUpdate.getIdentifier()
-                     && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
-                             || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
-                 try {
-                     final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                     roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                 } catch (AuthorizationDeniedException e) {
-                     if (log.isDebugEnabled()) {
-                         log.debug("Not authorized to members of authorized role '" + role.getRoleNameFull() + "' (?):" + e.getMessage());
-                     }
-                 }
-             }
-         }
-         return roleRepresentations;
-     }
+    private List<RoleInformation> updateRoleMembers(final RoleInformation roleToUpdate) {
+        final AuthenticationToken alwaysAllowToken = new AlwaysAllowLocalAuthenticationToken("Approval update");
+        Role role;
+        try {
+           role = roleSession.getRole(alwaysAllowToken, roleToUpdate.getIdentifier());
+        } catch (AuthorizationDeniedException e) {
+           throw new IllegalStateException(e);
+        }
+        final List<RoleInformation> roleRepresentations = new ArrayList<>();
+        if (role != null) {
+            if (role.getRoleId() == roleToUpdate.getIdentifier()
+                    && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
+                            || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
+                try {
+                    final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(alwaysAllowToken, role.getRoleId());
+                    roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
+                } catch (AuthorizationDeniedException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        }
+        return roleRepresentations;
+    }
 
      /**
       * Updates the encoded values of propertyClone if

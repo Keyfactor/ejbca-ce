@@ -44,6 +44,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import com.google.common.net.InternetDomainName;
+
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -53,12 +55,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 
-import com.google.common.net.InternetDomainName;
-
 /**
  * This class implements some utility functions that are useful when handling Strings.
- *
- * @version $Id$
  */
 public final class StringTools {
     private static final Logger log = Logger.getLogger(StringTools.class);
@@ -1290,5 +1288,33 @@ public final class StringTools {
             return a.compareTo(b);
         }
     }
+
+    /** takes a subject DN and looks for a country code, C field, and if there is one makes sure the two letter country code (first two letter of the value of C) is capitalized.
+     * Only handles one occurrence of C, the first one if there are multiple (I have never seen multiple ones used)
+     * it will also fail if you have DC in the DN, i.e. DC=test,C=se
+     * @param subjectDN the subject DN to look for lowr case country name in
+     * @return either the same subjectDN if no country code was found, or subjectDN with capitalized country code, if C has more than two characters only the first two are capitalized
+     */
+    public static String capitalizeCountryCodeInSubjectDN(final String subjectDN) {
+        String delimiter = "C=";
+        int delimeterStartIndex = subjectDN.indexOf(delimiter);
+        if (delimeterStartIndex > -1) {
+            int countryStartIndex = delimeterStartIndex + delimiter.length();
+            // This has to be either the first component, or prepended with a comma or space, so we don't capitalize DC=test -> DC=TEst
+            final boolean isC = (delimeterStartIndex == 0 || subjectDN.charAt(delimeterStartIndex-1) == ' ' || subjectDN.charAt(delimeterStartIndex-1) == ',');
+            if (delimeterStartIndex != -1 && isC) {
+                // Assume country code is 2 characters long. In special cases when it's longer and it's lowercase not all of it will be capitalized.
+                // In that case CA creation fails just like it always used to anyway.
+                int countryEndIndex = countryStartIndex + 2;
+                String replacement = subjectDN.substring(countryStartIndex, countryEndIndex).toUpperCase(Locale.ENGLISH);
+                String manipulatedSubjectDN = subjectDN.substring(0, countryStartIndex)
+                           + replacement
+                           + subjectDN.substring(countryEndIndex);
+                return manipulatedSubjectDN;
+            }
+        }
+        return subjectDN;
+    }
+
 
 }
