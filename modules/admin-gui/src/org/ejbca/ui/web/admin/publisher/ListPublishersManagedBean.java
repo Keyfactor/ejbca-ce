@@ -27,6 +27,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -59,6 +61,8 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     private PublisherSessionLocal publisherSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CaSessionLocal caSession;
 
     private String selectedPublisherName;
     private String newPublisherName = StringUtils.EMPTY;
@@ -111,6 +115,20 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             return "listpublishers";
         }
     }
+    private List<String> caUsingPublisher (String selectedPublisherName){
+        List<String> caUsingPublisherResult = new ArrayList<>();
+        final int publisherid=publisherSession.getPublisherId(selectedPublisherName);
+        for (final Integer caid : caSession.getAllCaIds()) {
+            if(caSession.getCAInfoInternal(caid).getCAType() == CAInfo.CATYPE_X509) {
+                for (final Integer pubInt : caSession.getCAInfoInternal(caid).getCRLPublishers()) {
+                    if (pubInt == publisherid) {
+                        caUsingPublisherResult.add(caSession.getCAInfoInternal(caid).getName());
+                    }
+                }
+            }
+        }
+        return caUsingPublisherResult;
+    }
 
     public String deletePublisher() throws AuthorizationDeniedException {
         if (StringUtils.isNotEmpty(selectedPublisherName)) {
@@ -119,6 +137,8 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             } catch (ReferencesToItemExistException e) {
                 log.info("Error while deleting the publisher " + selectedPublisherName + e);
                 addErrorMessage("COULDNTDELETEPUBLISHERDUETOEXISTINGREF");
+                addErrorMessage("PUBLISHER_USEDBY_CA");
+                addNonTranslatedErrorMessage(StringUtils.join(caUsingPublisher(selectedPublisherName), ", "));
             }
         } else {
             addErrorMessage("YOUHAVETOSELECTAPUBLISHER");
