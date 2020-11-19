@@ -1063,6 +1063,9 @@ public class CryptokiDevice {
                     // Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
                     final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
                     if (StringUtils.contains(libName, "cknfast")) { // only use String for nCipher
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("cknfast detected, using PrintableString CKA_EC_PARAMS: " + curve);
+                        }
                         final DERPrintableString str = new DERPrintableString(curve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
                     }
