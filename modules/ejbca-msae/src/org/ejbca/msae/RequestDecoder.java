@@ -34,7 +34,6 @@ import org.cesecore.util.CertTools;
 
 /**
  * 
- * @version $Id$
  */
 public class RequestDecoder {
 

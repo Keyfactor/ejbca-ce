@@ -22,7 +22,6 @@ import java.util.List;
 
 /**
  * 
- * @version $Id$
  */
 public class TemplateSettings {
     private static final Logger log = Logger.getLogger(TemplateSettings.class);
