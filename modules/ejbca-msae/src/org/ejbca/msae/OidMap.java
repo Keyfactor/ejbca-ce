@@ -16,7 +16,6 @@ import java.util.TreeMap;
  * Provides strings for OIDs that appear in PKCS10 requests from Windows enrollment clients.
  * Used by ASN1.dump method.
  *
- * @version $Id$
  */
 public class OidMap
 {
