@@ -11,6 +11,7 @@ package org.ejbca.msae;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -70,7 +71,7 @@ class EJBCARequest {
 		user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
 		user1.setCertificateProfileName(certificateProfileName);
 		user1.setEndEntityProfileName(endEntityProfileName);
-		user1.setStatus(UserDataVOWS.STATUS_NEW);
+		user1.setStatus(EndEntityConstants.STATUS_NEW);
 
 		// The CA Name is user-configurable.
 		user1.setCaName(msEnrollmentProperties.getCANAME());

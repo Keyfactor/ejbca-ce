@@ -19,7 +19,6 @@ import java.util.Properties;
 
 /**
  *
- * @version $Id$
  */
 class MSTemplateToSettings extends Properties {
     

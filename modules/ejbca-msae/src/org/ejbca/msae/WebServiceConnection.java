@@ -34,7 +34,7 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * @version $Id$
+ * 
  */
 // TODO All or most of these calls are made from the main thread.
 // How do we make these calls asynchronously so that the results can be used in

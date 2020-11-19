@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 
 /**
  * 
- * @version $Id$
  */
 public class PKCS10Info
 {

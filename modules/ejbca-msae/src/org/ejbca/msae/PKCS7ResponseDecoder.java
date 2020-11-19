@@ -32,7 +32,6 @@ import org.cesecore.util.CertTools;
 
 /**
  * 
- * @version $Id$
  */
 public class PKCS7ResponseDecoder {
 

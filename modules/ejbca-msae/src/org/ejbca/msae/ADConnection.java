@@ -27,7 +27,7 @@ import java.security.cert.X509Certificate;
 import java.util.Hashtable;
 
 /**
- * @version $Id: ADConnection.java 25133 2017-01-27 12:19:09Z anatom $
+ * 
  */
 class ADConnection {
 
