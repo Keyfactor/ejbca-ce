@@ -11,7 +11,6 @@ package org.ejbca.msae;
 
 /**
  *
- * @version $Id$
  */
 public class EnrollmentException extends Exception
 {
