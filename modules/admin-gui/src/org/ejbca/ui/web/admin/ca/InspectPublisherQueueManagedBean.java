@@ -13,19 +13,9 @@
 
 package org.ejbca.ui.web.admin.ca;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -35,18 +25,33 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
+import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
+import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
- * Backing bean for the "Inspect Publisher Queue" page. 
- *
+ * Backing bean for the "Inspect Publisher Queue" page.
  */
 @ManagedBean(name = "inspectPublisherQueue")
 @ViewScoped
 public class InspectPublisherQueueManagedBean extends BaseManagedBean {
+    private static final Logger log = Logger.getLogger(InspectPublisherQueueManagedBean.class);
     private static final long serialVersionUID = 1L;
     private static final int MAX_RESULTS = 20;
     private static final int DESCRIPTION_MAX_LENGTH = 80;
@@ -60,6 +65,10 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     private CaSessionLocal caSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
+    @EJB
+    private ServiceDataSessionLocal serviceDataSession;
 
     private int pageNumber;
     private String publisherId;
@@ -68,7 +77,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     public InspectPublisherQueueManagedBean() {
         super(AccessRulesConstants.REGULAR_VIEWPUBLISHER);
     }
-    
+
     /**
      * A publisher queue item, displayed as a row in the GUI.
      */
@@ -83,7 +92,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
             if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CERT) {
                 final CertificateInfo certificateInfo = certificateSession.getCertificateInfo(publisherQueueData.getFingerprint());
                 if (isAuthorizedToViewCertificate(certificateInfo)) {
-                    return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CERTIFICATE_DESCRIPTION", /* unescape */ false,
+                    return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CERTIFICATE_DESCRIPTION", false,
                             certificateInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
                 } else {
                     return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
@@ -91,7 +100,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
             } else if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CRL) {
                 final CRLInfo crlInfo = crlSession.getCRLInfo(getFingerprint());
                 if (isAuthorizedToViewCrl(crlInfo)) {
-                    return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CRL_DESCRIPTION", /* unescape */ false,
+                    return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CRL_DESCRIPTION", false,
                             crlInfo.getLastCRLNumber(), crlInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
                 } else {
                     return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
@@ -102,6 +111,10 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
 
         public String getFingerprint() {
             return publisherQueueData.getFingerprint();
+        }
+
+        public String getPrimaryKey() {
+            return publisherQueueData.getPk();
         }
 
         public String getLink() {
@@ -189,6 +202,24 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         return caSession.authorizedToCANoLogging(getAdmin(), CertTools.stringToBCDNString(crlInfo.getSubjectDN()).hashCode());
     }
 
+    /**
+     * Get a message describing why the publisher queue process service cannot run.
+     *
+     * @return an error message or null if the service can run.
+     */
+    public String getReasonWhyPublisherQueueProcessQueueCannotRun() {
+        final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
+        if (!idOfPublisherQueueProcessService.isPresent()) {
+            return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NO_SERVICE");
+        }
+        final String serviceName = serviceDataSession.findNameById(idOfPublisherQueueProcessService.get());
+        final ServiceConfiguration serviceConfiguration = serviceSession.getService(serviceName);
+        if (!serviceConfiguration.isActive()) {
+            return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_SERVICE_DISABLED");
+        }
+        return null;
+    }
+
     public String getPublisherId() {
         return this.publisherId;
     }
@@ -207,6 +238,45 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         return "";
     }
 
+    public String flushItem(final PublisherQueueItem item) {
+        log.info("Attempting to flush item with fingerprint " + item.getFingerprint());
+        publisherQueueSession.removeQueueData(item.getPrimaryKey());
+        return "";
+    }
+
+    public String flush() {
+        log.info("Attempting to flush items on page " + pageNumber  + " in the queue with publisher ID " + getPublisherId() + ".");
+        getItemsForCurrentPage(Integer.parseInt(getPublisherId()))
+                .stream()
+                .forEach(item -> publisherQueueSession.removeQueueData(item.getPrimaryKey()));
+        return "";
+    }
+
+    public String republish() {
+        log.info("Attempting to republish items in the queue with publisher ID " + getPublisherId() + ".");
+        final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
+        if (!idOfPublisherQueueProcessService.isPresent()) {
+            log.error("No PublishQueueProcessWorker available on this system.");
+            return "";
+        }
+        log.info("Scheduling timer for PublishQueueProcessWorker with ID " + idOfPublisherQueueProcessService.get() + ".");
+        serviceSession.runService(idOfPublisherQueueProcessService.get());
+        addInfoMessage("INSPECT_PUBLISHER_QUEUE_STARTED_SERVICE", serviceSession.getServiceName(idOfPublisherQueueProcessService.get()));
+        return "";
+    }
+
+    private Optional<Integer> getIdOfPublisherQueueProcessService() {
+        return serviceSession
+                .getServiceIdToNameMap()
+                .entrySet()
+                .stream()
+                .map(idToName -> new AbstractMap.SimpleEntry<>(idToName.getKey(), serviceSession.getService(idToName.getValue())))
+                .filter(entry -> entry.getValue().getWorkerClassPath().endsWith("PublishQueueProcessWorker"))
+                .filter(entry -> entry.getValue().isActive())
+                .map(entry -> entry.getKey())
+                .findFirst();
+    }
+
     public boolean isFirstPage() {
         return pageNumber == 0;
     }
@@ -218,11 +288,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     public List<PublisherQueueItem> getItems() {
         try {
             final int publisherId = Integer.parseInt(getPublisherId());
-            final List<PublisherQueueItem> items = publisherQueueSession
-                    .getPendingEntriesForPublisherWithLimitAndOffset(publisherId, MAX_RESULTS + 1, MAX_RESULTS * pageNumber)
-                    .stream()
-                    .map(data -> new PublisherQueueItem(data))
-                    .collect(Collectors.toList());
+            final List<PublisherQueueItem> items = getItemsForCurrentPage(publisherId);
             if (items.size() != MAX_RESULTS + 1) {
                 isLastPage = true;
                 return items;
@@ -235,5 +301,13 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
             addNonTranslatedErrorMessage("The publisher ID must be an integer.");
             return new ArrayList<>();
         }
+    }
+
+    private List<PublisherQueueItem> getItemsForCurrentPage(final int publisherId) {
+        return publisherQueueSession
+                .getPendingEntriesForPublisherWithLimitAndOffset(publisherId, MAX_RESULTS + 1, MAX_RESULTS * pageNumber)
+                .stream()
+                .map(data -> new PublisherQueueItem(data))
+                .collect(Collectors.toList());
     }
 }
