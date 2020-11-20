@@ -1046,7 +1046,7 @@ public class CryptokiDevice {
                  * a public key and its corresponding private key should be the same */
                 privateKeyTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
                 
-                // Override attributes
+                // Override attributes, depending on what was chosen SIGN, ENCRYPT, SIGN/ENCRYPT
                 publicKeyTemplate.putAll(overridePublic);
                 privateKeyTemplate.putAll(overridePrivate);
 
@@ -1066,13 +1066,28 @@ public class CryptokiDevice {
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("cknfast detected, using PrintableString CKA_EC_PARAMS: " + curve);
                         }
+                        // actually only Ed25519 is supported (nCipher v12.60 nov2020)
                         final DERPrintableString str = new DERPrintableString(curve);
                         publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
                     }
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
                     }
-                    ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
+                    if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("Cryptoki2 detected, using CKM_VENDOR_DEFINED + 0xC01 instead of P11v3 for CKM_EC_EDWARDS_KEY_PAIR_GEN: " + curve);
+                        }
+                        // From cryptoki_v2.h in the lunaclient sample package
+                        final long LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN = (0x80000000L + 0xC01L);
+                        // Also using the OID is not good enough...just as for nCipher
+                        // actually only Ed25519 is supported (Luna 7 nov2020)
+                        final String lunacurve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "Ed25519" : "Ed448");
+                        final DERPrintableString str = new DERPrintableString(lunacurve);
+                        publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+                        ckm = new CKM(LUNA_CKM_EC_EDWARDS_KEY_PAIR_GEN);          
+                    } else {
+                        ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);                        
+                    }
                 } else {
                     LOG.trace("Using ECDSA_KEY_PAIR_GEN");
                     ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
