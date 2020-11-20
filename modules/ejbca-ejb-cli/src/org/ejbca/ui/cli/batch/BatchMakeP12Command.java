@@ -46,6 +46,20 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import org.ejbca.util.keystore.P12toPEM;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+
 /**
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12, JKS or PEM-files.
@@ -244,7 +258,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
      *            username
      * @param password
      *            user's password
-     * @param id
+     * @param caId
      *            of CA used to issue the keystore certificates
      * @param keyPair
      *            a previously generated keypair
@@ -266,7 +280,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
      */
 
     private void createKeysForUser(String username, String password, int caId, KeyPair keyPair, int keystoreType, boolean savekeys,
-            X509Certificate orgCert) throws Exception {
+                                   X509Certificate orgCert) throws Exception {
         if (log.isTraceEnabled()) {
             log.trace(">createUser: username=" + username);
         }
