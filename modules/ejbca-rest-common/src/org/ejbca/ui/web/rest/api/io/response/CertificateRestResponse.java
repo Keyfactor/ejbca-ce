@@ -13,14 +13,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.SecConst;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -140,7 +134,7 @@ public class CertificateRestResponse {
                     .build();
         }
         
-        public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType)  {
             return CertificateRestResponse.builder()
                     .setCertificate(keyStoreBytes)
                     .setResponseFormat(keystoreType)
@@ -154,11 +148,5 @@ public class CertificateRestResponse {
                 throw new RuntimeException(e);
             }
         }
-    }
-    
-    private static byte[] lockKeyStore(KeyStore keyStore, String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        keyStore.store(baos, password.toCharArray());
-        return baos.toByteArray();
     }
 }
