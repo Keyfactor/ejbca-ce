@@ -619,8 +619,6 @@ public final class KeyTools {
     public static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
             throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         try {
-            // Store the key and the certificate chain
-            // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
             KeyStore store = CesecoreConfiguration.useLegacyPkcs12Keystore()
                     ? KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME)
                     : KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
