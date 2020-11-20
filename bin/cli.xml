@@ -183,10 +183,7 @@ appserver.home         : ${appserver.home}
         * Role Template 'Super Administrators' - SeleniumSuperAdminRole;
         * Role Template 'Supervisors' - SeleniumSupervisorRole.
         -->
-        <antcall target="ejbca:setup:selenium-role">
-            <param name="roleName" value="SeleniumAuditorRole" />
-            <param name="ruleStrings" value="
-                /administrator/;
+        <property name="auditorRuleStrings" value="/administrator/;
                 /ca/;
                 /ca_functionality/view_approval_profiles/;
                 /ca_functionality/view_ca/;
@@ -196,7 +193,6 @@ appserver.home         : ${appserver.home}
                 /ca_functionality/view_validator/;
                 /cryptotoken/view/;
                 /internalkeybinding/view/;
-                /peer/view/;
                 /ra_functionality/view_end_entity/;
                 /ra_functionality/view_end_entity_history/;
                 /ra_functionality/view_end_entity_profiles/;
@@ -205,8 +201,12 @@ appserver.home         : ${appserver.home}
                 /system_functionality/view_administrator_privileges/;
                 /system_functionality/view_available_custom_certificate_extensions/;
                 /system_functionality/view_available_extended_key_usages/;
-                /system_functionality/view_systemconfiguration/" />
-        </antcall>
+                /system_functionality/view_systemconfiguration/"/>
+        <property name="auditorRuleStringsEE" value="${auditorRuleStrings};
+                                                    /peer/view/" />
+
+        <antcall target="ejbca:setup:selenium-auditor-roleEE" />
+        <antcall target="ejbca:setup:selenium-auditor-role" />
         <antcall target="ejbca:setup:selenium-role">
             <param name="roleName" value="SeleniumCaAdminRole" />
             <param name="ruleStrings" value="
@@ -326,6 +326,19 @@ appserver.home         : ${appserver.home}
         </antcall>
     </target>
 
+
+    <target name="ejbca:setup:selenium-auditor-roleEE" if="${mod.peerconnector.exists}">
+        <antcall target="ejbca:setup:selenium-role" >
+            <param name="roleName" value="SeleniumAuditorRole" />
+            <param name="ruleStrings" value="${auditorRuleStringsEE}" />
+        </antcall>
+    </target>
+    <target name="ejbca:setup:selenium-auditor-role" unless="${mod.peerconnector.exists}">
+        <antcall target="ejbca:setup:selenium-role" >
+            <param name="roleName" value="SeleniumAuditorRole" />
+            <param name="ruleStrings" value="${auditorRuleStrings}" />
+        </antcall>
+    </target>
     <target name="ejbca:setup:selenium-role">
         <ejbca:cli-hideargs arg="roles addrole --role ${roleName}" />
         <!-- Add Rules -->

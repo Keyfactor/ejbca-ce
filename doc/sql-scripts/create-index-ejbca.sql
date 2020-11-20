@@ -55,8 +55,8 @@ CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStat
 -- When using a role members with many entries
 CREATE INDEX rolemember_idx1 ON RoleMemberData (tokenType,roleId);
 
--- When using a blacklist with many entries
-CREATE INDEX blacklist_idx1 ON BlacklistData (type,value);
+-- When using a blocklist with many entries
+CREATE INDEX blocklist_idx1 ON BlacklistData (type,value);
 
 -- indices for NoConflictCertificateData (we don't need username, subjectDN, type, subjectKeyId indexes for revoked throw away certificates)
 CREATE INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData (serialNumber, issuerDN);

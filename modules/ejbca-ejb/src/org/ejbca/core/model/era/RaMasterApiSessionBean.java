@@ -331,8 +331,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>8<td>=<td>7.3.0
      * <tr><th>9<td>=<td>7.4.1
      * <tr><th>10<td>=<td>7.4.2
+     * <tr><th>10<td>=<td>7.5.0
      */
-    private static final int RA_MASTER_API_VERSION = 10;
+    private static final int RA_MASTER_API_VERSION = 11;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1587,10 +1588,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
+        IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = getAuthorizedCertificateProfiles(authenticationToken, CertificateConstants.CERTTYPE_UNKNOWN);
+        return authorizedCertificateProfiles;
+    }
+
+    @Override
     public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
+        IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = getAuthorizedCertificateProfiles(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
+        return authorizedCertificateProfiles;
+    }
+
+    private IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken, int certificateProfileType) {
         IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-        List<Integer> authorizedCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
-        for (Integer certificateProfileId : authorizedCertificateProfileIds){
+        List<Integer> authorizedCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType);
+        for (Integer certificateProfileId : authorizedCertificateProfileIds) {
             final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             final String certificateProfileName = certificateProfileSession.getCertificateProfileName(certificateProfileId);
             authorizedCertificateProfiles.put(certificateProfileId, certificateProfileName, certificateProfile);
@@ -1699,12 +1711,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (globalConfig.getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to perform key recovery
-                endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, userData.getEndEntityProfileId(), AccessRulesConstants.KEYRECOVERY_RIGHTS);
+                endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, userData.getEndEntityProfileId(), AccessRulesConstants.KEYRECOVERY_RIGHTS);
             }
             endEntityAuthenticationSessionLocal.authenticateUser(authenticationToken, username, password);
             final boolean shouldFinishUser = caSession.getCAInfo(authenticationToken, userData.getCAId()).getFinishUser();
             if (shouldFinishUser) {
-                    endEntityAuthenticationSessionLocal.finishUser(userData);
+                    endEntityManagementSession.finishUser(userData);
             }
 
             userData = endEntityAccessSession.findUser(username);
@@ -2284,7 +2296,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException{
         KeyToValueHolder<CAInfo> caInfoHolder = getAuthorizedCAInfos(authenticationToken).get(caId);
-        KeyToValueHolder<CertificateProfile> certificateProfileHolder = getAuthorizedCertificateProfiles(authenticationToken).get(certificateProfileId);
+        KeyToValueHolder<CertificateProfile> certificateProfileHolder = getAllAuthorizedCertificateProfiles(authenticationToken).get(certificateProfileId);
         if(caInfoHolder == null){
             throw new AuthorizationDeniedException("Could not get approval profile because " + authenticationToken + " doesn't have access to CA with ID = " + caId);
         }
@@ -2698,7 +2710,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean isClearPwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         //Authorization
-        if (!endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, endEntity.getEndEntityProfileId(),
+        if (!endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, endEntity.getEndEntityProfileId(),
                 AccessRulesConstants.DELETE_END_ENTITY)) {
             log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
                     + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
@@ -2768,12 +2780,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
 
     @Override
-    public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
+    public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
             throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
         }
         //Authorization
-        if (!endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, endEntityInformation.getEndEntityProfileId(),
+        if (!endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, endEntityInformation.getEndEntityProfileId(),
                 AccessRulesConstants.DELETE_END_ENTITY)) {
             log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
                     + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
@@ -2789,13 +2802,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
             throw new EndEntityProfileValidationRaException(e);
         }
-        PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
-        req.setUsername(endEntityInformation.getUsername());
-        req.setPassword(endEntityInformation.getPassword());
-        final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
-        req.setRequestValidityNotAfter(encodedValidity == null ? null :
-            ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
         try {
+            PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+            req.setUsername(endEntityInformation.getUsername());
+            req.setPassword(endEntityInformation.getPassword());
+            final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
+            req.setRequestValidityNotAfter(encodedValidity == null ? null :
+                    ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
             ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             return cert.getEncoded();
@@ -2804,8 +2817,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
                 | InvalidAlgorithmException | CertificateExtensionException e) {
             throw new EjbcaException(e);
-        } catch (CertificateParsingException | CertificateEncodingException e) {
-            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
+        } catch (CertificateParsingException | CertificateEncodingException | IOException e) {
+            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage", e);
         }
     }
 
