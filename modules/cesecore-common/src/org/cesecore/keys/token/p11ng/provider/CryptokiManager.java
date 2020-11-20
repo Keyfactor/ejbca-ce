@@ -40,15 +40,15 @@ public class CryptokiManager {
     private CryptokiManager() {}
 
 
-    public synchronized CryptokiDevice getDevice(final String name, final String libDir) {
-        LOG.debug(">getDevice(" + name + ", " + libDir + ")");
-        CryptokiDevice result = devices.get(getId(name, libDir));
+    public synchronized CryptokiDevice getDevice(final String libName, final String libDir) {
+        LOG.debug(">getDevice(" + libName + ", " + libDir + ")");
+        CryptokiDevice result = devices.get(getId(libName, libDir));
         if (result == null) {
-            NativeLibrary.addSearchPath(name, libDir);
-            JNAiNative jnaiNative = (JNAiNative) Native.loadLibrary(name, JNAiNative.class);
+            NativeLibrary.addSearchPath(libName, libDir);
+            JNAiNative jnaiNative = (JNAiNative) Native.loadLibrary(libName, JNAiNative.class);
             CEi ce = new CEi(new Ci(new JNAi(jnaiNative)));
-            result = new CryptokiDevice(ce, getInstallOrReInstallProvider());
-            devices.put(getId(name, libDir), result);
+            result = new CryptokiDevice(ce, getInstallOrReInstallProvider(), libName);
+            devices.put(getId(libName, libDir), result);
         }
         return result;
     }
@@ -70,7 +70,7 @@ public class CryptokiManager {
             Security.addProvider(result);
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Did not found our provider: " + p);
+                LOG.debug("Did not find our provider: " + p);
             }
             result = new JackNJI11Provider();
             Security.addProvider(result);

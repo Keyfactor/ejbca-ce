@@ -24,8 +24,6 @@ import org.junit.Test;
 
 /**
  * Tests the DNFieldExtractor class.
- *
- * @version $Id$
  */
 public class DnFieldExtractorTest {
  
@@ -33,13 +31,13 @@ public class DnFieldExtractorTest {
     public void test01CheckDnFields() throws Exception {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
-    	String dn = "name=tomas,street=a street, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,L=Stockholm,dc=PrimeKey,DC=com,description=Test DN";
+    	String dn = "name=tomas,street=a street, role=Test Role, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,L=Stockholm,dc=PrimeKey,DC=com,description=Test DN";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(31, i.size());
+            assertEquals(32, i.size());
         } else {
-            assertEquals(27, i.size());
+            assertEquals(28, i.size());
         }
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
@@ -59,6 +57,8 @@ public class DnFieldExtractorTest {
     	assertEquals("pseudo", pseudo);
     	final String description = extractor.getField(DNFieldExtractor.DESCRIPTION, 0);
         assertEquals("Test DN", description);
+        final String role = extractor.getField(DNFieldExtractor.ROLE, 0);
+        assertEquals("Test Role", role);
     	int num = extractor.getNumberOfFields(DNFieldExtractor.DC);
     	assertEquals(2, num);
     	num = extractor.getNumberOfFields(DNFieldExtractor.O);
