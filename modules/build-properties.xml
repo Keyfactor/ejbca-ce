@@ -189,7 +189,7 @@
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
 	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
-	<property name="mod.msae.path" location="${mod.path}/ejbca-msae" />
+	<property name="mod.msae.path" location="${mod.path}/msae" />
 	<property name="mod.msae.war" location="${mod.dist.path}/msae.war" />
 	
     <!-- Variables of global interest -->
