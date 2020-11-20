@@ -28,10 +28,10 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -45,20 +45,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import org.ejbca.util.keystore.P12toPEM;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 
 /**
  * This class generates keys and request certificates for all users with status NEW. The result is
@@ -258,7 +244,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
      *            username
      * @param password
      *            user's password
-     * @param caId
+     * @param id
      *            of CA used to issue the keystore certificates
      * @param keyPair
      *            a previously generated keypair
@@ -294,7 +280,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             if (finishUser) {
                 EndEntityInformation userdata = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
                         getAuthenticationToken(), username);
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class).finishUser(userdata);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSession.class).finishUser(userdata);
             }
 
         } else {

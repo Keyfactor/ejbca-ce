@@ -69,9 +69,16 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.LongByReference;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -115,8 +122,6 @@ import org.pkcs11.jacknji11.LongRef;
 
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
- *
- * @version $Id$
  */
 public class CryptokiDevice {
     /** Logger for this class. */
@@ -124,6 +129,7 @@ public class CryptokiDevice {
 
     private final CEi c;
     private final JackNJI11Provider provider;
+    private final String libName;
     private final ArrayList<Slot> slots = new ArrayList<>();
     private final HashMap<Long, Slot> slotMap = new HashMap<>();
     private final HashMap<String, Slot> slotLabelMap = new HashMap<>();
@@ -131,12 +137,13 @@ public class CryptokiDevice {
     private static final int SIGN_HASH_SIZE = 32;
     private static final int MAX_CHAIN_LENGTH = 100;
     
-    CryptokiDevice(CEi c, JackNJI11Provider provider) {
+    CryptokiDevice(CEi c, JackNJI11Provider provider, String libName) {
         if (c == null) {
             throw new NullPointerException("c must not be null");
         }
         this.c = c;
         this.provider = provider;
+        this.libName = libName;
         try {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("c.Initialize()");
@@ -607,7 +614,27 @@ public class CryptokiDevice {
                             LOG.debug("Trying to decode public elliptic curve OID. The DER encoded parameters look like this: " 
                                     + StringTools.hex(ckaParams.getValue()) + ".");
                         }
-                        final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());
+                        ASN1ObjectIdentifier oid = null;
+                        try (ASN1InputStream ain = new ASN1InputStream(ckaParams.getValue())) {
+                            ASN1Primitive primitive = ain.readObject();
+                            // Here we have some specific things if the key is EdDSA, it can be either an OID or a String
+                            // PKCS#11v3 section 2.3.10
+                            // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
+                            // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the 
+                            // public key using the curveName or the oID methods"
+                            // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
+                            // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
+                            if (primitive instanceof ASN1String) {
+                                ASN1String string = (ASN1String) primitive;
+                                if ("curve25519".equalsIgnoreCase(string.getString())) {
+                                    oid = EdECObjectIdentifiers.id_Ed25519;
+                                } else if ("curve448".equalsIgnoreCase(string.getString())) {
+                                    oid = EdECObjectIdentifiers.id_Ed448;
+                                }
+                            } else {
+                                oid = ASN1ObjectIdentifier.getInstance(ckaParams.getValue());                            
+                            }                            
+                        }
                         if (oid == null) {
                             LOG.warn("Unable to reconstruct curve OID from DER encoded data: " + StringTools.hex(ckaParams.getValue()));
                             return null;
@@ -621,22 +648,39 @@ public class CryptokiDevice {
                         // Always return a public key with OID form of parameters, which means we probably don't support EC keys with fully custom EC parameters using this code
                         {
                             final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(oid.getId());
-                            if (bcspec == null) {
+                            if (bcspec != null) {
+                                final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
+                                final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
+                                        ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
+                                final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
+                                final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
+                                final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+                                return keyfact.generatePublic(pubKeySpec);
+                            } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
+                                // It is an EdDSA key
+                                X509EncodedKeySpec edSpec = createEdDSAPublicKeySpec(ckaQ.getValue());
+                                final KeyFactory keyfact = KeyFactory.getInstance(oid.getId(), BouncyCastleProvider.PROVIDER_NAME);
+                                return keyfact.generatePublic(edSpec);
+                            } else {
                                 LOG.warn("Could not find an elliptic curve with the specified OID " + oid.getId() + ", not returning public key with alias '" + alias +"'.");
                                 return null;
                             }
-                            final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
-                            final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
-                                    ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
-                            final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
-                            final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
-                            final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
-                            return keyfact.generatePublic(pubKeySpec);
                         }
                     } else {
                         final CKA publicExponent = c.GetAttributeValue(session, publicKeyRef, CKA.PUBLIC_EXPONENT);
                         final byte[] modulusBytes = modulus.getValue();
-                        final byte[] publicExponentBytes = publicExponent.getValue();
+                        // Cavium/Marvell/AWS CloudHSM have a bug (as of october 2020 still) that:
+                        // On first call to C_GetAttributeValue with pValue==null, it returns ulValueLen==8 bytes (saying 8 bytes is needed to hold the value)
+                        // On second call it fills only three bytes and returns ulValueLen==3 bytes
+                        // This seems to be against the specification of C_GetAttributeValue in
+                        // http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html
+                        // And we workaround it here
+                        final byte[] publicExponentBytes;
+                        if (publicExponent.pValue != null && publicExponent.ulValueLen < publicExponent.pValue.length) {
+                             publicExponentBytes = Arrays.copyOfRange(publicExponent.pValue, 0, (int)publicExponent.ulValueLen);
+                        } else {
+                            publicExponentBytes = publicExponent.getValue();
+                        }
 
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Trying to decode RSA modulus: " + StringTools.hex(modulusBytes) + " and public exponent: "
@@ -654,7 +698,7 @@ public class CryptokiDevice {
                     }
                 }
                 return null;
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException | CKRException ex) {
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException | IOException | CKRException ex) {
                 throw new RuntimeException("Unable to fetch public key.", ex);
             } finally {
                 if (session != null) {
@@ -662,6 +706,29 @@ public class CryptokiDevice {
                 }
             }
         }
+        /** Takes the EC point bytes from an EdDSA key and creates a keyspec that we can use to generate the public key object */ 
+        private X509EncodedKeySpec createEdDSAPublicKeySpec(byte[] encPoint) throws IOException {
+            final byte[] rawPoint;
+            // Turns out that different HSMs store this field differently, guess because P11v3 is not fully implemented yet
+            // SoftHSM2 uses OctetString, same as for ECDSA keys (I think this is what it should be in P11v3)
+            // nCipher (12.60.x) used BitString
+            ASN1Primitive asn1 = ASN1Primitive.fromByteArray(encPoint);
+            if (asn1 instanceof DERBitString) {
+                rawPoint = ((DERBitString) asn1).getOctets();
+            } else {
+                // If something else than ASN1OctetString we'll get an exception here, which will propagate well 
+                // and give us an informative error message
+                rawPoint = ((ASN1OctetString) asn1).getOctets();
+            }
+            AlgorithmIdentifier algId;
+            if (rawPoint.length == 32) {
+                algId = new AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed25519);
+            } else {
+                algId = new AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed448);
+            }
+            return new X509EncodedKeySpec(new SubjectPublicKeyInfo(algId, rawPoint).getEncoded());
+        }
+
 
         public JackNJI11Provider getProvider() {
             return provider;
@@ -906,7 +973,8 @@ public class CryptokiDevice {
          * @param alias the CKA_LABEL of the key.
          * @throws IllegalStateException if a key with the specified alias already exists on the token.
          */
-        public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias) {
+        public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias,
+                final Map<Long, Object> overridePublic, final Map<Long, Object> overridePrivate) {
             Long session = null;
             try {
                 session = aquireSession();
@@ -922,7 +990,9 @@ public class CryptokiDevice {
                 publicKeyTemplate.put(CKA.VERIFY, true);
                 /* CK_TRUE if key supports verification where the data is recovered from the signature. */
                 // *Comment* ECDSA does not support data recovery on signature verification, but some other ECC signature schemes such as Abe-Okamoto does.
-                publicKeyTemplate.put(CKA.VERIFY_RECOVER, false);
+                // Some HSMs (Cavium/Marvell) does not work when specifying this flag but will fail with TEMPLATE_INCONSISTENT, as this 
+                // should be false by default on all sensible HSMs, leave it out completely
+                //publicKeyTemplate.put(CKA.VERIFY_RECOVER, false);
                 /* CK_TRUE if key supports wrapping (i.e., can be used to wrap other keys) */
                 publicKeyTemplate.put(CKA.WRAP, false);
 
@@ -946,22 +1016,27 @@ public class CryptokiDevice {
 
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
-                /* CK_TRUE if key is sensitive. */
-                privateKeyTemplate.put(CKA.SENSITIVE, true);
+                privateKeyTemplate.put(CKA.DERIVE, false);
                 /* CK_TRUE if key supports decryption */
                 privateKeyTemplate.put(CKA.DECRYPT, false);
                 /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
                 privateKeyTemplate.put(CKA.SIGN, true);
                 /* CK_TRUE if key supports signatures where the data can be recovered from the signature. */
-                privateKeyTemplate.put(CKA.SIGN_RECOVER, false);
+                // Some HSMs (Cavium/Marvell) does not work when specifying this flag but will fail with TEMPLATE_INCONSISTENT, as this 
+                // should be false by default on all sensible HSMs, leave it out completely
+                //privateKeyTemplate.put(CKA.SIGN_RECOVER, false);
                 /* CK_TRUE if key supports unwrapping (i.e., can be used to unwrap other keys. */
                 privateKeyTemplate.put(CKA.UNWRAP, false);
+
+                /* CK_TRUE if key is sensitive. */
+                privateKeyTemplate.put(CKA.SENSITIVE, true);
                 /* CK_TRUE if key is extractable and can be wrapped. */
                 privateKeyTemplate.put(CKA.EXTRACTABLE, false);
-
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.4 - Storage objects
                 /* CK_TRUE if object is a token object or CK_FALSE if object is a session object. */
                 privateKeyTemplate.put(CKA.TOKEN, true);
+                /* By default the private key can not be accessed until the user is authenticated */
+                privateKeyTemplate.put(CKA.PRIVATE, true);
                 /* Description of the object (default empty). */
                 privateKeyTemplate.put(CKA.LABEL, ("priv-" + alias).getBytes(StandardCharsets.UTF_8));
 
@@ -971,9 +1046,38 @@ public class CryptokiDevice {
                  * a public key and its corresponding private key should be the same */
                 privateKeyTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
                 
+                // Override attributes
+                publicKeyTemplate.putAll(overridePublic);
+                privateKeyTemplate.putAll(overridePrivate);
+
                 final LongRef publicKeyRef = new LongRef();
                 final LongRef privateKeyRef = new LongRef();
-                c.GenerateKeyPair(session, new CKM(CKM.ECDSA_KEY_PAIR_GEN), toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
+                final CKM ckm;
+                if (oid.equals(EdECObjectIdentifiers.id_Ed25519) || oid.equals(EdECObjectIdentifiers.id_Ed448)) {
+                    // PKCS#11v3 section 2.3.10
+                    // https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/pkcs11-curr-v3.0.html
+                    // "These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the 
+                    // public key using the curveName or the oID methods"
+                    // nCipher only supports the curveName, see Integration_Guide_nShield_Cryptographic_API_12.60.pdf section 3.9.16 (12)
+                    // CKA_EC_PARAMS is a DER-encoded PrintableString curve25519
+                    // Generating keys for SoftHSM however, the keys generate fine with PrintableString, but can not be used
+                    final String curve = (oid.equals(EdECObjectIdentifiers.id_Ed25519) ? "curve25519" : "curve448");
+                    if (StringUtils.contains(libName, "cknfast")) { // only use String for nCipher
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("cknfast detected, using PrintableString CKA_EC_PARAMS: " + curve);
+                        }
+                        final DERPrintableString str = new DERPrintableString(curve);
+                        publicKeyTemplate.put(CKA.EC_PARAMS, str.getEncoded());
+                    }
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
+                    }
+                    ckm = new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN);
+                } else {
+                    LOG.trace("Using ECDSA_KEY_PAIR_GEN");
+                    ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
+                }
+                c.GenerateKeyPair(session, ckm, toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
                         publicKeyRef, privateKeyRef);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated EC public key " + publicKeyRef.value + " and EC private key " + privateKeyRef.value + ".");
@@ -1024,6 +1128,7 @@ public class CryptokiDevice {
                 publicTemplate.put(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
 
                 final HashMap<Long, Object> privateTemplate = new HashMap<>();
+                privateTemplate.put(CKA.DERIVE, false);
                 privateTemplate.put(CKA.TOKEN, true);
                 privateTemplate.put(CKA.PRIVATE, true);
                 privateTemplate.put(CKA.SENSITIVE, true);
