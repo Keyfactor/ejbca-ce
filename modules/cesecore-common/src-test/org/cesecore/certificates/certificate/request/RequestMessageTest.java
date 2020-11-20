@@ -12,18 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -43,10 +31,20 @@ import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
- * Testing various aspects of request messages
- *
- * @version $Id$
+ * Testing various aspects of request messages.
  */
 public class RequestMessageTest {
 
@@ -258,7 +256,7 @@ public class RequestMessageTest {
             "4Bdl+Nj8V5PRlEf8hjm7VldLczABKfnJM6aVMQ/L8YueRCnNzMNdcgBbfrfGXCU=").getBytes());
 
     @Test
-    public void testOpenSSLChallengepassword() {
+    public void testOpenSSLChallengepassword() throws IOException {
         PKCS10RequestMessage msg1 = new PKCS10RequestMessage(p10utf8StringPwd);
         assertEquals("Username from P10 message is not what we expect", "p10test", msg1.getUsername());
         assertEquals("Challenge password (UTF8 encoded) from P10 message is not what we expect", "fSREp8pnxtx3CuV", msg1.getPassword());

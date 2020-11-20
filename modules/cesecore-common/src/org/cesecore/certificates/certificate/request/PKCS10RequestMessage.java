@@ -10,19 +10,8 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.certificate.request;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+package org.cesecore.certificates.certificate.request;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -46,34 +35,34 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 /**
- * Class to handle PKCS10 request messages sent to the CA.
+ * <p>Class to handle PKCS10 request messages sent to the CA.
  * 
- * This class implements equals/hashcode, so if any members are added please modify those as well.
+ * <p><b>Implementation note:</b> This class implements {@link Object#equals(Object)} and {@link Object#hashCode()}.
+ * Make sure these methods are updated if any new members are added to this class.
  */
-public class PKCS10RequestMessage implements RequestMessage {  
-    /**
-     * Determines if a de-serialized file is compatible with this class.
-     *
-     * Maintainers must change this value if and only if the new version
-     * of this class is not compatible with old versions. See Sun docs
-     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
-     * /serialization/spec/version.doc.html> details. </a>
-     *
-     */
-    static final long serialVersionUID = 3597275157018205137L;
-
+public class PKCS10RequestMessage implements RequestMessage {
+    private static final long serialVersionUID = 3597275157018205137L;
     private static final Logger log = Logger.getLogger(PKCS10RequestMessage.class);
-
     /** Raw form of the PKCS10 message */
     protected byte[] p10msg;
-
     /** manually set password */
     protected String password = null;
-
     /** manually set username */
     protected String username = null;
-
     protected Date notAfter = null;
     protected Date notBefore = null;
 
@@ -84,7 +73,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
     /** The pkcs10 request message, not serialized. */
-    protected transient JcaPKCS10CertificationRequest pkcs10 = null;
+    protected transient JcaPKCS10CertificationRequest pkcs10;
 
     /** Type of error */
     private int error = 0;
@@ -95,26 +84,29 @@ public class PKCS10RequestMessage implements RequestMessage {
     private List<Certificate> additionalCaCertificates = new ArrayList<>();
     
     private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
+
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+    }
     
     /**
      * Constructs a new empty PKCS#10 message handler object.
      */
     public PKCS10RequestMessage() {
-    	// No constructor
     }
 
     /**
      * Constructs a new PKCS#10 message handler object.
      *
      * @param msg The DER encoded PKCS#10 request.
-     * @throws IOException
      */
-    public PKCS10RequestMessage(byte[] msg) {
+    public PKCS10RequestMessage(byte[] msg) throws IOException {
     	if (log.isTraceEnabled()) {
     		log.trace(">PKCS10RequestMessage(byte[])");
     	}
         this.p10msg = msg;
-        init();
+        this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
     	if (log.isTraceEnabled()) {
     		log.trace("<PKCS10RequestMessage(byte[])");
     	}
@@ -137,26 +129,8 @@ public class PKCS10RequestMessage implements RequestMessage {
     	}
     }
 
-    private void init() {
-        if(p10msg == null) {
-            throw new NullPointerException("Cannot initiate with p10msg == null");
-        }
-        try {
-            pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
-        } catch (IOException e) {
-            log.warn("PKCS10 not initiated! "+e.getMessage());
-        }
-    }
-
     @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException {
-        if (pkcs10 == null) {
-            if (p10msg != null) {
-                init();
-            } else {
-                return null;
-            }
-        }
         return pkcs10.getPublicKey();
     }
 
@@ -169,14 +143,6 @@ public class PKCS10RequestMessage implements RequestMessage {
     public String getPassword() {
         if (password != null) {
             return password;
-        }
-        try {
-            if (pkcs10 == null) {
-                init();
-            }
-        } catch (NullPointerException e) {
-            log.error("PKCS10 not initated! "+e.getMessage());
-            return null;
         }
 
         String ret = null;
@@ -326,14 +292,6 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
     public X500Name getRequestX500Name() {
-        try {
-            if (pkcs10 == null) {
-                init();
-            }
-        } catch (NullPointerException e) {
-            log.error("PKCS10 not inited: "+e.getMessage());
-            return null;
-        }
         return X500Name.getInstance(new CeSecoreNameStyle(), pkcs10.getSubject());
     }
 
@@ -373,14 +331,6 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
 	public Extensions getRequestExtensions() {
-        try {
-            if (pkcs10 == null) {
-                init();
-            }
-        } catch (NullPointerException e) {
-            log.error("PKCS10 not inited! "+e.getMessage());
-            return null;
-        }
         Extensions ret = null;
 
         // Get attributes
@@ -413,15 +363,6 @@ public class PKCS10RequestMessage implements RequestMessage {
      * @return the request object
      */
     public PKCS10CertificationRequest getCertificationRequest() {
-        try {
-            if (pkcs10 == null) {
-                init();
-            }
-        } catch (NullPointerException e) {
-            log.error("PKCS10 not inited! "+e.getMessage());
-            return null;
-        }
-
         return pkcs10;
     }
 
@@ -431,33 +372,28 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     public boolean verify(PublicKey pubKey) throws InvalidKeyException, NoSuchAlgorithmException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">verify()");
-    	}
-    	 if (pkcs10 == null) {
-             init();
-         }
-
-        ContentVerifierProvider verifierProvider;
         try {
+            if (log.isTraceEnabled()) {
+                log.trace(">verify()");
+            }
+            final ContentVerifierProvider verifierProvider;
             if (pubKey == null) {
                 verifierProvider = CertTools.genContentVerifierProvider(pkcs10.getPublicKey());
             } else {
                 verifierProvider = CertTools.genContentVerifierProvider(pubKey);
             }
-            try {
-                return pkcs10.isSignatureValid(verifierProvider);
-            } catch (PKCSException e) {
-                log.error("Signature could not be processed.", e);
-            }
+            return pkcs10.isSignatureValid(verifierProvider);
         } catch (OperatorCreationException e) {
             log.error("Content verifier provider could not be created.", e);
+            return false;
+        } catch (PKCSException e) {
+            log.error("Signature could not be processed.", e);
+            return false;
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<verify()");
             }
         }
-        return false;
     }
 
     @Override

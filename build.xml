@@ -682,7 +682,7 @@
                 <include name="*.jar"/>
             </zipfileset>
         	<!-- Include JackNji11 for use from P11NG (cesecore-common) -->
-        	<zipfileset prefix="lib" dir="${lib}/ext" includes="jacknji11-*.jar"/>
+        	<zipfileset prefix="lib" dir="${lib}" includes="jacknji11-*.jar"/>
         	<zipfileset prefix="lib" dir="${mod.dist.path}">
         		<!-- ejbca-ws-client is needed for automatic OCSP Renewal via WS
         		     There are classpath issues using the ejbca-ws-cli.jar though, since this jar contain class-patch in META-INF/MANIFEST 
@@ -1645,7 +1645,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
                 <exclude name="cesecore-*/build/*"/>
                 
                 <!-- Exclude build system for now. When possible in the future, also include this. -->
-                <exclude name="cesecore-*/nbproject/**/*"/>
                 <exclude name="cesecore-*/build.xml"/>
             </fileset>
         </copy>

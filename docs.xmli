@@ -41,17 +41,25 @@
    	<property file="src/doc.properties"/>
     <property name="confluence.url"  value="none" />
     <property name="confluence.port"  value="-1" />
-	<path id="jdoc.classpath">
-        <path location="lib/jee/javaee-api-7.0-1.jar"/>
-        <path location="lib/jee/jaxb-api-2.3.1.jar"/>
-		<path location="dist/ejbca-common.jar" />
-		<path location="modules/dist/ejbca-ejb.jar" />
-        <path location="modules/dist/cesecore-common.jar"/>
-        <path location="modules/dist/cesecore-entity.jar"/>
-       	<path location="modules/dist/cesecore-ejb-interface.jar"/>
-		<path location="lib/bcprov-jdk15on-165.jar" />
-		<path location="lib/bcpkix-jdk15on-165.jar" />
-        <path location="lib/bctls-jdk15on-165.jar" />
+    <path id="jdoc.classpath">
+       <fileset dir="${dist.dir}">
+           <include name="ejbca-common.jar"/>
+        </fileset>  
+       <fileset dir="${ejbca.home}/lib">
+           <include name="bcprov*.jar"/>
+           <include name="bcpkix*.jar"/>
+           <include name="bctls*.jar"/>
+        </fileset>
+       <fileset dir="${ejbca.home}/lib/jee">
+           <include name="javaee-api*.jar"/>
+           <include name="jaxb-api*.jar"/>
+        </fileset>
+       <fileset dir="${mod.path}/dist">
+           <include name="ejbca-ejb.jar" />
+           <include name="cesecore-common.jar"/>
+           <include name="cesecore-entity.jar"/>
+           <include name="cesecore-ejb-interface.jar"/>
+        </fileset>
     </path>
     
     <!-- =================================================================== -->

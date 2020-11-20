@@ -13,17 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -43,6 +32,16 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A class used as an interface between Apply jsp pages and ejbca functions.
@@ -261,7 +260,7 @@ public class ApplyBean implements Serializable {
     public void setUserOk(String username, String password) throws Exception {
         if(!username.equals(this.username) || this.endEntityInformation == null){
             try {
-                this.userOk = ejbLocalHelper.getEndEntityManagementSession().verifyPassword(administrator, username, password, true);
+                this.userOk = ejbLocalHelper.getEndEntityAuthenticationSession().verifyPassword(administrator, username, password, true);
             } catch (NoSuchEndEntityException e) {
                 // Username does not exist
                 this.userOk = false;
@@ -313,7 +312,6 @@ public class ApplyBean implements Serializable {
 
     /**
      * Returns the detected browser type.
-     * @see detectBrowser(Request)
      * @return Either "netscape", "explorer" or "unknown"
      */
     public String getBrowser() {

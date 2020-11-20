@@ -107,7 +107,6 @@ import java.util.stream.Collectors;
  * effected by this change. This would be harder to code and maintain since you have to think about
  * all permutations that could potentially be affected down the line.)
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -197,7 +196,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     @PostConstruct
     private void postContruct() {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
-        this.authorizedCertificateProfiles = raMasterApiProxyBean.getAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
+        this.authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
         this.authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
     }
 

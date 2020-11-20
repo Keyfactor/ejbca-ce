@@ -40,8 +40,6 @@ import org.pkcs11.jacknji11.CKM;
 
 /**
  * Provider using JackNJI11.
- *
- * @version $Id$
  */
 public class JackNJI11Provider extends Provider {
 
@@ -53,7 +51,7 @@ public class JackNJI11Provider extends Provider {
     public static final String NAME = "JackNJI11";
 
     public JackNJI11Provider() {
-        super(NAME, 0.3, "JackNJI11 Provider");
+        super(NAME, 1.1, "JackNJI11 Provider");
  
         putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "MD5withRSA", MySignature.class.getName()));
@@ -74,6 +72,8 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED25519, MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_ED448, MySignature.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA256", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA384", MyMessageDigiest.class.getName()));
         putService(new MySigningService(this, "MessageDigest", "SHA512", MyMessageDigiest.class.getName()));
@@ -151,8 +151,7 @@ public class JackNJI11Provider extends Provider {
     private static class MySignature extends SignatureSpi {
         private static final Logger log = Logger.getLogger(MySignature.class);
 
-        private final JackNJI11Provider provider;
-        private final String algorithm;
+        private String algorithm;
         private NJI11Object myKey;
         private long session;
         private ByteArrayOutputStream buffer;
@@ -164,20 +163,22 @@ public class JackNJI11Provider extends Provider {
         private final static int T_DIGEST = 1;
         // constant for type update, token does everything
         private final static int T_UPDATE = 2;
-        // constant for type raw, used with NONEwithRSA only
+        // constant for type raw, used with NONEwithRSA and EdDSA only
         private final static int T_RAW = 3;
         
         
+        @SuppressWarnings("unused")
         public MySignature(Provider provider, String algorithm) {
             super();
-            this.provider = (JackNJI11Provider) provider;
             this.algorithm = algorithm;
-
-            if (algorithm.equals("NONEwithRSA")) {
+            if (log.isTraceEnabled()) {
+                log.info("Creating Signature provider for algorithm: " + algorithm + ", and provider: " + provider);
+            }
+            if (algorithm.equals("NONEwithRSA") || algorithm.startsWith("Ed")) {
                 type = T_RAW;
             } else if (algorithm.contains("ECDSA")) {
                 type = T_DIGEST;
-            } else {
+            } else { // SHA256WithRSA, etc
                 type = T_UPDATE;
             }
         }
@@ -210,12 +211,12 @@ public class JackNJI11Provider extends Provider {
                 byte[] param = MechanismNames.CKM_PARAMS.get(mechanism);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineInitSign: session: " + session + ", object: " +
-                            myKey.getObject() + ", sigAlgoValue: " + mechanism + ", param: " + StringTools.hex(param));
+                            myKey.getObject() + ", sigAlgoValue: 0x" + Long.toHexString(mechanism) + ", param: " + StringTools.hex(param));
                     debugStacktrace = new Exception();
                 }
                 myKey.getSlot().getCryptoki().SignInit(session, new CKM(mechanism, param),
                         myKey.getObject());
-                log.debug("C_SignInit with mechanism " + mechanism + " successful.");
+                log.debug("C_SignInit with mechanism 0x" + Long.toHexString(mechanism) + " successful.");
             } catch (Exception e) {
                 log.error("An exception occurred when calling C_SignInit: " + e.getMessage());
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
@@ -362,6 +363,7 @@ public class JackNJI11Provider extends Provider {
     
     private static class MyAlgorithmParameters extends PSS {
         // Fall back on BC PSS parameter configuration. 
+        @SuppressWarnings("unused")
         public MyAlgorithmParameters(Provider provider, String algorithm) {
             super();
         }
@@ -371,6 +373,7 @@ public class JackNJI11Provider extends Provider {
         // While this MessageDigiest "implementation" doesn't do anything currently, it's required
         // in order for MGF1 Algorithms to work since BC performs a sanity check before
         // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)
+        @SuppressWarnings("unused")
         public MyMessageDigiest(Provider provider, String algorithm) {
             super();
         }

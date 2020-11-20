@@ -34,8 +34,6 @@ import org.ietf.ldap.LDAPDN;
 
 /**
  * A class used to retrieve different fields from a Distinguished Name or Subject Alternate Name or Subject Directory Attributes strings.
- * 
- * @version $Id$
  */
 public class DNFieldExtractor implements Serializable {
 
@@ -74,6 +72,7 @@ public class DNFieldExtractor implements Serializable {
     public static final int PSEUDONYM = 37;
     public static final int STREET = 38;
     public static final int NAME = 55;
+    public static final int ROLE = 70;
     public static final int DESCRIPTION = 60;
     public static final int ORGANIZATIONIDENTIFIER = 106;
 

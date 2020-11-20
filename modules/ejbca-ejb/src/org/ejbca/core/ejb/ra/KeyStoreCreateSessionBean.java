@@ -251,7 +251,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     		boolean finishUser = true;
 			finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
     		if (finishUser) {
-				authenticationSession.finishUser(userdata);
+				endEntityManagementSession.finishUser(userdata);
     		}
     	} else {
             if (log.isDebugEnabled()) {
