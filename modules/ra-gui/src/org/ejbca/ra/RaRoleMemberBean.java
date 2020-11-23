@@ -227,11 +227,6 @@ public class RaRoleMemberBean implements Serializable {
             Collections.sort(tokenTypes);
             availableTokenTypes = new ArrayList<>();
             for (final String tokenType : tokenTypes) {
-                // ECA-9514: Temporarily skip token types until full support for OAuth2
-                if (tokenType.equals("OAuth2AuthenticationToken")) {
-                    continue;
-                }
-
                 availableTokenTypes.add(new SelectItem(tokenType, raLocaleBean.getMessage("role_member_token_type_" + tokenType)));
             }
         }
