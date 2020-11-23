@@ -1938,7 +1938,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Extended Key Usages");
         }
-        // ECA-9514: Trusted OAuth Providers tab removed until full OAuth2 support
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
+            availableTabs.add("Trusted OAuth Providers");
+        }
         if (getEjbcaWebBean().isRunningBuildWithCA()
                 && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())
                 && CertificateTransparencyFactory.isCTAvailable()) {
