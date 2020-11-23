@@ -12,14 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -47,6 +39,14 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+
 /**
  * Utility class to gather a few functions
  */
@@ -69,7 +69,7 @@ public abstract class RequestMessageUtils {
 	            log.debug("Can not parse PKCS10 request, trying CVC instead: P10 is parsed to null");
 	            ret = genCVCRequestMessage(request);			    
 			}
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException | IOException e) {
 		    if (log.isDebugEnabled()) {
 		        log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
 		    }
@@ -85,7 +85,7 @@ public abstract class RequestMessageUtils {
 		return ret;
 	}
 
-	public static PKCS10RequestMessage genPKCS10RequestMessage(byte[] bytes) {
+	public static PKCS10RequestMessage genPKCS10RequestMessage(byte[] bytes) throws IOException {
 		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;

@@ -20,8 +20,6 @@ import org.pkcs11.jacknji11.ULong;
 
 /**
  * Handles mapping between PKCS#11 mechanism constant names and values.
- *
- * @version $Id$
  */
 public class MechanismNames {
 
@@ -54,12 +52,14 @@ public class MechanismNames {
         SIGALGOS2L.put("SHA256withECDSA", CKM.ECDSA);
         SIGALGOS2L.put("SHA384withECDSA", CKM.ECDSA);
         SIGALGOS2L.put("SHA512withECDSA", CKM.ECDSA);
+        SIGALGOS2L.put("Ed25519", CKM.EDDSA);
+        SIGALGOS2L.put("Ed448", CKM.EDDSA);
         
         CKM_PARAMS = new HashMap<>();
         CKM_PARAMS.put(CKM.SHA1_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA_1, CKG.MGF1_SHA1, 20}));
         CKM_PARAMS.put(CKM.SHA256_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA256, CKG.MGF1_SHA256, 32}));
         CKM_PARAMS.put(CKM.SHA384_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA384, CKG.MGF1_SHA384, 48}));
-        CKM_PARAMS.put(CKM.SHA512_RSA_PKCS_PSS, ULong.ulong2b(new long[] { CKM.SHA512, CKG.MGF1_SHA512, 64 }));
+        CKM_PARAMS.put(CKM.SHA512_RSA_PKCS_PSS, ULong.ulong2b(new long[]{CKM.SHA512, CKG.MGF1_SHA512, 64}));
     }
 
     /**
