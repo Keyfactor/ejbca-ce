@@ -37,9 +37,12 @@ import java.security.SecureRandom;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertPath;
+import java.security.cert.CertPathBuilder;
+import java.security.cert.CertPathBuilderException;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertPathValidatorResult;
+import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -47,11 +50,15 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.PKIXBuilderParameters;
+import java.security.cert.PKIXCertPathBuilderResult;
 import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
+import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -69,6 +76,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.novell.ldap.LDAPDN;
 
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
@@ -151,6 +160,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
@@ -170,12 +180,8 @@ import org.ejbca.cvc.ReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
-import com.novell.ldap.LDAPDN;
-
 /**
  * Tools to handle common certificate operations.
- * 
- * @version $Id$
  */
 public abstract class CertTools {
     private static final Logger log = Logger.getLogger(CertTools.class);
@@ -4250,28 +4256,77 @@ public abstract class CertTools {
         return returnval;
     } // orderCertificateChain
 
-    /**
-     * Method ordering a list of X509 certificate into a certificate path with the root CA, or topmost Sub CA at the end. Does not check validity or verification of any kind,
-     * just ordering by issuerdn/keyId. This is mostly a wrapper around CertPath.generateCertPath, but we do regression test this ordering.
-     * 
-     * @param certlist list of certificates to order can be collection of Certificate or byte[] (der encoded certs).
-     * @return List with certificate chain with leaf certificate first, and root CA, or last sub CA, in the end, does not have to contain a Root CA is input does not.
-     */
-    @SuppressWarnings("unchecked")
-    public static List<X509Certificate> orderX509CertificateChain(List<X509Certificate> certlist) throws CertPathValidatorException {
-        CertPath cp;
-        try {
-            cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(certlist);
-        } catch (CertificateException e) {
-            // Wasn't a certificate after all?
-            throw new CertPathValidatorException(e);
-        } catch (NoSuchProviderException e) {
-            // This is really bad
-            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+    public static boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, CAInfo cainfo) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertPathBuilderException, CertPathValidatorException {
+        if (certs == null || certs.isEmpty()) {
+            throw new IllegalArgumentException("extraCerts must contain at least one certificate.");
         }
-        return (List<X509Certificate>)cp.getCertificates();
-    } // orderX509CertificateChain
+        // What we got in extraCerts can be different things
+        // - An end entity certificate only, signed by a SubCA or a RootCA
+        // -- We need to find both SubCA and RootCA here, should be in cainfo?
+        // - An end entity certificate and a SubCA certificate
+        // -- We need to find the RootCA certificate only, should be in cainfo?
+        // - An end entity certificate a SubCA certificate and a RootCA certificate
+        // -- We need to remove the CA certificates that are not part of cainfo
+        ArrayList<Certificate> certlist = new ArrayList<>();
+        // Create CertPath
+        certlist.addAll(certs);
+        // Move CA certificates into cert path, except root certificate which is the trust anchor
+        X509Certificate rootcert = null;
+        Collection<Certificate> trustedCertificates = cainfo.getCertificateChain();
+        final Iterator<Certificate> itr = trustedCertificates.iterator();
+        while (itr.hasNext()) {
+            // Trust anchor is last, so if this is the last element, don't add it
+            Certificate crt = itr.next();
+            if (itr.hasNext()) {
+                if (!certlist.contains(crt)) {
+                    certlist.add(crt);
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Certlist already contains certificate with subject "+CertTools.getSubjectDN(crt)+", not adding to list");
+                    }
+                }
+            } else {
+                rootcert = (X509Certificate)crt;
+                if (log.isDebugEnabled()) {
+                    log.debug("Using certificate with subject "+CertTools.getSubjectDN(crt)+", as trust anchor, removing from certlist if it is there");
+                }
+                // Don't have the trust anchor in the cert path, remove doesn't do anything if rootcert doesn't exist in certlist
+                certlist.remove(rootcert);
+            }
+        }
+        // Get a CertPath that can order certificate chains well...
+        CollectionCertStoreParameters storeParams = new CollectionCertStoreParameters(certlist);
+        CertStore store = CertStore.getInstance("Collection", storeParams, BouncyCastleProvider.PROVIDER_NAME);
+        // build the path
+        CertPathBuilder  builder = CertPathBuilder.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
+        X509CertSelector pathConstraints = new X509CertSelector();
+        //pathConstraints.setCertificate(endCert);
+        TrustAnchor anchor = new TrustAnchor(rootcert, null);
+        PKIXBuilderParameters buildParams = new PKIXBuilderParameters(Collections.singleton(anchor), pathConstraints);
+        buildParams.addCertStore(store);
+        buildParams.setDate(new Date());
+        buildParams.setRevocationEnabled(false);
+        PKIXCertPathBuilderResult pathresult = (PKIXCertPathBuilderResult)builder.build(buildParams);
+        CertPath cp = pathresult.getCertPath();
 
+        // The end entity cert is the first one in the CertPath according to javadoc
+        // - "By convention, X.509 CertPaths (consisting of X509Certificates), are ordered starting with the target
+        //    certificate and ending with a certificate issued by the trust anchor.
+        //    That is, the issuer of one certificate is the subject of the following one."
+        // Note: CertPath above will most likely not sort the path, at least if there is a root cert in certlist
+        // the cp will fail verification if it was not in the right order in certlist to start with
+        PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
+        params.setRevocationEnabled(false);
+        params.setSigProvider(BouncyCastleProvider.PROVIDER_NAME);
+        CertPathValidator cpv = CertPathValidator.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
+        PKIXCertPathValidatorResult result = (PKIXCertPathValidatorResult) cpv.validate(cp, params);
+        if (log.isDebugEnabled()) {
+            log.debug("Certificate verify result: " + result.toString());
+        }
+        // No CertPathValidatorException thrown means it passed
+        return true;
+    }
+    
     /**
      * @return true if the chains are nonempty, contain the same certificates in the same order
      */
