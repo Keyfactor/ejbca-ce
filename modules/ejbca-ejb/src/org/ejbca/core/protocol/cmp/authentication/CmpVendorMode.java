@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -23,9 +25,6 @@ import org.ejbca.config.CmpConfiguration;
 
 /**
  * Check the authentication of the PKIMessage by verifying the signature from a Vendor CA (3GPP mode)
- * 
- * @version $Id$
- *
  */
 public interface CmpVendorMode {
 
@@ -39,8 +38,10 @@ public interface CmpVendorMode {
      * @param confAlias the CMP alias in use
      * @param extraCerts certificates from the extraCert field of the CMP request, a certificate path ordered with leaf certificate first (pos 0) and CA certificate(s) after
      * @return CAInfo if the Vendor CA, in the specified CMP alias, that issues the extraCert, null if no issuing Vendor CA was found.
+     * @throws CertificateExpiredException If certificate have expired when validating the certificate path
+     * @throws CertificateNotYetValidException If certificate is not yet valid when validating the certificate path
      */
-    CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts);
+    CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts) throws CertificateExpiredException, CertificateNotYetValidException;
     
     /**
      * Checks whether authentication by vendor-issued-certificate should be used. It can be used only in client mode and with initialization/certification requests.
