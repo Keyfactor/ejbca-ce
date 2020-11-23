@@ -19,7 +19,6 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestBase;
 import org.cesecore.keys.token.PKCS11TestUtils;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
@@ -33,10 +32,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * Test class for Pkcs11Ng functions.
+ * Test class for Pkcs11Ng functions, generating testing and deleting keys on a Crypto Token using P11NG.
  * 
- * @version $Id: Pkcs11NgCryptoTokenTest.java 33540 2019-10-08 14:49:57Z aminkh $
- *
  */
 public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
 
@@ -68,7 +65,15 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
         token.deactivate();
         doCryptoTokenECC(token, "secp256r1", 256, "secp384r1", 384);
     }
-    
+
+    @Test
+    public void testCryptoTokenEd25519() throws Exception {
+        // HSMs only support Ed25519 so far (October 2020), not Ed448
+        token = createPkcs11NgToken();
+        token.deactivate();
+        doCryptoTokenECC(token, "Ed25519", 255, "Ed25519", 255);
+    }
+
     @Test(expected = InvalidAlgorithmParameterException.class)
     public void testCryptoTokenDSA() throws Exception {
         token = createPkcs11NgToken();

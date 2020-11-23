@@ -252,13 +252,13 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     /**
-     * Selects Available Certificate Profiles by single name.
+     * Selects Available CAs by single name.
      *
-     * @param cPName Certificate Profile name.
+     * @param caName Certificate Profile name.
      */
-    public void selectAvailableCp(String cPName) {
-        deselectOptions(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES);
-        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Collections.singletonList(cPName));
+    public void selectAvailableCa(String caName) {
+        deselectOptions(Page.SELECT_AVAILABLE_CAS);
+        selectOptionsByName(Page.SELECT_AVAILABLE_CAS, Collections.singletonList(caName));
     }
 
     /**
@@ -280,6 +280,15 @@ public class EndEntityProfileHelper extends BaseHelper {
         selectOptionByName(Page.SELECT_DEFAULT_CA, defaultCAName);
     }
 
+    /**
+     * Selects Available Certificate Profiles by single name.
+     *
+     * @param cPName Certificate Profile name.
+     */
+    public void selectAvailableCp(String cPName) {
+        deselectOptions(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES);
+        selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, Collections.singletonList(cPName));
+    }
     /**
      * Saves the End Entity Profile with success assertion.
      */

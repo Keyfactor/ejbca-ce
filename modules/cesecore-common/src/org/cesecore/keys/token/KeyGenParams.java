@@ -44,7 +44,11 @@ public class KeyGenParams implements Serializable {
         /**
          * Template for a keypair only allowed to be used for decrypting and encrypting.
          */
-        ENCRYPT
+        ENCRYPT,
+        /**
+         * Template for a keypair allowed to be used for signing, verifying, decrypting and encrypting.
+         */
+        SIGN_ENCRYPT
     }
 
     public static class KeyGenParamsBuilder {
@@ -81,10 +85,19 @@ public class KeyGenParams implements Serializable {
                 privateAttributesMap.put(CKA.SIGN, true);
                 publicAttributesMap.put(CKA.ENCRYPT, false);
                 publicAttributesMap.put(CKA.VERIFY, true);
+            } else if (keyPairTemplate == KeyPairTemplate.SIGN_ENCRYPT) {
+                privateAttributesMap.put(CKA.DECRYPT, true);
+                privateAttributesMap.put(CKA.SIGN, true);
+                publicAttributesMap.put(CKA.ENCRYPT, true);
+                publicAttributesMap.put(CKA.VERIFY, true);
             }
             return this;
         }
 
+        public KeyGenParamsBuilder withPrivateTemplateAttribute(long attribute, boolean flag) {
+            privateAttributesMap.put(attribute, flag);
+            return this;
+        }
         /**
          * Set the type of key to use, e.g. 'RSA2048' or 'secp256r1'.
          * 
