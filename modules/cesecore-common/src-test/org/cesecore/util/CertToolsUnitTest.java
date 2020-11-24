@@ -2549,60 +2549,6 @@ public class CertToolsUnitTest {
     }
     
     @Test
-    public void testOrderCertChain() throws CertificateParsingException, CertPathValidatorException {
-        X509Certificate root = CertTools.getCertfromByteArray(chainRootCA, X509Certificate.class);
-        X509Certificate sub = CertTools.getCertfromByteArray(chainSubCA, X509Certificate.class);
-        X509Certificate ee = CertTools.getCertfromByteArray(chainUser, X509Certificate.class);
-        // Try different orders...and see that we get the right things back
-        List<X509Certificate> order1 = new ArrayList<>();
-        order1.add(ee);
-        order1.add(sub);
-        order1.add(root);
-        List<X509Certificate> list = CertTools.orderX509CertificateChain(order1);
-        assertEquals("List should be of size 3", 3, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
-
-        List<X509Certificate> order2 = new ArrayList<>();
-        order2.add(sub);
-        order2.add(root);
-        order2.add(ee);
-        list = CertTools.orderX509CertificateChain(order2);
-        assertEquals("List should be of size 3", 3, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
-        
-        List<X509Certificate> order3 = new ArrayList<>();
-        order3.add(sub);
-        order3.add(ee);
-        order3.add(root);
-        list = CertTools.orderX509CertificateChain(order3);
-        assertEquals("List should be of size 3", 3, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
-        
-        // Skip root, should order anyway up to sub
-        List<X509Certificate> order4 = new ArrayList<>();
-        order4.add(sub);
-        order4.add(ee);
-        list = CertTools.orderX509CertificateChain(order4);
-        assertEquals("List should be of size 2", 2, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-
-        List<X509Certificate> order5 = new ArrayList<>();
-        order5.add(ee);
-        order5.add(sub);
-        list = CertTools.orderX509CertificateChain(order5);
-        assertEquals("List should be of size 2", 2, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-    }
-    
-    @Test
     public void testEscapeFieldValue() {
         assertEquals(null, CertTools.escapeFieldValue(null));
         assertEquals("", CertTools.escapeFieldValue(""));
