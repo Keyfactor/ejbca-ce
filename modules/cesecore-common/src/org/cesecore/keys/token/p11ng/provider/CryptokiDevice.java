@@ -228,7 +228,11 @@ public class CryptokiDevice {
             this.id = id;
             this.cache = new P11NGSlotStore();
         }
-        
+
+        final protected String getLibName() {
+            return libName;
+        }
+
         final protected CEi getCryptoki() {
             return c;
         }
@@ -1074,6 +1078,8 @@ public class CryptokiDevice {
                         LOG.trace("EC_EDWARDS_KEY_PAIR_GEN with curve: " + curve);
                     }
                     if (StringUtils.contains(libName, "Cryptoki2")) { // vendor defined mechanism for Thales Luna
+                        // Workaround for EdDSA where HSMs are not up to P11v3 yet
+                        // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("Cryptoki2 detected, using CKM_VENDOR_DEFINED + 0xC01 instead of P11v3 for CKM_EC_EDWARDS_KEY_PAIR_GEN: " + curve);
                         }

@@ -28,6 +28,7 @@ import java.security.SignatureSpi;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERSequenceGenerator;
@@ -51,7 +52,7 @@ public class JackNJI11Provider extends Provider {
     public static final String NAME = "JackNJI11";
 
     public JackNJI11Provider() {
-        super(NAME, 1.1, "JackNJI11 Provider");
+        super(NAME, 1.2, "JackNJI11 Provider");
  
         putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "MD5withRSA", MySignature.class.getName()));
@@ -207,7 +208,17 @@ public class JackNJI11Provider extends Provider {
                     log.error(message);
                     throw new InvalidKeyException("The signature algorithm " + algorithm + " is not supported by P11NG.");
                 }
-                final long mechanism = MechanismNames.longFromSigAlgoName(this.algorithm).get();
+                long mechanism = MechanismNames.longFromSigAlgoName(this.algorithm).get();
+                if (mechanism == CKM.EDDSA && StringUtils.contains(myKey.getSlot().getLibName(), "Cryptoki2")) {
+                    // Workaround, like ED key generation in CryptokiDevice, for EdDSA where HSMs are not up to P11v3 yet
+                    // In a future where PKCS#11v3 is ubiquitous, this need to be removed.
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Cryptoki2 detected, using CKM_VENDOR_DEFINED + 0xC03 instead of P11v3 for CKM_EDDSA");
+                    }
+                    // From cryptoki_v2.h in the lunaclient sample package
+                    final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
+                    mechanism = LUNA_CKM_EDDSA;
+                }
                 byte[] param = MechanismNames.CKM_PARAMS.get(mechanism);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineInitSign: session: " + session + ", object: " +
