@@ -16,6 +16,10 @@ package org.ejbca.config;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * This file handles configuration from ejbca.properties
  * 
@@ -258,6 +262,24 @@ public final class EjbcaConfiguration {
 
     public static String getScepDefaultCA() {
         return EjbcaConfigurationHolder.getString("scep.defaultca");
+    }
+
+    /**
+     * Returns the date after which this EJBCA installation should no longer be allowed to start.
+     *
+     * @return the expiration date of this EJBCA instance as a {@link Date} object.
+     */
+    public static Date getExpireAfter() {
+        try {
+            final String expireAfter = EjbcaConfigurationHolder.getString("ejbca.expireafter");
+            return expireAfter == null ? new Date(Long.MAX_VALUE) : new SimpleDateFormat("yyyy-MM-dd").parse(expireAfter);
+        } catch (ParseException e) {
+            log.error("The string " + EjbcaConfigurationHolder.getString("ejbca.expireafter")
+                    + " is not valid date for the property 'ejbca.expireafter'. Valid dates should be on the format 'yyyy-MM-dd'. " +
+                    "Using the default expiration date " + new SimpleDateFormat("yyyy-MM-dd").format(new Date(Long.MAX_VALUE)) +
+                    " instead.");
+            return new Date(Long.MAX_VALUE);
+        }
     }
 
     /** @return true if publishers should be invoked in parallel instead of sequentially. */
