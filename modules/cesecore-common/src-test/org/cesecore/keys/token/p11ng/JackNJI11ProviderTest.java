@@ -58,6 +58,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -135,7 +136,6 @@ public class JackNJI11ProviderTest {
         cryptoToken.activate(tokenpin.toCharArray());
         cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_2048, PKCS11TestUtils.RSA_TEST_KEY_1);
         cryptoToken.generateKeyPair("secp256r1", PKCS11TestUtils.ECC_TEST_KEY_1);
-        cryptoToken.generateKeyPair("Ed25519", PKCS11TestUtils.ECC_TEST_KEY_2);
     }
     
     @After
@@ -168,8 +168,9 @@ public class JackNJI11ProviderTest {
         signWithProvider("SHA256withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
     }
 
-    @Test
+    @Ignore
     public void testSignatureEdEDSA() throws Exception {
+        cryptoToken.generateKeyPair("Ed25519", PKCS11TestUtils.ECC_TEST_KEY_2);
         signWithProvider("Ed25519", PKCS11TestUtils.ECC_TEST_KEY_2, cryptoToken.getSignProviderName());
         // No HSM supports Ed448 as of October 2020
         //signWithProvider("Ed448", PKCS11TestUtils.ECC_TEST_KEY_2, cryptoToken.getSignProviderName());
