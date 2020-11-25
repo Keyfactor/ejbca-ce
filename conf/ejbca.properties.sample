@@ -36,6 +36,12 @@
 #ejbca.productionmode=true
 #ejbca.productionmode=false
 
+# Enable time limited builds by specifying an expiration date. EJBCA will check the expiration date during startup
+# and stop the deployment if the the build has expired according to the local system clock.
+# The date should be on the format 'yyyy-MM-dd'.
+# Default: Disable
+#ejbca.expireafter=1941-12-07
+
 # In order to allow upgrades of EJBCA with a minimum of fuss, EJBCA supports keeping configurations, key stores and custom modifications in an external 
 # directory which will be shared between versions. This technique can also be used easily when performing several identical installations across 
 # several instances to share settings. 
