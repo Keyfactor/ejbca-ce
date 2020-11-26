@@ -9,6 +9,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.core.model.util.EjbLocalHelper;
+
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -45,6 +49,8 @@ public @interface ValidSearchCertificateMaxNumberOfResults {
     class Validator implements ConstraintValidator<ValidSearchCertificateMaxNumberOfResults, Integer> {
 
         private static final int MINIMUM_INCLUSIVE = 0;
+        /*private static final GlobalConfigurationSessionLocal globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
+        private static final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);*/
 
         @Override
         public void initialize(final ValidSearchCertificateMaxNumberOfResults validSearchCertificateMaxNumberOfResults) {
@@ -60,6 +66,13 @@ public @interface ValidSearchCertificateMaxNumberOfResults {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateMaxNumberOfResults.invalid.lessThanOrEqualNull}");
                 return false;
             }
+
+            /*final int MAXIMUM_EXCLUSIVE = globalCesecoreConfiguration.getMaximumQueryCount();
+            if(value > MAXIMUM_EXCLUSIVE) {
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateMaxNumberOfResults.invalid.moreThanMaximum}");
+                return false;
+            }*/
+
             return true;
         }
     }
