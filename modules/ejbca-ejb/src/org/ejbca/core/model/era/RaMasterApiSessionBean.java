@@ -1228,7 +1228,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 query.setParameter("revocationReason", request.getRevocationReasons());
             }
         }
-        final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
+        final int maxResults = request.getMaxResults();
         final int offset = request.getPageNumber() * maxResults;
         query.setMaxResults(maxResults);
         query.setFirstResult(offset);
