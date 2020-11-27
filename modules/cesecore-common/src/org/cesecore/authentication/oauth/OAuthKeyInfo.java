@@ -31,6 +31,7 @@ public final class OAuthKeyInfo implements Serializable {
     private final int internalId;
     private byte[] publicKeyBytes;
     private String keyIdentifier;
+    private String url;
     private int skewLimit = 60000;
 
     private transient PublicKey publicKey;
@@ -103,6 +104,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setKeyIdentifier(final String keyIdentifier) {
         this.keyIdentifier = keyIdentifier;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public void setSkewLimit(final int skewLimit) {
