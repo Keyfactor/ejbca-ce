@@ -39,6 +39,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
     public class OAuthKeyEditor {
         private String keyIdentifier;
+        private String url;
         private UploadedFile publicKeyFile;
         private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
@@ -46,6 +47,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         
         public String getKeyIdentifier() {
             return keyIdentifier;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
         }
 
         public UploadedFile getPublicKeyFile() {
@@ -83,6 +92,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             // Only replace the key if a new one was uploaded
             this.publicKeyFile = null;
             this.keyIdentifier = oauthKey.getKeyIdentifier();
+            this.url = oauthKey.getUrl();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
             this.defaultKeyIdentifier = defaultKeyIdentifier;
@@ -197,7 +207,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
 
         final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getKeyIdentifier(), newOauthKeyPublicKey, oauthKeyEditor.getSkewLimit());
-
+        newOauthKey.setUrl(oauthKeyEditor.getUrl());
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
             return;
@@ -301,10 +311,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         /* Update the configuration */
         final byte[] keyBytes = oauthKeyEditor.getPublicKeyFile() != null ? getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile())
                 : oauthKeyEditor.getOauthKeyBeingEdited().getPublicKeyBytes();
-        final int skewLimit = oauthKeyEditor.getSkewLimit();
         oauthKeyToUpdate.setPublicKeyBytes(keyBytes);
-        oauthKeyToUpdate.setSkewLimit(skewLimit);
+        oauthKeyToUpdate.setSkewLimit(oauthKeyEditor.getSkewLimit());
         oauthKeyToUpdate.setKeyIdentifier(keyIdentifier);
+        oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;

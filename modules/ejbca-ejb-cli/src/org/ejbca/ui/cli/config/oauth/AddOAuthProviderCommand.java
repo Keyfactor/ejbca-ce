@@ -33,7 +33,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String KEY_IDENTIFIER = "--keyidentifier";
     private static final String PUBLIC_KEY = "--publickey";
     private static final String SKEW_LIMIT = "--skewlimit";
-    
+    private static final String URL = "--url";
+
     {
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key identifier of the Trusted OAuth Provider which is going to be added."));
@@ -41,6 +42,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Path to publickey file used by the OAuth Provider."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be used."));
+        registerParameter(new Parameter(URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider url to the login page."));
     }
     
     
@@ -59,7 +62,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String kid = parameters.get(KEY_IDENTIFIER);
         String publicKey = parameters.get(PUBLIC_KEY);
         String skewLimit = parameters.get(SKEW_LIMIT);
-        
+        String url = parameters.get(URL);
+
         byte[] publicKeyByteArray = getOauthKeyPublicKey(publicKey);
         
         if (ArrayUtils.isEmpty(publicKeyByteArray)) {
@@ -76,6 +80,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         
         OAuthKeyInfo keyInfo = new OAuthKeyInfo(kid, publicKeyByteArray, skewLimitInt);
+        keyInfo.setUrl(url);
         
         if (!canAdd(keyInfo)) {
             log.info("Trusted OAuth Provider with same kid or internal Id exists!");
