@@ -710,7 +710,8 @@ public class RequestInstance {
 	private void pkcs10Req(HttpServletRequest request, HttpServletResponse response, String username, String password, CertificateResponseType resulttype,
 			RequestHelper helper, byte[] reqBytes) throws Exception, IOException {
         if (log.isDebugEnabled()) {
-            log.debug("Received PKCS10 request: " + new String(reqBytes));
+            String reqString = new String(reqBytes);
+            log.debug("Received PKCS10 request: " + reqString.substring(0, reqString.indexOf(CertTools.END_CERTIFICATE_REQUEST)+33));
         }
 		CertificateRequestResponse result = helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, resulttype);
 		byte[] b64data = result.getEncoded(); // PEM cert, cert-chain or PKCS7
