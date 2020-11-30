@@ -36,6 +36,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_KEY_IDENTIFIER = "--new-keyidentifier";
     private static final String NEW_PUBLIC_KEY = "--new-publickey";
     private static final String NEW_SKEW_LIMIT = "--new-skewlimit";
+    private static final String NEW_URL = "--new-url";
 
     {
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -46,6 +47,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Public key to be updated."));
         registerParameter(new Parameter(NEW_SKEW_LIMIT, "Skew limit", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be updated."));
+        registerParameter(new Parameter(NEW_URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider url to the login page to be updated."));
     }
 
     @Override
@@ -65,8 +68,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
         for (Map.Entry<Integer, OAuthKeyInfo> entry : getGlobalConfiguration().getOauthKeys().entrySet()) {
             if (entry.getValue().getKeyIdentifier().equals(kid)) {
-                if (checkParametersAndSet(parameters.get(NEW_KEY_IDENTIFIER), parameters.get(NEW_SKEW_LIMIT), parameters.get(NEW_PUBLIC_KEY),
-                        entry.getValue())) {
+                if (checkParametersAndSet(parameters.get(NEW_KEY_IDENTIFIER), parameters.get(NEW_SKEW_LIMIT),
+                        parameters.get(NEW_PUBLIC_KEY), parameters.get(NEW_URL), entry.getValue())) {
                     OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
                     if (defaultKey != null && entry.getValue().getInternalId() == defaultKey.getInternalId()) {
                         getGlobalConfiguration().setDefaultOauthKey(entry.getValue());
@@ -97,7 +100,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         return log;
     }
 
-    private boolean checkParametersAndSet(final String newKid, final String newSkewLimit, final String newPublicKey,
+    private boolean checkParametersAndSet(final String newKid, final String newSkewLimit, final String newPublicKey, final String newUrl,
             final OAuthKeyInfo keyInfoToBeEdited) {
         if (newKid != null) { 
             if (canEditKid(newKid)) {
@@ -124,6 +127,9 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 log.info("New given public key is invalid!");
                 return false;
             }
+        }
+        if (newUrl != null) {
+            keyInfoToBeEdited.setUrl(newUrl);
         }
             
         return true;
