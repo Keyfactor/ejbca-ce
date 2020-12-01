@@ -711,7 +711,11 @@ public class RequestInstance {
 			RequestHelper helper, byte[] reqBytes) throws Exception, IOException {
         if (log.isDebugEnabled()) {
             String reqString = new String(reqBytes);
-            log.debug("Received PKCS10 request: " + reqString.substring(0, reqString.indexOf(CertTools.END_CERTIFICATE_REQUEST)+33));
+            if (reqString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)) {
+                log.debug("Received PKCS10 request: " + reqString.substring(0, reqString.indexOf(CertTools.END_CERTIFICATE_REQUEST)+33));
+            } else {
+                log.debug("Received PKCS10 request: " + "Not a valid request.");
+            }
         }
 		CertificateRequestResponse result = helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, resulttype);
 		byte[] b64data = result.getEncoded(); // PEM cert, cert-chain or PKCS7
