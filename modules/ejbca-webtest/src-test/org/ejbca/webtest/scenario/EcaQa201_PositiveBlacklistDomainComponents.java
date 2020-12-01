@@ -139,7 +139,7 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
         validatorsHelper.setBlackListSite(TestData.VALIDATOR_BLACKLIST_SITE);
         // Test to verify it returns a positive test result
         validatorsHelper.testBlacklistSite();
-        validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator '" + TestData.VALIDATOR_NAME + "' permitted issuance of certificate.");
+        validatorsHelper.assertBlackListResultsIsCorrect("Domain Block List Validator '" + TestData.VALIDATOR_NAME + "' permitted issuance of certificate.");
     }
 
     @Test
