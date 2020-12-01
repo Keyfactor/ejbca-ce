@@ -1620,8 +1620,9 @@ public class EjbcaWS implements IEjbcaWS {
 	    	logAdminName(admin,logger);
 	        final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userData);
 	        final boolean createJKS = userData.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
-	        final byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, endEntityInformation, keySpec, keyAlg, createJKS);
-	        // Convert encoded KeyStore to the proper return type
+	        final byte[] encodedKeyStore = raMasterApiProxyBean.addUserAndCreateCertificate(admin, endEntityInformation, false);
+
+            // Convert encoded KeyStore to the proper return type
 	        final java.security.KeyStore ks;
 	        if (createJKS) {
 	        	ks = java.security.KeyStore.getInstance("JKS");
@@ -1639,15 +1640,11 @@ public class EjbcaWS implements IEjbcaWS {
             throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
             throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-		} catch (NoSuchEndEntityException e) {
-            throw getEjbcaException(e, logger, ErrorCode.USER_NOT_FOUND, Level.INFO);
-        }catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException | CertificateException | IOException | CertificateSerialNumberException | IllegalNameException | InvalidKeySpecException | InvalidAlgorithmParameterException | RuntimeException e) {
+		} catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException | CertificateException | IOException /*| CertificateSerialNumberException | IllegalNameException | InvalidKeySpecException | InvalidAlgorithmParameterException*/ | RuntimeException e) {
             throw getInternalException(e, logger);
-		} catch (EndEntityExistsException e) {
-            throw getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
-        }
-        catch (EndEntityProfileValidationException e) {
-            throw new UserDoesntFullfillEndEntityProfile(e);
+		} catch (WaitingForApprovalException e) {
+            throw getInternalException(e, logger);
+            // throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
         } finally {
             logger.writeln();
             logger.flush();
