@@ -37,6 +37,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private final OAuthKeyEditor oauthKeyEditor;
     private AuthenticationToken adminToken;
 
+    private enum OAuthKeyEditorMode {
+        VIEW,
+        ADD,
+        EDIT
+    }
+
     public class OAuthKeyEditor {
         private String keyIdentifier;
         private String url;
@@ -44,6 +50,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
         private String defaultKeyIdentifier;
+        private OAuthKeyEditorMode editorMode;
         
         public String getKeyIdentifier() {
             return keyIdentifier;
@@ -84,7 +91,25 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void setDefaultKeyIdentifier(final String defaultKeyIdentifier) {
             this.defaultKeyIdentifier = defaultKeyIdentifier;
         }
-        
+
+        public OAuthKeyEditorMode getEditorMode() {
+            return editorMode;
+        }
+
+        public void setEditorMode(OAuthKeyEditorMode editorMode) {
+            this.editorMode = editorMode;
+        }
+
+        public boolean isViewMode(){
+            return this.editorMode.equals(OAuthKeyEditorMode.VIEW);
+        }
+        public boolean isEditMode(){
+            return this.editorMode.equals(OAuthKeyEditorMode.EDIT);
+        }
+        public boolean isAddMode(){
+            return this.editorMode.equals(OAuthKeyEditorMode.ADD);
+        }
+
         /**
          * Load an existing OAuth Key into the editor.
          */
@@ -104,6 +129,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void clear() {
             keyIdentifier = null;
             publicKeyFile = null;
+            this.url = null;
             skewLimit = 60000;
         }
 
@@ -189,33 +215,34 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     /**
      * Adds an OAuth Key with the information stored in the OAuth Key editor.
      */
-    public void addOauthKey() {
+    public String addOauthKey() {
         if (oauthKeyEditor.getPublicKeyFile() == null) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_UPLOADFAILED");
-            return;
+            return StringUtils.EMPTY;
         }
 
         if (oauthKeyEditor.getSkewLimit() < 0) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_SKEWLIMITNEGATIVE");
-            return;
+            return StringUtils.EMPTY;
         }
 
         final byte[] newOauthKeyPublicKey = getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile());
         if (newOauthKeyPublicKey == null) {
             // Error already reported
-            return;
+            return StringUtils.EMPTY;
         }
 
         final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getKeyIdentifier(), newOauthKeyPublicKey, oauthKeyEditor.getSkewLimit());
         newOauthKey.setUrl(oauthKeyEditor.getUrl());
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
-            return;
+            return StringUtils.EMPTY;
         }
 
         super.addOauthKey(newOauthKey);
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.clear();
+        return OAUTH_KEY_SAVED;
     }
 
     @Override
@@ -242,9 +269,35 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
      */
     public String editOauthKey(final OAuthKeyInfo oauthKey, final String defaultKeyIdentifier) {
         oauthKeyEditor.loadIntoEditor(oauthKey, defaultKeyIdentifier);
+        oauthKeyEditor.setEditorMode(OAuthKeyEditorMode.EDIT);
         return EDIT_OAUTH_KEY;
     }
 
+    /**
+     * Prepares for an OAuth Key to be viewed. This method will load the specified OAuth Key into
+     * the OAuth Key editor and set the editor in view mode.
+     * @param oauthKey the OAuth Key to be edited
+     * @return the constant string EDIT_OAUTH_KEY
+     */
+    public String viewOauthKey(final OAuthKeyInfo oauthKey, final String defaultKeyIdentifier) {
+        oauthKeyEditor.loadIntoEditor(oauthKey, defaultKeyIdentifier);
+        oauthKeyEditor.setEditorMode(OAuthKeyEditorMode.VIEW);
+        return EDIT_OAUTH_KEY;
+    }
+
+    /**
+     * Prepares for an OAuth Key to be added. This method will clear OAuth Key in
+     * the OAuth Key editor and set the editor in add mode.
+     * @return the constant string EDIT_OAUTH_KEY
+     */
+    public String goToAddOauthKey() {
+        oauthKeyEditor.clear();
+        oauthKeyEditor.setEditorMode(OAuthKeyEditorMode.ADD);
+        return EDIT_OAUTH_KEY;
+    }
+    public void toggleCurrentAliasEditMode() {
+        oauthKeyEditor.setEditorMode(OAuthKeyEditorMode.EDIT);
+    }
     /**
      * Retrieves the OAuth Key editor for this OAuth Key manager.
      * @return an editor which can be used to edit OAuth Keys
