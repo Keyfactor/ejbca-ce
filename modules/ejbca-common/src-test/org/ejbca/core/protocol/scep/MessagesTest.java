@@ -91,7 +91,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * Protocol messages.
  *
- * @version $Id$
  */
 public class MessagesTest {
 
