@@ -615,14 +615,6 @@
 							  styleClass="monospace"/>
 			</h:column>
 			<h:column>
-   				<f:facet name="header">
-   				   <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEY}"/>
-   				</f:facet>
-				<h:outputText value="#{oauthkey.keyFingerprint}"
-				    title="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEY}"
-				    styleClass="monospace"/>
-			</h:column>
-			<h:column>
         <f:facet name="header">
            <h:outputText value="#{web.text.ACTIONS}"/>
         </f:facet>
@@ -639,7 +631,7 @@
              rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
       </h:column>
 		</h:dataTable>
-		<h:commandButton id="addOauthKey" value="#{web.text.OAUTHKEYCONFIGURATION_ADD_NEW}"
+		<h:commandButton id="addOauthKey" value="#{web.text.ADD}"
 						 action="#{systemConfigMBean.oauthKeyManager.goToAddOauthKey}"
 						 rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
     </h:form>
