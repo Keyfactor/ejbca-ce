@@ -132,7 +132,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         validatorsHelper.setBlackListSite(TestData.VALIDATOR_BLACKLIST_SITE);
         //Test to verify it returns a positive test result
         validatorsHelper.testBlacklistSite();
-        validatorsHelper.assertBlackListResultsIsCorrect("Domain '" + TestData.VALIDATOR_BLACKLIST_SITE + "' is blacklisted. Matching domain on blacklist: 'evil.example.edu'");
+        validatorsHelper.assertBlackListResultsIsCorrect("Domain '" + TestData.VALIDATOR_BLACKLIST_SITE + "' is block listed. Matching domain on block list: 'evil.example.edu'");
     }
 
     @Test
