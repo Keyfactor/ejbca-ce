@@ -44,28 +44,54 @@ import org.cesecore.util.StringTools;
 
 /**
  * Representation of a certificate and related information.
- *
- * @version $Id$
  */
 @Entity
 @Table(name = "CertificateData")
 @SqlResultSetMappings(value = {
-        @SqlResultSetMapping(name = "RevokedCertInfoSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "serialNumber"),
-                @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"), @ColumnResult(name = "revocationReason") }),
-        @SqlResultSetMapping(name = "CertificateInfoSubset", columns = { @ColumnResult(name = "issuerDN"), @ColumnResult(name = "subjectDN"),
-                @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
+        @SqlResultSetMapping(name = "RevokedCertInfoSubset", columns = {
+                @ColumnResult(name = "fingerprint"),
                 @ColumnResult(name = "serialNumber"),
-                @ColumnResult(name = "notBefore"), @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"),
-                @ColumnResult(name = "revocationReason"), @ColumnResult(name = "username"), @ColumnResult(name = "tag"),
-                @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
-                @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName") }),
-        @SqlResultSetMapping(name = "CertificateInfoSubset2", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "subjectDN"),
-                @ColumnResult(name = "cAFingerprint"), @ColumnResult(name = "status"), @ColumnResult(name = "type"),
-                @ColumnResult(name = "notBefore"), @ColumnResult(name = "expireDate"), @ColumnResult(name = "revocationDate"),
-                @ColumnResult(name = "revocationReason"), @ColumnResult(name = "username"), @ColumnResult(name = "tag"),
-                @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
-                @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName") }),
-        @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "username") }) })
+                @ColumnResult(name = "expireDate"),
+                @ColumnResult(name = "revocationDate"),
+                @ColumnResult(name = "revocationReason") }),
+        @SqlResultSetMapping(name = "CertificateInfoSubset", columns = {
+                @ColumnResult(name = "issuerDN"),
+                @ColumnResult(name = "subjectDN"),
+                @ColumnResult(name = "cAFingerprint"),
+                @ColumnResult(name = "status"),
+                @ColumnResult(name = "type"),
+                @ColumnResult(name = "serialNumber"),
+                @ColumnResult(name = "notBefore"),
+                @ColumnResult(name = "expireDate"),
+                @ColumnResult(name = "revocationDate"),
+                @ColumnResult(name = "revocationReason"),
+                @ColumnResult(name = "username"),
+                @ColumnResult(name = "tag"),
+                @ColumnResult(name = "certificateProfileId"),
+                @ColumnResult(name = "endEntityProfileId"),
+                @ColumnResult(name = "updateTime"),
+                @ColumnResult(name = "subjectKeyId"),
+                @ColumnResult(name = "subjectAltName") }),
+        @SqlResultSetMapping(name = "CertificateInfoSubset2", columns = {
+                @ColumnResult(name = "fingerprint"),
+                @ColumnResult(name = "subjectDN"),
+                @ColumnResult(name = "cAFingerprint"),
+                @ColumnResult(name = "status"),
+                @ColumnResult(name = "type"),
+                @ColumnResult(name = "notBefore"),
+                @ColumnResult(name = "expireDate"),
+                @ColumnResult(name = "revocationDate"),
+                @ColumnResult(name = "revocationReason"),
+                @ColumnResult(name = "username"),
+                @ColumnResult(name = "tag"),
+                @ColumnResult(name = "certificateProfileId"),
+                @ColumnResult(name = "endEntityProfileId"),
+                @ColumnResult(name = "updateTime"),
+                @ColumnResult(name = "subjectKeyId"),
+                @ColumnResult(name = "subjectAltName") }),
+        @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = {
+                @ColumnResult(name = "fingerprint"),
+                @ColumnResult(name = "username") }) })
 public class CertificateData extends BaseCertificateData implements Serializable {
 
     private static final long serialVersionUID = -8493105317760641442L;
