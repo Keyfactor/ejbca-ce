@@ -123,7 +123,7 @@ public class X509CAInfo extends CAInfo {
                 .setCaDefinedFreshestCrl(null)
                 .setFinishUser(true)
                 .setExtendedCaServiceInfos(new ArrayList<>())
-                .setUseUtf8PolicyText(false)
+                .setUseUtf8PolicyText(true)
                 .setApprovals(new HashMap<>())
                 .setUsePrintableStringSubjectDN(false)
                 .setUseLdapDnOrder(true)
@@ -616,7 +616,7 @@ public class X509CAInfo extends CAInfo {
         private String caDefinedFreshestCrl = null;
         private boolean finishUser = true;
         private Collection<ExtendedCAServiceInfo> extendedCaServiceInfos = new ArrayList<>();
-        private boolean useUtf8PolicyText = false;
+        private boolean useUtf8PolicyText = true;
         private Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
         private boolean usePrintableStringSubjectDN = false;
         private boolean useLdapDnOrder = true;
