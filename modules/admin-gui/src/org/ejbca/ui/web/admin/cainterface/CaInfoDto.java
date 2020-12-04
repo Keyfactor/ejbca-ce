@@ -61,9 +61,9 @@ public class CaInfoDto {
     private String nameConstraintsPermitted = StringUtils.EMPTY; // Default everywhere except editca page
     private String nameConstraintsExcluded = StringUtils.EMPTY; // Default everywhere except editca page
     private String caDefinedFreshestCRL;
-    private boolean useUtf8Policy;
+    private boolean useUtf8Policy = true; // Default in create CA page
     private boolean usePrintableStringSubjectDN;
-    private boolean useLdapDNOrder = true; // Default in create ca page
+    private boolean useLdapDNOrder = true; // Default in create CA page
     private boolean useCrlDistributiOnPointOnCrl;
     private boolean crlDistributionPointOnCrlCritical;
     private boolean includeInHealthCheck;
