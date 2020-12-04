@@ -80,6 +80,7 @@ import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -1618,9 +1619,13 @@ public class EjbcaWS implements IEjbcaWS {
 	        userData.setClearPwd(true);
 	    	final AuthenticationToken admin = getAdmin(false);
 	    	logAdminName(admin,logger);
-	        final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userData);
-	        final boolean createJKS = userData.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
-	        final byte[] encodedKeyStore = raMasterApiProxyBean.addUserAndCreateCertificate(admin, endEntityInformation, false);
+
+            final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userData);
+            endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
+            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
+            final boolean createJKS = userData.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
+            final byte[] encodedKeyStore = raMasterApiProxyBean.addUserAndGenerateKeyStore(admin, endEntityInformation, false);
 
             // Convert encoded KeyStore to the proper return type
 	        final java.security.KeyStore ks;
