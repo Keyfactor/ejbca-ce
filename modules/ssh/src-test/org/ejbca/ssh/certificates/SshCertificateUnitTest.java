@@ -9,10 +9,6 @@
  *************************************************************************/
 package org.ejbca.ssh.certificates;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.lang.reflect.Field;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -51,6 +47,10 @@ import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
 import org.ejbca.ssh.util.SshTestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * SSH Certificate tests.
