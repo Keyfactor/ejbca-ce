@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.ssh.SshCertificateType;
 import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
@@ -53,8 +54,6 @@ import org.junit.Test;
 
 /**
  * SSH Certificate tests.
- *
- * @version $Id: SshCertificateTest.java 35278 2020-06-23 20:22:42Z mikeku
  */
 public class SshCertificateUnitTest {
 
@@ -86,7 +85,7 @@ public class SshCertificateUnitTest {
         // Init sshRsaCertificate and signatureKeys
         initSshRsaCertificateAndItsKeyPair();
         byte[] signature = new RsaCertificateSigner(RsaSigningAlgorithms.SHA1).signPayload(sshRsaCertificate.encodeCertificateBody(),
-                signatureKeys.getPublic(), signatureKeys.getPrivate());
+                signatureKeys.getPublic(), signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         assertEquals("Signature was the wrong size, cannot continue", 271, signature.length);
         sshRsaCertificate.setSignature(signature);
         assertTrue("SSH Certificate did not verify correctly", sshRsaCertificate.verify());
@@ -105,7 +104,7 @@ public class SshCertificateUnitTest {
         // Init sshRsaCertificate and signatureKeys
         initSshRsaCertificateAndItsKeyPair();
         byte[] signature = new RsaCertificateSigner(RsaSigningAlgorithms.SHA256).signPayload(sshRsaCertificate.encodeCertificateBody(),
-                signatureKeys.getPublic(), signatureKeys.getPrivate());
+                signatureKeys.getPublic(), signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         assertEquals("Signature was the wrong size, cannot continue", 276, signature.length);
         sshRsaCertificate.setSignature(signature);
         assertTrue("SSH Certificate did not verify correctly", sshRsaCertificate.verify());
@@ -117,7 +116,7 @@ public class SshCertificateUnitTest {
         // Init sshRsaCertificate and signatureKeys
         initSshRsaCertificateAndItsKeyPair();
         byte[] signature = new RsaCertificateSigner(RsaSigningAlgorithms.SHA512).signPayload(sshRsaCertificate.encodeCertificateBody(),
-                signatureKeys.getPublic(), signatureKeys.getPrivate());
+                signatureKeys.getPublic(), signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         assertEquals("Signature was the wrong size, cannot continue", 276, signature.length);
         sshRsaCertificate.setSignature(signature);
         assertTrue("SSH Certificate did not verify correctly", sshRsaCertificate.verify());
@@ -129,7 +128,7 @@ public class SshCertificateUnitTest {
         // Init sshEcCertificate and signatureKeys
         initSshEcCertificateAndItsKeyPair(SshEcPublicKey.NISTP256, "secp256r1", false);
         byte[] signature = new EcCertificateSigner(EcSigningAlgorithm.SHA256).signPayload(sshEcCertificate.encodeCertificateBody(),
-                signatureKeys.getPublic(), signatureKeys.getPrivate());
+                signatureKeys.getPublic(), signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         sshEcCertificate.setSignature(signature);
         assertTrue("SSH Certificate did not verify correctly", sshEcCertificate.verify());
     }
@@ -140,7 +139,7 @@ public class SshCertificateUnitTest {
         // Init sshEcCertificate and signatureKeys
         initSshEcCertificateAndItsKeyPair(SshEcPublicKey.NISTP256, "secp256r1", true);
         byte[] signature = new EcCertificateSigner(EcSigningAlgorithm.SHA256).signPayload(sshEcCertificate.encodeCertificateBody(),
-                signatureKeys.getPublic(), signatureKeys.getPrivate());
+                signatureKeys.getPublic(), signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         sshEcCertificate.setSignature(signature);
         assertTrue("SSH Certificate did not verify correctly", sshEcCertificate.verify());
     }
@@ -151,7 +150,7 @@ public class SshCertificateUnitTest {
         // Init sshCertificate and signatureKeys
         initSshEcCertificateAndItsKeyPair(SshEcPublicKey.NISTP384, "secp384r1", false, "127.0.0.1", "192.168.0.1");
         byte[] signature = new EcCertificateSigner(EcSigningAlgorithm.SHA384).signPayload(sshEcCertificate.encodeCertificateBody(),
-                signatureKeys.getPublic(), signatureKeys.getPrivate());
+                signatureKeys.getPublic(), signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         sshEcCertificate.setSignature(signature);
         assertTrue("SSH Certificate did not verify correctly", sshEcCertificate.verify());
         byte[] exportedCert = sshEcCertificate.encodeForExport();
@@ -167,7 +166,7 @@ public class SshCertificateUnitTest {
         // Init sshCertificate and signatureKeys
         initSshEcCertificateAndItsKeyPair(SshEcPublicKey.NISTP521, "secp521r1", false);
         byte[] signature = new EcCertificateSigner(EcSigningAlgorithm.SHA512).signPayload(sshEcCertificate.encodeCertificateBody(),
-                signatureKeys.getPublic(), signatureKeys.getPrivate());
+                signatureKeys.getPublic(), signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         sshEcCertificate.setSignature(signature);
         assertTrue("SSH Certificate did not verify correctly", sshEcCertificate.verify());
     }
@@ -207,7 +206,7 @@ public class SshCertificateUnitTest {
         // Siging algorithm is set to SHA384, which should fail with P521
         try {
             new EcCertificateSigner(EcSigningAlgorithm.SHA384).signPayload(sshCertificate.encodeCertificateBody(), signatureKeys.getPublic(),
-                    signatureKeys.getPrivate());
+                    signatureKeys.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
             fail("Creating the certificate signer with an incorrect signing algorithm should have failed.");
         } catch (InvalidKeyException e) {
             //NOPMD As expected
