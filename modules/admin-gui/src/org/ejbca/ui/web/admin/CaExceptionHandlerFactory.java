@@ -30,6 +30,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ExceptionQueuedEvent;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 
 /**
  * Custom ExceptionHandlerFactory to be able to process and present Exceptions in an orderly fashion.
@@ -46,6 +47,7 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
     private static final Logger log = Logger.getLogger(CaExceptionHandler.class);
     public static final String REQUESTMAP_KEY = "org.ejbca.ui.web.admin.throwables";
     private static final String ERROR_PAGE = "/error.xhtml";
+    private static final String LOGIN_PAGE = "/login.xhtml";
 
     private final ExceptionHandlerFactory parentExceptionHandlerFactory;
 
@@ -72,6 +74,7 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
         @SuppressWarnings("unchecked")
         @Override
         public void handle() throws FacesException {
+            boolean isAuthenException = false;
             final List<Throwable> throwables = new ArrayList<>();
             for (final Iterator<ExceptionQueuedEvent> iterator = super.getUnhandledExceptionQueuedEvents().iterator(); iterator.hasNext();) {
                 Throwable throwable = iterator.next().getContext().getException();
@@ -87,6 +90,9 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
                         log.debug(msg, throwable);
                     }
                 }
+                if (throwable instanceof AuthenticationFailedException) {
+                    isAuthenException = true;
+                }
                 throwables.add(throwable);
                 iterator.remove();
             }
@@ -96,7 +102,11 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
                 if (externalContext.getRequestMap().get(REQUESTMAP_KEY) == null) {
                     externalContext.getRequestMap().put(REQUESTMAP_KEY, throwables);
                     try {
-                        externalContext.dispatch(ERROR_PAGE);
+                        if (isAuthenException) {
+                            externalContext.dispatch(LOGIN_PAGE);
+                        } else {
+                            externalContext.dispatch(ERROR_PAGE);
+                        }
                     } catch (final IOException e) {
                         log.error("Unable to dispatch client to unknown error page '" + ERROR_PAGE + "'.", e);
                     }
