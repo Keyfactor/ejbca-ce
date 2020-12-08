@@ -9,6 +9,11 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -16,7 +21,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.interfaces.ECPublicKey;
@@ -43,8 +47,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -97,13 +99,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Test the WS methods that relate to SSH CAs
+ *
+ * @version $Id$
  */
 public class SshWsSystemTest extends CommonEjbcaWs {
 
@@ -115,7 +114,6 @@ public class SshWsSystemTest extends CommonEjbcaWs {
     private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     private static List<File> fileHandles = new ArrayList<>();
 
@@ -258,8 +256,8 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         sshRequestMessageWs.setPrincipals(PRINCIPALS);
         sshRequestMessageWs.setPublicKey(keypair.getPublic().getEncoded());
         sshCa = SshCaTestUtils.addSshCa(caName, SshEcPublicKey.SECP384R1, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
-        createCertificateProfile(sshCa.getCAId());
-        createEndEntityProfile(sshCa.getCAId());
+        createCertificateProfile();
+        createEndEntityProfile();
 
         Date now = new Date(System.currentTimeMillis());
         String certificateBytes = new String(ejbcaraws.enrollAndIssueSshCertificate(userDataVOWS, sshRequestMessageWs));
@@ -276,7 +274,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         readAndVerifyValidity(sshCertificateReader, now);
         SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, SOURCE_ADDRESS + ",192.168.0.1");
         readAndVerifyCertificateExtensions(sshCertificateReader);
-        readAndVerifySignerAndSignature(sshCertificateReader, sshCa.getCACertificate().getPublicKey());
+        readAndVerifySignerAndSignature(sshCertificateReader);
         sshCertificateReader.close();
     }
 
@@ -301,10 +299,9 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         sshRequestMessageWs.setPrincipals(PRINCIPALS);
         sshRequestMessageWs.setPublicKey(sshEcKeyPair.getPublicKey().encodeForExport("foo"));
 
-        CAInfo sshCAInfo = caSession.getCAInfo(internalAdmin, "AaSSH CA EC");
-        //sshCa = SshCaTestUtils.addSshCa(caName, SshEcPublicKey.SECP384R1, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
-        createCertificateProfile(sshCAInfo.getCAId());
-        createEndEntityProfile(sshCAInfo.getCAId());
+        sshCa = SshCaTestUtils.addSshCa(caName, SshEcPublicKey.SECP384R1, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+        createCertificateProfile();
+        createEndEntityProfile();
 
         Date now = new Date(System.currentTimeMillis());
         String certificateBytes = new String(ejbcaraws.enrollAndIssueSshCertificate(userDataVOWS, sshRequestMessageWs));
@@ -321,7 +318,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         readAndVerifyValidity(sshCertificateReader, now);
         SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, SOURCE_ADDRESS);
         readAndVerifyCertificateExtensions(sshCertificateReader);
-        readAndVerifySignerAndSignature(sshCertificateReader, sshCAInfo.getCertificateChain().get(0).getPublicKey());
+        readAndVerifySignerAndSignature(sshCertificateReader);
         sshCertificateReader.close();
     }
 
@@ -357,7 +354,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         userDataVOWS.setPassword(PASSWORD);
         userDataVOWS.setClearPwd(false);
         userDataVOWS.setSubjectDN(null);
-        caName = "AaSSH CA EC";
+        caName = "testEnrollAndIssueEcCertificate" + postfixName;
         userDataVOWS.setCaName(caName);
         userDataVOWS.setEmail(null);
         userDataVOWS.setSubjectAltName(null);
@@ -369,17 +366,17 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         return userDataVOWS;
     }
 
-    private void createCertificateProfile(int caid) throws CertificateProfileExistsException, AuthorizationDeniedException {
+    private void createCertificateProfile() throws CertificateProfileExistsException, AuthorizationDeniedException {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateConstants.CERTTYPE_SSH);
         certificateProfile.setType(CertificateConstants.CERTTYPE_SSH);
         certificateProfile.setSshCertificateType(SshCertificateType.USER);
         certificateProfile.setSshExtensions(SshTestUtils.getAllSshExtensionsMap());
         certificateProfile.setAllowExternalSshExtensions(true);
-        certificateProfile.setAvailableCAs(Collections.singletonList(caid));
+        certificateProfile.setAvailableCAs(Collections.singletonList(sshCa.getCAId()));
         certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certificateProfile);
     }
 
-    private void createEndEntityProfile(int caid) throws EndEntityProfileExistsException, AuthorizationDeniedException {
+    private void createEndEntityProfile() throws EndEntityProfileExistsException, AuthorizationDeniedException {
         final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
         endEntityProfile.addField(SshEndEntityProfileFields.SSH_PRINCIPAL);
         endEntityProfile.addField(SshEndEntityProfileFields.SSH_PRINCIPAL);
@@ -388,8 +385,8 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         endEntityProfile.setRequired(DnComponents.COMMONNAME,0,false);
         endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
         endEntityProfile.setAvailableCertificateProfileIds(Collections.singletonList(certificateProfileId));
-        endEntityProfile.setDefaultCA(caid);
-        endEntityProfile.setAvailableCAs(Collections.singletonList(caid));
+        endEntityProfile.setDefaultCA(sshCa.getCAId());
+        endEntityProfile.setAvailableCAs(Collections.singletonList(sshCa.getCAId()));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, endEntityProfile);
     }
 
@@ -458,12 +455,12 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         assertTrue("Reserved should not be used.", StringUtils.isEmpty(sshCertificateReader.readString()));
     }
 
-    private void readAndVerifySignerAndSignature(final SshCertificateReader sshCertificateReader, final PublicKey publicKey) throws IOException, InvalidKeySpecException, SshKeyException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    private void readAndVerifySignerAndSignature(final SshCertificateReader sshCertificateReader) throws IOException, InvalidKeySpecException, SshKeyException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         final byte[] signKeyBytes = sshCertificateReader.readByteArray();
         final SshEcPublicKey signKey = new SshEcPublicKey(signKeyBytes);
         assertEquals("Signer Curve name was not correct.", SshEcPublicKey.NISTP384, signKey.getCurveName());
         final ECPoint signerEcPoint = ((ECPublicKey) signKey.getPublicKey()).getW();
-        final ECPoint knownSignerEcPoint = ((ECPublicKey) publicKey).getW();
+        final ECPoint knownSignerEcPoint = ((ECPublicKey) sshCa.getCACertificate().getPublicKey()).getW();
         assertEquals("Signer EC point was incorrect", knownSignerEcPoint, signerEcPoint);
         // The signature also lives in its own structure
         final byte[] signatureBytes = sshCertificateReader.readByteArray();
