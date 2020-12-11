@@ -17,15 +17,12 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.ejbca.ssh.certificate.signature.SshSigningAlgorithm;
 import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 
 /**
  * Enum representation of all possible signing algorithms for SSH EC certificates
- *
- * @version $Id$
  */
 public enum EcSigningAlgorithm implements SshSigningAlgorithm {
     SHA256(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, "ecdsa-sha2-nistp256", SshEcPublicKey.NISTP256),
@@ -56,9 +53,9 @@ public enum EcSigningAlgorithm implements SshSigningAlgorithm {
     }
 
     @Override
-    public Signature getSigner() {
+    public Signature getSigner(final String provider) {
         try {
-            return Signature.getInstance(identifier, BouncyCastleProvider.PROVIDER_NAME);
+            return Signature.getInstance(identifier, provider);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Fixed algorithms identifier " + identifier + " was not found in provider.");
         } catch (NoSuchProviderException e) {
