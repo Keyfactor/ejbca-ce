@@ -85,7 +85,6 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
  * 
  * This class implements equals/hashcode, so if any members are added please modify those as well.
  *
- * @version $Id$
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements RequestMessage {
     /**
