@@ -16,8 +16,6 @@ import java.security.SignatureException;
 
 /**
  * SSH Certificate Signer.
- *
- * @version $Id$
  */
 public interface SshCertificateSigner {
 
@@ -27,10 +25,11 @@ public interface SshCertificateSigner {
      * @param payload the payload to be signed, typically the contents of an SSH certificate except for the signature itself
      * @param signingPublicKey used to verify that the correct signing algorithm is being used
      * @param signingKey the CA's private key
+     * @param provider signature provider, for example BouncyCastleProvider.PROVIDER_NAME for a software provider, or a PKCS#11 provider for signing using an HSM
      * @return a signature
      * @throws InvalidKeyException if the signing key was of an incorrect type
      * @throws SignatureException if the signer was unable to sign the key
      */
-    byte[] signPayload(final byte[] payload, final PublicKey signingPublicKey, final PrivateKey signingKey)
+    byte[] signPayload(final byte[] payload, final PublicKey signingPublicKey, final PrivateKey signingKey, final String provider)
             throws InvalidKeyException, SignatureException;
 }
