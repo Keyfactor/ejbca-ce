@@ -16,8 +16,6 @@
  	 *  commercial license terms.                                            *
  	 *                                                                       *
  	 *************************************************************************/
-
-     $Id$
      -->
 </ui:remove>
 
@@ -60,7 +58,7 @@
                 title="#{web.text.OAUTHKEYCONFIGURATION_NEW_PUBLICKEYFILE}"/>
 
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SKEWLIMIT}"/>
-            <h:inputText id="editedCTLogSkewLimit"
+            <h:inputText id="editedProviderSkewLimit"
                 required="true"
                 disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
                 value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.skewLimit}"
