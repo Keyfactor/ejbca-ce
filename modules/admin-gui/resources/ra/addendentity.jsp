@@ -835,7 +835,7 @@ function isKeyRecoveryPossible(){
 function fillCAField(){
    var selcertprof = document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options.selectedIndex; 
    var certprofid = document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options[selcertprof].value; 
-   var caselect   =  document.adduser.<%=SELECT_CA%>; 
+   var caselect   =  document.adduser.<%=SELECT_CA%>;
 
    var numofcas = caselect.length;
    for( i=numofcas-1; i >= 0; i-- ){
@@ -844,13 +844,17 @@ function fillCAField(){
 
     if( selcertprof > -1){
       for( i=0; i < certprofileids.length; i ++){
-        if(certprofileids[i][CERTPROFID] == certprofid){
-          for( j=0; j < certprofileids[i][AVAILABLECAS].length; j++ ){
-            caselect.options[j]=new Option(certprofileids[i][AVAILABLECAS][j][CANAME],
-                                           certprofileids[i][AVAILABLECAS][j][CAID]);    
-            if(certprofileids[i][AVAILABLECAS][j][CAID] == "<%= lastselectedca %>")
-              caselect.options.selectedIndex=j;
-          }
+        if(certprofileids[i][CERTPROFID] == certprofid) {
+            for (j = 0; j < certprofileids[i][AVAILABLECAS].length; j++) {
+                caselect.options[j] = new Option(certprofileids[i][AVAILABLECAS][j][CANAME],
+                    certprofileids[i][AVAILABLECAS][j][CAID]);
+
+                if (certprofileids[i][AVAILABLECAS][j][CAID] == "<%= lastselectedca %>" ) {
+                    caselect.options.selectedIndex = j;
+
+                }else if (certprofileids[i][AVAILABLECAS][j][CAID] == "<%= profile.getDefaultCA() %>")
+                    caselect.options.selectedIndex = j;
+            }
         }
       }
     }
