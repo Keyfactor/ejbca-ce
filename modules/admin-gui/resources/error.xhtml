@@ -46,4 +46,9 @@
 			<h:outputText value="#{caErrorBean.stackTrace}"/>
 		</h:panelGroup>
 	</h:panelGroup>
+	<h:form  id="go" enctype="multipart/form-data" >
+		<h:commandButton action="#{adminLoginMBean.doSomething}"
+						 value="GO"/>
+		<h:commandLink action="#{adminLoginMBean.doSomething()}" value="go" styleClass="fineprint"/>
+	</h:form>
 </html>
