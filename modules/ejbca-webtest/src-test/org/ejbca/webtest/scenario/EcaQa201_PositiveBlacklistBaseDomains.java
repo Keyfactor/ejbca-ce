@@ -222,6 +222,8 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     @Test
     public void stepO_EditEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
+        eeProfileHelper.selectAvailableCps(TestData.CERTIFICATE_PROFILE_NAME);
+        eeProfileHelper.selectDefaultCp(TestData.CERTIFICATE_PROFILE_NAME);
         eeProfileHelper.selectDefaultCa(this.getCaName());
         //Add DNS Name
         eeProfileHelper.setSubjectAlternativeName("DNS Name");
@@ -241,6 +243,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     @Test
     public void stepR_SelectRequestTemplate() throws Exception {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        //raWebHelper.selectCertificateSubType(TestData.CERTIFICATE_PROFILE_NAME);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }
