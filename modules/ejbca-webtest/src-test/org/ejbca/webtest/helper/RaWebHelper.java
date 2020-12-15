@@ -137,7 +137,28 @@ public class RaWebHelper extends BaseHelper {
     }
 
     public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) throws InterruptedException {
-        selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, endEntityProfileName);
+        try {
+            selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, endEntityProfileName);
+        } catch (NoSuchElementException e) {
+            final String nameWithDefault = endEntityProfileName + " (default)";
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate type select item '" + endEntityProfileName + "' was not found, trying with '" + nameWithDefault + "'");
+            }
+            selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, nameWithDefault);            
+        }       
+        TimeUnit.SECONDS.sleep(2);
+    }
+    
+    public void selectCertificateSubType(final String certProfileName) throws InterruptedException {
+        try {
+            selectOptionByName(Page.SELECT_CERTIFICATE_SUBTYPE, certProfileName);
+        } catch (NoSuchElementException e) {
+            final String nameWithDefault = certProfileName + " (default)";
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate subtype select item '" + certProfileName + "' was not found, trying with '" + nameWithDefault + "'");
+            }
+            selectOptionByName(Page.SELECT_CERTIFICATE_SUBTYPE, nameWithDefault);            
+        }       
         TimeUnit.SECONDS.sleep(2);
     }
 
