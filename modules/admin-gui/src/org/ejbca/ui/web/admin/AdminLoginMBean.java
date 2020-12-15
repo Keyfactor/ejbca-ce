@@ -17,16 +17,29 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.keycloak.OAuthErrorException;
+import org.keycloak.adapters.ServerRequest;
+import org.keycloak.adapters.installed.KeycloakInstalled;
+import org.keycloak.common.VerificationException;
+import org.keycloak.representations.AccessToken;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Bean used to display a login page.
@@ -41,7 +54,33 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
 
     private List<Throwable> throwables = null;
     private String errorMessage;
-    private Collection<OAuthKeyInfo> oauthKeys = null;
+    private Collection<OAuthKeyInfoGui> oauthKeys = null;
+
+    public class OAuthKeyInfoGui{
+        String label;
+        String url;
+
+        public OAuthKeyInfoGui(String label, String url) {
+            this.label = label;
+            this.url = url;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+    }
 
     /**
      * @return the general error which occurred
@@ -113,7 +152,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
      *
      * @return a list of OAuth Keys containing url
      */
-    public Collection<OAuthKeyInfo> getAllOauthKeys() {
+    public Collection<OAuthKeyInfoGui> getAllOauthKeys() {
         if (oauthKeys == null) {
             oauthKeys = new ArrayList<>();
             ejbcaWebBean.reloadGlobalConfiguration();
@@ -122,11 +161,32 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             if (!oAuthKeyInfos.isEmpty()) {
                 for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
                     if (!StringUtils.isEmpty(oauthKeyInfo.getUrl())) {
-                        oauthKeys.add(oauthKeyInfo);
+                        URI uri = UriBuilder.fromUri(oauthKeyInfo.getUrl()).queryParam("response_type", "token").build();
+                        oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getKeyIdentifier(), uri.toString()));
                     }
                 }
             }
         }
         return oauthKeys;
+    }
+
+    public void doSomething() throws InterruptedException, IOException, URISyntaxException, OAuthErrorException, ServerRequest.HttpFailure, VerificationException {
+        String keycloakConfigs = "{\n" +
+                "  \"realm\": \"EJBCA\",\n" +
+                "  \"auth-server-url\": \"http://localhost:8084/auth/\",\n" +
+                "  \"ssl-required\": \"external\",\n" +
+                "  \"resource\": \"EJBCAAdminWeb\",\n" +
+                "  \"public-client\": true,\n" +
+                "  \"verify-token-audience\": true,\n" +
+                "  \"use-resource-role-mappings\": true,\n" +
+                "  \"confidential-port\": 0\n" +
+                "}";
+        InputStream inputStream = new ByteArrayInputStream(keycloakConfigs.getBytes(StandardCharsets.UTF_8));
+        KeycloakInstalled keycloak = new KeycloakInstalled(inputStream);
+        keycloak.loginDesktop();
+        AccessToken token = keycloak.getToken();
+        String tokenString = keycloak.getTokenString(3000, TimeUnit.SECONDS);
+        System.out.println(tokenString);
+        System.out.println(token.getIssuer());
     }
 }

@@ -217,7 +217,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
             requestServerPort = httpServletRequest.getServerPort();
             currentRemoteIp = httpServletRequest.getRemoteAddr();
-            final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+            String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+            if (oauthBearerToken == null ){
+                oauthBearerToken = httpServletRequest.getParameter("access_token");
+            }
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }

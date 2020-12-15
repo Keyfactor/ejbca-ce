@@ -46,9 +46,14 @@
                  styleClass="oauthkeyTable" style="margin: 5px;">
         <h:column>
             <h:outputLink value="#{oauthkey.url}">
-                <h:outputText value="#{oauthkey.keyIdentifier}"/>
+                <h:outputText value="#{oauthkey.label}"/>
             </h:outputLink>
         </h:column>
     </h:dataTable>
 </h:panelGroup>
+<h:form  id="go" enctype="multipart/form-data" >
+<h:commandButton action="#{adminLoginMBean.doSomething}"
+                 value="GO"/>
+    <h:commandLink action="#{adminLoginMBean.doSomething()}" value="go" styleClass="fineprint"/>
+</h:form>
 </html>
