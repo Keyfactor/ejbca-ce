@@ -178,6 +178,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private static final String TEMPLATE_NAME_CUSTOM = "CUSTOM";
 
     private static final List<AccessRulesTemplate> accessRulesTemplates = Arrays.asList(
+            new AccessRulesTemplate(TEMPLATE_NAME_CUSTOM),
             new AccessRulesTemplate("SUPERVISOR",
                     new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
                     new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW),
@@ -254,8 +255,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     // From legacy JS
                     new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW)
                     ),
-            new AccessRulesTemplate("SUPERADMINISTRATOR", new AccessRule(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW)),
-            new AccessRulesTemplate(TEMPLATE_NAME_CUSTOM)
+            new AccessRulesTemplate("SUPERADMINISTRATOR", new AccessRule(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW))
             );
 
     @EJB
@@ -496,6 +496,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableAccessRulesTemplates() {
         if (availableAccessRulesTemplates==null) {
             availableAccessRulesTemplates = new ArrayList<>();
+            boolean isAccessRuleTemplateSet = false;
             for (final AccessRulesTemplate accessRulesTemplate : accessRulesTemplates) {
                 // Ensure that current admin is authorized to all access rules implied by the template
                 final List<String> allowedResources = new ArrayList<>();
@@ -519,8 +520,9 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                             availableAccessRulesTemplates.add(
                                     new SelectItem(accessRulesTemplate.getName(), super.getEjbcaWebBean().getText(accessRulesTemplate.getName())));
                             // Check if this template matches the Role's current access rules
-                            if (remainingAccessRulesInRole.isEmpty()) {
-                                accessRulesTemplateSelected = accessRulesTemplate.getName();
+                                if (remainingAccessRulesInRole.isEmpty() && !isAccessRuleTemplateSet) {
+                                    accessRulesTemplateSelected = accessRulesTemplate.getName();
+                                    isAccessRuleTemplateSet = true;
                             } else {
                                 if (log.isDebugEnabled()) {
                                     log.debug("Role '" + getRole().getRoleNameFull() + "' does not qualify as a '" + accessRulesTemplate.getName()

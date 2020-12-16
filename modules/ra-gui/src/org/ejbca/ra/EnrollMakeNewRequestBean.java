@@ -1918,6 +1918,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 selectedCertificateAuthority = null;
             }
         }
+        if (!availableCertificateAuthorities.isEmpty()){
+            for (int certAuth: availableCertificateAuthorities){
+                if (certAuth == getEndEntityProfile().getDefaultCA()){
+                    selectedCertificateAuthority= String.valueOf(getEndEntityProfile().getDefaultCA());
+                }
+            }
+        }
         return selectedCertificateAuthority;
     }
 
