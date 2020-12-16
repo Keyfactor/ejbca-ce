@@ -12,22 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
-import org.keycloak.OAuthErrorException;
-import org.keycloak.adapters.ServerRequest;
-import org.keycloak.adapters.installed.KeycloakInstalled;
-import org.keycloak.common.VerificationException;
-import org.keycloak.representations.AccessToken;
-
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +24,27 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthTokenRequest;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.util.HttpTools;
+import org.keycloak.OAuthErrorException;
+import org.keycloak.adapters.ServerRequest;
+import org.keycloak.adapters.installed.KeycloakInstalled;
+import org.keycloak.common.VerificationException;
+import org.keycloak.representations.AccessToken;
 
 /**
  * Bean used to display a login page.
@@ -132,19 +137,58 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         ejbcaWebBean = getEjbcaErrorWebBean();
         ejbcaWebBean.initialize_errorpage((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        final Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        final String authCode = params.get("code");
+        final String state = params.get("state");
+        final String error = params.get("error");
         // Render error caught by CaExceptionHandlerFactory
         if (throwables == null) {
             throwables = (List<Throwable>) requestMap.get(CaExceptionHandlerFactory.REQUESTMAP_KEY);
             requestMap.remove(CaExceptionHandlerFactory.REQUESTMAP_KEY);
         }
-        if (throwables == null) {
-            log.debug("No exception thrown, could not renderer error messages.");
-        } else {
+        if (error != null) {
+            log.info("Server reported user authentication failure: " + error.replaceAll("[^a-zA-Z0-9_]", "")); // sanitize untrusted parameter
+            if (verifyStateParameter(state)) {
+                errorMessage = params.getOrDefault("error_description", "");
+            } else {
+                log.info("Received 'error' parameter without valid 'state' parameter.");
+                errorMessage = "Internal error.";
+            }
+        } else if (CollectionUtils.isEmpty(throwables)) {
+            log.debug("No exception thrown.");
             for (final Throwable throwable : throwables) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error occurred.", throwable);
+                }
                 errorMessage = ejbcaWebBean.getText("CAUSE") + ": " + throwable.getMessage();
             }
+        } else if (StringUtils.isNotEmpty(authCode)) {
+            log.debug("Received authorization code. Requesting token from authorization server.");
+            if (verifyStateParameter(state)) {
+                final OAuthTokenRequest request = new OAuthTokenRequest();
+                request.setUri("http://localhost:8049/auth/realms/EJBCA/protocol/openid-connect/token");
+                request.setClientId("EJBCAAdminWeb"); // TODO configuration
+                request.setRedirectUri("https://localhost:8442/ejbca/adminweb/"); // TODO configuration
+                final OAuthGrantResponseInfo token = request.execute(authCode);
+                if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
+                    log.info("XXX RECEIVED TOKEN " + token.getAccessToken()); // XXX remove me
+                    // TODO
+                } else {
+                    log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
+                    errorMessage = "Internal error.";
+                }
+            } else {
+                log.info("Received 'code' parameter without valid 'state' parameter.");
+                errorMessage = "Internal error.";
+            }
+        } else {
+            log.debug("Showing login links.");
         }
+    }
 
+    private boolean verifyStateParameter(final String state) {
+        // TODO
+        return true;
     }
 
     /**
@@ -161,7 +205,10 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             if (!oAuthKeyInfos.isEmpty()) {
                 for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
                     if (!StringUtils.isEmpty(oauthKeyInfo.getUrl())) {
-                        URI uri = UriBuilder.fromUri(oauthKeyInfo.getUrl()).queryParam("response_type", "token").build();
+                        URI uri = UriBuilder.fromUri(oauthKeyInfo.getUrl())
+                                .queryParam("response_type", "code")
+                                .queryParam("state", "abc123-TODO") // TODO add randomized state code for security
+                                .build();
                         oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getKeyIdentifier(), uri.toString()));
                     }
                 }
@@ -173,7 +220,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     public void doSomething() throws InterruptedException, IOException, URISyntaxException, OAuthErrorException, ServerRequest.HttpFailure, VerificationException {
         String keycloakConfigs = "{\n" +
                 "  \"realm\": \"EJBCA\",\n" +
-                "  \"auth-server-url\": \"http://localhost:8084/auth/\",\n" +
+                "  \"auth-server-url\": \"http://localhost:8049/auth/\",\n" +
                 "  \"ssl-required\": \"external\",\n" +
                 "  \"resource\": \"EJBCAAdminWeb\",\n" +
                 "  \"public-client\": true,\n" +
