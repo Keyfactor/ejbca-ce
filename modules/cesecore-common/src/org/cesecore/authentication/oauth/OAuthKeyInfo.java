@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Random;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -31,6 +32,9 @@ public final class OAuthKeyInfo implements Serializable {
     private final int internalId;
     private byte[] publicKeyBytes;
     private String keyIdentifier;
+    private String label;
+    private String client;
+    private String realm;
     private String url;
     private int skewLimit = 60000;
 
@@ -102,6 +106,10 @@ public final class OAuthKeyInfo implements Serializable {
         return keyIdentifier;
     }
 
+    public String getShowName(){
+        return StringUtils.isNotEmpty(label) ? label : keyIdentifier;
+    }
+
     public void setKeyIdentifier(final String keyIdentifier) {
         this.keyIdentifier = keyIdentifier;
     }
@@ -112,6 +120,30 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public String getRealm() {
+        return realm;
+    }
+
+    public void setRealm(String realm) {
+        this.realm = realm;
     }
 
     public void setSkewLimit(final int skewLimit) {
