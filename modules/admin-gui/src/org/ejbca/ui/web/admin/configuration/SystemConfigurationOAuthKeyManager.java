@@ -44,8 +44,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
 
     public class OAuthKeyEditor {
+        private String label;
         private String keyIdentifier;
         private String url;
+        private String client;
+        private String realm;
         private UploadedFile publicKeyFile;
         private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
@@ -92,6 +95,30 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.defaultKeyIdentifier = defaultKeyIdentifier;
         }
 
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public String getClient() {
+            return client;
+        }
+
+        public void setClient(String client) {
+            this.client = client;
+        }
+
+        public String getRealm() {
+            return realm;
+        }
+
+        public void setRealm(String realm) {
+            this.realm = realm;
+        }
+
         public OAuthKeyEditorMode getEditorMode() {
             return editorMode;
         }
@@ -118,6 +145,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.publicKeyFile = null;
             this.keyIdentifier = oauthKey.getKeyIdentifier();
             this.url = oauthKey.getUrl();
+            this.label = oauthKey.getLabel();
+            this.client = oauthKey.getClient();
+            this.realm = oauthKey.getRealm();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
             this.defaultKeyIdentifier = defaultKeyIdentifier;
@@ -234,6 +264,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getKeyIdentifier(), newOauthKeyPublicKey, oauthKeyEditor.getSkewLimit());
         newOauthKey.setUrl(oauthKeyEditor.getUrl());
+        newOauthKey.setLabel(oauthKeyEditor.getLabel());
+        newOauthKey.setRealm(oauthKeyEditor.getRealm());
+        newOauthKey.setClient(oauthKeyEditor.getClient());
+
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
             return StringUtils.EMPTY;
@@ -368,6 +402,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setSkewLimit(oauthKeyEditor.getSkewLimit());
         oauthKeyToUpdate.setKeyIdentifier(keyIdentifier);
         oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
+        oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
+        oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
+        oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;
