@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,11 +27,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -50,7 +52,7 @@ import org.keycloak.representations.AccessToken;
  * Bean used to display a login page.
  */
 @ManagedBean
-@ViewScoped
+@SessionScoped
 public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AdminLoginMBean.class);
@@ -60,6 +62,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private List<Throwable> throwables = null;
     private String errorMessage;
     private Collection<OAuthKeyInfoGui> oauthKeys = null;
+    /** A random identifier used to link requests, to avoid CSRF attacks. */
+    private String stateInSession = null;
 
     public class OAuthKeyInfoGui{
         String label;
@@ -182,13 +186,16 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 errorMessage = "Internal error.";
             }
         } else {
+            log.debug("Generating randomized 'state' string.");
+            final byte[] stateBytes = new byte[32];
+            new SecureRandom().nextBytes(stateBytes);
+            stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
             log.debug("Showing login links.");
         }
     }
 
     private boolean verifyStateParameter(final String state) {
-        // TODO
-        return true;
+        return stateInSession != null && stateInSession.equals(state);
     }
 
     /**
@@ -207,7 +214,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                     if (!StringUtils.isEmpty(oauthKeyInfo.getUrl())) {
                         URI uri = UriBuilder.fromUri(oauthKeyInfo.getUrl())
                                 .queryParam("response_type", "code")
-                                .queryParam("state", "abc123-TODO") // TODO add randomized state code for security
+                                .queryParam("state", stateInSession)
                                 .build();
                         oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getKeyIdentifier(), uri.toString()));
                     }
