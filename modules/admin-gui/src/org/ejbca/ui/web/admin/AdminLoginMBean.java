@@ -12,19 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -42,11 +36,6 @@ import org.cesecore.authentication.oauth.OAuthTokenRequest;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
-import org.keycloak.OAuthErrorException;
-import org.keycloak.adapters.ServerRequest;
-import org.keycloak.adapters.installed.KeycloakInstalled;
-import org.keycloak.common.VerificationException;
-import org.keycloak.representations.AccessToken;
 
 /**
  * Bean used to display a login page.
@@ -224,23 +213,4 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         return oauthKeys;
     }
 
-    public void doSomething() throws InterruptedException, IOException, URISyntaxException, OAuthErrorException, ServerRequest.HttpFailure, VerificationException {
-        String keycloakConfigs = "{\n" +
-                "  \"realm\": \"EJBCA\",\n" +
-                "  \"auth-server-url\": \"http://localhost:8049/auth/\",\n" +
-                "  \"ssl-required\": \"external\",\n" +
-                "  \"resource\": \"EJBCAAdminWeb\",\n" +
-                "  \"public-client\": true,\n" +
-                "  \"verify-token-audience\": true,\n" +
-                "  \"use-resource-role-mappings\": true,\n" +
-                "  \"confidential-port\": 0\n" +
-                "}";
-        InputStream inputStream = new ByteArrayInputStream(keycloakConfigs.getBytes(StandardCharsets.UTF_8));
-        KeycloakInstalled keycloak = new KeycloakInstalled(inputStream);
-        keycloak.loginDesktop();
-        AccessToken token = keycloak.getToken();
-        String tokenString = keycloak.getTokenString(3000, TimeUnit.SECONDS);
-        System.out.println(tokenString);
-        System.out.println(token.getIssuer());
-    }
 }
