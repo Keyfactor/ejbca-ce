@@ -128,7 +128,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     @SuppressWarnings("unchecked")
     public void onLoginPageLoad() throws Exception {
         ejbcaWebBean = getEjbcaErrorWebBean();
-        ejbcaWebBean.initialize_errorpage((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+        HttpServletRequest servletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        ejbcaWebBean.initialize_errorpage(servletRequest);
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         final Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         final String authCode = params.get("code");
@@ -165,7 +166,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 final OAuthGrantResponseInfo token = request.execute(authCode);
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     log.info("XXX RECEIVED TOKEN " + token.getAccessToken()); // XXX remove me
-                    // TODO
+                    servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
+                    FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
                 } else {
                     log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                     errorMessage = "Internal error.";
