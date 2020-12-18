@@ -354,14 +354,6 @@
 	<path id="lib.guava.classpath"><fileset dir="${ejbca.home}/lib" includes="guava-*.jar"/></path>
 	<path id="lib.jacknji.classpath"><fileset dir="${ejbca.home}/lib/" includes="jacknji11-*.jar"/></path>
 	<path id="lib.jna.classpath"><fileset dir="${ejbca.home}/lib/" includes="jna-*.jar"/></path>
-	<path id="lib.keycloak.classpath">
-		<fileset dir="${ejbca.home}/lib/ext/keycloak">
-			<include name="keycloak-installed-adapter-*.jar"/>
-			<include name="keycloak-core-*.jar"/>
-			<include name="keycloak-adapter-core-*.jar"/>
-			<include name="keycloak-common-*.jar"/>
-		</fileset>
-	</path>
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
 			<include name="commons-*.jar"/>

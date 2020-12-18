@@ -47,7 +47,6 @@
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path location="${mod.statedump-common.lib}"/>
 		<path location="${mod.acme-common.jar}"/>
-		<path refid="lib.keycloak.classpath"/>
 	</path>
 	
     <path id="test.classpath">
@@ -69,10 +68,6 @@
         <war destfile="${mod.admin-gui.war}" webxml="${admin-gui.resources.dir}/WEB-INF/web.xml" basedir="${admin-gui.build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-3.1.0.jar"/>
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/ext/keycloak" includes="keycloak-core-11.0.3.jar"/>
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/ext/keycloak" includes="keycloak-adapter-core-11.0.3.jar"/>
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/ext/keycloak" includes="keycloak-common-11.0.3.jar"/>
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/ext/keycloak" includes="keycloak-installed-adapter-11.0.3.jar"/>
         	<fileset dir="${admin-gui.resources.dir}" excludes="languages/*"/>
         </war>
     </target>
