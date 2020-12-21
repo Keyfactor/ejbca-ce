@@ -40,6 +40,7 @@ import java.util.List;
 
 import com.novell.ldap.LDAPDN;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -722,6 +723,13 @@ public class CertToolsUnitTest {
         String dn15 = "C=SE, E=foo@primekey.se, O=PrimeKey, EmailAddress=bar@primekey.se";
         emails = CertTools.getEmailFromDN(dn15);
         assertEquals(emails.get(0), "bar@primekey.se");
+
+        String dn16 = "SUBJECTIDENTIFICATIONMETHOD=2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue";
+        String sim = CertTools.getPartFromDN(dn16, "SUBJECTIDENTIFICATIONMETHOD");
+        assertEquals(sim, "2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue");
+        String dn17 = "subjectIdentificationMethod=2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue";
+        sim = CertTools.getPartFromDN(dn17, "SUBJECTIDENTIFICATIONMETHOD");
+        assertEquals(sim, "2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue");
 
         log.trace("<test01GetPartFromDN()");
     }
@@ -1819,12 +1827,25 @@ public class CertToolsUnitTest {
 
     @Test
     public void testIdOnSIM() throws Exception {
-        String otherName = "krb5principal=foo/bar@P.SE, " + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::CB3AE7FBFFFD9C85A3FB234E51FFFD2190B1F8F161C0A2873B998EFAC067B03A::6D9E6264DDBD0FC997B9B40524247C8BC319D02A583F4B499DD3ECAF06C786DF, upn=upn@u.com";
+        String otherName = "krb5principal=foo/bar@P.SE, " + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::8db00be05041ad00149e27ad134c64002af06147932d2859413e28add0f01b58::245C975D648DB3B0B27BB1ABAF3A321416340F50FACCE197D28A3F00B2E93C09, upn=upn@u.com";
         GeneralNames gn = CertTools.getGeneralNamesFromAltName(otherName);
         GeneralName[] names = gn.getNames();
         String ret = CertTools.getGeneralNameString(0, names[2].getName());
         assertEquals(names.length, 3);
-        assertEquals(RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::CB3AE7FBFFFD9C85A3FB234E51FFFD2190B1F8F161C0A2873B998EFAC067B03A::6D9E6264DDBD0FC997B9B40524247C8BC319D02A583F4B499DD3ECAF06C786DF", ret);
+        assertEquals(RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::8db00be05041ad00149e27ad134c64002af06147932d2859413e28add0f01b58::245C975D648DB3B0B27BB1ABAF3A321416340F50FACCE197D28A3F00B2E93C09", ret);
+
+        String sim = CertTools.getPartFromDN(ret, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD);
+        // Compare the SIM, we know the input that was used to generate the SIM above
+        // MyStrongPassword, 1.2.410.200004.10.1.1.10.1 and SIIValue
+        String[] simtokens = StringUtils.split(sim, "::");
+        assertNotNull("SIM must be tokenized by ::", simtokens);
+        assertEquals("There should be 3 SIM tokens", 3, simtokens.length);
+        String hashalg = simtokens[0];
+        String r = simtokens[1];
+        String pepsifromsim = simtokens[2];
+        String pepsi = RFC4683Tools.createPepsi(hashalg, "MyStrongPassword", "1.2.410.200004.10.1.1.10.1", "SIIValue", r);
+        assertEquals("Calculated PEPSI and PEPSI from SIM must be equal", pepsifromsim, pepsi);
+
     }
     
     @Test
