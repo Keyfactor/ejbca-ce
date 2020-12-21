@@ -17,9 +17,7 @@ import java.security.PublicKey;
 import org.cesecore.internal.CommonCacheBase;
 
 /**
- * Cache for Key aliases (used in Azure Crypto Token, but is generic). Caches a public key, with alias as key
- * 
- * @version $Id$
+ * Cache for Key aliases (used in Azure and AWS Crypto Token, but is generic). Caches a public key, with alias as key
  */
 public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
 
@@ -33,12 +31,12 @@ public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
 
     @Override
     protected long getCacheTime() {
-        return 30000; // Cache key aliases for 30 seconds
+        return 60000; // Cache key aliases for 60 seconds
     }
 
     @Override
     protected long getMaxCacheLifeTime() {
-        return 30000; // Cache key aliases for 30 seconds
+        return 60000; // Cache key aliases for 60 seconds
     }
 
 }
