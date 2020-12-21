@@ -202,12 +202,23 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             Collection<OAuthKeyInfo> oAuthKeyInfos = globalConfiguration.getOauthKeys().values();
             if (!oAuthKeyInfos.isEmpty()) {
                 for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
-                    if (!StringUtils.isEmpty(oauthKeyInfo.getUrl())) {
-                        URI uri = UriBuilder.fromUri(oauthKeyInfo.getUrl())
+                    if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
+                        String url = oauthKeyInfo.getUrl();
+                        if (StringUtils.isNotEmpty(oauthKeyInfo.getRealm())) {
+                            url = new StringBuilder()
+                                    .append(oauthKeyInfo.getUrl()).append("/realms/")
+                                    .append(oauthKeyInfo.getRealm())
+                                    .append("/protocol/openid-connect/auth").toString();
+                        }
+                        UriBuilder uriBuilder = UriBuilder.fromUri(url);
+                        if (StringUtils.isNotEmpty(oauthKeyInfo.getClient())) {
+                            uriBuilder
+                                    .queryParam("client_id", oauthKeyInfo.getClient());
+                        }
+                        uriBuilder
                                 .queryParam("response_type", "code")
-                                .queryParam("state", stateInSession)
-                                .build();
-                        oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getKeyIdentifier(), uri.toString()));
+                                .queryParam("state", stateInSession);
+                        oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getShowName(), uriBuilder.build().toString()));
                     }
                 }
             }
