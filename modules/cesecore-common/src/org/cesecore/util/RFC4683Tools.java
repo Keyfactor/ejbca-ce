@@ -13,9 +13,11 @@
 
 package org.cesecore.util;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +33,11 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.tsp.TSPAlgorithms;
-import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.DnComponents;
 
 /**
@@ -43,8 +46,6 @@ import org.cesecore.certificates.util.DnComponents;
  * an optional feature that may be used by relying parties to determine whether the subject of a particular 
  * certificate is also the person corresponding to a particular sensitive identifier 
  * (see <a href="https://tools.ietf.org/html/rfc4683">RFC 4683</a>).
- * 
- * @version $Id$
  */
 public final class RFC4683Tools {
 
@@ -63,6 +64,7 @@ public final class RFC4683Tools {
      * Gets the allowed hash algorithm object identifiers (see <a href="https://tools.ietf.org/html/rfc4683#section-4.3">RFC 4683 section 4.3</a>).
      * @return a list of ASN1ObjectIdentifier {@link TSPAlgorithms#ALLOWED}.
      */
+    @SuppressWarnings("unchecked")
     public static final List<ASN1ObjectIdentifier> getAllowedHashAlgorithms() {
         return new ArrayList<ASN1ObjectIdentifier>(TSPAlgorithms.ALLOWED);
     }
@@ -85,11 +87,11 @@ public final class RFC4683Tools {
      * the generated SIM strings (list of 3 tokens, separated by '::') {@link RFC4683Tools#generateInternalSimString(String, String, String, String)}
      * 
      * @param san the SAN string in internal storage format with SIM as user parameters.
-     * @return SAN string in internal storage format with generated SIM strings.
+     * @return SAN string in internal storage format with generated SIM strings, or just the original string if there was no SIM.
      */
     public static final String generateSimForInternalSanFormat(String san)
             throws IllegalArgumentException, NoSuchProviderException, NoSuchAlgorithmException {
-        if (StringUtils.isNotBlank(san) && san.contains(DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
+        if (StringUtils.isNotBlank(san) && san.toUpperCase().contains(DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
             final List<String> sims = CertTools.getPartsFromDN(san, DnComponents.SUBJECTIDENTIFICATIONMETHOD);
             for (String sim : sims) {
                 if (LOG.isDebugEnabled()) {
@@ -102,7 +104,7 @@ public final class RFC4683Tools {
                         final String newSim = generateInternalSimString(tokens[0], tokens[1], tokens[2], tokens[3]);
                         san = san.replace(sim, newSim);
                     } else if (tokens.length == 3) {
-                        // NOOP
+                        // NOOP, it was already in the SIM format
                     } else {
                         throw new IllegalArgumentException("Wrong SIM input string with " + tokens.length + " tokens.");
                     }
@@ -122,59 +124,95 @@ public final class RFC4683Tools {
      * Where P is the user chosen password, SSI the Sensitive Identification Information and SIIType its type.
      * 
      * @param hashAlogrithmOidString i.e '1.3.14.3.2.26' for SHA-1
-     * @param userChosenPassword (P) FIPS 112 and FIPS 180-1 compliant password up to 28 characters (see https://tools.ietf.org/html/rfc4683#section-4.2)
-     * @param ssiType OID string of an SSI type (see https://tools.ietf.org/html/rfc4683#section-4.1).
-     * @param ssi Sensitive Identification Information (SII) (see https://tools.ietf.org/html/rfc4683#section-4.1).
+     * @param userChosenPassword a user selected password for computing the SIM (see https://tools.ietf.org/html/rfc4683#section-4.2).
+     * @param siiType OID string of an SSI type (see https://tools.ietf.org/html/rfc4683#section-4.1).
+     * @param sii Sensitive Identification Information (SII) (see https://tools.ietf.org/html/rfc4683#section-4.1).
      * @return a '::' separated string of hashAlogrithmOidString, R and PEPSI.
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if input is bad
      */
-    public static final String generateInternalSimString(final String hashAlogrithmOidString, final String userChosenPassword, final String ssiType,
-            final String ssi) throws IllegalArgumentException, NoSuchProviderException, NoSuchAlgorithmException {
+    public static final String generateInternalSimString(final String hashAlogrithmOidString, final String userChosenPassword, final String siiType,
+            final String sii) throws IllegalArgumentException, NoSuchProviderException, NoSuchAlgorithmException {
         if (StringUtils.isBlank(hashAlogrithmOidString)) {
             throw new IllegalArgumentException("Hash algorithm OID string must not be null or empty: '" + hashAlogrithmOidString + "'.");
         }
         if (!getAllowedHashAlgorithmOidStrings().contains(hashAlogrithmOidString)) {
             throw new IllegalArgumentException("Hash algorithm with OID '" + hashAlogrithmOidString + "' is not supparted for RFC4683 (SIM).");
         }
-        // TODO Insert check for FIPS 180-1 compliant passwords (better current standards ...)
+        // To ensure that we follow the rules in RFC4683 section 5.2, the input should be enforce, it is not done here
+        // hence it will in theory be possible to violate RFC4683 by illegal characters
+        // See RFC4683 section 4.2: (P) FIPS 112 and FIPS 180-1 compliant password up to 28 characters
         if (StringUtils.isBlank(userChosenPassword) || userChosenPassword.length() < 8) {
-            throw new IllegalArgumentException("The user chosen password must not be null or empty: '" + hashAlogrithmOidString + "'.");
+            throw new IllegalArgumentException("The password must not be null, empty or only whitespace, and must be at least 8 characters.");
         }
-        if (StringUtils.isBlank(ssiType)) {
-            throw new IllegalArgumentException("The sensitve identification information type must not be null or empty: '" + ssiType + "'.");
+        if (StringUtils.isBlank(siiType)) {
+            throw new IllegalArgumentException("The sensitve identification information type must not be null or empty: '" + siiType + "'.");
         }
-        if (StringUtils.isBlank(ssi)) {
-            throw new IllegalArgumentException("The sensitve identification information must not be null or empty: '" + ssi + "'.");
+        // Throws IllegalArgumentException if ssiType is not an OID
+        final ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(siiType);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("SIIType: " + oid.getId());
+        }
+        if (StringUtils.isBlank(sii)) {
+            throw new IllegalArgumentException("The sensitve identification information must not be null or empty: '" + sii + "'.");
         }
         final StringBuilder result = new StringBuilder();
         result.append(hashAlogrithmOidString);
 
-        // 1. Create authority random.
-        final String authorityRandomSource = Long.toHexString(SernoGeneratorRandom.instance(16).getSerno().longValue());
+        // 1. Create Digest algorithm
+        final MessageDigest digester = MessageDigest.getInstance(new ASN1ObjectIdentifier(hashAlogrithmOidString).getId(),BouncyCastleProvider.PROVIDER_NAME);
+
+        // 2. Create authority random, the same length as hash, RFC4683 section 4.3
+        // Use a BC hybrid (FIPS/SP800 compliant) DRBG chain if ca.rngalgorithm is provided and it's defined as BCSP800Hybrid
+        // create the seed material source - note can only be used to seed others. More info at HybridSecureRandom below.
+        final SecureRandom random = new SecureRandom();
+        byte[] authorityRandom = new byte[digester.getDigestLength()]; 
+        random.nextBytes(authorityRandom);
+        final String authorityRandomHex = Hex.toHexString(authorityRandom).toUpperCase();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Authority random source created: " + authorityRandomSource);
+            LOG.debug("Authority random created: " + authorityRandomHex);
+        }
+        result.append(LIST_SEPARATOR).append(authorityRandomHex);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Authority random hash created: " + authorityRandomHex);
         }
 
-        // 1b. Get HEX by hash of authority random.
-        final MessageDigest digester = MessageDigest.getInstance(new ASN1ObjectIdentifier(hashAlogrithmOidString).getId(),
-                BouncyCastleProvider.PROVIDER_NAME);
-        digester.update(authorityRandomSource.getBytes());
-        final String authorityRandom = toHexString(digester.digest());
-        result.append(LIST_SEPARATOR).append(authorityRandom);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Authority random hash created: " + authorityRandom);
+        // 3. Create PEPSI.
+        try {
+            final String pepsi = createPepsi(hashAlogrithmOidString, userChosenPassword, siiType, sii, authorityRandomHex);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("SIM string PEPSI created: " + pepsi);
+            }
+            result.append(LIST_SEPARATOR).append(pepsi);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Unable to ASN.1 encode PEPSI input, some input is invalid: ", e);
         }
+        return result.toString();
+    }
 
-        // 2. Create SIM HEX string, and hash 2 times.
-        digester.update(
-                new StringBuilder().append(userChosenPassword).append(authorityRandomSource).append(ssiType).append(ssi).toString().getBytes());
+    public static final String createPepsi(final String hashAlogrithmOidString, final String userChosenPassword, final String siiType,
+            final String sii, final String authorityRandomHex) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
+
+        // Get digester for the specified hash algo
+        final MessageDigest digester = MessageDigest.getInstance(new ASN1ObjectIdentifier(hashAlogrithmOidString).getId(), BouncyCastleProvider.PROVIDER_NAME);
+
+        // Create the ASN.1 HashContent, RFC4683 5.2
+        final ASN1EncodableVector v = new ASN1EncodableVector();
+        // To ensure that we follow the rules in RFC4683 section 5.2, the input should be enforce, it is not done here
+        // hence it will be possible to violate RFC4683 by illegal characters
+        v.add(new DERUTF8String(userChosenPassword)); 
+        v.add(new DEROctetString(Hex.decode(authorityRandomHex)));
+        v.add(new ASN1ObjectIdentifier(siiType));
+        v.add(new DERUTF8String(sii));
+        final ASN1Sequence seq = new DERSequence(v);
+        
+        // Digest twice
+        digester.update(seq.getEncoded());
         digester.update(digester.digest());
-        final String pepsi = toHexString(digester.digest());
-        result.append(LIST_SEPARATOR).append(pepsi);
+        final String pepsi = Hex.toHexString(digester.digest()).toUpperCase();
         if (LOG.isDebugEnabled()) {
             LOG.debug("SIM string PEPSI created: " + pepsi);
         }
-        return result.toString();
+        return pepsi;
     }
 
     /**
@@ -196,7 +234,7 @@ public final class RFC4683Tools {
         final ASN1EncodableVector otherName = new ASN1EncodableVector();
         otherName.add(new ASN1ObjectIdentifier(SUBJECTIDENTIFICATIONMETHOD_OBJECTID));
         final ASN1EncodableVector simVector = new ASN1EncodableVector();
-        simVector.add(new AlgorithmIdentifier(new ASN1ObjectIdentifier(hashAlgorithmIdentifier))); // new DERTaggedObject(true, 0, 
+        simVector.add(new AlgorithmIdentifier(new ASN1ObjectIdentifier(hashAlgorithmIdentifier)));
         simVector.add(new DEROctetString((authorityRandom).getBytes()));
         simVector.add(new DEROctetString((pepsi).getBytes()));
         otherName.add(new DERTaggedObject(true, 0, new DERSequence(simVector)));
@@ -222,7 +260,14 @@ public final class RFC4683Tools {
             // First in sequence is the object identifier, that we must check
             final ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(sequence.getObjectAt(0));
             if (SUBJECTIDENTIFICATIONMETHOD_OBJECTID.equals(id.getId())) {
-                final ASN1Sequence simVector = ASN1Sequence.getInstance(ASN1TaggedObject.getInstance(sequence.getObjectAt(1)).getObject());
+                // Get the PermanentIdentifier sequence
+                ASN1TaggedObject oobj = ASN1TaggedObject.getInstance(sequence.getObjectAt(1));
+                // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
+                ASN1Primitive obj = oobj.getObject();
+                if (obj instanceof ASN1TaggedObject) {
+                    obj = ASN1TaggedObject.getInstance(obj).getObject();
+                }
+                final ASN1Sequence simVector = ASN1Sequence.getInstance(obj);
                 // 1. After certificate issuance the method is called with an algorithm identifier in its ASN.1 sequence.
                 // 2. But after reading a stored certificate (PEM or DER) the ASN.1 sequence contains a DERSeqence instead.
                 String algorithmIdentifier = null;
@@ -245,23 +290,6 @@ public final class RFC4683Tools {
             LOG.debug("SIM parsed from other name: " + result);
         }
         return result;
-    }
-
-    /**
-     * The method generates the HEX string by digestResult. 
-     * @param digestResult the resulting byte[] of the digester.
-     * @return the HEX string.
-     */
-    public static final String toHexString(final byte[] digestResult) {
-        final StringBuffer buf = new StringBuffer(digestResult.length * 2);
-        for (int i = 0; i < digestResult.length; i++) {
-            int intVal = digestResult[i] & 0xff;
-            if (intVal < 0x10) {
-                buf.append("0");
-            }
-            buf.append(Integer.toHexString(intVal).toUpperCase());
-        }
-        return buf.toString();
     }
 
     /** Avoid instantiation. */
