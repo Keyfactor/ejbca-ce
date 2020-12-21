@@ -399,7 +399,7 @@ public final class CesecoreConfiguration {
      * This is a workaround for MS-SQL.
      */
     public static boolean getDatabaseRevokedCertInfoFetchOrdered() {
-        return Boolean.parseBoolean(ConfigurationHolder.getString("database.crlgenfetchordered").toLowerCase());
+        return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
     }
 
     /**
