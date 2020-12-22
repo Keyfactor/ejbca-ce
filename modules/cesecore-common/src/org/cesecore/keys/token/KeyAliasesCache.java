@@ -46,6 +46,12 @@ public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
         lastUpdate = System.currentTimeMillis();
     }
     @Override
+    public void flush() {
+        lastUpdate = 0;
+        super.flush();
+    }
+
+    @Override
     public boolean shouldCheckForUpdates(final int id) {
         if (id == 0) {
             // The whole cache itself needs refresh?
