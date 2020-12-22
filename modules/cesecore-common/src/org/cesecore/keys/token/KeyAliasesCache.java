@@ -21,6 +21,9 @@ import org.cesecore.internal.CommonCacheBase;
  */
 public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
 
+    /** cache time of the overall cache, seeing if we need to re-read aliases */
+    long lastUpdate = 0;
+
     @Override
     public PublicKey getEntry(final Integer id) {
         if (id == null) {
@@ -39,4 +42,21 @@ public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
         return 60000; // Cache key aliases for 60 seconds
     }
 
+    public void updateCacheTimeStamp() {
+        lastUpdate = System.currentTimeMillis();
+    }
+    @Override
+    public boolean shouldCheckForUpdates(final int id) {
+        if (id == 0) {
+            // The whole cache itself needs refresh?
+            final long now = System.currentTimeMillis();
+            if (lastUpdate+getCacheTime()<now) {
+                return true;
+            } else {
+                return false;
+            }
+
+        }
+        return super.shouldCheckForUpdates(id);
+    }
 }
