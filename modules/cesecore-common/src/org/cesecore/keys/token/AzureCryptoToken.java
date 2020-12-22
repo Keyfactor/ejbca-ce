@@ -253,6 +253,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         if (log.isDebugEnabled()) {
             log.debug("getAliases called for crypto token: "+getId()+", "+getTokenName()+", "+getKeyVaultName()+", "+getKeyVaultType()+", "+authorizationHeader);
         }
+        // We have a way to check if the alias cache itself has expired, independent of the individual entries, using id==0
         if (aliasCache.shouldCheckForUpdates(0) || aliasCache.getAllNames().isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("Cache is expired or empty, re-reading aliases: " + aliasCache.getAllNames().size());
@@ -300,7 +301,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                             }
                         }
                         // Put an expiry time on the cache itself (for the topmost if statement here)
-                        newCache.updateWith(0, 0, "aliasCache", AzureCryptoToken.getDummyCacheKey());
+                        newCache.updateCacheTimeStamp();
                         // Swap caches after filling the new one
                         aliasCache = newCache;
                     } else {
