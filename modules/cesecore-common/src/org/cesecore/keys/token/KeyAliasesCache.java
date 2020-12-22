@@ -45,6 +45,7 @@ public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
     public void updateCacheTimeStamp() {
         lastUpdate = System.currentTimeMillis();
     }
+    
     @Override
     public void flush() {
         lastUpdate = 0;
