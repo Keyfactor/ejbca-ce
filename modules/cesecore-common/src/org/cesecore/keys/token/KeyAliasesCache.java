@@ -50,12 +50,7 @@ public class KeyAliasesCache extends CommonCacheBase<PublicKey> {
         if (id == 0) {
             // The whole cache itself needs refresh?
             final long now = System.currentTimeMillis();
-            if (lastUpdate+getCacheTime()<now) {
-                return true;
-            } else {
-                return false;
-            }
-
+            return (lastUpdate+getCacheTime()<now); // true if "now" has passed end of cache time
         }
         return super.shouldCheckForUpdates(id);
     }
