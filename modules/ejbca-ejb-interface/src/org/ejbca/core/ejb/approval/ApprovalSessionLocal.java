@@ -116,7 +116,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
              String endEntityProfileAuthorizationString) throws IllegalQueryException;
      
      /**
-      * Returns a list of non-expired approvals with the given statuses.
+      * Returns a list of non-expired approvals with the given statuses excluding CA related approvals.
       * @param includeUnfinished Includes requests that haven't been executed or rejected yet.
       * @param includeProcessed Includes requests that have been approved and executed, or rejected.
       * @param includeExpired Includes requests that have expired.
