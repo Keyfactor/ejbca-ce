@@ -1621,7 +1621,9 @@ public class EjbcaWS implements IEjbcaWS {
 	    	logAdminName(admin,logger);
 
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userData);
-            endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            if (endEntityInformation.getExtendedInformation() == null) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
             endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
             endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
             final boolean createJKS = userData.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
@@ -1649,7 +1651,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw getInternalException(e, logger);
 		} catch (WaitingForApprovalException e) {
             throw getInternalException(e, logger);
-            // throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
         } finally {
             logger.writeln();
             logger.flush();
