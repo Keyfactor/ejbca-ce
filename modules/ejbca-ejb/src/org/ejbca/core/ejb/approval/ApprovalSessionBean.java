@@ -92,8 +92,6 @@ import org.ejbca.util.query.QueryWrapper;
 
 /**
  * Keeps track of approval requests and their approval or rejects.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -492,7 +490,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             queryWrapper.add(" AND email LIKE '%' || ? || '%'", email);
         }
 
-        queryWrapper.add(" AND approvalType NOT IN (" + ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN + ")");
+        queryWrapper.add(" AND approvalType NOT IN (" + ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN + ")"); // Excluding approval that are not related to RA
 
         final List<ApprovalDataVO> ret = queryInternal(queryWrapper, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString,
                 orderByString);
