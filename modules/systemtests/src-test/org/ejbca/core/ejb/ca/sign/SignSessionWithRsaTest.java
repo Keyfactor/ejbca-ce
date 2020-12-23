@@ -33,10 +33,11 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -452,7 +453,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
@@ -1273,7 +1274,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=testsigalg"), rsakeys.getPublic(), null, rsakeys
                 .getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         byte[] p10bytes = bOut.toByteArray();
@@ -1357,7 +1358,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
                     rsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            DEROutputStream dOut = new DEROutputStream(bOut);
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             dOut.writeObject(req.toASN1Structure());
             dOut.close();
             byte[] p10bytes = bOut.toByteArray();
@@ -1484,7 +1485,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
                     rsakeys.getPrivate(), null);
             bOut = new ByteArrayOutputStream();
-            dOut = new DEROutputStream(bOut);
+            dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             dOut.writeObject(req.toASN1Structure());
             dOut.close();
             p10bytes = bOut.toByteArray();
@@ -1638,7 +1639,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("CN=foo,C=SE,NAME=AnaTom,O=My org"),
                     rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            DEROutputStream dOut = new DEROutputStream(bOut);
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             dOut.writeObject(req.toASN1Structure());
             dOut.close();
             PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
@@ -1709,7 +1710,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"), dsakeys
                 .getPublic(), new DERSet(), dsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
