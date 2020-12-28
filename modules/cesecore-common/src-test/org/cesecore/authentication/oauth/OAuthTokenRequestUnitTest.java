@@ -132,12 +132,6 @@ public class OAuthTokenRequestUnitTest {
         assertEquals("Wrong code", AUTHORIZATION_CODE, params.get("code"));
         assertEquals("Wrong redirect_uri", REDIRECT_URI, params.get("redirect_uri"));
         assertEquals("Wrong client_id", CLIENTID, params.get("client_id"));
-//        final String[] params = requestData.split("&");
-//        for (final String param : params) {
-//            final String[] keyvalue = param.split("=", 2);
-//            final String key = keyvalue[0];
-//            final String value =  keyvalue[1]
-//        }
     }
 
     @Test
