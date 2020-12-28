@@ -54,9 +54,9 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider url to the login page to be updated."));
         registerParameter(new Parameter(NEW_LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider name to be updated"));
-        registerParameter(new Parameter(NEW_CLIENT, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(NEW_REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider realm name to be updated."));
-        registerParameter(new Parameter(NEW_REALM, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(NEW_CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client name for EJBCA in Trusted OAuth Provider to be updated."));
     }
 
