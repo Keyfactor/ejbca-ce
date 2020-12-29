@@ -632,6 +632,8 @@ public class CryptokiDevice {
                                 ASN1String string = (ASN1String) primitive;
                                 if ("curve25519".equalsIgnoreCase(string.getString())) {
                                     oid = EdECObjectIdentifiers.id_Ed25519;
+                                } else if ("Ed25519".equalsIgnoreCase(string.getString())) {
+                                    oid = EdECObjectIdentifiers.id_Ed25519;
                                 } else if ("curve448".equalsIgnoreCase(string.getString())) {
                                     oid = EdECObjectIdentifiers.id_Ed448;
                                 }
