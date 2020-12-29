@@ -163,11 +163,13 @@ public class JackNJI11ProviderTest {
     
     @After
     public void tearDown() throws Exception {
-        // Delete created HSM keys. CryptoToken is never persiste.
-        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
-        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
-        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
-        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
+        // Delete created HSM keys. CryptoToken is never persisted.
+        if (cryptoToken != null) {
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
+            cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
+            cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
+        }
     }
     
     @Test
@@ -223,9 +225,12 @@ public class JackNJI11ProviderTest {
 
             // Try to decrypt it, since this key is generated with Sign only, unwrap is not allowed
             try {
-                final KeyPair decrypted = CryptoTools.decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, encrypted);
+                CryptoTools.decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, encrypted);
             } catch (CKRException e) {
-                assertEquals("Error should be that function is not permitted", CKR.KEY_FUNCTION_NOT_PERMITTED, e.getCKR());
+                // Error should be that function is not permitted, but can be GENERAL_ERROR as well, or KEY_TYPE_INCONSISTENT
+                if (e.getCKR() != CKR.KEY_FUNCTION_NOT_PERMITTED && e.getCKR() != CKR.GENERAL_ERROR && e.getCKR() != CKR.KEY_TYPE_INCONSISTENT) {
+                    fail("There should be an that function is not permitted/working (KEY_FUNCTION_NOT_PERMITTED/104 or GENERAL_ERROR/5 or KEY_TYPE_INCONSISTENT/99), but was " + e.getCKR());                    
+                }
             }
         }
 
