@@ -169,7 +169,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         final PrivateKey privateKey = slot.getReleasableSessionPrivateKey(alias);
         if (privateKey == null) {
             final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
-            log.error(msg);
+            log.warn(msg);
             throw new CryptoTokenOfflineException(msg);
         }
         return privateKey;
