@@ -1093,7 +1093,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             }
         } catch (Exception e) {
-            log.info("Administrator " + authenticationToken.toString() + " tries to list pkcs#11 slots using token label. Failed with: ", e);
+            log.info("Administrator " + authenticationToken.toString() + " tries to list PKCS#11 slots using token label for P11 library '" + currentCryptoToken.getP11Library() + "'. Failed with: ", e);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Unable to retrieve token labels.", ""));
         }
