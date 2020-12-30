@@ -1127,6 +1127,19 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             }
             if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) ||
                 availableCryptoToken.getClassPath().equals(CryptoTokenFactory.JACKNJI_NAME)) {
+                // Never expose the PKCS11 or "PKCS11 NG" crypto tokens when creating new tokens if not enabled in web.properties
+                if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) && !WebConfiguration.isSunP11Enabled()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("SunP11 Crypto Token support is not enabled in GUI. See web.properties for enabling Sun PKCS#11.");
+                    }
+                    continue;                    
+                }
+                if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.JACKNJI_NAME) && !WebConfiguration.isP11NGEnabled()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("P11NG Crypto Token support is not enabled in GUI. See web.properties for enabling PKCS#11 NG.");
+                    }
+                    continue;                    
+                }
                 // Special case: Never expose the PKCS11CryptoToken when creating new tokens if no libraries are detected
                 if (!isAnyP11LibraryAvailable()) {
                     if (log.isDebugEnabled()) {

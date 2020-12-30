@@ -328,6 +328,16 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("awskms.cryptotoken.enabled"));
     }
 
+    /** @return true if we have SunP11 Crypto Token enabled in the Admin GUI. */
+    public static boolean isSunP11Enabled(){
+        return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true
+    }
+
+    /** @return true if we have P11NG Crypto Token enabled in the Admin GUI. */
+    public static boolean isP11NGEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("p11ng.cryptotoken.enabled"));
+    }
+
     public static String getStatedumpTemplatesBasedir() {
         return EjbcaConfigurationHolder.getString("statedump.templatebasedir");
     }
