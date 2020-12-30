@@ -146,6 +146,13 @@ public class OAuthTokenRequest {
         post.setEntity(new UrlEncodedFormEntity(params));
         try (CloseableHttpResponse response = httpClient.execute(post)) {
             if (response.getStatusLine().getStatusCode() != 200) {
+                final HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    final byte[] responseBytes = FileTools.readStreamToByteArray(entity.getContent(), -1, maxResponseBytes);
+                    String content = new String(responseBytes, StandardCharsets.UTF_8);
+                    log.info("Failed to get token from authorization server. HTTP status code " + response.getStatusLine().getStatusCode()
+                            + " response content " + content);
+                }
                 throw new IOException("Failed to get token from authorization server. HTTP status code " + response.getStatusLine().getStatusCode());
             }
             final Header[] contentType = response.getHeaders(MIME.CONTENT_TYPE);
