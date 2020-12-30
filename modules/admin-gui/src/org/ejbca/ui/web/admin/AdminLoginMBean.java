@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthTokenRequest;
-import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 
@@ -140,6 +140,15 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             throwables = (List<Throwable>) requestMap.get(CaExceptionHandlerFactory.REQUESTMAP_KEY);
             requestMap.remove(CaExceptionHandlerFactory.REQUESTMAP_KEY);
         }
+        if (CollectionUtils.isNotEmpty(throwables)) {
+            for (final Throwable throwable : throwables) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error occurred.", throwable);
+                }
+                errorMessage = ejbcaWebBean.getText("CAUSE") + ": " + throwable.getMessage();
+            }
+        }
+
         if (error != null) {
             log.info("Server reported user authentication failure: " + error.replaceAll("[^a-zA-Z0-9_]", "")); // sanitize untrusted parameter
             if (verifyStateParameter(state)) {
@@ -148,24 +157,34 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 log.info("Received 'error' parameter without valid 'state' parameter.");
                 errorMessage = "Internal error.";
             }
-        } else if (CollectionUtils.isEmpty(throwables)) {
-            log.debug("No exception thrown.");
-            for (final Throwable throwable : throwables) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error occurred.", throwable);
-                }
-                errorMessage = ejbcaWebBean.getText("CAUSE") + ": " + throwable.getMessage();
-            }
-        } else if (StringUtils.isNotEmpty(authCode)) {
-            log.debug("Received authorization code. Requesting token from authorization server.");
-            if (verifyStateParameter(state)) {
+        }
+        else if (StringUtils.isNotEmpty(authCode)) {
+            requestTokenUsingCode(servletRequest, params);
+        } else {
+            log.debug("Generating randomized 'state' string.");
+            final byte[] stateBytes = new byte[32];
+            new SecureRandom().nextBytes(stateBytes);
+            stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
+            initOauthProviderUrls();
+            log.debug("Showing login links.");
+        }
+    }
+
+    private void requestTokenUsingCode(HttpServletRequest servletRequest, Map<String, String> params) throws IOException {
+        log.debug("Received authorization code. Requesting token from authorization server.");
+        final String authCode = params.get("code");
+        final String state = params.get("state");
+        if (verifyStateParameter(state)) {
+            final String provider = params.get("provider");
+            log.debug("Provider:" + provider);
+            OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getGlobalConfiguration().getOauthKeyByKeyIdentifier(provider);
+            if (oAuthKeyInfo != null) {
                 final OAuthTokenRequest request = new OAuthTokenRequest();
-                request.setUri("http://localhost:8049/auth/realms/EJBCA/protocol/openid-connect/token");
-                request.setClientId("EJBCAAdminWeb"); // TODO configuration
-                request.setRedirectUri("https://localhost:8442/ejbca/adminweb/"); // TODO configuration
+                request.setUri(oAuthKeyInfo.getUrl() + "/realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token");
+                request.setClientId(oAuthKeyInfo.getClient());
+                request.setRedirectUri(getRedirectUri(oAuthKeyInfo));
                 final OAuthGrantResponseInfo token = request.execute(authCode);
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
-                    log.info("XXX RECEIVED TOKEN " + token.getAccessToken()); // XXX remove me
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
                     FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
                 } else {
@@ -173,16 +192,23 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                     errorMessage = "Internal error.";
                 }
             } else {
-                log.info("Received 'code' parameter without valid 'state' parameter.");
-                errorMessage = "Internal error.";
+                log.info("Received provider identifier does not correspond to existing oauth providers. Key indentifier = " + provider);
+                errorMessage = "Internal error";
             }
         } else {
-            log.debug("Generating randomized 'state' string.");
-            final byte[] stateBytes = new byte[32];
-            new SecureRandom().nextBytes(stateBytes);
-            stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
-            log.debug("Showing login links.");
+            log.info("Received 'code' parameter without valid 'state' parameter.");
+            errorMessage = "Internal error.";
         }
+    }
+
+    private String getRedirectUri(OAuthKeyInfo oAuthKeyInfo) {
+        String baseUrl = ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
+                "https",
+                WebConfiguration.getHostName(),
+                WebConfiguration.getPublicHttpsPort()
+        ) + ejbcaWebBean.getGlobalConfiguration().getAdminWebPath();
+        log.info(" baseUrl " + baseUrl);
+        return baseUrl + "?provider="+oAuthKeyInfo.getKeyIdentifier();
     }
 
     private boolean verifyStateParameter(final String state) {
@@ -196,34 +222,47 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
      */
     public Collection<OAuthKeyInfoGui> getAllOauthKeys() {
         if (oauthKeys == null) {
-            oauthKeys = new ArrayList<>();
-            ejbcaWebBean.reloadGlobalConfiguration();
-            GlobalConfiguration globalConfiguration = ejbcaWebBean.getGlobalConfiguration();
-            Collection<OAuthKeyInfo> oAuthKeyInfos = globalConfiguration.getOauthKeys().values();
-            if (!oAuthKeyInfos.isEmpty()) {
-                for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
-                    if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
-                        String url = oauthKeyInfo.getUrl();
-                        if (StringUtils.isNotEmpty(oauthKeyInfo.getRealm())) {
-                            url = new StringBuilder()
-                                    .append(oauthKeyInfo.getUrl()).append("/realms/")
-                                    .append(oauthKeyInfo.getRealm())
-                                    .append("/protocol/openid-connect/auth").toString();
-                        }
-                        UriBuilder uriBuilder = UriBuilder.fromUri(url);
-                        if (StringUtils.isNotEmpty(oauthKeyInfo.getClient())) {
-                            uriBuilder
-                                    .queryParam("client_id", oauthKeyInfo.getClient());
-                        }
-                        uriBuilder
-                                .queryParam("response_type", "code")
-                                .queryParam("state", stateInSession);
-                        oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getShowName(), uriBuilder.build().toString()));
-                    }
+            initOauthProviderUrls();
+        }
+        return oauthKeys;
+    }
+
+    private void initOauthProviderUrls() {
+        oauthKeys = new ArrayList<>();
+        ejbcaWebBean.reloadGlobalConfiguration();
+        Collection<OAuthKeyInfo> oAuthKeyInfos = ejbcaWebBean.getGlobalConfiguration().getOauthKeys().values();
+        if (!oAuthKeyInfos.isEmpty()) {
+            for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
+                if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
+                    String url = getOauthLoginUrl(oauthKeyInfo);
+                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getShowName(), url));
                 }
             }
         }
-        return oauthKeys;
+    }
+
+    private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
+        String url = oauthKeyInfo.getUrl();
+        if (StringUtils.isNotEmpty(oauthKeyInfo.getRealm())) {
+            url = new StringBuilder()
+                    .append(oauthKeyInfo.getUrl()).append("/realms/")
+                    .append(oauthKeyInfo.getRealm())
+                    .append("/protocol/openid-connect/auth").toString();
+        }
+        return addParametersToUrl(oauthKeyInfo, url);
+    }
+
+    private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url) {
+        UriBuilder uriBuilder = UriBuilder.fromUri(url);
+        if (StringUtils.isNotEmpty(oauthKeyInfo.getClient())) {
+            uriBuilder
+                    .queryParam("client_id", oauthKeyInfo.getClient());
+        }
+        uriBuilder
+                .queryParam("response_type", "code")
+                .queryParam("redirect_uri", getRedirectUri(oauthKeyInfo))
+                .queryParam("state", stateInSession);
+        return uriBuilder.build().toString();
     }
 
 }
