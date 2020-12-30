@@ -48,6 +48,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyGenParams;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
@@ -68,13 +69,6 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /** Keys, specific to PKCS#11, that can be defined in CA token properties */
-    public static final String SLOT_LABEL_VALUE = "slotLabelValue";
-    public static final String SLOT_LABEL_TYPE = "slotLabelType";
-    public static final String SHLIB_LABEL_KEY = "sharedLibrary";
-    public static final String ATTRIB_LABEL_KEY = "attributesFile";
-    public static final String PASSWORD_LABEL_KEY = "pin";
-
     protected CryptokiDevice.Slot slot;
 
     private String sSlotLabel = null;
@@ -96,9 +90,9 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         // Don't auto activate this right away, we must dynamically create the auth-provider with a slot
         setProperties(properties);
         init(properties, false, id);
-        sSlotLabel = getSlotLabel(SLOT_LABEL_VALUE, properties);
-        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
-        String sharedLibrary = properties.getProperty(SHLIB_LABEL_KEY);
+        sSlotLabel = getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_VALUE, properties);
+        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_TYPE, properties));
+        String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
 
         String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
         String libraryFileName = sharedLibrary.substring(sharedLibrary.lastIndexOf("/") + 1, sharedLibrary.length());

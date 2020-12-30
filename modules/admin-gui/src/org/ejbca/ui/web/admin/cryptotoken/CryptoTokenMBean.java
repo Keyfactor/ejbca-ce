@@ -207,6 +207,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
         }
 
+        public boolean isP11NG() {
+            return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
+        }
+
         public boolean isAzureType() {
             return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType());
         }
