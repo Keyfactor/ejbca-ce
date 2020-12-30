@@ -28,10 +28,10 @@ public class CK_CP5_AUTHORIZE_PARAMS extends Structure {
     }
 
     @Override
-    protected List<?> getFieldOrder() {
+    protected List<String> getFieldOrder() {
         return Arrays.asList("ulCount");
     }
-    
+
     public CK_CP5_AUTHORIZE_PARAMS(Pointer peer) {
         super(peer);
     }
