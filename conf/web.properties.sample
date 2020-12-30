@@ -312,9 +312,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #p11ng.cryptotoken.enabled=true
 
 #
-# Enable P11NG CP5 specific functions in the Admin UI
-# Default: false (not enabled)
-#p11ng.utimacocp5.enabled=true
+# Utimaco CP5 specific functions are disabled in the Admin UI
 
 #
 # Enable usage of SunP11 Crypto Token in the Admin UI
