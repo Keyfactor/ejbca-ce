@@ -435,6 +435,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
         }
 
+        public boolean isShowP11NGCryptoToken() {
+            return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
+        }
+
         public boolean isShowAzureCryptoToken() {
             return AzureCryptoToken.class.getSimpleName().equals(getType());
         }
@@ -447,9 +451,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return p11SlotLabelType.equals(Pkcs11SlotLabelType.SLOT_LABEL);
         }
 
-        // If CP5 crypto token
+        // If P11NG crypto token and Utimaco CP5 functions enabled
         public boolean isShowAuthorizationInfo() {
-            return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
+            return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType()) && WebConfiguration.isP11NGUtimacoCP5Enabled();
         }
     }
 
@@ -700,7 +704,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         return Arrays.asList(
                 new SelectItem(null, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU")),
                 new SelectItem(KeyPairTemplate.SIGN, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGN")),
-                new SelectItem(KeyPairTemplate.ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC")));
+                new SelectItem(KeyPairTemplate.ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC")),
+                new SelectItem(KeyPairTemplate.SIGN_ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGENC")));
     }
 
     /**
