@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -590,6 +591,14 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public LinkedHashMap<Integer,OAuthKeyInfo> getOauthKeys() {
         final Map<Integer,OAuthKeyInfo> ret = (Map<Integer,OAuthKeyInfo>)data.get(OAUTH_KEYS);
         return (ret == null ? new LinkedHashMap<>() : new LinkedHashMap<>(ret));
+    }
+
+    public OAuthKeyInfo getOauthKeyByKeyIdentifier(String keyIdentifier){
+        LinkedHashMap<Integer, OAuthKeyInfo> oauthKeys = getOauthKeys();
+        final Optional<OAuthKeyInfo> optionalEntry = oauthKeys.values().stream().filter(
+        oauthInfo ->
+                oauthInfo.getKeyIdentifier().equals(keyIdentifier)).findFirst();
+        return optionalEntry.orElse(null);
     }
 
     /** Sets the available OAuth keys */
