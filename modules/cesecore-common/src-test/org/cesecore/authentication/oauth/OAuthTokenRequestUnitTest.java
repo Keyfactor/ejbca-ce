@@ -49,8 +49,6 @@ import org.junit.Test;
 
 /**
  * Test of {@link OAuthTokenRequest}
- * 
- * @version $Id$
  */
 public class OAuthTokenRequestUnitTest {
 
