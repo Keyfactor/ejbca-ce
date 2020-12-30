@@ -84,6 +84,8 @@ public class QcStatement extends StandardCertificateExtension {
     public static final String id_etsi_psd2_role_psp_ai = "0.4.0.19495.1.3";
     public static final String id_etsi_psd2_role_psp_ic = "0.4.0.19495.1.4";
     
+    public static final String id_esi4_qcStatement_7 = "0.4.0.1862.1.7";
+    
     private static final Map<String, String> psd2RoleIdNameMap = new HashMap<>();
     static {
         psd2RoleIdNameMap.put("PSP_AS", id_etsi_psd2_role_psp_as);
@@ -239,6 +241,20 @@ public class QcStatement extends StandardCertificateExtension {
             }            
         }
         
+        // ETSI legal countries for qualified certificates:
+        // esi4-qcStatement-7 QC-STATEMENT ::= { SYNTAX QcCClegislation IDENTIFIED BY id-etsi-qcsQcCClegislation }
+        // id-etsi-qcs-QcCClegislation OBJECT IDENTIFIER ::= { id-etsi-qcs 7 }
+        // QcCClegislation ::= SEQUENCE OF CountryName
+        // CountryName ::= PrintableString (SIZE (2)) (CONSTRAINED BY { -- ISO 3166-1 [6] alpha-2 codes only -- })
+        if (certProfile.getUseQCCountries() && !StringUtils.isEmpty(certProfile.getQCCountriesString())) {
+            final ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(id_esi4_qcStatement_7);
+            final ASN1EncodableVector vector = new ASN1EncodableVector();
+            for (String country : certProfile.getQCCountriesString().split(",")) {
+                vector.add(new DERPrintableString(country));
+            }
+            qc = new QCStatement(oid, new DERSequence(vector));
+            qcs.add(qc);         
+        }
         
 		// Custom UTF8String QC-statement:
 		// qcStatement-YourCustom QC-STATEMENT ::= { SYNTAX YourCustomUTF8String
