@@ -247,6 +247,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                         prof.getUseQCPSD2(),
                         !StringUtils.isEmpty(prof.getQCEtsiType()),
                         prof.getQCEtsiPds() != null && prof.getQCEtsiPds().size() > 0 && !(prof.getQCEtsiPds().size() == 1 && prof.getQCEtsiPds().get(0).getUrl() == null),
+                        prof.getUseQCCountries() && prof.getQCCountriesString() != null && prof.getQCCountriesString().length() > 0,
                         prof.getUseQCCustomString() && !prof.getQCCustomStringOid().isEmpty() && !prof.getQCCustomStringText().isEmpty()
                 };
                 // Check that at least one QC statement is used
@@ -984,6 +985,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseQCEtsiRetentionPeriod(!getCertificateProfile().getUseQCEtsiRetentionPeriod());
     }
 
+    public void toggleUseQCCountriesString() throws IOException {
+        getCertificateProfile().setUseQCCountries(!getCertificateProfile().getUseQCCountries());
+    }
+    
     public void toggleUseQCCustomString() throws IOException {
         getCertificateProfile().setUseQCCustomString(!getCertificateProfile().getUseQCCustomString());
     }
