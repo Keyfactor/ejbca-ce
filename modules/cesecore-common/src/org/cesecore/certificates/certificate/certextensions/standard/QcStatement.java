@@ -14,6 +14,8 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,6 @@ import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
 import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
-import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -86,12 +87,40 @@ public class QcStatement extends StandardCertificateExtension {
     
     public static final String id_esi4_qcStatement_7 = "0.4.0.1862.1.7";
     
+    public static final String id_etsi_qcs_semanticsId_Natural = "0.4.0.194121.1.1";
+    public static final String id_etsi_qcs_semanticsId_Legal = "0.4.0.194121.1.2";
+    public static final String id_etsi_qcs_semanticsId_eIDASNatural = "0.4.0.194121.1.3";
+    public static final String id_etsi_qcs_semanticsId_eIDASLegal = "0.4.0.194121.1.4";
+    
+    private static final List<String> availableSemanticsOids;
+    
     private static final Map<String, String> psd2RoleIdNameMap = new HashMap<>();
+    
     static {
+        final List<String> sematicsOids = new ArrayList<>();
+        sematicsOids.add(id_etsi_qcs_semanticsId_Natural);
+        sematicsOids.add(id_etsi_qcs_semanticsId_Legal);
+//        sematicsOids.add(id_etsi_qcs_semanticsId_eIDASNatural);
+//        sematicsOids.add(id_etsi_qcs_semanticsId_eIDASLegal);
+        availableSemanticsOids = Collections.unmodifiableList(sematicsOids);
+        
         psd2RoleIdNameMap.put("PSP_AS", id_etsi_psd2_role_psp_as);
         psd2RoleIdNameMap.put("PSP_PI", id_etsi_psd2_role_psp_pi);
         psd2RoleIdNameMap.put("PSP_AI", id_etsi_psd2_role_psp_ai);
         psd2RoleIdNameMap.put("PSP_IC", id_etsi_psd2_role_psp_ic);
+    }
+    
+    /**
+     * Returns the available semantics OIDs 0.4.0.194121.1.*. for the ETSI semantics 
+     * information QC certificate extension (id-qcs-pkixQCSyntax-v1 or id-qcs-pkixQCSyntax-v2).
+     * 
+     * @see https://tools.ietf.org/html/rfc3039
+     * @see https://tools.ietf.org/html/rfc3739
+     * 
+     * @return the list of OIDs.
+     */
+    public static List<String> getAvailableSemanticsOids() {
+        return availableSemanticsOids;
     }
     
     /** @return the ETSI PSD2 role OID of the corresponding given role name */
@@ -111,30 +140,31 @@ public class QcStatement extends StandardCertificateExtension {
 		DERSequence ret = null;
 		final String names = certProfile.getQCStatementRAName();
 		final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
-		SemanticsInformation si = null;
+		ExtendedSemanticsInformation si = null;
 		if (san != null) {
-			if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-				si = new SemanticsInformation(new ASN1ObjectIdentifier(certProfile.getQCSemanticsId()), san.getNames());
+			if (StringUtils.isNotEmpty(certProfile.getQCSemanticsIds())) {
+			    final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(";")));
+				si = new ExtendedSemanticsInformation(oids, san.getNames());
 			} else {
-				si = new SemanticsInformation(san.getNames());                     
+				si = new ExtendedSemanticsInformation(san.getNames());                     
 			}
-		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-			si = new SemanticsInformation(new ASN1ObjectIdentifier(certProfile.getQCSemanticsId()));                 
+		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsIds())) {
+			final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(";")));
+			si = new ExtendedSemanticsInformation(oids);                 
 		}
 		final ArrayList<QCStatement> qcs = new ArrayList<>();
 		QCStatement qc = null;
 		// First the standard rfc3739 QCStatement with an optional SematicsInformation
-		// We never add RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1. This is so old so we think it has never been used in the wild basically.
-		// That means no need to have code we have to maintain for that.
+		// We never add RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1. This is so old so we 
+		// think it has never been used in the wild basically. That means no need to have code 
+		// we have to maintain for that.
 		if (certProfile.getUsePkixQCSyntaxV2()) {
-		    ASN1ObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2;
-	        if ( (si != null)  ) {
-	            qc = new QCStatement(pkixQcSyntax, si);
-	            qcs.add(qc);
+	        if (si != null) {
+	            qc = new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si);
 	        } else {
-	            qc = new QCStatement(pkixQcSyntax);
-	            qcs.add(qc);
+	            qc = new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2);
 	        }
+	        qcs.add(qc);
 		}
 		// ETSI Statement that the certificate is a Qualified Certificate
 		if (certProfile.getUseQCEtsiQCCompliance()) {
@@ -283,5 +313,14 @@ public class QcStatement extends StandardCertificateExtension {
 		    throw new CertificateExtensionException("If qualified certificate statements extension has been enabled, at least one statement must be included!");
 		}
 		return ret;
-    }	
+    }
+    
+    private List<ASN1ObjectIdentifier> createOidList(final List<String> oidStrings) {
+    	final List<ASN1ObjectIdentifier> oids = new ArrayList<>();
+        for (String oid : oidStrings) {
+            oids.add(new ASN1ObjectIdentifier(oid));
+        }
+        return oids;
+    }
+    
 }
