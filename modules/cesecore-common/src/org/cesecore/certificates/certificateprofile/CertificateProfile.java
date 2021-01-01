@@ -515,7 +515,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUsePkixQCSyntaxV2(false);
         setQCStatementCritical(false);
         setQCStatementRAName(null);
-        setQCSemanticsId(null);
+        setQCSemanticsIds(null);
         setUseQCEtsiQCCompliance(false);
         setUseQCEtsiSignatureDevice(false);
         setUseQCEtsiValueLimit(false);
@@ -2000,12 +2000,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
-    /** @return String with SemanticsId or empty string */
-    public String getQCSemanticsId() {
+    /** @return String with semicolon separated list of SemanticsIds or empty string */
+    public String getQCSemanticsIds() {
         return (String) data.get(QCSSEMANTICSID);
     }
 
-    public void setQCSemanticsId(String qcsemanticsid) {
+    public void setQCSemanticsIds(String qcsemanticsid) {
         if (qcsemanticsid == null) {
             data.put(QCSSEMANTICSID, "");
         } else {
@@ -3165,7 +3165,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUsePkixQCSyntaxV2(false);
                 setQCStatementCritical(false);
                 setQCStatementRAName(null);
-                setQCSemanticsId(null);
+                setQCSemanticsIds(null);
                 setUseQCEtsiQCCompliance(false);
                 setUseQCEtsiSignatureDevice(false);
                 setUseQCEtsiValueLimit(false);

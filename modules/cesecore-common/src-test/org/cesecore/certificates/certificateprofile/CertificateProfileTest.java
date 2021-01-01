@@ -134,7 +134,7 @@ public class CertificateProfileTest {
         assertEquals(false, prof.getUsePkixQCSyntaxV2());
         assertEquals(false, prof.getQCStatementCritical());
         assertEquals("", prof.getQCStatementRAName());
-        assertEquals("", prof.getQCSemanticsId());
+        assertEquals("", prof.getQCSemanticsIds());
         assertEquals(false, prof.getUseQCEtsiQCCompliance());
         assertEquals(false, prof.getUseQCEtsiSignatureDevice());
         assertEquals(false, prof.getUseQCEtsiValueLimit());
@@ -233,7 +233,7 @@ public class CertificateProfileTest {
         assertFalse(profile.getUseQCStatement());
         assertFalse(profile.getQCStatementCritical());
         assertFalse(profile.getUsePkixQCSyntaxV2());
-        assertEquals("", profile.getQCSemanticsId());
+        assertEquals("", profile.getQCSemanticsIds());
         assertFalse(profile.getUseQCEtsiQCCompliance());
         assertFalse(profile.getUseQCEtsiSignatureDevice());
         assertFalse(profile.getUseQCEtsiValueLimit());
@@ -259,8 +259,8 @@ public class CertificateProfileTest {
         profile.setUsePkixQCSyntaxV2(true);
         assertEquals("Use PKIX QC syntax V2 does not match.", profile.getUsePkixQCSyntaxV2(), true);
         
-        profile.setQCSemanticsId("0.4.0.194121.1.2");
-        assertEquals("QC semantics OID does not match.", profile.getQCSemanticsId(), "0.4.0.194121.1.2");
+        profile.setQCSemanticsIds("0.4.0.194121.1.2");
+        assertEquals("QC semantics OID does not match.", profile.getQCSemanticsIds(), "0.4.0.194121.1.2");
         
         profile.setUseQCEtsiQCCompliance(true);
         assertEquals("Use QC ETSI QC compliance does not match.", profile.getUseQCEtsiQCCompliance(), true);
@@ -600,7 +600,7 @@ public class CertificateProfileTest {
         CertificatePolicy pol = l.get(0);
         assertEquals("2.5.29.32.0", pol.getPolicyID() );
         assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
-        String qcId = ep.getQCSemanticsId();
+        String qcId = ep.getQCSemanticsIds();
         assertEquals("", qcId);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         l = cp.getCertificatePolicies();
@@ -618,10 +618,11 @@ public class CertificateProfileTest {
         pol = l.get(1);
         assertEquals("1.1.1.1.1", pol.getPolicyID());
         assertEquals(CertificateProfile.LATEST_VERSION, cp.getLatestVersion(),0);
-        assertEquals("", cp.getQCSemanticsId());
-        cp.setQCSemanticsId("1.1.1.2");
-        assertEquals("1.1.1.2", cp.getQCSemanticsId());
-        
+        assertEquals("", cp.getQCSemanticsIds());
+        cp.setQCSemanticsIds("1.1.1.2");
+        assertEquals("1.1.1.2", cp.getQCSemanticsIds());
+        cp.setQCSemanticsIds("1.1.1.2;1.1.1.3");
+        assertEquals("1.1.1.2;1.1.1.3", cp.getQCSemanticsIds());
         assertNull(cp.getSignatureAlgorithm()); // default value null = inherit from CA
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
