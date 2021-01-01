@@ -1545,17 +1545,20 @@
                     <h:outputLabel for="checkpkixqcsyntaxv2"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
-
-                <h:outputLabel for="textfieldqcsemanticsid"
-                    value="#{web.text.EXT_PKIX_QCS_SEMANTICSID}"
-                    rendered="#{certProfileBean.certificateProfile.useQCStatement}"
-                    styleClass="subItem" />
-                <h:inputText id="textfieldqcsemanticsid"
-                    value="#{certProfileBean.certificateProfile.QCSemanticsId}"
-                    size="20" maxlength="255"
-                    title="#{web.text.FORMAT_OID}"
-                    rendered="#{certProfileBean.certificateProfile.useQCStatement}"
-                    disabled="#{certProfileBean.viewOnly}" />
+                
+               	<h:outputLabel for="selectqcsemanticsid"
+                   	value="#{web.text.EXT_PKIX_QCS_SEMANTICSID}"
+                   	rendered="#{certProfileBean.certificateProfile.useQCStatement}"
+                   	styleClass="subItem" />
+                   <h:selectManyListbox styleClass="select-list"
+                       id="selectqcsemanticsid"
+                       value="#{certProfileBean.QCSemanticsOids}"
+                       size="4"
+                       rendered="#{certProfileBean.certificateProfile.useQCStatement}"
+                   	disabled="#{certProfileBean.viewOnly}">
+                       <f:selectItems
+                           value="#{certProfileBean.QCSemanticsOidsAvailable}" />
+                   </h:selectManyListbox>
 
                 <h:outputLabel for="textfieldqcstatementraname"
                     value="#{web.text.EXT_PKIX_QCS_NAMERAS}"
