@@ -1686,7 +1686,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Calling pkcs10Request with a malformed PKCS#10 request should throw an exception.");
         } catch(EjbcaException_Exception e) {
-            assertTrue(e.getMessage().contains("Fault occurred while processing"));
+            assertTrue("Not expected error message: " + e.getMessage(), e.getMessage().contains("Fault occurred while processing"));
         }
         // Tbd: Test CADoesntExistsException (not possible anymore because of NPE in changeUser (checks DB foreign key references now!).
         // Tbd: Test AuthorizationDeniedException (where possible).
