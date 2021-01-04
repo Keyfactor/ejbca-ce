@@ -71,7 +71,8 @@ import org.cesecore.util.StringTools;
                 @ColumnResult(name = "endEntityProfileId"),
                 @ColumnResult(name = "updateTime"),
                 @ColumnResult(name = "subjectKeyId"),
-                @ColumnResult(name = "subjectAltName") }),
+                @ColumnResult(name = "subjectAltName"),
+                @ColumnResult(name = "accountBindingId") }),
         @SqlResultSetMapping(name = "CertificateInfoSubset2", columns = {
                 @ColumnResult(name = "fingerprint"),
                 @ColumnResult(name = "subjectDN"),
@@ -88,7 +89,8 @@ import org.cesecore.util.StringTools;
                 @ColumnResult(name = "endEntityProfileId"),
                 @ColumnResult(name = "updateTime"),
                 @ColumnResult(name = "subjectKeyId"),
-                @ColumnResult(name = "subjectAltName") }),
+                @ColumnResult(name = "subjectAltName"),
+                @ColumnResult(name = "accountBindingId") }),
         @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = {
                 @ColumnResult(name = "fingerprint"),
                 @ColumnResult(name = "username") }) })
@@ -98,7 +100,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     private static final Logger log = Logger.getLogger(CertificateData.class);
 
-    private static final int LATEST_PROTECT_VERSON = 5;
+    private static final int LATEST_PROTECT_VERSON = 6;
 
     private String issuerDN;
     private String subjectDN;
@@ -120,10 +122,11 @@ public class CertificateData extends BaseCertificateData implements Serializable
     private Integer crlPartitionIndex = null; // @since EJBCA 7.1.0
     private long updateTime = 0;
     private String subjectKeyId;
+    private String accountBindingId;    // @since EJBCA 7.5.0
     private String certificateRequest;  // @since EJBCA 7.0.0
     private int rowVersion = 0;
     private String rowProtection;
-
+    
     /**
      * Entity holding info about a certificate. Create by sending in the certificate, which extracts (from the cert) fingerprint (primary key),
      * subjectDN, issuerDN, serial number, expiration date. Status, Type, CAFingerprint, revocationDate and revocationReason are set to default values
@@ -212,6 +215,12 @@ public class CertificateData extends BaseCertificateData implements Serializable
             throw new RuntimeException(msg);
         }
     }
+    
+    public CertificateData(Certificate certificate, PublicKey enrichedpubkey, String username, String cafp, String certificateRequest, int status, int type, int certprofileid, int endEntityProfileId,
+            int crlPartitionIndex, String tag, long updatetime, boolean storeCertificate, boolean storeSubjectAltName, String accountBindingId) {
+        this(certificate, enrichedpubkey, username, cafp, certificateRequest, status, type, certprofileid, endEntityProfileId, crlPartitionIndex, tag, updatetime, storeCertificate, storeSubjectAltName);
+        setAccountBindingId(accountBindingId);
+    }
 
     /**
      * Copy Constructor
@@ -236,6 +245,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         setEndEntityProfileId(copy.getEndEntityProfileId());
         setCrlPartitionIndex(copy.getCrlPartitionIndex());
         setSubjectKeyId(copy.getSubjectKeyId());
+        setAccountBindingId(copy.getAccountBindingId());
         setTag(copy.getTag());
         setRowVersion(copy.getRowVersion());
         setRowProtection(copy.getRowProtection());
@@ -465,6 +475,18 @@ public class CertificateData extends BaseCertificateData implements Serializable
     }
     
     @Override
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
+    /**
+     * The ID of the account binding, i.E. ACME EAB.
+     */
+    public void setAccountBindingId(String accountBindingId) {
+        this.accountBindingId = accountBindingId;
+    }
+    
+    @Override
     public int getRowVersion() {
         return rowVersion;
     }
@@ -671,6 +693,9 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (!StringUtils.equals(certificateRequest, certificateData.certificateRequest)) {
             return false;
         }
+        if (!StringUtils.equals(accountBindingId, certificateData.accountBindingId)) {
+            return false;
+        }
         return true;
     }
 
@@ -733,6 +758,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         protectionStringBuilder.append(getFingerprint()).append(getIssuerDN());
+        if (version > 6) {
+        	// In version 6 (EJBCA 7.5.0) the accountBindingId column is added
+            protectionStringBuilder.append(getAccountBindingId());
+        }
         if (version >= 5) {
             // In version 5 (EJBCA 7.1.0) the crlPartitionIndex column is added
             protectionStringBuilder.append(getCrlPartitionIndex());

@@ -10,26 +10,34 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.acme;
-
-import javax.ejb.Local;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.config.AcmeConfiguration;
+package org.ejbca.core.protocol.acme.eab;
 
 /**
- * ACME configuration handling business logic.
+ * Custom exception for ACME EAB message parsing.
+ * 
+ * @version $Id$
  */
-@Local
-public interface AcmeConfigurationSessionLocal {
+public class AcmeEabRequestParsingException extends Exception {
+
+    private static final long serialVersionUID = 978259700029353969L;
 
     /**
-     * Get the ACME Configuration settings for the requested alias.
-     * @param authenticationToken an authentication token authorizing the retrieval of the end entity profile and CAA identifiers
-     * @param configurationAlias (allows the direct path param form ending in '/')
-     * @return the requested Acme Configuration
-     * @throws AcmeProblemException if the requested configuration does not exist
+     * Default constructor.
+     * 
+     * @param message the human readable message.
+     * @param cause the nested exception.
      */
-    AcmeConfiguration getAcmeConfiguration(AuthenticationToken authenticationToken, String configurationAlias) throws AcmeProblemException;
+    public AcmeEabRequestParsingException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Default constructor.
+     * 
+     * @param message the human readable message.
+     */
+    public AcmeEabRequestParsingException(String message) {
+        super(message);
+    }
 
 }
