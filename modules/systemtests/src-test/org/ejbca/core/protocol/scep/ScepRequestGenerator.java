@@ -111,7 +111,7 @@ public class ScepRequestGenerator {
         // AltNames
         final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
         final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
+        final ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         try {
             dOut.writeObject(san);
         } catch (IOException e) {

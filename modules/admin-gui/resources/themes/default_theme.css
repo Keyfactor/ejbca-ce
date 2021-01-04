@@ -398,7 +398,10 @@ table.grid table td {
 	display: block;
 	text-align: right;
 }
-
+.fixBlankRow tr:first-child:not(.Row0) td:empty {
+	padding: 0;
+	border: 0;
+}
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT > FORMS */
