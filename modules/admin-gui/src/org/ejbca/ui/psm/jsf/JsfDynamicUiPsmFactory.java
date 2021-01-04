@@ -14,7 +14,6 @@ package org.ejbca.ui.psm.jsf;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -58,6 +57,8 @@ public class JsfDynamicUiPsmFactory {
     /** Class logger. */
     private static final Logger log = Logger.getLogger(JsfDynamicUiPsmFactory.class);
 
+    private static final String STYLE_CLASS_SUB_ITEM = "subItem";
+
     /**
      * Initializes the dynamic UI properties on a grid panel with two columns, label on the left, UI component on the right,
      * and an optional help text below the UI component.
@@ -76,9 +77,14 @@ public class JsfDynamicUiPsmFactory {
         panelGrid.getChildren().clear();
         panelGrid.setColumns(2);
         // Build PSM fields by PIM.
+        int index = 0;
         for (final DynamicUiProperty<? extends Serializable> property : model.getProperties().values()) {
             final HtmlOutputLabel label = new HtmlOutputLabel();
             label.setValue(getText(i18nPrefix, property.getName()));
+            label.setStyleClass(STYLE_CLASS_SUB_ITEM);
+            if (index == 0) { // Re-factor: Set header bold.
+                label.setStyle("font-weight: bold;");
+            }
             panelGrid.getChildren().add(label);
 
             if (!property.isLabelOnly()) {
@@ -106,6 +112,7 @@ public class JsfDynamicUiPsmFactory {
                 label.setStyleClass(StringUtils.EMPTY);
                 panelGrid.getChildren().add(new HtmlPanelGroup());
             }
+            index++;
         }
     }
 
@@ -289,17 +296,10 @@ public class JsfDynamicUiPsmFactory {
         setUIInputAttributes(result, property);
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         final List<SelectItem> items = new ArrayList<>();
-        if (property.isI18NLabeled()) {
-            final Map<?, String> labels = property.getLabels();
-            for (Entry<?, String> entry : labels.entrySet()) {
-                items.add(new SelectItem(entry.getKey(), EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue())));
-                
-            }
-        } else {
-            final Collection<String> entries = property.getPossibleValuesAsStrings();
-            for (String entry : entries) {
-                items.add(new SelectItem(entry,entry));
-            }
+        final Map<?, String> labels = property.getLabels();
+        for (Entry<?, String> entry : labels.entrySet()) {
+            items.add(new SelectItem(entry.getKey(),
+                    property.isI18NLabeled() ? EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue()) : entry.getValue()));
         }
         final UISelectItems selectItems = new UISelectItems();
         selectItems.setValue(items);
@@ -374,8 +374,7 @@ public class JsfDynamicUiPsmFactory {
      * @return the file chooser instance.
      */
     public static final HtmlInputFileUpload createFileChooserInstance(final DynamicUiProperty<?> property) {
-        final JsfDynamicUiHtmlInputFileUpload result = new JsfDynamicUiHtmlInputFileUpload();
-        result.setDynamicUiProperty(property);
+        final HtmlInputFileUpload result = new HtmlInputFileUpload();
         setUIInputAttributes(result, property);
         result.setStorage("file");
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());

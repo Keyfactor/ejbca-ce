@@ -13,9 +13,8 @@
 package org.ejbca.core.protocol.acme.response;
 
 /**
- * Enumeration of ACME problem types.
- * 
- * @see https://tools.ietf.org/html/rfc8555#section-6.7
+ * @version $Id$
+ *
  */
 public enum AcmeProblem {
     PROBLEM_BAD_CSR("badCSR", "The CSR is unacceptable (e.g., due to a short key)"),
@@ -39,8 +38,7 @@ public enum AcmeProblem {
     PROBLEM_TLS("tls", "The server received a TLS error during validation"),
     PROBLEM_INCORRECT_RESPONSE("incorrectResponse", "Response received didn't match the challenge's requirements"),
     PROBLEM_ACCOUNT_DOES_NOT_EXIST("accountDoesNotExist", "The request specified an account that does not exist"),
-    PROBLEM_ORDER_NOT_READY("orderNotReady", "Order is not ready yet."),
-    PROBLEM_EXTERNAL_ACCOUNT_REQUIRED("externalAccountRequired", "External account binding required.");
+    PROBLEM_ORDER_NOT_READY("orderNotReady", "Order is not ready yet.");
     
     
     private final String type;

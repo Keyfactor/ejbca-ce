@@ -26,6 +26,8 @@ import org.ejbca.core.protocol.acme.AcmeAccountDataSessionRemote;
 /**
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
+ *
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAccountDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
