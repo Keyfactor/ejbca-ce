@@ -34,6 +34,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String PUBLIC_KEY = "--publickey";
     private static final String SKEW_LIMIT = "--skewlimit";
     private static final String URL = "--url";
+    private static final String LABEL = "--label";
+    private static final String CLIENT = "--client";
+    private static final String REALM = "--realm";
 
     {
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -44,6 +47,12 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Skew limit to be used."));
         registerParameter(new Parameter(URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider url to the login page."));
+        registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider name to be shown"));
+        registerParameter(new Parameter(REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider realm name."));
+        registerParameter(new Parameter(CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Client name for EJBCA in Trusted OAuth Provider."));
     }
     
     
@@ -63,6 +72,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String publicKey = parameters.get(PUBLIC_KEY);
         String skewLimit = parameters.get(SKEW_LIMIT);
         String url = parameters.get(URL);
+        String label = parameters.get(LABEL);
+        String client = parameters.get(CLIENT);
+        String realm = parameters.get(REALM);
 
         byte[] publicKeyByteArray = getOauthKeyPublicKey(publicKey);
         
@@ -81,6 +93,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         
         OAuthKeyInfo keyInfo = new OAuthKeyInfo(kid, publicKeyByteArray, skewLimitInt);
         keyInfo.setUrl(url);
+        keyInfo.setLabel(label);
+        keyInfo.setClient(client);
+        keyInfo.setRealm(realm);
         
         if (!canAdd(keyInfo)) {
             log.info("Trusted OAuth Provider with same kid or internal Id exists!");
