@@ -129,11 +129,6 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract String getSubjectKeyId();
     
     /**
-     * The ID of the account binding, i.e. ACME EAB base64 URL encoded key identifier.
-     */
-    public abstract String getAccountBindingId();
-    
-    /**
      * The time this row was last updated.
      *
      * @return updateTime
