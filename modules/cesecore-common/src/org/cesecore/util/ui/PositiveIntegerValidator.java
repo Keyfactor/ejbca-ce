@@ -17,9 +17,13 @@ import org.cesecore.internal.InternalResources;
 /**
  * Validator which will validate an integer to greater or equal to 0
  * 
+ * This class is deprecated. Use IntegerValidator.minInstance(0) instead.
+ * 
+ * @see IntegerValidator
+ * 
  * @version $Id$
- *
  */
+@Deprecated
 public class PositiveIntegerValidator implements DynamicUiPropertyValidator<Integer> {
 
   

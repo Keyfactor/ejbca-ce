@@ -35,8 +35,7 @@ import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.SecureXMLDecoder;
 
 /**
- *
- * @version $Id$
+ * Representation of an ACME account entity.
  */
 @Entity
 @Table(name = "AcmeAccountData")
