@@ -738,6 +738,15 @@ table.edit-bottom, table.subsection {
 	text-align: left
 }
 
+.fixEditColumn1 {
+	width: 360px;
+	text-align: left
+}
+.fixEditColumn2 {
+	width: auto;
+	text-align: left
+}
+
 .column-checkbox1 {
 	width: 3%;
 	text-align: left
