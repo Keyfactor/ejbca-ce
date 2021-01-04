@@ -37,6 +37,9 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_PUBLIC_KEY = "--new-publickey";
     private static final String NEW_SKEW_LIMIT = "--new-skewlimit";
     private static final String NEW_URL = "--new-url";
+    private static final String NEW_LABEL = "--new-label";
+    private static final String NEW_CLIENT = "--new-client";
+    private static final String NEW_REALM = "--new-realm";
 
     {
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -49,6 +52,12 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Skew limit to be updated."));
         registerParameter(new Parameter(NEW_URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider url to the login page to be updated."));
+        registerParameter(new Parameter(NEW_LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider name to be updated"));
+        registerParameter(new Parameter(NEW_REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider realm name to be updated."));
+        registerParameter(new Parameter(NEW_CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Client name for EJBCA in Trusted OAuth Provider to be updated."));
     }
 
     @Override
@@ -68,8 +77,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
         for (Map.Entry<Integer, OAuthKeyInfo> entry : getGlobalConfiguration().getOauthKeys().entrySet()) {
             if (entry.getValue().getKeyIdentifier().equals(kid)) {
-                if (checkParametersAndSet(parameters.get(NEW_KEY_IDENTIFIER), parameters.get(NEW_SKEW_LIMIT),
-                        parameters.get(NEW_PUBLIC_KEY), parameters.get(NEW_URL), entry.getValue())) {
+                if (checkParametersAndSet(parameters, entry.getValue())) {
                     OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
                     if (defaultKey != null && entry.getValue().getInternalId() == defaultKey.getInternalId()) {
                         getGlobalConfiguration().setDefaultOauthKey(entry.getValue());
@@ -100,9 +108,16 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         return log;
     }
 
-    private boolean checkParametersAndSet(final String newKid, final String newSkewLimit, final String newPublicKey, final String newUrl,
+    private boolean checkParametersAndSet(final ParameterContainer parameters,
             final OAuthKeyInfo keyInfoToBeEdited) {
-        if (newKid != null) { 
+        final String newKid= parameters.get(NEW_KEY_IDENTIFIER);
+        final String newSkewLimit= parameters.get(NEW_SKEW_LIMIT);
+        final String newPublicKey = parameters.get(NEW_PUBLIC_KEY);
+        final String newUrl = parameters.get(NEW_URL);
+        final String newLabel = parameters.get(NEW_LABEL);
+        final String newClient = parameters.get(NEW_CLIENT);
+        final String newRealm = parameters.get(NEW_REALM);
+        if (newKid != null) {
             if (canEditKid(newKid)) {
                 keyInfoToBeEdited.setKeyIdentifier(newKid);
             } else {
@@ -130,6 +145,15 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         if (newUrl != null) {
             keyInfoToBeEdited.setUrl(newUrl);
+        }
+        if (newLabel != null) {
+            keyInfoToBeEdited.setLabel(newLabel);
+        }
+        if (newClient != null) {
+            keyInfoToBeEdited.setClient(newClient);
+        }
+        if (newRealm != null) {
+            keyInfoToBeEdited.setRealm(newRealm);
         }
             
         return true;
