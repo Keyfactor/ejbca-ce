@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.SignatureException;
@@ -23,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import javax.management.openmbean.InvalidKeyException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -1002,9 +1001,10 @@ public class CrmfRequestTest extends CmpTestCase {
      * @throws OperatorException if unwrapping the symmetric encryption key fails
      * @throws IOException if decoding keys fails
      * @throws PKCSException if decrypting the key from the CMS message
+     * @throws InvalidKeyException if the EncryptedKey is not an EncryptedValue object
      */
     private PrivateKey decryptPrivateKey(final PrivateKey protocolEncKey, final PKIMessage pkiMessage)
-            throws OperatorException, IOException, PKCSException {
+            throws OperatorException, IOException, PKCSException, InvalidKeyException {
         final PKIBody pkiBody = pkiMessage.getBody();
         final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
         final CertResponse certResponse = certRepMessage.getResponse()[0];

@@ -37,7 +37,7 @@ public class CK_CP5_AUTH_DATA extends Structure {
     }
 
     @Override
-    protected List<?> getFieldOrder() {
+    protected List<String> getFieldOrder() {
         return Arrays.asList("ulModulusLen", "pModulus", "ulPublicExponentLen", "pPublicExponent", "protocol");
     }
     
