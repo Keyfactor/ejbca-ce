@@ -66,7 +66,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT,
                 "Name of the affected CA. If the CA is present, it must either be waiting for a certificate response from an external CA or itself be "
-                        + "an external CA, in which case its certificate will be updated. If the CA is not present, a new CA will be added using the imported certificate chain."));
+                        + "an external CA, in which case its certificate will be updated. If the CA is not present, a new CA will be added using the imported certificate."));
         registerParameter(new Parameter(FILE_KEY, "File Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "A file containing a certificate, in either PEM or DER format. If the CA is waiting for a CSR, this certificate should be the response. "
                         + "If the CA is an externally imported CA, then it will be updated using this certificate. "
