@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+    	 -->
+
+    <!--
+    Blank Login page rendered upon authorization errors.
+     -->
+</ui:remove>
+
+<h:head>
+    <link rel="stylesheet" type="text/css" href="#{adminLoginMBean.cssFile}"/>
+</h:head>
+<f:metadata>
+    <f:event type="preRenderView" listener="#{adminLoginMBean.onLoginPageLoad}"/>
+</f:metadata>
+<h:panelGroup>
+    <h1>
+        <h:outputText value="#{adminLoginMBean.error}"/>
+    </h1>
+    <h2>
+        <h:outputText value="#{adminLoginMBean.errorMessage}"/>
+    </h2>
+    <h:panelGroup styleClass="preformatted" rendered="#{adminLoginMBean.allOauthKeys.size() > 0}">
+        <h:outputText value="#{web.text.PLEASE_LOGIN}"/>
+    </h:panelGroup>
+    <h:dataTable value="#{adminLoginMBean.allOauthKeys}"
+                 var="oauthkey"
+                 styleClass="oauthkeyTable" style="margin: 5px;">
+        <h:column>
+            <h:outputLink value="#{oauthkey.url}">
+                <h:outputText value="#{oauthkey.keyIdentifier}"/>
+            </h:outputLink>
+        </h:column>
+    </h:dataTable>
+</h:panelGroup>
+</html>
