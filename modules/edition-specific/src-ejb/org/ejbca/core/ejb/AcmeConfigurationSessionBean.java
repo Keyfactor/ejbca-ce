@@ -25,8 +25,6 @@ import org.ejbca.core.protocol.acme.AcmeProblemException;
  * ACME configuration handling business logic.
  *
  * Not available in Community Edition
- * 
- * @version $Id$
  */
 @Stateless
 // We can't rely on transactions for calls that will do persistence over the RaMasterApi, so avoid the overhead of when methods are invoked
