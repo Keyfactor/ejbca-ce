@@ -10,26 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.acme;
+package org.ejbca.configdump;
 
-import javax.ejb.Local;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.config.AcmeConfiguration;
+import java.io.Serializable;
+import java.util.List;
 
 /**
- * ACME configuration handling business logic.
+ * Config dump extension for map backed EJBCA objects.
+ * 
+ * @version $Id$
  */
-@Local
-public interface AcmeConfigurationSessionLocal {
-
+public interface ConfigDumpItemAware {
+    
     /**
-     * Get the ACME Configuration settings for the requested alias.
-     * @param authenticationToken an authentication token authorizing the retrieval of the end entity profile and CAA identifiers
-     * @param configurationAlias (allows the direct path param form ending in '/')
-     * @return the requested Acme Configuration
-     * @throws AcmeProblemException if the requested configuration does not exist
+     * Initializes the config dump properties.
      */
-    AcmeConfiguration getAcmeConfiguration(AuthenticationToken authenticationToken, String configurationAlias) throws AcmeProblemException;
-
+    void initConfigdumpProperties();
+    
+    /**
+     * Returns the list of declared config dump properties.
+     * @return the list of config dump properties or null.
+     */
+    List<ConfigdumpProperty<? extends Serializable>> getConfigDumpProperties();
 }
