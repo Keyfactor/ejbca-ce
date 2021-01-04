@@ -567,6 +567,15 @@ table.edit tr td {
 	width: 50%;
 	text-align: left;
 }
+.fixEditColumn1 {
+	width: 360px;
+	text-align: left
+}
+.fixEditColumn2 {
+	width: auto;
+	text-align: left
+}
+
 .column-checkbox1 {
 	width: 3%;
 	text-align: left;
@@ -1414,6 +1423,7 @@ a.button:active {
     width: 100%;
     box-sizing: border-box;
 }
+.fullwidth-dynui-table tr:first-child td:first-child label { font-weight: bold; }
 
 /* CSS2 compatible expandable text */
 .expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
