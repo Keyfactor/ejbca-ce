@@ -15,16 +15,17 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-/*import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.easymock.EasyMock;*/
+import org.easymock.EasyMock;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.rest.api.builder.SearchCertificatesRestRequestTestBuilder;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
-/*import org.junit.Before;*/
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-/*import org.powermock.api.easymock.PowerMock;*/
+import org.powermock.api.easymock.PowerMock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -35,15 +36,15 @@ import static org.junit.Assert.assertEquals;
  * <br/>
  * <b>Note: </b> Due to test compilation issue ECA-7148, we use an original input class SearchCertificatesRestRequest instead of simplified annotated class.
  */
+@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({EjbLocalHelper.class})
 public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
 
     private static final Validator validator =  Validation.buildDefaultValidatorFactory().getValidator();
 
-    /*@Before
+    @Before
     public void setUp() throws Exception {
-        // globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         EjbLocalHelper ejbLocalHelperMock = EasyMock.createMock(EjbLocalHelper.class);
         GlobalConfigurationSessionLocal globalConfigurationSession = EasyMock.mock(GlobalConfigurationSessionLocal.class);
         GlobalCesecoreConfiguration globalCesecoreConfigurationMock = EasyMock.mock(GlobalCesecoreConfiguration.class);
@@ -61,7 +62,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         PowerMock.replay(EjbLocalHelper.class);
         EasyMock.replay();
 
-    }*/
+    }
 
     @Test
     public void validationShouldFailOnNullValue() {
@@ -101,7 +102,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
-    /*@Test
+    @Test
     public void validationShouldFailOnValueAboveMaximum() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be more than 321.";
@@ -111,7 +112,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         // then
         assertEquals("Invalid object.", 1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
-    }*/
+    }
 
     @Test
     public void validationShouldPassOnNormalValue() {
