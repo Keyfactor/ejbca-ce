@@ -25,8 +25,6 @@ import org.cesecore.configuration.ConfigurationBase;
 
 /**
  * Global Configuration object which holds all the AcmeConfigurations and generic protocol settings.
- * 
- * @version $Id$
  */
 public class GlobalAcmeConfiguration extends ConfigurationBase implements Serializable {
 

@@ -149,6 +149,16 @@ certificate.validityoffset=-10m
 # Default: 500000
 #database.crlgenfetchsize=500000
 
+# Whether EJBCA should request ordered fetching of revoked certificates when generating CRLs.
+# EJBCA relies on Hibernate to return data in batches (see the database.crlgenfetchsize setting
+# above, to control the read batch size). However, Microsoft SQL Server 2016 is known to return
+# duplicates and/or missing entries when multiple batches are read. The setting below is a
+# workaround for this problem.
+#
+# Default: off (false)
+#database.crlgenfetchordered=true
+
+
 # ------------- Core language configuration -------------
 # The language that should be used internally for logging, exceptions and approval notifications.
 # The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties' and 'intresources.xx.properties'.
