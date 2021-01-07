@@ -1570,7 +1570,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (keyPairGuiInfos != null) {
             keyPairGuiInfos.stream().filter(KeyPairGuiInfo::isSelected).forEach(cryptoTokenKeyPairInfo -> {
                 try {
-                    cryptoTokenManagementSession.removeKeyPair(getAdmin(), getCurrentCryptoTokenId(), cryptoTokenKeyPairInfo.getAlias());
+                    if (!cryptoTokenKeyPairInfo.isPlaceholder()) {
+                        cryptoTokenManagementSession.removeKeyPair(getAdmin(), getCurrentCryptoTokenId(), cryptoTokenKeyPairInfo.getAlias());
+                    } else {
+                        cryptoTokenManagementSession.removeKeyPairPlaceholder(getAdmin(), getCurrentCryptoTokenId(), cryptoTokenKeyPairInfo.getAlias());
+                    }
                 } catch (Exception e) {
                     addNonTranslatedErrorMessage(e);
                 }
