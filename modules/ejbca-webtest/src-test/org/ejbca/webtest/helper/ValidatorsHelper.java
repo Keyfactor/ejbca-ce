@@ -110,9 +110,9 @@ public class ValidatorsHelper extends BaseHelper {
     public enum ValidatorType {
         CAA_VALIDATOR("CAA Validator"),
         ECC_KEY_VALIDATOR("ECC Key Validator"),
-        PUBLIC_KEY_BLACKLIST_KEY_VALIDATOR("Public Key Blacklist Key Validator"),
+        PUBLIC_KEY_BLACKLIST_KEY_VALIDATOR("Public Key Block List Key Validator"),
         RSA_KEY_VALIDATOR("RSA Key Validator"),
-        DOMAIN_BLACKLIST_VALIDATOR("Domain Blacklist Validator");
+        DOMAIN_BLACKLIST_VALIDATOR("Domain Block List Validator");
 
         private final String type;
 

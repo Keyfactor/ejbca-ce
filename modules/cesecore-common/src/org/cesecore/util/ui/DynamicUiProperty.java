@@ -35,6 +35,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.util.Base64;
 import org.cesecore.util.LookAheadObjectInputStream;
@@ -46,6 +47,8 @@ import org.cesecore.util.LookAheadObjectInputStream;
  */
 public class DynamicUiProperty<T extends Serializable> implements Serializable, Cloneable {
 
+    private static final Logger log = Logger.getLogger(DynamicUiProperty.class);
+    
     private static final long serialVersionUID = 1L;
 
     /** Literal for list separator. */
@@ -255,7 +258,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.possibleValues = original.getPossibleValues();
         this.propertyCallback = original.getPropertyCallback();
         this.actionCallback = original.getActionCallback();
-        this.validator = original.validator;
+        this.validator = original.getValidator();
         this.disabled = original.isDisabled();
         this.dynamicUiModel = original.getDynamicUiModel();
         this.transientValue = original.isTransientValue();
@@ -674,14 +677,6 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
                 newValues.add(defaultValue);
             }
         } else {
-            if (validator != null) {
-                try {
-                    validator.validate((T) object);
-                } catch (PropertyValidationException e) {
-                    throw new IllegalStateException(
-                            "Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
-                }
-            }
             newValues.add((T) object);
         }
         this.values = newValues;
@@ -697,14 +692,6 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         if (object == null) {
             newValues.add((T) object);
         } else {
-            if (validator != null) {
-                try {
-                    validator.validate((T) object);
-                } catch (PropertyValidationException e) {
-                    throw new IllegalStateException(
-                            "Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
-                }
-            }
             newValues.add((T) object);
         }
         this.values = newValues;
@@ -720,14 +707,6 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         final List<? extends Serializable> listCopy = new ArrayList<>(list); // extra safety in case list is modified during the function call
         final List<T> newValues = new ArrayList<>();
         for (final Serializable object : listCopy) {
-            if (validator != null) {
-                try {
-                    validator.validate((T) object);
-                } catch (PropertyValidationException e) {
-                    throw new IllegalStateException(
-                            "Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
-                }
-            }
             newValues.add((T) object);
         }
         this.values = newValues;
@@ -766,7 +745,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         try (final LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(bytes))) {
             lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(type, LinkedHashMap.class, HashMap.class, HashSet.class, DynamicUiPropertyCallback.class, 
                   AccessMatchType.class, UrlString.class, MultiLineString.class, String.class, Date.class,
-                  PositiveIntegerValidator.class, DateValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
+                  PositiveIntegerValidator.class, IntegerValidator.class, StringValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
                   Collections.emptyList().getClass().asSubclass(Serializable.class), 
                   Class.forName("org.cesecore.roles.RoleInformation").asSubclass(Serializable.class),
                   Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class),
@@ -857,6 +836,20 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      */
     public void setValidator(final DynamicUiPropertyValidator<T> validator) {
         this.validator = validator;
+    }
+    
+    /**
+     * Gets the validator instance.
+     */
+    public DynamicUiPropertyValidator<T> getValidator() {
+        return this.validator;
+    }
+    
+    public void validate() throws PropertyValidationException {
+        if (getValidator() != null) {
+            log.debug("Validate property '" + getName() + "' with value '" + getValue() + "'.");
+            getValidator().validate(getValue());
+        }
     }
 
     /**
@@ -1027,7 +1020,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public String toString() {
         return "DynamicUiProperty [name=" + name + ", required=" + required + ", defaultValue=" + defaultValue + ", values=" + values
                 + ", possibleValues=" + possibleValues + ", renderingHint=" + renderingHint + ", labeled=" + labeled + ", labels=" + labels
-                + ", labelOnly=" + labelOnly + ", type=" + type + ", hasMultipleValues=" + hasMultipleValues + "]";
+                + ", labelOnly=" + labelOnly + ", type=" + type + ", hasMultipleValues=" + hasMultipleValues + ", validator=" + validator + "]";
     }
 
     /** Delegation method for {@link DynamicUIModel#addDynamicUiComponent}. */

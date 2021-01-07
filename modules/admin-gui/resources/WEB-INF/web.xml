@@ -96,6 +96,7 @@
         <filter-name>extensionsFilter</filter-name>
         <url-pattern>*.jsf</url-pattern>
         <!-- The following JSF pages in the AdminGUI are still using <t:inputFileUpload>. They should be converted to use <h:inputFile> instead (ECA-3658) -->
+        <url-pattern>/sysconfig/acmealiasconfiguration.xhtml</url-pattern>
         <url-pattern>/sysconfig/editctlog.xhtml</url-pattern>
         <url-pattern>/sysconfig/editoauthkey.xhtml</url-pattern>
         <url-pattern>/sysconfig/systemconfiguration.xhtml</url-pattern>
