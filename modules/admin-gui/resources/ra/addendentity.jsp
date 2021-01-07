@@ -73,6 +73,7 @@
     static final String CHECKBOX_SENDNOTIFICATION = "checkboxsendnotification";
     static final String CHECKBOX_CARDNUMBER = "checkboxcardnumber";
     static final String CHECKBOX_PRINT = "checkboxprint";
+    static final String CHECKBOX_SUBJECTALTNAME_DNS = "checkboxsubjectaltnamedns";
 
     static final String CHECKBOX_REQUIRED_USERNAME = "checkboxrequiredusername";
     static final String CHECKBOX_REQUIRED_PASSWORD = "checkboxrequiredpassword";
@@ -835,7 +836,7 @@ function isKeyRecoveryPossible(){
 function fillCAField(){
    var selcertprof = document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options.selectedIndex; 
    var certprofid = document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options[selcertprof].value; 
-   var caselect   =  document.adduser.<%=SELECT_CA%>; 
+   var caselect   =  document.adduser.<%=SELECT_CA%>;
 
    var numofcas = caselect.length;
    for( i=numofcas-1; i >= 0; i-- ){
@@ -844,13 +845,17 @@ function fillCAField(){
 
     if( selcertprof > -1){
       for( i=0; i < certprofileids.length; i ++){
-        if(certprofileids[i][CERTPROFID] == certprofid){
-          for( j=0; j < certprofileids[i][AVAILABLECAS].length; j++ ){
-            caselect.options[j]=new Option(certprofileids[i][AVAILABLECAS][j][CANAME],
-                                           certprofileids[i][AVAILABLECAS][j][CAID]);    
-            if(certprofileids[i][AVAILABLECAS][j][CAID] == "<%= lastselectedca %>")
-              caselect.options.selectedIndex=j;
-          }
+        if(certprofileids[i][CERTPROFID] == certprofid) {
+            for (j = 0; j < certprofileids[i][AVAILABLECAS].length; j++) {
+                caselect.options[j] = new Option(certprofileids[i][AVAILABLECAS][j][CANAME],
+                    certprofileids[i][AVAILABLECAS][j][CAID]);
+
+                if (certprofileids[i][AVAILABLECAS][j][CAID] == "<%= lastselectedca %>" ) {
+                    caselect.options.selectedIndex = j;
+
+                }else if (certprofileids[i][AVAILABLECAS][j][CAID] == "<%= profile.getDefaultCA() %>")
+                    caselect.options.selectedIndex = j;
+            }
         }
       }
     }
@@ -1110,6 +1115,16 @@ function checkallfields(){
 
    function maxFailedLoginsSpecified() {
 		document.adduser.<%= TEXTFIELD_MAXFAILEDLOGINS %>.disabled = false;
+   }
+
+   function toggleModifySubjectAltName(checkBox, textBoxName) {
+       const textBox = document.getElementsByName(textBoxName)[0];
+       if(checkBox.checked) {
+           textBox.disabled = true;
+           textBox.value = "";
+       } else {
+           textBox.disabled = false;
+       }
    }
    
    -->
@@ -1376,7 +1391,7 @@ function checkallfields(){
     <%  
         int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
 		int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
-    %> 
+    %>
 	<%	if ( numberofsubjectaltnamefields > 0
 		  || numberofsubjectdirattrfields > 0
 		   ) { %>
@@ -1493,10 +1508,27 @@ function checkallfields(){
 						<input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" > @
 						<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="15" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>' title="<%= ejbcawebbean.getText("FORMAT_DOMAINNAME") %>">
 				<%	} else {
+                        String disabled = "";
+	               	    if(profile.getCopy(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])
+                                && EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
+	               	        disabled = "disabled";
+                            %>
+                            <input
+                                type="checkbox"
+                                id="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"
+                                onchange="toggleModifySubjectAltName(this, '<%= TEXTFIELD_SUBJECTALTNAME + i %>')"
+                                checked>
+                            <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>">Use entity CN</label><br />
+                        <% }
 				        final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
                         final String regex = (validation != null ? (String)validation.get(RegexFieldValidator.class.getName()) : null); %>
-                        <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="355" tabindex="<%=tabindex++%>"
+                        <input type="text"
+                               name="<%= TEXTFIELD_SUBJECTALTNAME + i %>"
+                               size="40"
+                               maxlength="355"
+                               tabindex="<%=tabindex++%>"
                                value="<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>"
+                               <%=disabled%>
                                <% if (regex != null) { %>pattern="<c:out value='<%=regex%>'/>" title="Must match format specified in profile. / Technical detail - the regex is <c:out value='<%=regex%>'/>"<% } %> />
 				<%	} %>
 			<%	} %>

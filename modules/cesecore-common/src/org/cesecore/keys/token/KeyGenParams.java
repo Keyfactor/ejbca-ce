@@ -23,8 +23,6 @@ import org.pkcs11.jacknji11.CKA;
 
 /**
  * Immutable object used for passing key parameters and attributes for key generation.
- * 
- * @version $Id$
  */
 public class KeyGenParams implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -77,18 +75,24 @@ public class KeyGenParams implements Serializable {
         public KeyGenParamsBuilder withKeyPairTemplate(final KeyPairTemplate keyPairTemplate) {
             if (keyPairTemplate == KeyPairTemplate.ENCRYPT) {
                 privateAttributesMap.put(CKA.DECRYPT, true);
+                privateAttributesMap.put(CKA.UNWRAP, true);
                 privateAttributesMap.put(CKA.SIGN, false);
                 publicAttributesMap.put(CKA.ENCRYPT, true);
+                publicAttributesMap.put(CKA.WRAP, true);
                 publicAttributesMap.put(CKA.VERIFY, false);
             } else if (keyPairTemplate == KeyPairTemplate.SIGN) {
                 privateAttributesMap.put(CKA.DECRYPT, false);
+                privateAttributesMap.put(CKA.UNWRAP, false);
                 privateAttributesMap.put(CKA.SIGN, true);
                 publicAttributesMap.put(CKA.ENCRYPT, false);
+                publicAttributesMap.put(CKA.WRAP, false);
                 publicAttributesMap.put(CKA.VERIFY, true);
             } else if (keyPairTemplate == KeyPairTemplate.SIGN_ENCRYPT) {
                 privateAttributesMap.put(CKA.DECRYPT, true);
+                privateAttributesMap.put(CKA.UNWRAP, true);
                 privateAttributesMap.put(CKA.SIGN, true);
                 publicAttributesMap.put(CKA.ENCRYPT, true);
+                publicAttributesMap.put(CKA.WRAP, true);
                 publicAttributesMap.put(CKA.VERIFY, true);
             }
             return this;
