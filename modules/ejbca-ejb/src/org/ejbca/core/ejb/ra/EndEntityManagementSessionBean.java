@@ -319,13 +319,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final String dn = endEntity.getDN();
         String altName = endEntity.getSubjectAltName();
         try {
-            altName =  RFC4683Tools.generateSimForInternalSanFormat( altName);
+            altName =  RFC4683Tools.generateSimForInternalSanFormat(altName);
         } catch(Exception e) {
             log.info("Could not generate SIM string for SAN: " + altName, e);
             throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: " + e.getMessage(), e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("addUser(calculated SIM " + altName + ")");
+            log.trace("addUser(calculated SIM: " + altName + ")");
         }
         final String email = endEntity.getEmail();
         final EndEntityType type = endEntity.getType();
@@ -795,7 +795,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
              throw new EndEntityProfileValidationException("Could not generate SIM string for SAN: " + e.getMessage(), e);
         }
         if (log.isTraceEnabled()) {
-            log.trace(">changeUser(calculated SIM " + altName + ")");
+            log.trace(">changeUser(calculated SIM: " + altName + ")");
         }
         UserData userData = endEntityAccessSession.findByUsername(username);
         if (userData == null) {

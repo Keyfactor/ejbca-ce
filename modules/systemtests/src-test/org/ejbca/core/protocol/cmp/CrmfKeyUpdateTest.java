@@ -136,9 +136,6 @@ import static org.junit.Assert.fail;
 
 /**
  * This will test will check performing key updates over CMP. 
- * 
- * @version $Id$
- *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrmfKeyUpdateTest extends CmpTestCase {
@@ -896,7 +893,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field is not valid - Trust anchor for certification path not found.";
+            final String expectedErrMsg = "The certificate chain attached to the PKIMessage in the extraCert field is not valid - No issuer certificate for certificate in certification path found.";
             assertEquals(expectedErrMsg, errMsg);
         } finally {
             removeTestCA(differentX509ca.getCAId());
