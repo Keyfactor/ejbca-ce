@@ -150,8 +150,8 @@ public class OauthProvidersHelper extends BaseHelper {
         clickLink(Page.BUTTON_BACK);
     }
     
-    public File createPublicKeyFile(final TemporaryFolder folder, final String fileName, final String fileContent) throws IOException {
-        File publicKeyFile = folder.newFile(fileName);
+    public File createPublicKeyFile(final TemporaryFolder folder, final String fileContent) throws IOException {
+        File publicKeyFile = folder.newFile("public1.pem");
         FileWriter fileWriter = new FileWriter(publicKeyFile);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
         bufferedWriter.write(fileContent);
