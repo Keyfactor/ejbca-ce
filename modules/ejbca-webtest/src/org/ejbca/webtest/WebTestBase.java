@@ -15,6 +15,7 @@ package org.ejbca.webtest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -64,8 +65,7 @@ import java.util.logging.Level;
 
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
- *
- * @version $Id$
+ * 
  */
 public abstract class WebTestBase extends ExtentReportCreator {
 
@@ -507,4 +507,25 @@ public abstract class WebTestBase extends ExtentReportCreator {
         }
     }
 
+    /**
+     * Removes OAuth Providers
+     * @param oauthKeyIdentifiers an array of OAuth Provider Key Identifiers.
+     */
+    protected static void removeOauthProviders(String... oauthKeyIdentifiers) {
+        final GlobalConfigurationSessionRemote globalConfigurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSessionRemote
+                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final LinkedHashMap<Integer, OAuthKeyInfo> oauthKeys = globalConfiguration.getOauthKeys();
+        oauthKeys.forEach((key, oauthKeyInfo) -> {
+            if (Arrays.asList(oauthKeyIdentifiers).contains(oauthKeyInfo.getKeyIdentifier())) {
+                globalConfiguration.removeOauthKey(oauthKeyInfo.getInternalId());
+            }
+        });
+        try {
+            globalConfigurationSessionRemote.saveConfiguration(ADMIN_TOKEN, globalConfiguration);
+        }
+        catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
+    }
 }
