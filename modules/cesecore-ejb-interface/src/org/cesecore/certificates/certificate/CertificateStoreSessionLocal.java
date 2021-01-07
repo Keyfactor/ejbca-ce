@@ -121,6 +121,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return true if the column was empty and is now populated.
      */
     boolean updateCertificateOnly(AuthenticationToken authenticationToken, Certificate certificate);
+    
+    /**
+     * Update the base64cert column if the database row exists, but the column is empty.
+     * @return true if the column was empty and is now populated.
+     */
+    boolean updateAccountBindingOnly(AuthenticationToken authenticationToken, String certificateFingerprint, String accountBindingId);
 
     /**
      * Fetch a List of all certificate fingerprints and corresponding username

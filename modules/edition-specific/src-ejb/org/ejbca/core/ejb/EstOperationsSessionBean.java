@@ -24,8 +24,6 @@ import org.ejbca.core.protocol.est.EstOperationsSessionRemote;
 /**
  * Class that receives a EST message and passes it on to the correct message handler.
  * Not available in Community Edition
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EstOperationsSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

@@ -395,6 +395,14 @@ public final class CesecoreConfiguration {
     }
 
     /**
+     * Whether EJBCA should request ordered fetching of revoked certificates when generating CRLs.
+     * This is a workaround for MS-SQL.
+     */
+    public static boolean getDatabaseRevokedCertInfoFetchOrdered() {
+        return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
+    }
+
+    /**
      * Used just in {@link #getForbiddenCharacters()}. The method is called very
      * often so we declare this String in the class so it does not have to be
      * each time the method is called.

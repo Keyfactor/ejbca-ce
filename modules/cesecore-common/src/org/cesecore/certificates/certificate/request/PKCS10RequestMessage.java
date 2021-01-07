@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>Class to handle PKCS10 request messages sent to the CA.
@@ -87,6 +88,11 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
+        
+        if(Objects.isNull(p10msg)) {
+            return;
+        }
+        
         this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
     }
     
@@ -131,7 +137,7 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException {
-        return pkcs10.getPublicKey();
+        return Objects.isNull(pkcs10) ? null : pkcs10.getPublicKey();
     }
 
     @Override
