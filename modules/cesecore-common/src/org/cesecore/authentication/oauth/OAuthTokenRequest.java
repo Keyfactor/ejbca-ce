@@ -168,7 +168,6 @@ public class OAuthTokenRequest {
                 throw new IOException("Received empty HTTP response from authorization server.");
             }
             final byte[] responseBytes = FileTools.readStreamToByteArray(entity.getContent(), -1, maxResponseBytes);
-//                for (final NameValuePair param : URLEncodedUtils.parse(new String(responseBytes, StandardCharsets.UTF_8), StandardCharsets.UTF_8)) {
             final JSONParser parser = new JSONParser();
             try {
                 final JSONObject json = (JSONObject) parser.parse(new String(responseBytes, StandardCharsets.UTF_8));
