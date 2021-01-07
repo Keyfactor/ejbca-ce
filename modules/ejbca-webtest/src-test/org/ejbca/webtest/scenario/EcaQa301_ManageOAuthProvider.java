@@ -66,7 +66,7 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
         oauthProvidersHelper.startAddingProvider();
         
         oauthProvidersHelper.fillKeyIdField(KEYID);
-        oauthProvidersHelper.fillPublicKeyField(oauthProvidersHelper.createPublicKeyFile(folder, "temp_public.pem", OauthProvidersHelper.PUBLIC_KEY));
+        oauthProvidersHelper.fillPublicKeyField(oauthProvidersHelper.createPublicKeyFile(folder, OauthProvidersHelper.PUBLIC_KEY));
         oauthProvidersHelper.fillSkewLimitField(SKEWLIMIT);
         oauthProvidersHelper.pressAddOauthProviderButton();
 
