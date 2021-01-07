@@ -40,6 +40,7 @@ import java.util.List;
 
 import com.novell.ldap.LDAPDN;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -722,6 +723,13 @@ public class CertToolsUnitTest {
         String dn15 = "C=SE, E=foo@primekey.se, O=PrimeKey, EmailAddress=bar@primekey.se";
         emails = CertTools.getEmailFromDN(dn15);
         assertEquals(emails.get(0), "bar@primekey.se");
+
+        String dn16 = "SUBJECTIDENTIFICATIONMETHOD=2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue";
+        String sim = CertTools.getPartFromDN(dn16, "SUBJECTIDENTIFICATIONMETHOD");
+        assertEquals(sim, "2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue");
+        String dn17 = "subjectIdentificationMethod=2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue";
+        sim = CertTools.getPartFromDN(dn17, "SUBJECTIDENTIFICATIONMETHOD");
+        assertEquals(sim, "2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SsiValue");
 
         log.trace("<test01GetPartFromDN()");
     }
@@ -1819,12 +1827,25 @@ public class CertToolsUnitTest {
 
     @Test
     public void testIdOnSIM() throws Exception {
-        String otherName = "krb5principal=foo/bar@P.SE, " + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::CB3AE7FBFFFD9C85A3FB234E51FFFD2190B1F8F161C0A2873B998EFAC067B03A::6D9E6264DDBD0FC997B9B40524247C8BC319D02A583F4B499DD3ECAF06C786DF, upn=upn@u.com";
+        String otherName = "krb5principal=foo/bar@P.SE, " + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::8db00be05041ad00149e27ad134c64002af06147932d2859413e28add0f01b58::245C975D648DB3B0B27BB1ABAF3A321416340F50FACCE197D28A3F00B2E93C09, upn=upn@u.com";
         GeneralNames gn = CertTools.getGeneralNamesFromAltName(otherName);
         GeneralName[] names = gn.getNames();
         String ret = CertTools.getGeneralNameString(0, names[2].getName());
         assertEquals(names.length, 3);
-        assertEquals(RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::CB3AE7FBFFFD9C85A3FB234E51FFFD2190B1F8F161C0A2873B998EFAC067B03A::6D9E6264DDBD0FC997B9B40524247C8BC319D02A583F4B499DD3ECAF06C786DF", ret);
+        assertEquals(RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD +"=2.16.840.1.101.3.4.2.1::8db00be05041ad00149e27ad134c64002af06147932d2859413e28add0f01b58::245C975D648DB3B0B27BB1ABAF3A321416340F50FACCE197D28A3F00B2E93C09", ret);
+
+        String sim = CertTools.getPartFromDN(ret, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD);
+        // Compare the SIM, we know the input that was used to generate the SIM above
+        // MyStrongPassword, 1.2.410.200004.10.1.1.10.1 and SIIValue
+        String[] simtokens = StringUtils.split(sim, "::");
+        assertNotNull("SIM must be tokenized by ::", simtokens);
+        assertEquals("There should be 3 SIM tokens", 3, simtokens.length);
+        String hashalg = simtokens[0];
+        String r = simtokens[1];
+        String pepsifromsim = simtokens[2];
+        String pepsi = RFC4683Tools.createPepsi(hashalg, "MyStrongPassword", "1.2.410.200004.10.1.1.10.1", "SIIValue", r);
+        assertEquals("Calculated PEPSI and PEPSI from SIM must be equal", pepsifromsim, pepsi);
+
     }
     
     @Test
@@ -2546,60 +2567,6 @@ public class CertToolsUnitTest {
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         str = DERIA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/CPS", str.getString());
-    }
-    
-    @Test
-    public void testOrderCertChain() throws CertificateParsingException, CertPathValidatorException {
-        X509Certificate root = CertTools.getCertfromByteArray(chainRootCA, X509Certificate.class);
-        X509Certificate sub = CertTools.getCertfromByteArray(chainSubCA, X509Certificate.class);
-        X509Certificate ee = CertTools.getCertfromByteArray(chainUser, X509Certificate.class);
-        // Try different orders...and see that we get the right things back
-        List<X509Certificate> order1 = new ArrayList<>();
-        order1.add(ee);
-        order1.add(sub);
-        order1.add(root);
-        List<X509Certificate> list = CertTools.orderX509CertificateChain(order1);
-        assertEquals("List should be of size 3", 3, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
-
-        List<X509Certificate> order2 = new ArrayList<>();
-        order2.add(sub);
-        order2.add(root);
-        order2.add(ee);
-        list = CertTools.orderX509CertificateChain(order2);
-        assertEquals("List should be of size 3", 3, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
-        
-        List<X509Certificate> order3 = new ArrayList<>();
-        order3.add(sub);
-        order3.add(ee);
-        order3.add(root);
-        list = CertTools.orderX509CertificateChain(order3);
-        assertEquals("List should be of size 3", 3, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
-        
-        // Skip root, should order anyway up to sub
-        List<X509Certificate> order4 = new ArrayList<>();
-        order4.add(sub);
-        order4.add(ee);
-        list = CertTools.orderX509CertificateChain(order4);
-        assertEquals("List should be of size 2", 2, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
-
-        List<X509Certificate> order5 = new ArrayList<>();
-        order5.add(ee);
-        order5.add(sub);
-        list = CertTools.orderX509CertificateChain(order5);
-        assertEquals("List should be of size 2", 2, list.size());
-        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
-        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
     }
     
     @Test

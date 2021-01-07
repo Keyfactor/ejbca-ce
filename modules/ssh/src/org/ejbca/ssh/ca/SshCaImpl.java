@@ -143,8 +143,6 @@ import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
  *
  * TODO SSH: Remove all references to CT in ECA-9182
  *
- * @version $Id$
- *
  */
 public class SshCaImpl extends CABase implements Serializable, SshCa {
     private static final long serialVersionUID = 1L;
@@ -246,14 +244,14 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         case CertificateConstants.CERTTYPE_SSH:
             try {
                 return generateSshCertificate(subject, (SshRequestMessage) request, publicKey, notBefore, notAfter, certProfile, caPublicKey,
-                        caPrivateKey);
+                        caPrivateKey, cryptoToken.getSignProviderName());
             } catch (InvalidKeyException | InvalidKeySpecException e) {
                 throw new InvalidAlgorithmException("Unable to process either signature or public key.", e);
             } catch (CertificateEncodingException e) {
                 throw new CertificateCreateException("Could not create certificate", e);
             }
         default:
-            throw new CertificateCreateException("SSH CA can not generate certificates for other CA types than ROOT, SUBCA or SSH");
+            throw new CertificateCreateException("SSH CA can not generate certificates for other certificate types than ROOT, SUBCA or SSH. Certificate profile is of type " + certProfile.getType());
         }
 
     }
@@ -281,7 +279,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
      */
     private SshCertificateBase generateSshCertificate(final EndEntityInformation endEntityInformation, final SshRequestMessage requestMessage,
             final PublicKey publicKey, final Date notBefore, final Date notAfter, final CertificateProfile certificateProfile,
-            final PublicKey caPublicKey, final PrivateKey caPrivateKey) throws InvalidKeySpecException,
+            final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider) throws InvalidKeySpecException,
             SignatureException, InvalidKeyException, CertificateEncodingException, CAOfflineException, IllegalValidityException {
 
         //Generate a nine octet serial number - since the serial number generator always produces positive numbers, we'll simply squeeze it into an unsigned long.
@@ -356,13 +354,13 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
             EcCertificateSigner ecCertificateSigner = new EcCertificateSigner(
                     EcSigningAlgorithm.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
             sshCertificate
-                    .setSignature(ecCertificateSigner.signPayload(sshCertificate.encodeCertificateBody(), caPublicKey, caPrivateKey));
+                    .setSignature(ecCertificateSigner.signPayload(sshCertificate.encodeCertificateBody(), caPublicKey, caPrivateKey, provider));
         } else if (publicKey instanceof RSAPublicKey) {
             sshCertificate = new SshRsaCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, notBefore, notAfter,
                     criticalOptions, extensions, signatureKey, requestMessage.getComment(), getSubjectDN());
             RsaCertificateSigner rsaCertificateSigner = new RsaCertificateSigner(RsaSigningAlgorithms.SHA1);
             sshCertificate
-                    .setSignature(rsaCertificateSigner.signPayload(sshCertificate.getEncoded(), caPublicKey, caPrivateKey));
+                    .setSignature(rsaCertificateSigner.signPayload(sshCertificate.getEncoded(), caPublicKey, caPrivateKey, provider));
         } else {
             throw new InvalidKeySpecException("Public key was not of a type applicable for SSH certificates.");
         }

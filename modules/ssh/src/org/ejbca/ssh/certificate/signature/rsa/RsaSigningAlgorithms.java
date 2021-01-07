@@ -13,14 +13,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.ejbca.ssh.certificate.signature.SshSigningAlgorithm;
 
 /**
  * Enum representation of all possible signing algorithms for SSH EC certificates
- *
- * @version $Id$
  */
 public enum RsaSigningAlgorithms implements SshSigningAlgorithm {
     SHA1(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, "ssh-rsa"),
@@ -42,9 +39,9 @@ public enum RsaSigningAlgorithms implements SshSigningAlgorithm {
     }
 
     @Override
-    public Signature getSigner() {
+    public Signature getSigner(final String provider) {
         try {
-            return Signature.getInstance(identifier, BouncyCastleProvider.PROVIDER_NAME);
+            return Signature.getInstance(identifier, provider);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Fixed algorithms identifier " + identifier + " was not found in provider.");
         } catch (NoSuchProviderException e) {

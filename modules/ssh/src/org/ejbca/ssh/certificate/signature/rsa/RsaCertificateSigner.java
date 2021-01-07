@@ -21,8 +21,6 @@ import org.ejbca.ssh.certificate.signature.SshCertificateSigner;
 
 /**
  * RSA Certificate Signer.
- *
- * @version $Id$
  */
 public class RsaCertificateSigner implements SshCertificateSigner {
 
@@ -33,10 +31,10 @@ public class RsaCertificateSigner implements SshCertificateSigner {
     }
 
     @Override
-    public byte[] signPayload(final byte[] payload, final PublicKey signingPublicKey, final PrivateKey signingKey)
+    public byte[] signPayload(final byte[] payload, final PublicKey signingPublicKey, final PrivateKey signingKey, final String provider)
             throws InvalidKeyException, SignatureException {
         try {
-            Signature signer = signingAlgorithm.getSigner();
+            Signature signer = signingAlgorithm.getSigner(provider);
             signer.initSign(signingKey);
             signer.update(payload);
             byte[] signatureBytes = signer.sign();
