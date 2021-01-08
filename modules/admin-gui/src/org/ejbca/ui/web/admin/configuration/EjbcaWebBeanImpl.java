@@ -54,6 +54,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
@@ -152,6 +153,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private String usercommonname = "";
     private String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
     private String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
+    private boolean isAuthenticatedWithToken; // a flag to detect authentication path used
+    private String oauthAuthenticationToken; // Keep token used for authentication so we can detect changes
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
@@ -205,9 +208,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final X509Certificate certificate = getClientX509Certificate(httpServletRequest);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
+        final String oauthBearerToken = getBearerToken(httpServletRequest);
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
-        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) || !StringUtils.equals(fingerprint, certificateFingerprint)) {
+        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)
+                || (isAuthenticatedWithToken && !StringUtils.equals(oauthAuthenticationToken, oauthBearerToken))
+                || (!isAuthenticatedWithToken && !StringUtils.equals(fingerprint, certificateFingerprint))) {
             if (log.isDebugEnabled() && initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
                 log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificateFingerprint+", new cert fp: "+fingerprint);
@@ -217,7 +223,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
             requestServerPort = httpServletRequest.getServerPort();
             currentRemoteIp = httpServletRequest.getRemoteAddr();
-            final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
@@ -257,6 +262,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 if (administrator == null) {
                     throw new AuthenticationFailedException("Authentication failed using OAuth Bearer Token");
                 }
+                isAuthenticatedWithToken = true;
+                oauthAuthenticationToken = oauthBearerToken;
                 final Map<String, Object> details = new LinkedHashMap<>();
                 final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) administrator;
                 final OAuth2Principal principal = oauth2Admin.getClaims();
@@ -312,6 +319,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
 
         return globalconfiguration;
+    }
+
+    /**
+     * Gets bearer token from Authorization header or from session
+     * @param httpServletRequest
+     * @return
+     */
+    private String getBearerToken(HttpServletRequest httpServletRequest) {
+        String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+        if (oauthBearerToken == null) {
+            OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
+            oauthBearerToken = token != null ? token.getAccessToken() : null;
+        }
+        return oauthBearerToken;
     }
 
     /**
