@@ -14,126 +14,40 @@ package org.cesecore.keys.token.p11;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
+import org.cesecore.keys.token.p11ng.provider.CryptokiDevice.Slot;
+import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 
 /**
  *
- * This class wraps sun.security.pkcs11.wrapper.PKCS11, so that we can access the native PKCS11 calls
- * directly.
+ * This class wraps some calls to P11 to get information about slots/tokens and their labels
+ * 
  * A slot list and token labels for each slot is cached so that C_GetSlotList() only has to be called once and
- * so that C_GetTokenInfo() only has to be called once for each slot.
+ * so that C_GetTokenInfo() only has to be called once for each slot. This means that is additional/new slots are created on a token
+ * EJBCA has to be restarted.
+ * 
+ * This class is used through the UI both when using SunP11 and P11NG, to display slot labels.
  *
- * The {@link #getInstance(File)} method must be called before any PKCS#11 provider is created.
- *
- *  @version $Id$
- *
+ * The {@link #getInstance(File)} method must be called before any SunPKCS#11 provider is created.
  */
 public class Pkcs11Wrapper {
     private static final Logger log = Logger.getLogger(Pkcs11Wrapper.class);
 
     private static volatile Map<String, Pkcs11Wrapper> instances = new HashMap<>();
     private static final Lock lock = new ReentrantLock();
-    private final Method getSlotListMethod;
-    private final Method getTokenInfoMethod;
-    private final Field labelField;
-    private final Object p11;
     private final HashMap<Long, char[]> labelMap;
     private final long slotList[];
+    private final String fileName;
 
     private Pkcs11Wrapper(final String fileName) {
-        final Class<? extends Object> p11Class;
-        try {
-            p11Class = Class.forName("sun.security.pkcs11.wrapper.PKCS11");
-        } catch (ClassNotFoundException e) {
-            String msg = "Class sun.security.pkcs11.wrapper.PKCS11 was not found locally, could not wrap.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
-
-        try {
-            getSlotListMethod = p11Class.getDeclaredMethod("C_GetSlotList", boolean.class);
-        } catch (NoSuchMethodException e) {
-            String msg = "Method C_GetSlotList was not found in class sun.security.pkcs11.wrapper.PKCS11, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (SecurityException e) {
-            String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11.C_GetSlotList";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
-        try {
-            getTokenInfoMethod = p11Class.getDeclaredMethod("C_GetTokenInfo", long.class);
-        } catch (NoSuchMethodException e) {
-            String msg = "Method C_GetTokenInfo was not found in class sun.security.pkcs11.wrapper.PKCS11, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (SecurityException e) {
-            String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
-        try {
-            labelField = Class.forName("sun.security.pkcs11.wrapper.CK_TOKEN_INFO").getField("label");
-        } catch (NoSuchFieldException e) {
-            String msg = "Field 'label' was not found in class sun.security.pkcs11.wrapper.CK_TOKEN_INFO, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (SecurityException e) {
-            String msg = "Access was denied to field sun.security.pkcs11.wrapper.CK_TOKEN_INFO.label";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (ClassNotFoundException e) {
-            String msg = "Class sun.security.pkcs11.wrapper.CK_TOKEN_INFO was not found locally, could not wrap.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
-        final Method getInstanceMethod;
-        try {
-            getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
-                    String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class);
-        } catch (NoSuchMethodException e) {
-            String msg = "Method getInstance was not found in class sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (SecurityException e) {
-            String msg = "Access was denied to method sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS.getInstance";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (ClassNotFoundException e) {
-            String msg = "Class sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS was not found locally, could not wrap.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
-        try {
-            p11 = getInstanceMethod.invoke(null, fileName, "C_GetFunctionList", null, Boolean.FALSE);
-        } catch (IllegalAccessException e) {
-            String msg = "Method sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance was not accessible, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (IllegalArgumentException e) {
-            String msg = "Wrong arguments were passed to sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance. This may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (InvocationTargetException e) {
-            String msg = "Wrong arguments were passed to sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance threw an exception "
-                    + "for log.error(msg, e)";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
+        this.fileName = fileName;
         labelMap = new HashMap<>();
         slotList = C_GetSlotList();
         for (long id : slotList) {
@@ -148,6 +62,9 @@ public class Pkcs11Wrapper {
      * @throws IllegalArgumentException
      */
     public static Pkcs11Wrapper getInstance(final File file) throws IllegalArgumentException {
+        if (log.isTraceEnabled()) {
+            log.trace(">getInstance: " + file.getAbsolutePath());
+        }
         final String canonicalFileName;
         try {
             canonicalFileName = file.getCanonicalPath();
@@ -167,7 +84,9 @@ public class Pkcs11Wrapper {
                 return storedP11;// some other thread had already created the instance
             }
             // no other thread has created the instance and no other will since this thread is locking.
-            Pkcs11SlotLabel.doC_Initialize(file);// C_Initialize with multithreading args.
+            // CK_C_INITIALIZE_ARGS pInitArgs should include CKF_OS_LOCKING_OK
+            // We utilize the SunP11 provider for this, a liytle way around, especially if we are using P11NG, but it works
+            Pkcs11SlotLabel.doC_Initialize(file);
             final Pkcs11Wrapper newP11 = new Pkcs11Wrapper(canonicalFileName);
             instances.put(canonicalFileName, newP11);
             return newP11;
@@ -177,8 +96,8 @@ public class Pkcs11Wrapper {
     }
 
     /**
-     * Get a list of p11 slot IDs to slots that has a token.
-     * @return the list.
+     * Get a (cached) list of p11 slot IDs to slots that has a token.
+     * @return (cached) list of slot IDs.
      */
     public long[] getSlotList() {
         return slotList;
@@ -190,64 +109,43 @@ public class Pkcs11Wrapper {
      * @return the token label, or null if no matching token was found.
      */
     public char[] getTokenLabel(long slotID) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getTokenLabel: " + slotID);
+        }
         return labelMap.get(slotID);
     }
 
     private long[] C_GetSlotList() {
-        try {
-            return (long[]) getSlotListMethod.invoke(p11, Boolean.TRUE);
-        } catch (IllegalAccessException e) {
-            String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11C.GetSlotList, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (IllegalArgumentException e) {
-            String msg = "Incorrect parameters sent to sun.security.pkcs11.wrapper.PKCS11C.GetSlotList, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (InvocationTargetException e) {
-            String msg = "Method sun.security.pkcs11.wrapper.PKCS11C.GetSlotList threw an unknown exception.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
+        if (log.isTraceEnabled()) {
+            log.trace(">C_GetSlotList");
         }
+        // Use P11NG to get the list of slots, because we have better control of what we do than trying to use SunP11
+        final File lib = new File(fileName);
+        final String libDir = lib.getParent();
+        final String libName = lib.getName();
+        final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
+        final List<Slot> list = device.getSlots();
+        long[] slots = new long[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            slots[i] = list.get(i).getId();
+        }
+        return slots;
     }
 
     private char[] getTokenLabelLocal(long slotID)  {
-        final Object tokenInfo;
-        try {
-            tokenInfo = getTokenInfoMethod.invoke(p11, slotID);
-        } catch (IllegalAccessException e) {
-            String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (IllegalArgumentException e) {
-            String msg = "Incorrect parameters sent to sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (InvocationTargetException e) {
-            String msg = "Method sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo threw an unknown exception.";
-            log.error(msg, e);
-            return null;
+        if (log.isTraceEnabled()) {
+            log.trace(">getTokenLabelLocal: " + slotID);
         }
-        if (tokenInfo == null) {
-            return null;
+        // Use P11NG to get the token labels, because we have better control of what we do than trying to use SunP11
+        final File lib = new File(fileName);
+        final String libDir = lib.getParent();
+        final String libName = lib.getName();
+        final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
+        final Slot slot = device.getSlot(slotID);
+        if (slot != null) {
+            return slot.getLabel().toCharArray();
         }
-        try {
-            String result = String.copyValueOf((char[]) labelField.get(tokenInfo));
-            return result.trim().toCharArray();
-        } catch (IllegalArgumentException e) {
-            String msg = "Field sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo was not of type sun.security.pkcs11.wrapper.CK_TOKEN_INFO"
-                    + ", this may be due to a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        } catch (IllegalAccessException e) {
-            String msg = "Access was denied to field sun.security.pkcs11.wrapper.CK_TOKEN_INFO.label, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
+        log.debug(">getTokenLabelLocal: tokenInfo == null");
+        return null;
     }
 }

@@ -146,15 +146,15 @@ public class CryptokiDevice {
         this.libName = libName;
         try {
             if (LOG.isTraceEnabled()) {
-                LOG.trace("c.Initialize()");
+                LOG.trace("c.Initialize(): "+ libName);
             }
             c.Initialize();
         } catch (CKRException ex) {
             if (ex.getCKR() == CKR.CRYPTOKI_ALREADY_INITIALIZED) {
-                LOG.info("Cryptoki already initialized");
+                LOG.info("Cryptoki already initialized for '" + libName + "'");
             } else if (ex.getCKR() == CKR.GENERAL_ERROR) {
                 LOG.info("Cryptoki initialization failed");
-                throw new EJBException("Cryptoki initialization failed.", ex);
+                throw new EJBException("Cryptoki initialization failed for '" + libName + "'.", ex);
             } else {
                 throw ex;
             }
@@ -167,15 +167,17 @@ public class CryptokiDevice {
         try {
             final long[] slotsWithTokens = c.GetSlotList(true);
             for (long slotId : slotsWithTokens) {
-                Slot s = new Slot(slotId);
-                slots.add(s);
-                slotMap.put(slotId, s);
                 final CK_TOKEN_INFO tokenInfo = c.GetTokenInfo(slotId);
-                try {
-                    slotLabelMap.put(decodeUtf8(tokenInfo.label).trim(), s);
-                } catch (CharacterCodingException e) {
-                    LOG.info("Label of slot " + slotId + " / index " + slots.size() + " could not be parsed as UTF-8. This slot/token must be referenced by index or ID");
-                }
+                    String label = null;
+                    try {
+                        label = decodeUtf8(tokenInfo.label).trim();
+                    } catch (CharacterCodingException e) {
+                        LOG.info("Label of slot " + slotId + " / index " + slots.size() + " could not be parsed as UTF-8. This slot/token must be referenced by index or ID");
+                    }
+                    Slot s = new Slot(slotId, label);
+                    slots.add(s);
+                    slotMap.put(slotId, s);
+                    slotLabelMap.put(label, s);
             }
         } catch (CKRException ex) {
             throw new EJBException("Slot list retrieval failed.", ex);
@@ -210,12 +212,27 @@ public class CryptokiDevice {
     
     public class Slot {
         private final long id;
+        private final String label;
         private final LinkedList<Long> activeSessions = new LinkedList<>();
         private final LinkedList<Long> idleSessions = new LinkedList<>();
         private Long loginSession;
         private final P11NGSlotStore cache;
         private boolean useCache;
         
+        private Slot(final long id, final String label) {
+            this.id = id;
+            this.label = label;
+            this.cache = new P11NGSlotStore();
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
         public synchronized boolean isUseCache() {
             return useCache;
         }
@@ -224,11 +241,6 @@ public class CryptokiDevice {
             this.useCache = useCache;
         }
         
-        private Slot(final long id) {
-            this.id = id;
-            this.cache = new P11NGSlotStore();
-        }
-
         final protected String getLibName() {
             return libName;
         }

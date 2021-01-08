@@ -50,11 +50,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.AzureProvider.AzureCipher;
 import org.cesecore.keys.token.p11ng.MechanismNames;
 import org.cesecore.util.StringTools;
-import org.pkcs11.jacknji11.CKA;
-import org.pkcs11.jacknji11.CKK;
 import org.pkcs11.jacknji11.CKM;
-import org.pkcs11.jacknji11.CKO;
-import org.pkcs11.jacknji11.CKRException;
 
 /**
  * Provider using JackNJI11.
@@ -441,7 +437,6 @@ public class JackNJI11Provider extends Provider {
         private String algorithm;
         private NJI11Object myKey;
         private long session;
-        private ByteArrayOutputStream buffer;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
 
@@ -468,50 +463,23 @@ public class JackNJI11Provider extends Provider {
                 log.debug("engineUnwrap: " + this.getClass().getName() + ", " + this.opmode + ", " + myKey.getClass().getName()
                         + ", " + wrappedKeyAlgorithm + ", " + wrappedKeyType);
             }
-            if (!StringUtils.equalsIgnoreCase("AES", wrappedKeyAlgorithm)) {
-                throw new UnsupportedOperationException("Only AES keys can be unwrapped at this moment");
-            }
-            final long keyType = CKK.AES;
-            long seckey = 0; // handle to remove if we managed to create a key
             try {
-                // We need to provide a full set of attributes for the secret key in order to unwrap it inside the HSM
-                // Unwrapping is done with the RSA private key, i.e. the secret key is never exposed unencrypted outside
-                // of the HSM (if we had generated the secret key with CKA.EXTRACTABLE=false that is)
-                CKA[] secTemplUnwrap = new CKA[] {
-                        new CKA(CKA.CLASS, CKO.SECRET_KEY),
-                        new CKA(CKA.KEY_TYPE, keyType),
-                        // We don't need a label and id for this key, we wil destroy it just efter we read it
-                        //new CKA(CKA.LABEL, "labelunwrap"), 
-                        //new CKA(CKA.ID, "labelunwrap"), 
-                        new CKA(CKA.TOKEN, false),
-                        new CKA(CKA.SENSITIVE, false),
-                        new CKA(CKA.EXTRACTABLE, true),
-                        new CKA(CKA.ENCRYPT, true),
-                        new CKA(CKA.DECRYPT, true),
-                        new CKA(CKA.DERIVE, true),
-                };
-                
                 long mechanism = MechanismNames.longFromEncAlgoName(this.algorithm).get();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineUnwrap: session: " + session + ", object: " +
                             myKey.getObject() + ", algoValue: 0x" + Long.toHexString(mechanism) + ", param: null");
                     debugStacktrace = new Exception();
                 }
-
-                seckey = myKey.getSlot().getCryptoki().UnwrapKey(session, new CKM(mechanism), myKey.getObject(), wrappedKey, secTemplUnwrap);
-                byte[] seckeybuf = myKey.getSlot().getCryptoki().GetAttributeValue(session, seckey, CKA.VALUE).getValue();
+                // We do unwrapping using DECRYPT in PKCS#11
+                // This is very generic and ignores wrappedeyAlgorithm and wrappedKeyType to this method, but it supports our 
+                // goal of CMS message encrytion using wrapped AES keys for keyRecovery and SCEP in EJBCA
+                // Does not support all other generic cases for key wrapping/unwrapping, specifically when yu want to use the secret ke inside the HSM 
+                myKey.getSlot().getCryptoki().DecryptInit(session, new CKM(mechanism), myKey.getObject());
+                final byte[] seckeybuf = myKey.getSlot().getCryptoki().Decrypt(session, wrappedKey);
                 // Get AES key from byte array
                 SecretKey key = new SecretKeySpec(seckeybuf, wrappedKeyAlgorithm);
                 return key;
             } finally {
-                // Destroy the secret key object so it doesn't linger around in the PKCS#11 session
-                if (seckey != 0) {
-                    try {
-                        myKey.getSlot().getCryptoki().DestroyObject(session, seckey);
-                    } catch (CKRException e) {
-                        log.error("Can not destroy temporary secret key object: " + e.getCKR() + ": " + e.getMessage());
-                    }
-                }
                 // Decryption is done, either successful or failed
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
                     myKey.getSlot().releaseSession(session);
