@@ -32,9 +32,6 @@ import org.junit.Test;
 
 /**
  * Tests instantiating the Pkcs11Wrapper
- *
- * @version $Id$
- *
  */
 public class Pkcs11WrapperTest {
 
