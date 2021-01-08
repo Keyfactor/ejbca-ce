@@ -39,8 +39,7 @@ import org.json.simple.parser.ParseException;
 
 /**
  * Requests an OAuth token. See <a href="https://tools.ietf.org/html/rfc6749#section-4.1.3">RFC 6749 section 4.1.3</a>.
- * 
- * @version $Id$
+ *
  */
 public class OAuthTokenRequest {
 

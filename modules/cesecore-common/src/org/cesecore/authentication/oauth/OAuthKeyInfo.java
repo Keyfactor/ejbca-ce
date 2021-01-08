@@ -24,7 +24,6 @@ import org.cesecore.util.CertTools;
 /**
  * Represents an OAuth Public Key entry
  *
- * @version $Id$
  */
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;

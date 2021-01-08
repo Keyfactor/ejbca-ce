@@ -16,8 +16,7 @@ import java.io.Serializable;
 
 /**
  * See <a href="https://tools.ietf.org/html/rfc6749#section-5.1">RFC 6749 section 5.1</a>.
- * 
- * @version $Id$
+ *
  */
 public final class OAuthGrantResponseInfo implements Serializable {
     private static final long serialVersionUID = 1L;

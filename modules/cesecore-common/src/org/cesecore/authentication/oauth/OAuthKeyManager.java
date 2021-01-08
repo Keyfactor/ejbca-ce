@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  * This class is responsible for managing a list of OAuth Keys.
  *
- * @version $Id$
  */
 public class OAuthKeyManager {
     private final List<OAuthKeyInfo> oauthKeys;
