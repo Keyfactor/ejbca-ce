@@ -88,8 +88,6 @@ public class QcStatement extends StandardCertificateExtension {
     
     public static final String id_etsi_qcs_semanticsId_Natural = "0.4.0.194121.1.1";
     public static final String id_etsi_qcs_semanticsId_Legal = "0.4.0.194121.1.2";
-    public static final String id_etsi_qcs_semanticsId_eIDASNatural = "0.4.0.194121.1.3";
-    public static final String id_etsi_qcs_semanticsId_eIDASLegal = "0.4.0.194121.1.4";
     
     private static final List<String> availableSemanticsOids;
     
@@ -99,8 +97,6 @@ public class QcStatement extends StandardCertificateExtension {
         final List<String> sematicsOids = new ArrayList<>();
         sematicsOids.add(id_etsi_qcs_semanticsId_Natural);
         sematicsOids.add(id_etsi_qcs_semanticsId_Legal);
-//        sematicsOids.add(id_etsi_qcs_semanticsId_eIDASNatural);
-//        sematicsOids.add(id_etsi_qcs_semanticsId_eIDASLegal);
         availableSemanticsOids = Collections.unmodifiableList(sematicsOids);
         
         psd2RoleIdNameMap.put("PSP_AS", id_etsi_psd2_role_psp_as);
