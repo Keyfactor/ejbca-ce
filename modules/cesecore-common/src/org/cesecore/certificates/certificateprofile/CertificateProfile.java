@@ -3403,7 +3403,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // v46: approvals changed type to LinkedHashMap
             setApprovals(getApprovals());
 
-            // v48: ECA-9500 ETSI QC Countries
+            // v48: ECA-9500 ETSI QC Legislation Countries
             if (data.get(USEQCCOUNTRIES) == null) {
                 setUseQCCountries(false);
                 setQCCountriesString("");

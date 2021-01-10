@@ -310,7 +310,7 @@ public class CertificateProfileTest {
         
         profile.setUseQCCountries(true);
         profile.setQCCountriesString("SE,DE,IT");
-        assertEquals("Use ETSI QC countries does not match.", profile.getUseQCCountries(), true);
+        assertEquals("Use ETSI QC legislation countries does not match.", profile.getUseQCCountries(), true);
         assertEquals("QC ETSI countries string does not match.", profile.getQCCountriesString(), "SE,DE,IT");
         
         profile.setUseQCCustomString(true);
