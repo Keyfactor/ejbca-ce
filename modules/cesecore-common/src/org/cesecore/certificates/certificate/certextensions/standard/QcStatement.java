@@ -53,8 +53,9 @@ import org.cesecore.util.CertTools;
  * Class for standard X509 certificate extension. 
  * This extension have some basics defined in RFC 3739, but the majority of fields are used in EU purposes 
  * and specified in EU standards.
- * ETSI EN 319 412-5 (v2.1.1, 2016-02 or later)
- * https://www.etsi.org/deliver/etsi_en/319400_319499/31941205/02.01.01_60/en_31941205v020101p.pdf
+ *
+ * ETSI EN 319 412-5 (v2.3.1, 2020-04 or later)
+ * https://www.etsi.org/deliver/etsi_en/319400_319499/31941205/02.03.01_60/en_31941205v020301p.pdf
  * ETSI TS 101 862 (v1.3.3, 2006-01 or later)
  * https://www.etsi.org/deliver/etsi_ts/101800_101899/101862/01.03.03_60/ts_101862v010303p.pdf
  * ETSI TS 119 495 (v1.1.2, 2018-07 or later)
@@ -72,8 +73,6 @@ import org.cesecore.util.CertTools;
  *        ({SupportedStatements}{@statementId}) OPTIONAL }
  *
  *    SupportedStatements QC-STATEMENT ::= { qcStatement-1,...}
- * 
- * @version $Id$
  */
 public class QcStatement extends StandardCertificateExtension {
     private static final long serialVersionUID = 1L;
@@ -271,7 +270,8 @@ public class QcStatement extends StandardCertificateExtension {
             }            
         }
         
-        // ETSI legal countries for qualified certificates:
+        // ETSI EN 319 412-5 v2.3.1 section 4.2.2
+        // ETSI legal countries for qualified certificates:        
         // esi4-qcStatement-7 QC-STATEMENT ::= { SYNTAX QcCClegislation IDENTIFIED BY id-etsi-qcsQcCClegislation }
         // id-etsi-qcs-QcCClegislation OBJECT IDENTIFIER ::= { id-etsi-qcs 7 }
         // QcCClegislation ::= SEQUENCE OF CountryName
