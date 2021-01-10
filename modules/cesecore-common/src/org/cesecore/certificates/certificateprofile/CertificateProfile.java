@@ -54,8 +54,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
- *
- * @version $Id$
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -3405,7 +3403,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // v46: approvals changed type to LinkedHashMap
             setApprovals(getApprovals());
 
-            // v47: ECA-9500 ETSI QC Countries
+            // v48: ECA-9500 ETSI QC Countries
             if (data.get(USEQCCOUNTRIES) == null) {
                 setUseQCCountries(false);
                 setQCCountriesString("");
