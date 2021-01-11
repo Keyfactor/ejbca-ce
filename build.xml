@@ -1106,6 +1106,12 @@
                 <!-- List of modules to exclude from non-eIDAS editions -->
 		    	<!-- Exclude standard values if eIDAS edition for which we will include the updated version below -->
                 <exclude if="build.contains.eidas" name="src/java/defaultvalues.properties"/> 
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliKeyAuthorizationCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliKeyAuthorizationInitCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliBackupObjectCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliRestoreObjectCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliUnblockKeyCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java" unless="build.contains.eidas"/>
 		    	
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java"/>
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerDownstreamImpl.java"/>
