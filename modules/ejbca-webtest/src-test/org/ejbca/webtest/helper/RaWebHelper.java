@@ -46,6 +46,7 @@ public class RaWebHelper extends BaseHelper {
      */
     public static class Page {
         public static final String PAGE_URI = "/ejbca/ra/";
+        public static final String ENDUSER = "ENDUSER";
 
         static final By BUTTON_MAKE_NEW_REQUEST = By.id("makeRequestButton");
         static final By SELECT_CERTIFICATE_TYPE = By.id("requestTemplateForm:selectEEPOneMenu");
