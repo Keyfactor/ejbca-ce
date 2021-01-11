@@ -266,7 +266,7 @@ public class QcStatement extends StandardCertificateExtension {
             }            
         }
         
-        // ETSI EN 319 412-5 v2.3.1 section 4.2.2
+        // ETSI EN 319 412-5 v2.3.1 section 4.2.4
         // ETSI legal countries for qualified certificates:        
         // esi4-qcStatement-7 QC-STATEMENT ::= { SYNTAX QcCClegislation IDENTIFIED BY id-etsi-qcsQcCClegislation }
         // id-etsi-qcs-QcCClegislation OBJECT IDENTIFIER ::= { id-etsi-qcs 7 }
