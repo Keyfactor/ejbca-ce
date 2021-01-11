@@ -202,7 +202,7 @@ public class CryptoTokenFactory {
                 throw e;
             }
         } catch (Exception e) {
-            log.error("Error initializing Crypto Token. Classpath=" + classname, e);
+            log.error("Error initializing Crypto Token '"+tokenName+"' (" + cryptoTokenId + "). Classpath=" + classname, e);
         }
         token.setTokenName(tokenName);
         return token;

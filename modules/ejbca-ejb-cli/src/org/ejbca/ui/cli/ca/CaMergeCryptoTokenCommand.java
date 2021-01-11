@@ -21,6 +21,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.PKCS11CryptoToken;
@@ -38,8 +39,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
  *
  * The command will look for other CAs that reference the same HSM slot and use the specified CA's CryptoToken id for
  * all the CAs.
- *
- * @version $Id$
  */
 public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
 
@@ -49,7 +48,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
     private static final String DELETE_KEY = "--delete";
 
     {
-        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "The name of the CA."));
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "The name of the CA to use for reference crypto token."));
         registerParameter(Parameter.createFlag(EXECUTE_KEY, "Make the change instead of displaying what would change."));
         registerParameter(Parameter.createFlag(DELETE_KEY, "Delete vacant crypto tokens after merging."));
     }
@@ -71,11 +70,15 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final CAInfo caInfo = caSession.getCAInfo(getAuthenticationToken(), caName);
+            if (caInfo == null) {
+                log.error("CA with name " + caName + " does not exist.");
+                return CommandResult.CLI_FAILURE;                
+            }
             final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
             final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
-            if (!cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName())) {
-                log.error("CA with name " + caName + " does not reference a PKCS#11 Crypto Token. Merge is not possible.");
-                return CommandResult.FUNCTIONAL_FAILURE;
+            if (!cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName()) && !CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType())) {
+                log.error("CA with name " + caName + " does not reference a PKCS#11 Crypto Token (SunP11 or P11NG). Merge is not possible.");
+                return CommandResult.CLI_FAILURE;
             }
             log.info("CA '" + caInfo.getName() + "' references crypto token '" + cryptoTokenInfo.getName() + "'");
             log.info(" PKCS#11 Library: " + cryptoTokenInfo.getP11Library());
@@ -97,8 +100,15 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
                     continue;
                 }
                 final CryptoTokenInfo currentCryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), currentCryptoTokenId);
-                if (currentCryptoTokenInfo==null || !currentCryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName())) {
+                if (currentCryptoTokenInfo==null || 
+                        (!currentCryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName()) &&
+                        !CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType())) 
+                        ) {
                     // Skip non PKCS#11 crypto token CAs
+                    continue;
+                }
+                if (!currentCryptoTokenInfo.getType().equals(cryptoTokenInfo.getType())) {
+                    // Skip when crypto token type is not the same (i.e. it's P11 but one is SunP11 and the other is P11NG
                     continue;
                 }
                 if (!currentCryptoTokenInfo.getP11Library().equals(cryptoTokenInfo.getP11Library())) {
@@ -113,7 +123,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
                     // Skip when the same slot isn't referenced
                     continue;
                 }
-                log.info((force?"Merging ":"Would merge" )+" CA '" + currentCaInfo.getName() + "' that currently references crypto token '" + currentCryptoTokenInfo.getName() + "' to instead reference '" + cryptoTokenInfo.getName() + "'.");
+                log.info((force?"Merging":"Would merge")+" CA '" + currentCaInfo.getName() + "' that currently references crypto token '" + currentCryptoTokenInfo.getName() + "' to instead reference '" + cryptoTokenInfo.getName() + "'.");
                 log.info(" Current PKCS#11 Library: " + currentCryptoTokenInfo.getP11Library());
                 log.info(" Current SlotLabelType:   " + currentCryptoTokenInfo.getP11SlotLabelType());
                 log.info(" Current SlotLabel:       " + currentCryptoTokenInfo.getP11Slot());
@@ -144,7 +154,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             log.trace("<execute()");
             return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CADoesntExistsException e) {
-            log.error("No such CA with by name " + caName);
+            log.error("No such CA with by name when editing CA that previously existed: " + caName);
             log.error(getCaList());
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNonceConflictException e) {
@@ -158,7 +168,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Merge all CA's sharing a PKCS#11 slot to use the same Crypto Token";
+        return "Merge all CA's sharing a PKCS#11 library and slot to use the same Crypto Token";
     }
 
     @Override
