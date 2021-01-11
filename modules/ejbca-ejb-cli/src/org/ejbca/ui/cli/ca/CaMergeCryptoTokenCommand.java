@@ -71,7 +71,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final CAInfo caInfo = caSession.getCAInfo(getAuthenticationToken(), caName);
             if (caInfo == null) {
-                log.error("CA with name " + caName + " does exist.");
+                log.error("CA with name " + caName + " does not exist.");
                 return CommandResult.CLI_FAILURE;                
             }
             final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
