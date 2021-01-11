@@ -214,8 +214,6 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
     @Test
     public void stepN_EditEndEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
-        //eeProfileHelper.selectAvailableCps(TestData.CERTIFICATE_PROFILE_NAME);
-        //eeProfileHelper.selectDefaultCp(TestData.CERTIFICATE_PROFILE_NAME);
         eeProfileHelper.selectDefaultCa(this.getCaName());
         //Add DNS Name
         eeProfileHelper.setSubjectAlternativeName("DNS Name");
@@ -235,6 +233,7 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
     @Test
     public void stepQ_SelectRequestTemplate() throws Exception {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificateSubType(RaWebHelper.Page.ENDUSER);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }
@@ -257,7 +256,6 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
 
     @Test
     public void stepU_downloadPem() throws InterruptedException {
-        Thread.sleep(60000);
         raWebHelper.clickDownloadPem();
         raWebHelper.assertApproveMessageDoesNotExist();
     }
