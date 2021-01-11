@@ -70,11 +70,15 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final CAInfo caInfo = caSession.getCAInfo(getAuthenticationToken(), caName);
+            if (caInfo == null) {
+                log.error("CA with name " + caName + " does exist.");
+                return CommandResult.CLI_FAILURE;                
+            }
             final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
             final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
             if (!cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName()) && !CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType())) {
                 log.error("CA with name " + caName + " does not reference a PKCS#11 Crypto Token (SunP11 or P11NG). Merge is not possible.");
-                return CommandResult.FUNCTIONAL_FAILURE;
+                return CommandResult.CLI_FAILURE;
             }
             log.info("CA '" + caInfo.getName() + "' references crypto token '" + cryptoTokenInfo.getName() + "'");
             log.info(" PKCS#11 Library: " + cryptoTokenInfo.getP11Library());
@@ -150,7 +154,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             log.trace("<execute()");
             return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CADoesntExistsException e) {
-            log.error("No such CA with by name " + caName);
+            log.error("No such CA with by name when editing CA that previously existed: " + caName);
             log.error(getCaList());
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNonceConflictException e) {
