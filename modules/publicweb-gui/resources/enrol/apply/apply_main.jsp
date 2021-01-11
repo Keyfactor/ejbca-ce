@@ -58,17 +58,8 @@
 		        %>
 	        </c:when> 
 	        <c:when test="${tokentype == TOKEN_SOFT_BROWSERGEN}">
-				<c:choose>
-			        <c:when test="${browser == BROWSER_NETSCAPE}">
-			        	<c:set var="includefile" value="apply_nav.jspf" />
-			        </c:when> 
-			        <c:when test="${browser == BROWSER_EXPLORER}">
-			        	<c:set var="includefile" value="apply_exp.jspf" />
-			        </c:when> 
-			        <c:otherwise> 
-			        	<c:set var="includefile" value="apply_unknown.jspf" />
-					</c:otherwise>
-				</c:choose>
+	        <c:out value="Browser enrollment is not supported since EJBCA 7.5.0, because all relevant browsers have removed the browser enrollment functionality."/>
+	        <c:set var="includefile" value="deprecated" />
 	        </c:when> 
 	        <c:otherwise> 
 	        	<c:set var="includefile" value="apply_token.jspf" />
@@ -87,12 +78,6 @@
     </c:when> 
     <c:when test="${includefile == 'apply_token.jspf'}">
 		<%@ include file="apply_token.jspf" %>
-    </c:when> 
-    <c:when test="${includefile == 'apply_nav.jspf'}">
-		<%@ include file="apply_nav.jspf" %>
-    </c:when> 
-    <c:when test="${includefile == 'apply_exp.jspf'}">
-		<%@ include file="apply_exp.jspf" %>
     </c:when> 
     <c:when test="${includefile == 'apply_unknown.jspf'}">
 		<%@ include file="apply_unknown.jspf" %>
