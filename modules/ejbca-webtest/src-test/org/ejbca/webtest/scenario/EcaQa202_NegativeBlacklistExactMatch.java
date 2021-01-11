@@ -212,6 +212,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     @Test
     public void stepO_SelectRequestTemplate() throws InterruptedException {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificateSubType(RaWebHelper.Page.ENDUSER);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }
