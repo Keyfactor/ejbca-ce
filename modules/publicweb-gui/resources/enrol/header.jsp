@@ -41,9 +41,6 @@
           <li><div class="menuheader">Enroll</div>
             <ul>
               <li>
-                <a href="browser.jsp">Create Browser Certificate</a>
-              </li>
-              <li>
                 <a href="server.jsp">Create Certificate from CSR</a>
               </li>
               <li>
