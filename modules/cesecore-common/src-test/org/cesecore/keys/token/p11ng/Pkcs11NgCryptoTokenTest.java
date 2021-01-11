@@ -18,9 +18,9 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestBase;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
@@ -112,11 +112,11 @@ public class Pkcs11NgCryptoTokenTest extends CryptoTokenTestBase {
         Properties prop = new Properties();
         String hsmlib = PKCS11TestUtils.getHSMLibrary();
         assertNotNull(hsmlib);
-        prop.setProperty(Pkcs11NgCryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
-        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
+        prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
         if (file != null) {
-            prop.setProperty(Pkcs11NgCryptoToken.ATTRIB_LABEL_KEY, file);
+            prop.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, file);
         }
         prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
         CryptoToken token = CryptoTokenFactory.createCryptoToken(CryptoTokenFactory.JACKNJI_NAME, prop, null, 111, "P11Ng CryptoToken");
