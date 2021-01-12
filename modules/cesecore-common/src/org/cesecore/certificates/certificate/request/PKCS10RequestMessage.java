@@ -88,11 +88,9 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        
-        if(Objects.isNull(p10msg)) {
+        if (Objects.isNull(p10msg)) {
             return;
         }
-        
         this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
     }
     
@@ -112,7 +110,9 @@ public class PKCS10RequestMessage implements RequestMessage {
     		log.trace(">PKCS10RequestMessage(byte[])");
     	}
         this.p10msg = msg;
-        this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+        if (!Objects.isNull(p10msg)) {
+            this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+        }
     	if (log.isTraceEnabled()) {
     		log.trace("<PKCS10RequestMessage(byte[])");
     	}
@@ -298,6 +298,10 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
     public X500Name getRequestX500Name() {
+        if (pkcs10 == null) {
+            log.info("PKCS10 not inited getting requestX500Name, pkcs10 is null");
+            return null;            
+        }
         return X500Name.getInstance(new CeSecoreNameStyle(), pkcs10.getSubject());
     }
 
@@ -337,6 +341,11 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
 	public Extensions getRequestExtensions() {
+        if (pkcs10 == null) {
+            log.info("PKCS10 not inited getting requestExtensions, pkcs10 is null");
+            return null;            
+        }
+
         Extensions ret = null;
 
         // Get attributes
