@@ -64,6 +64,7 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
         static final String CERTIFICATE_PROFILE_NAME = "EcaQa202B_CertificateProfile";
         static final String ROLE_NAME = "Super Administrator Role";
         static final String ENTITY_NAME = "EcaQa202B_EntityProfile";
+        static final String USERNAME = "EcaQa202B";
         static final String[] CERTIFICATE_REQUEST_PEM = new String[] {
                 "-----BEGIN CERTIFICATE REQUEST-----",
                 "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w",
@@ -258,6 +259,7 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
     public void stepT_ProvideRequestInfo() throws InterruptedException {
         raWebHelper.fillMakeRequestEditCommonName("cn" + Calendar.getInstance().toString());
         raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+        raWebHelper.fillUsername(TestData.USERNAME);
         TimeUnit.SECONDS.sleep(2);
     }
 
