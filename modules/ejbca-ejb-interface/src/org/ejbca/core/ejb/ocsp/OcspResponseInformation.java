@@ -31,10 +31,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
 /**
- * Data carrier that wraps the contents of an OCSPResp, since OCSPResp and many of its members aren't serializable. 
- * 
- * @version $Id$
- *
+ * Data carrier that wraps the contents of an OCSPResp, since OCSPResp and many of its members aren't serializable.
  */
 public class OcspResponseInformation implements Serializable {
 
@@ -43,13 +40,14 @@ public class OcspResponseInformation implements Serializable {
     private final byte[] ocspResponse;
     private final long maxAge;
     private boolean addCacheHeaders = true;
+    private boolean cacheUnknown = false;
     private boolean explicitNoCache = false;
     private Long nextUpdate = null;
     private Long thisUpdate = null;
     private String responseHeader = null;
     private X509Certificate signerCert = null;
 
-    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge, X509Certificate signerCert) throws OCSPException {
+    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge, X509Certificate signerCert, boolean cacheUnknown) throws OCSPException {
         try {
             this.ocspResponse = ocspResponse.getEncoded();
         } catch (IOException e) {
@@ -57,6 +55,7 @@ public class OcspResponseInformation implements Serializable {
         }
         this.maxAge = maxAge;
         this.signerCert = signerCert;
+        this.cacheUnknown = cacheUnknown;
         /*
          * This may seem like a somewhat odd place to perform the below operations (instead of in the end servlet which demanded 
          * this object), but BouncyCastle (up to 1.47) is  a bit shy about making their classes serializable. This means that 
@@ -72,13 +71,13 @@ public class OcspResponseInformation implements Serializable {
             addCacheHeaders = false;
         } else {
             final BasicOCSPResp basicOCSPResp = (BasicOCSPResp)ocspResponse.getResponseObject();
-            final SingleResp[] singleRespones = basicOCSPResp.getResponses();
-            if (singleRespones.length != 1) {
+            final SingleResp[] singleResponses = basicOCSPResp.getResponses();
+            if (singleResponses.length != 1) {
                 if (log.isDebugEnabled()) {
                     log.debug("Will not add RFC 5019 cache headers: reponse contains multiple embedded responses.");
                 }
                 addCacheHeaders = false;
-            } else if (singleRespones[0].getNextUpdate() == null) {
+            } else if (singleResponses[0].getNextUpdate() == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Will not add RFC 5019 cache headers: nextUpdate isn't set.");
                 }
@@ -89,8 +88,8 @@ public class OcspResponseInformation implements Serializable {
                 }
                 addCacheHeaders = false;
             } else {
-                nextUpdate = singleRespones[0].getNextUpdate().getTime();
-                thisUpdate = singleRespones[0].getThisUpdate().getTime();
+                nextUpdate = singleResponses[0].getNextUpdate().getTime();
+                thisUpdate = singleResponses[0].getThisUpdate().getTime();
                 try {
                     responseHeader = new String(Hex.encode(MessageDigest.getInstance("SHA-1", BouncyCastleProvider.PROVIDER_NAME).digest(this.ocspResponse)));
                 } catch (NoSuchProviderException e) {
@@ -99,7 +98,7 @@ public class OcspResponseInformation implements Serializable {
                     throw new OcspFailureException("SHA-1 was not an available algorithm for MessageDigester", e);
                 }
             }
-            if (addCacheHeaders && singleRespones[0].getCertStatus() instanceof UnknownStatus) {
+            if (!cacheUnknown && addCacheHeaders && singleResponses[0].getCertStatus() instanceof UnknownStatus) {
                 explicitNoCache = true;
             }
         }
@@ -147,4 +146,8 @@ public class OcspResponseInformation implements Serializable {
         return signerCert;
     }
 
+    /** @return true if we should add cache header for unknown status. */
+    public boolean isCacheUnknown() {
+        return cacheUnknown;
+    }
 }
