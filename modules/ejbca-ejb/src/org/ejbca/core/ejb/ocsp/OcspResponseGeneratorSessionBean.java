@@ -195,9 +195,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * This SSB generates OCSP responses. 
- * 
- * @version $Id$
+ * This SSB generates OCSP responses.
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -1176,6 +1174,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         X509Certificate signerCert = null;
         String serialNrForResponseStore = null;
         int caIdForResponseStore = 0;
+
+        GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
+            .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final boolean cacheUnknown = ocspConfig.getBrowserCacheUnknownStatusEnabled();
+
         try {
             req = translateRequestFromByteArray(request, remoteAddress, transactionLogger);
             // Get the certificate status requests that are inside this OCSP req
@@ -1210,7 +1213,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // If the Extended Revoked Definition should be added for certificates that we can not find in the database, see RFC6960 4.4.8
             boolean addExtendedRevokedExtension = false;
             Date producedAt = null;
-            
+
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
                 ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
@@ -1294,7 +1297,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 transactionLogger.writeln();
                                 transactionLogger.flush();
                             }
-                            return new OcspResponseInformation(ocspResp, maxAge, signerCert);
+                            return new OcspResponseInformation(ocspResp, maxAge, signerCert, cacheUnknown);
                         } catch (IOException e) {
                             log.warn("Pre-produced OCSP response for certificate with serialNr '" + certId.getSerialNumber()
                                     + "' was malformed. Producing new response.");
@@ -1372,7 +1375,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 }
                                 log.info(intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", StringTools.hex(certId.getIssuerNameHash()), "Unauthorized"));
                                 // Return early here
-                                return new OcspResponseInformation(ocspResponse, maxAge, null);
+                                return new OcspResponseInformation(ocspResponse, maxAge, null, cacheUnknown);
                             }
                         }
                         responseList.add(new OCSPResponseItem(certId, status, nextUpdate));
@@ -1519,7 +1522,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             log.info(intres.getLocalizedMessage("ocsp.errorfindcert", certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                             //Return early here
-                            return new OcspResponseInformation(ocspResponse, maxAge, null);
+                            return new OcspResponseInformation(ocspResponse, maxAge, null, cacheUnknown);
                         } else {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
@@ -1770,7 +1773,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 log.warn("Error storing OCSP response for certificate with serialNr '" + serialNrForResponseStore);
             }
         }
-        return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
+        return new OcspResponseInformation(ocspResponse, maxAge, signerCert, cacheUnknown);
     }
     
     private int fetchCertStatus(org.bouncycastle.cert.ocsp.CertificateStatus certStatus) {
