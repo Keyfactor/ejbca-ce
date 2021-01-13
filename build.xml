@@ -979,7 +979,21 @@
 			<istrue value="${running.full.ejbca}" />
         </condition>
 		
-		
+        <!-- Pre-configure eIDAS edition only to use P11NG with CP5 additions -->
+	    <copy file="src/java/defaultvalues.properties" tofile="${tmp}/eidas/src/java/defaultvalues.properties" overwrite="true">
+	        <filterchain>
+	            <tokenfilter>
+	                <replacestring from="#sunp11.cryptotoken.enabled=false" to="sunp11.cryptotoken.enabled=false"/>
+	            </tokenfilter>
+                <tokenfilter>
+                    <replacestring from="#p11ng.cryptotoken.enabled=true" to="p11ng.cryptotoken.enabled=true"/>
+                </tokenfilter>
+                <tokenfilter>
+                    <replacestring from="#p11ng.utimacocp5.enabled=true" to="p11ng.utimacocp5.enabled=true"/>
+                </tokenfilter>
+	        </filterchain>
+	    </copy>
+
 		<convertdot/> <!-- convert dots to underscores in version string -->
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
 		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}${variant.suffix}"/>
@@ -1085,11 +1099,19 @@
                 <exclude unless="edition.is.ee" name="lib/ext/swagger/**"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ssh/**"/>
-		    	<!-- List of modules to exclude from non-eIDAS editions -->
-		    	<exclude unless="build.contains.eidas" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
-		    	<exclude unless="build.contains.eidas" name="modules/p11ng-cli/**"/>
-		    	<exclude unless="build.contains.eidas" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
-                <exclude unless="build.contains.eidas" name="modules/cesecore-common/src-test/org/cesecore/keys/token/p11ng/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
+                <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/keys/token/p11ng/**"/>
+                <!-- List of modules to exclude from non-eIDAS editions -->
+		    	<!-- Exclude standard values if eIDAS edition for which we will include the updated version below -->
+                <exclude if="build.contains.eidas" name="src/java/defaultvalues.properties"/> 
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliKeyAuthorizationCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliKeyAuthorizationInitCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliBackupObjectCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliRestoreObjectCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/p11ng-cli/src/org/ejbca/ui/p11ngcli/command/P11NgCliUnblockKeyCommand.java" unless="build.contains.eidas"/>
+                <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java" unless="build.contains.eidas"/>
 		    	
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java"/>
 		    	<exclude unless="build.contains.ra" name="modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerDownstreamImpl.java"/>
@@ -1119,6 +1141,12 @@
 				<!-- End of the list of subcommands of ejbca.sh that must be hidden when we are running on limited ejbca (va/ra) installation -->
 		    	
 		    </zipfileset>
+			
+            <!-- Pre-configure eIDAS edition only to use P11NG with CP5 additions -->
+            <zipfileset dir="${tmp}/eidas" prefix="${basezipfile}" filemode="700" dirmode="700"> 
+                <include if="build.contains.eidas" name="src/java/defaultvalues.properties"/>
+            </zipfileset>
+			
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    	<exclude name="bin/backup/**" />
