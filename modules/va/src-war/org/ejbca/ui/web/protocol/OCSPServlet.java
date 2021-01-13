@@ -38,6 +38,7 @@ import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -57,8 +58,6 @@ import org.ejbca.util.IPatternLogger;
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
  * For a detailed description of OCSP refer to RFC2560.
- *
- * @version  $Id$
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -170,8 +169,9 @@ public class OCSPServlet extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.OCSP.getName());
+        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID))
+            .getProtocolStatus(AvailableProtocols.OCSP.getName());
+
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
         }
@@ -264,8 +264,16 @@ public class OCSPServlet extends HttpServlet {
                 if (log.isDebugEnabled()) {
                     log.debug(errMsg, e);
                 }
+
+                GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
                 // RFC 2560: responseBytes are not set on error.
-                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE), null);
+                ocspResponseInformation = new OcspResponseInformation(
+                    responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null),
+                    OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
+                    null,
+                    ocspConfig.getBrowserCacheUnknownStatusEnabled()
+                );
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
                     transactionLogger.writeln();
@@ -285,8 +293,16 @@ public class OCSPServlet extends HttpServlet {
                 if (log.isDebugEnabled()) {
                     log.debug(errMsg, e);
                 }
+
+                GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
                 // RFC 2560: responseBytes are not set on error.
-                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE), null);
+                ocspResponseInformation = new OcspResponseInformation(
+                    responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null),
+                    OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
+                    null,
+                    ocspConfig.getBrowserCacheUnknownStatusEnabled()
+                );
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
                     transactionLogger.writeln();
@@ -295,6 +311,7 @@ public class OCSPServlet extends HttpServlet {
                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
                 }
             }
+
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
             response.setContentType("application/ocsp-response");
             response.setContentLength(ocspResponseBytes.length);
@@ -302,7 +319,7 @@ public class OCSPServlet extends HttpServlet {
       
             
             if (HttpMethod.POST.equals(httpMethod)) {
-                addOscpPostHeaders(response, ocspResponseInformation);
+                addOcspPostHeaders(response, ocspResponseInformation);
             }
             
             response.getOutputStream().write(ocspResponseBytes);
@@ -314,7 +331,7 @@ public class OCSPServlet extends HttpServlet {
         }
     }
     
-    private void addOscpPostHeaders(HttpServletResponse response, OcspResponseInformation ocspResponseInformation) {
+    private void addOcspPostHeaders(HttpServletResponse response, OcspResponseInformation ocspResponseInformation) {
         
         if (!ocspResponseInformation.shouldAddCacheHeaders()) {
             return;
