@@ -159,7 +159,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void clear() {
             keyIdentifier = null;
             publicKeyFile = null;
-            this.url = null;
+            url = null;
+            label = null;
+            client = null;
+            realm = null;
+            oauthKeyBeingEdited = null;
             skewLimit = 60000;
         }
 
