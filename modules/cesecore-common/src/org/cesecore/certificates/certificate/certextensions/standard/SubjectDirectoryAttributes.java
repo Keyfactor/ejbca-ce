@@ -49,8 +49,18 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) {
-		ASN1Encodable ret = null;
 		final String dirAttrString  = subject.getExtendedInformation() != null ? subject.getExtendedInformation().getSubjectDirectoryAttributes() : null;
+		ASN1Encodable ret = getAsn1Encodable(dirAttrString);
+		if (ret == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("No directory attributes trying to create SubjectDirectoryAttributes extension: "+dirAttrString);
+			}
+		}
+		return ret;
+	}
+
+	public static ASN1Encodable getAsn1Encodable(String dirAttrString) {
+		ASN1Encodable ret = null;
 		if (StringUtils.isNotEmpty(dirAttrString)) {
 			// Subject Directory Attributes is a sequence of Attribute
 			final Collection<Attribute> attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
@@ -58,16 +68,11 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
 			final Iterator<Attribute> iter = attr.iterator();
 			while (iter.hasNext()) {
 				vec.add(iter.next());
-			}        
-			if (vec.size() > 0) {
-				ret = new DERSequence(vec);				
 			}
-		}			
-		if (ret == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("No directory attributes trying to create SubjectDirectoryAttributes extension: "+dirAttrString);
+			if (vec.size() > 0) {
+				ret = new DERSequence(vec);
 			}
 		}
 		return ret;
-	}	
+	}
 }
