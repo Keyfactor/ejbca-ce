@@ -2330,6 +2330,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final AuthenticationToken authenticationToken, final Integer customId,
             final String searchDetail1, final String searchDetail2,
             final SecurityEventProperties securityEventProperties) {
-
+        auditSession.log(
+                eventType, eventStatus,
+                EjbcaModuleTypes.RA, ServiceTypes.CORE,
+                authenticationToken.toString(),
+                String.valueOf(customId), searchDetail1, searchDetail2,
+                securityEventProperties.toMap()
+        );
     }
 }
