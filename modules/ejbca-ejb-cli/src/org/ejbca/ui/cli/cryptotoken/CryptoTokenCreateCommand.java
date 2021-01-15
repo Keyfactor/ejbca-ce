@@ -119,6 +119,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         sb.append(SoftCryptoToken.class.getSimpleName());
         sb.append(", ");
         sb.append(PKCS11CryptoToken.class.getSimpleName());
+        sb.append(", ");
+        sb.append(AzureCryptoToken.class.getSimpleName());
         try {
             final Class<?> jackJni11Class = Class.forName(CryptoTokenFactory.JACKNJI_NAME);
             sb.append(", ");
@@ -155,10 +157,19 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
         } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(type)) {
             className = CryptoTokenFactory.AWSKMS_NAME;
+            if (parameters.get(AWSKMS_REGION) == null || parameters.get(AWSKMS_ACCESSKEYID) == null) {
+                getLogger().info("You need to specify all parameters for AWS KMS Vault.");
+                return CommandResult.CLI_FAILURE;                
+            }
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
         } else if (AzureCryptoToken.class.getSimpleName().equals(type)) {
             className = AzureCryptoToken.class.getName();
+            // For an Azure token all three parameters are needed
+            if (parameters.get(AZUREVAULT_NAME) == null || parameters.get(AZUREVAULT_TYPE) == null || parameters.get(AZUREVAULT_CLIENTID) == null) {
+                getLogger().info("You need to specify all parameters for Azure Key Vault.");
+                return CommandResult.CLI_FAILURE;                
+            }
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, parameters.get(AZUREVAULT_CLIENTID));
