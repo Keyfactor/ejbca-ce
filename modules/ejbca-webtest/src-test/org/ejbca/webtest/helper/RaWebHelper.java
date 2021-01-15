@@ -206,7 +206,7 @@ public class RaWebHelper extends BaseHelper {
     public void assertCorrectProvideUserCredentialsBlock() {
         final List<WebElement> provideUserCredentialsWebElements = findElements(Page.LABELS_GROUP_PROVIDE_USER_CREDENTIALS);
         assertEquals("Unexpected number of fields under 'Provide User Credentials'", 4, provideUserCredentialsWebElements.size());
-        assertEquals("Expected the label to have the value 'Username'", "Username", provideUserCredentialsWebElements.get(0).getText());
+        assertEquals("Expected the label to have the value 'Username *'", "Username *", provideUserCredentialsWebElements.get(0).getText());
         assertEquals("Expected the label to have the value 'Enrollment code'", "Enrollment code", provideUserCredentialsWebElements.get(1).getText());
         assertEquals("Expected the label to have the value 'Confirm enrollment code'", "Confirm enrollment code", provideUserCredentialsWebElements.get(2).getText());
         assertEquals("Expected the label to have the value 'Email'", "Email", provideUserCredentialsWebElements.get(3).getText());
