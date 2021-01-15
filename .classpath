@@ -157,10 +157,10 @@
 	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.15.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
-	<classpathentry kind="lib" path="lib/intune/csr-validation-0.0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/intune/json-20180130.jar"/>
-	<classpathentry kind="lib" path="lib/intune/adal4j-1.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-8.22.jar"/>
+	<classpathentry kind="lib" path="lib/intune/csr-validation-20210115-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/intune/json-20201115.jar"/>
+	<classpathentry kind="lib" path="lib/intune/adal4j-1.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-7.5.jar"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
