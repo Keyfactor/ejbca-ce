@@ -177,9 +177,6 @@ import org.junit.runner.Description;
 
 /**
  * Tests http pages of ocsp
- * 
- * @version $Id$
- *
  */
 public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
@@ -1257,7 +1254,7 @@ Content-Type: text/html; charset=iso-8859-1
      * @throws Exception
      */
     @Test
-    public void testUnknownStatusCacheControlHeader() throws Exception {
+    public void testUnknownStatusCacheControlHeaderSetNoCache() throws Exception {
         
         // set ocsp configuration
         Map<String,String> map = new HashMap<String, String>();
@@ -1291,6 +1288,77 @@ Content-Type: text/html; charset=iso-8859-1
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();        
+        b64 = new String(Base64.encode(req.getEncoded(), false));
+        url = new URL(sBaseURL + '/' + b64 + urlEnding);
+        con = (HttpURLConnection)url.openConnection();
+        if (con.getResponseCode() != 200) {
+            log.info("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
+        }
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
+        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
+        // Make sure we have a nonce in the response, we should have since we sent one in the request
+        assertNotNull("Response should have nonce since we sent a nonce in the request", noncerep);
+        ASN1InputStream ain = new ASN1InputStream(noncerep);
+        ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+        ain.close();
+        assertEquals("Response Nonce was not the same as the request Nonce, it must be", "123456789", new String(oct.getOctets()));
+        assertNull("Cache-Control in reply although we used Nonce in the request. Responses with Nonce should not have a Cache-control header.", con.getHeaderField("Cache-Control"));
+    }
+
+    /**
+     * This test tests that the OCSP response for a status unknown contains the header "cache-control" with the value "max-age=30,public,no-transform,must-revalidate"
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUnknownStatusCacheControlHeaderSetMaxAge() throws Exception {
+
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        ocspConfiguration.setBrowserCacheUnknownStatusEnabled(true);
+        globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
+
+        // set ocsp configuration
+        Map<String,String> map = new HashMap<String, String>();
+        map.put(OcspConfiguration.UNTIL_NEXT_UPDATE, "1");
+        this.helper.alterConfig(map);
+
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        OCSPReq req = gen.build();
+
+        String sBaseURL = httpReqPath + '/' + resourceOcsp;
+        String urlEnding = "";
+        String b64 = new String(Base64.encode(req.getEncoded(), false));
+        //String urls = URLEncoder.encode(b64, "UTF-8");    // JBoss/Tomcat will not accept escaped '/'-characters by default
+        URL url = new URL(sBaseURL + '/' + b64 + urlEnding);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        if (con.getResponseCode() != 200) {
+            log.info("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
+        }
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+
+        final String expectedHeaderValue = "max-age=30,public,no-transform,must-revalidate";
+        final String actualHeaderValue = con.getHeaderField("Cache-Control");
+        assertNotNull("No Cache-Control in reply.", actualHeaderValue);
+        assertEquals(
+            "Cache-Control header value is '" + actualHeaderValue + "' instead '" + expectedHeaderValue + "'",
+            expectedHeaderValue,
+            actualHeaderValue
+        );
+
+        // Create a GET request using Nonce extension, in this case we should have no cache-control header
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();
         b64 = new String(Base64.encode(req.getEncoded(), false));
         url = new URL(sBaseURL + '/' + b64 + urlEnding);
         con = (HttpURLConnection)url.openConnection();
