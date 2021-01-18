@@ -884,6 +884,37 @@
         </h:panelGrid>
     </h:form>
 
+	<!-- MSAE Auto Enrollment -->
+	<h:form id="autoenrollment" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'AutoEnrollment' and systemConfigMBean.statedumpAvailable}">
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+
+			<h:panelGroup>
+				<h:outputText value="#{web.text.AUTOENROLLMENT_TITLE}" style="font-weight: bold; font-size:1.2em;"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/MSAE_Autoenrollment.html')}" style="font-weight: bold; font-size:1.2em;" escape="false"/>
+			</h:panelGroup>
+
+			<h:panelGroup />
+
+			<h:panelGroup>
+				<h:outputLabel value="Use SSL" styleClass="titles"/> <br/>
+				<h:outputText value="Help tesxt" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="msaeIsUseSSL" value="#{msAutoEnrollmentSettings.useSSL}"
+										 disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:outputLabel for="enableicaocanamechange" value="#{web.text.ACTIVATE}" />
+			</h:panelGroup>
+
+		</h:panelGrid>
+
+		<h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+			<h:panelGroup />
+			<h:panelGroup>
+				<h:commandButton value="#{web.text.SAVE}" action="#{msAutoEnrollmentSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+			</h:panelGroup>
+		</h:panelGrid>
+	</h:form>
+
     <!-- Configuration Checker -->
 
     <h:form id="configurationCheckerForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Configuration Checker'}">
