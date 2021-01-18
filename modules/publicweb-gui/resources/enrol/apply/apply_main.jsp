@@ -59,7 +59,8 @@
 	        </c:when> 
 	        <c:when test="${tokentype == TOKEN_SOFT_BROWSERGEN}">
 	        <c:out value="Browser enrollment is not supported since EJBCA 7.5.0, because all relevant browsers have removed the browser enrollment functionality."/>
-	        <c:set var="includefile" value="deprecated" />
+            <c:out value="Re-directing to CSR enrollment."/>
+	        <c:set var="includefile" value="server.jsp" />
 	        </c:when> 
 	        <c:otherwise> 
 	        	<c:set var="includefile" value="apply_token.jspf" />
@@ -81,6 +82,9 @@
     </c:when> 
     <c:when test="${includefile == 'apply_unknown.jspf'}">
 		<%@ include file="apply_unknown.jspf" %>
+    </c:when> 
+    <c:when test="${includefile == 'server.jsp'}">
+        <c:redirect url="server.jsp"/>
     </c:when> 
     <c:otherwise> 
 	    <h1><c:out value="NO MATCH! Error in apply_main.jsp. includefile == &quot;${includefile}&quot;" /></h1>
