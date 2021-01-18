@@ -43,10 +43,11 @@ public class CertificateInfo implements Serializable {
     private Date updateTime;
     private String subjectKeyId;
     private String subjectAltName;
+    private String accountBindingId;
     
     public CertificateInfo(String fingerprint, String cafingerprint, String serno,  String issuerdn, String subjectdn, int status, int type, 
             Long notBefore, long expiredate, long revocationdate, int revocationreason, String username, String tag, int certificateProfileId,
-            Integer endEntityProfileId, long updateTime, String subjectKeyId, String subjectAltName) {
+            Integer endEntityProfileId, long updateTime, String subjectKeyId, String subjectAltName, String accountBindingId) {
         this.fingerprint = fingerprint;
         this.cafingerprint = cafingerprint;
         this.serno = serno;
@@ -65,6 +66,7 @@ public class CertificateInfo implements Serializable {
         this.updateTime = new Date(updateTime);
         this.subjectKeyId = subjectKeyId;
         this.subjectAltName = subjectAltName;
+        this.accountBindingId = accountBindingId;
     }
     
     public String getFingerprint() {return fingerprint;}
@@ -126,4 +128,9 @@ public class CertificateInfo implements Serializable {
     public String getSubjectAltName() {
         return subjectAltName;
     }
+
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
 }
