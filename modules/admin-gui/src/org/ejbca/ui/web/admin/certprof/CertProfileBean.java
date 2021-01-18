@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
@@ -46,7 +47,6 @@ import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
-import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.ssh.SshCertificateType;
 import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -1407,20 +1407,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return CertificateProfileConstants.QC_ETSI_TYPE_WEBAUTH;
     }
   
-    public List<SelectItem> getQCSemanticsOidsAvailable() {
-        final List<SelectItem> ret = new ArrayList<>();
-        for (final String oid : QcStatement.getAvailableSemanticsOids()) {
-            ret.add(new SelectItem(oid, getEjbcaWebBean().getText("EXT_PKIX_QCS_SEMANTICSID_" + oid)));
-        }
-        return ret;
+    public String getQCSemanticsOids() {
+        return certificateProfile.getQCSemanticsIds();
     }
     
-    public List<String> getQCSemanticsOids() {
-        return Arrays.asList(certificateProfile.getQCSemanticsIds().split(";"));
-    }
-    
-    public void setQCSemanticsOids(final List<String> oids) {
-        certificateProfile.setQCSemanticsIds(String.join(";", oids));
+    public void setQCSemanticsOids(final String oids) {
+        final SortedSet<String> filteredOids = new TreeSet<>(Arrays.asList(oids.split(",")));
+        certificateProfile.setQCSemanticsIds(String.join(",", filteredOids));
     }
 
 }
