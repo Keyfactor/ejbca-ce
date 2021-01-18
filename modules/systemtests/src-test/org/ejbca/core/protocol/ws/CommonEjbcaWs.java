@@ -1686,7 +1686,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Calling pkcs10Request with a malformed PKCS#10 request should throw an exception.");
         } catch(EjbcaException_Exception e) {
-            assertTrue("Not expected error message: " + e.getMessage(), e.getMessage().contains("Fault occurred while processing"));
+            assertEquals("Not expected error message: " + e.getMessage(), "corrupted stream - out of bounds length found: 97 >= 25", e.getMessage());
         }
         // Tbd: Test CADoesntExistsException (not possible anymore because of NPE in changeUser (checks DB foreign key references now!).
         // Tbd: Test AuthorizationDeniedException (where possible).
