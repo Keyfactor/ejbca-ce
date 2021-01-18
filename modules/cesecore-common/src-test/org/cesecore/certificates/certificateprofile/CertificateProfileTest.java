@@ -621,8 +621,8 @@ public class CertificateProfileTest {
         assertEquals("", cp.getQCSemanticsIds());
         cp.setQCSemanticsIds("1.1.1.2");
         assertEquals("1.1.1.2", cp.getQCSemanticsIds());
-        cp.setQCSemanticsIds("1.1.1.2;1.1.1.3");
-        assertEquals("1.1.1.2;1.1.1.3", cp.getQCSemanticsIds());
+        cp.setQCSemanticsIds("1.1.1.2,1.1.1.3");
+        assertEquals("1.1.1.2,1.1.1.3", cp.getQCSemanticsIds());
         assertNull(cp.getSignatureAlgorithm()); // default value null = inherit from CA
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
