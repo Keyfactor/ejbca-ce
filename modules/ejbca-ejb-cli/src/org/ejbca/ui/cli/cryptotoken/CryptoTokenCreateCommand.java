@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -64,6 +65,9 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String PKCS11_SLOTCOLLIDE_IGNORE= "--forceusedslots";
     private static final String AWSKMS_ACCESSKEYID= "--awskmsaccesskeyid";
     private static final String AWSKMS_REGION= "--awskmsregion";
+    private static final String AZUREVAULT_TYPE= "--azurevaulttype";
+    private static final String AZUREVAULT_NAME= "--azurevaultname";
+    private static final String AZUREVAULT_CLIENTID= "--azurevaultclientid";
 
     {
         registerParameter(new Parameter(CRYPTOTOKEN_NAME_KEY, "Token Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -93,6 +97,12 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(AWSKMSCryptoToken) Access Key ID for AWS KMS, example AKIA2I6NL4C3YGQJ6YY3"));
         registerParameter(new Parameter(AWSKMS_REGION, "Region", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(AWSKMSCryptoToken) AWS KMS region, example us-east-1."));
+        registerParameter(new Parameter(AZUREVAULT_NAME, "Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(AzureCryptoToken)  Key Vault name as chosen when creating the Azure Key Vault, example ejbca-keyvault."));
+        registerParameter(new Parameter(AZUREVAULT_TYPE, "Type", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(AzureCryptoToken) Key Vault type, Premium or Standard."));
+        registerParameter(new Parameter(AZUREVAULT_CLIENTID, "Client ID", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(AzureCryptoToken) Key Vault Client ID as noted when creating the App Registration, example 2f6bd1d7-81ee-52cf-b0a4-8dd570196701."));
         // ePassport CSCA only
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
@@ -109,6 +119,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         sb.append(SoftCryptoToken.class.getSimpleName());
         sb.append(", ");
         sb.append(PKCS11CryptoToken.class.getSimpleName());
+        sb.append(", ");
+        sb.append(AzureCryptoToken.class.getSimpleName());
         try {
             final Class<?> jackJni11Class = Class.forName(CryptoTokenFactory.JACKNJI_NAME);
             sb.append(", ");
@@ -145,8 +157,22 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
         } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(type)) {
             className = CryptoTokenFactory.AWSKMS_NAME;
+            if (parameters.get(AWSKMS_REGION) == null || parameters.get(AWSKMS_ACCESSKEYID) == null) {
+                getLogger().info("You need to specify all parameters for AWS KMS Vault.");
+                return CommandResult.CLI_FAILURE;                
+            }
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
+        } else if (AzureCryptoToken.class.getSimpleName().equals(type)) {
+            className = AzureCryptoToken.class.getName();
+            // For an Azure token all three parameters are needed
+            if (parameters.get(AZUREVAULT_NAME) == null || parameters.get(AZUREVAULT_TYPE) == null || parameters.get(AZUREVAULT_CLIENTID) == null) {
+                getLogger().info("You need to specify all parameters for Azure Key Vault.");
+                return CommandResult.CLI_FAILURE;                
+            }
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, parameters.get(AZUREVAULT_CLIENTID));
         } else if (PKCS11CryptoToken.class.getSimpleName().equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
             if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
                 className = PKCS11CryptoToken.class.getName();
