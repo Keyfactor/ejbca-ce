@@ -307,6 +307,19 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #awskms.cryptotoken.enabled=true
 
 #
+# Enable usage of P11NG Crypto Token in the Admin UI
+# Default: false (not enabled)
+#p11ng.cryptotoken.enabled=true
+
+#
+# Utimaco CP5 specific functions are disabled in the Admin UI
+
+#
+# Enable usage of SunP11 Crypto Token in the Admin UI
+# Default: true (enabled)
+#sunp11.cryptotoken.enabled=false
+
+#
 # Enable usage of legacy RA API for EST. Only needed if this is a CA that
 # accepts EST requests from an RA older than version 7.4.1.1, 7.4.3 or 7.5.0.
 # This legacy API does not check the access rules of the peer connector, i.e.

@@ -226,7 +226,22 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE";
     private static final String KEY_RECOVERY_EEP = "KEYRECOVERY";
     private static final String BADCANAME = "BadCaName";
-    
+
+    private static final String PKCS10 = "MIIChTCCAW0CAQAwQDELMAkGA1UEBhMCU0UxDjAMBgNVBAgMBVNvbG5hMREwDwYD" + 
+            "VQQKDAhQcmltZUtleTEOMAwGA1UEAwwFVG9tYXMwggEiMA0GCSqGSIb3DQEBAQUA" + 
+            "A4IBDwAwggEKAoIBAQDfOpmUDnUsilYoaYpHUGN9AvAkK2AdHoYz4cTkKD4kPPvq" + 
+            "ErRdayyGWiuKrmhH6v+jPvh5ZYQoqL2viSTIkcvr7BIo9pgqSVswxvC5v4GGy3R4" + 
+            "nme0El27oB5X0AJl3X5STT5GwIWw66XHcTeg1ux62bfY/N1RhiHanFOZ00DokPyW" + 
+            "/s+dGcnZ9kBC5s5jcEEEwcGXCyKuyCoy60Z87asOraCsYeRlq3qqdms0BZEM7lLK" + 
+            "7oP4HjIpk9VSLYihGlFsbophw96gNGtYjorX//CYvuyckUpA9TLdfx8IoQSiKlsJ" + 
+            "CDdMeDXnkqOZAmXj3xos3qm1VJV2J9AVggzQ1SUnAgMBAAGgADANBgkqhkiG9w0B" + 
+            "AQsFAAOCAQEAGcK8aMvmdhsTeCv+D1R21Bjc5fb+dmrXcYdR4RI8roW4GZDqGdBU" + 
+            "8bYDZfO0SnV0q6m23G6upVhtYpzOrVcDaiQ4iFvGQkz8pfErZ+qqwZhE6yvbc+2p" + 
+            "0BVuIIePbgdAW17acxkOF4p0Z5TkNazdNwePyjW8dfUvarVX//AA48l66bUXu6IM" + 
+            "X2LU/OY1hcLETlAqV2o1iDPRsOTnF2OpV8FdmpBhD7VUa78h8n3w3l+WdmaAhcy4" + 
+            "jItzjKHi5CEoJ3s15Yo4zuwZt2g+bmGGfBqGcSKkPAlsQ+A79DMwzJXLN/Cs/joY" + 
+            "gwObGYEkQqkX1DGjDNzYyw+RtvdzJV8shQ==";
+
     private static final String CRMF = "MIIBdjCCAXIwgdkCBQCghr4dMIHPgAECpRYwFDESMBAGA1UEAxMJdW5kZWZpbmVk"
             + "poGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCi6+Bmo+0I/ye8k6B6BkhXgv03" + "1jEeD3mEuvjIEZUmmdt2RBvW2qfJzqXV8dsI1HZT4fZqo8SBsrYls4AC7HooWI6g"
             + "DjSyd3kFcb5HP+qnNlz6De/Ab+qAF1rLJhfb2cXib4C7+bap2lwA56jTjY0qWRYb" + "v3IIfxEEKozVlbg0LQIDAQABqRAwDgYDVR0PAQH/BAQDAgXgoYGTMA0GCSqGSIb3"
@@ -661,7 +676,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
         userDataVOWS.setCertificateProfileName(WS_CERTPROF_EI);
         try {
-            ejbcaraws.certificateRequest(userDataVOWS, "junk", CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            ejbcaraws.certificateRequest(userDataVOWS, PKCS10, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Expected empty username to be rejected according to profile settings.");
         } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
             // NOPMD expected
@@ -673,6 +688,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             fail("Should have failed because of invalid RESPONSETYPE value.");
         } catch (EjbcaException_Exception e) {
             assertEquals(ErrorCode.INTERNAL_ERROR.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
+            assertEquals("Wrong response message", "Bad responseType:xx", e.getMessage());
         }
     }
 

@@ -126,9 +126,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 /**
- * 
- * @version $Id$
- * 
  */
 @RunWith(CryptoTokenTestRunner.class)
 public class IntegratedOcspResponseTest {
@@ -395,7 +392,8 @@ public class IntegratedOcspResponseTest {
         // Use a nonce with more than 32 bytes to see if we reject it. We should not allow too long nonces due to the possibility of using 
         // this as a chosen-prefix attack on hash collisions.
         // https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("0123456789012345678901234567890123456789".getBytes()));
+        // https://www.rfc-editor.org/rfc/rfc8954.txt
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[33]));
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq reqnonce = gen.build();
         
@@ -403,13 +401,32 @@ public class IntegratedOcspResponseTest {
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", errResponseBytes);
         OCSPResp errResponse = new OCSPResp(errResponseBytes);
-        assertEquals("Response status not 6 (unauthorized).", OCSPRespBuilder.UNAUTHORIZED, errResponse.getStatus());
-                
-        // Go on now with a nonce that is not too long
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        assertEquals("Response status not 1 (malformed request see RFC8954) when sending 33 bytes nonce.", OCSPRespBuilder.MALFORMED_REQUEST, errResponse.getStatus());
+
+        // Go on now with a nonce that is too short (0 bytes)
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        reqnonce = gen.build();
+        
+        errResponseBytes = ocspResponseGeneratorSession.getOcspResponse(reqnonce.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
+                .getOcspResponse();
+        assertNotNull("OCSP responder replied null", errResponseBytes);
+        errResponse = new OCSPResp(errResponseBytes);
+        assertEquals("Response status not 1 (malformed request see RFC8954) when sending 0 byte nonce.", OCSPRespBuilder.MALFORMED_REQUEST, errResponse.getStatus());
+
+        // Go on now with a nonce that is not too long, exactly 1 byte
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[1]));
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
+                .getOcspResponse();
+        assertNotNull("OCSP responder replied null", responseBytes);
+
+        // Go on now with a nonce that is not too long, exactly 32 bytes
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[32]));
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();
+        responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 

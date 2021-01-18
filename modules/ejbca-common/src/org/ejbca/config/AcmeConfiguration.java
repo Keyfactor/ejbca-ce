@@ -11,53 +11,72 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.log4j.Logger;
+import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
+import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
 
 /**
  * Configuration used by specifying the configurationId as part of the request URL path.
- *
- * @version $Id$
  */
 public class AcmeConfiguration extends UpgradeableDataHashMap implements Serializable {
 
+    /** Class logger. */
+    private static final Logger log = Logger.getLogger(AcmeConfiguration.class);
+    
     private static final long serialVersionUID = 1L;
-
+    
+    protected static final InternalResources intres = InternalResources.getInstance();
+    
+    protected static final float LATEST_VERSION = 5;
+    
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
 
     private static final String KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING = "requireExternalAccountBinding";
+    private static final String KEY_EXTERNAL_ACCOUNT_BINDING = "externalAccountBinding";
     private static final String KEY_PRE_AUTHORIZATION_ALLOWED = "preAuthorizationAllowed";
     private static final String KEY_END_ENTITY_PROFILE_ID = "endEntityProfileId";
     private static final String KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE = "valiationHttpCallbackUrlTemplate";
     private static final String KEY_TERMS_OF_SERVICE_URL = "termsOfServiceUrl";
+    private static final String KEY_TERMS_OF_SERVICE_CHANGE_URL = "termsOfServiceChangeUrl";
     private static final String KEY_WEB_SITE_URL = "webSiteUrl";
     private static final String KEY_ORDER_VALIDITY = "orderValidity";
     private static final String KEY_PRE_AUTHORIZATION_VALIDITY = "preAuthorizationValidity";
     private static final String KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = "wildcardCertificateIssuanceAllowed";
+    private static final String KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = "wildcardWithHttp01ChallengeAllowed";
     private static final String KEY_DNS_RESOLVER = "dnsResolver";
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
     private static final String KEY_DNS_PORT = "dnsPort";
     private static final String KEY_USE_DNSSEC_VALIDATION = "useDnssecValidation";
     private static final String KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL = "termsOfServiceRequireNewApproval";
+    private static final String KEY_AGREE_TO_NEW_TERMS_OF_SERVICE_ALLOWED = "agreeToNewTermsOfServiceAllowed";
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
-
 
     private static final int DEFAULT_END_ENTITY_PROFILE_ID = EndEntityConstants.NO_END_ENTITY_PROFILE;
     private static final boolean DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING = false;
     private static final boolean DEFAULT_PRE_AUTHORIZATION_ALLOWED = false;
     private static final boolean DEFAULT_REQUIRE_NEW_APPROVAL = true;
-    private static final boolean DEFAULT__WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = false;
+    private static final boolean DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED = true;
+    private static final boolean DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = false;
+    private static final boolean DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = true;
+    
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
+    private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
+    private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
+    
     private static final boolean DEFAULT_USE_DNSSEC_VALIDATION = true;
-
 
     public AcmeConfiguration() {}
 
@@ -67,11 +86,33 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     @Override
     public float getLatestVersion() {
-        return 0;
+        return LATEST_VERSION;
     }
 
     @Override
-    public void upgrade() {}
+    public void upgrade() {
+        if (Float.compare(getLatestVersion(), getVersion()) > 0) {
+            // New version of the class, upgrade.
+            log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
+            // v5. Added configurable order validity.
+            setOrderValidity(DEFAULT_ORDER_VALIDITY);
+            // v4. Added wildcard certificate issuance with http-01 challenge allowed.
+            setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
+            // v3. Change of ToS URL is set to ToS URL and MUST be changed by the user if feature is used (but 
+            // it's a required field on GUI).
+            setTermsOfServiceChangeUrl(getTermsOfServiceUrl());
+            setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
+            // v2. ACME external account binding implementation.
+            try {
+                if (getExternalAccountBinding() == null) {
+                    setExternalAccountBinding(AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation());
+                }
+            } catch (AccountBindingException e) {
+                log.error("Could not upgrade ACME configuration with default ACME EAB implementation: " + e.getMessage());
+            }
+            data.put(VERSION, LATEST_VERSION);
+        }
+    }
 
     /** @return the configuration ID as used in the request URL path */
     public String getConfigurationId() { return configurationId; }
@@ -91,6 +132,23 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
     public void setRequireExternalAccountBinding(final boolean requireExternalAccountBinding) {
         super.data.put(KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING, String.valueOf(requireExternalAccountBinding));
+    }
+
+    @SuppressWarnings("unchecked")
+    public AcmeExternalAccountBinding getExternalAccountBinding() throws AccountBindingException {
+        if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof LinkedHashMap) {
+            final LinkedHashMap<Object,Object> eabData = (LinkedHashMap<Object,Object>) data.get(KEY_EXTERNAL_ACCOUNT_BINDING);
+            final AcmeExternalAccountBinding eab = AcmeExternalAccountBindingFactory.INSTANCE.getArcheType((String) eabData.get("typeIdentifier"));
+            eab.setDataMap(eabData);
+            return eab;
+        }
+        return null;
+    }
+
+    public void setExternalAccountBinding(final AcmeExternalAccountBinding eab) {
+        if (eab != null) {
+            data.put(KEY_EXTERNAL_ACCOUNT_BINDING, eab.clone().getDataMap());
+        }
     }
 
     /**
@@ -134,6 +192,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_TERMS_OF_SERVICE_URL, termsOfServiceUrl);
     }
     
+    /** @return a URL pointing to a location where advice how to agree to a new terms Of services version can be found. */
+    public String getTermsOfServiceChangeUrl() {
+        return (String) super.data.get(KEY_TERMS_OF_SERVICE_CHANGE_URL);
+    }
+    
+    public void setTermsOfServiceChangeUrl(final String url) {
+        super.data.put(KEY_TERMS_OF_SERVICE_CHANGE_URL, url);
+    }
+    
     /** @return the web site URL presented in the directory meta data */
     public String getWebSiteUrl() {
         return (String) super.data.get(KEY_WEB_SITE_URL);
@@ -152,11 +219,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /** @return how long a new order will be valid for in milliseconds */
     public long getOrderValidity() {
-        final Long orderValidity = (Long) super.data.get(KEY_ORDER_VALIDITY);
-        return orderValidity==null ? 3600000L : orderValidity.intValue();
+        final Long orderValidity = (Long) data.get(KEY_ORDER_VALIDITY);
+        return Objects.isNull(orderValidity) ? DEFAULT_ORDER_VALIDITY : orderValidity;
     }
-    public void setOrderValidity(final int orderValidity) {
-        super.data.put(KEY_ORDER_VALIDITY, Long.valueOf(orderValidity));
+    public void setOrderValidity(final long orderValidity) {
+        super.data.put(KEY_ORDER_VALIDITY, orderValidity);
     }
 
     /** @return how long a new pre-authorizations will be valid for in milliseconds */
@@ -179,6 +246,14 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     public void setWildcardCertificateIssuanceAllowed(final boolean wildcardCertificateIssuanceAllowed) {
         super.data.put(KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED, String.valueOf(wildcardCertificateIssuanceAllowed));
+    }
+    
+    public boolean isWildcardWithHttp01ChallengeAllowed() {
+        return Boolean.valueOf((String) super.data.get(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED));
+    }
+
+    public void setWildcardWithHttp01ChallengeAllowed(final boolean allowed) {
+        super.data.put(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED, String.valueOf(allowed));
     }
 
     public String getDnssecTrustAnchor() {
@@ -223,6 +298,13 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL, String.valueOf(termsOfServiceRequireNewApproval));
     }
     
+    public boolean isAgreeToNewTermsOfServiceAllowed() {
+        return Boolean.valueOf((String) super.data.get(KEY_AGREE_TO_NEW_TERMS_OF_SERVICE_ALLOWED));
+    }
+    
+    public void setAgreeToNewTermsOfServiceAllowed(boolean allowed) {
+        super.data.put(KEY_AGREE_TO_NEW_TERMS_OF_SERVICE_ALLOWED, String.valueOf(allowed));
+    }
     
     public boolean isUseDnsSecValidation() {
         return Boolean.valueOf((String) super.data.get(KEY_USE_DNSSEC_VALIDATION));
@@ -237,11 +319,20 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         alias += ".";
         setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
         setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
+        try {
+            setExternalAccountBinding(AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation());
+        } catch (AccountBindingException e) {
+            // NOOP
+        }
         setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
         setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL);
+        setTermsOfServiceChangeUrl(DEFAULT_TERMS_OF_SERVICE_CHANGE_URL);
         setTermsOfServiceRequireNewApproval(DEFAULT_REQUIRE_NEW_APPROVAL);
-        setWildcardCertificateIssuanceAllowed(DEFAULT__WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
+        setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
+        setWildcardCertificateIssuanceAllowed(DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
+        setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
         setWebSiteUrl(DEFAULT_WEBSITE_URL);
+        setOrderValidity(DEFAULT_ORDER_VALIDITY);
         setDnsResolver(DNS_RESOLVER_DEFAULT);
         setDnssecTrustAnchor(DnsSecDefaults.IANA_ROOT_ANCHORS_DEFAULT);
         setDnsPort(DNS_SERVER_PORT_DEFAULT);

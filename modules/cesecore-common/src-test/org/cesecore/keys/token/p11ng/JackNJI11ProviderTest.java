@@ -10,7 +10,11 @@
 
 package org.cesecore.keys.token.p11ng;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
@@ -19,6 +23,7 @@ import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Security;
 import java.security.spec.PSSParameterSpec;
 import java.util.Date;
@@ -47,9 +52,14 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
@@ -61,13 +71,12 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyGenParams.KeyPairTemplate;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.util.crypto.CryptoTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -163,11 +172,13 @@ public class JackNJI11ProviderTest {
     
     @After
     public void tearDown() throws Exception {
-        // Delete created HSM keys. CryptoToken is never persiste.
-        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
-        cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
-        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
-        cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
+        // Delete created HSM keys. CryptoToken is never persisted.
+        if (cryptoToken != null) {
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_1);
+            cryptoToken.deleteEntry(PKCS11TestUtils.RSA_TEST_KEY_2);
+            cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_1);
+            cryptoToken.deleteEntry(PKCS11TestUtils.ECC_TEST_KEY_2);
+        }
     }
     
     @Test
@@ -213,7 +224,7 @@ public class JackNJI11ProviderTest {
         
         {
             // Encrypt key pair, will only use the public key and should therefore always work (BC provider)
-            byte[] encrypted = CryptoTools.encryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, toEncrypt);
+            byte[] encrypted = encryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, toEncrypt);
             assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
             // Verify at least something about the encrypted data
             CMSEnvelopedData ed = new CMSEnvelopedData(encrypted);
@@ -223,15 +234,18 @@ public class JackNJI11ProviderTest {
 
             // Try to decrypt it, since this key is generated with Sign only, unwrap is not allowed
             try {
-                final KeyPair decrypted = CryptoTools.decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, encrypted);
+                decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_1, encrypted);
             } catch (CKRException e) {
-                assertEquals("Error should be that function is not permitted", CKR.KEY_FUNCTION_NOT_PERMITTED, e.getCKR());
+                // Error should be that function is not permitted, but can be GENERAL_ERROR as well, or KEY_TYPE_INCONSISTENT
+                if (e.getCKR() != CKR.KEY_FUNCTION_NOT_PERMITTED && e.getCKR() != CKR.GENERAL_ERROR && e.getCKR() != CKR.KEY_TYPE_INCONSISTENT) {
+                    fail("There should be an that function is not permitted/working (KEY_FUNCTION_NOT_PERMITTED/104 or GENERAL_ERROR/5 or KEY_TYPE_INCONSISTENT/99), but was " + e.getCKR());                    
+                }
             }
         }
 
         {
             // Do the same but with a key that has SIGN_ENCRYPT
-            byte[] encrypted = CryptoTools.encryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_2, toEncrypt);
+            byte[] encrypted = encryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_2, toEncrypt);
             assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
             // Verify at least something about the encrypted data
             CMSEnvelopedData ed = new CMSEnvelopedData(encrypted);
@@ -240,7 +254,7 @@ public class JackNJI11ProviderTest {
             assertEquals("Encryption algorithms should be RSAEncryption", "1.2.840.113549.1.1.1", recipient.getKeyEncryptionAlgOID());
 
             // Decrypt it, this will use the private key and the JACKNJI11Provider 
-            final KeyPair decrypted = CryptoTools.decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_2, encrypted);
+            final KeyPair decrypted = decryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_2, encrypted);
             assertNotNull("Decrypting a key pair must result in a KeyPair", decrypted);
             assertTrue("Decrypted public key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPublic().getEncoded(), decrypted.getPublic().getEncoded()));
             assertTrue("Decrypted private key should be equal to input", ArrayUtils.isEquals(toEncrypt.getPrivate().getEncoded(), decrypted.getPrivate().getEncoded()));
@@ -264,9 +278,9 @@ public class JackNJI11ProviderTest {
         Properties prop = new Properties();
         String hsmlib = PKCS11TestUtils.getHSMLibrary();
         assertNotNull("No HSM library installed for testing", hsmlib);
-        prop.setProperty(Pkcs11NgCryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
-        prop.setProperty(Pkcs11NgCryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
+        prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
         prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
         return CryptoTokenFactory.createCryptoToken(CryptoTokenFactory.JACKNJI_NAME, prop, null, 111, "JackNJI11ProviderTestToken");
     }
@@ -303,5 +317,57 @@ public class JackNJI11ProviderTest {
                 pssParams.getHashAlgorithm(), AlgorithmIdentifier.getInstance(pssParams.getMaskGenAlgorithm().getParameters()));
         assertEquals("Salt length and digest length should be equal.", pssParams.getSaltLength().intValue(), digest.getDigestLength());
     }
-    
+ 
+    /**
+     * Copied from org.ejbca.util.crypto.CryptoTools, which is in another module. 
+     * Not so important to run the exact same code, what we test here is that using a symmestric AES key in BC, 
+     * wrapping it with an RSA key in the HSM works with the BC code. 
+     */
+    private KeyPair decryptKeys(final CryptoToken cryptoToken, final String alias, final byte[] data) throws IOException, CryptoTokenOfflineException {
+        try {
+            CMSEnvelopedData ed = new CMSEnvelopedData(data);
+            RecipientInformationStore recipients = ed.getRecipientInfos();
+            RecipientInformation recipient = recipients.getRecipients().iterator().next();
+            ObjectInputStream ois = null;
+            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
+            rec.setProvider(cryptoToken.getEncProviderName());
+            rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
+            // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
+            // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known
+            // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+            rec.setMustProduceEncodableUnwrappedKey(true);
+            byte[] recdata = recipient.getContent(rec);
+            ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
+            return (KeyPair) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Could not deserialize key pair after decrypting it due to missing class: " + e.getMessage(), e);
+        } catch (CMSException e) {
+            throw new IOException("Could not parse encrypted data: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Copied from org.ejbca.util.crypto.CryptoTools, which is in another module. 
+     * Not so important to run the exact same code, what we test here is that using a symmestric AES key in BC, 
+     * wrapping it with an RSA key in the HSM works with the BC code. 
+     */
+    private byte[] encryptKeys(final CryptoToken cryptoToken, final String alias, final KeyPair keypair) throws CryptoTokenOfflineException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream os = new ObjectOutputStream(baos);
+            os.writeObject(keypair);
+            CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+            CMSEnvelopedData ed;
+            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
+            final PublicKey pk = cryptoToken.getPublicKey(alias);
+            byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
+            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
+            JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), jceCMSContentEncryptorBuilder.build());
+            return ed.getEncoded();
+        } catch (IOException | CMSException e) {
+            throw new IllegalStateException("Failed to encrypt keys: " + e.getMessage(), e);
+        }
+    }
+
 }

@@ -196,8 +196,6 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * This SSB generates OCSP responses. 
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -1686,7 +1684,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (!isPreSigning && auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SIG_REQUIRED);
             }
-        } catch (SignRequestSignatureException | IllegalNonceException e) {
+        } catch (IllegalNonceException e) {
+            if (!isPreSigning && transactionLogger.isEnabled()) {
+                transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+            }
+            if (!isPreSigning && auditLogger.isEnabled()) {
+                auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
+            }
+            String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+            log.info(errMsg); // No need to log the full exception here
+            // RFC 2560: responseBytes are not set on error.
+            ocspResponse = responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null);
+            if (!isPreSigning && transactionLogger.isEnabled()) {
+                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
+            }
+            if (!isPreSigning && auditLogger.isEnabled()) {
+                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
+            }
+        } catch (SignRequestSignatureException e) {
             if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
@@ -1864,9 +1879,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 ((GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).getNonceEnabled());
             if (null != ext && nonceEnable) {
                 ASN1OctetString noncestr = ext.getExtnValue();
-                // Limit Nonce to 32 bytes to avoid chosen-prefix attack on hash collisions.
+                // If we have a nonce, limit Nonce to 32 bytes to avoid chosen-prefix attack on hash collisions.
                 // See https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
-                if ( (noncestr != null) && (noncestr.getOctets() != null) && (noncestr.getOctets().length > 32) ) {
+                // https://www.rfc-editor.org/rfc/rfc8954.txt
+                if ( (noncestr != null) && (noncestr.getOctets() != null) && (noncestr.getOctets().length > 32 || noncestr.getOctets().length < 1) ) {
                     log.info("Received OCSP request with Nonce larger than 32 bytes, rejecting.");
                     throw new IllegalNonceException("Nonce too large");
                 }
