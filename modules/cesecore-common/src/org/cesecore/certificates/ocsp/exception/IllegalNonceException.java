@@ -16,8 +16,6 @@ import org.cesecore.CesecoreException;
 
 /**
  * Error due to an invalid Nonce value in request.
- *
- * @version $Id$
  */
 public class IllegalNonceException extends CesecoreException {
  

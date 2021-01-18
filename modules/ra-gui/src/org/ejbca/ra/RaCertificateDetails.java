@@ -116,6 +116,7 @@ public class RaCertificateDetails {
     private String publicKeySpecification = "";
     private String publicKeyParameter = "";
     private String subjectKeyId = "";
+    private String accountBindingId = "";
     private String basicConstraints = "";
     private String cvcAuthorizationRole = "";
     private String cvcAuthorizationAccessRights = "";
@@ -281,6 +282,7 @@ public class RaCertificateDetails {
         if (subjectKeyIdB64!=null) {
             this.subjectKeyId = new String(Hex.encode(Base64.decode(subjectKeyIdB64.getBytes())));
         }
+        this.accountBindingId = certificateData.getAccountBindingId();
         styleRowCallCounter = 0;    // Reset
     }
 
@@ -364,6 +366,7 @@ public class RaCertificateDetails {
     public String getPublicKeySpecification() { return publicKeySpecification; }
     public String getPublicKeyParameter() { return publicKeyParameter; }
     public String getSubjectKeyId() { return subjectKeyId; }
+    public String getAccountBindingId() { return accountBindingId; }
     public String getBasicConstraints() { return basicConstraints; }
     public String getCvcAuthorizationRole() { return cvcAuthorizationRole; }
     public String getCvcAuthorizationAccessRights() { return cvcAuthorizationAccessRights; }
