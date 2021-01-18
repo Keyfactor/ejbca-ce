@@ -1550,16 +1550,16 @@
                    	value="#{web.text.EXT_PKIX_QCS_SEMANTICSID}"
                    	rendered="#{certProfileBean.certificateProfile.useQCStatement}"
                    	styleClass="subItem" />
-                   <h:selectManyListbox styleClass="select-list"
-                       id="selectqcsemanticsid"
-                       value="#{certProfileBean.QCSemanticsOids}"
-                       size="2"
-                       rendered="#{certProfileBean.certificateProfile.useQCStatement}"
-                   	disabled="#{certProfileBean.viewOnly}">
-                       <f:selectItems
-                           value="#{certProfileBean.QCSemanticsOidsAvailable}" />
-                   </h:selectManyListbox>
-
+                <h:inputText id="textfieldqcsemanticsid"
+	                value="#{certProfileBean.QCSemanticsOids}"
+	                size="20" maxlength="255"
+	                title="#{web.text.FORMAT_OIDS}"
+	                rendered="#{certProfileBean.certificateProfile.useQCStatement}"
+	                disabled="#{certProfileBean.viewOnly}"
+	                validatorMessage="#{web.text.ONLYOIDSINQCSEMATICSOID}">
+	                <f:validateRegex pattern="^(((\d+\.{1})+(\d+\.{0}){1}),?)*$" />
+	            </h:inputText>
+                   
                 <h:outputLabel for="textfieldqcstatementraname"
                     value="#{web.text.EXT_PKIX_QCS_NAMERAS}"
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}"

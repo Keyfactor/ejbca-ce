@@ -138,13 +138,13 @@ public class QcStatement extends StandardCertificateExtension {
 		ExtendedSemanticsInformation si = null;
 		if (san != null) {
 			if (StringUtils.isNotEmpty(certProfile.getQCSemanticsIds())) {
-			    final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(";")));
+			    final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(",")));
 				si = new ExtendedSemanticsInformation(oids, san.getNames());
 			} else {
 				si = new ExtendedSemanticsInformation(san.getNames());                     
 			}
 		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsIds())) {
-			final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(";")));
+			final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(",")));
 			si = new ExtendedSemanticsInformation(oids);                 
 		}
 		final ArrayList<QCStatement> qcs = new ArrayList<>();

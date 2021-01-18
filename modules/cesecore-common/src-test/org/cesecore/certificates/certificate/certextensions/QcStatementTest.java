@@ -62,7 +62,7 @@ public class QcStatementTest {
         prof.setUsePkixQCSyntaxV2(true);
         // (OID = 1.3.6.1.55.7.11.2) with SematicsID = 0.4.0.194121.1.1 AND 0.4.0.194121.1.2 
         // SemanticsID = "Natural Person" or "Legal Person", according to eIDAS EN 319 412-1
-        prof.setQCSemanticsIds(QcStatement.id_etsi_qcs_semanticsId_Natural + ";" + QcStatement.id_etsi_qcs_semanticsId_Legal);
+        prof.setQCSemanticsIds(QcStatement.id_etsi_qcs_semanticsId_Natural + "," + QcStatement.id_etsi_qcs_semanticsId_Legal);
         prof.setUseQCCountries(true);
         prof.setQCCountriesString("SE,DE,CH");
         
