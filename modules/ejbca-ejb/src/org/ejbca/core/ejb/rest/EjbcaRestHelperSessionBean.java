@@ -212,7 +212,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
             try {
                 subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
-            } catch (ParseException e) {
+            } catch (ParseException | IllegalArgumentException e) {
                 throw new EjbcaException(ErrorCode.BAD_REQUEST, e.getMessage());
             }
         }
