@@ -74,6 +74,7 @@ public class SubjectDirAttrExtension extends CertTools {
 	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
      *  
 	 * @throws java.text.ParseException when id_pda_dateOfBirth is malformed
+     * @throws IllegalArgumentException if the ASN.1 in the subjectDirectoryAttributes is malformed
 	 */
 	public static String getSubjectDirectoryAttributes(Certificate certificate) throws ParseException {
 		log.debug("Search for SubjectDirectoryAttributes");
@@ -86,6 +87,24 @@ public class SubjectDirAttrExtension extends CertTools {
 		return result;
 	}
 
+	/** Parses Extension value with SubjectDirectoryAttributes.
+	 * 
+	 * final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
+     * if (subjectDirectoryAttributes != null) {
+     *     ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
+     *     final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
+     * ...
+     * 
+	 * Supported subjectDirectoryAttributes are the ones in the method above 
+	 *
+	 * @param certificate containing subject directory attributes
+	 * @return String containing directoryAttributes of form the form specified above or null if no directoryAttributes exist. 
+	 *   Values in returned String is from CertTools constants. 
+	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
+	 *  
+	 * @throws java.text.ParseException when id_pda_dateOfBirth is malformed
+	 * @throws IllegalArgumentException if the ASN.1 is malformed
+	 */
 	public static String getSubjectDirectoryAttribute(ASN1Primitive obj) throws ParseException {
 		StringBuilder result;
 		result = new StringBuilder();
