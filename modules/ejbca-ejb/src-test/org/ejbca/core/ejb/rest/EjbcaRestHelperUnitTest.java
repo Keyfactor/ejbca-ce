@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.rest;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -30,6 +25,7 @@ import java.util.Collection;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -37,6 +33,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -67,12 +64,14 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * This class contains unit tests for EjbcaRestHelper class
- *
- * @version $Id: EjbcaRestHelperUnitTest.java 29025 2018-05-25 08:45:54Z tarmo_r_helmes $
- *
  */
 @RunWith(EasyMockRunner.class)
 public class EjbcaRestHelperUnitTest {
@@ -301,20 +300,25 @@ public class EjbcaRestHelperUnitTest {
         //this key is not used to issue any certifictate. It is used only to generate a csr that can be parsed
         final KeyPair keyPair = KeyTools.genKeys("secp256r1", "EC");
 
-        // Create a P10 with extensions, in this case subject directory attributes with dateOfBirth, gender,
-        // countryOfCitizenchip and countryOfResidence
-        ASN1EncodableVector altnameattr = new ASN1EncodableVector();
-        altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        ASN1Encodable asn1Encodable = SubjectDirectoryAttributes.getAsn1Encodable(dirAttrString);
+        // Create a P10 with extensions,
         ExtensionsGenerator extgen = new ExtensionsGenerator();
-        extgen.addExtension(Extension.subjectDirectoryAttributes, false, asn1Encodable );
+
+        // Subject Directory Attributes with dateOfBirth, gender, countryOfCitizenchip and countryOfResidence
+        ASN1Encodable asn1Encodable = SubjectDirectoryAttributes.getAsn1Encodable(dirAttrString);
+        extgen.addExtension(Extension.subjectDirectoryAttributes, false, new DEROctetString(asn1Encodable));
+        // Subjec Alternative Name with DNS and IP
+        final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.example.com,iPAddress=10.0.0.1");
+        extgen.addExtension(Extension.subjectAlternativeName, false, san);
+
         Extensions exts = extgen.generate();
-        altnameattr.add(new DERSet(exts));
+        ASN1EncodableVector extensions = new ASN1EncodableVector();
+        extensions.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        extensions.add(new DERSet(exts));
 
         // Complete the Attribute section of the request, the set (Attributes)
         // contains one sequence (Attribute)
         ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(new DERSequence(altnameattr));
+        v.add(new DERSequence(extensions));
         DERSet attributes = new DERSet(v);
 
         PKCS10CertificationRequest pkcs10Request = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", x509dn, keyPair.getPublic(), attributes,
