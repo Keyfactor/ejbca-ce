@@ -64,6 +64,7 @@ public class SystemConfigurationHelper extends BaseHelper {
         ADMINPREFERENCES("Administrator Preferences"),
         PROTOCOLCONFIG("Protocol Configuration"),
         EXTENDEDKEYUSAGE("Extended Key Usages"),
+        OAUTHPROVIDERS("Trusted OAuth Providers"),
         CTLOGS("Certificate Transparency Logs"),
         CUSTOMCERTEXTENSIONS("Custom Certificate Extensions"),
         CUSTOMRASTYLES("Custom RA Styles"),

@@ -626,7 +626,8 @@
             id="editOauthKeyButton"/>
         <h:commandButton action="#{systemConfigMBean.oauthKeyManager.removeOauthKey(oauthkey)}"
              value="#{web.text.REMOVE}"
-             rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
+             rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
+             id="removeOauthKeyButton"/>
       </h:column>
 		</h:dataTable>
 		<h:commandButton id="addOauthKey" value="#{web.text.ADD}"
