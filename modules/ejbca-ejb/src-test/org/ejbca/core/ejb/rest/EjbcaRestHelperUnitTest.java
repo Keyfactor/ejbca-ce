@@ -305,7 +305,7 @@ public class EjbcaRestHelperUnitTest {
 
         // Subject Directory Attributes with dateOfBirth, gender, countryOfCitizenchip and countryOfResidence
         ASN1Encodable asn1Encodable = SubjectDirectoryAttributes.getAsn1Encodable(dirAttrString);
-        extgen.addExtension(Extension.subjectDirectoryAttributes, false, new DEROctetString(asn1Encodable));
+        extgen.addExtension(Extension.subjectDirectoryAttributes, false, asn1Encodable);
         // Subjec Alternative Name with DNS and IP
         final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.example.com,iPAddress=10.0.0.1");
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
