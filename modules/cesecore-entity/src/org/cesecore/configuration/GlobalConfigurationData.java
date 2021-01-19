@@ -41,6 +41,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.MSAutoEnrollmentOIDInfo;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.dbprotection.DatabaseProtectionException;
@@ -80,6 +81,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             OcspKeyBinding.ResponderIdType.class,
             Properties.class,
             RaCssInfo.class,
+            MSAutoEnrollmentOIDInfo.class,
             RaStyleInfo.class));	
 
     static {
