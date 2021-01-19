@@ -70,7 +70,7 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
         oauthProvidersHelper.fillSkewLimitField(SKEWLIMIT);
         oauthProvidersHelper.pressAddOauthProviderButton();
 
-        oauthProvidersHelper.assertIsTableAndRowExists(KEYID);
+        oauthProvidersHelper.assertElementExistsInTable(KEYID);
     }
     
     @Test
@@ -81,7 +81,7 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
         oauthProvidersHelper.fillSkewLimitField(SKEWLIMIT_EDITED);
         oauthProvidersHelper.pressSaveOauthProviderButton();
         
-        oauthProvidersHelper.assertIsTableAndRowExists(KEYID_EDITED);
+        oauthProvidersHelper.assertElementExistsInTable(KEYID_EDITED);
     }
     
     @Test
@@ -93,14 +93,13 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
         oauthProvidersHelper.assertSkewLimitText("60000");
         oauthProvidersHelper.pressBackButton();
         
-        oauthProvidersHelper.assertIsTableAndRowExists(KEYID_EDITED);
+        oauthProvidersHelper.assertElementExistsInTable(KEYID_EDITED);
     }
     
-    @Test(expected = TimeoutException.class)
     public void stepD_deleteOauthProvider() {
         oauthProvidersHelper.pressRemoveOauthProviderButton(KEYID_EDITED);
         
-        oauthProvidersHelper.assertIsTableAndRowExists(KEYID_EDITED);
+        oauthProvidersHelper.assertElementDoesNotExistInTable(KEYID_EDITED);
     }
 
     private void goToProvidersConfigurationPage() {
