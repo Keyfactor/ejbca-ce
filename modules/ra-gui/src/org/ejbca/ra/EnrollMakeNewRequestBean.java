@@ -686,7 +686,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 getSubjectAlternativeName().update();
             } else {
                 // If an updated CSR did not have any AN, make sure we clean the fields
-                this.subjectDirectoryAttributes = null;
+                this.subjectAlternativeName = null;
             }
             final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
             if (subjectDirectoryAttributes != null) {
@@ -695,8 +695,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
                     populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
                     getSubjectDirectoryAttributes().update();
-                } catch (ParseException e) {
+                } catch (ParseException | IllegalArgumentException e) {
                     log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
+                    // If an updated CSR did not have any Directory attributes, make sure we clean the fields
+                    this.subjectDirectoryAttributes = null;
                 }
             } else {
                 // If an updated CSR did not have any Directory attributes, make sure we clean the fields
