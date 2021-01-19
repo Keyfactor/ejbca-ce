@@ -97,7 +97,8 @@ public class ErrorCode implements Serializable {
     private static final String _VALIDATION_FAILED = "VALIDATION_FAILED"; // CAA Validation Failed
     private static final String _DOMAIN_BLACKLIST_FILE_PARSING_FAILED = "DOMAIN_BLACKLIST_FILE_PARSING_FAILED"; // Domain Blacklist File Parsing Failed
     private static final String _ACME_EAB_PARSING_FAILED = "ACME_EAB_PARSING_FAILED"; // ACME EAB Upload File Parsing Failed
-    
+    private static final String _BAD_REQUEST = "BAD_REQUEST"; // Invalid input
+
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -211,6 +212,8 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode CAA_VALIDATION_FAILED = new ErrorCode(_CAA_VALIDATION_FAILED);
     /** Generic validation failure (public key, domain name, etc.) */
     public static final ErrorCode VALIDATION_FAILED = new ErrorCode(_VALIDATION_FAILED);
+    /** Invalid input */
+    public static final ErrorCode BAD_REQUEST = new ErrorCode(_BAD_REQUEST);
     public static final ErrorCode DOMAIN_BLACKLIST_FILE_PARSING_FAILED = new ErrorCode(_DOMAIN_BLACKLIST_FILE_PARSING_FAILED);
     public static final ErrorCode ACME_EAB_PARSING_FAILED = new ErrorCode(_ACME_EAB_PARSING_FAILED);
     
