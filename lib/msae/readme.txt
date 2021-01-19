@@ -1,10 +1,3 @@
-From OpenLDAP and used for publishing in LDAP directories, current version is from 2009-10-07.
-License: OpenLDAP Public License, http://www.openldap.org/software/release/license.html
- ldap.jar
-
-Used for Kerberos authentication to Active Directory.
-https://sourceforge.net/projects/spnego/
-License: GNU LGPL
- spnego-r7.jar
-
- 
+ "Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
+ "Spnego";						 "spnego-r7.jar";								 "GNU LGPL";			 "GNU LGPL";					 "https://sourceforge.net/projects/spnego/";						 "Used for Kerberos authenticaton in MSAE module"
+ "ADSSDDL";						 "adsddl-1.9.jar";								 "ALv2";				 "LICENSE-APACHE-2.0";			 "https://github.com/Tirasa/ADSDDL";								 "Used for parsing SID/ACE entries in AD"
