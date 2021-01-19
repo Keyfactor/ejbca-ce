@@ -58,8 +58,7 @@
 		        %>
 	        </c:when> 
 	        <c:when test="${tokentype == TOKEN_SOFT_BROWSERGEN}">
-	        <c:out value="Browser enrollment is not supported since EJBCA 7.5.0, because all relevant browsers have removed the browser enrollment functionality."/>
-            <c:out value="Re-directing to CSR enrollment."/>
+            <c:out value="Browser enrollment not supported because all browsers removed this functionality. Re-directing to CSR enrollment."/>
 	        <c:set var="includefile" value="server.jsp" />
 	        </c:when> 
 	        <c:otherwise> 
