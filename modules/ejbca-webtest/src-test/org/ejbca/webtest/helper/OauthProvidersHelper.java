@@ -18,14 +18,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import org.ejbca.webtest.helper.AcmeHelper.Page;
 import org.junit.rules.TemporaryFolder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Helper class for UI tests related to Trusted OAuth Provider configuration
@@ -53,7 +51,7 @@ public class OauthProvidersHelper extends BaseHelper {
         static final By BUTTON_ADD = By.id("editOAuthKeyForm:addOauthKey");
         static final By BUTTON_BACK = By.id("editOAuthKeyForm:goBack");
 
-        static By getKeyIdTextFromTable(final String text) {
+        static By getTextFromTable(final String text) {
             return By.xpath("//tr/td/span[contains(text(), '" + text + "')]");
         }
         
@@ -93,8 +91,12 @@ public class OauthProvidersHelper extends BaseHelper {
         fillInput(Page.SKEWLIMIT_INPUT_FIELD, inputNumber);
     }
 
-    public void assertIsTableAndRowExists(final String matchKidWith) {
-        assertElementExists(Page.getKeyIdTextFromTable(matchKidWith), "Element with kid:" + matchKidWith + " does not exist in the table.");
+    public void assertElementExistsInTable(final String matchTextWith) {
+        assertElementExists(Page.getTextFromTable(matchTextWith), "Element with text:" + matchTextWith + " does not exist in the table.");
+    }
+    
+    public void assertElementDoesNotExistInTable(final String matchTextWith) {
+        assertElementDoesNotExist(Page.getTextFromTable(matchTextWith), "Element with text:" + matchTextWith + " exists in the table.");
     }
 
     public void assertIsTableRowsCorrectOrder(int rowNum, String rowData) {
@@ -154,8 +156,12 @@ public class OauthProvidersHelper extends BaseHelper {
         File publicKeyFile = folder.newFile("public1.pem");
         FileWriter fileWriter = new FileWriter(publicKeyFile);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        bufferedWriter.write(fileContent);
-        bufferedWriter.close();
+        try {
+            bufferedWriter.write(fileContent);
+        } finally {
+            bufferedWriter.close();
+            fileWriter.close();
+        }
         return publicKeyFile;
     }
 }
