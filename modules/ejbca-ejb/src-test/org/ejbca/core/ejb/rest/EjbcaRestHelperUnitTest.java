@@ -298,7 +298,8 @@ public class EjbcaRestHelperUnitTest {
     private String generateCsrWithSubjectDirectoryAttributes(final String dn, String dirAttrString) throws InvalidAlgorithmParameterException, IOException, OperatorCreationException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         final X500Name x509dn = new X500Name(dn);
-        final KeyPair keyPair = KeyTools.genKeys("512", "RSA");
+        //this key is not used to issue any certifictate. It is used only to generate a csr that can be parsed
+        final KeyPair keyPair = KeyTools.genKeys("secp256r1", "EC");
 
         // Create a P10 with extensions, in this case subject directory attributes with dateOfBirth, gender,
         // countryOfCitizenchip and countryOfResidence
@@ -316,7 +317,7 @@ public class EjbcaRestHelperUnitTest {
         v.add(new DERSequence(altnameattr));
         DERSet attributes = new DERSet(v);
 
-        PKCS10CertificationRequest pkcs10Request = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", x509dn, keyPair.getPublic(), attributes,
+        PKCS10CertificationRequest pkcs10Request = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", x509dn, keyPair.getPublic(), attributes,
                 keyPair.getPrivate(), null);
         byte[] pem = CertTools.getPEMFromCertificateRequest(pkcs10Request.getEncoded());
         String request = new String(pem, StandardCharsets.UTF_8);
