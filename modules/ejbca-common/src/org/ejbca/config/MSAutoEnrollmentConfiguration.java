@@ -1,6 +1,10 @@
 package org.ejbca.config;
 
+import org.cesecore.config.MSAutoEnrollmentOIDInfo;
 import org.cesecore.configuration.ConfigurationBase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Configuration for the Microsoft Auto Enrollment
@@ -27,6 +31,8 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final String TRUSTED_KEY_STORE_PASSWORD = "trustedKeyStorePassword";
     private static final String CA_NAME = "caName";
 
+    // Template to Settings
+    private static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
     private static int DEFAULT_AD_CONNECTION_PORT = 389;
 
@@ -52,6 +58,8 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
         setTrustedKeyStorePath("");
         setTrustedKeyStorePassword("");
         setCaName("");
+
+        setMsTemplateSettings(new ArrayList<>());
     }
 
     @Override
@@ -142,5 +150,15 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     }
     public void setCaName(final String caName) {
         data.put(CA_NAME, caName);
+    }
+
+    // MS Template Settings
+    @SuppressWarnings("unchecked")
+    public List<MSAutoEnrollmentOIDInfo> getMsTemplateSettings() {
+        return (List<MSAutoEnrollmentOIDInfo>) data.get(MS_TEMPLATE_SETTINGS);
+    }
+
+    public void setMsTemplateSettings(final List<MSAutoEnrollmentOIDInfo> msTemplateSettings) {
+        data.put(MS_TEMPLATE_SETTINGS, msTemplateSettings);
     }
 }
