@@ -213,7 +213,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             try {
                 subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
             } catch (ParseException e) {
-                throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+                throw new EjbcaException(ErrorCode.BAD_REQUEST, e.getMessage());
             }
         }
         return subjectDirectoryAttributeString;
