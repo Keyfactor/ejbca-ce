@@ -253,7 +253,8 @@ public class EjbcaRestHelperUnitTest {
 
         final String dn = "CN=pkcs10requesttestWithSubDirAtt";
         String dirAttrString = "DATEOFBIRTH=19840202, GENDER=F, COUNTRYOFCITIZENSHIP=EE, COUNTRYOFRESIDENCE=FR";
-        String csrRequest = generateCsrWithSubjectDirectoryAttributes(dn, dirAttrString);
+        String altNameString = "dNSName=foo.example.com, iPAddress=10.0.0.1";
+        String csrRequest = generateCsrWithSubjectDirectoryAttributesAndSAN(dn, dirAttrString, altNameString);
 
         String subjectDn = CertTools.stringToBCDNString("CN=mydn");
         Collection<Certificate> certificatechain = new ArrayList<>();
@@ -292,9 +293,11 @@ public class EjbcaRestHelperUnitTest {
                 subjectDirectoryAttributes.contains("countryOfCitizenship=EE") );
         assertTrue("Subject Directory attributes should contain country of residence",
                 subjectDirectoryAttributes.contains("countryOfResidence=FR") );
+        // Also check that we handled multiple extensions in the CSR
+        assertEquals("Subject Alt Name should contain value", altNameString, endEntityInformation.getSubjectAltName());
     }
 
-    private String generateCsrWithSubjectDirectoryAttributes(final String dn, String dirAttrString) throws InvalidAlgorithmParameterException, IOException, OperatorCreationException {
+    private String generateCsrWithSubjectDirectoryAttributesAndSAN(final String dn, String dirAttrString, String altName) throws InvalidAlgorithmParameterException, IOException, OperatorCreationException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         final X500Name x509dn = new X500Name(dn);
         //this key is not used to issue any certifictate. It is used only to generate a csr that can be parsed
@@ -306,8 +309,8 @@ public class EjbcaRestHelperUnitTest {
         // Subject Directory Attributes with dateOfBirth, gender, countryOfCitizenchip and countryOfResidence
         ASN1Encodable asn1Encodable = SubjectDirectoryAttributes.getAsn1Encodable(dirAttrString);
         extgen.addExtension(Extension.subjectDirectoryAttributes, false, asn1Encodable);
-        // Subjec Alternative Name with DNS and IP
-        final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.example.com,iPAddress=10.0.0.1");
+        // Subject Alternative Name with DNS and IP
+        final GeneralNames san = CertTools.getGeneralNamesFromAltName(altName);
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
 
         Extensions exts = extgen.generate();
