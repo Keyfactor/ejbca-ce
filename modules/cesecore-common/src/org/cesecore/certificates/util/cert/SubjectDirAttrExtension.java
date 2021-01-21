@@ -97,7 +97,7 @@ public class SubjectDirAttrExtension extends CertTools {
      * 
 	 * Supported subjectDirectoryAttributes are the ones in the method above 
 	 *
-	 * @param certificate containing subject directory attributes
+	 * @param obj certificate extension value for subject directory attributes, ASN1Primitive obj = CertTools.getExtensionValue(x509cert, Extension.subjectDirectoryAttributes.getId());
 	 * @return String containing directoryAttributes of form the form specified above or null if no directoryAttributes exist. 
 	 *   Values in returned String is from CertTools constants. 
 	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
