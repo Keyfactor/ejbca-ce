@@ -23,8 +23,6 @@ import org.junit.Test;
 
 /** 
  * Test of the TimeUnitFormat class.
- *  
- * @version $Id$
  */
 public class TimeUnitFormatTest {
 
@@ -213,5 +211,16 @@ public class TimeUnitFormatTest {
         } catch (NumberFormatException e) {
             assertEquals("Wrong NumberFormatException message", "Illegal characters.", e.getMessage());
         }
+    }
+
+    /**
+     * Tests the fileTimeToMillis() method.
+     */
+    @Test
+    public void test03FileTimeToMillis() {
+        String fileTime = "{0, 64, 57, 135, 46, 225, 254, 255}";
+        final long expected = 365l*24l*60l*60l*1000l; // 1 year
+        final long actual = TimeUnitFormat.fileTimeToMillis(fileTime);
+        assertEquals("Wrong conversion from FILETIME text to milli seconds.", expected, actual);
     }
 }
