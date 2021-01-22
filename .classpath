@@ -118,6 +118,7 @@
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/msae/adsddl-1.9.jar"/>
+	<classpathentry kind="lib" path="lib/msae/spnego-r9.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.14.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-3.1.0.jar"/>
