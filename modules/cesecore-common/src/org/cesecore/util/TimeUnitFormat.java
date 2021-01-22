@@ -139,9 +139,9 @@ public final class TimeUnitFormat {
      * @param text the microsoft FILETIME text presentation (example 1year = "{0, 64, 57, 135, 46, 225, 254, 255}").
      * @return the milliseconds as long value from 0.
      */
-    public static long fileTimeToMillis(final String text) {
-        String[] bytes = text.replaceAll("\\{|\\}|,", "")
-            .split(" ");
+    public static long fileTimeToMillis(final byte[] bytes) {
+//        String[] bytes = text.replaceAll("\\{|\\}|,", "")
+//            .split(" ");
 
         long hundredNano = 0l;
         for (int i=7; i>=0; i--) {
