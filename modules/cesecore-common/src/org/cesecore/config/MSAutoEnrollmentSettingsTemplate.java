@@ -2,7 +2,7 @@ package org.cesecore.config;
 
 import java.io.Serializable;
 
-public class MSAutoEnrollmentOIDInfo implements Serializable {
+public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private boolean isUsed;
@@ -20,7 +20,7 @@ public class MSAutoEnrollmentOIDInfo implements Serializable {
     private String additionalSubjectDNAttributes;
     private boolean publishToActiveDirectory;
 
-    public MSAutoEnrollmentOIDInfo() {
+    public MSAutoEnrollmentSettingsTemplate() {
         init();
     }
 
@@ -174,7 +174,7 @@ public class MSAutoEnrollmentOIDInfo implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        MSAutoEnrollmentOIDInfo other = (MSAutoEnrollmentOIDInfo) obj;
+        MSAutoEnrollmentSettingsTemplate other = (MSAutoEnrollmentSettingsTemplate) obj;
         if (!oid.equals(other.oid)) {
             return false;
         }

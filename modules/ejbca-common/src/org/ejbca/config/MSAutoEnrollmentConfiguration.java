@@ -1,6 +1,6 @@
 package org.ejbca.config;
 
-import org.cesecore.config.MSAutoEnrollmentOIDInfo;
+import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.ConfigurationBase;
 
 import java.util.ArrayList;
@@ -12,8 +12,6 @@ import java.util.List;
 public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
     public static final String CONFIGURATION_ID = "MS_AUTO_ENROLLMENT";
-
-    // Configuration elements here.
 
     // MSAE Kerberos
     private static final String MSAE_DOMAIN = "msaeDomain";
@@ -89,7 +87,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     }
 
     public void setIsUseSsl(final boolean isUseSsl) {
-        data.put(IS_USE_SSL, Boolean.valueOf(isUseSsl));
+        data.put(IS_USE_SSL, isUseSsl);
     }
 
     public int getADConnectionPort() {
@@ -154,11 +152,11 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     // MS Template Settings
     @SuppressWarnings("unchecked")
-    public List<MSAutoEnrollmentOIDInfo> getMsTemplateSettings() {
-        return (List<MSAutoEnrollmentOIDInfo>) data.get(MS_TEMPLATE_SETTINGS);
+    public List<MSAutoEnrollmentSettingsTemplate> getMsTemplateSettings() {
+        return (List<MSAutoEnrollmentSettingsTemplate>) data.get(MS_TEMPLATE_SETTINGS);
     }
 
-    public void setMsTemplateSettings(final List<MSAutoEnrollmentOIDInfo> msTemplateSettings) {
+    public void setMsTemplateSettings(final List<MSAutoEnrollmentSettingsTemplate> msTemplateSettings) {
         data.put(MS_TEMPLATE_SETTINGS, msTemplateSettings);
     }
 }
