@@ -218,7 +218,7 @@ public class TimeUnitFormatTest {
      */
     @Test
     public void test03FileTimeToMillis() {
-        String fileTime = "{0, 64, 57, 135, 46, 225, 254, 255}";
+        byte[] fileTime = new byte[]{(byte)0, (byte)64, (byte)57, (byte)135, (byte)46, (byte)225, (byte)254, (byte)255};
         final long expected = 365l*24l*60l*60l*1000l; // 1 year
         final long actual = TimeUnitFormat.fileTimeToMillis(fileTime);
         assertEquals("Wrong conversion from FILETIME text to milli seconds.", expected, actual);
