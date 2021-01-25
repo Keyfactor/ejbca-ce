@@ -1,6 +1,5 @@
 package org.ejbca.core.protocol.scep;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -13,9 +12,7 @@ import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -54,8 +51,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 /** Class used to generate SCEP messages. Used for SCEP clients and testing
- * 
- * @version $Id$
  */
 public class ScepRequestGenerator {
     private static Logger log = Logger.getLogger(ScepRequestGenerator.class);
@@ -110,14 +105,7 @@ public class ScepRequestGenerator {
         // Requested extensions attribute
         // AltNames
         final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
-        final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        final ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
-        try {
-            dOut.writeObject(san);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("error encoding value: " + e);
-        }
-        extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(bOut.toByteArray()));
+        extgen.addExtension(Extension.subjectAlternativeName, false, san);
         return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey, encryptionAlg);
     }
 
