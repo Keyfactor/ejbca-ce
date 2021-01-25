@@ -1,10 +1,12 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -13,8 +15,12 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +38,13 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String SELECT_CEP = "Select a Certificate Profile";
     private static final String SELECT_EEP = "Select an End Entity Profile";
     private static final String SELECT_MST = "Select a Template";
+    private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
 
     // MSAE Kerberos Settings
     private String msaeDomain;
+    private UploadedFile keyTabFile;
+    private String keyTabFilename;
+    private byte[] keyTabFileBytes;
 
     // MSAE Settings
     private boolean isUseSSL;
@@ -72,6 +82,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
         if (autoEnrollmentConfiguration != null) {
             msaeDomain = autoEnrollmentConfiguration.getMsaeDomain();
+            keyTabFileBytes = autoEnrollmentConfiguration.getMsaeKeyTabBytes();
+            keyTabFilename = autoEnrollmentConfiguration.getMsaeKeyTabFilename();
 
             isUseSSL = autoEnrollmentConfiguration.isUseSSL();
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort();
@@ -95,6 +107,34 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setMsaeDomain(String msaeDomain) {
         this.msaeDomain = msaeDomain;
+    }
+
+    public UploadedFile getKeyTabFile() {
+        return keyTabFile;
+    }
+
+    public void setKeyTabFile(UploadedFile keyTabFile) {
+        this.keyTabFile = keyTabFile;
+    }
+
+    public String getKeyTabFilename() {
+        return keyTabFilename;
+    }
+
+    public void setKeyTabFilename(String keyTabFilename) {
+        this.keyTabFilename = StringTools.stripFilename(keyTabFilename);
+    }
+
+    public byte[] getKeyTabFileBytes() {
+        return keyTabFileBytes;
+    }
+
+    public void setKeyTabFileBytes(byte[] keyTabFileBytes) {
+        this.keyTabFileBytes = keyTabFileBytes;
+    }
+
+    public boolean isKeyTabUploaded() {
+        return (keyTabFilename != null && keyTabFileBytes != null);
     }
 
     // MSAE Settings
@@ -397,6 +437,89 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
 
         return availableEndEntityProfiles;
+    }
+
+    /**
+     * Import and save key tab file.
+     *
+     * @throws IOException
+     */
+    public void importKeyTabFile() throws IOException {
+        if (keyTabFile != null) {
+            String contentType = keyTabFile.getContentType();
+
+            if(!contentType.equals(KEYTAB_CONTENT_TYPE)) {
+                addErrorMessage("MSAE_KEYTAB_ERROR_WRONG_CONTENT");
+                return;
+            }
+
+            setKeyTabFilename(keyTabFile.getName());
+            setKeyTabFileBytes(keyTabFile.getBytes());
+
+            saveKeyTabFile();
+        } else {
+            addErrorMessage("MSAE_KEYTAB_ERROR_NOT_FOUND");
+        }
+    }
+
+    /**
+     * Download save key tab file from UI.
+     *
+     */
+    public void downloadKeyTabFile() {
+        if (keyTabFileBytes != null && keyTabFilename != null) {
+
+            FacesContext fc = FacesContext.getCurrentInstance();
+            ExternalContext ec = fc.getExternalContext();
+            ec.responseReset();
+            ec.setResponseContentType(KEYTAB_CONTENT_TYPE);
+            ec.setResponseContentLength(keyTabFileBytes.length);
+
+            final String filename = "keytab.krb";
+            ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+            OutputStream output = null;
+            try {
+                output = ec.getResponseOutputStream();
+                output.write(keyTabFileBytes);
+                output.flush();
+                fc.responseComplete();
+            } catch (IOException e) {
+                log.info("Key Tab " + filename + " could not be downloaded", e);
+                addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
+            } finally {
+                if (output != null) {
+                    try {
+                        output.close();
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Failed to close outputstream", e);
+                    }
+                }
+            }
+        } else {
+            addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
+        }
+    }
+
+    /**
+     * Save key tab to the global configuration.
+     */
+    public void saveKeyTabFile() {
+        try {
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+
+            autoEnrollmentConfiguration.setMsaeKeyTabFilename(getKeyTabFilename());
+            autoEnrollmentConfiguration.setMsaeKeyTabBytes(getKeyTabFileBytes());
+
+            globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
+            addInfoMessage("MSAE_KEYTAB_SAVE_OK");
+
+        } catch (AuthorizationDeniedException e) {
+            log.error("Cannot save the configuration for the MS Auto Enrollment Key Tab because the current "
+                              + "administrator is not authorized. Error description: " + e.getMessage());
+            addErrorMessage("MSAE_KEYTAB_SAVE_ERROR");
+        }
     }
 
     public void save() {

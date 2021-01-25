@@ -15,6 +15,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     // MSAE Kerberos
     private static final String MSAE_DOMAIN = "msaeDomain";
+    private static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
+    private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
+
 
     // MSAE Settings
     private static final String IS_USE_SSL = "isUseSSL";
@@ -79,6 +82,22 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     public void setMsaeDomain(final String msaeDomain) {
         data.put(MSAE_DOMAIN, msaeDomain);
+    }
+
+    public String getMsaeKeyTabFilename() {
+        return (String) data.get(MSAE_KEYTAB_FILENAME);
+    }
+
+    public void setMsaeKeyTabFilename(final String msaeKeyTabFilename) {
+        data.put(MSAE_KEYTAB_FILENAME, msaeKeyTabFilename);
+    }
+
+    public byte[] getMsaeKeyTabBytes() {
+        return (byte[]) data.get(MSAE_KEYTAB_BYTES);
+    }
+
+    public void setMsaeKeyTabBytes(final byte[]  msaeKeyTabBytes) {
+        data.put(MSAE_KEYTAB_BYTES, msaeKeyTabBytes);
     }
 
     // MSAE Settings
