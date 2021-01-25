@@ -278,6 +278,11 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         initialize("adminweb", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
                 ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
     }
+    
+    public void initializeRaWeb() {
+        initialize("ra", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
+                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
+    }
 
     /** Checks if global data configuration have been initialized. */
     public boolean isInitialized(){
@@ -328,6 +333,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public String getAdminWebPath() {
         return getString(ADMINPATH, "adminweb");
+    }
+    
+    public String getRaWebPath() {
+        return getString(ADMINPATH, "ra");
     }
 
     public String getStandardCRLDistributionPointURI(){
