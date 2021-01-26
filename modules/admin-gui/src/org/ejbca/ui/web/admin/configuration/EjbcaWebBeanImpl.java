@@ -55,6 +55,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
@@ -258,7 +259,24 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
                 }
             } else if (oauthBearerToken != null) {
-                administrator = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                try {
+                    administrator = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+
+                } catch (TokenExpiredException e) {
+                    String refreshToken = getRefreshToken(httpServletRequest);
+                    String baseUrl = getGlobalConfiguration().getBaseUrl(
+                            "https",
+                            WebConfiguration.getHostName(),
+                            WebConfiguration.getPublicHttpsPort()
+                    ) + getGlobalConfiguration().getAdminWebPath();
+                    if (refreshToken != null) {
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken, baseUrl);
+                        if (token != null) {
+                            httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
+                            administrator = authenticationSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
+                        }
+                    }
+                }
                 if (administrator == null) {
                     throw new AuthenticationFailedException("Authentication failed using OAuth Bearer Token");
                 }
@@ -333,6 +351,16 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             oauthBearerToken = token != null ? token.getAccessToken() : null;
         }
         return oauthBearerToken;
+    }
+
+    /**
+     * Gets bearer token from Authorization header or from session
+     * @param httpServletRequest
+     * @return
+     */
+    private String getRefreshToken(HttpServletRequest httpServletRequest) {
+            OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
+            return token != null ? token.getRefreshToken() : null;
     }
 
     /**
