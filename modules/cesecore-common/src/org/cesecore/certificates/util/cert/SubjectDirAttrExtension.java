@@ -74,77 +74,103 @@ public class SubjectDirAttrExtension extends CertTools {
 	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
      *  
 	 * @throws java.text.ParseException when id_pda_dateOfBirth is malformed
+     * @throws IllegalArgumentException if the ASN.1 in the subjectDirectoryAttributes is malformed
 	 */
 	public static String getSubjectDirectoryAttributes(Certificate certificate) throws ParseException {
 		log.debug("Search for SubjectDirectoryAttributes");
-        StringBuilder result = new StringBuilder();
-        if (certificate instanceof X509Certificate) {
+		String result = null;
+		if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;
-	        ASN1Primitive obj = CertTools.getExtensionValue(x509cert, Extension.subjectDirectoryAttributes.getId());
-	        if (obj == null) {
-	            return null;
-	        }
-	        ASN1Sequence seq = ASN1Sequence.getInstance(obj);
-	        
-	        String prefix = "";
-			SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
-	        for (int i = 0; i < seq.size(); i++) {
-	        	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
-	        	if (result.length() != 0) {
-	        		prefix = ", ";
-	        	}
-	        	switch (attr.getAttrType().getId()) {
-	        	case id_pda_dateOfBirth: {
-	        		ASN1Set set = attr.getAttrValues();
-	        		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
-	        		ASN1GeneralizedTime time = ASN1GeneralizedTime.getInstance(set.getObjectAt(0));
-	        		Date date = time.getDate();
-	        		String dateStr = dateF.format(date);
-	        		result.append(prefix).append("dateOfBirth=").append(dateStr); 
-	        		break;
-        		}
-	        	case id_pda_placeOfBirth: {
-	        		ASN1Set set = attr.getAttrValues();
-	        		// same here only one placeOfBirth
-	        		String pb = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result.append(prefix).append("placeOfBirth=").append(pb);
-	        		break;
-	        	}
-	        	case id_pda_gender: {
-	        		ASN1Set set = attr.getAttrValues();
-	        		// same here only one gender
-	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result.append(prefix).append("gender=").append(g);        			
-	        		break;
-	        	}
-	        	case id_pda_countryOfCitizenship: {
-	        		ASN1Set set = attr.getAttrValues();
-	        		// same here only one citizenship
-	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result.append(prefix).append("countryOfCitizenship=").append(g);        			
-	        		break;
-	        	}
-	        	case id_pda_countryOfResidence: {
-	        		ASN1Set set = attr.getAttrValues();
-	        		// same here only one residence
-	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
-	        		result.append(prefix).append("countryOfResidence=").append(g);
-	        		break;
-	        	}
-        		default:
-        		    if (log.isDebugEnabled()) {
-        		        log.debug("Unsupported attribute in Subject Directory Attributes: " + attr.getAttrType().getId());
-        		    }
-	        	}
-	        }
-        }
-        if (result.length() == 0) {
-            return null;
-        }
-        return result.toString();            
+			ASN1Primitive obj = CertTools.getExtensionValue(x509cert, Extension.subjectDirectoryAttributes.getId());
+			result = getSubjectDirectoryAttribute(obj);
+		}
+		return result;
 	}
 
-    /**
+	/** Parses Extension value with SubjectDirectoryAttributes.
+	 * 
+	 * final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
+     * if (subjectDirectoryAttributes != null) {
+     *     ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
+     *     final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
+     * ...
+     * 
+	 * Supported subjectDirectoryAttributes are the ones in the method above 
+	 *
+	 * @param obj certificate extension value for subject directory attributes, ASN1Primitive obj = CertTools.getExtensionValue(x509cert, Extension.subjectDirectoryAttributes.getId());
+	 * @return String containing directoryAttributes of form the form specified above or null if no directoryAttributes exist. 
+	 *   Values in returned String is from CertTools constants. 
+	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
+	 *  
+	 * @throws java.text.ParseException when id_pda_dateOfBirth is malformed
+	 * @throws IllegalArgumentException if the ASN.1 is malformed
+	 */
+	public static String getSubjectDirectoryAttribute(ASN1Primitive obj) throws ParseException {
+		StringBuilder result;
+		result = new StringBuilder();
+		if (obj == null) {
+			return null;
+		}
+		ASN1Sequence seq = ASN1Sequence.getInstance(obj);
+
+		String prefix = "";
+		SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
+		for (int i = 0; i < seq.size(); i++) {
+			Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
+			if (result.length() != 0) {
+				prefix = ", ";
+			}
+			switch (attr.getAttrType().getId()) {
+			case id_pda_dateOfBirth: {
+				ASN1Set set = attr.getAttrValues();
+				// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
+				ASN1GeneralizedTime time = ASN1GeneralizedTime.getInstance(set.getObjectAt(0));
+				Date date = time.getDate();
+				String dateStr = dateF.format(date);
+				result.append(prefix).append("dateOfBirth=").append(dateStr);
+				break;
+			}
+			case id_pda_placeOfBirth: {
+				ASN1Set set = attr.getAttrValues();
+				// same here only one placeOfBirth
+				String pb = ((ASN1String)set.getObjectAt(0)).getString();
+				result.append(prefix).append("placeOfBirth=").append(pb);
+				break;
+			}
+			case id_pda_gender: {
+				ASN1Set set = attr.getAttrValues();
+				// same here only one gender
+				String g = ((ASN1String)set.getObjectAt(0)).getString();
+				result.append(prefix).append("gender=").append(g);
+				break;
+			}
+			case id_pda_countryOfCitizenship: {
+				ASN1Set set = attr.getAttrValues();
+				// same here only one citizenship
+				String g = ((ASN1String)set.getObjectAt(0)).getString();
+				result.append(prefix).append("countryOfCitizenship=").append(g);
+				break;
+			}
+			case id_pda_countryOfResidence: {
+				ASN1Set set = attr.getAttrValues();
+				// same here only one residence
+				String g = ((ASN1String)set.getObjectAt(0)).getString();
+				result.append(prefix).append("countryOfResidence=").append(g);
+				break;
+			}
+			default:
+				if (log.isDebugEnabled()) {
+					log.debug("Unsupported attribute in Subject Directory Attributes: " + attr.getAttrType().getId());
+				}
+			}
+		}
+		if (result.length() == 0) {
+			return null;
+		}
+		return result.toString();
+	}
+
+	/**
      * From subjectDirAttributes string as defined in getSubjectDirAttribute 
      * @param dirAttr string of SubjectDirectoryAttributes
      * @return A Collection of ASN.1 Attribute (org.bouncycastle.asn1.x509), or an empty Collection, never null

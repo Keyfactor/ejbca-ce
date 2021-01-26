@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
@@ -77,6 +79,7 @@ import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CeSecoreNameStyle;
@@ -674,33 +677,69 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr != null) {
             final PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
             if (pkcs10CertificateRequest.getSubject() != null) {
-                populateRequestFields(false, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getFieldInstances());
+                populateRequestFields(RequestFieldType.DN, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getFieldInstances());
                 getSubjectDn().update();
             }
             final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
             if (sanExtension != null) {
-                populateRequestFields(true, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
                 getSubjectAlternativeName().update();
+            } else {
+                // If an updated CSR did not have any AN, make sure we clean the fields
+                this.subjectAlternativeName = null;
             }
-            // Don't make the effort to populate Subject Directory Attribute fields. Too little real world use for that.
+            final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
+            if (subjectDirectoryAttributes != null) {
+                ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
+                try {
+                    final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
+                    populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
+                    getSubjectDirectoryAttributes().update();
+                } catch (ParseException | IllegalArgumentException e) {
+                    log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
+                    // If an updated CSR did not have any Directory attributes, make sure we clean the fields
+                    this.subjectDirectoryAttributes = null;
+                }
+            } else {
+                // If an updated CSR did not have any Directory attributes, make sure we clean the fields
+                this.subjectDirectoryAttributes = null;
+            }
 
             uploadCsrDoneRendered = true;
         }
     }
 
+    // enum to make type selection for populateRequestFields easy and fixed, with good toString() value for debug log
+    enum RequestFieldType {
+        DN,
+        AN,
+        DIRATTR
+      }
+
     /**
      * Populate the fieldInstances parameter with values from the CSR when the instances are modifiable
      */
-    private void populateRequestFields(final boolean isSubjectAlternativeName, final String subject, final Collection<FieldInstance> fieldInstances) {
+    private void populateRequestFields(final RequestFieldType type, final String subject, final Collection<FieldInstance> fieldInstances) {
         final List<String> subjectFieldsFromParsedCsr = CertTools.getX500NameComponents(subject);
         bothLoops:
         for (final String subjectField : subjectFieldsFromParsedCsr) {
             if (log.isDebugEnabled()) {
-                log.debug("Parsing the subject " + (isSubjectAlternativeName ? "AN" : "DN") + " field '" + subjectField + "'...");
+                log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
             }
             final String[] nameValue = subjectField.split("=");
             if (nameValue != null && nameValue.length == 2) {
-                final Integer dnId = isSubjectAlternativeName ? DnComponents.getDnIdFromAltName(nameValue[0]) : DnComponents.getDnIdFromDnName(nameValue[0]);
+                Integer dnId = null;
+                switch (type) {
+                case DN:
+                    dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
+                    break;
+                case AN:
+                    dnId = DnComponents.getDnIdFromAltName(nameValue[0]);
+                    break;
+                case DIRATTR:
+                    dnId = DnComponents.getDnIdFromDirAttr(nameValue[0]);
+                    break;
+                }
                 if (log.isDebugEnabled()) {
                     log.debug(" dnId=" + dnId);
                 }
@@ -736,7 +775,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
             if (log.isDebugEnabled()) {
-                log.debug("Unparsable subject " + (isSubjectAlternativeName ? "AN" : "DN") + " field '" + subjectField +
+                log.debug("Unparsable subject " + type + " field '" + subjectField +
                         "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
             }
         }
