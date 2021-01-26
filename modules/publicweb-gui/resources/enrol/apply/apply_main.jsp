@@ -58,17 +58,8 @@
 		        %>
 	        </c:when> 
 	        <c:when test="${tokentype == TOKEN_SOFT_BROWSERGEN}">
-				<c:choose>
-			        <c:when test="${browser == BROWSER_NETSCAPE}">
-			        	<c:set var="includefile" value="apply_nav.jspf" />
-			        </c:when> 
-			        <c:when test="${browser == BROWSER_EXPLORER}">
-			        	<c:set var="includefile" value="apply_exp.jspf" />
-			        </c:when> 
-			        <c:otherwise> 
-			        	<c:set var="includefile" value="apply_unknown.jspf" />
-					</c:otherwise>
-				</c:choose>
+            <c:out value="Browser enrollment not supported because all browsers removed this functionality. Re-directing to CSR enrollment."/>
+	        <c:set var="includefile" value="server.jsp" />
 	        </c:when> 
 	        <c:otherwise> 
 	        	<c:set var="includefile" value="apply_token.jspf" />
@@ -88,14 +79,11 @@
     <c:when test="${includefile == 'apply_token.jspf'}">
 		<%@ include file="apply_token.jspf" %>
     </c:when> 
-    <c:when test="${includefile == 'apply_nav.jspf'}">
-		<%@ include file="apply_nav.jspf" %>
-    </c:when> 
-    <c:when test="${includefile == 'apply_exp.jspf'}">
-		<%@ include file="apply_exp.jspf" %>
-    </c:when> 
     <c:when test="${includefile == 'apply_unknown.jspf'}">
 		<%@ include file="apply_unknown.jspf" %>
+    </c:when> 
+    <c:when test="${includefile == 'server.jsp'}">
+        <c:redirect url="server.jsp"/>
     </c:when> 
     <c:otherwise> 
 	    <h1><c:out value="NO MATCH! Error in apply_main.jsp. includefile == &quot;${includefile}&quot;" /></h1>
