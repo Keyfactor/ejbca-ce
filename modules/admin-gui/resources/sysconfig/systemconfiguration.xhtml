@@ -975,66 +975,6 @@
 					<f:converter converterId="trimConverter"/>
 				</h:inputText>
 			</h:panelGroup>
-		</h:panelGrid>
-
-		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-			<h:panelGroup>
-				<h:outputText value="#{web.text.MSAE_SERVLET_TITLE}" style="font-weight: bold; font-size:1.2em;"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/MSAE_Autoenrollment.html')}" style="font-weight: bold; font-size:1.2em;" escape="false"/>
-			</h:panelGroup>
-			<h:panelGroup />
-
-			<!-- Key Store Path -->
-			<h:panelGroup>
-				<h:outputLabel value="#{web.text.MSAE_KEYSTORE_PATH}" styleClass="titles"/> <br/>
-				<h:outputText value="#{web.text.MSAE_KEYSTORE_PATH_HELP}" styleClass="help"/>
-			</h:panelGroup>
-			<h:panelGroup>
-				<h:inputText id="msaeKeyStorePath" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
-							 value="#{msAutoEnrollmentSettings.keyStorePath}" size="45"
-							 title="#{web.text.FORMAT_FILENAME}">
-					<f:converter converterId="trimConverter"/>
-				</h:inputText>
-			</h:panelGroup>
-
-			<!-- Key Store Password -->
-			<h:panelGroup>
-				<h:outputLabel value="#{web.text.MSAE_KEYSTORE_PASSWORD}" styleClass="titles"/> <br/>
-				<h:outputText value="#{web.text.MSAE_KEYSTORE_PASSWORD_HELP}" styleClass="help"/>
-			</h:panelGroup>
-			<h:panelGroup>
-				<h:inputText id="msaeKeyStorePassword" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
-							 value="#{msAutoEnrollmentSettings.keyStorePassword}" size="45"
-							 title="#{web.text.FORMAT_STRING}">
-					<f:converter converterId="trimConverter"/>
-				</h:inputText>
-			</h:panelGroup>
-
-			<!-- Trusted Key Store Path -->
-			<h:panelGroup>
-				<h:outputLabel value="#{web.text.MSAE_TRUSTED_KEYSTORE_PATH}" styleClass="titles"/> <br/>
-				<h:outputText value="#{web.text.MSAE_TRUSTED_KEYSTORE_PATH_HELP}" styleClass="help"/>
-			</h:panelGroup>
-			<h:panelGroup>
-				<h:inputText id="msaeTrustedKeyStorePath" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
-							 value="#{msAutoEnrollmentSettings.trustedKeyStorePath}" size="45"
-							 title="#{web.text.FORMAT_FILENAME}">
-					<f:converter converterId="trimConverter"/>
-				</h:inputText>
-			</h:panelGroup>
-
-			<!-- Key Store Password -->
-			<h:panelGroup>
-				<h:outputLabel value="#{web.text.MSAE_TRUSTED_KEYSTORE_PASSWORD}" styleClass="titles"/> <br/>
-				<h:outputText value="#{web.text.MSAE_TRUSTED_KEYSTORE_PASSWORD_HELP}" styleClass="help"/>
-			</h:panelGroup>
-			<h:panelGroup>
-				<h:inputText id="msaeTrustedKeyStorePassword" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
-							 value="#{msAutoEnrollmentSettings.trustedKeyStorePassword}" size="45"
-							 title="#{web.text.FORMAT_STRING}">
-					<f:converter converterId="trimConverter"/>
-				</h:inputText>
-			</h:panelGroup>
 
 			<!-- Ca Name -->
 			<h:panelGroup>
@@ -1047,7 +987,6 @@
 					<f:selectItems value="#{systemConfigMBean.availableCAs}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
-
 		</h:panelGrid>
 
 		<!-- MS Template Settings -->
