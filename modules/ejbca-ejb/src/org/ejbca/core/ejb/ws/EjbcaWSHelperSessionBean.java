@@ -158,7 +158,6 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token.");
                 }
             } catch (TokenExpiredException e) {
-                //TODO ECA-9747 refresh token
                 throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token.");
             }
 
