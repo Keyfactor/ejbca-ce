@@ -239,6 +239,7 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
     @Test
     public void stepR_SelectRequestTemplate() throws Exception {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificateSubType(RaWebHelper.Page.ENDUSER);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }
