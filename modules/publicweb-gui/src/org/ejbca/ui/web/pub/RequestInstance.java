@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.ObjectNotFoundException;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -83,10 +81,7 @@ import org.ejbca.util.HTMLTools;
 
 /**
  *
- * @version $Id$
- *
  */
-
 public class RequestInstance {
 
 	private static final Logger log = Logger.getLogger(RequestInstance.class);
@@ -103,8 +98,6 @@ public class RequestInstance {
         }
     }
 
-	private ServletContext servletContext;
-	private ServletConfig servletConfig;
 	private CaSessionLocal caSession;
     private CertificateProfileSessionLocal certificateProfileSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
@@ -129,11 +122,9 @@ public class RequestInstance {
     @SuppressWarnings("rawtypes")
     private Map params = null;
 
-	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAccessSessionLocal endEntityAccessSession, CaSessionLocal caSession,
+	protected RequestInstance(EndEntityAccessSessionLocal endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyStoreCreateSessionLocal keyStoreCreateSession,
 	        SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession) {
-		this.servletContext = servletContext;
-		this.servletConfig = servletConfig;
 		this.caSession = caSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.endEntityProfileSession = endEntityProfileSession;
@@ -288,13 +279,6 @@ public class RequestInstance {
 				resulttype = CertificateResponseType.fromNumber(getParameter("resulttype")); // Indicates if certificate or PKCS7 should be returned on manual PKCS10 request.
 			}
 
-			String classid = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
-
-			if ((getParameter("classid") != null) &&
-					!getParameter("classid").equals("")) {
-				classid = getParameter("classid");
-			}
-
             final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal("RequestInstance", request.getRemoteAddr()));
 
 			RequestHelper helper = new RequestHelper(administrator, debug);
@@ -384,45 +368,8 @@ public class RequestInstance {
 				sendPEMTokens(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
-
-				// first check if it is a Firefox request,
-				if (getParameter("keygen") != null) {
-					byte[] reqBytes=getParameter("keygen").getBytes();
-					if ((reqBytes != null) && (reqBytes.length>0)) {
-					    if (log.isDebugEnabled()) {
-					        log.debug("Received NS request: "+new String(reqBytes));
-					    }
-						byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
-						if (Boolean.valueOf(getParameter("showResultPage")) && !isCertIssuerThrowAwayCA(certs, username)) {
-						  // Send info page that redirects to download URL that
-						  // retrieves the new certificate from the database
-						  RequestHelper.sendResultPage(certs, response, "true".equals(getParameter("hidemenu")), "netscape");
-						} else {
-						  // The certificate will not be stored in the database,
-						  // so we must send the certificate while we still have it
-						  RequestHelper.sendNewCertToNSClient(certs, response);
-						}
-					} else {
-						throw new SignRequestException("No request bytes received.");
-					}
-				} else if ( (getParameter("pkcs10") != null) || (getParameter("PKCS10") != null) ) {
-					// if not firefox, check if it's IE
-					byte[] reqBytes = getParameter("pkcs10").getBytes();
-					if (reqBytes == null) {
-						reqBytes=getParameter("PKCS10").getBytes();
-					}
-					if ((reqBytes != null) && (reqBytes.length>0)) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Received IE request: "+new String(reqBytes));
-                        }
-						byte[] b64cert=helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, CertificateResponseType.ENCODED_PKCS7).getEncoded();
-						debug.ieCertFix(b64cert);
-						response.setContentType("text/html");
-						RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseTemplate"),classid);
-					} else {
-						throw new SignRequestException("No request bytes received.");
-					}
-				} else if ( ((getParameter("pkcs10req") != null) || (getParameter("pkcs10file") != null)) && resulttype != CertificateResponseType.UNSPECIFIED) {
+			    // TOKEN_SOFT_BROWSERGEN is just a legacy name for PKCS10 CSR requests
+			    if ( ((getParameter("pkcs10req") != null) || (getParameter("pkcs10file") != null)) && resulttype != CertificateResponseType.UNSPECIFIED) {
 					byte[] reqBytes = null;
 					String pkcs10req = getParameter("pkcs10req");
 					if (StringUtils.isEmpty(pkcs10req)) {

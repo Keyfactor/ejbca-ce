@@ -13,18 +13,26 @@
  
 package org.ejbca.ui.web;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.LinkedList;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -44,43 +52,14 @@ import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.HTMLTools;
 
-import javax.ejb.ObjectNotFoundException;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.regex.Pattern;
-
 /**
  * Helper class for handling certificate request from browsers or general PKCS#10
- * 
- * @version $Id$
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
     private AuthenticationToken administrator;
     private ServletDebug debug;
-    private static final Pattern CLASSID = Pattern.compile("\\$CLASSID");
-
+    
 	public static final  String BEGIN_CERTIFICATE_REQUEST_WITH_NL = "-----BEGIN CERTIFICATE REQUEST-----\n";
 	public static final  String END_CERTIFICATE_REQUEST_WITH_NL    = "\n-----END CERTIFICATE REQUEST-----\n";
 
@@ -105,10 +84,6 @@ public class RequestHelper {
 	@Deprecated
 	public static final int ENCODED_CERTIFICATE_CHAIN = 4;
 	
-    /** String reported by Firefox when the key generation fails */
-    private static final byte[] HIGHGRADE_STRING = "High Grade".getBytes();
-    private static final byte[] MEDIUMGRADE_STRING = "Medium Grade".getBytes();
-
     /**
      * Creates a new RequestHelper object.
      *
@@ -119,95 +94,6 @@ public class RequestHelper {
         this.administrator = administrator;
         this.debug = debug;
     }
-
-    /**
-     * Handles Firefox certificate request (KEYGEN), these are constructed as: <code>
-     * SignedPublicKeyAndChallenge ::= SEQUENCE { publicKeyAndChallenge    PublicKeyAndChallenge,
-     * signatureAlgorithm   AlgorithmIdentifier, signature        BIT STRING }</code> PublicKey's
-     * encoded-format has to be RSA X.509.
-     *
-     * @param signsession EJB session to signature bean.
-     * @param reqBytes buffer holding te request from NS.
-     * @param username username in EJBCA for authoriation.
-     * @param password users password for authorization.
-     *
-     * @return byte[] containing DER-encoded certificate.
-     *
-     * @throws CesecoreException 
-     * @throws AuthorizationDeniedException 
-     * @throws EjbcaException 
-     * @throws CADoesntExistsException 
-     * @throws ObjectNotFoundException 
-     * @throws CertificateEncodingException 
-     * @throws NoSuchProviderException 
-     * @throws SignatureException 
-     * @throws NoSuchAlgorithmException 
-     * @throws InvalidKeyException 
-     */
-    public byte[] nsCertRequest(SignSessionLocal signsession, byte[] reqBytes, String username, String password) throws 
-            ObjectNotFoundException, CADoesntExistsException, EjbcaException, AuthorizationDeniedException, CesecoreException,
-            CertificateEncodingException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
-        if (reqBytes == null || reqBytes.length == 0) {
-            throw new IllegalStateException("Invalid request sent from browser (null or zero length).");
-        }
-        if (Arrays.equals(reqBytes, HIGHGRADE_STRING) || Arrays.equals(reqBytes, MEDIUMGRADE_STRING)) {
-            throw new IllegalStateException("Key generation failed. If enrolling using a hardware token, please check the token and the token middleware.");
-        }
-
-        byte[] buffer = Base64.decode(reqBytes);
-
-        if (buffer == null) {
-            return null;
-        }
-
-        final ASN1Sequence spkac;
-        try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer))) {
-            spkac = ASN1Sequence.getInstance(in.readObject());
-        } catch (IOException e) {
-            throw new IllegalStateException("Unexpected IOException was caught.", e);
-        }
-       
-        NetscapeCertRequest nscr = new NetscapeCertRequest(spkac);
-
-        // Verify POPO, we don't care about the challenge, it's not important.
-        nscr.setChallenge("challenge");
-
-        if (nscr.verify("challenge") == false) {
-            throw new SignRequestSignatureException(
-                "Invalid signature in NetscapeCertRequest, popo-verification failed.");
-        }
-        if (log.isDebugEnabled()) {
-        	log.debug("POPO verification successful");
-        }
-        X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator,
-                username, password, nscr.getPublicKey());
-        if (log.isDebugEnabled()) {
-        	log.debug("Created certificate for " + username);
-        }
-        if (debug != null) {
-            debug.print("<h4>Generated certificate:</h4>");
-            debug.printInsertLineBreaks(cert.toString().getBytes());
-        }
-        return cert.getEncoded();
-
-/* ECA-2065: the <keygen> specification doesn't say anything about the
- * returned certificate.  Originally EJBCA used a PKCS7 container but
- * this has proved to be incompatible with Safari and Chrome.  ECA-2065
- * changes returned data to just a DER-encoded certificate which has
- * been verified to work in Firefox, Chrome and Safari.  The mime-type
- * remains application/x-x509-user-certificate.  Below is the deleted
- * code: 
-        // Don't include certificate chain in the PKCS7 to Firefox
-        byte[] pkcs7 = signsession.createPKCS7(administrator, cert, false);
-        log.debug("Created certificate (PKCS7) for " + username);
-        if (debug != null) {
-            debug.print("<h4>Generated certificate:</h4>");
-            debug.printInsertLineBreaks(cert.toString().getBytes());
-        }
-
-        return pkcs7;
-*/
-    } //nsCertRequest
 
     /**
      * Handles PKCS10 certificate request, these are constructed as: <code> CertificationRequest
@@ -327,128 +213,6 @@ public class RequestHelper {
             }
             return Base64.encode(result);
         } //cvcCertRequest
-
-    /**
-     * Formats certificate in form to be received by IE
-     *
-     * @param bA input
-     * @param out Output
-     */
-    public static void ieCertFormat(byte[] bA, PrintStream out)
-        throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bA)));
-        int rowNr = 0;
-
-        while (true) {
-            String line = br.readLine();
-
-            if (line == null) {
-                break;
-            }
-
-            if (line.indexOf("END CERT") < 0) {
-                if (line.indexOf(" CERT") < 0) {
-                    if (++rowNr > 1) {
-                        out.println(" & _ ");
-                    } else {
-                        out.print("    cert = ");
-                    }
-
-                    out.print('\"' + line + '\"');
-                }
-            } else {
-                break;
-            }
-        }
-
-        out.println();
-    } // ieCertFormat
-
-   
-    /**
-     * Reads template and inserts cert to send back to IE for installation of cert
-     *
-     * @param b64cert cert to be installed in IE-client
-     * @param out utput stream to send to
-     * @param sc serveltcontext
-     * @param responseTemplate path to responseTemplate
-     * @param classid replace
-     *
-     * @throws Exception on error
-     */
-    public static void sendNewCertToIEClient(byte[] b64cert, OutputStream out, ServletContext sc,
-        String responseTemplate, String classid) throws Exception {
-        if (b64cert.length == 0) {
-            log.error("0 length certificate can not be sent to IE client!");
-            return;
-        }
-
-        PrintStream ps = new PrintStream(out);
-        if (log.isDebugEnabled()) {
-            log.debug("Response template is: "+responseTemplate);
-        }
-        InputStream is = sc.getResourceAsStream(responseTemplate);
-        if (is == null) {
-        	// Some app servers (oracle) require a / first...
-            if (log.isDebugEnabled()) {
-                log.debug("Trying to read responseTemplate with / first");
-            }
-            is = sc.getResourceAsStream("/"+responseTemplate);
-        }
-        if (is == null) {
-        	throw new IOException("Template '(/)"+responseTemplate+"' can not be found or read.");
-        }
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-        while (true) {
-            String line = br.readLine();
-
-            if (line == null) {
-                break;
-            }
-
-            if (line.indexOf("cert =") < 0) {
-                ps.println(CLASSID.matcher(line).replaceFirst(classid));
-            } else {
-                RequestHelper.ieCertFormat(b64cert, ps);
-            }
-        }
-
-        ps.close();
-        if (log.isDebugEnabled()) {
-            log.debug("Sent reply to IE client");
-            log.debug(new String(b64cert));
-        }
-    } // sendNewCertToIEClient
-
-    /**
-     * Sends back cert to Firefox for installation of cert
-     *
-     * @param certs DER encoded certificates to be installed in browser
-     * @param out output stream to send to
-     *
-     * @throws Exception on error
-     */
-    public static void sendNewCertToNSClient(byte[] certs, HttpServletResponse out)
-        throws Exception {
-    	log.trace(">nsCertRequest");
-        if (certs.length == 0) {
-            log.error("0 length certificate can not be sent to NS client!");
-            return;
-        }
-
-        // Set content-type to what NS wants
-        out.setContentType("application/x-x509-user-cert");
-        out.setContentLength(certs.length);
-
-        // Print the certificate
-        out.getOutputStream().write(certs);
-        if (log.isDebugEnabled()) {
-            log.debug("Sent reply to NS client");
-            log.debug(new String(Base64.encode(certs)));
-        }
-    	log.trace("<nsCertRequest");
-    } // sendNewCertToNSClient
 
     /**
      * Sends back certificate as binary file (application/octet-stream)

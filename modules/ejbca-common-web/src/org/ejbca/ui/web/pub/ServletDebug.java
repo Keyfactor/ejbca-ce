@@ -24,7 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
 
@@ -113,11 +112,5 @@ public class ServletDebug {
         request.setAttribute("Exception", "true");
     }
 
-    public void ieCertFix(byte[] bA) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream tmpPrinter = new PrintStream(baos);
-        RequestHelper.ieCertFormat(bA, tmpPrinter);
-        printInsertLineBreaks(baos.toByteArray());
-    }
 }
  // Debug
