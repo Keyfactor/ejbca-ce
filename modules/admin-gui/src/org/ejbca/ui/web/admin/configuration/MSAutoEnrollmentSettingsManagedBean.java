@@ -53,10 +53,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private String adLoginPassword;
 
     // MS Servlet Settings
-    private String keyStorePath;
-    private String keyStorePassword;
-    private String trustedKeyStorePath;
-    private String trustedKeyStorePassword;
     private String caName;
 
     // MS Template Settings: Holds mapped MS Templates for the configuration
@@ -90,10 +86,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             adLoginDN = autoEnrollmentConfiguration.getAdLoginDN();
             adLoginPassword = autoEnrollmentConfiguration.getAdLoginPassword();
 
-            keyStorePath = autoEnrollmentConfiguration.getKeyStorePath();
-            keyStorePassword = autoEnrollmentConfiguration.getKeyStorePassword();
-            trustedKeyStorePath = autoEnrollmentConfiguration.getTrustedKeyStorePath();
-            trustedKeyStorePassword = autoEnrollmentConfiguration.getTrustedKeyStorePassword();
             caName = autoEnrollmentConfiguration.getCaName();
 
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings();
@@ -171,38 +163,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     // MS Servlet Settings
-    public String getKeyStorePath() {
-        return keyStorePath;
-    }
-
-    public void setKeyStorePath(String keyStorePath) {
-        this.keyStorePath = keyStorePath;
-    }
-
-    public String getKeyStorePassword() {
-        return keyStorePassword;
-    }
-
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword;
-    }
-
-    public String getTrustedKeyStorePath() {
-        return trustedKeyStorePath;
-    }
-
-    public void setTrustedKeyStorePath(String trustedKeyStorePath) {
-        this.trustedKeyStorePath = trustedKeyStorePath;
-    }
-
-    public String getTrustedKeyStorePassword() {
-        return trustedKeyStorePassword;
-    }
-
-    public void setTrustedKeyStorePassword(String trustedKeyStorePassword) {
-        this.trustedKeyStorePassword = trustedKeyStorePassword;
-    }
-
     public String getCaName() {
         return caName;
     }
@@ -537,10 +497,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setAdLoginPassword(adLoginPassword);
 
             // MS Servlet Settings
-            autoEnrollmentConfiguration.setKeyStorePath(keyStorePath);
-            autoEnrollmentConfiguration.setKeyStorePassword(keyStorePassword);
-            autoEnrollmentConfiguration.setTrustedKeyStorePath(trustedKeyStorePath);
-            autoEnrollmentConfiguration.setTrustedKeyStorePassword(trustedKeyStorePassword);
             autoEnrollmentConfiguration.setCaName(caName);
 
             // MS Template Settings
