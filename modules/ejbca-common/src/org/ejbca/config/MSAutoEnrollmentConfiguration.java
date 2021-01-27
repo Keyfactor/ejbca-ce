@@ -26,10 +26,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
 
     // MS Enrollment Servlet Settings
-    private static final String KEY_STORE_PATH = "keyStorePath";
-    private static final String KEY_STORE_PASSWORD = "keyStorePassword";
-    private static final String TRUSTED_KEY_STORE_PATH = "trustedKeyStorePath";
-    private static final String TRUSTED_KEY_STORE_PASSWORD = "trustedKeyStorePassword";
     private static final String CA_NAME = "caName";
 
     // Template to Settings
@@ -54,10 +50,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
         setAdLoginPassword("");
 
         // MS Servlet Settings
-        setKeyStorePath("");
-        setKeyStorePassword("");
-        setTrustedKeyStorePath("");
-        setTrustedKeyStorePassword("");
         setCaName("");
 
         setMsTemplateSettings(new ArrayList<>());
@@ -134,34 +126,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     }
 
     // MS Enrollment Servlet Settings
-    public String getKeyStorePath() {
-        return (String) data.get(KEY_STORE_PATH);
-    }
-    public void setKeyStorePath(final String keyStorePath) {
-        data.put(KEY_STORE_PATH, keyStorePath);
-    }
-
-    public String getKeyStorePassword() {
-        return (String) data.get(KEY_STORE_PASSWORD);
-    }
-    public void setKeyStorePassword(final String keyStorePassword) {
-        data.put(KEY_STORE_PASSWORD, keyStorePassword);
-    }
-
-    public String getTrustedKeyStorePath() {
-        return (String) data.get(TRUSTED_KEY_STORE_PATH);
-    }
-    public void setTrustedKeyStorePath(final String trustedKeyStorePath) {
-        data.put(TRUSTED_KEY_STORE_PATH, trustedKeyStorePath);
-    }
-
-    public String getTrustedKeyStorePassword() {
-        return (String) data.get(TRUSTED_KEY_STORE_PASSWORD);
-    }
-    public void setTrustedKeyStorePassword(final String trustedKeyStorePassword) {
-        data.put(TRUSTED_KEY_STORE_PASSWORD, trustedKeyStorePassword);
-    }
-
     public String getCaName() {
         return (String) data.get(CA_NAME);
     }
