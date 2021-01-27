@@ -76,8 +76,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests http servlet for certificate request
- * 
- * @version $Id$
  */
 public class CertRequestHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(CertRequestHttpTest.class);
@@ -371,34 +369,6 @@ public class CertRequestHttpTest extends CaTestCase {
         log.trace("<test04RequestWrongStatus()");
     }
 
-    @Test
-    public void test05RequestIE() throws Exception {
-        // find a CA (TestCA?) create a user
-        // Send certificate request for a server generated PKCS12
-        setupUser(SecConst.TOKEN_SOFT_BROWSERGEN);
-
-        String resp = sendCsrRequest(1);
-        // This is a string with VB script and all
-        // System.out.println(resp);
-        assertTrue("Response does not contain 'cert ='", resp.contains("cert ="));
-    }
-
-    /** Tries to send a browser certificate request when the user on the server side has been 
-     * added using a P12 token type. This means server generated token, which should be wrong for a browser request.
-     * We should receive an error back.
-     */
-    @Test
-    public void test06RequestIEWrongTokenType() throws Exception {
-        // find a CA (TestCA?) create a user
-        // Send certificate request for a server generated PKCS12
-        setupUser(SecConst.TOKEN_SOFT_PEM);
-
-        String resp = sendCsrRequest(1);
-        // This is a string with VB script and all
-        // System.out.println(resp);
-        assertTrue("Response does not contain 'User was configured for server generated token but a CSR was sent in the request'", resp.contains("User was configured for server generated token but a CSR was sent in the request"));
-    }
-
     /** Tries to send a CSR and gets a certificate back 
      * added using a P12 token type. This means server generated token, which should be wrong for a CSR request.
      * We should receive an error back.
@@ -409,7 +379,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // Send certificate request for a server generated PKCS12
         setupUser(SecConst.TOKEN_SOFT_BROWSERGEN);
 
-        String resp = sendCsrRequest(2);
+        String resp = sendCsrRequest();
         // This is a string with VB script and all
         // System.out.println(resp);
         assertTrue("Response does not start with '-----BEGIN CERTIFICATE-----'", resp.startsWith("-----BEGIN CERTIFICATE-----"));
@@ -425,7 +395,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // Send certificate request for a server generated PKCS12
         setupUser(SecConst.TOKEN_SOFT_PEM);
 
-        String resp = sendCsrRequest(2);
+        String resp = sendCsrRequest();
         // This is a string with VB script and all
         // System.out.println(resp);
         assertTrue("Response does not contain 'User was configured for server generated token but a CSR was sent in the request'", resp.contains("User was configured for server generated token but a CSR was sent in the request"));
@@ -473,7 +443,7 @@ public class CertRequestHttpTest extends CaTestCase {
     /** type 1 = ie (pkcs10)
      *  type 2 = csr (pkcs10req)
      */
-    private String sendCsrRequest(int type) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException,
+    private String sendCsrRequest() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException,
             InvalidKeyException, SignatureException, OperatorCreationException, MalformedURLException, ProtocolException,
             UnsupportedEncodingException {
         // Create a PKCS10 request
@@ -485,13 +455,9 @@ public class CertRequestHttpTest extends CaTestCase {
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         final StringBuilder request = new StringBuilder();
-        if (type == 2) {
-            request.append("-----BEGIN CERTIFICATE REQUEST-----\n");
-        }
+        request.append("-----BEGIN CERTIFICATE REQUEST-----\n");
         request.append(new String(Base64.encode(bOut.toByteArray())));
-        if (type == 2) {
-            request.append("\n-----END CERTIFICATE REQUEST-----\n");
-        }
+        request.append("\n-----END CERTIFICATE REQUEST-----\n");
         String p10 = request.toString();
         // System.out.println(p10);
 
@@ -506,16 +472,7 @@ public class CertRequestHttpTest extends CaTestCase {
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         OutputStream os = con.getOutputStream();
         final StringBuilder buf = new StringBuilder("user="+TEST_USERNAME+"&password=foo123&");
-        switch (type) {
-        case 1:
-            buf.append("pkcs10=");
-            break;
-        case 2:
-            buf.append("resulttype=1&pkcs10req=");
-            break;
-        default:
-            break;
-        }
+        buf.append("resulttype=1&pkcs10req=");
         buf.append(URLEncoder.encode(p10, "UTF-8"));
         os.write(buf.toString().getBytes("UTF-8"));
         os.close();
