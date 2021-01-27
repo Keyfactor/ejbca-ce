@@ -255,7 +255,7 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
     }
 
     @Test
-    public void stepU_downloadPem() throws InterruptedException {
+    public void stepU_downloadPem() {
         raWebHelper.clickDownloadPem();
         raWebHelper.assertApproveMessageDoesNotExist();
     }
