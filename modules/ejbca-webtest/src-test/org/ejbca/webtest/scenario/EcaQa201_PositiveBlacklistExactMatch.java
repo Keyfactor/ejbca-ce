@@ -233,6 +233,7 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
     @Test
     public void stepQ_SelectRequestTemplate() throws Exception {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificateSubType(RaWebHelper.Page.ENDUSER);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }
@@ -254,7 +255,7 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
     }
 
     @Test
-    public void stepU_downloadPem() {
+    public void stepU_downloadPem() throws InterruptedException {
         raWebHelper.clickDownloadPem();
         raWebHelper.assertApproveMessageDoesNotExist();
     }
