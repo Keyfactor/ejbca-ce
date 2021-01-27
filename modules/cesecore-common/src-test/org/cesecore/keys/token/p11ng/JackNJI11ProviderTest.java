@@ -165,7 +165,7 @@ public class JackNJI11ProviderTest {
         cryptoToken = createPkcs11NgTokenWithoutAttributesFile();
         cryptoToken.activate(tokenpin.toCharArray());
         cryptoToken.generateKeyPair(PKCS11TestUtils.KEY_SIZE_2048, PKCS11TestUtils.RSA_TEST_KEY_1); // Default params is SIGN only
-        cryptoToken.generateKeyPair(KeyGenParams.builder(PKCS11TestUtils.KEY_SIZE_2048).withKeyPairTemplate(KeyPairTemplate.SIGN_ENCRYPT).build(), 
+        cryptoToken.generateKeyPair(KeyGenParams.builder(PKCS11TestUtils.KEY_SIZE_2048).withKeyPairTemplate(KeyPairTemplate.SIGN_UNWRAP).build(), 
                 PKCS11TestUtils.RSA_TEST_KEY_2);
         cryptoToken.generateKeyPair("secp256r1", PKCS11TestUtils.ECC_TEST_KEY_1);
     }
@@ -244,7 +244,7 @@ public class JackNJI11ProviderTest {
         }
 
         {
-            // Do the same but with a key that has SIGN_ENCRYPT
+            // Do the same but with a key that has SIGN_UNWRAP
             byte[] encrypted = encryptKeys(cryptoToken, PKCS11TestUtils.RSA_TEST_KEY_2, toEncrypt);
             assertNotNull("Encrypting a key pair with the public key must return encrypted data", encrypted);
             // Verify at least something about the encrypted data
