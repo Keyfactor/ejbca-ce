@@ -120,7 +120,6 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
                 }
             } catch (TokenExpiredException e) {
                 throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
-                //TODO ECA-9747 refresh token in REST
             }
             return admin;
         } else {

@@ -92,7 +92,7 @@ public class RaAuthenticationHelper implements Serializable {
                 try {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
                 } catch (TokenExpiredException e) {
-                    //TODO ECA-9747 refresh token in RA
+                    //TODO ECA-9762 refresh token in RA
                     authenticationToken = null;
                 }
                 if (authenticationToken == null) {
