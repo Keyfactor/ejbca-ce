@@ -37,7 +37,7 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
 
     // Test Data
     public static class TestData {
-        final static int EXPECTED_NUMBER_OF_MENU_ITEMS = 13;
+        final static int EXPECTED_NUMBER_OF_MENU_ITEMS = 12;
         final static int EXPECTED_NUMBER_OF_MENU_HEADERS = 5;
     }
     
