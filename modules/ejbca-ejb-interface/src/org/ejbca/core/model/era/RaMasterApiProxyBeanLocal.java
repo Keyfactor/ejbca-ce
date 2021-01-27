@@ -18,8 +18,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * Interface for EJB access to the RaMasterApi proxy singleton
- *
- * @version $Id$
  */
 @Local
 public interface RaMasterApiProxyBeanLocal extends RaMasterApi {

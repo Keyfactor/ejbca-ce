@@ -84,8 +84,6 @@ import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -338,9 +336,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             KeyStore keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, null, null,
                     createJKS, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
-            String alias = keyStore.aliases().nextElement();
-            // FIXME Can we remove the line below, or does keyStore.getCertificate() have any side-effects?
-            X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keyStore.store(baos, password.toCharArray());
             ret = baos.toByteArray();

@@ -40,7 +40,6 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
- * @version $Id$
  */
 public interface CertificateRequestSession {
 
@@ -53,6 +52,9 @@ public interface CertificateRequestSession {
 	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
+     * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+     * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
+     * @throws CADoesntExistsException If the CA requested for certificate generation does not exist
 	 * @throws CesecoreException 
 	 * @throws CertificateExtensionException if the request contained invalid extensions
 	 */
@@ -70,6 +72,8 @@ public interface CertificateRequestSession {
 	 * @param req is the certificate request
 	 * @param responseClass the class of the response message that should be returned back
      * @return a response message of the type specified in responseClass 
+     * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+     * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
 	 * @throws CesecoreException 
 	 * @throws CertificateExtensionException (rollback) if an error exists in the exensions specified in the request
 	 */
@@ -77,7 +81,7 @@ public interface CertificateRequestSession {
             AuthorizationDeniedException, EndEntityProfileValidationException, EjbcaException, CesecoreException, CertificateExtensionException;
 
 	/**
-	 * Edits or adds a user and generates a keystore for that user in a single transaction.
+	 * Edits or adds a user and generates a keystore for that user in a single transaction, including key recovery if that is active.
      * Used from EjbcaWS.
      * 
 	 * @param admin is the requesting administrator
@@ -85,11 +89,11 @@ public interface CertificateRequestSession {
      * @param keyspec name of ECDSA key or length of RSA and DSA keys  
      * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
-     * @return an encoded keystore of the type specified in responseType 
-	 * @throws EndEntityProfileValidationException 
-	 * @throws AuthorizationDeniedException 
+     * @return an encoded keystore of the type specified
+	 * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+	 * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
 	 * @throws CustomFieldException 
-	 * @throws CADoesntExistsException 
+	 * @throws CADoesntExistsException If the CA requested for certificate generation does not exist
 	 * @throws EndEntityExistsException 
 	 * @throws ApprovalException 
 	 * @throws IllegalNameException if the Subject DN failed constraints
