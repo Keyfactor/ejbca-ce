@@ -87,7 +87,7 @@ public class WebdistHttpTest {
         String httpReqPath = "http://"+remoteHost+":" + httpPort + "/ejbca";
         String[] resourceNames = {
                 "retrieve/ca_crls.jsp", "retrieve/ca_certs.jsp", "retrieve/latest_cert.jsp", "retrieve/list_certs.jsp", "retrieve/check_status.jsp",
-                "enrol/browser.jsp", "enrol/server.jsp", "enrol/keystore.jsp"
+                "enrol/server.jsp", "enrol/keystore.jsp"
         };
 
         for (final String resourceName : resourceNames) {
