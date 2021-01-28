@@ -32,26 +32,28 @@ public class KeyGenParams implements Serializable {
     private final Map<Long, Object> privateAttributesMap;
 
     /**
-     * Describes a set of PKCS #11 attribute templates.
+     * Describes a set of PKCS#11 attribute templates for the key pair generation with P11-NG
      */
     public enum KeyPairTemplate {
         /**
-         * Template for a keypair only allowed to be used for signing and verifying.
+         * Template for a key pair only allowed to be used for signing and verifying.
          */
         SIGN,
         /**
-         * Template for a keypair only allowed to be used for decrypting and encrypting.
+         * Template for a key pair only allowed to be used for key wrapping and unwrapping.
          */
         ENCRYPT,
         /**
-         * Template for a keypair allowed to be used for signing, verifying, decrypting and encrypting.
+         * Template for a key pair allowed to be used for signing, verifying, unwrapping and wrapping.
          */
         SIGN_ENCRYPT
     }
 
     public static class KeyGenParamsBuilder {
         private String keySpecification;
+        /** PKCS#11 attributes for the public key generation with P11-NG */
         private Map<Long, Object> publicAttributesMap;
+        /** PKCS#11 attributes for the private key generation with P11-NG */
         private Map<Long, Object> privateAttributesMap;
 
         protected KeyGenParamsBuilder(final String keySpecification) {
@@ -67,18 +69,22 @@ public class KeyGenParams implements Serializable {
         }
 
         /**
-         * Specify the PKCS #11 attribute template to use.
+         * Specify the PKCS#11 attribute template to use, with P11-NG. There are different key templates depending on if
+         * a generated key should be possible to use for signing or decryption, or both. Different HSMs can have limitations
+         * regarding allowed mix of usage, for example Utimaco CP5, and Google GCP KMS, don't allow both sign and unwrap at the same time.
          * 
-         * @param keyPairTemplate the key pair template to use.
+         * @param keyPairTemplate the {@link KeyPairTemplate} to use.
          * @return the builder.
          */
         public KeyGenParamsBuilder withKeyPairTemplate(final KeyPairTemplate keyPairTemplate) {
+            // Utimaco CP5 allows only ENCRYPT/DECRYPT _or_ WRAP/UNWRAP. Since we use Decrypt in JackNJI11Provider we only need DECRYPT
+            // See JackNJI11Provider.MyCipher.engineUnwrap for more information
             if (keyPairTemplate == KeyPairTemplate.ENCRYPT) {
                 privateAttributesMap.put(CKA.DECRYPT, true);
-                privateAttributesMap.put(CKA.UNWRAP, true);
+                privateAttributesMap.put(CKA.UNWRAP, false);
                 privateAttributesMap.put(CKA.SIGN, false);
                 publicAttributesMap.put(CKA.ENCRYPT, true);
-                publicAttributesMap.put(CKA.WRAP, true);
+                publicAttributesMap.put(CKA.WRAP, false);
                 publicAttributesMap.put(CKA.VERIFY, false);
             } else if (keyPairTemplate == KeyPairTemplate.SIGN) {
                 privateAttributesMap.put(CKA.DECRYPT, false);
@@ -88,11 +94,13 @@ public class KeyGenParams implements Serializable {
                 publicAttributesMap.put(CKA.WRAP, false);
                 publicAttributesMap.put(CKA.VERIFY, true);
             } else if (keyPairTemplate == KeyPairTemplate.SIGN_ENCRYPT) {
+                // SIGN_UNWRAP can not be used with a Utimaco CP5 HSM anyhow, but let's use the same limitations on DECRYPT/UNWRAP
+                // there may be some future limitations on other HSMs, be minimalistic
                 privateAttributesMap.put(CKA.DECRYPT, true);
-                privateAttributesMap.put(CKA.UNWRAP, true);
+                privateAttributesMap.put(CKA.UNWRAP, false);
                 privateAttributesMap.put(CKA.SIGN, true);
                 publicAttributesMap.put(CKA.ENCRYPT, true);
-                publicAttributesMap.put(CKA.WRAP, true);
+                publicAttributesMap.put(CKA.WRAP, false);
                 publicAttributesMap.put(CKA.VERIFY, true);
             }
             return this;
@@ -175,18 +183,18 @@ public class KeyGenParams implements Serializable {
     }
     
     /**
-     * Get a map with PKCS #11 attributes for the public key.
+     * Get a map with PKCS#11 attributes for the public key generation with P11-NG.
      * 
-     * @return a map with PKCS #11 attributes.
+     * @return a map with PKCS#11 attributes.
      */
     public Map<Long, Object> getPublicAttributesMap() {
         return new HashMap<>(publicAttributesMap);
     }
 
     /**
-     * Get a map with PKCS #11 attributes for the private key.
+     * Get a map with PKCS#11 attributes for the private key generation with P11-NG
      * 
-     * @return a map with PKCS #11 attributes.
+     * @return a map with PKCS#11 attributes.
      */
     public Map<Long, Object> getPrivateAttributesMap() {
         return new HashMap<>(privateAttributesMap);
