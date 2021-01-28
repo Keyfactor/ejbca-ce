@@ -202,9 +202,6 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(422, e.getMessage());
         }
         endEntityInformation.setPassword(keyStoreRestRequest.getPassword());
-        if (endEntityInformation.getExtendedInformation() == null) {
-            endEntityInformation.setExtendedInformation(new ExtendedInformation());
-        }
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyStoreRestRequest.getKeyAlg());
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keyStoreRestRequest.getKeySpec());
         final int tokenType = endEntityInformation.getTokenType();
