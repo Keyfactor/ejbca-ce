@@ -203,8 +203,8 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-168.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-168.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-168.jar" sourcepath="/home/user/Dev/bcpkix-jdk15on-168/src.zip"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-168.jar" sourcepath="/home/user/Dev/bcprov-jdk15on-168/src.zip"/>
 	<classpathentry kind="lib" path="lib/bctls-jdk15on-168.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.4.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-5.1.2.Final.jar"/>
