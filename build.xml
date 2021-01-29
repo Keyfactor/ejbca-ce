@@ -595,10 +595,7 @@
 				<include name="jackson-dataformat-yaml-2.*.jar"/>
 			</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/intune" erroronmissingdir="false">    
-        		<include name="adal4j-*.jar"/>
-				<include name="csr-validation-*.jar"/>
-				<include name="json-*.jar"/>
-  				<include name="oauth2-oidc-sdk-*.jar"/>
+        		<include name="*.jar"/>
         	</zipfileset>
         	
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
