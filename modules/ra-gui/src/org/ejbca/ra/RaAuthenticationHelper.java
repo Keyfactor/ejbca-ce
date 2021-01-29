@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -51,6 +52,10 @@ public class RaAuthenticationHelper implements Serializable {
         this.webAuthenticationProviderSession = webAuthenticationProviderSession;
     }
 
+    public void resetAuthenticationToken(){
+        authenticationToken = null;
+    }
+
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
@@ -61,7 +66,7 @@ public class RaAuthenticationHelper implements Serializable {
             // Set the current TLS session 
             authenticationTokenTlsSessionId = currentTlsSessionId;
             final X509Certificate x509Certificate = getClientX509Certificate(httpServletRequest);
-            final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+            final String oauthBearerToken = getBearerToken(httpServletRequest);
             if (x509Certificate == null && x509AuthenticationTokenFingerprint != null) {
                 log.warn("Suspected session hijacking attempt from " + httpServletRequest.getRemoteAddr() +
                         ". RA client presented no TLS certificate in HTTP session previously authenticated with client certificate.");
@@ -92,8 +97,19 @@ public class RaAuthenticationHelper implements Serializable {
                 try {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
                 } catch (TokenExpiredException e) {
-                    //TODO ECA-9762 refresh token in RA
-                    authenticationToken = null;
+                    String refreshToken = getRefreshToken(httpServletRequest);
+                    if (refreshToken != null) {
+                        OAuthGrantResponseInfo token = null;
+                        try {
+                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken);
+                            if (token != null) {
+                                httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
+                                authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
+                            }
+                        } catch (TokenExpiredException tokenExpiredException) {
+                            tokenExpiredException.printStackTrace();
+                        }
+                    }
                 }
                 if (authenticationToken == null) {
                     log.warn("Authentication failed using OAuth Bearer Token");
@@ -107,6 +123,30 @@ public class RaAuthenticationHelper implements Serializable {
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
+    }
+
+    /**
+     * Gets bearer token from Authorization header or from session
+     * @param httpServletRequest
+     * @return
+     */
+    private String getBearerToken(HttpServletRequest httpServletRequest) {
+        String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+        if (oauthBearerToken == null) {
+            OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
+            oauthBearerToken = token != null ? token.getAccessToken() : null;
+        }
+        return oauthBearerToken;
+    }
+
+    /**
+     * Gets bearer token from Authorization header or from session
+     * @param httpServletRequest
+     * @return
+     */
+    private String getRefreshToken(HttpServletRequest httpServletRequest) {
+        OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
+        return token != null ? token.getRefreshToken() : null;
     }
     
     /** Invoke once the session is started to prevent security leak via HTTP headers related. */
