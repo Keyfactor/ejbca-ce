@@ -93,6 +93,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
@@ -1164,6 +1165,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
             final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
             final byte[] csr = pkcs10req.getEncoded();
+            if (endEntity.getExtendedInformation() == null) {
+                endEntity.setExtendedInformation(new ExtendedInformation());
+            } 
             endEntity.getExtendedInformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
             endEntity.setPassword(password); // not persisted
             // Request certificate
