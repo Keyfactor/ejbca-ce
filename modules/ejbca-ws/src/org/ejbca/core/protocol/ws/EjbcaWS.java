@@ -777,6 +777,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( AuthorizationDeniedException | NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+        } catch (AuthLoginException e) {
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.INFO);
         } catch (RuntimeException e) {	// EJBException, ...
             throw getInternalException(e, logger);
         } finally {
@@ -837,7 +839,7 @@ public class EjbcaWS implements IEjbcaWS {
 			// Don't log a bad error for this (user wrong status)
             throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
-            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.INFO);
         } catch(EjbcaException e) {
             throw getEjbcaException(e.getMessage(), logger, e.getErrorCode(), null);
         } // EJBException, ...
@@ -1620,15 +1622,8 @@ public class EjbcaWS implements IEjbcaWS {
 	    	final AuthenticationToken admin = getAdmin(false);
 	    	logAdminName(admin,logger);
 
-            final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userData);
-            if (endEntityInformation.getExtendedInformation() == null) {
-                endEntityInformation.setExtendedInformation(new ExtendedInformation());
-            }
-            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
-            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
             final boolean createJKS = userData.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
-            final byte[] encodedKeyStore = raMasterApiProxyBean.addUserAndGenerateKeyStore(admin, endEntityInformation, false);
-
+            final byte[] encodedKeyStore = raMasterApiProxyBean.softTokenRequest(admin, userData, keySpec, keyAlg, createJKS);
             // Convert encoded KeyStore to the proper return type
 	        final java.security.KeyStore ks;
 	        if (createJKS) {
@@ -1639,18 +1634,18 @@ public class EjbcaWS implements IEjbcaWS {
 	        }
 	        ks.load(new ByteArrayInputStream(encodedKeyStore), userData.getPassword().toCharArray());
             return new KeyStore(ks, userData.getPassword());
-        } catch( CADoesntExistsException | AuthorizationDeniedException t ) {
+        } catch(CADoesntExistsException | AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
         } catch (AuthStatusException e) {
 			// Don't log a bad error for this (user wrong status)
             throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
-            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.INFO);
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException | CertificateException | IOException /*| CertificateSerialNumberException | IllegalNameException | InvalidKeySpecException | InvalidAlgorithmParameterException*/ | RuntimeException e) {
             throw getInternalException(e, logger);
-		} catch (WaitingForApprovalException e) {
-            throw getInternalException(e, logger);
+        } catch (EndEntityProfileValidationException e) {
+            throw new UserDoesntFullfillEndEntityProfile(e);
         } finally {
             logger.writeln();
             logger.flush();

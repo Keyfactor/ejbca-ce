@@ -214,8 +214,6 @@ import static org.junit.Assume.assumeTrue;
  *     </ul>
  * <li>If you use different names, you can configure alternate CA names systemtests.properties.
  * <li>If EJBCA is not running on localhost, then target.hostname must be configured in systemtests.properties
- *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EjbcaWSTest extends CommonEjbcaWs {
@@ -2857,8 +2855,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         try {
             ejbcaraws.caRenewCertRequest(subCaName, cachain, false, false, true, String.valueOf(CryptoTokenTestUtils.SOFT_TOKEN_PIN));
             fail("CSR should not have been returned for a non-existant CA");
-        } catch(EjbcaException_Exception e) {
-            assertTrue("Other exception than CADoesntExistsException_Exception was thrown", !CADoesntExistsException_Exception.class.isInstance(e.getClass()));            
+        } catch(CADoesntExistsException_Exception e) {
+            // NOPMD
         } finally {
             CaTestUtils.removeCa(intAdmin, root.getCAInfo());
         }

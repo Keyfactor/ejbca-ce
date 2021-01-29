@@ -12,6 +12,51 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import javax.persistence.QueryTimeoutException;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -183,50 +228,6 @@ import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import javax.persistence.QueryTimeoutException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
@@ -1925,6 +1926,40 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), e);
         } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException | RuntimeException e) {  // EJBException, ClassCastException, ...
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public byte[] softTokenRequest(AuthenticationToken authenticationToken, UserDataVOWS userdata, String keyspec, String keyalg, boolean createJKS) 
+            throws AuthorizationDeniedException, CADoesntExistsException, EndEntityProfileValidationException, EjbcaException {
+        try {
+            // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
+            final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userdata);
+            if (endEntityInformation.getExtendedInformation() == null) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keyspec);
+            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyalg);
+            return certificateRequestSession.processSoftTokenReq(authenticationToken, endEntityInformation, keyspec, keyalg, createJKS);
+        } catch (NotFoundException e) {
+            log.debug("EJBCA WebService error", e);
+            throw e; // NFE extends EjbcaException
+        } catch (AuthStatusException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
+        } catch (AuthLoginException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
+        } catch (InvalidKeySpecException | InvalidAlgorithmParameterException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INVALID_KEY_SPEC, e.getMessage());
+        } catch (CesecoreException e) {
+            log.debug("EJBCA WebService error", e);
+            // Will convert the CESecore exception to an EJBCA exception with the same error code
+            throw new EjbcaException(e.getErrorCode(), e);
+        } catch (KeyStoreException| NoSuchAlgorithmException | CertificateException |  RuntimeException e) {  // EJBException, ClassCastException, ...
             log.debug("EJBCA WebService error", e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
