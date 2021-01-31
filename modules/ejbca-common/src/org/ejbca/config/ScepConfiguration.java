@@ -75,6 +75,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     //Intune configuration values
     public static final String SCEP_USE_INTUNE = "useIntune";
+    public static final String SCEP_INTUNE_VERIFICATION_ON_CA = "intuneVerificationOnCa";
     public static final String AAD_APP_ID = "intuneAadAppId";
     public static final String AAD_APP_KEY = "intuneAadAppKey";
     public static final String TENANT = "intuneTenant";
@@ -93,7 +94,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 4f;
+    public static final float LATEST_VERSION = 5f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
@@ -110,6 +111,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
     public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
+    public static final boolean DEFAULT_SCEP_INTUNE_VERIFICATION_ON_CA = true;
     
     /** Creates a new instance of ScepConfiguration */
     public ScepConfiguration()  {
@@ -141,6 +143,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
             
             data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
+            data.put(alias + SCEP_INTUNE_VERIFICATION_ON_CA, DEFAULT_SCEP_INTUNE_VERIFICATION_ON_CA);
             data.put(alias + AAD_APP_ID, "");
             data.put(alias + AAD_APP_KEY, "");
             data.put(alias + TENANT, "");
@@ -148,7 +151,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + PROXY_PORT, "");
             data.put(alias + PROXY_USER, "");
             data.put(alias + PROXY_PASS, "");
-               
         }
     }
     
@@ -170,6 +172,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
         
         keys.add(alias + SCEP_USE_INTUNE);
+        keys.add(alias + SCEP_INTUNE_VERIFICATION_ON_CA);
         keys.add(alias + AAD_APP_ID);
         keys.add(alias + AAD_APP_KEY);
         keys.add(alias + TENANT);
@@ -348,6 +351,17 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
     }
     
+    public void setIntuneVerificationOnCa(final String alias, final boolean onCa) {
+        String key = alias + "." + SCEP_INTUNE_VERIFICATION_ON_CA;
+        setValue(key, Boolean.toString(onCa), alias);
+    }
+    
+    public boolean getIntuneVerificationOnCa(final String alias) {
+        String key = alias + "." + SCEP_INTUNE_VERIFICATION_ON_CA;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+    }
+    
     public void setIntuneAadAppId(final String alias, final String value) {
         String key = alias + "." + AAD_APP_ID;
         setValue(key, value, alias);
@@ -421,6 +435,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
         intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
+        intuneProperties.put("SCEP_INTUNE_VERIFICATION_ON_CA", getIntuneVerificationOnCa(alias));
         if (StringUtils.isNotBlank(getIntuneAadAppId(alias))) {
             intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
         }
@@ -449,6 +464,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public String getValue(String key, String alias) {
         if(aliasExists(alias)) {
             if(data.containsKey(key)) {
+                if (data.get(key) instanceof Boolean) {
+                    return Boolean.toString((Boolean) data.get(key));
+                }
                 return (String) data.get(key);
             } else {
                 log.error("Could not find key '" + key + "' in the SCEP configuration data");
@@ -654,8 +672,14 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     @Override
     public void upgrade(){
-        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {    
-            //V4.0 
+        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+            //V5.0
+            for (String alias : getAliasList()) {
+            	if (data.get(alias + SCEP_INTUNE_VERIFICATION_ON_CA) == null) {
+            	    data.put(alias + SCEP_INTUNE_VERIFICATION_ON_CA, DEFAULT_SCEP_INTUNE_VERIFICATION_ON_CA);
+            	}
+            }
+            //V4.0
             for (String alias : getAliasList()) {
                 data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
                 data.put(alias + AAD_APP_ID, "");
