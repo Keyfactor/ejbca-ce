@@ -69,6 +69,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private boolean allowClientCertificateRenewaWithOldKey;
         
         private boolean useIntune;
+        private String intuneAuthority;
         private boolean intuneVerificationOnCa;
         private String intuneAadAppId;
         private String intuneAadAppKey;
@@ -95,6 +96,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
                     this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
                     this.setUseIntune(scepConfig.getUseIntune(alias));
+                    this.intuneAuthority = scepConfig.getIntuneAuthority(alias);
                     this.setIntuneVerificationOnCa(scepConfig.getIntuneVerificationOnCa(alias));
                     this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
                     this.intuneAadAppKey = scepConfig.getIntuneAadAppKey(alias);
@@ -118,6 +120,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.allowClientCertificateRenewaWithOldKey = Boolean
                             .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
                     this.setUseIntune(false);
+                    this.intuneAuthority = "";
                     this.setIntuneVerificationOnCa(true);
                     this.intuneAadAppId = "";
                     this.intuneAadAppKey = "";
@@ -255,6 +258,14 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
         public void setUseIntune(boolean useIntune) {
             this.useIntune = useIntune;
+        }
+        
+        public String getIntuneAuthority() {
+            return intuneAuthority;
+        }
+
+        public void setIntuneAuthority(String intuneAuthority) {
+            this.intuneAuthority = intuneAuthority;
         }
         
         public boolean isIntuneVerificationOnCa() {
@@ -441,6 +452,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
             scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
             scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
+            scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
             scepConfig.setIntuneVerificationOnCa(alias, currentAlias.isIntuneVerificationOnCa());
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
             scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
