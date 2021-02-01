@@ -92,8 +92,6 @@ import org.ejbca.util.query.QueryWrapper;
 
 /**
  * Keeps track of approval requests and their approval or rejects.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -457,8 +455,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 queryWrapper.add("expireDate <? AND ", expiresBefore.getTime());
             }
             // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
-            queryWrapper.add("status IN (" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL + ", " + ApprovalDataVO.STATUS_APPROVED + (includeExpired ? ", " 
-                    +            + ApprovalDataVO.STATUS_EXPIRED + ", " + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED : "") + "))");
+            queryWrapper.add(
+            "status IN (" +
+                    ApprovalDataVO.STATUS_WAITINGFORAPPROVAL +
+                    ", " +
+                    ApprovalDataVO.STATUS_APPROVED +
+                    (includeExpired ? ", " + ApprovalDataVO.STATUS_EXPIRED + ", " + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED : "") +
+                "))"
+            );
             orderByString = "ORDER BY requestDate ASC"; // oldest first
             first = false;
         }
@@ -485,6 +489,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (email != null) {
             queryWrapper.add(" AND email LIKE '%' || ? || '%'", email);
         }
+
+        queryWrapper.add(" AND approvalType NOT IN (" + ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN + ")"); // Excluding approval that are not related to RA
+
         final List<ApprovalDataVO> ret = queryInternal(queryWrapper, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString,
                 orderByString);
         log.trace("<queryByStatus()");
