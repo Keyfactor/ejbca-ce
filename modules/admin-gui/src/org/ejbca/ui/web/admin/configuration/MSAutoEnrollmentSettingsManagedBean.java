@@ -1,5 +1,6 @@
 package org.ejbca.ui.web.admin.configuration;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -458,6 +459,28 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             }
         } else {
             addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
+        }
+    }
+
+    /**
+     * Test if a connection can be made to Active Directory with given credentials.
+     */
+    public void testAdConnection() {
+        if (StringUtils.isBlank(getAdLoginDN())) {
+            addErrorMessage("MSAE_AD_TEST_CONNECTION_ERROR_NO_LOGIN");
+            return;
+        }
+
+        if (StringUtils.isBlank(getAdLoginPassword())) {
+            addErrorMessage("MSAE_AD_TEST_CONNECTION_ERROR_NO_PWD");
+            return;
+        }
+
+        try {
+            // TODO: Implement and use AD Connection method. (After ECA-9772)
+            addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
+        } catch (Exception e) {
+            addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE");
         }
     }
 
