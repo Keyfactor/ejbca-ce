@@ -909,6 +909,17 @@ public interface RaMasterApi {
     SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
     IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
     CertificateExtensionException, CertificateRenewalException;
+    
+    /**
+     * Verifies the MS Intune challenge token in the CSR.
+     *  
+     * @param authenticationToken the origin of the request
+     * @param scepConfigurationAlias name of alias containing SCEP configuration
+     * @param message to dispatch
+     * @return true if the CSR verification was successful.
+     * @throws CertificateCreateException if the CSR verification fails.
+     */
+    boolean scepMsIntuneVerifyCsr(final AuthenticationToken authenticationToken, final String scepConfigurationAlias, final byte[] message) throws CertificateCreateException;
 
     /**
      * Dispatch CMP request over RaMasterApi.
