@@ -145,6 +145,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -2352,6 +2353,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public boolean scepMsIntuneVerifyCsr(final AuthenticationToken authenticationToken, final String scepConfigurationAlias, final byte[] message)
+            throws CertificateCreateException {
+    	// ECA-9270 Handle exception.
+        return scepMessageDispatcherSession.doMsIntuneCsrVerification(authenticationToken, scepConfigurationAlias, message);
+    }
+
+    @Override
     public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
         return cmpMessageDispatcherSession.dispatchRequest(authenticationToken, pkiMessageBytes, cmpConfigurationAlias);
     }
@@ -2872,6 +2880,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         } else if (GlobalUpgradeConfiguration.class.getName().equals(type.getName())) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        } else if (ScepConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
             log.debug("Found Global configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
