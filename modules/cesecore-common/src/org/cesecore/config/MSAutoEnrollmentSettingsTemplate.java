@@ -7,7 +7,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
 
     private boolean isUsed;
     private String oid;
-    private String certificationProfile;
+    private String certificateProfile;
     private String endEntityProfile;
     private String subjectNameFormat; // TODO: Enum?
     private boolean includeEmailInSubjectDN;
@@ -27,7 +27,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private void init() {
         setUsed(false);
         setOid("");
-        setCertificationProfile("");
+        setCertificateProfile("");
         setEndEntityProfile("");
         setSubjectNameFormat("");
         setIncludeEmailInSubjectDN(false);
@@ -58,12 +58,12 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         this.oid = oid;
     }
 
-    public String getCertificationProfile() {
-        return certificationProfile;
+    public String getCertificateProfile() {
+        return certificateProfile;
     }
 
-    public void setCertificationProfile(String certificationProfile) {
-        this.certificationProfile = certificationProfile;
+    public void setCertificateProfile(String certificateProfile) {
+        this.certificateProfile = certificateProfile;
     }
 
     public String getEndEntityProfile() {
