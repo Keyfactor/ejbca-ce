@@ -1022,12 +1022,12 @@
 						<h:outputText value="#{templateSetting.oid}" style="text-align: center"/>
 					</h:column>
 					<h:column>
-						<f:facet name="header"><h:outputText value="#{web.text.MSAE_TEMPLATE_CP}"/></f:facet>
-						<h:outputText value="#{templateSetting.certificationProfile}"/>
-					</h:column>
-					<h:column>
 						<f:facet name="header"><h:outputText value="#{web.text.MSAE_TEMPLATE_EEP}"/></f:facet>
 						<h:outputText value="#{templateSetting.endEntityProfile}"/>
+					</h:column>
+					<h:column>
+						<f:facet name="header"><h:outputText value="#{web.text.MSAE_TEMPLATE_CP}"/></f:facet>
+						<h:outputText value="#{templateSetting.certificateProfile}"/>
 					</h:column>
 					<h:column>
 						<f:facet name="header"><h:outputText value="#{web.text.MSAE_TEMPLATE_ACTIONS}"/></f:facet>
@@ -1050,14 +1050,14 @@
 					</h:selectOneMenu>
 
 					<h:selectOneMenu disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" style="width:250px; margin-right: 10px"
-									 value="#{msAutoEnrollmentSettings.selectedCertificationProfileId}">
-						<f:selectItems value="#{msAutoEnrollmentSettings.availableCertificateProfiles}"/>
-						<f:ajax render="autoenrollment:msaeTemplateEEP"/>
+									 value="#{msAutoEnrollmentSettings.selectedEndEntityProfileId}">
+						<f:selectItems value="#{msAutoEnrollmentSettings.availableEndEntityProfiles}"/>
+						<f:ajax render="autoenrollment:msaeTemplateCertProfile"/>
 					</h:selectOneMenu>
 
-					<h:selectOneMenu id="msaeTemplateEEP" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" style="width:250px; margin-right: 10px"
-									 value="#{msAutoEnrollmentSettings.selectedEndEntityProfileName}">
-						<f:selectItems value="#{msAutoEnrollmentSettings.availableEndEntityProfiles}"/>
+					<h:selectOneMenu id="msaeTemplateCertProfile" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" style="width:250px; margin-right: 10px"
+									 value="#{msAutoEnrollmentSettings.selectedCertificateProfileId}">
+						<f:selectItems value="#{msAutoEnrollmentSettings.availableCertificateProfiles}"/>
 					</h:selectOneMenu>
 
 					<h:commandButton value="#{web.text.ADD}"

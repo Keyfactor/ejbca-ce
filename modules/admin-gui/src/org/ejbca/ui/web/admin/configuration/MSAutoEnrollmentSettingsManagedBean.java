@@ -10,6 +10,9 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 import javax.annotation.PostConstruct;
@@ -61,9 +64,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplatesModel;
 
     private String selectedTemplateName;
-    private String selectedCertificationProfileName;
-    private Integer selectedCertificationProfileId;
+    private String selectedCertificateProfileName;
+    private Integer selectedCertificateProfileId;
     private String selectedEndEntityProfileName;
+    private Integer selectedEndEntityProfileId;
 
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final EndEntityProfileSessionLocal endEntityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
@@ -186,20 +190,22 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.selectedTemplateName = selectedTemplateName;
     }
 
-    public String getSelectedCertificationProfileName() {
-        return selectedCertificationProfileName;
+    public String getSelectedCertificateProfileName() {
+        return selectedCertificateProfileName;
     }
 
-    public void setSelectedCertificationProfileName(String selectedCertificationProfileName) {
-        this.selectedCertificationProfileName = selectedCertificationProfileName;
+    public void setSelectedCertificateProfileName(String selectedCertificateProfileName) {
+        this.selectedCertificateProfileName = selectedCertificateProfileName;
     }
 
-    public Integer getSelectedCertificationProfileId() {
-        return selectedCertificationProfileId;
+    public Integer getSelectedCertificateProfileId() {
+        return selectedCertificateProfileId;
     }
 
-    public void setSelectedCertificationProfileId(Integer selectedCertificationProfileId) {
-        this.selectedCertificationProfileId = selectedCertificationProfileId;
+    public void setSelectedCertificateProfileId(Integer selectedCertificateProfileId) {
+        this.selectedCertificateProfileId = selectedCertificateProfileId;
+
+        setSelectedCertificateProfileName(certificateProfileSession.getCertificateProfileName(getSelectedCertificateProfileId()));
     }
 
     public String getSelectedEndEntityProfileName() {
@@ -208,6 +214,16 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setSelectedEndEntityProfileName(String selectedEndEntityProfileName) {
         this.selectedEndEntityProfileName = selectedEndEntityProfileName;
+    }
+
+    public Integer getSelectedEndEntityProfileId() {
+        return selectedEndEntityProfileId;
+    }
+
+    public void setSelectedEndEntityProfileId(Integer selectedEndEntityProfileId) {
+        this.selectedEndEntityProfileId = selectedEndEntityProfileId;
+
+        setSelectedEndEntityProfileName(endEntityProfileSession.getEndEntityProfileName(getSelectedEndEntityProfileId()));
     }
 
     /**
@@ -252,23 +268,17 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             return;
         }
 
-        if (selectedCertificationProfileId == null || selectedCertificationProfileId == -1) {
+        if (getSelectedCertificateProfileId() == null || getSelectedCertificateProfileId() == -1 || getSelectedCertificateProfileName() == null) {
             addErrorMessage("MSAE_ERROR_CEP");
             return;
         }
 
-        if (selectedEndEntityProfileName == null || selectedEndEntityProfileName.equals(SELECT_EEP)) {
+        if (getSelectedEndEntityProfileId() == null || getSelectedEndEntityProfileId() == -1 || getSelectedEndEntityProfileName() == null) {
             addErrorMessage("MSAE_ERROR_EEP");
             return;
         }
 
-        selectedCertificationProfileName = certificateProfileSession.getCertificateProfileName(selectedCertificationProfileId);
-        if (selectedCertificationProfileName == null) {
-            addErrorMessage("MSAE_ERROR_CEP");
-            return;
-        }
-
-        addToMappedMsTemplates(selectedTemplateName, selectedEndEntityProfileName, selectedCertificationProfileName);
+        addToMappedMsTemplates(selectedTemplateName, getSelectedCertificateProfileName(), getSelectedEndEntityProfileName());
     }
 
     /**
@@ -284,7 +294,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         MSAutoEnrollmentSettingsTemplate template = findMsTemplateByOid(adTemplates, templateOid);
 
         if (template != null) {
-            template.setCertificationProfile(certProfile);
+            template.setCertificateProfile(certProfile);
             template.setEndEntityProfile(eep);
             mappedMsTemplates.add(template);
             mappedMsTemplatesModel = new ListDataModel<>(getMappedMsTemplates());
@@ -346,7 +356,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     /**
-     * Return a list of certificate profile id and names.
+     * Return the available Certificate Profile id and names based on selected End Entity Profile.
      *
      * @return
      */
@@ -354,47 +364,36 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         List<SelectItem> availableCertificateProfiles = new ArrayList<>();
         availableCertificateProfiles.add(new SelectItem(-1, SELECT_CEP));
 
-        for (final Map.Entry<String,Integer> entry : getAllCertificateProfiles().entrySet()) {
-            final int certProfileId = entry.getValue(); // map is inverted
-            final String certProfileName = entry.getKey();
-            availableCertificateProfiles.add(new SelectItem(certProfileId, certProfileName));
-        }
+        if (getSelectedEndEntityProfileId() != null) {
+            EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(getSelectedEndEntityProfileId());
 
+            if (eep != null) {
+                for (Integer certProfileId: eep.getAvailableCertificateProfileIds()) {
+                    final String certProfileName = certificateProfileSession.getCertificateProfileName(certProfileId);
+                    availableCertificateProfiles.add(new SelectItem(certProfileId, certProfileName));
+                }
+            }
+
+        }
         return availableCertificateProfiles;
     }
 
-    /**
-     * Return all authorized Certificate Profile names.
-     *
-     * @return
-     */
-    private TreeMap<String, Integer> getAllCertificateProfiles() {
-        final TreeMap<String, Integer> eecertificateprofilenames = getEjbcaWebBean().getAuthorizedEndEntityCertificateProfileNames();
-        final TreeMap<String, Integer> subcacertificateprofilenames = getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames();
-        final TreeMap<String, Integer> sshcertificateprofilenames = getEjbcaWebBean().getAuthorizedSshCertificateProfileNames();
-        final TreeMap<String, Integer> mergedMap = new TreeMap<>();
-
-        mergedMap.putAll(eecertificateprofilenames);
-        mergedMap.putAll(subcacertificateprofilenames);
-        mergedMap.putAll(sshcertificateprofilenames);
-
-        return mergedMap;
-    }
 
     /**
-     * Return the available EEP names based on the selected Certificate Profile id.
+     * Return the available End Entity Profile id and names.
      *
      * @return
      */
     public List<SelectItem> getAvailableEndEntityProfiles() {
         List<SelectItem> availableEndEntityProfiles = new ArrayList<>();
-        availableEndEntityProfiles.add(new SelectItem(SELECT_EEP));
+        availableEndEntityProfiles.add(new SelectItem(-1, SELECT_EEP));
 
-        if (selectedCertificationProfileId != null){
-            List<String> eepNames = endEntityProfileSession.getEndEntityProfilesUsingCertificateProfile(selectedCertificationProfileId);
-            for (String eepName: eepNames) {
-                availableEndEntityProfiles.add(new SelectItem(eepName));
-            }
+        final TreeMap<String, String> endEntityProfileNames = getEjbcaWebBean().getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY);
+
+        for (final Map.Entry<String,String> entry : endEntityProfileNames.entrySet()) {
+            final String eepId = entry.getValue();
+            final String eepName = entry.getKey();
+            availableEndEntityProfiles.add(new SelectItem(eepId, eepName));
         }
 
         return availableEndEntityProfiles;
