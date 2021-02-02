@@ -75,7 +75,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates;
     private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplatesModel;
 
-    private String selectedTemplateName;
+    private String selectedTemplateOid;
     private String selectedCertificateProfileName;
     private Integer selectedCertificateProfileId;
     private String selectedEndEntityProfileName;
@@ -194,12 +194,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     // UI Related Getters and Setters
-    public String getSelectedTemplateName() {
-        return selectedTemplateName;
+    public String getSelectedTemplateOid() {
+        return selectedTemplateOid;
     }
 
-    public void setSelectedTemplateName(String selectedTemplateName) {
-        this.selectedTemplateName = selectedTemplateName;
+    public void setSelectedTemplateOid(String selectedTemplateOid) {
+        this.selectedTemplateOid = selectedTemplateOid;
     }
 
     public String getSelectedCertificateProfileName() {
@@ -270,12 +270,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void addToMappedMsTemplates() {
         // If a template is already mapped, it should be removed first.
-        if (findMsTemplateByOid(mappedMsTemplates, selectedTemplateName) != null) {
+        if (findMsTemplateByOid(mappedMsTemplates, selectedTemplateOid) != null) {
             addErrorMessage("MSAE_ERROR_TEMPLATE_ALREADY_ADDED");
             return;
         }
 
-        if (selectedTemplateName.equals(SELECT_MST)) {
+        if (selectedTemplateOid.equals(SELECT_MST)) {
             addErrorMessage("MSAE_ERROR_TEMPLATE");
             return;
         }
@@ -290,7 +290,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             return;
         }
 
-        addToMappedMsTemplates(selectedTemplateName, getSelectedCertificateProfileName(), getSelectedEndEntityProfileName());
+        addToMappedMsTemplates(selectedTemplateOid, getSelectedCertificateProfileName(), getSelectedEndEntityProfileName());
     }
 
     /**
@@ -338,33 +338,36 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
-        // TODO: Implement
+        // TODO: Implement and maybe return a Map<id, template> so findMsTemplateByOid is simpler
         List<MSAutoEnrollmentSettingsTemplate> templates = new ArrayList<>();
 
         MSAutoEnrollmentSettingsTemplate oid1 = new MSAutoEnrollmentSettingsTemplate();
-        oid1.setOid("Template 1");
+        oid1.setOid("1.0.111.111");
+        oid1.setDisplayName("Template 1");
         templates.add(oid1);
 
         MSAutoEnrollmentSettingsTemplate oid2 = new MSAutoEnrollmentSettingsTemplate();
-        oid2.setOid("Template 2");
+        oid2.setOid("2.0.111.111");
+        oid2.setDisplayName("Template 2");
         templates.add(oid2);
 
         MSAutoEnrollmentSettingsTemplate oid3 = new MSAutoEnrollmentSettingsTemplate();
-        oid3.setOid("Template 3");
+        oid3.setOid("3.0.111.111");
+        oid3.setDisplayName("Template 3");
         templates.add(oid3);
 
         return templates;
     }
 
-    public List<SelectItem> getAvailableTemplateOids() {
-        List<SelectItem> availableTemplateOids = new ArrayList<>();
-        availableTemplateOids.add(new SelectItem(SELECT_MST));
+    public List<SelectItem> getAvailableTemplates() {
+        List<SelectItem> availableTemplates = new ArrayList<>();
+        availableTemplates.add(new SelectItem(SELECT_MST));
 
         for (MSAutoEnrollmentSettingsTemplate template: getAvailableTemplateSettingsFromAD()) {
-            availableTemplateOids.add(new SelectItem(template.getOid()));
+            availableTemplates.add(new SelectItem(template.getOid(), template.getDisplayName()));
         }
 
-        return availableTemplateOids;
+        return availableTemplates;
     }
 
     /**
