@@ -21,8 +21,6 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
 /**
  * Wrapper class for holding CaInfo properties.
- *
- * @version $Id$
  */
 public class CaInfoDto {
 
@@ -86,6 +84,7 @@ public class CaInfoDto {
     private String crlCaIssueInterval;
     private String crlCaOverlapTime;
     private String crlCaDeltaCrlPeriod;
+    private boolean generateCrlUponRevocation = false;
     private String requestPreProcessor;
 
     long getDeltaCrlPeriod() {
@@ -607,6 +606,14 @@ public class CaInfoDto {
 
     public void setCrlCaDeltaCrlPeriod(String crlCaDeltaCrlPeriod) {
         this.crlCaDeltaCrlPeriod = crlCaDeltaCrlPeriod;
+    }
+    
+    public boolean isGenerateCrlUponRevocation() {
+        return generateCrlUponRevocation;
+    }
+    
+    public void setGenerateCrlUponRevocation(boolean generate) {
+        generateCrlUponRevocation = generate;
     }
 
     public String getRequestPreProcessor() {

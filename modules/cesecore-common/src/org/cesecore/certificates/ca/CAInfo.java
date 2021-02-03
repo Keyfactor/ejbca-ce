@@ -35,8 +35,6 @@ import org.cesecore.util.StringTools;
 
 /**
  * Holds non sensitive information about a CA.
- *
- * @version $Id$
  */
 public abstract class CAInfo implements Serializable {
 
@@ -90,6 +88,7 @@ public abstract class CAInfo implements Serializable {
     protected long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_MINUTE;
     /** Default value 0 = disabled */
     protected long deltacrlperiod = 0;
+    protected boolean generateCrlUponRevocation = false;
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCRL = false;
@@ -345,6 +344,14 @@ public abstract class CAInfo implements Serializable {
 
     public void setDeltaCRLPeriod(long deltacrlperiod) {
         this.deltacrlperiod = deltacrlperiod;
+    }
+    
+    public boolean isGenerateCrlUponRevocation() {
+        return generateCrlUponRevocation;
+    }
+
+    public void setGenerateCrlUponRevocation(boolean generate) {
+        generateCrlUponRevocation = generate;
     }
 
     public long getCRLIssueInterval() {

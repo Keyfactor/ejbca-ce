@@ -113,8 +113,6 @@ import org.cesecore.util.EJBTools;
 
 /**
  * Session bean for creating certificates.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -473,6 +471,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
                     certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                 }
+                // ECA-9716 TODO SACC
             }
             
             CTLogException ctLogException = null;

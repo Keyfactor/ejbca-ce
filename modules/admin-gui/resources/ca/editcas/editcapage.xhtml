@@ -1194,6 +1194,20 @@
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DELTACRLPERIOD_HELP}" styleClass="smallHelp" />
 				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:outputText value="#{web.text.CRL_CA_GENERATEUPONREVOCATION}" 
+						rendered="#{not editCAsMBean.caExternal}" />
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:selectBooleanCheckbox id="checkboxgeneratecrluponrevocation"
+											 value="#{editCAsMBean.caInfoDto.generateCrlUponRevocation}"
+											 disabled="#{not editCAsMBean.hasEditRight}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxgeneratecrluponrevocation"
+								   value="#{web.text.USE}" />
+				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.PUBLISHERS}"
