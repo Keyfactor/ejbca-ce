@@ -78,13 +78,14 @@ public class PublicWebHelper extends BaseHelper {
     /**
      * Verify number of menu items
      * @param expectedItemsNumber expected number of menu items without optional menu item
-     * @param optionalMenuItems the header of optional menu item.
+     * @param optionalMenuItems the headers of optional menu items.
      */
     public void verifyMenuItems(final int expectedItemsNumber, final String... optionalMenuItems) {
         List<WebElement> menuItems = findElements(Page.MENU_ITEMS);
         List<String> foundMenuItems = new ArrayList<>();
         List<String> optionalMenuItemList = Arrays.asList(optionalMenuItems);
         for (WebElement header : menuItems) {
+            // We ignore the optional items when counting
             if (!optionalMenuItemList.contains(header.getText())) {
                 foundMenuItems.add(header.getText());
             }
