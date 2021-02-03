@@ -33,6 +33,10 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
@@ -43,17 +47,17 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
  * - Setting revocation status in the database (using certificate store)
  * - Publishing revocations to publishers 
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RevocationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -67,6 +71,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
+    private CaSessionLocal caSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
@@ -74,6 +80,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
     @EJB
     private PublisherSessionLocal publisherSession;
+    @EJB
+    private PublishingCrlSessionLocal publishCrlSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -130,6 +138,22 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     			// revocation
                 publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
     		}
+    		final int caId = cdw.getBaseCertificateData().getIssuerDN().hashCode();
+            final CAInfo caInfo = caSession.getCAInfo(admin, caId);
+            // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking 
+            // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity) 
+            if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
+                log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
+                try {
+                    publishCrlSession.forceCRL(admin, caId);
+                    publishCrlSession.forceDeltaCRL(admin, caId);
+                } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
+                    log.error("Failed to sign new CRL upon revocation: " + e.getMessage());
+                } catch (AuthorizationDeniedException e) {
+                    // Should never happen.
+                    log.error("Failed to sign new CRL upon revocation because not authorized to CA: " + e.getMessage());
+                }
+            }
     	}
     }
 
