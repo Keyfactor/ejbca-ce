@@ -1943,19 +1943,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setUsePartitionedCrl(x509cainfo.getUsePartitionedCrl());
             caInfoDto.setCrlPartitions(x509cainfo.getCrlPartitions());
             caInfoDto.setSuspendedCrlPartitions(x509cainfo.getSuspendedCrlPartitions());
-
-            if (isCaexternal) {
-                caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-
-              } else {
-                caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-              }
+            caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
         }
 
         if (caInfoDto.isCaTypeX509() && cmscainfo != null) {
