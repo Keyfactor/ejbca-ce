@@ -976,17 +976,6 @@
 				</h:inputText>
 			</h:panelGroup>
 
-			<!-- AD Test Connection -->
-			<h:panelGroup>
-				<h:outputLabel value="#{web.text.MSAE_AD_TEST_CONNECTION}" styleClass="titles"/> <br/>
-				<h:outputText value="#{web.text.MSAE_AD_TEST_CONNECTION_HELP}" styleClass="help"/>
-			</h:panelGroup>
-			<h:panelGroup>
-				<br/>
-				<h:commandButton id="msaeAdTestConnection" value="#{web.text.TEST_CONNECTION}"
-								 action="#{msAutoEnrollmentSettings.testAdConnection}"/>
-			</h:panelGroup>
-
 			<!-- Ca Name -->
 			<h:panelGroup>
 				<h:outputLabel value="#{web.text.MSAE_CA_NAME}" styleClass="titles"/> <br/>
@@ -997,6 +986,17 @@
 								 value="#{msAutoEnrollmentSettings.caName}">
 					<f:selectItems value="#{systemConfigMBean.availableCAs}"/>
 				</h:selectOneMenu>
+			</h:panelGroup>
+			
+			<!-- AD Test Connection -->
+			<h:panelGroup>
+				<h:outputLabel value="#{web.text.MSAE_AD_TEST_CONNECTION}" styleClass="titles"/> <br/>
+				<h:outputText value="#{web.text.MSAE_AD_TEST_CONNECTION_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<br/>
+				<h:commandButton id="msaeAdTestConnection" value="#{web.text.TEST_CONNECTION}"
+								 action="#{msAutoEnrollmentSettings.testAdConnection}"/>
 			</h:panelGroup>
 		</h:panelGrid>
 
