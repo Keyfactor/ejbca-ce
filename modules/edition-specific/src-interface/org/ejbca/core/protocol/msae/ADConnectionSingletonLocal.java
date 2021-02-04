@@ -22,11 +22,15 @@ import javax.naming.directory.SearchResult;
 @Local
 public interface ADConnectionSingletonLocal {
 
-    public void updateConnectionProperties();
+    default void updateConnectionProperties() {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
     
     //TODO Will be covered in ECA-9766
 //    public MSAutoEnrollmentSettingsTemplate getMsCertificateTemplates(String domain);
     
-    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String domain) 
-            throws NamingException;
+    default NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String domain) 
+            throws NamingException {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
 }
