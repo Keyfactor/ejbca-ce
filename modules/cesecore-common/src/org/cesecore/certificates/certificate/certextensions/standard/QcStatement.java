@@ -326,6 +326,7 @@ public class QcStatement extends StandardCertificateExtension {
                 ASN1ObjectIdentifier oid = oids.get(i);
                 if (i==0 && san != null) {
                     si = new SemanticsInformation(oid, san.getNames());
+                    result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
                     continue;
                 } else {
                     si = new SemanticsInformation(oid);
