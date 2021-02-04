@@ -119,7 +119,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
                 }
             } catch (TokenExpiredException e) {
-                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
+                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token. JWT token has expired.");
             }
             return admin;
         } else {
