@@ -38,6 +38,7 @@ import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
 import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -133,20 +134,6 @@ public class QcStatement extends StandardCertificateExtension {
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
 		DERSequence ret = null;
-		final String names = certProfile.getQCStatementRAName();
-		final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
-		ExtendedSemanticsInformation si = null;
-		if (san != null) {
-			if (StringUtils.isNotEmpty(certProfile.getQCSemanticsIds())) {
-			    final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(",")));
-				si = new ExtendedSemanticsInformation(oids, san.getNames());
-			} else {
-				si = new ExtendedSemanticsInformation(san.getNames());                     
-			}
-		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsIds())) {
-			final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(certProfile.getQCSemanticsIds().split(",")));
-			si = new ExtendedSemanticsInformation(oids);                 
-		}
 		final ArrayList<QCStatement> qcs = new ArrayList<>();
 		QCStatement qc = null;
 		// First the standard rfc3739 QCStatement with an optional SematicsInformation
@@ -154,12 +141,7 @@ public class QcStatement extends StandardCertificateExtension {
 		// think it has never been used in the wild basically. That means no need to have code 
 		// we have to maintain for that.
 		if (certProfile.getUsePkixQCSyntaxV2()) {
-	        if (si != null) {
-	            qc = new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si);
-	        } else {
-	            qc = new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2);
-	        }
-	        qcs.add(qc);
+	        qcs.addAll(getV2SemanticOidStatements(certProfile));
 		}
 		// ETSI Statement that the certificate is a Qualified Certificate
 		if (certProfile.getUseQCEtsiQCCompliance()) {
@@ -317,6 +299,45 @@ public class QcStatement extends StandardCertificateExtension {
             oids.add(new ASN1ObjectIdentifier(oid));
         }
         return oids;
+    }
+    
+    /**
+     * Returns the list of QC V2 syntax statements derived by the chosen QC semantic OIDs 
+     * and available SANs.
+     * 
+     * SANs are added to the first QC semantics statement only.
+     *  
+     * @param profile the certificate profile.
+     * @return the list with size > 0 of QC statements. 
+     * @throws CertificateExtensionException if no QC statement could be created.
+     */
+    private List<QCStatement> getV2SemanticOidStatements(final CertificateProfile profile) throws CertificateExtensionException {
+        final String names = profile.getQCStatementRAName();
+        final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
+        final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(profile.getQCSemanticsIds().split(",")));
+        final List<QCStatement> result = new ArrayList<>();
+        SemanticsInformation si = null;
+        if (oids.size() > 0) {
+            for (int i=0,j=oids.size();i<j;i++) {
+                ASN1ObjectIdentifier oid = oids.get(i);
+                if (i==0 && san != null) {
+                    si = new SemanticsInformation(oid, san.getNames());
+                    continue;
+                } else {
+                    si = new SemanticsInformation(oid);
+                }
+                result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
+            }
+        }
+        if (result.size() == 0 && san != null) {
+            si = new SemanticsInformation(san.getNames());
+            result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
+        }
+        if (result.size() == 0) {
+            throw new CertificateExtensionException("If qualified certificate statements extension has been "
+                    + "enabled and V2 syntax is used, at least one SAN and one semantics OID must be present.");
+        }
+        return result;
     }
     
 }
