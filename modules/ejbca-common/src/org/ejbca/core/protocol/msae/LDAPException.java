@@ -34,6 +34,8 @@ public class LDAPException extends NamingException {
     
     private static final Logger log = Logger.getLogger(LDAPException.class);
     
+    private Exception caughtException = null;
+    
     // Error codes from https://docs.oracle.com/javase/tutorial/jndi/ldap/exceptions.html
     static {
         errorCodes.put(2, "Protocol error");
@@ -48,7 +50,7 @@ public class LDAPException extends NamingException {
     
     public LDAPException(final Exception e) {
         super(e.getMessage());
-        setRootCause(e);
+        caughtException = e;
     }
     
     public LDAPException(String message) {
@@ -59,9 +61,11 @@ public class LDAPException extends NamingException {
         final int errorCode = getErrorCodeFromExceptionMessage(getMessage());
         if (errorCodes.containsKey(errorCode)) {
             return errorCodes.get(errorCode);
-        } else if (getRootCause() instanceof UnknownHostException) {
-            return "Could not resolve host";
         }
+        if (caughtException != null && caughtException instanceof UnknownHostException) {
+            log.info("**** UnknownHostException ****");
+        }
+        log.info("Caught Exception class: " + caughtException.getClass().getName());
         return getMessage();
     }
     
