@@ -13,15 +13,13 @@
 
 package org.ejbca.core.protocol.msae;
 
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.naming.CommunicationException;
 import javax.naming.NamingException;
-
-import org.apache.log4j.Logger;
 
 /**
  * Extension of javax.naming.NamingException. Maps error code to 
@@ -31,8 +29,6 @@ public class LDAPException extends NamingException {
 
     private static final long serialVersionUID = 1L;
     private static Map<Integer, String> errorCodes = new HashMap<>();
-    
-    private static final Logger log = Logger.getLogger(LDAPException.class);
     
     private Exception caughtException = null;
     
@@ -62,10 +58,9 @@ public class LDAPException extends NamingException {
         if (errorCodes.containsKey(errorCode)) {
             return errorCodes.get(errorCode);
         }
-        if (caughtException != null && caughtException instanceof UnknownHostException) {
-            log.info("**** UnknownHostException ****");
+        if (caughtException != null && caughtException instanceof CommunicationException) {
+            return "Unknown host";
         }
-        log.info("Caught Exception class: " + caughtException.getClass().getName());
         return getMessage();
     }
     
