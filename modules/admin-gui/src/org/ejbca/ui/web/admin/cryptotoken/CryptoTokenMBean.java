@@ -705,11 +705,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getAvailableKeyUsages() {
-        return Arrays.asList(
+        List<SelectItem> ret = new ArrayList<SelectItem>(Arrays.asList(
                 new SelectItem(null, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU")),
                 new SelectItem(KeyPairTemplate.SIGN, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGN")),
-                new SelectItem(KeyPairTemplate.ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC")),
-                new SelectItem(KeyPairTemplate.SIGN_ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGENC")));
+                new SelectItem(KeyPairTemplate.ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC"))));
+        if (!WebConfiguration.isP11NGUtimacoCP5Enabled()) {
+            // Utimaco CP5 only limits key usage to either sign/verify or encrypt/decrypt, not both at the same time
+            ret.add(new SelectItem(KeyPairTemplate.SIGN_ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGENC")));
+        }
+        return ret;
     }
 
     /**

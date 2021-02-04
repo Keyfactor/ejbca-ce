@@ -93,6 +93,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
@@ -1164,6 +1165,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
             final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
             final byte[] csr = pkcs10req.getEncoded();
+            if (endEntity.getExtendedInformation() == null) {
+                endEntity.setExtendedInformation(new ExtendedInformation());
+            } 
             endEntity.getExtendedInformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
             endEntity.setPassword(password); // not persisted
             // Request certificate
@@ -1374,6 +1378,47 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         authorizationDeniedException = e;
                     }
                     // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] softTokenRequest(AuthenticationToken authenticationToken, UserDataVOWS userdata, String keyspec, String keyalg, boolean createJKS) 
+            throws AuthorizationDeniedException, CADoesntExistsException, EndEntityProfileValidationException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        CADoesntExistsException caDoesntExistException = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (log.isDebugEnabled()) {
+                log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+            }
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
+                try {
+                    return raMasterApi.softTokenRequest(authenticationToken, userdata, keyspec, keyalg, createJKS);
+                } catch (CADoesntExistsException e) {
+                    if (caDoesntExistException == null) {
+                        caDoesntExistException = e;
+                    }
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (EjbcaException e) {
+                    // Only catch "CA doesn't exist" case here
+                    if (e.getErrorCode() != null && !ErrorCode.CA_NOT_EXISTS.getInternalErrorCode().equals(e.getErrorCode().getInternalErrorCode())) {
+                        throw e;
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

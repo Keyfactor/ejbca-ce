@@ -580,7 +580,6 @@ public interface RaMasterApi {
      * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null.
      * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
-     * @throws ApprovalException if the request requires approval
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
      * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest
@@ -589,6 +588,24 @@ public interface RaMasterApi {
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userData, final String requestData, final int requestType,
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException,
             EndEntityProfileValidationException;
+    
+    /**
+     * Calls CertiifcateRequestSession.softTokenRequest
+     * Edits or adds a user and generates a keystore for that user in a single transaction, including key recovery if that is active. Used from EjbcaWS.
+     * 
+     * @param admin is the requesting administrator
+     * @param userdata contains information about the user that is about to get a keystore
+     * @param keyspec name of ECDSA key or length of RSA and DSA keys  
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
+     * @param createJKS true to create a JKS, false to create a PKCS12
+     * @return an encoded keystore of the type specified 
+     * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+     * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
+     * @throws CADoesntExistsException If the CA requested for certificate generation does not exist
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
+     */
+    byte[] softTokenRequest(AuthenticationToken authenticationToken, UserDataVOWS userdata, String keyspec, String keyalg, boolean createJKS)
+            throws AuthorizationDeniedException, CADoesntExistsException, EndEntityProfileValidationException, EjbcaException;
 
     /**
      * Enrolls a new end entity and creates an SSH certificate according to the profiles defined for that end entity

@@ -183,6 +183,9 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     }
 
     private boolean isAuthorizedToViewCertificate(final CertificateInfo certificateInfo) {
+        if (certificateInfo == null) {
+            return false;
+        }
         if (!caSession.authorizedToCANoLogging(getAdmin(), CertTools.stringToBCDNString(certificateInfo.getIssuerDN()).hashCode())) {
             return false;
         }
@@ -199,6 +202,9 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     }
 
     private boolean isAuthorizedToViewCrl(final CRLInfo crlInfo) {
+        if (crlInfo == null) {
+            return false;
+        }
         return caSession.authorizedToCANoLogging(getAdmin(), CertTools.stringToBCDNString(crlInfo.getSubjectDN()).hashCode());
     }
 
