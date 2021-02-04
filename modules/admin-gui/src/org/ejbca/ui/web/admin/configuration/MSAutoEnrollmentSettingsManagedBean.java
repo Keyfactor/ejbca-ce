@@ -25,6 +25,8 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
+import org.ejbca.core.protocol.msae.LDAPException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 import javax.annotation.PostConstruct;
@@ -35,6 +37,8 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.naming.NamingException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -74,6 +78,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     // MS Template Settings: Holds mapped MS Templates for the configuration
     private List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates;
     private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplatesModel;
+    private List<MSAutoEnrollmentSettingsTemplate> availableTemplates;
 
     private String selectedTemplateOid;
     private String selectedCertificateProfileName;
@@ -87,6 +92,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
+    @EJB
+    private ADConnectionSingletonLocal adConnection;
+    
     @PostConstruct
     public void loadConfiguration() {
 
@@ -339,24 +347,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      */
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
         // TODO: Implement and maybe return a Map<id, template> so findMsTemplateByOid is simpler
-        List<MSAutoEnrollmentSettingsTemplate> templates = new ArrayList<>();
-
-        MSAutoEnrollmentSettingsTemplate oid1 = new MSAutoEnrollmentSettingsTemplate();
-        oid1.setOid("1.0.111.111");
-        oid1.setDisplayName("Template 1");
-        templates.add(oid1);
-
-        MSAutoEnrollmentSettingsTemplate oid2 = new MSAutoEnrollmentSettingsTemplate();
-        oid2.setOid("2.0.111.111");
-        oid2.setDisplayName("Template 2");
-        templates.add(oid2);
-
-        MSAutoEnrollmentSettingsTemplate oid3 = new MSAutoEnrollmentSettingsTemplate();
-        oid3.setOid("3.0.111.111");
-        oid3.setDisplayName("Template 3");
-        templates.add(oid3);
-
-        return templates;
+        if (availableTemplates == null) {
+            availableTemplates = adConnection.getCertificateTemplateSettings();
+        }
+        return availableTemplates;
     }
 
     public List<SelectItem> getAvailableTemplates() {
@@ -491,11 +485,15 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
 
         try {
-            // TODO: Implement and use AD Connection method. (After ECA-9772)
+            availableTemplates = null;
+            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), getAdLoginPassword(), isUseSSL());
             addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
-        } catch (Exception e) {
-            addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE");
+        } catch (LDAPException e) {
+            addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", e.getFriendlyMessage());
+            return;
         }
+        // Save if connection was successful (in order to render templates without a page reload)
+        save();
     }
 
     /**

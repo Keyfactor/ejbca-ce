@@ -205,6 +205,19 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
 
     @Override
     public String toString() {
-        return getOid();
+        return "OID: " + getOid() + 
+        "\nDisplayName: " + getDisplayName() + 
+        "\nCertificateProfile: " + getCertificateProfile() + 
+        "\nEndEntityProfile: " + getEndEntityProfile() + 
+        "\nSubjectNameFormat: " + getSubjectNameFormat() + 
+        "\nIncludeEmailInSubjectDN: " + isIncludeEmailInSubjectDN() + 
+        "\nIncludeEmailInSubjectSAN: " + isIncludeEmailInSubjectSAN() + 
+        "\nIncludeUPNInSubjectSAN: " + isIncludeUPNInSubjectSAN() + 
+        "\nIncludeSPNInSubjectSAN: " + isIncludeSPNInSubjectSAN() + 
+        "\nIncludeNetBiosInSubjectSAN: " + isIncludeNetBiosInSubjectSAN() + 
+        "\nIncludeDomainInSubjectSAN: " + isIncludeDomainInSubjectSAN() + 
+        "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() + 
+        "\nAdditionalSubjectDNAttributes: " + isAdditionalSubjectDNAttributes() + 
+        "\nPublishToActiveDirectory: " + isPublishToActiveDirectory();
     }
 }
