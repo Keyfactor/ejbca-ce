@@ -354,7 +354,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /**
-     * Gets bearer token from Authorization header or from session
+     * Gets refresh token from session
      * @param httpServletRequest
      * @return
      */

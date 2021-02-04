@@ -147,7 +147,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             final Date now = new Date();
             final String subject = claims.getSubject();
             if (expiry != null && !now.before(new Date(expiry.getTime() + keyInfo.getSkewLimit()))) {
-                logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.expired", subject, keyFingerprint));
+                LOG.info(intres.getLocalizedMessage("authentication.jwt.expired", subject, keyFingerprint));
                 throw new TokenExpiredException("Token expired");
             }
             if (claims.getNotBeforeTime() != null && now.before(new Date(claims.getNotBeforeTime().getTime() - keyInfo.getSkewLimit()))) {
