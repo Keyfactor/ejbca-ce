@@ -472,8 +472,8 @@ public class JackNJI11Provider extends Provider {
                 }
                 // We do unwrapping using DECRYPT in PKCS#11
                 // This is very generic and ignores wrappedeyAlgorithm and wrappedKeyType to this method, but it supports our 
-                // goal of CMS message encrytion using wrapped AES keys for keyRecovery and SCEP in EJBCA
-                // Does not support all other generic cases for key wrapping/unwrapping, specifically when yu want to use the secret ke inside the HSM 
+                // goal of CMS message encryption using wrapped AES keys for keyRecovery and SCEP in EJBCA
+                // Does not support all other generic cases for key wrapping/unwrapping, specifically when you want to use the secret key inside the HSM 
                 myKey.getSlot().getCryptoki().DecryptInit(session, new CKM(mechanism), myKey.getObject());
                 final byte[] seckeybuf = myKey.getSlot().getCryptoki().Decrypt(session, wrappedKey);
                 // Get AES key from byte array
