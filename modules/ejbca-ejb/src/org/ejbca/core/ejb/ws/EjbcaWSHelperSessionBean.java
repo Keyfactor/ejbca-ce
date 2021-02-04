@@ -602,12 +602,13 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             boolean futureRollover) throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException,
             CertPathValidatorException, CesecoreException, CertificateParsingException {
         CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String errmsg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(errmsg);
+        }
         // create response messages, for CVC certificates we use a regular X509ResponseMessage
         X509ResponseMessage msg = new X509ResponseMessage();
         msg.setCertificate(CertTools.getCertfromByteArray(cert, java.security.cert.Certificate.class));
-        if (cainfo == null) {
-            throw new CADoesntExistsException("CA by name '" + caname + "' not found.");
-        }
         // Activate the CA's token using the provided keystorepwd if any
         if (keystorepwd != null) {
             cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
@@ -620,6 +621,10 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             boolean activatekey, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String msg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(msg);
+        }
         String nextSignKeyAlias = null; // null means generate new keypair
         if (!regenerateKeys) {
             nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
@@ -645,15 +650,23 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     public void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes)
             throws AuthorizationDeniedException, CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException, CmsCertificatePathMissingException {
         final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
-        final int caid = caSession.getCA(admin, caname).getCAId();
-        caAdminSession.updateCACertificate(admin, caid, cachain);
+        CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String msg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(msg);
+        }
+        caAdminSession.updateCACertificate(admin, cainfo.getCAId(), cachain);
     }
 
     @Override
     public void rolloverCACert(AuthenticationToken admin, String caname)
             throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
-        int caid = caSession.getCAInfo(admin, caname).getCAId();
-        caAdminSession.rolloverCA(admin, caid);
+        CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String msg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(msg);
+        }
+        caAdminSession.rolloverCA(admin, cainfo.getCAId());
     }
 
     @Override
