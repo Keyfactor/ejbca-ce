@@ -59,6 +59,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         static final String CA_VALIDITY = "1y";
         static final String CERTIFICATE_PROFILE_NAME = "EcaQa202-2C_CertificateProfile";
         static final String ENTITY_NAME = "EcaQa202-2C_EntityProfile";
+        static final String USERNAME = "EcaQa202C";
         static final String[] CERTIFICATE_REQUEST_PEM = new String[] {
                 "-----BEGIN CERTIFICATE REQUEST-----",
                 "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w",
@@ -230,6 +231,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     public void stepR_ProvideRequestInfo() throws InterruptedException {
         raWebHelper.fillMakeRequestEditCommonName("cn" + Calendar.getInstance().toString());
         raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+        raWebHelper.fillUsername(TestData.USERNAME);
         TimeUnit.SECONDS.sleep(2);
     }
 
