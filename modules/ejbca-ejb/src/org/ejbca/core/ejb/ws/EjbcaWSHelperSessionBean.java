@@ -158,7 +158,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token.");
                 }
             } catch (TokenExpiredException e) {
-                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token.");
+                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token. JWT token has expired.");
             }
 
             return admin;

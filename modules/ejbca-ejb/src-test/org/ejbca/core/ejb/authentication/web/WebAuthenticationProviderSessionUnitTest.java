@@ -250,15 +250,18 @@ public class WebAuthenticationProviderSessionUnitTest {
         log.trace("<unknownSignatureAlgorithm");
     }
 
-    @Test(expected = TokenExpiredException.class)
-    public void expiredToken() throws TokenExpiredException {
+    @Test
+    public void expiredToken()  {
         log.trace(">expiredToken");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        expectAuditLog("authentication.jwt.expired", "johndoe", pubKeyFingerprint);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
         final String timestamp = timestampFromNow(-60*60*1000); // 1 hour old
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
+        try {
+            assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
+        } catch (TokenExpiredException e) {
+           //ignore
+        }
         verify(globalConfigurationSessionMock, securityEventsSessionMock);
         log.trace("<expiredToken");
     }
