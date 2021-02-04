@@ -485,7 +485,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         try {
             availableTemplates = null;
             adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), getAdLoginPassword(), isUseSSL());
-            addPersistentInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
+            addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
         } catch (LDAPException e) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", e.getFriendlyMessage());
             return;
