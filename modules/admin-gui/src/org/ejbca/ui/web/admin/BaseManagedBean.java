@@ -140,17 +140,6 @@ public abstract class BaseManagedBean implements Serializable {
         ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO, getEjbcaWebBean().getText(messageResource, false, params),
                 getEjbcaWebBean().getText(messageResource, false, params)));
     }
-    
-    protected void addPersistentInfoMessage(String messageResource, Object... params) {
-        if (log.isDebugEnabled()) {
-            log.debug("Adding info message: " + messageResource + ": " + StringUtils.join(params, "; "));
-        }
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        Flash flash = ctx.getExternalContext().getFlash();
-        flash.setKeepMessages(true);
-        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO, getEjbcaWebBean().getText(messageResource, false, params),
-                getEjbcaWebBean().getText(messageResource, false, params)));
-    }
 
     protected void addNonTranslatedInfoMessage(final String message) {
         if (log.isDebugEnabled()) {
