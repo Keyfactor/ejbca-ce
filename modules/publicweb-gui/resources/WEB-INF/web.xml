@@ -56,10 +56,6 @@
     <servlet>
         <servlet-name>CertReqServlet</servlet-name>
         <servlet-class>org.ejbca.ui.web.pub.CertReqServlet</servlet-class>
-        <init-param>
-            <param-name>responseTemplate</param-name>
-            <param-value>templates/certInstTemplate.jsp</param-value>
-        </init-param>
     </servlet>
     
     <servlet-mapping>
