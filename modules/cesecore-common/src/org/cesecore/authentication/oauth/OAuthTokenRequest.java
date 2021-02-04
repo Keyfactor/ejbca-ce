@@ -50,6 +50,7 @@ public class OAuthTokenRequest {
     private String redirectUri;
     private String clientId;
     private String uri;
+    private String clientSecret;
 
     public int getTimeoutMillis() {
         return timeoutMillis;
@@ -93,6 +94,14 @@ public class OAuthTokenRequest {
     public void setUri(final String uri) {
         this.uri = uri;
     }
+    
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public void setClientSecret(final String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
 
     /**
      * Requests the OAuth token from the authorization server.
@@ -134,6 +143,7 @@ public class OAuthTokenRequest {
         params.add(new BasicHeader("code", authCode));
         params.add(new BasicHeader("redirect_uri", redirectUri));
         params.add(new BasicHeader("client_id", clientId));
+        params.add(new BasicHeader("client_secret", clientSecret));
         final HttpPost post = new HttpPost();
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
         try {
