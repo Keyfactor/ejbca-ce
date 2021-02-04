@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.msae;
 
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -20,8 +21,10 @@ import java.util.regex.Pattern;
 
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
+
 /**
- * Extends javax.naming.NamingException and maps error code to 
+ * Extension of javax.naming.NamingException. Maps error code to 
  * human readable error messages.
  */
 public class LDAPException extends NamingException {
@@ -29,6 +32,9 @@ public class LDAPException extends NamingException {
     private static final long serialVersionUID = 1L;
     private static Map<Integer, String> errorCodes = new HashMap<>();
     
+    private static final Logger log = Logger.getLogger(LDAPException.class);
+    
+    // Error codes from https://docs.oracle.com/javase/tutorial/jndi/ldap/exceptions.html
     static {
         errorCodes.put(2, "Protocol error");
         errorCodes.put(3, "Time limit exceeded");
@@ -36,10 +42,12 @@ public class LDAPException extends NamingException {
         errorCodes.put(7, "Authentication method not supported.");
         errorCodes.put(8, "Strong authentication required.");
         errorCodes.put(32, "No such object exists");
+        errorCodes.put(11, "Administrative limit exceeded");
         errorCodes.put(49, "Invalid credentials");
     }
     
     public LDAPException(final Exception e) {
+        super(e.getMessage());
         setRootCause(e);
     }
     
@@ -51,6 +59,8 @@ public class LDAPException extends NamingException {
         final int errorCode = getErrorCodeFromExceptionMessage(getMessage());
         if (errorCodes.containsKey(errorCode)) {
             return errorCodes.get(errorCode);
+        } else if (getRootCause() instanceof UnknownHostException) {
+            return "Could not resolve host";
         }
         return getMessage();
     }
