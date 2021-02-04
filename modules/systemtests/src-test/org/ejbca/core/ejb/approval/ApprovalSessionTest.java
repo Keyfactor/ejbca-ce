@@ -94,8 +94,6 @@ import static org.junit.Assert.fail;
  * A lot of tests in this class is written in such a way that they are sensitive to timing on a highly loaded test
  * server. This needs to rewritten in a more robust way at a future point in time to avoid false negatives.
  * The EXPIRATION_PERIOD constant can be adjusted depending on test server load/performance.
- *
- * @version $Id$
  */
 public class ApprovalSessionTest extends CaTestCase {
 
@@ -639,6 +637,46 @@ public class ApprovalSessionTest extends CaTestCase {
         assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
 
         log.trace("<testQuery");
+    }
+
+    @Test
+    public void testQueryByStatus() throws Exception {
+        log.trace(">testQueryByStatus");
+
+        // Add a few requests
+        final DummyApprovalRequest req1 = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfileLongExpirationPeriod);
+        final int req1ApprovalId = req1.generateApprovalId();
+        final DummyCaApprovalRequest req2 = new DummyCaApprovalRequest(admin1, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfileLongExpirationPeriod);
+        final int req2ApprovalId = req2.generateApprovalId();
+        final DummyCaApprovalRequest req3 = new DummyCaApprovalRequest(admin2, null, 3, 2, false, approvalProfileLongExpirationPeriod);
+        final int req3ApprovalId = req3.generateApprovalId();
+
+        removeApprovalIds.add(req1ApprovalId);
+        removeApprovalIds.add(req2ApprovalId);
+        removeApprovalIds.add(req3ApprovalId);
+
+        approvalSessionRemote.addApprovalRequest(admin1, req1);
+        approvalSessionRemote.addApprovalRequest(admin1, req2);
+        approvalSessionRemote.addApprovalRequest(admin1, req3);
+
+        // Make a query
+        List<ApprovalDataVO> result = approvalSessionProxyRemote.queryByStatus(
+            true,
+            true,
+            true,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            99,
+            "cAId=" + caid,
+            "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")"
+        );
+        assertEquals("Result size should be 1.", 1, result.size());
+
+        log.trace("<testQueryByStatus");
     }
 
     @Test

@@ -134,6 +134,9 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 			query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, selectedStatus, Query.CONNECTOR_AND);
 			query.add(getStartDate(), new Date());
 		}
+
+		query.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN), Query.CONNECTOR_AND);
+
         List<ApprovalDataVO> result = new ArrayList<>();
 		try {
             RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejbLocalHelper.getGlobalConfigurationSession(),

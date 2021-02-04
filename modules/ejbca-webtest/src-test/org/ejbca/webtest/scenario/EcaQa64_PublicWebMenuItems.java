@@ -37,7 +37,7 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
 
     // Test Data
     public static class TestData {
-        final static int EXPECTED_NUMBER_OF_MENU_ITEMS = 13;
+        final static int EXPECTED_NUMBER_OF_MENU_ITEMS = 11;
         final static int EXPECTED_NUMBER_OF_MENU_HEADERS = 5;
     }
     
@@ -58,7 +58,7 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
         publicWebHelper.openPage(getPublicWebUrl());
         publicWebHelper.verifyMenuHeaders(TestData.EXPECTED_NUMBER_OF_MENU_HEADERS,
                 Arrays.asList("Enroll", "Register", "Retrieve", "Inspect", "Miscellaneous"));
-        publicWebHelper.verifyMenuItems(TestData.EXPECTED_NUMBER_OF_MENU_ITEMS, "Renew Browser Certificate");
+        publicWebHelper.verifyMenuItems(TestData.EXPECTED_NUMBER_OF_MENU_ITEMS, "Renew Browser Certificate", "Documentation");
     }
 
     // TODO ECA-7627 Documentation has to be built

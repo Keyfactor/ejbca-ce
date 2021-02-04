@@ -46,6 +46,7 @@ public class RaWebHelper extends BaseHelper {
      */
     public static class Page {
         public static final String PAGE_URI = "/ejbca/ra/";
+        public static final String ENDUSER = "ENDUSER";
 
         static final By BUTTON_MAKE_NEW_REQUEST = By.id("makeRequestButton");
         static final By SELECT_CERTIFICATE_TYPE = By.id("requestTemplateForm:selectEEPOneMenu");
@@ -137,7 +138,28 @@ public class RaWebHelper extends BaseHelper {
     }
 
     public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) throws InterruptedException {
-        selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, endEntityProfileName);
+        try {
+            selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, endEntityProfileName);
+        } catch (NoSuchElementException e) {
+            final String nameWithDefault = endEntityProfileName + " (default)";
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate type select item '" + endEntityProfileName + "' was not found, trying with '" + nameWithDefault + "'");
+            }
+            selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, nameWithDefault);            
+        }       
+        TimeUnit.SECONDS.sleep(2);
+    }
+    
+    public void selectCertificateSubType(final String certProfileName) throws InterruptedException {
+        try {
+            selectOptionByName(Page.SELECT_CERTIFICATE_SUBTYPE, certProfileName);
+        } catch (NoSuchElementException e) {
+            final String nameWithDefault = certProfileName + " (default)";
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate subtype select item '" + certProfileName + "' was not found, trying with '" + nameWithDefault + "'");
+            }
+            selectOptionByName(Page.SELECT_CERTIFICATE_SUBTYPE, nameWithDefault);            
+        }       
         TimeUnit.SECONDS.sleep(2);
     }
 
@@ -184,9 +206,9 @@ public class RaWebHelper extends BaseHelper {
     public void assertCorrectProvideUserCredentialsBlock() {
         final List<WebElement> provideUserCredentialsWebElements = findElements(Page.LABELS_GROUP_PROVIDE_USER_CREDENTIALS);
         assertEquals("Unexpected number of fields under 'Provide User Credentials'", 4, provideUserCredentialsWebElements.size());
-        assertEquals("Expected the label to have the value 'Username'", "Username", provideUserCredentialsWebElements.get(0).getText());
-        assertEquals("Expected the label to have the value 'Enrollment code'", "Enrollment code", provideUserCredentialsWebElements.get(1).getText());
-        assertEquals("Expected the label to have the value 'Confirm enrollment code'", "Confirm enrollment code", provideUserCredentialsWebElements.get(2).getText());
+        assertEquals("Expected the label to have the value 'Username *'", "Username *", provideUserCredentialsWebElements.get(0).getText());
+        assertEquals("Expected the label to have the value 'Enrollment code *'", "Enrollment code *", provideUserCredentialsWebElements.get(1).getText());
+        assertEquals("Expected the label to have the value 'Confirm enrollment code *'", "Confirm enrollment code *", provideUserCredentialsWebElements.get(2).getText());
         assertEquals("Expected the label to have the value 'Email'", "Email", provideUserCredentialsWebElements.get(3).getText());
     }
 
