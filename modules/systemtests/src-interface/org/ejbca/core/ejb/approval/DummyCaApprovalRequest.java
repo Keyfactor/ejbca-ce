@@ -10,31 +10,33 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.era;
+package org.ejbca.core.ejb.approval;
 
-import javax.ejb.Local;
-
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
- * Interface for EJB access to the RaMasterApi proxy singleton
+ * Dummy CA Approval Request used for testing purpose.
  */
-@Local
-public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
+public class DummyCaApprovalRequest extends DummyApprovalRequest {
 
-    /**
-     *
-     * @param apiType the implementation of RaMasterApi to check for
-     * @return returns true if an API of a certain type is available
-     */
-    boolean isBackendAvailable(Class<? extends RaMasterApi> apiType);
+	private static final long serialVersionUID = -2L;
+	private static final Logger log = Logger.getLogger(DummyApprovalRequest.class);
+	private static final int LATEST_VERSION = 1;
 
-    /**
-     * De-prioritizes the local RA Master API implementation, causing it to not be called if a remote connection is available.
-     * Used in tests, to test "remote" peer connections to localhost.
-     */
-    void deferLocalForTest();
+	public DummyCaApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId,
+								boolean executable, final ApprovalProfile approvalProfile) {
+		super(requestAdmin, requestSignature, cAId, endEntityProfileId, executable, approvalProfile);
+	}
 
-    /** @return a RaCertificateSearchResponse from a search with a given username */
-    RaCertificateSearchResponse searchForCertificatesByUsername(final AuthenticationToken authenticationToken, final String username);
+	/** Constructor used in externalization only */
+	public DummyCaApprovalRequest() {
+	}
+
+	@Override
+    public int getApprovalType(){
+		return ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN;
+	}
 }
