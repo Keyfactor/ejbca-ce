@@ -996,7 +996,9 @@
 			<h:panelGroup>
 				<br/>
 				<h:commandButton id="msaeAdTestConnection" value="#{web.text.TEST_CONNECTION}"
-								 action="#{msAutoEnrollmentSettings.testAdConnection}"/>
+								 action="#{msAutoEnrollmentSettings.testAdConnection}">
+					 <f:ajax render="@form"/>
+				 </h:commandButton>
 			</h:panelGroup>
 		</h:panelGrid>
 

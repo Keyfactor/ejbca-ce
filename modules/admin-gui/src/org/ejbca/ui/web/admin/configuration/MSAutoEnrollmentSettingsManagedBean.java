@@ -12,6 +12,22 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -23,28 +39,10 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.naming.NamingException;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Backing bean for MSAutoEnrollmentConfiguration in System Settings.
