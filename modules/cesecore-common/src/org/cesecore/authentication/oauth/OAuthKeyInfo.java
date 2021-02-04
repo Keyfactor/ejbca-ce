@@ -35,6 +35,7 @@ public final class OAuthKeyInfo implements Serializable {
     private String client;
     private String realm;
     private String url;
+    private String clientSecret;
     private int skewLimit = 60000;
 
     private transient PublicKey publicKey;
@@ -119,6 +120,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+    
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
     }
 
     public String getLabel() {
