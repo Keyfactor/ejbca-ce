@@ -308,39 +308,41 @@ public class QcStatement extends StandardCertificateExtension {
     /**
      * Returns the list of QC V2 syntax statements derived by the chosen QC semantic OIDs 
      * and available SANs.
+     * Only supports id_qcs_pkixQCSyntax_v2 from RFC3739.
      * 
-     * SANs are added to the first QC semantics statement only.
+     * NameRegistrationAuthorities (usually SANs) are added to the first QC semantics statement only.
      *  
      * @param profile the certificate profile.
      * @return the list with size > 0 of QC statements. 
-     * @throws CertificateExtensionException if no QC statement could be created.
      */
-    private List<QCStatement> getV2SemanticOidStatements(final CertificateProfile profile) throws CertificateExtensionException {
+    private List<QCStatement> getV2SemanticOidStatements(final CertificateProfile profile) {
         final String names = profile.getQCStatementRAName();
         final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
-        final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(profile.getQCSemanticsIds().split(",")));
         final List<QCStatement> result = new ArrayList<>();
-        SemanticsInformation si = null;
-        if (oids.size() > 0) {
-            for (int i=0,j=oids.size();i<j;i++) {
-                ASN1ObjectIdentifier oid = oids.get(i);
-                if (i==0 && san != null) {
-                    si = new SemanticsInformation(oid, san.getNames());
+        if (StringUtils.isNotEmpty(profile.getQCSemanticsIds())) {
+            final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(profile.getQCSemanticsIds().split(",")));
+            if (oids.size() > 0) {
+                SemanticsInformation si;
+                for (int i=0;i<oids.size();i++) {
+                    final ASN1ObjectIdentifier oid = oids.get(i);
+                    if (i==0 && san != null) {
+                        si = new SemanticsInformation(oid, san.getNames());
+                    } else {
+                        si = new SemanticsInformation(oid);
+                    }
                     result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
-                    continue;
-                } else {
-                    si = new SemanticsInformation(oid);
                 }
-                result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
             }
         }
         if (result.size() == 0 && san != null) {
-            si = new SemanticsInformation(san.getNames());
+            SemanticsInformation si = new SemanticsInformation(san.getNames());
             result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
         }
         if (result.size() == 0) {
-            throw new CertificateExtensionException("If qualified certificate statements extension has been "
-                    + "enabled and V2 syntax is used, at least one SAN and one semantics OID must be present.");
+            // RFC3739: Note that the statementInfo component need not be present in a
+            // QCStatement value even if the statementID component is set to 
+            // id-qcs-pkix-QCSyntax-v1 or id-qcs-pkix-QCSyntax-v2.
+            result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2));
         }
         return result;
     }
