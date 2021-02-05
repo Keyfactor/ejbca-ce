@@ -4,7 +4,8 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:composite="http://xmlns.jcp.org/jsf/composite">
+    xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+    xmlns:component="http://xmlns.jcp.org/jsf/composite/component">
     <ui:remove>
     <!--
     /*************************************************************************
@@ -19,8 +20,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-
-     version: $Id$
      -->
     </ui:remove>
     <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
@@ -239,9 +238,9 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:outputLabel for="subjectdn" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
+            <h:outputLabel for="subjectdn" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectdn" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDn}"
+            <h:outputText id="subjectdn" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDn}"
                 value="#{cc.attrs.raEndEntityDetails.subjectDnUnescapedValue}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances
@@ -264,9 +263,14 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:outputLabel for="subjectan" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
+            <ui:fragment rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances and not cc.attrs.approvalRequestMode}">
+                <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectdn}"/>
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}" msgPrefix="#{'subject_dn_'}" />
+            </ui:fragment>
+
+            <h:outputLabel for="subjectan" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectan" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectAn}"
+            <h:outputText id="subjectan" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}"
                 value="#{cc.attrs.raEndEntityDetails.subjectAn}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances and cc.attrs.approvalRequestMode}"
@@ -287,9 +291,15 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:outputLabel for="subjectda" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
+            <ui:fragment rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances and not cc.attrs.approvalRequestMode}">
+                <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+                <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectan}"/>
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}" msgPrefix="#{'subject_alternative_name_'}" />
+            </ui:fragment>
+
+            <h:outputLabel for="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectda" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDa}"
+            <h:outputText id="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}"
                 value="#{cc.attrs.raEndEntityDetails.subjectDa}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances and cc.attrs.approvalRequestMode}"
@@ -309,6 +319,12 @@
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
+
+            <ui:fragment rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances and not cc.attrs.approvalRequestMode}">
+                <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+                <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectda}"/>
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}" msgPrefix="#{'subject_directory_attributes_'}" />
+            </ui:fragment>
 
             <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
                            rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"

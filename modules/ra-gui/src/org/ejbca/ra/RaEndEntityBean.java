@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -181,8 +182,8 @@ public class RaEndEntityBean implements Serializable {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
-        EndEntityInformation endEntityInformation = new EndEntityInformation(
-                raEndEntityDetails.getEndEntityInformation());
+        EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
+
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
             // A new status was selected, verify the enrollment codes
             if (verifyEnrollmentCodes()) {
@@ -214,6 +215,28 @@ public class RaEndEntityBean implements Serializable {
             }            
             changed = true;
         }
+        String subjectDn = raEndEntityDetails.getSubjectDistinguishedName().getValue();
+        if(!subjectDn.equals(endEntityInformation.getDN())) {
+            endEntityInformation.setDN(subjectDn);
+            changed = true;
+        }
+        String subjectAn = raEndEntityDetails.getSubjectAlternativeName().getValue();
+        if (!subjectAn.equals(endEntityInformation.getSubjectAltName())) {
+            endEntityInformation.setSubjectAltName(subjectAn);
+            changed = true;
+        }
+        String subjectDa = raEndEntityDetails.getSubjectDirectoryAttributes().getValue();
+        if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
+            endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
+            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+            if(extendedInformation == null) {
+                extendedInformation = new ExtendedInformation();
+            }
+            extendedInformation.setSubjectDirectoryAttributes(subjectDa);
+            endEntityInformation.setExtendedInformation(extendedInformation);
+            changed = true;
+        }
+
         if (changed) {
             // Edit the End Entity if changes were made
             try {
