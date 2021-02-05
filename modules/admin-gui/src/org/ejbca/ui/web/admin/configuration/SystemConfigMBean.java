@@ -1965,7 +1965,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             availableTabs.add("Configuration Checker");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("AutoEnrollment");
+            availableTabs.add("Auto Enrollment");
         }
         return availableTabs;
     }
