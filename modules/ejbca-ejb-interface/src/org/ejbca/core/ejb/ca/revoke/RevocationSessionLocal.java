@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.revoke;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Local;
 
@@ -50,6 +51,19 @@ public interface RevocationSessionLocal extends RevocationSession {
     void revokeCertificate(AuthenticationToken admin, CertificateDataWrapper cdw, Collection<Integer> publishers, Date revocationDate, int reason,
             String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
 
+    /**
+     * Revokes a list of certificates, in the database and in publishers. Also handles re-activation of suspended certificates.
+     *
+     * @see RevocationSessionLocal#revokeCertificate(AuthenticationToken, CertificateDataWrapper, Collection, Date, int, String)
+     *
+     * @param admin      Administrator performing the operation
+     * @param cdws       The list of certificate data wrappers.
+     * @param publishers and array of publisher IDs (Integer) of publishers to revoke the certificate in.
+     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     * @throws AuthorizationDeniedException (rollback)
+     */
+    void revokeCertificates(AuthenticationToken admin, List<CertificateDataWrapper> cdw, Collection<Integer> publishers) throws CertificateRevokeException, AuthorizationDeniedException;
+    
     /**
      * Revokes a certificate, in the database and in publishers, but does so in a new transaction. Also handles re-activation of suspended certificates.
      * Will do so in a new transaction. 

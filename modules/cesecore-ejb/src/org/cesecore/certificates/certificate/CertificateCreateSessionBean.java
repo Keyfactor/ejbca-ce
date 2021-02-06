@@ -460,6 +460,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (log.isDebugEnabled()) {
                     log.debug("SingleActiveCertificateConstraint, found "+cdws.size()+" old (non expired, active) certificates.");
                 }
+                boolean revoked = false;
                 for (final CertificateDataWrapper cdw : cdws) {
                     final CertificateData certificateData = cdw.getCertificateData();
                     if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -470,8 +471,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     }                  
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
                     certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                    revoked = true;
                 }
-                // ECA-9716 TODO SACC
+                if (revoked) { 
+                    // ECA-9716 TODO SACC? Already done?
+                }
             }
             
             CTLogException ctLogException = null;
