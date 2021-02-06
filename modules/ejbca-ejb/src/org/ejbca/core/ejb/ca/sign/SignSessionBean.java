@@ -54,7 +54,6 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
-import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -77,7 +76,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -1340,17 +1338,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 log.debug("SingleActiveCertificateConstraint, found " + cdws.size() + " old (non expired, active) certificates and "
                         + publishers.size() + " publishers.");
             }
-            for (final CertificateDataWrapper cdw : cdws) {
-                final CertificateData certificateData = cdw.getCertificateData();
-                if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED
-                        && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
-                    continue;
-                }
-                //Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
-                //the certificate must be revoked nonetheless. 
-                revocationSession.revokeCertificate(admin, cdw, publishers, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED,
-                        endEntityInformation.getDN());
-            }
+            // Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
+            // the certificate must be revoked nonetheless. 
+            revocationSession.revokeCertificates(admin, cdws, publishers);
         }
         if (log.isTraceEnabled()) {
             log.trace("<singleActiveCertificateConstraint()");
