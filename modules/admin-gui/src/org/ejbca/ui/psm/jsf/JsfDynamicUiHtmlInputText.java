@@ -24,8 +24,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
 /**
  * MyFaces HTML UI text field component implementing the {@link PropertyChangeListener} interface 
  * to get noticed for dynamic UI property changes.
- * 
- * @version $Id$
  */
 public class JsfDynamicUiHtmlInputText extends HtmlInputText implements DynamicUiComponent, PropertyChangeListener {
 
@@ -50,6 +48,11 @@ public class JsfDynamicUiHtmlInputText extends HtmlInputText implements DynamicU
         this.dynamicUiProperty.addDynamicUiComponent(this);
     }
 
+    @Override
+    public void updateValueRange() {
+        // No implemented.
+    }
+    
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
         if (log.isTraceEnabled()) {
