@@ -92,4 +92,15 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws CertificateCreateException if the CSR verification fails.
      */
     boolean doMsIntuneCsrVerification(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException;
+    
+    /**
+     * Verifies and decrypts the SCEP PKCS10 message CSR with the CAs cryptoToken.
+     * 
+     * @param authenticationToken the origin of the request
+     * @param alias name of alias containing SCEP configuration
+     * @param message to parse
+     * @return the DER encoded CSR or null.
+     * @throws CertificateCreateException if the message could not be parsed or verified. 
+     */
+    public byte[] verifyRequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException;
 }

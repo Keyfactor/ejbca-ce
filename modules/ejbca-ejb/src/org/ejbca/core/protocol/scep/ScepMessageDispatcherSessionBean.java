@@ -97,6 +97,7 @@ import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalReques
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
@@ -145,8 +146,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private GlobalConfigurationSessionLocal globalConfigSession;
     @EJB
     private SignSessionLocal signSession;
-
-    
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     
     @PostConstruct
     public void postConstruct() {
@@ -643,11 +644,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.warn("SCEP RA mode is enabled, but not included in the community version of EJBCA. Unable to continue.");
             throw new CertificateCreateException("Intune enrollment failed because no license.");
         }
-        final ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        
+        final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class); 
         ScepRequestMessage reqmsg = null;
+        String transactionId = null;
         try {
             final boolean includeCACert = scepConfig.getIncludeCA(alias);
             reqmsg = new ScepRequestMessage(Base64.decode(message), includeCACert);
+            transactionId = reqmsg.getTransactionId();
         } catch (Exception e) {
             log.info("Error receiving ScepMessage: ", e);
             throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
@@ -660,33 +664,54 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } catch (IllegalArgumentException e) {
             throw new CertificateCreateException("Failed to initialize MS Intune SCEP service client for alias '" + alias + "'.", e);
         }
+        
         try {
-            //Initialize request message to get the P10. 
-            final String caName = getCaName(reqmsg, scepConfig, alias);
-            CAInfo caInfo;
-            CACommon ca;
-            try {
-                caInfo = caSession.getCAInfo(authenticationToken, caName);
-                if (caInfo == null) {
-                    throw new CertificateCreateException("Could not find CA set in SCEP alias '" + alias + "': " + caName);
-                }
-                ca = caSession.getCA(authenticationToken, caName);
-            } catch (AuthorizationDeniedException e) {
-                throw new CertificateCreateException("Administator is not authorized for CA: " + caName, e);
-            }
-            final CAToken caToken = caInfo.getCAToken();
-            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
-            reqmsg.setKeyInfo(ca.getCACertificate(),
-                    cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                    cryptoToken.getSignProviderName());
-            reqmsg.verify();
-            intuneScepServiceClient.ValidateRequest(reqmsg.getTransactionId(), new String(Base64.encode(reqmsg.getCertificationRequest().getEncoded())));
+            final byte[] derEncodedCsr = raMasterApiProxyBean.verifyScepPkcs10RequestMessage(authenticationToken, alias, message);
+            intuneScepServiceClient.ValidateRequest(transactionId, new String(Base64.encode(derEncodedCsr)));
             return true;
         } catch (IntuneScepServiceException e) {
             log.error("Failed intunes validation for alias " + alias, e);
             throw new CertificateCreateException("MS Intune validation failed for alias " + alias + "'.", e);
         } catch (Exception e) {
             throw new CertificateCreateException("MS Intune enrollment failed for alias " + alias + "'.", e);
+        }
+    }
+    
+    @Override
+    public byte[] verifyRequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException {
+        final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
+        ScepRequestMessage reqmsg = null;
+        try {
+            final boolean includeCACert = scepConfig.getIncludeCA(alias);
+            reqmsg = new ScepRequestMessage(Base64.decode(message), includeCACert);
+        } catch (Exception e) {
+            log.info("Error receiving ScepMessage: ", e);
+            throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
+        }
+        
+        String caName = null; 
+        CAInfo caInfo = null;
+        CACommon ca = null;
+        try {
+            caName = getCaName(reqmsg, scepConfig, alias);
+            caInfo = caSession.getCAInfo(authenticationToken, caName);
+            if (caInfo == null) {
+                throw new CertificateCreateException("Could not find CA set in SCEP alias '" + alias + "': " + caName);
+            }
+            ca = caSession.getCA(authenticationToken, caName);
+        } catch (AuthorizationDeniedException e) {
+            throw new CertificateCreateException("Administator is not authorized for CA: " + caName, e);
+        }
+        final CAToken caToken = caInfo.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
+        try {
+            reqmsg.setKeyInfo(ca.getCACertificate(),
+                    cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                    cryptoToken.getSignProviderName());
+            reqmsg.verify();
+            return reqmsg.getCertificationRequest().getEncoded();
+        } catch (Exception e) {
+            throw new CertificateCreateException("SCEP PKCS10 message verification failed for alias " + alias + "'.", e);
         }
     }
     
