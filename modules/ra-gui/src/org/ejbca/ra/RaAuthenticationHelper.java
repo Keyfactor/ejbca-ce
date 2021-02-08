@@ -107,7 +107,7 @@ public class RaAuthenticationHelper implements Serializable {
                                 authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
                             }
                         } catch (TokenExpiredException tokenExpiredException) {
-                            tokenExpiredException.printStackTrace();
+                            log.info("Authentication failed using OAuth Bearer Token. Token Expired");
                         }
                     }
                 }
