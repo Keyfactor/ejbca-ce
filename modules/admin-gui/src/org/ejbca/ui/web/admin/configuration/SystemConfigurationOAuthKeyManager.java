@@ -156,7 +156,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
-            this.clientSecret = oauthKey.getClientSecret();
+            this.clientSecret = oauthKey.getClientSecretAndDecrypt();
             this.realm = oauthKey.getRealm();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -282,7 +282,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setLabel(oauthKeyEditor.getLabel());
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setClient(oauthKeyEditor.getClient());
-        newOauthKey.setClientSecret(oauthKeyEditor.getClientSecret());
+        newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
 
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
@@ -420,7 +420,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
-        oauthKeyToUpdate.setClientSecret(oauthKeyEditor.getClientSecret());
+        oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
