@@ -918,9 +918,22 @@ public interface RaMasterApi {
      * @param message to dispatch
      * @return true if the CSR verification was successful.
      * @throws CertificateCreateException if the CSR verification fails.
+     * @since RA Master API version 11 (EJBCA 7.5.0)
      */
     boolean scepMsIntuneVerifyCsr(final AuthenticationToken authenticationToken, final String scepConfigurationAlias, final byte[] message) throws CertificateCreateException;
 
+    /**
+     * Verifies and decrypts the SCEP PKCS10 message CSR with the CAs cryptoToken.
+     * 
+     * @param authenticationToken the origin of the request
+     * @param alias name of alias containing SCEP configuration
+     * @param message to parse
+     * @return the DER encoded CSR or null.
+     * @throws CertificateCreateException if the message could not be parsed or verified.
+     * @since RA Master API version 11 (EJBCA 7.5.0)  
+     */
+    byte[] verifyScepPkcs10RequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException;
+    
     /**
      * Dispatch CMP request over RaMasterApi.
      *
