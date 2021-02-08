@@ -157,7 +157,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             keyInfoToBeEdited.setClient(newClient);
         }
         if (newClientSecret != null) {
-            keyInfoToBeEdited.setClientSecret(newClientSecret);
+            keyInfoToBeEdited.setClientSecretAndEncrypt(newClientSecret);
         }
         if (newRealm != null) {
             keyInfoToBeEdited.setRealm(newRealm);

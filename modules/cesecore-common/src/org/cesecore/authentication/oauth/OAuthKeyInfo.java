@@ -13,13 +13,19 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.Serializable;
+import java.security.InvalidKeyException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 
 /**
  * Represents an OAuth Public Key entry
@@ -128,6 +134,18 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
+    }
+    
+    public String getClientSecretAndDecrypt() {
+        try {
+            return StringTools.pbeDecryptStringWithSha256Aes192(clientSecret);
+        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public void setClientSecretAndEncrypt(String clientSecret) {
+        this.clientSecret = StringTools.pbeEncryptStringWithSha256Aes192(clientSecret);
     }
 
     public String getLabel() {
