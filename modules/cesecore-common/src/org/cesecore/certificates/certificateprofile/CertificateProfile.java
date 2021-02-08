@@ -54,8 +54,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
- *
- * @version $Id$
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -63,7 +61,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 47.0;
+    public static final float LATEST_VERSION = (float) 48.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -277,6 +275,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @Deprecated
     protected static final String QCETSIPDSLANG = "qcetsipdslang";
     protected static final String USEQCPSD2 = "useqcpsd2";
+    protected static final String USEQCCOUNTRIES = "useqccountries";
+    protected static final String QCCOUNTRIESSTRING = "qccountriestring";
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
@@ -513,7 +513,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUsePkixQCSyntaxV2(false);
         setQCStatementCritical(false);
         setQCStatementRAName(null);
-        setQCSemanticsId(null);
+        setQCSemanticsIds(null);
         setUseQCEtsiQCCompliance(false);
         setUseQCEtsiSignatureDevice(false);
         setUseQCEtsiValueLimit(false);
@@ -522,6 +522,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setQCEtsiValueLimitCurrency(null);
         setUseQCEtsiRetentionPeriod(false);
         setQCEtsiRetentionPeriod(0);
+        setUseQCCountries(false);
+        setQCCountriesString("");
         setUseQCCustomString(false);
         setQCCustomStringOid(null);
         setQCCustomStringText(null);
@@ -1996,12 +1998,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
-    /** @return String with SemanticsId or empty string */
-    public String getQCSemanticsId() {
+    /** @return String with semicolon separated list of SemanticsIds or empty string */
+    public String getQCSemanticsIds() {
         return (String) data.get(QCSSEMANTICSID);
     }
 
-    public void setQCSemanticsId(String qcsemanticsid) {
+    public void setQCSemanticsIds(String qcsemanticsid) {
         if (qcsemanticsid == null) {
             data.put(QCSSEMANTICSID, "");
         } else {
@@ -2138,6 +2140,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(USEQCPSD2, useqcpsd2);
     }
 
+    public boolean getUseQCCountries() {
+        return (Boolean) data.get(USEQCCOUNTRIES);
+    }
+    
+    public void setUseQCCountries(boolean useqccountriesstring) {
+        data.put(USEQCCOUNTRIES, useqccountriesstring);
+    }
+    
+    public String getQCCountriesString() {
+        return (String) data.get(QCCOUNTRIESSTRING);
+    }
+    
+    public void setQCCountriesString(String iso3166_2_list) {
+        if (iso3166_2_list == null) {
+            data.put(QCCOUNTRIESSTRING, "");
+        } else {
+            data.put(QCCOUNTRIESSTRING, iso3166_2_list);
+        }
+    }
+    
     public boolean getUseQCCustomString() {
         return (Boolean) data.get(USEQCCUSTOMSTRING);
     }
@@ -3141,7 +3163,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUsePkixQCSyntaxV2(false);
                 setQCStatementCritical(false);
                 setQCStatementRAName(null);
-                setQCSemanticsId(null);
+                setQCSemanticsIds(null);
                 setUseQCEtsiQCCompliance(false);
                 setUseQCEtsiSignatureDevice(false);
                 setUseQCEtsiValueLimit(false);
@@ -3381,6 +3403,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // v46: approvals changed type to LinkedHashMap
             setApprovals(getApprovals());
 
+            // v48: ECA-9500 ETSI QC Legislation Countries
+            if (data.get(USEQCCOUNTRIES) == null) {
+                setUseQCCountries(false);
+                setQCCountriesString("");
+            }
+            
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
