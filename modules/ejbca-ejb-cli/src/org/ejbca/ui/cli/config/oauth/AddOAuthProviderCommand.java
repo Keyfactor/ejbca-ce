@@ -100,7 +100,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         keyInfo.setUrl(url != null ? url : "");
         keyInfo.setLabel(label != null ? label : "");
         keyInfo.setClient(client != null ? client : "");
-        keyInfo.setClientSecret(clientSecret != null ? clientSecret : "");
+        keyInfo.setClientSecretAndEncrypt(clientSecret != null ? clientSecret : "");
         keyInfo.setRealm(realm != null ? realm : "");
         
         if (!canAdd(keyInfo)) {
