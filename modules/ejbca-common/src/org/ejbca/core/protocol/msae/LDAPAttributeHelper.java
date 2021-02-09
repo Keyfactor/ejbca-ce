@@ -117,7 +117,9 @@ public class LDAPAttributeHelper {
             byte[] securityDescription = (byte[]) attribute.get();
             final SDDL sddl = new SDDL(securityDescription);
             final List<ACE> accessControlEntries = sddl.getDacl().getAces();
+            log.debug("Access Control Entries:");
             for (ACE ace : accessControlEntries) {
+                log.debug(ace.getSid().toString());
                 if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE && 
                         ace.getObjectType() != null && 
                         GUID.getGuidAsString(ace.getObjectType()).equals(AD_ACCESS_TYPE_AUTOENROLL)) {
