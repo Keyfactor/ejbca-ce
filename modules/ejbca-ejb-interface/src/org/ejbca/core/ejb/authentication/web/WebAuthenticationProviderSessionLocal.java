@@ -16,6 +16,8 @@ import java.security.cert.X509Certificate;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 
@@ -34,5 +36,8 @@ public interface WebAuthenticationProviderSessionLocal extends AuthenticationPro
     AuthenticationToken authenticateUsingNothing(String principal, boolean confidentialTransport);
 
     /** @return an OAuth2AuthenticationToken based on the given encoded token */
-    AuthenticationToken authenticateUsingOAuthBearerToken(String encodedOauthBearerToken);
+    AuthenticationToken authenticateUsingOAuthBearerToken(String encodedOauthBearerToken) throws TokenExpiredException;
+
+    /** @return new OAuthGrantResponseInfo from oauth provider based on the given refresh token */
+    OAuthGrantResponseInfo refreshOAuthBearerToken(String encodedOauthBearerToken, String refreshToken) throws TokenExpiredException;
 }
