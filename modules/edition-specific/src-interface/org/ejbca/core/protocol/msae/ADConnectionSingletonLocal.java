@@ -17,7 +17,6 @@ import java.util.List;
 
 import javax.ejb.Local;
 import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
@@ -28,14 +27,11 @@ public interface ADConnectionSingletonLocal {
 
     void updateConnectionProperties() throws LDAPException;
     
-    NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String domain) 
-            throws NamingException;
-
-    void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL) throws LDAPException;
+    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL) throws LDAPException;
 
 
-    List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings();
+    public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings();
 
 
-    NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls) throws LDAPException;
+    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls) throws LDAPException;
 }

@@ -15,8 +15,9 @@ package org.ejbca.core.ejb;
 
 import java.util.List;
 
+import javax.ejb.DependsOn;
+import javax.ejb.Singleton;
 import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
@@ -24,18 +25,14 @@ import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
 
+@Singleton
+@DependsOn({"StartupSingletonBean"})
 public class ADConnectionSingletonBean implements ADConnectionSingletonLocal {
 
     @Override
     public void updateConnectionProperties() throws LDAPException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
         
-    }
-
-    @Override
-    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String domain)
-            throws NamingException {
-        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
 
     @Override
