@@ -32,6 +32,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.ErrorCode;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -111,12 +112,15 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
             return admin;
         } else if (oauthBearerToken != null) {
-            final AuthenticationToken admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
-
-            if (admin == null) {
+            final AuthenticationToken admin;
+            try {
+                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                if (admin == null) {
+                    throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
+                }
+            } catch (TokenExpiredException e) {
                 throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
             }
-
             return admin;
         } else {
             throw new AuthorizationDeniedException("Authorization failed. No certificates or OAuth token provided.");
