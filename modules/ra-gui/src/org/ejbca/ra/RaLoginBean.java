@@ -12,17 +12,23 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriBuilder;
 
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.apache.commons.codec.binary.Base64;
@@ -30,12 +36,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.util.HttpTools;
 
 /**
  * JSF Managed Bean for the OAuth login page in the RA Web. 
  */
 @ManagedBean
-@ViewScoped
+@SessionScoped
 public class RaLoginBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -53,10 +60,6 @@ public class RaLoginBean implements Serializable {
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
-    @ManagedProperty(value="#{raLocaleBean}")
-    private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
-    
     public class OAuthKeyInfoGui implements Serializable {
         private static final long serialVersionUID = 1L;
         String label;
@@ -84,12 +87,51 @@ public class RaLoginBean implements Serializable {
         }
     }
     
-    public void onLoginPageLoad() {
-        log.debug("Generating randomized 'state' string.");
-        final byte[] stateBytes = new byte[32];
-        new SecureRandom().nextBytes(stateBytes);
-        stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
-        initOauthKeys();
+    public void onLoginPageLoad() throws IOException {
+        HttpServletRequest servletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        final Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        final String authCode = params.get("code");
+        final String state = params.get("state");
+        if (StringUtils.isNotEmpty(state)) {
+            if (verifyStateParameter(state)) {
+                if(StringUtils.isNotEmpty(authCode)) {
+                    requestTokenUsingCode(servletRequest, params);
+                }
+            } else {
+                log.info("Received 'code' parameter without valid 'state' parameter.");
+            }
+        } else {
+            log.debug("Generating randomized 'state' string.");
+            final byte[] stateBytes = new byte[32];
+            new SecureRandom().nextBytes(stateBytes);
+            stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
+            initOauthKeys();
+        }
+    }
+
+    private void requestTokenUsingCode(HttpServletRequest servletRequest, Map<String, String> params) throws IOException {
+        log.debug("Received authorization code. Requesting token from authorization server.");
+        final String authCode = params.get("code");
+        final String provider = params.get("provider");
+        log.debug("Provider:" + provider);
+        if (globalConfiguration == null) {
+            initGlobalConfiguration();
+        }
+        OAuthKeyInfo oAuthKeyInfo = globalConfiguration.getOauthKeyByKeyIdentifier(provider);
+        if (oAuthKeyInfo != null) {
+            final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
+                    getRedirectUri(oAuthKeyInfo));
+            if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
+                servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
+                raAuthenticationBean.resetAuthentication();
+                FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
+            } else {
+                log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
+            }
+        } else {
+            log.info("Received provider identifier does not correspond to existing oauth providers. Key indentifier = " + provider);
+        }
+
     }
     
     private void initOauthKeys() {
@@ -144,11 +186,15 @@ public class RaLoginBean implements Serializable {
                 WebConfiguration.getPublicHttpsPort()
         ) + globalConfiguration.getRaWebPath();
         log.info(" baseUrl " + baseUrl);
-        return baseUrl + "?provider="+oAuthKeyInfo.getKeyIdentifier();
+        return baseUrl +"/login.xhtml"+ "?provider="+oAuthKeyInfo.getKeyIdentifier();
     }
     
     private void initGlobalConfiguration() {
         globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalConfiguration.initializeRaWeb();
+    }
+
+    private boolean verifyStateParameter(final String state) {
+        return stateInSession != null && stateInSession.equals(state);
     }
 }
