@@ -484,6 +484,34 @@ public class RaEndEntityDetails {
         return ret.toString();
     }
 
+    public int getMaxLogin() {
+        return getEndEntityInformation().getExtendedInformation().getMaxLoginAttempts();
+    }
+
+    public void setMaxLogin(int number) {
+        getEndEntityInformation().getExtendedInformation().setMaxLoginAttempts(number);
+    }
+
+    public boolean isUnlimited() {
+        return getMaxLogin() < 0;
+    }
+
+    public void setUnlimited(boolean unlimited) {
+        if (unlimited) {
+            setMaxLogin(-1);
+        } else {
+            setMaxLogin(1);
+        }
+    }
+
+    public int getRemainingLogin() {
+        return getEndEntityInformation().getExtendedInformation().getRemainingLoginAttempts();
+    }
+
+    public void setRemainingLogin(int number) {
+        getEndEntityInformation().getExtendedInformation().setRemainingLoginAttempts(number);
+    }
+
     /** @return true every twice starting with every forth call */
     public boolean isEven() {
         styleRowCallCounter++;
