@@ -91,6 +91,7 @@ public class RaEndEntityBean implements Serializable {
     private String enrollmentCodeConfirm = "";
     private boolean clearCsrChecked = false;
     private boolean authorized = false;
+    private boolean resetRemainingLoginAttempts;
     
     
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
@@ -182,7 +183,7 @@ public class RaEndEntityBean implements Serializable {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
-        EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
+        EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
 
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
             // A new status was selected, verify the enrollment codes
@@ -229,10 +230,29 @@ public class RaEndEntityBean implements Serializable {
         if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
             endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
             ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
-            if(extendedInformation == null) {
+            if(extendedInformation == null) { // TODO: remove null safe-ing here
                 extendedInformation = new ExtendedInformation();
             }
             extendedInformation.setSubjectDirectoryAttributes(subjectDa);
+            endEntityInformation.setExtendedInformation(extendedInformation);
+            changed = true;
+        }
+        int maxLoginAttempts = raEndEntityDetails.getMaxLogin();
+        if (maxLoginAttempts != endEntityInformation.getExtendedInformation().getMaxLoginAttempts()) {
+            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+            if(extendedInformation == null) {
+                extendedInformation = new ExtendedInformation();
+            }
+            extendedInformation.setMaxLoginAttempts(maxLoginAttempts);
+            endEntityInformation.setExtendedInformation(extendedInformation);
+            changed = true;
+        }
+        if (resetRemainingLoginAttempts) {
+            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+            if(extendedInformation == null) {
+                extendedInformation = new ExtendedInformation();
+            }
+            extendedInformation.setRemainingLoginAttempts(raEndEntityDetails.getMaxLogin());
             endEntityInformation.setExtendedInformation(extendedInformation);
             changed = true;
         }
@@ -443,5 +463,13 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setClearCsrChecked(boolean checked) {
         this.clearCsrChecked = checked;
+    }
+
+    public boolean isResetRemainingLoginAttempts() {
+        return resetRemainingLoginAttempts;
+    }
+
+    public void setResetRemainingLoginAttempts(boolean resetRemainingLoginAttempts) {
+        this.resetRemainingLoginAttempts = resetRemainingLoginAttempts;
     }
 }
