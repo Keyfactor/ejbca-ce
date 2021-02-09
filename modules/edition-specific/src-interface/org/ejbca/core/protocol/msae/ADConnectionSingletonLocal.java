@@ -26,27 +26,16 @@ import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 @Local
 public interface ADConnectionSingletonLocal {
 
-    default void updateConnectionProperties() throws LDAPException {
-        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
-    }
+    void updateConnectionProperties() throws LDAPException;
     
-    
-    default NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String domain) 
-            throws NamingException {
-        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
-    }
+    NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String domain) 
+            throws NamingException;
 
-    default void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL) throws LDAPException {
-        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
-    }
+    void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL) throws LDAPException;
 
 
-    default List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings() {
-        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
-    }
+    List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings();
 
 
-    default NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls) throws LDAPException {
-        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
-    }
+    NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls) throws LDAPException;
 }
