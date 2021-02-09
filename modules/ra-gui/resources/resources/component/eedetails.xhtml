@@ -109,6 +109,42 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
+            <h:outputLabel for="maxfailedlogin" value="#{msg.component_eedetails_field_max_failed_logins}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="maxfailedlogin"
+                rendered="#{not cc.attrs.editMode}"
+                value="#{cc.attrs.raEndEntityDetails.maxLogin lt 0 ? msg.component_eedetails_field_max_failed_unlimited : cc.attrs.raEndEntityDetails.maxLogin}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:selectOneRadio value="#{cc.attrs.raEndEntityDetails.unlimited}">
+                    <f:selectItem itemValue="#{true}" itemLabel="#{msg.component_eedetails_field_max_failed_unlimited} "/>
+                    <f:selectItem itemValue="#{false}" itemLabel="#{msg.component_eedetails_field_max_failed_specify}"/>
+                    <f:ajax event="change" render="maxnumber"/>
+                </h:selectOneRadio>
+                <h:inputText id="maxnumber" value="#{cc.attrs.raEndEntityDetails.maxLogin}" disabled="#{cc.attrs.raEndEntityDetails.unlimited}">
+                    <f:validateLength minimum="1"/>
+                </h:inputText>
+            </h:panelGroup>
+
+            <h:outputLabel for="remaininglogin" value="#{msg.component_eedetails_field_logins}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="remaininglogin"
+                rendered="#{not cc.attrs.editMode}"
+                value="#{cc.attrs.raEndEntityDetails.remainingLogin}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:inputText id="remainingloginnumber"
+                    styleClass="remaining-number-of-login-attempts"
+                    value="#{cc.attrs.raEndEntityDetails.remainingLogin}"
+                    disabled="true"/>
+                <h:selectBooleanCheckbox id="resetremaininglogin" value="#{cc.attrs.raEndEntityBean.resetRemainingLoginAttempts}"/>
+                <h:outputText value="Reset login attempts"/>
+            </h:panelGroup>
+
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+
             <h:outputLabel for="eep" value="#{msg.component_eedetails_field_eep}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="eep" value="#{cc.attrs.raEndEntityDetails.eepName}"

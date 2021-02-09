@@ -293,6 +293,11 @@ img.menu_logo {
     color: #000000;
 }
 
+.ra-editEndEntity .remaining-number-of-login-attempts {
+	width: 40px;
+	margin-right: 15px;
+}
+
 /* End Entity status change */
 .ra-endEntityNavEditBar {
     width: auto !important;
