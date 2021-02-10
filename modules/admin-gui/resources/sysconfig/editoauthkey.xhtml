@@ -37,6 +37,14 @@
             <h:panelGroup id="placeholder1" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
             <h:commandButton action="#{systemConfigMBean.oauthKeyManager.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}"
                              rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode and systemConfigMBean.allowedToEditOauthKeys}"/>
+                             
+            <h:outputLabel for="providerType" value="#{web.text.OAUTHKEYCONFIGURATION_PROVIDERTYPE}" />
+            <h:panelGroup id="providerType" >
+                <h:selectOneMenu id="selectOneMenuProviderType" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.type}"
+                                 disabled="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.addMode}">
+                    <f:selectItems value="#{systemConfigMBean.oauthKeyManager.availableProviderTypes}"/>
+                </h:selectOneMenu>
+            </h:panelGroup>
 
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_LABEL}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.label}" size="46" id="label"
