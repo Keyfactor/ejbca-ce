@@ -11,6 +11,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.security.cert.CertificateParsingException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.oauth.OAuthKeyManager;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -46,6 +48,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     public class OAuthKeyEditor {
         private String label;
         private String keyIdentifier;
+        private OAuthProviderType type = OAuthProviderType.TYPE_AZURE;
         private String url;
         private String client;
         private String realm;
@@ -57,6 +60,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         
         public String getKeyIdentifier() {
             return keyIdentifier;
+        }
+        
+        public OAuthProviderType getType() {
+            return type;
+        }
+
+        public void setType(OAuthProviderType type) {
+            this.type = type;
         }
 
         public String getUrl() {
@@ -144,6 +155,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             // Only replace the key if a new one was uploaded
             this.publicKeyFile = null;
             this.keyIdentifier = oauthKey.getKeyIdentifier();
+            this.type = oauthKey.getType();
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
@@ -158,6 +170,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
          */
         public void clear() {
             keyIdentifier = null;
+            type = OAuthProviderType.TYPE_AZURE;
             publicKeyFile = null;
             url = null;
             label = null;
@@ -266,7 +279,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         }
 
-        final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getKeyIdentifier(), newOauthKeyPublicKey, oauthKeyEditor.getSkewLimit());
+        final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getKeyIdentifier(), newOauthKeyPublicKey, oauthKeyEditor.getSkewLimit(), 
+                oauthKeyEditor.getType());
         newOauthKey.setUrl(oauthKeyEditor.getUrl());
         newOauthKey.setLabel(oauthKeyEditor.getLabel());
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
@@ -342,6 +356,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
      */
     public OAuthKeyEditor getOauthKeyEditor() {
         return oauthKeyEditor;
+    }
+    
+    public List<OAuthProviderType> getAvailableProviderTypes() {
+        return Arrays.asList(OAuthProviderType.values());
     }
 
     /**
