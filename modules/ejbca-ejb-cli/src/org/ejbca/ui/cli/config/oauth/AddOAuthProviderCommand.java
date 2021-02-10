@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.config.oauth;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -31,16 +32,21 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final Logger log = Logger.getLogger(AddOAuthProviderCommand.class);
     
     private static final String KEY_IDENTIFIER = "--keyidentifier";
+    private static final String TYPE = "-- type";
     private static final String PUBLIC_KEY = "--publickey";
     private static final String SKEW_LIMIT = "--skewlimit";
     private static final String URL = "--url";
     private static final String LABEL = "--label";
     private static final String CLIENT = "--client";
     private static final String REALM = "--realm";
+    private static final String KEYCLOAK = "KEYCLOAK";
+    private static final String AZURE = "AZURE";
 
     {
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the Trusted OAuth Provider which is going to be added."));
+                "Key identifier of the Trusted OAuth Provider."));
+        registerParameter(new Parameter(TYPE, "Provider type. Supported types are KEYCLOAK and AZURE.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Type of the Trusted OAuth Provider."));
         registerParameter(new Parameter(PUBLIC_KEY, "Public key", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Path to publickey file used by the OAuth Provider."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -53,8 +59,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider realm name."));
         registerParameter(new Parameter(CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client name for EJBCA in Trusted OAuth Provider."));
-    }
-    
+    }    
     
     @Override
     public String getMainCommand() {
@@ -69,14 +74,30 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
         String kid = parameters.get(KEY_IDENTIFIER);
+        String typeString = parameters.get(TYPE);
         String publicKey = parameters.get(PUBLIC_KEY);
         String skewLimit = parameters.get(SKEW_LIMIT);
         String url = parameters.get(URL);
         String label = parameters.get(LABEL);
         String client = parameters.get(CLIENT);
         String realm = parameters.get(REALM);
+        OAuthProviderType type = null;
 
         byte[] publicKeyByteArray = getOauthKeyPublicKey(publicKey);
+        
+        switch (typeString) {
+            case KEYCLOAK:
+                type = OAuthProviderType.TYPE_KEYCLOAK;
+                break;
+            case AZURE:
+                type = OAuthProviderType.TYPE_AZURE;
+                break;
+        }
+        
+        if (type == null) {
+            log.info("");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
         
         if (ArrayUtils.isEmpty(publicKeyByteArray)) {
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -84,14 +105,14 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         
         int skewLimitInt = 0;
 
-        if(validateSkewLimit(skewLimit) >= 0) {
+        if (validateSkewLimit(skewLimit) >= 0) {
             skewLimitInt = validateSkewLimit(skewLimit);
         } else {
             log.info("Invalid skew limit value!");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
-        OAuthKeyInfo keyInfo = new OAuthKeyInfo(kid, publicKeyByteArray, skewLimitInt);
+        OAuthKeyInfo keyInfo = new OAuthKeyInfo(kid, publicKeyByteArray, skewLimitInt, type);
         keyInfo.setUrl(url);
         keyInfo.setLabel(label);
         keyInfo.setClient(client);

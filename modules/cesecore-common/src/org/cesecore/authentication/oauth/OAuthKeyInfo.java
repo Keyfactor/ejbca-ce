@@ -27,10 +27,17 @@ import org.cesecore.util.CertTools;
  */
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    // Integer values of existing types should not be changed.
+    public enum OAuthProviderType {
+        TYPE_AZURE,
+        TYPE_KEYCLOAK
+    }
 
     private final int internalId;
     private byte[] publicKeyBytes;
     private String keyIdentifier;
+    private OAuthProviderType type;
     private String label;
     private String client;
     private String realm;
@@ -48,7 +55,7 @@ public final class OAuthKeyInfo implements Serializable {
      * @param keyIdentifier  Key identifier
      * @param publicKeyBytes  The ASN1 encoded public key.
      */
-    public OAuthKeyInfo(final String keyIdentifier, final byte[] publicKeyBytes, final int skewLimit) {
+    public OAuthKeyInfo(final String keyIdentifier, final byte[] publicKeyBytes, final int skewLimit, OAuthProviderType type) {
         this.internalId = random.nextInt();
         this.keyIdentifier = keyIdentifier;
         if (publicKeyBytes == null) {
@@ -56,6 +63,7 @@ public final class OAuthKeyInfo implements Serializable {
         }
         this.publicKeyBytes = publicKeyBytes.clone();
         this.skewLimit = skewLimit;
+        this.type = type;
     }
 
     private void ensureParsed() {
@@ -111,6 +119,10 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setKeyIdentifier(final String keyIdentifier) {
         this.keyIdentifier = keyIdentifier;
+    }
+    
+    public OAuthProviderType getType() {
+        return type;
     }
 
     public String getUrl() {

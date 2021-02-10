@@ -188,7 +188,7 @@ public class OAuthSystemTest {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalConfiguration.getOauthKeys();
         //add oauth key
-        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, pubKeyBytes, 6000);
+        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, pubKeyBytes, 6000, 0);
         oAuthKeyInfoInternalId = oAuthKeyInfo.getInternalId();
         globalConfiguration.addOauthKey(oAuthKeyInfo);
         globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
