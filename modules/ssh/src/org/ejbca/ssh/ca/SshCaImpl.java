@@ -132,6 +132,7 @@ import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.ssh.certificate.SshCertificateBase;
 import org.ejbca.ssh.certificate.SshEcCertificate;
 import org.ejbca.ssh.certificate.SshRsaCertificate;
+import org.ejbca.ssh.certificate.signature.SshCertificateSigner;
 import org.ejbca.ssh.certificate.signature.ec.EcCertificateSigner;
 import org.ejbca.ssh.certificate.signature.ec.EcSigningAlgorithm;
 import org.ejbca.ssh.certificate.signature.rsa.RsaCertificateSigner;
@@ -348,22 +349,25 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         final CertificateValidity validity = new CertificateValidity(endEntityInformation, getCAInfo(), certificateProfile, notBefore, notAfter, cacert, false, false);
 
         SshCertificateBase sshCertificate;
+        SshCertificateSigner sshCertificateSigner = null;
         if (publicKey instanceof ECPublicKey) {
             sshCertificate = new SshEcCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, validity.getNotBefore(), validity.getNotAfter(),
                     criticalOptions, extensions, signatureKey, requestMessage.getComment(), getSubjectDN());
-            EcCertificateSigner ecCertificateSigner = new EcCertificateSigner(
-                    EcSigningAlgorithm.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
-            sshCertificate
-                    .setSignature(ecCertificateSigner.signPayload(sshCertificate.encodeCertificateBody(), caPublicKey, caPrivateKey, provider));
         } else if (publicKey instanceof RSAPublicKey) {
-            sshCertificate = new SshRsaCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, notBefore, notAfter,
+            sshCertificate = new SshRsaCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, validity.getNotBefore(), validity.getNotAfter(),
                     criticalOptions, extensions, signatureKey, requestMessage.getComment(), getSubjectDN());
-            RsaCertificateSigner rsaCertificateSigner = new RsaCertificateSigner(RsaSigningAlgorithms.SHA1);
-            sshCertificate
-                    .setSignature(rsaCertificateSigner.signPayload(sshCertificate.getEncoded(), caPublicKey, caPrivateKey, provider));
         } else {
             throw new InvalidKeySpecException("Public key was not of a type applicable for SSH certificates.");
         }
+        
+        if (caPublicKey instanceof ECPublicKey) {
+          sshCertificateSigner = new EcCertificateSigner(EcSigningAlgorithm.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
+        } else if (caPublicKey instanceof RSAPublicKey) {
+            sshCertificateSigner = new RsaCertificateSigner(RsaSigningAlgorithms.SHA1);
+        } else {
+            throw new InvalidKeySpecException("CA Public key was not of a type applicable for SSH certificates.");
+        }
+        sshCertificate.setSignature(sshCertificateSigner.signPayload(sshCertificate.encodeCertificateBody(), caPublicKey, caPrivateKey, provider));
         return sshCertificate;
     }
 
