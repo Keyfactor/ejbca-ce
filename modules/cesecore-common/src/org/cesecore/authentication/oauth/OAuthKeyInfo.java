@@ -28,7 +28,7 @@ import org.cesecore.util.CertTools;
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    // Integer values of existing types should not be changed.
+    // The order of existing types should not be changed. New types should be added to the end of the enum.
     public enum OAuthProviderType {
         TYPE_AZURE,
         TYPE_KEYCLOAK
