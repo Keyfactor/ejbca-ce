@@ -198,9 +198,13 @@ public class RaLoginBean implements Serializable {
     }
 
     public void clickLoginLink(String keyId) throws IOException {
-        oauthClicked = keyId;
         OAuthKeyInfo oAuthKeyInfo = globalConfiguration.getOauthKeyByKeyIdentifier(keyId);
-        String url = getOauthLoginUrl(oAuthKeyInfo);
-        FacesContext.getCurrentInstance().getExternalContext().redirect(url);
+        if (oAuthKeyInfo != null) {
+            oauthClicked = keyId;
+            String url = getOauthLoginUrl(oAuthKeyInfo);
+            FacesContext.getCurrentInstance().getExternalContext().redirect(url);
+        } else {
+            log.info("Trusted provider info not found for keyId =" + keyId);
+        }
     }
 }
