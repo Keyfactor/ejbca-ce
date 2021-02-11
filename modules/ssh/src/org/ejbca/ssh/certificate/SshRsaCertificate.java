@@ -44,7 +44,7 @@ public class SshRsaCertificate extends SshCertificateBase {
 
     private static final Logger log = Logger.getLogger(SshRsaCertificate.class);
 
-    private static final String SSH_RSA_CERT_V01 = "ssh-rsa-cert-v01@openssh.com";
+    public static final String SSH_RSA_CERT_V01 = "ssh-rsa-cert-v01@openssh.com";
 
     public SshRsaCertificate() {
         super();
