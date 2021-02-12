@@ -28,10 +28,26 @@ import org.cesecore.util.CertTools;
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    // The order of existing types should not be changed. New types should be added to the end of the enum.
+    // dbIndexes of existing provider types should not be changed
     public enum OAuthProviderType {
-        TYPE_AZURE,
-        TYPE_KEYCLOAK
+        TYPE_AZURE(0, "Azure"),
+        TYPE_KEYCLOAK(1, "Keycloak");
+        
+        private final int dbIndex;
+        private final String label;
+
+        OAuthProviderType(int dbIndex, String label) {
+            this.dbIndex = dbIndex;
+            this.label = label;
+        }
+        
+        public int getDbIndex() {
+            return this.dbIndex;
+        }
+        
+        public String getLabel() {
+            return this.label;
+        }
     }
 
     private final int internalId;

@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.oauth.OAuthKeyManager;
@@ -34,6 +35,8 @@ import org.cesecore.util.CertTools;
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
     private static final String OAUTH_KEY_SAVED = "saved";
+    private static final String TYPE_AZURE_LABEL = "Azure";
+    private static final String TYPE_KEYCLOAK_LABEL = "Keycloak";
     private static final Logger log = Logger.getLogger(SystemConfigurationOAuthKeyManager.class);
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final OAuthKeyEditor oauthKeyEditor;
@@ -288,6 +291,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
+            return StringUtils.EMPTY;
+        }
+        try {
+            OAuthKeyHelper.validateProvider(newOauthKey);
+        } catch(Exception e) {
+            systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
         }
 
