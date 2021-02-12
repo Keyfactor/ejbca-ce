@@ -145,14 +145,34 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:outputLabel for="eep" value="#{msg.component_eedetails_field_eep}"
+            <h:outputLabel for="eepName" value="#{msg.component_eedetails_field_eep}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="eep" value="#{cc.attrs.raEndEntityDetails.eepName}"
+            <h:outputText id="eepName"
+                rendered="#{not cc.attrs.editMode}"
+                value="#{cc.attrs.raEndEntityDetails.eepName}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                rendered="#{cc.attrs.editMode}">
+                <h:selectOneMenu id="eepId" value="#{cc.attrs.raEndEntityBean.eepId}" styleClass="pure-input-1-4">
+                    <f:selectItems value="#{cc.attrs.raEndEntityBean.eepIdToNameMap.entrySet()}" var="eep" itemLabel="#{eep.value}" itemValue="#{eep.key}" />
+                    <f:ajax render="cpId"/>
+                </h:selectOneMenu>
+            </h:panelGroup>
+
             <h:outputLabel for="cp" value="#{msg.component_eedetails_field_cp}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="cp" value="#{cc.attrs.raEndEntityDetails.cpName}"
+            <h:outputText id="cp" rendered="#{not cc.attrs.editMode}" value="#{cc.attrs.raEndEntityDetails.cpName}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                rendered="#{cc.attrs.editMode}">
+                <h:selectOneMenu id="cpId" value="#{cc.attrs.raEndEntityBean.cpId}" styleClass="pure-input-1-4">
+                    <f:selectItems value="#{cc.attrs.raEndEntityBean.certificateProfiles.entrySet()}" var="cp" itemLabel="#{cp.value}" itemValue="#{cp.key}" />
+                </h:selectOneMenu>
+            </h:panelGroup>
+
+
             <h:outputLabel for="caname" value="#{msg.component_eedetails_field_caname}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="caname" value="#{cc.attrs.raEndEntityDetails.caName}"
