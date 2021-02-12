@@ -13,10 +13,12 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -25,6 +27,7 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.persistence.Id;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +37,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -92,8 +96,11 @@ public class RaEndEntityBean implements Serializable {
     private boolean clearCsrChecked = false;
     private boolean authorized = false;
     private boolean resetRemainingLoginAttempts;
-    
-    
+    private int eepId;
+    private int cpId;
+    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles;
+    private Map<Integer, String> certificateProfiles;
+
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -137,6 +144,7 @@ public class RaEndEntityBean implements Serializable {
                 }
                 raEndEntityDetails = new RaEndEntityDetails(endEntityInformation, raEndEntityDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caIdToNameMap);
                 selectedTokenType = endEntityInformation.getTokenType();
+                authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
             }
         }
         issuedCerts = null;
@@ -144,6 +152,8 @@ public class RaEndEntityBean implements Serializable {
         selectableTokenTypes = null;
         selectedStatus = -1;
         clearCsrChecked = false;
+        eepId = raEndEntityDetails.getEepId();
+        cpId = raEndEntityDetails.getCpId();
     }
     
     public boolean isAuthorized() {
@@ -183,7 +193,7 @@ public class RaEndEntityBean implements Serializable {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
-        EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
+        final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
 
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
             // A new status was selected, verify the enrollment codes
@@ -254,6 +264,14 @@ public class RaEndEntityBean implements Serializable {
             }
             extendedInformation.setRemainingLoginAttempts(raEndEntityDetails.getMaxLogin());
             endEntityInformation.setExtendedInformation(extendedInformation);
+            changed = true;
+        }
+        if (eepId != endEntityInformation.getEndEntityProfileId()) {
+            endEntityInformation.setEndEntityProfileId(eepId);
+            changed = true;
+        }
+        if (cpId != endEntityInformation.getCertificateProfileId()) {
+            endEntityInformation.setCertificateProfileId(cpId);
             changed = true;
         }
 
@@ -471,5 +489,36 @@ public class RaEndEntityBean implements Serializable {
 
     public void setResetRemainingLoginAttempts(boolean resetRemainingLoginAttempts) {
         this.resetRemainingLoginAttempts = resetRemainingLoginAttempts;
+    }
+
+    public Map<Integer, String> getEepIdToNameMap() {
+        return eepIdToNameMap;
+    }
+
+    public int getEepId() {
+        return eepId;
+    }
+
+    public void setEepId(int eepId) {
+        this.eepId = eepId;
+        cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
+    }
+
+    public Map<Integer, String> getCpIdToNameMap() {
+        return cpIdToNameMap;
+    }
+
+    public int getCpId() {
+        return cpId;
+    }
+
+    public void setCpId(int cpId) {
+        this.cpId = cpId;
+    }
+
+    public Map<Integer, String> getCertificateProfiles() {
+        return raEndEntityDetails.getAvailableCertificateProfilesByEepId(eepId)
+            .stream()
+            .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
     }
 }
