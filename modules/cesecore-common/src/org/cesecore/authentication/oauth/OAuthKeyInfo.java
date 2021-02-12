@@ -137,10 +137,14 @@ public final class OAuthKeyInfo implements Serializable {
     }
     
     public String getClientSecretAndDecrypt() {
-        try {
-            return StringTools.pbeDecryptStringWithSha256Aes192(clientSecret);
-        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException e) {
-            throw new IllegalStateException(e);
+        if (clientSecret != null) {
+            try {
+                return StringTools.pbeDecryptStringWithSha256Aes192(clientSecret);
+            } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            return null;
         }
     }
 
