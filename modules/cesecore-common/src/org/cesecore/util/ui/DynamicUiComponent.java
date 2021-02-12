@@ -14,9 +14,6 @@ package org.cesecore.util.ui;
 
 /**
  * Interface type for PSM components like check boxes, text fields, etc. for dynamic UI model.
- * 
- * @version $Id$
- *
  */
 public interface DynamicUiComponent {
 
@@ -25,4 +22,14 @@ public interface DynamicUiComponent {
 	 * @param disabled
 	 */
     void setDisabled(final boolean disabled);
+    
+    
+    /**
+     * Updates the components value range with the one of the backing dynamic UI property.
+     * 
+     * This method typically is invoked after the component already has been built and rendered.
+     * 
+     * If I18N labels are used, they must have been updated before invocation.  
+     */
+    void updateValueRange();
 }
