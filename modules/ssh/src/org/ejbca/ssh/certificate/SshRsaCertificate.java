@@ -37,8 +37,6 @@ import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
 
 /**
  * SSH RSA Certificate.
- *
- * @version $Id$
  */
 public class SshRsaCertificate extends SshCertificateBase {
 
