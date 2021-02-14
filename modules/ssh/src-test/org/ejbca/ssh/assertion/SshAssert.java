@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,6 +96,7 @@ public class SshAssert {
                 signature = Signature.getInstance(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
                 break;
         }
+        // EC signature consists of two big integers encoded in a
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DERSequenceGenerator seq = new DERSequenceGenerator(byteArrayOutputStream);
         SshCertificateReader sshCertificateReader = new SshCertificateReader(signatureBytes);
@@ -108,4 +110,27 @@ public class SshAssert {
         signature.update(data);
         return signature.verify(encoded);
     }
+
+    /**
+     * Verifies the RSA signature.
+     *
+     * @param publicKey Public key
+     * @param signatureBytes Signature bytes.
+     * @param signatureAlgorithm Signature algorithm, for example AlgorithmConstants.SIGALG_SHA256_WITH_RSA.
+     * @param data data.
+     * @return true if RSA signature is valid.
+     * @throws NoSuchAlgorithmException no algorithm exception.
+     * @throws SignatureException signature exception.
+     * @throws InvalidKeyException invalid key exception.
+     * @throws IOException IO exception.
+     */
+    public static boolean verifyRsaSignature(
+            RSAPublicKey publicKey, byte[] signatureBytes, String signatureAlgorithm, byte[] data
+    ) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
+        final Signature signature = Signature.getInstance(signatureAlgorithm);
+        signature.initVerify(publicKey);
+        signature.update(data);
+        return signature.verify(signatureBytes);
+    }
+
 }
