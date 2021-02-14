@@ -9,11 +9,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -101,10 +96,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test the WS methods that relate to SSH CAs
- *
- * @version $Id$
  */
 public class SshWsSystemTest extends CommonEjbcaWs {
 
@@ -173,7 +171,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
     }
 
     /**
-     * Test creates an SSH CA, then verifies that it can retrieve an EC public key correctly
+     * Test creates an SSH CA using ECDSA secp256r1, then verifies that the CAs EC public key can be retrieved correctly
      */
     @Test
     public void getSshCaPublicKeyAsEcP256() throws InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
@@ -189,7 +187,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
     }
 
     /**
-     * Test creates an SSH CA, then verifies that it can retrieve an EC public key correctly
+     * Test creates an SSH CA using ECDSA secp384r1, then verifies that the CAs EC public key can be retrieved correctly
      */
     @Test
     public void getSshCaPublicKeyAsEcP384() throws InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
@@ -205,7 +203,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
     }
 
     /**
-     * Test creates an SSH CA, then verifies that it can retrieve an EC public key correctly
+     * Test creates an SSH CA using ECDSA secp512r1, then verifies that the CAs EC public key can be retrieved correctly
      */
     @Test
     public void getSshCaPublicKeyAsEcP521() throws InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
@@ -221,7 +219,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
     }
 
     /**
-     * Test creates an SSH CA, then verifies that it can retrieve an RSA public key correctly
+     * Test creates an SSH CA using RSA 2048 and SHA1, then verifies that the CAs RSA public key can be retrieved correctly
      */
     @Test
     public void getSshCaPublicKeyAsRsaSha1() throws InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
@@ -235,13 +233,50 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         SshRsaPublicKey sshRsaPublicKey = new SshRsaPublicKey(Base64.decode(sshKeyBody.getBytes()));
         assertEquals("CA key did not have the correct encoding algorithm.", AlgorithmConstants.KEYALGORITHM_RSA,
                 sshRsaPublicKey.getKeyAlgorithm());
+        assertEquals("CA key was not RSA 2048", "2048", AlgorithmTools.getKeySpecification(sshRsaPublicKey.getPublicKey()));
     }
 
     /**
-     * Tests enrolling and issuing an EC certificate over WS using a standard public key as input
+     * Test creates an SSH CA using RSA 2048 and SHA256, then verifies that the CAs RSA public key can be retrieved correctly
      */
     @Test
-    public void enrollAndIssueEcCertificate() throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
+    public void getSshCaPublicKeyAsRsaSha256() throws InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidAlgorithmException, OperatorCreationException,
+            CertificateException, CAExistsException, AuthorizationDeniedException, NoSuchSlotException, CADoesntExistsException_Exception,
+            SshKeyException_Exception, InvalidKeySpecException, SshKeyException {
+        final String caName = "getSshCaPublicKeyAsRsaSha256";
+        sshCa = SshCaTestUtils.addSshCa(caName, "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        String sshKey = new String(ejbcaraws.getSshCaPublicKey(caName));
+        String sshKeyBody = sshKey.split(" ")[1];
+        SshRsaPublicKey sshRsaPublicKey = new SshRsaPublicKey(Base64.decode(sshKeyBody.getBytes()));
+        assertEquals("CA key did not have the correct encoding algorithm.", AlgorithmConstants.KEYALGORITHM_RSA,
+                sshRsaPublicKey.getKeyAlgorithm());
+        assertEquals("CA key was not RSA 2048", "2048", AlgorithmTools.getKeySpecification(sshRsaPublicKey.getPublicKey()));
+    }
+
+    /**
+     * Test creates an SSH CA using RSA 4096 and SHA512, then verifies that the CAs RSA public key can be retrieved correctly
+     */
+    @Test
+    public void getSshCaPublicKeyAsRsaSha512() throws InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidAlgorithmException, OperatorCreationException,
+            CertificateException, CAExistsException, AuthorizationDeniedException, NoSuchSlotException, CADoesntExistsException_Exception,
+            SshKeyException_Exception, InvalidKeySpecException, SshKeyException {
+        final String caName = "getSshCaPublicKeyAsRsaSha512";
+        sshCa = SshCaTestUtils.addSshCa(caName, "RSA4096", AlgorithmConstants.SIGALG_SHA512_WITH_RSA);
+        String sshKey = new String(ejbcaraws.getSshCaPublicKey(caName));
+        String sshKeyBody = sshKey.split(" ")[1];
+        SshRsaPublicKey sshRsaPublicKey = new SshRsaPublicKey(Base64.decode(sshKeyBody.getBytes()));
+        assertEquals("CA key did not have the correct encoding algorithm.", AlgorithmConstants.KEYALGORITHM_RSA,
+                sshRsaPublicKey.getKeyAlgorithm());
+        assertEquals("CA key was not RSA 4096", "4096", AlgorithmTools.getKeySpecification(sshRsaPublicKey.getPublicKey()));
+    }
+
+    /**
+     * Tests enrolling and issuing an EC certificate over WS using a standard public key as input, with an EC CA
+     */
+    @Test
+    public void enrollAndIssueEcCertificateEcCA() throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidAlgorithmException,
             OperatorCreationException, CertificateException, CAExistsException, NoSuchSlotException, AuthorizationDeniedException_Exception,
             EjbcaException_Exception, EndEntityProfileValidationException_Exception, EndEntityProfileExistsException,
@@ -276,15 +311,15 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         readAndVerifyValidity(sshCertificateReader, now);
         SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, SOURCE_ADDRESS + ",192.168.0.1");
         readAndVerifyCertificateExtensions(sshCertificateReader);
-        readAndVerifySignerAndSignature(sshCertificateReader);
+        readAndVerifySignerAndSignatureEC(sshCertificateReader);
         sshCertificateReader.close();
     }
-    
+
     /**
-     * Tests enrolling and issuing a RSA certificate over WS using a standard public key as input
+     * Tests enrolling and issuing a RSA certificate over WS using a standard public key as input, with an EC CA
      */
     @Test
-    public void enrollAndIssueRsaCertificate() throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
+    public void enrollAndIssueRsaCertificateEcCA() throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidAlgorithmException,
             OperatorCreationException, CertificateException, CAExistsException, NoSuchSlotException, AuthorizationDeniedException_Exception,
             EjbcaException_Exception, EndEntityProfileValidationException_Exception, EndEntityProfileExistsException,
@@ -319,15 +354,60 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         readAndVerifyValidity(sshCertificateReader, now);
         SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, SOURCE_ADDRESS + ",192.168.0.1");
         readAndVerifyCertificateExtensions(sshCertificateReader);
-        readAndVerifySignerAndSignature(sshCertificateReader);
+        readAndVerifySignerAndSignatureEC(sshCertificateReader);
         sshCertificateReader.close();
     }
 
     /**
-     * Tests enrolling and issuing an EC certificate over WS using an SSH public key as input
+     * Tests enrolling and issuing an RSA certificate over WS using a standard public key as input, with an RSA CA
      */
     @Test
-    public void enrollAndIssueEcCertificateWithSshPublicKey() throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
+    public void enrollAndIssueRsaCertificateRsaCA() throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidAlgorithmException,
+            OperatorCreationException, CertificateException, CAExistsException, NoSuchSlotException, AuthorizationDeniedException_Exception,
+            EjbcaException_Exception, EndEntityProfileValidationException_Exception, EndEntityProfileExistsException,
+            CertificateProfileExistsException, NoSuchAlgorithmException, SignatureException, IOException, InvalidKeySpecException, SshKeyException {
+
+        final UserDataVOWS userDataVOWS = getUserDataVOWS();
+        final KeyPair keypair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        final SshRequestMessageWs sshRequestMessageWs = new SshRequestMessageWs();
+        sshRequestMessageWs.setAdditionalExtensions(getAdditionalExtensions());
+        sshRequestMessageWs.setComment(COMMENT);
+        sshRequestMessageWs.setCriticalOptions(getCriticalOptions(SOURCE_ADDRESS, "192.168.0.1"));
+        sshRequestMessageWs.setKeyId(KEY_ID);
+        sshRequestMessageWs.setPrincipals(PRINCIPALS);
+        sshRequestMessageWs.setPublicKey(keypair.getPublic().getEncoded());
+        sshCa = SshCaTestUtils.addSshCa(caName, "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        createCertificateProfile();
+        createEndEntityProfile();
+
+        Date now = new Date(System.currentTimeMillis());
+        String certificateBytes = new String(ejbcaraws.enrollAndIssueSshCertificate(userDataVOWS, sshRequestMessageWs));
+        assertTrue("SSH certificate prefix was incorrect", certificateBytes.startsWith(SshRsaCertificate.SSH_RSA_CERT_V01));
+        assertTrue("Comment was not included", certificateBytes.endsWith(COMMENT));
+
+        String rsaCertificateBody = certificateBytes.split(" ")[1];
+        byte[] decoded = Base64.decode(rsaCertificateBody.getBytes());
+        SshCertificateReader sshCertificateReader = new SshCertificateReader(decoded);
+
+        assertEquals("Certificate algorithm was incorrect", "ssh-rsa-cert-v01@openssh.com", sshCertificateReader.readString());
+        readAndVerifyRsaCertificate(sshCertificateReader, (RSAPublicKey) keypair.getPublic());
+        readAndVerifyPrincipals(sshCertificateReader);
+        readAndVerifyValidity(sshCertificateReader, now);
+        SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, SOURCE_ADDRESS + ",192.168.0.1");
+        readAndVerifyCertificateExtensions(sshCertificateReader);
+        // TODO: bug that SHA1 is always used even though the CA is created with SHA256 above
+        // verify the signature algorithms in CA certificates created by all the "getSshCaPublicKey" above.
+        readAndVerifySignerAndSignatureRSA(sshCertificateReader, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        sshCertificateReader.close();
+    }
+
+    /**
+     * Tests enrolling and issuing an EC certificate over WS using an SSH public key as input, with an EC CA
+     */
+    @Test
+    public void enrollAndIssueEcCertificateWithSshPublicKeyEcCA() throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidAlgorithmException,
             OperatorCreationException, CertificateException, CAExistsException, NoSuchSlotException, AuthorizationDeniedException_Exception,
             EjbcaException_Exception, EndEntityProfileValidationException_Exception, EndEntityProfileExistsException,
@@ -363,7 +443,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         readAndVerifyValidity(sshCertificateReader, now);
         SshAssert.readAndVerifyCriticalOptions(sshCertificateReader, SOURCE_ADDRESS);
         readAndVerifyCertificateExtensions(sshCertificateReader);
-        readAndVerifySignerAndSignature(sshCertificateReader);
+        readAndVerifySignerAndSignatureEC(sshCertificateReader);
         sshCertificateReader.close();
     }
 
@@ -399,7 +479,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         userDataVOWS.setPassword(PASSWORD);
         userDataVOWS.setClearPwd(false);
         userDataVOWS.setSubjectDN(null);
-        caName = "testEnrollAndIssueEcCertificate" + postfixName;
+        caName = "testEnrollAndIssueSshCertificate" + postfixName;
         userDataVOWS.setCaName(caName);
         userDataVOWS.setEmail(null);
         userDataVOWS.setSubjectAltName(null);
@@ -457,7 +537,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
     }
 
     private void readAndVerifyRsaCertificate(
-            final SshCertificateReader sshCertificateReader, final RSAPublicKey ecPublicKey
+            final SshCertificateReader sshCertificateReader, final RSAPublicKey rsaPublicKey
     ) throws IOException, InvalidKeySpecException {
         byte[] nonce = sshCertificateReader.readByteArray();
         assertNotNull("Nonce was not read correctly", nonce);
@@ -515,7 +595,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         assertTrue("Reserved should not be used.", StringUtils.isEmpty(sshCertificateReader.readString()));
     }
 
-    private void readAndVerifySignerAndSignature(final SshCertificateReader sshCertificateReader) throws IOException, InvalidKeySpecException, SshKeyException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    private void readAndVerifySignerAndSignatureEC(final SshCertificateReader sshCertificateReader) throws IOException, InvalidKeySpecException, SshKeyException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         final byte[] signKeyBytes = sshCertificateReader.readByteArray();
         final SshEcPublicKey signKey = new SshEcPublicKey(signKeyBytes);
         assertEquals("Signer Curve name was not correct.", SshEcPublicKey.NISTP384, signKey.getCurveName());
@@ -535,4 +615,26 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         assertTrue("Certificate signature could not be verified",
                 SshAssert.verifyEcSignature((ECPublicKey) signKey.getPublicKey(), strippedSignatureBytes, SshEcPublicKey.NISTP384, data));
     }
+
+    private void readAndVerifySignerAndSignatureRSA(final SshCertificateReader sshCertificateReader, final String signatureAlgorithm) throws IOException, InvalidKeySpecException, SshKeyException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        final byte[] signKeyBytes = sshCertificateReader.readByteArray();
+        final SshRsaPublicKey signKey = new SshRsaPublicKey(signKeyBytes);
+        assertEquals("CA key did not have the correct encoding algorithm.", AlgorithmConstants.KEYALGORITHM_RSA,
+                signKey.getKeyAlgorithm());
+        assertEquals("CA key was not RSA 2048", "2048", AlgorithmTools.getKeySpecification(signKey.getPublicKey()));
+        // The signature also lives in its own structure
+        final byte[] signatureBytes = sshCertificateReader.readByteArray();
+        final SshCertificateReader signatureReader = new SshCertificateReader(signatureBytes);
+        final String signaturePrefix = signatureReader.readString();
+        assertEquals("Incorrect signature prefix", "ssh-rsa", signaturePrefix);
+        final byte[] strippedSignatureBytes = signatureReader.readByteArray();
+        signatureReader.close();
+        // The complete certificate body, minus the signature, i.e. that which was signed
+        final byte[] data = new byte[sshCertificateReader.array().length - (signatureBytes.length + 4)];
+        System.arraycopy(sshCertificateReader.array(), 0, data, 0, data.length);
+        assertTrue("Certificate signature could not be verified",
+                SshAssert.verifyRsaSignature((RSAPublicKey) signKey.getPublicKey(), strippedSignatureBytes, signatureAlgorithm, data));
+    }
+
+
 }
