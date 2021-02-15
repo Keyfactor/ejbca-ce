@@ -19,6 +19,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -188,7 +189,7 @@ public class OAuthSystemTest {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalConfiguration.getOauthKeys();
         //add oauth key
-        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, pubKeyBytes, 6000, 0);
+        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, pubKeyBytes, 6000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfoInternalId = oAuthKeyInfo.getInternalId();
         globalConfiguration.addOauthKey(oAuthKeyInfo);
         globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);

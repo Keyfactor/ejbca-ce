@@ -43,7 +43,7 @@ public class ListOAuthProvidersCommand extends BaseOAuthConfigCommand {
         OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
         
         for (OAuthKeyInfo keyInfo : oauthKeys) {
-            log.info("Kid: "  + keyInfo.getKeyIdentifier() + " | skew limit: " + keyInfo.getSkewLimit()
+            log.info("Kid: "  + keyInfo.getKeyIdentifier() + " | type: " + keyInfo.getType().getLabel() + " | skew limit: " + keyInfo.getSkewLimit()
                     + " | publickey fingerprint: " + keyInfo.getKeyFingerprint()
                     + " | url: " + keyInfo.getUrl())
             ;

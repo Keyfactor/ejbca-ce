@@ -43,6 +43,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -219,7 +220,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void missingSignature() {
         log.trace(">missingSignature");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
@@ -230,7 +231,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void malformedSignature() {
         log.trace(">malformedSignature");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}") + "AAAA"; // last part is signature
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
@@ -241,7 +242,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void unknownSignatureAlgorithm() {
         log.trace(">unknownSignatureAlgorithm");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"XX\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}") + "AAAA"; // last part is signature
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
@@ -252,7 +253,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void expiredToken() {
         log.trace(">expiredToken");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         expectAuditLog("authentication.jwt.expired", "johndoe", pubKeyFingerprint);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
         final String timestamp = timestampFromNow(-60*60*1000); // 1 hour old
@@ -265,7 +266,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void notYetValidToken() {
         log.trace(">notYetValidToken");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         expectAuditLog("authentication.jwt.not_yet_valid", "johndoe", pubKeyFingerprint);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
         final String timestamp = timestampFromNow(60*60*1000); // 1 hour ahead
@@ -278,7 +279,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void tamperedWithContents() {
         log.trace(">tamperedWithContents");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         expectAuditLog("authentication.jwt.invalid_signature", pubKeyFingerprint);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
         final String originalToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
@@ -311,7 +312,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulRsaDefaultKey() {
         log.trace(">successfulRsaDefaultKey");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
         final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token);
@@ -329,7 +330,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulRsaWithKeyId() {
         log.trace(">successfulRsaWithKeyId");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
         final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token);
@@ -348,7 +349,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulComplexToken() {
         log.trace(">successfulComplexToken");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
         final String expiry = timestampFromNow(60*60*1000); // 1 hour ahead
         final String notBefore = timestampFromNow(-60*60*1000); // 1 hour old
