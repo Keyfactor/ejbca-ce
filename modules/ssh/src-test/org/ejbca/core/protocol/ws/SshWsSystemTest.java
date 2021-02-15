@@ -399,7 +399,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         readAndVerifyCertificateExtensions(sshCertificateReader);
         // TODO: bug that SHA1 is always used even though the CA is created with SHA256 above
         // verify the signature algorithms in CA certificates created by all the "getSshCaPublicKey" above.
-        readAndVerifySignerAndSignatureRSA(sshCertificateReader, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        readAndVerifySignerAndSignatureRSA(sshCertificateReader, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         sshCertificateReader.close();
     }
 
@@ -626,7 +626,7 @@ public class SshWsSystemTest extends CommonEjbcaWs {
         final byte[] signatureBytes = sshCertificateReader.readByteArray();
         final SshCertificateReader signatureReader = new SshCertificateReader(signatureBytes);
         final String signaturePrefix = signatureReader.readString();
-        assertEquals("Incorrect signature prefix", "ssh-rsa", signaturePrefix);
+        assertEquals("Incorrect signature prefix", "rsa-sha2-256", signaturePrefix);
         final byte[] strippedSignatureBytes = signatureReader.readByteArray();
         signatureReader.close();
         // The complete certificate body, minus the signature, i.e. that which was signed
