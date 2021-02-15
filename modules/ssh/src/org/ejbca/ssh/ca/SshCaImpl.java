@@ -140,7 +140,13 @@ import org.ejbca.ssh.certificate.signature.rsa.RsaSigningAlgorithms;
 import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
 
-/**
+/** A CA for issuing SSH certificates.
+ * Certificate specification: https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys?annotate=HEAD
+ * KRL specification: https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.krl?annotate=HEAD
+ * 
+ * Other relevant standards:
+ * https://tools.ietf.org/html/rfc8332
+ * https://tools.ietf.org/html/rfc6668
  *
  * TODO SSH: Remove all references to CT in ECA-9182
  *
@@ -363,7 +369,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         if (caPublicKey instanceof ECPublicKey) {
           sshCertificateSigner = new EcCertificateSigner(EcSigningAlgorithm.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
         } else if (caPublicKey instanceof RSAPublicKey) {
-            sshCertificateSigner = new RsaCertificateSigner(RsaSigningAlgorithms.SHA1);
+            sshCertificateSigner = new RsaCertificateSigner(RsaSigningAlgorithms.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
         } else {
             throw new InvalidKeySpecException("CA Public key was not of a type applicable for SSH certificates.");
         }
