@@ -33,27 +33,36 @@ public final class OAuthKeyInfo implements Serializable {
         TYPE_AZURE(0, "Azure"),
         TYPE_KEYCLOAK(1, "Keycloak");
         
-        private final int dbIndex;
+        private final int index;
         private final String label;
 
         OAuthProviderType(int dbIndex, String label) {
-            this.dbIndex = dbIndex;
+            this.index = dbIndex;
             this.label = label;
         }
         
-        public int getDbIndex() {
-            return this.dbIndex;
+        public int getIndex() {
+            return this.index;
         }
         
         public String getLabel() {
             return this.label;
+        }
+        
+        public static OAuthProviderType getByIndex(final int index) {
+            for (OAuthProviderType type : values()) {
+                if (index == type.index) {
+                    return type;
+                }
+            }
+            return null;
         }
     }
 
     private final int internalId;
     private byte[] publicKeyBytes;
     private String keyIdentifier;
-    private OAuthProviderType type;
+    private int typeInt;
     private String label;
     private String client;
     private String realm;
@@ -79,7 +88,7 @@ public final class OAuthKeyInfo implements Serializable {
         }
         this.publicKeyBytes = publicKeyBytes.clone();
         this.skewLimit = skewLimit;
-        this.type = type;
+        this.typeInt = type.getIndex();
     }
 
     private void ensureParsed() {
@@ -138,7 +147,15 @@ public final class OAuthKeyInfo implements Serializable {
     }
     
     public OAuthProviderType getType() {
-        return type;
+        return OAuthProviderType.getByIndex(typeInt);
+    }
+    
+    public int getTypeInt() {
+        return typeInt;
+    }
+    
+    public void setTypeInt(int typeInt) {
+        this.typeInt = typeInt;
     }
 
     public String getUrl() {
