@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -81,6 +82,12 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                     OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
                     if (defaultKey != null && entry.getValue().getInternalId() == defaultKey.getInternalId()) {
                         getGlobalConfiguration().setDefaultOauthKey(entry.getValue());
+                    }
+                    try {
+                        OAuthKeyHelper.validateProvider(entry.getValue());
+                    } catch(Exception e) {
+                        log.info(e.getMessage());
+                        return CommandResult.FUNCTIONAL_FAILURE;
                     }
                     if (saveGlobalConfig()) {
                         log.info("Trusted OAuth Provider with kid: " + kid + " successfully updated!");

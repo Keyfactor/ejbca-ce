@@ -14,6 +14,7 @@ package org.ejbca.ui.cli.config.oauth;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -32,7 +33,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final Logger log = Logger.getLogger(AddOAuthProviderCommand.class);
     
     private static final String KEY_IDENTIFIER = "--keyidentifier";
-    private static final String TYPE = "-- type";
+    private static final String TYPE = "--type";
     private static final String PUBLIC_KEY = "--publickey";
     private static final String SKEW_LIMIT = "--skewlimit";
     private static final String URL = "--url";
@@ -95,7 +96,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         
         if (type == null) {
-            log.info("");
+            log.info("No provider type was specified.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
@@ -120,6 +121,12 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         
         if (!canAdd(keyInfo)) {
             log.info("Trusted OAuth Provider with same kid or internal Id exists!");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        try {
+            OAuthKeyHelper.validateProvider(keyInfo);
+        } catch(Exception e) {
+            log.info(e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
