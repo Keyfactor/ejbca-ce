@@ -150,6 +150,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public boolean isAddMode(){
             return this.editorMode.equals(OAuthKeyEditorMode.ADD);
         }
+        
+        public boolean isRealmRendered() {
+            return OAuthProviderType.TYPE_KEYCLOAK.getIndex() == type.getIndex();
+        }
 
         /**
          * Load an existing OAuth Key into the editor.
@@ -436,6 +440,15 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
+        
+        /* Make sure the edited provider does not have any unfilled mandatory fields */
+        try {
+            OAuthKeyHelper.validateProvider(oauthKeyToUpdate);
+        } catch(Exception e) {
+            systemConfigurationHelper.addErrorMessage(e.getMessage());
+            return StringUtils.EMPTY;
+        }
+        
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;
