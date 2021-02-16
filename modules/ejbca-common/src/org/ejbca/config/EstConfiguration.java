@@ -56,7 +56,16 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
     public static final String CONFIG_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
     public static final String CONFIG_RA_NAMEGENERATIONPOSTFIX= "ra.namegenerationpostfix";
-
+    public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
+    public static final String CONFIG_VENDORCA                = "vendorca";
+    public static final String CONFIG_OPERATIONMODE = "operationmode";
+    public static final String CONFIG_EXTRACTUSERNAMECOMPONENT= "extractusernamecomponent";
+    public static final String CONFIG_EXTRACTDNPARTPWDCOMPONENT = "extractdnpartpwdcomponent";
+    public static final String CONFIG_AUTHENTICATIONMODULE    = "authenticationmodule";
+    public static final String CONFIG_AUTHMODULE_CHALLENGE_PWD         = "ChallengePwd";
+    public static final String CONFIG_AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
+    public static final String CONFIG_CHANGESUBJECTNAME = "changesubjectname";
+        
     private final String ALIAS_LIST = "aliaslist";
     public static final String EST_CONFIGURATION_ID = "4";
 
@@ -77,7 +86,14 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
     private static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
-
+    private static final String DEFAULT_VENDOR_CERTIFICATE_MODE = "false";
+    private static final String DEFAULT_VENDOR_CA = "";
+    private static final String DEFAULT_OPERATION_MODE = "client";
+    private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
+    private static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
+    private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
+    private static final String DEFAULT_ALLOW_CHANGESUBJECTNAME = "false";
+        
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
 
@@ -122,9 +138,64 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_RA_NAMEGENERATIONPARAMS, DEFAULT_RA_USERNAME_GENERATION_PARAMS);
             data.put(alias + CONFIG_RA_NAMEGENERATIONPREFIX, DEFAULT_RA_USERNAME_GENERATION_PREFIX);
             data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
+            data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_CERTIFICATE_MODE);
+            data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+            data.put(alias + CONFIG_OPERATIONMODE, DEFAULT_OPERATION_MODE);
+            data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
+            data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
+            data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
+            data.put(alias + CONFIG_CHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
         }
     }
-
+    
+    public void setRAMode(String alias, String mode) {
+        setRAMode(alias, StringUtils.equalsIgnoreCase(mode, "ra"));
+    }
+    
+    public void setRAMode(String alias, boolean ramode) {
+        String key = alias + "." + CONFIG_OPERATIONMODE;
+        setValue(key, ramode? "ra" : "client", alias);
+    }
+    
+    public String getRAMode(String alias) {
+        String key = alias + "." + CONFIG_OPERATIONMODE; 
+        String value = getValue(key, alias);
+        if (StringUtils.equalsIgnoreCase(value, "ra")) {
+            return "ra";
+        }
+        return "client";
+    }
+    
+    public boolean getVendorMode(String alias) {
+        String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    public void setVendorMode(String alias, boolean vendormode) {
+        String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
+        setValue(key, Boolean.toString(vendormode), alias);
+    }
+    
+    public boolean getChangeSubjectName(String alias) {
+        String key = alias + "." + CONFIG_CHANGESUBJECTNAME;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    public void setChangeSubjectName(String alias, boolean changeSubjectName) {
+        String key = alias + "." + CONFIG_CHANGESUBJECTNAME;
+        setValue(key, Boolean.toString(changeSubjectName), alias);
+    }
+    
+    
+    public String getVendorCA(String alias) {
+        String key = alias + "." + CONFIG_VENDORCA;
+        return getValue(key, alias);
+    }
+    public void setVendorCA(String alias, String vendorCA) {
+        String key = alias + "." + CONFIG_VENDORCA;
+        setValue(key, vendorCA, alias);
+    }
+    
     // return all the key with an alias
     public static Set<String> getAllAliasKeys(String alias) {
         alias = alias + ".";
@@ -140,6 +211,13 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPARAMS);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPREFIX);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX);
+        keys.add(alias + CONFIG_VENDORCA);
+        keys.add(alias + CONFIG_OPERATIONMODE);
+        keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
+        keys.add(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT);
+        keys.add(alias + CONFIG_AUTHENTICATIONMODULE);
+        keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
+        keys.add(alias + CONFIG_CHANGESUBJECTNAME);
         return keys;
     }
 
@@ -489,6 +567,32 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public String getConfigurationId() {
         return EST_CONFIGURATION_ID;
     }
+    
+    public String getExtractUsernameComponent(String alias) {
+        String key = alias + "." + CONFIG_EXTRACTUSERNAMECOMPONENT;
+        return getValue(key, alias);
+    }
+    public void setExtractUsernameComponent(String alias, String extractComponent) {
+        String key = alias + "." + CONFIG_EXTRACTUSERNAMECOMPONENT;
+        setValue(key, extractComponent, alias);
+    }
+    public String getExtractDnPwdComponent(String alias) {
+        String key = alias + "." + CONFIG_EXTRACTDNPARTPWDCOMPONENT;
+        return getValue(key, alias);
+    }
+    public void setExtractDnPwdComponent(String alias, String extractComponent) {
+        String key = alias + "." + CONFIG_EXTRACTDNPARTPWDCOMPONENT;
+        setValue(key, extractComponent, alias);
+    }
+    public String getAuthenticationModule(String alias) {
+        String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
+        return getValue(key, alias);
+    }
+    public void setAuthenticationModule(String alias, String authModule) {
+        String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
+        setValue(key, authModule, alias);
+    }
+    
 
     /**
      * Getter for RA Name Generation Scheme for given alias
