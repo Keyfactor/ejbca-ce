@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.authentication.oauth.OAuthTokenRequest;
+import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
@@ -179,11 +179,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             log.debug("Provider:" + provider);
             OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getGlobalConfiguration().getOauthKeyByKeyIdentifier(provider);
             if (oAuthKeyInfo != null) {
-                final OAuthTokenRequest request = new OAuthTokenRequest();
-                request.setUri(oAuthKeyInfo.getUrl() + "/realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token");
-                request.setClientId(oAuthKeyInfo.getClient());
-                request.setRedirectUri(getRedirectUri(oAuthKeyInfo));
-                final OAuthGrantResponseInfo token = request.execute(authCode);
+                final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
+                        getRedirectUri(oAuthKeyInfo));
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
                     FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
@@ -207,7 +204,6 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
         ) + ejbcaWebBean.getGlobalConfiguration().getAdminWebPath();
-        log.info(" baseUrl " + baseUrl);
         return baseUrl + "?provider="+oAuthKeyInfo.getKeyIdentifier();
     }
 
