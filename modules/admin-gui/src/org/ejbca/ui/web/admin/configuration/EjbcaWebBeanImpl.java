@@ -261,16 +261,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             } else if (oauthBearerToken != null) {
                 try {
                     administrator = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
-
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
-                    String baseUrl = getGlobalConfiguration().getBaseUrl(
-                            "https",
-                            WebConfiguration.getHostName(),
-                            WebConfiguration.getPublicHttpsPort()
-                    ) + getGlobalConfiguration().getAdminWebPath();
                     if (refreshToken != null) {
-                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken, baseUrl);
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken);
                         if (token != null) {
                             httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
                             administrator = authenticationSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
