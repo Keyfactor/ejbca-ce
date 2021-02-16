@@ -98,10 +98,11 @@ public class OAuthTokenRequest {
      * Requests the OAuth token from the authorization server.
      *
      * @param authCode Authorization code received from authorization server.
+     * @param isRefresh true, if provided code is refresh token, false, if it is after login code
      * @return Response object, including the OAuth token.
      * @throws IOException On network errors or malformed server response.
      */
-    public OAuthGrantResponseInfo execute(final String authCode) throws IOException {
+    public OAuthGrantResponseInfo execute(final String authCode, boolean isRefresh) throws IOException {
         final RequestConfig reqcfg = RequestConfig.custom()
                 .setConnectionRequestTimeout(timeoutMillis)
                 .setConnectTimeout(timeoutMillis)
@@ -115,7 +116,7 @@ public class OAuthTokenRequest {
                 .setUserTokenHandler(null)
                 .useSystemProperties()
                 .build()) {
-            return execute(authCode, httpClient);
+            return execute(authCode, httpClient, isRefresh);
         }
     }
 
@@ -125,13 +126,19 @@ public class OAuthTokenRequest {
      *
      * @param authCode Authorization code received from authorization server.
      * @param httpClient The HttpClient to use for the request.
+     * @param isRefresh true, if provided code is refresh token, false, if it is after login code
      * @return Response object, including the OAuth token.
      * @throws IOException On network errors or malformed server response.
      */
-    public OAuthGrantResponseInfo execute(final String authCode, final CloseableHttpClient httpClient) throws IOException {
+    public OAuthGrantResponseInfo execute(final String authCode, final CloseableHttpClient httpClient, final boolean isRefresh) throws IOException {
         final List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicHeader("grant_type", "authorization_code"));
-        params.add(new BasicHeader("code", authCode));
+        if (isRefresh) {
+            params.add(new BasicHeader("grant_type", "refresh_token"));
+            params.add(new BasicHeader("refresh_token", authCode));
+        } else {
+            params.add(new BasicHeader("grant_type", "authorization_code"));
+            params.add(new BasicHeader("code", authCode));
+        }
         params.add(new BasicHeader("redirect_uri", redirectUri));
         params.add(new BasicHeader("client_id", clientId));
         final HttpPost post = new HttpPost();

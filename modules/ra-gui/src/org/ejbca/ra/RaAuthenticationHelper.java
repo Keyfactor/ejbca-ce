@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -88,7 +89,12 @@ public class RaAuthenticationHelper implements Serializable {
                 }
                 x509AuthenticationTokenFingerprint = authenticationToken == null ? null : fingerprint;
             } else if (oauthBearerToken != null) {
-                authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                try {
+                    authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                } catch (TokenExpiredException e) {
+                    //TODO ECA-9762 refresh token in RA
+                    authenticationToken = null;
+                }
                 if (authenticationToken == null) {
                     log.warn("Authentication failed using OAuth Bearer Token");
                 }
