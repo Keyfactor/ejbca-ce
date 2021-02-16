@@ -39,5 +39,5 @@ public interface WebAuthenticationProviderSessionLocal extends AuthenticationPro
     AuthenticationToken authenticateUsingOAuthBearerToken(String encodedOauthBearerToken) throws TokenExpiredException;
 
     /** @return new OAuthGrantResponseInfo from oauth provider based on the given refresh token */
-    OAuthGrantResponseInfo refreshOAuthBearerToken(String encodedOauthBearerToken, String refreshToken, String baseUrl) throws TokenExpiredException;
+    OAuthGrantResponseInfo refreshOAuthBearerToken(String encodedOauthBearerToken, String refreshToken) throws TokenExpiredException;
 }
