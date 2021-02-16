@@ -166,7 +166,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public OAuthGrantResponseInfo refreshOAuthBearerToken(String encodedOauthBearerToken, String refreshToken, String baseUrl) {
+    public OAuthGrantResponseInfo refreshOAuthBearerToken(String encodedOauthBearerToken, String refreshToken) {
         OAuthGrantResponseInfo oAuthGrantResponseInfo = null;
         try {
             OAuthKeyInfo keyInfo;
@@ -187,7 +187,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                     return null;
                 }
-                String redirectUrl = baseUrl + "?provider=" + keyInfo.getKeyIdentifier();
+                String redirectUrl = getBaseUrl();
                 oAuthGrantResponseInfo = OauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
             }
         } catch (ParseException e) {
@@ -270,5 +270,15 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
+    }
+
+    private String getBaseUrl(){
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        String baseUrl = globalConfiguration.getBaseUrl(
+                "https",
+                WebConfiguration.getHostName(),
+                WebConfiguration.getPublicHttpsPort()
+        ) + globalConfiguration.getAdminWebPath();
+        return baseUrl;
     }
 }
