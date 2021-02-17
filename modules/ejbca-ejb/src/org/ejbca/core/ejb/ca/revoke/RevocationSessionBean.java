@@ -163,18 +163,15 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     }
     
     @Override
-    public void revokeCertificates(AuthenticationToken admin, List<CertificateDataWrapper> cdws, Collection<Integer> publishers)
+    public void revokeCertificates(AuthenticationToken admin, List<CertificateDataWrapper> cdws, Collection<Integer> publishers, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
         CertificateData data = null;
-        int reason = -1;
         boolean wasChanged = false;
         Integer caId = null;
         final Map<Integer,ArrayList<CertificateDataWrapper>> generateCrlsForCas = new HashMap<>(); 
         
         for (CertificateDataWrapper cdw : cdws) {
-            // ECA-9716 Check this!
             data = cdw.getCertificateData();
-            reason = data.getRevocationReason();
             
             if (data.getStatus() == CertificateConstants.CERT_REVOKED && 
                 data.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -207,7 +204,6 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                     }               
                 } else {
                     // revocation
-                    // ECA-9716 Check from userDataDN to certificate subjectDN!
                     publisherSession.storeCertificate(admin, publishers, cdw, password, data.getSubjectDN(), null);
                 }
                 
@@ -222,7 +218,6 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         CAInfo caInfo = null;
         for (ArrayList<CertificateDataWrapper> revokedCertificates : generateCrlsForCas.values()) {
             if (revokedCertificates.size() > 0) {
-                // ECA-9716 getBaseCertificateData ?!?
                 caId = revokedCertificates.get(0).getBaseCertificateData().getIssuerDN().hashCode();
                 caInfo = caSession.getCAInfo(admin, caId);
                 // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking 
