@@ -182,6 +182,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 final OAuthTokenRequest request = new OAuthTokenRequest();
                 request.setUri(oAuthKeyInfo.getUrl() + "/realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token");
                 request.setClientId(oAuthKeyInfo.getClient());
+                request.setClientSecret(oAuthKeyInfo.getClientSecret());
                 request.setRedirectUri(getRedirectUri(oAuthKeyInfo));
                 final OAuthGrantResponseInfo token = request.execute(authCode);
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
