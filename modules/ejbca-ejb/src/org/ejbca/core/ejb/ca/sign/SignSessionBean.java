@@ -76,6 +76,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -1340,7 +1341,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             // Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
             // the certificate must be revoked nonetheless. 
-            revocationSession.revokeCertificates(admin, cdws, publishers);
+            revocationSession.revokeCertificates(admin, cdws, publishers, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
         }
         if (log.isTraceEnabled()) {
             log.trace("<singleActiveCertificateConstraint()");
