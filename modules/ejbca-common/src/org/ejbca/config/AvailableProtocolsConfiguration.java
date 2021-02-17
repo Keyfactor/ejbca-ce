@@ -44,7 +44,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         CRL_STORE("CRLstore", WebConfiguration.DEFAULT_CRLSTORE_CONTEXTROOT),
         EST("EST", "/.well-known/est"),
         MSAE("MSAE", "/ejbca/msae"),
-        MSAE_CES("MSAE CES", "/ejbca/msae/cesservice"),
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
         PUBLIC_WEB("Public Web", "/ejbca"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
@@ -107,7 +106,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.ACME.getName())  ||
                 protocol.equals(AvailableProtocols.EST.getName())   || 
                 protocol.equals(AvailableProtocols.MSAE.getName())   ||
-                protocol.equals(AvailableProtocols.MSAE_CES.getName())   ||
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
