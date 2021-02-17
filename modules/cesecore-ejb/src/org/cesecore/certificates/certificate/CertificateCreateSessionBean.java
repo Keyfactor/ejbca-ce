@@ -474,7 +474,14 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     revoked = true;
                 }
                 if (revoked) { 
-                    // ECA-9716 TODO SACC? Already done?
+                    // ECA-9716 Single active certificate constraint (SACC) functionality was processed before
+                    // in SignSessionBean.createCertificate. All other invocations of this method are caused by 
+                    // InternalKeyBindingMgmtSessionBean.renewInternallyIssuedCertificate or test classes.
+                    // The processing of SACC at this point should be verified with a separate ticket.
+                    if (ca.getGenerateCrlUponRevocation()) {
+                        log.warn("No CRL was generated upon revocation for CA '" + ca.getName() 
+                            + "' even though certificates had been revoked because of single active certificate constraint.");
+                    }
                 }
             }
             

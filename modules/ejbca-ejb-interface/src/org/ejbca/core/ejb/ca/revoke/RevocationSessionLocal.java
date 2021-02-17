@@ -59,10 +59,11 @@ public interface RevocationSessionLocal extends RevocationSession {
      * @param admin      Administrator performing the operation
      * @param cdws       The list of certificate data wrappers.
      * @param publishers and array of publisher IDs (Integer) of publishers to revoke the certificate in.
+     * @param reason the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.) 
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
-    void revokeCertificates(AuthenticationToken admin, List<CertificateDataWrapper> cdw, Collection<Integer> publishers) throws CertificateRevokeException, AuthorizationDeniedException;
+    void revokeCertificates(AuthenticationToken admin, List<CertificateDataWrapper> cdw, Collection<Integer> publishers, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
     
     /**
      * Revokes a certificate, in the database and in publishers, but does so in a new transaction. Also handles re-activation of suspended certificates.
