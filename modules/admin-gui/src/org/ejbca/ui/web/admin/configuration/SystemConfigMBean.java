@@ -1262,7 +1262,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.MSAE_CES.getName()) && !isMSAESettingsAvailable()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.MSAE_CEP.getName()) && !isMSAESettingsAvailable()) {
+            if (protocol.equals(AvailableProtocols.MSAE.getName()) && !isMSAESettingsAvailable()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRestAvailable()) {
