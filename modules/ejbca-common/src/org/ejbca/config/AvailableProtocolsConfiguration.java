@@ -43,7 +43,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         CMP("CMP", "/ejbca/publicweb/cmp"),
         CRL_STORE("CRLstore", WebConfiguration.DEFAULT_CRLSTORE_CONTEXTROOT),
         EST("EST", "/.well-known/est"),
-        MSAE_CEP("MSAE CEP", "/ejbca/msae/cepservice"),
+        MSAE("MSAE", "/ejbca/msae"),
         MSAE_CES("MSAE CES", "/ejbca/msae/cesservice"),
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
         PUBLIC_WEB("Public Web", "/ejbca"),
@@ -106,7 +106,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         if (ret == null && (
                 protocol.equals(AvailableProtocols.ACME.getName())  ||
                 protocol.equals(AvailableProtocols.EST.getName())   || 
-                protocol.equals(AvailableProtocols.MSAE_CEP.getName())   ||
+                protocol.equals(AvailableProtocols.MSAE.getName())   ||
                 protocol.equals(AvailableProtocols.MSAE_CES.getName())   ||
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
