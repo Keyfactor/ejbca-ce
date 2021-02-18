@@ -64,6 +64,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private String keyTabFilename;
     private byte[] keyTabFileBytes;
 
+    private String policyName;
+
     // MSAE Settings
     private boolean isUseSSL;
     private int adConnectionPort;
@@ -101,6 +103,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
         if (autoEnrollmentConfiguration != null) {
             msaeDomain = autoEnrollmentConfiguration.getMsaeDomain();
+            policyName = autoEnrollmentConfiguration.getPolicyName();
             keyTabFileBytes = autoEnrollmentConfiguration.getMsaeKeyTabBytes();
             keyTabFilename = autoEnrollmentConfiguration.getMsaeKeyTabFilename();
 
@@ -122,6 +125,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setMsaeDomain(String msaeDomain) {
         this.msaeDomain = msaeDomain;
+    }
+
+    public String getPolicyName() {
+        return policyName;
+    }
+
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
     }
 
     public UploadedFile getKeyTabFile() {
@@ -522,6 +533,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             // MSAE Kerberos Settings
             autoEnrollmentConfiguration.setMsaeDomain(msaeDomain);
+            autoEnrollmentConfiguration.setPolicyName(policyName);
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(isUseSSL);

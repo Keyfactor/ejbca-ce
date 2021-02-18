@@ -29,6 +29,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final String MSAE_DOMAIN = "msaeDomain";
     private static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
     private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
+    private static final String POLICY_NAME = "policyName";
 
 
     // MSAE Settings
@@ -54,6 +55,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
         // MSAE Kerberos
         setMsaeDomain("");
+        setPolicyName("");
 
         // MSAE
         setIsUseSsl(false);
@@ -86,6 +88,14 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     public void setMsaeDomain(final String msaeDomain) {
         data.put(MSAE_DOMAIN, msaeDomain);
+    }
+
+    public String getPolicyName() {
+        return (String) data.get(POLICY_NAME);
+    }
+
+    public void setPolicyName(final String policyName) {
+        data.put(POLICY_NAME, policyName);
     }
 
     public String getMsaeKeyTabFilename() {
