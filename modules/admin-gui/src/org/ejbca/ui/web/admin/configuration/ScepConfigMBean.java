@@ -74,6 +74,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String intuneAadAppId;
         private String intuneAadAppKey;
         private String intuneTenant;
+        private String intuneResourceUrl;
+        private String intuneGraphApiVersion;
+        private String intuneGraphResourceUrl;
         private String intuneProxyHost;
         private String intuneProxyPort;
         private String intuneProxyUser;
@@ -101,6 +104,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
                     this.intuneAadAppKey = scepConfig.getIntuneAadAppKey(alias);
                     this.intuneTenant = scepConfig.getIntuneTenant(alias);
+                    this.intuneResourceUrl = scepConfig.getIntuneResourceUrl(alias);
+                    this.intuneGraphApiVersion = scepConfig.getIntuneGraphApiVersion(alias);
+                    this.intuneGraphResourceUrl = scepConfig.getIntuneGraphResourceUrl(alias);
                     this.intuneProxyHost = scepConfig.getIntuneProxyHost(alias);
                     this.intuneProxyPort = scepConfig.getIntuneProxyPort(alias);
                     this.intuneProxyUser = scepConfig.getIntuneProxyUser(alias);
@@ -125,6 +131,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.intuneAadAppId = "";
                     this.intuneAadAppKey = "";
                     this.intuneTenant = "";
+                    this.intuneResourceUrl = "";
+                    this.intuneGraphApiVersion = "";
+                    this.intuneGraphResourceUrl = "";
                     this.intuneProxyHost = "";
                     this.intuneProxyPort = "";
                     this.intuneProxyUser = "";
@@ -300,6 +309,30 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.intuneTenant = intuneTenant;
         }
        
+        public String getIntuneResourceUrl() {
+            return intuneResourceUrl;
+        }
+
+        public void setIntuneResourceUrl(String intuneResourceUrl) {
+            this.intuneResourceUrl = intuneResourceUrl;
+        }
+
+        public String getIntuneGraphApiVersion() {
+            return intuneGraphApiVersion;
+        }
+
+        public void setIntuneGraphApiVersion(String intuneGraphApiVersion) {
+            this.intuneGraphApiVersion = intuneGraphApiVersion;
+        }
+
+        public String getIntuneGraphResourceUrl() {
+            return intuneGraphResourceUrl;
+        }
+
+        public void setIntuneGraphResourceUrl(String intuneGraphResourceUrl) {
+            this.intuneGraphResourceUrl = intuneGraphResourceUrl;
+        }
+            
         public String getIntuneProxyHost() {
             return intuneProxyHost;
         }
@@ -457,6 +490,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
             scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
             scepConfig.setIntuneTenant(alias, currentAlias.getIntuneTenant());
+            scepConfig.setIntuneResourceUrl(alias, currentAlias.getIntuneResourceUrl());
+            scepConfig.setIntuneGraphApiVersion(alias, currentAlias.getIntuneGraphApiVersion());
+            scepConfig.setIntuneGraphResourceUrl(alias, currentAlias.getIntuneGraphResourceUrl());
             scepConfig.setIntuneProxyHost(alias, currentAlias.getIntuneProxyHost());
             scepConfig.setIntuneProxyPort(alias, currentAlias.getIntuneProxyPort());
             scepConfig.setIntuneProxyUser(alias, currentAlias.getIntuneProxyUser());
