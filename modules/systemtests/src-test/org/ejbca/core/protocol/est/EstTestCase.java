@@ -29,6 +29,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -66,17 +67,15 @@ import static org.junit.Assert.fail;
  * Helper class for EST Junit tests. 
  * You can run this test against a EST Proxy instead of direct to the CA by setting the system property httpEstProxyURL, 
  * for example to "https://ra-host:8442/.well-known/est"
- * 
- * @version $Id$
  */
 public abstract class EstTestCase extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(EstTestCase.class);
 
-    protected static final String CP_DN_OVERRIDE_NAME = "CP_DN_OVERRIDE_NAME";
-    protected static final String EEP_DN_OVERRIDE_NAME = "EEP_DN_OVERRIDE_NAME";
-    protected int eepDnOverrideId;
-    protected int cpDnOverrideId;
+    protected static final String CP_NAME = "EST_TEST_CP_NAME";
+    protected static final String EEP_NAME = "EST_TEST_EEP_NAME";
+    protected int eepId;
+    protected int cpId;
 
     protected final String httpReqPath; // = "https://127.0.0.1:8442/.well-known/est/";
     private final String EST_HOST; // = "127.0.0.1";
@@ -102,8 +101,8 @@ public abstract class EstTestCase extends CaTestCase {
         cleanup();
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
-        this.cpDnOverrideId = addCertificateProfile(CP_DN_OVERRIDE_NAME);
-        this.eepDnOverrideId = addEndEntityProfile(EEP_DN_OVERRIDE_NAME, this.cpDnOverrideId);
+        this.cpId = addCertificateProfile(CP_NAME);
+        this.eepId = addEndEntityProfile(EEP_NAME, this.cpId);
     } 
     
     @Override
@@ -113,14 +112,14 @@ public abstract class EstTestCase extends CaTestCase {
     }
     
     private void cleanup() throws AuthorizationDeniedException {
-        endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME);
-        certProfileSession.removeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME);
+        endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_NAME);
+        certProfileSession.removeCertificateProfile(ADMIN, CP_NAME);
     }
 
 
     
     /**
-     * Adds a certificate profile for end entities and sets {@link CertificateProfile#setAllowDNOverride(boolean)} to true.
+     * Adds a certificate profile for end entities.
      * 
      * @param name the name.
      * @return the id of the newly created certificate profile.
@@ -128,7 +127,6 @@ public abstract class EstTestCase extends CaTestCase {
     protected final int addCertificateProfile(final String name) {
         assertTrue("Certificate profile with name " + name + " already exists. Clear test data first.", this.certProfileSession.getCertificateProfile(name) == null);
         final CertificateProfile result = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        result.setAllowDNOverride(true);
         int id = -1;
         try {
             this.certProfileSession.addCertificateProfile(ADMIN, name, result);
@@ -142,12 +140,6 @@ public abstract class EstTestCase extends CaTestCase {
     }
     
     /**
-     * Adds a certificate profile and sets {@link CertificateProfile#setAllowDNOverride(boolean)} to true.
-     * 
-     * @param name the name of the certificate profile.
-     * @return the ID of the newly created certificate profile.
-     */
-    /**
      * Adds an end entity profile and links it with the default certificate profile for test {@link EndEntityProfile#setDefaultCertificateProfile(int)}.
      * 
      * @param name the name of the end entity profile.
@@ -156,7 +148,6 @@ public abstract class EstTestCase extends CaTestCase {
      */
     protected final int addEndEntityProfile(final String name, final int certificateProfileId) {
         assertTrue("End entity profile with name " + name + " already exists. Clear test data first.", this.endEntityProfileSession.getEndEntityProfile(name)  == null);
-        // Create profile that is just using CP_DN_OVERRIDE_NAME
         final EndEntityProfile result = new EndEntityProfile(true);
         result.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileId));
         int id = 0;
@@ -176,7 +167,16 @@ public abstract class EstTestCase extends CaTestCase {
         }
     }
 
-    protected byte[] sendEstHttps(byte[] message, int httpRespCode, String estAlias, String operation) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    /**
+     * Sends a EST request with the alias requestAlias in the URL and expects a HTTP response
+     *
+     * @param the EST message to send, can be null if the request has no message bytes
+     * @param estAlias the alias that is specified in the URL
+     * @param operation the EST operation, i.e. cacerts, simpleenroll, simplereenroll, etc
+     * @param expectedReturnCode the HTTP return code that we expect for this request, i.e. success vs failure
+     * @throws Exception if connection to server can not be established
+     */
+    protected byte[] sendEstRequest(final String estAlias, final String operation, byte[] message, int expectedReturnCode) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         // POST the ESTrequest
         final String urlString = getProperty("httpEstProxyURL", this.httpReqPath) + estAlias + '/' + operation;
         log.info("http URL: " + urlString);
@@ -193,31 +193,55 @@ public abstract class EstTestCase extends CaTestCase {
         con.setHostnameVerifier(new SimpleVerifier()); // no hostname verification for testing
 
         con.setDoOutput(true);
-        con.setRequestMethod("POST");
+        if (operation.contains("simple")) {
+            // mime-type for simpleenroll and simplereenroll as specified in RFC7030 section 3.2.4 and 4.2.1
+            con.setRequestProperty("Content-type", "application/pkcs10");
+            con.setRequestMethod("POST");
+        } else {
+            con.setRequestMethod("GET"); // cacerts uses GET, Content-type is N/A according to RFC7030 section 3.2.4
+        }
         con.setRequestProperty("Content-type", "application/est");
         con.connect();
-        // POST it
-        OutputStream os = con.getOutputStream();
-        os.write(message);
-        os.close();
+        // POST the message if there is one
+        if (message != null) {
+            final OutputStream os = con.getOutputStream();
+            os.write(message);
+            os.close();
+        }
 
-        assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
+        // Read response bytes, it can be an error message from the server as well
+        ByteArrayOutputStream errbaos = new ByteArrayOutputStream();
+        if (con.getResponseCode() != HttpServletResponse.SC_OK) {
+            // This works for small requests, and EST requests are small enough
+            InputStream in = con.getErrorStream();
+            int b = in.read();
+            while (b != -1) {
+                errbaos.write(b);
+                b = in.read();
+            }
+            errbaos.flush();
+            in.close();
+        }
+        byte[] errBytes = errbaos.toByteArray();
+        // EST alias does not exist: 400 bad request
+        // Unknown operation: 404 not found
+        // Invalid credentials: 401 unauthorized
+        // OK: 200
+        assertEquals("Unexpected HTTP response code: " + new String(errBytes) + ".", expectedReturnCode, con.getResponseCode());
         // Only try to read the response if we expected a 200 (ok) response
-        if (httpRespCode != 200) {
+        if (expectedReturnCode != 200) {
             return null;
         }
-        // Check returned headers as specified in RFC7030
+        // Check returned headers as specified in RFC7030 section 3.2.4
         assertNotNull("No content type in response.", con.getContentType());
-        assertTrue(con.getContentType().startsWith("application/est"));
-        final String cacheControl = con.getHeaderField("Cache-Control");
-        assertNotNull("'Cache-Control' header is not present.", cacheControl);
-        assertEquals("no-cache", cacheControl);
-        final String pragma = con.getHeaderField("Pragma");
-        assertNotNull(pragma);
-        assertEquals("no-cache", pragma);
-        // Now read in the bytes
+        assertTrue("Unexpected response Content-type: " + con.getContentType(), con.getContentType().startsWith("application/pkcs7-mime"));
+        // For EST we don't care about cache-control headers, nothing specified in RFC7030
+        //final String cacheControl = con.getHeaderField("Cache-Control");
+        //assertNotNull("'Cache-Control' header is not present.", cacheControl);
+        //assertEquals("no-cache", cacheControl);
+        // If we came here we should have a real response, so read response bytes
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and CMP requests are small enough
+        // This works for small requests, and EST requests are small enough
         InputStream in = con.getInputStream();
         int b = in.read();
         while (b != -1) {
