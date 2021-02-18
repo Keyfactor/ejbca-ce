@@ -175,11 +175,6 @@
 		     </h:inputText>
 		     <h:outputText value="#{scepConfigMBean.currentAlias.intuneAuthority}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
-		
-		<h:outputLabel for="intuneVerificationOnCa" value="#{web.text.SCEP_RA_INTUNE_VERIFICATION_ON_CA}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
-		<h:panelGroup id="intuneVerificationOnCa" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:selectBooleanCheckbox id="intuneVerificationOnCaCheckbox" value="#{scepConfigMBean.currentAlias.intuneVerificationOnCa}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
-		</h:panelGroup>
 			
 		<h:outputLabel for="intuneAadAppId" value="#{web.text.SCEP_AAD_APP_ID}" rendered="#{scepConfigMBean.currentAlias.modeRa}" />
 		<h:panelGroup id="intuneAadAppId" rendered="#{scepConfigMBean.currentAlias.modeRa}">
