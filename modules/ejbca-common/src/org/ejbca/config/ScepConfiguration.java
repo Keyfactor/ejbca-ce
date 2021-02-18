@@ -80,7 +80,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String AAD_APP_ID = "intuneAadAppId";
     public static final String AAD_APP_KEY = "intuneAadAppKey";
     public static final String TENANT = "intuneTenant";
-    
+    public static final String INTUNE_RESOURCE_URL = "intuneResourceUrl";
+    public static final String GRAPH_API_VERSION = "intuneGraphApiVersion";
+    public static final String GRAPH_RESOURCE_URL = "intuneGraphResourceUrl";
     public static final String PROXY_HOST = "intuneProxyHost";
     public static final String PROXY_PORT = "intuneProxyPort";
     public static final String PROXY_USER = "intuneProxyUser";
@@ -149,6 +151,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + AAD_APP_ID, "");
             data.put(alias + AAD_APP_KEY, "");
             data.put(alias + TENANT, "");
+            data.put(alias + INTUNE_RESOURCE_URL, "");
+            data.put(alias + GRAPH_API_VERSION, "");
+            data.put(alias + GRAPH_RESOURCE_URL, "");
             data.put(alias + PROXY_HOST, "");
             data.put(alias + PROXY_PORT, "");
             data.put(alias + PROXY_USER, "");
@@ -179,6 +184,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + AAD_APP_ID);
         keys.add(alias + AAD_APP_KEY);
         keys.add(alias + TENANT);
+        keys.add(alias + INTUNE_RESOURCE_URL);
+        keys.add(alias + GRAPH_API_VERSION);
+        keys.add(alias + GRAPH_RESOURCE_URL);
         keys.add(alias + PROXY_HOST);
         keys.add(alias + PROXY_PORT);
         keys.add(alias + PROXY_USER);
@@ -405,6 +413,36 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return getValue(key, alias);
     }
     
+    public void setIntuneResourceUrl(final String alias, final String value) {
+        String key = alias + "." + INTUNE_RESOURCE_URL;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneResourceUrl(final String alias) {
+        String key = alias + "." + INTUNE_RESOURCE_URL;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneGraphApiVersion(final String alias, final String value) {
+        String key = alias + "." + GRAPH_API_VERSION;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneGraphApiVersion(final String alias) {
+        String key = alias + "." + GRAPH_API_VERSION;
+        return getValue(key, alias);
+    }
+
+    public void setIntuneGraphResourceUrl(final String alias, final String value) {
+        String key = alias + "." + GRAPH_RESOURCE_URL;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneGraphResourceUrl(final String alias) {
+        String key = alias + "." + GRAPH_RESOURCE_URL;
+        return getValue(key, alias);
+    }
+        
     public void setIntuneProxyHost(final String alias, final String value) {
         String key = alias + "." + PROXY_HOST;
         setValue(key, value, alias);
@@ -461,7 +499,15 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         if (StringUtils.isNotBlank(getIntuneTenant(alias))) {
             intuneProperties.put("TENANT", getIntuneTenant(alias));
         }
-     
+        if (StringUtils.isNotBlank(getIntuneResourceUrl(alias))) {
+            intuneProperties.put("INTUNE_RESOURCE_URL", getIntuneResourceUrl(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneGraphApiVersion(alias))) {
+            intuneProperties.put("GRAPH_API_VERSION", getIntuneGraphApiVersion(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneGraphResourceUrl(alias))) {
+            intuneProperties.put("GRAPH_RESOURCE_URL", getIntuneGraphResourceUrl(alias));
+        }
         if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("PROXY_HOST", getIntuneProxyHost(alias));
         }
@@ -702,6 +748,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 data.put(alias + AAD_APP_ID, "");
                 data.put(alias + AAD_APP_KEY, "");
                 data.put(alias + TENANT, "");
+                data.put(alias + INTUNE_RESOURCE_URL, "");
+                data.put(alias + GRAPH_API_VERSION, "");
+                data.put(alias + GRAPH_RESOURCE_URL, "");
                 data.put(alias + PROXY_HOST, "");
                 data.put(alias + PROXY_PORT, "");
                 data.put(alias + PROXY_USER, "");
