@@ -24,8 +24,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
 /**
  * MyFaces HTML UI check box component implementing the {@link PropertyChangeListener} interface 
  * to get noticed for dynamic UI property changes.
- * 
- * @version $Id$
  */
 public class JsfDynamicUiHtmlSelectBooleanCheckbox extends HtmlSelectBooleanCheckbox implements DynamicUiComponent, PropertyChangeListener {
 
@@ -48,6 +46,11 @@ public class JsfDynamicUiHtmlSelectBooleanCheckbox extends HtmlSelectBooleanChec
     void setDynamicUiProperty(final DynamicUiProperty<?> property) {
         this.dynamicUiProperty = property;
         this.dynamicUiProperty.addDynamicUiComponent(this);
+    }
+    
+    @Override
+    public void updateValueRange() {
+        // No implemented.
     }
 
     @Override

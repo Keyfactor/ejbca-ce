@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
+import java.io.IOException;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -31,7 +32,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -105,7 +109,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public AuthenticationToken authenticateUsingOAuthBearerToken(final String encodedOauthBearerToken) {
+    public AuthenticationToken authenticateUsingOAuthBearerToken(final String encodedOauthBearerToken) throws TokenExpiredException {
         try {
             String keyFingerprint = null;
             OAuthKeyInfo keyInfo = null;
@@ -143,8 +147,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             final Date now = new Date();
             final String subject = claims.getSubject();
             if (expiry != null && !now.before(new Date(expiry.getTime() + keyInfo.getSkewLimit()))) {
-                logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.expired", subject, keyFingerprint));
-                return null;
+                LOG.info(intres.getLocalizedMessage("authentication.jwt.expired", subject, keyFingerprint));
+                throw new TokenExpiredException("Token expired");
             }
             if (claims.getNotBeforeTime() != null && now.before(new Date(claims.getNotBeforeTime().getTime() - keyInfo.getSkewLimit()))) {
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.not_yet_valid", subject, keyFingerprint));
@@ -159,6 +163,41 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             LOG.info("Configured not verify OAuth2 JWT signature: " + e.getMessage(), e);
             return null;
         }
+    }
+
+    @Override
+    public OAuthGrantResponseInfo refreshOAuthBearerToken(String encodedOauthBearerToken, String refreshToken) {
+        OAuthGrantResponseInfo oAuthGrantResponseInfo = null;
+        try {
+            OAuthKeyInfo keyInfo;
+            final JWT jwt = JWTParser.parse(encodedOauthBearerToken);
+            if (jwt instanceof PlainJWT) {
+                LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
+                return null;
+            } else if (jwt instanceof EncryptedJWT) {
+                LOG.info("Received encrypted OAuth2 JWT, which is unsupported.");
+                return null;
+            } else if (jwt instanceof SignedJWT) {
+                final SignedJWT signedJwt = (SignedJWT) jwt;
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Signed JWT has key ID: " + signedJwt.getHeader().getKeyID());
+                }
+                keyInfo = getJwtKey(signedJwt.getHeader().getKeyID());
+                if (keyInfo == null) {
+                    logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                    return null;
+                }
+                String redirectUrl = getBaseUrl();
+                oAuthGrantResponseInfo = OauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            }
+        } catch (ParseException e) {
+            LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
+            return null;
+        } catch (IOException e) {
+            LOG.info("Failed to refresh token: " + e.getMessage(), e);
+            return null;
+        }
+        return oAuthGrantResponseInfo;
     }
 
     private OAuthKeyInfo getJwtKey(final String keyId) {
@@ -231,5 +270,15 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
+    }
+
+    private String getBaseUrl(){
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        String baseUrl = globalConfiguration.getBaseUrl(
+                "https",
+                WebConfiguration.getHostName(),
+                WebConfiguration.getPublicHttpsPort()
+        ) + globalConfiguration.getAdminWebPath();
+        return baseUrl;
     }
 }
