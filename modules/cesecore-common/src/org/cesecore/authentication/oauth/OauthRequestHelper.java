@@ -47,6 +47,7 @@ public class OauthRequestHelper {
         final OAuthTokenRequest request = new OAuthTokenRequest();
         request.setUri(oAuthKeyInfo.getUrl() + "/realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token");
         request.setClientId(oAuthKeyInfo.getClient());
+        request.setClientSecret(oAuthKeyInfo.getClientSecretAndDecrypt());
         request.setRedirectUri(redirectUri);
         return request.execute(codeOrToken, isRefresh);
     }
