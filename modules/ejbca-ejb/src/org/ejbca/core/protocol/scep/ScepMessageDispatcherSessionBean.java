@@ -679,6 +679,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     
     @Override
     public byte[] verifyRequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException {
+        log.info("Verify SCEP PKCS10 request message for SCEP alias '" + alias + "'.");
         final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
         ScepRequestMessage reqmsg = null;
         try {
