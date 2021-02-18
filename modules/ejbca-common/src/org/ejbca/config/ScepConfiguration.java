@@ -29,8 +29,6 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 /**
  * Configuration of the SCEP protocol.
- * 
- * @version $Id$
  */
 public class ScepConfiguration extends ConfigurationBase implements Serializable {
     
@@ -76,7 +74,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     //Intune configuration values
     public static final String SCEP_USE_INTUNE = "useIntune";
     public static final String AUTH_AUTHORITY = "intuneAuthority";
-    public static final String SCEP_INTUNE_VERIFICATION_ON_CA = "intuneVerificationOnCa";
     public static final String AAD_APP_ID = "intuneAadAppId";
     public static final String AAD_APP_KEY = "intuneAadAppKey";
     public static final String TENANT = "intuneTenant";
@@ -97,7 +94,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 5f;
+    public static final float LATEST_VERSION = 4f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
@@ -114,7 +111,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
     public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
-    public static final boolean DEFAULT_SCEP_INTUNE_VERIFICATION_ON_CA = true;
     
     /** Creates a new instance of ScepConfiguration */
     public ScepConfiguration()  {
@@ -147,7 +143,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             
             data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
             data.put(alias + AUTH_AUTHORITY, "");
-            data.put(alias + SCEP_INTUNE_VERIFICATION_ON_CA, DEFAULT_SCEP_INTUNE_VERIFICATION_ON_CA);
             data.put(alias + AAD_APP_ID, "");
             data.put(alias + AAD_APP_KEY, "");
             data.put(alias + TENANT, "");
@@ -180,7 +175,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         
         keys.add(alias + SCEP_USE_INTUNE);
         keys.add(alias + AUTH_AUTHORITY);
-        keys.add(alias + SCEP_INTUNE_VERIFICATION_ON_CA);
         keys.add(alias + AAD_APP_ID);
         keys.add(alias + AAD_APP_KEY);
         keys.add(alias + TENANT);
@@ -371,17 +365,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         String key = alias + "." + AUTH_AUTHORITY;
         return getValue(key, alias);
     }
-        
-    public void setIntuneVerificationOnCa(final String alias, final boolean onCa) {
-        String key = alias + "." + SCEP_INTUNE_VERIFICATION_ON_CA;
-        setValue(key, Boolean.toString(onCa), alias);
-    }
-    
-    public boolean getIntuneVerificationOnCa(final String alias) {
-        String key = alias + "." + SCEP_INTUNE_VERIFICATION_ON_CA;
-        String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
-    }
     
     public void setIntuneAadAppId(final String alias, final String value) {
         String key = alias + "." + AAD_APP_ID;
@@ -489,7 +472,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         if (StringUtils.isNotBlank(getIntuneAuthority(alias))) {
             intuneProperties.put("AUTH_AUTHORITY", getIntuneAuthority(alias));
         }
-        intuneProperties.put("SCEP_INTUNE_VERIFICATION_ON_CA", getIntuneVerificationOnCa(alias));
         if (StringUtils.isNotBlank(getIntuneAadAppId(alias))) {
             intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
         }
@@ -735,12 +717,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     @Override
     public void upgrade(){
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            //V5.0
-            for (String alias : getAliasList()) {
-            	if (data.get(alias + SCEP_INTUNE_VERIFICATION_ON_CA) == null) {
-            	    data.put(alias + SCEP_INTUNE_VERIFICATION_ON_CA, DEFAULT_SCEP_INTUNE_VERIFICATION_ON_CA);
-            	}
-            }
             //V4.0
             for (String alias : getAliasList()) {
                 data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
