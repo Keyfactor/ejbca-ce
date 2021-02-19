@@ -54,6 +54,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private OAuthProviderType type = OAuthProviderType.TYPE_AZURE;
         private String url;
         private String client;
+        private String clientSecret;
         private String realm;
         private UploadedFile publicKeyFile;
         private int skewLimit = 60000;
@@ -124,6 +125,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void setClient(String client) {
             this.client = client;
         }
+        
+        public String getClientSecret() {
+            return clientSecret;
+        }
+
+        public void setClientSecret(String clientSecret) {
+            this.clientSecret = clientSecret;
+        }
 
         public String getRealm() {
             return realm;
@@ -166,6 +175,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
+            this.clientSecret = oauthKey.getClientSecretAndDecrypt();
             this.realm = oauthKey.getRealm();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -182,6 +192,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             url = null;
             label = null;
             client = null;
+            clientSecret = null;
             realm = null;
             oauthKeyBeingEdited = null;
             skewLimit = 60000;
@@ -292,6 +303,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setLabel(oauthKeyEditor.getLabel());
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setClient(oauthKeyEditor.getClient());
+        newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
 
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
@@ -439,6 +451,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
+        oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         
         /* Make sure the edited provider does not have any unfilled mandatory fields */
