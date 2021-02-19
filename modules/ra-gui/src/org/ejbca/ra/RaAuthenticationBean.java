@@ -56,6 +56,10 @@ public class RaAuthenticationBean implements Serializable {
         authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
     }
+
+    public void resetAuthentication(){
+        raAuthenticationHelper.resetAuthenticationToken();
+    }
     
     private HttpServletRequest getHttpServletRequest() {
         return (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();

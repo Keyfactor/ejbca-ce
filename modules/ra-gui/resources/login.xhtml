@@ -32,18 +32,21 @@
             </h1>
         </h:panelGroup>
         <br/>
-        <h:panelGroup>
-            <h:outputText value="#{msg.login_page_no_keys}" rendered="#{raLoginBean.oauthKeys.size() == 0}"/>
-		    <h:dataTable value="#{raLoginBean.oauthKeys}"
-		                 var="oauthkey" rendered="#{raLoginBean.oauthKeys.size() > 0}"
-		                 style="margin: 5px;">
-		        <h:column>
-		            <h:outputLink value="#{oauthkey.url}" styleClass="pure-button ra-button" style="min-width:20rem; min-height:1.4rem;">
-		                <h:outputText value="#{oauthkey.label}" style="font-size:1.0rem;"/>
-		            </h:outputLink>
-		        </h:column>
-		    </h:dataTable>
-		</h:panelGroup>
+        <h:form id="login">
+            <h:panelGroup>
+                <h:outputText value="#{msg.login_page_no_keys}" rendered="#{raLoginBean.oauthKeys.size() == 0}"/>
+                <h:dataTable value="#{raLoginBean.oauthKeys}"
+                             var="oauthkey" rendered="#{raLoginBean.oauthKeys.size() > 0}"
+                             style="margin: 5px;">
+                    <h:column>
+                        <h:commandLink action="#{raLoginBean.clickLoginLink(oauthkey.keyId)}"
+                                       styleClass="pure-button ra-button" style="min-width:20rem; min-height:1.4rem;">
+                            <h:outputText value="#{oauthkey.label}" style="font-size:1.0rem;"/>
+                        </h:commandLink>
+                    </h:column>
+                </h:dataTable>
+            </h:panelGroup>
+        </h:form>
     </ui:define>
 </ui:composition>
 </html>

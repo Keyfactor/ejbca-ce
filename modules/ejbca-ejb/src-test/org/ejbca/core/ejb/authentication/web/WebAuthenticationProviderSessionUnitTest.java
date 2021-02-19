@@ -44,6 +44,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -141,21 +142,21 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void blankToken() {
+    public void blankToken() throws TokenExpiredException {
         log.trace(">blankToken");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(""));
         log.trace("<blankToken");
     }
 
     @Test
-    public void missingDots() {
+    public void missingDots() throws TokenExpiredException {
         log.trace(">missingDots");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken("AAAA"));
         log.trace("<missingDots");
     }
 
     @Test
-    public void malformedBase64() {
+    public void malformedBase64() throws TokenExpiredException {
         log.trace(">malformedBase64");
         // The token format is: JOSE-Header.Payload.Signature, and each part should be base64url encoded
         // See RFC-7519 section 3.1, https://tools.ietf.org/html/rfc7519#section-3.1
@@ -164,7 +165,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void nonJsonToken() {
+    public void nonJsonToken() throws TokenExpiredException {
         log.trace(">nonJsonToken");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken("AAAA.AAAA.AAAA"));
         log.trace("<nonJsonToken");
@@ -202,7 +203,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
     
     @Test
-    public void nonJwtToken() {
+    public void nonJwtToken() throws TokenExpiredException {
         log.trace(">nonJwtToken");
         final String token = encodeToken("{\"data\":123}", "{\"data\":123}");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
@@ -210,7 +211,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void unsignedToken() {
+    public void unsignedToken() throws TokenExpiredException {
         log.trace(">unsignedToken");
         final String token = encodeToken("{\"alg\":\"none\"}", "{\"sub\":\"johndoe\"}");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
@@ -218,7 +219,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void missingSignature() {
+    public void missingSignature() throws TokenExpiredException {
         log.trace(">missingSignature");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
@@ -229,7 +230,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void malformedSignature() {
+    public void malformedSignature() throws TokenExpiredException {
         log.trace(">malformedSignature");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
@@ -240,7 +241,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void unknownSignatureAlgorithm() {
+    public void unknownSignatureAlgorithm() throws TokenExpiredException {
         log.trace(">unknownSignatureAlgorithm");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
@@ -251,20 +252,23 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void expiredToken() {
+    public void expiredToken()  {
         log.trace(">expiredToken");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
-        expectAuditLog("authentication.jwt.expired", "johndoe", pubKeyFingerprint);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
         final String timestamp = timestampFromNow(-60*60*1000); // 1 hour old
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
+        try {
+            assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
+        } catch (TokenExpiredException e) {
+           //ignore
+        }
         verify(globalConfigurationSessionMock, securityEventsSessionMock);
         log.trace("<expiredToken");
     }
 
     @Test
-    public void notYetValidToken() {
+    public void notYetValidToken() throws TokenExpiredException {
         log.trace(">notYetValidToken");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         expectAuditLog("authentication.jwt.not_yet_valid", "johndoe", pubKeyFingerprint);
@@ -277,7 +281,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void tamperedWithContents() {
+    public void tamperedWithContents() throws TokenExpiredException {
         log.trace(">tamperedWithContents");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         expectAuditLog("authentication.jwt.invalid_signature", pubKeyFingerprint);
@@ -310,7 +314,7 @@ public class WebAuthenticationProviderSessionUnitTest {
 
     @Ignore("Configuration of a 'default key' is not yet implemented.") // TODO enable and update test when ECA-9351 is done
     @Test
-    public void successfulRsaDefaultKey() {
+    public void successfulRsaDefaultKey() throws TokenExpiredException {
         log.trace(">successfulRsaDefaultKey");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
@@ -328,7 +332,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void successfulRsaWithKeyId() {
+    public void successfulRsaWithKeyId() throws TokenExpiredException {
         log.trace(">successfulRsaWithKeyId");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);
@@ -347,7 +351,7 @@ public class WebAuthenticationProviderSessionUnitTest {
 
     /** Tests with a token with all supported attributes. */
     @Test
-    public void successfulComplexToken() {
+    public void successfulComplexToken() throws TokenExpiredException {
         log.trace(">successfulComplexToken");
         expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000, OAuthProviderType.TYPE_AZURE));
         replay(globalConfigurationSessionMock);

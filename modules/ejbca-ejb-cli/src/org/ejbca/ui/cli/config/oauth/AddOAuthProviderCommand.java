@@ -39,6 +39,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String URL = "--url";
     private static final String LABEL = "--label";
     private static final String CLIENT = "--client";
+    private static final String CLIENT_SECRET = "--clientsecret";
     private static final String REALM = "--realm";
     private static final String KEYCLOAK = "KEYCLOAK";
     private static final String AZURE = "AZURE";
@@ -60,7 +61,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider realm name."));
         registerParameter(new Parameter(CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client name for EJBCA in Trusted OAuth Provider."));
-    }    
+        registerParameter(new Parameter(CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Client secret in Trusted OAuth Provider."));
+    }
     
     @Override
     public String getMainCommand() {
@@ -81,6 +84,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String url = parameters.get(URL);
         String label = parameters.get(LABEL);
         String client = parameters.get(CLIENT);
+        String clientSecret = parameters.get(CLIENT_SECRET);
         String realm = parameters.get(REALM);
         OAuthProviderType type = null;
 
@@ -114,10 +118,12 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         
         OAuthKeyInfo keyInfo = new OAuthKeyInfo(kid, publicKeyByteArray, skewLimitInt, type);
-        keyInfo.setUrl(url);
-        keyInfo.setLabel(label);
-        keyInfo.setClient(client);
-        keyInfo.setRealm(realm);
+        // Since the UI already saves missing values as empty strings it's better to match that behaviour
+        keyInfo.setUrl(url != null ? url : "");
+        keyInfo.setLabel(label != null ? label : "");
+        keyInfo.setClient(client != null ? client : "");
+        keyInfo.setClientSecretAndEncrypt(clientSecret != null ? clientSecret : "");
+        keyInfo.setRealm(realm != null ? realm : "");
         
         if (!canAdd(keyInfo)) {
             log.info("Trusted OAuth Provider with same kid or internal Id exists!");
