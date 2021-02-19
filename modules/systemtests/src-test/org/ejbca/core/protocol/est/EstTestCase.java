@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -33,17 +35,28 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.config.WebConfiguration;
@@ -86,6 +99,7 @@ public abstract class EstTestCase extends CaTestCase {
     protected final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     protected final CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    protected final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);            
 
     protected final static AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken("EstTestCase");
 
@@ -176,7 +190,22 @@ public abstract class EstTestCase extends CaTestCase {
      * @param expectedReturnCode the HTTP return code that we expect for this request, i.e. success vs failure
      * @throws Exception if connection to server can not be established
      */
-    protected byte[] sendEstRequest(final String estAlias, final String operation, byte[] message, int expectedReturnCode) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        return sendEstRequest(estAlias, operation, message, expectedReturnCode, null, null);
+    }
+    
+    /**
+     * Sends a EST request with the alias requestAlias in the URL and expects a HTTP response
+     *
+     * @param the EST message to send, can be null if the request has no message bytes
+     * @param estAlias the alias that is specified in the URL
+     * @param operation the EST operation, i.e. cacerts, simpleenroll, simplereenroll, etc
+     * @param expectedReturnCode the HTTP return code that we expect for this request, i.e. success vs failure
+     * @param username for basic authentication, if null no basic auth header will be added
+     * @param password for basic authentication
+     * @throws Exception if connection to server can not be established
+     */
+    protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode, final String username, final String password) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         // POST the ESTrequest
         final String urlString = getProperty("httpEstProxyURL", this.httpReqPath) + estAlias + '/' + operation;
         log.info("http URL: " + urlString);
@@ -191,7 +220,12 @@ public abstract class EstTestCase extends CaTestCase {
 
         final HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
         con.setHostnameVerifier(new SimpleVerifier()); // no hostname verification for testing
-
+        if (username != null) {
+            final String auth = username + ":" + password;
+            final String authHeader = "Basic " + Base64.toBase64String(auth.getBytes(StandardCharsets.UTF_8));
+            log.info("Using basic authentication with: " + username + ":" + password);
+            con.setRequestProperty("Authorization", authHeader);
+        }
         con.setDoOutput(true);
         if (operation.contains("simple")) {
             // mime-type for simpleenroll and simplereenroll as specified in RFC7030 section 3.2.4 and 4.2.1
@@ -271,6 +305,41 @@ public abstract class EstTestCase extends CaTestCase {
             }
         }
         return StringUtils.defaultIfEmpty(result, defaultValue);
+    }
+
+    protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, Extensions exts,
+            final KeyPair keys) throws OperatorCreationException {
+        // Generate keys
+
+        // Create challenge password attribute for PKCS10
+        // Attributes { ATTRIBUTE:IOSet } ::= SET OF Attribute{{ IOSet }}
+        //
+        // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
+        //    type    ATTRIBUTE.&id({IOSet}),
+        //    values  SET SIZE(1..MAX) OF ATTRIBUTE.&Type({IOSet}{\@type})
+        // }
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        if (challengePassword != null) {
+            ASN1EncodableVector challpwdattr = new ASN1EncodableVector();
+            // Challenge password attribute
+            challpwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
+            ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
+            pwdvalues.add(new DERUTF8String(challengePassword));
+            challpwdattr.add(new DERSet(pwdvalues));            
+            v.add(new DERSequence(challpwdattr));
+        }
+        if (exts != null) {
+            ASN1EncodableVector extensionattr = new ASN1EncodableVector();
+            extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            extensionattr.add(new DERSet(exts));
+            v.add(new DERSequence(extensionattr));
+        }
+        // Complete the Attribute section of the request, the set (Attributes) contains two sequences (Attribute)
+        DERSet attributes = new DERSet(v);
+        // Create PKCS#10 certificate request
+        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA",
+                CertTools.stringToBcX500Name(dn), keys.getPublic(), attributes, keys.getPrivate(), null);
+        return p10request;
     }
 
 
