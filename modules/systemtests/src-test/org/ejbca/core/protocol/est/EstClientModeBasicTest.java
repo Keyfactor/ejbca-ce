@@ -119,7 +119,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             config.setDefaultCAID(alias, getTestCAId(TESTCA_NAME));
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             // Make EST cacerts request here
-            byte[] resp = sendEstRequest(alias, "cacerts", null, 200); // "alias123" in the request causes EJBCA to use "alias123" as EST alias
+            byte[] resp = sendEstRequest(alias, "cacerts", null, 200);
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.1.3
             assertNotNull("There must be response data to cacerts request", resp);
             final CMSSignedData msg = new CMSSignedData(Base64.decode(resp));
