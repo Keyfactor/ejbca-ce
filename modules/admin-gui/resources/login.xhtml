@@ -41,14 +41,16 @@
     <h:panelGroup styleClass="preformatted" rendered="#{adminLoginMBean.allOauthKeys.size() > 0}">
         <h:outputText value="#{web.text.PLEASE_LOGIN}"/>
     </h:panelGroup>
+    <h:form id="login">
     <h:dataTable value="#{adminLoginMBean.allOauthKeys}"
                  var="oauthkey"
                  styleClass="oauthkeyTable" style="margin: 5px;">
         <h:column>
-            <h:outputLink value="#{oauthkey.url}">
-                <h:outputText value="#{oauthkey.label}"/>
-            </h:outputLink>
+            <h:commandLink action="#{adminLoginMBean.clickLoginLink(oauthkey.keyId)}">
+                <h:outputText value="#{oauthkey.label}" />
+            </h:commandLink>
         </h:column>
     </h:dataTable>
+    </h:form>
 </h:panelGroup>
 </html>
