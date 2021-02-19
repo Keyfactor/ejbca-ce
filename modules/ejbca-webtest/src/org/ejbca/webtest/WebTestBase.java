@@ -26,6 +26,7 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.common.exception.ReferencesToItemExistException;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -513,16 +514,16 @@ public abstract class WebTestBase extends ExtentReportCreator {
      */
     protected static void removeOauthProviders(String... oauthKeyIdentifiers) {
         final GlobalConfigurationSessionRemote globalConfigurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSessionRemote
+        final OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSessionRemote
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final LinkedHashMap<Integer, OAuthKeyInfo> oauthKeys = globalConfiguration.getOauthKeys();
+        final Map<String, OAuthKeyInfo> oauthKeys = oAuthConfiguration.getOauthKeys();
         oauthKeys.forEach((key, oauthKeyInfo) -> {
-            if (Arrays.asList(oauthKeyIdentifiers).contains(oauthKeyInfo.getKeyIdentifier())) {
-                globalConfiguration.removeOauthKey(oauthKeyInfo.getInternalId());
+            if (Arrays.asList(oauthKeyIdentifiers).contains(oauthKeyInfo.getLabel())) {
+                oAuthConfiguration.removeOauthKey(oauthKeyInfo.getLabel());
             }
         });
         try {
-            globalConfigurationSessionRemote.saveConfiguration(ADMIN_TOKEN, globalConfiguration);
+            globalConfigurationSessionRemote.saveConfiguration(ADMIN_TOKEN, oAuthConfiguration);
         }
         catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e); // Should never happen with always allow token

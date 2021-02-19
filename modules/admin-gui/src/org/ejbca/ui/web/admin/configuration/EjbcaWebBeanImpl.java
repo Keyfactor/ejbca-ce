@@ -74,6 +74,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -149,6 +150,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private EstConfiguration estConfigForEdit = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
+    private OAuthConfiguration oAuthConfiguration = null;
     private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
     private String usercommonname = "";
@@ -1821,6 +1823,28 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         availableExtendedKeyUsagesConfig = ekuConfig;
     }
 
+    //*************************************************
+    //      OAuth trusted provider configurations
+    //*************************************************
+    @Override
+    public OAuthConfiguration getOAuthConfiguration() {
+        if (oAuthConfiguration == null) {
+            reloadOAuthConfiguration();
+        }
+        return oAuthConfiguration;
+    }
+
+    @Override
+    public void reloadOAuthConfiguration() {
+        oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+    }
+
+    @Override
+    public void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, oAuthConfig);
+        oAuthConfiguration = oAuthConfig;
+    }
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************

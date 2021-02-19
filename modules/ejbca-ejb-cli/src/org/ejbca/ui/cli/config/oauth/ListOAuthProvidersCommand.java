@@ -39,17 +39,17 @@ public class ListOAuthProvidersCommand extends BaseOAuthConfigCommand {
 
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
-        Collection<OAuthKeyInfo> oauthKeys = getGlobalConfiguration().getOauthKeys().values();
-        OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
+        Collection<OAuthKeyInfo> oauthKeys = getOAuthConfiguration().getOauthKeys().values();
+        OAuthKeyInfo defaultKey = getOAuthConfiguration().getDefaultOauthKey();
         
         for (OAuthKeyInfo keyInfo : oauthKeys) {
-            log.info("Kid: "  + keyInfo.getKeyIdentifier() + " | skew limit: " + keyInfo.getSkewLimit()
-                    + " | publickey fingerprint: " + keyInfo.getKeyFingerprint()
+            log.info("Label: "  + keyInfo.getLabel() + " | skew limit: " + keyInfo.getSkewLimit()
+//                    + " | publickey fingerprint: " + keyInfo.getKeyFingerprint()
                     + " | url: " + keyInfo.getUrl())
             ;
         }
         if (defaultKey != null) {
-            log.info("Default OAuth Provider kid: " + defaultKey.getKeyIdentifier());
+            log.info("Default OAuth Provider label: " + defaultKey.getLabel());
         }
         
         return CommandResult.SUCCESS;

@@ -32,7 +32,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     private static final Logger log = Logger.getLogger(EditOAuthProviderCommand.class);
 
-    private static final String KEY_IDENTIFIER = "--keyidentifier";
+    private static final String KEYLABEL = "--keylabel";
     private static final String NEW_KEY_IDENTIFIER = "--new-keyidentifier";
     private static final String NEW_PUBLIC_KEY = "--new-publickey";
     private static final String NEW_SKEW_LIMIT = "--new-skewlimit";
@@ -42,7 +42,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_REALM = "--new-realm";
 
     {
-        registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(KEYLABEL, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key identifier of the Trusted OAuth Provider to update its parameters."));
         registerParameter(new Parameter(NEW_KEY_IDENTIFIER, "Key identifier", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New key identifier of the Trusted OAuth Provider."));
@@ -73,14 +73,14 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
 
-        String kid = parameters.get(KEY_IDENTIFIER);
+        String kid = parameters.get(KEYLABEL);
 
-        for (Map.Entry<Integer, OAuthKeyInfo> entry : getGlobalConfiguration().getOauthKeys().entrySet()) {
-            if (entry.getValue().getKeyIdentifier().equals(kid)) {
+        for (Map.Entry<String, OAuthKeyInfo> entry : getOAuthConfiguration().getOauthKeys().entrySet()) {
+            if (entry.getValue().getLabel().equals(kid)) {
                 if (checkParametersAndSet(parameters, entry.getValue())) {
-                    OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
-                    if (defaultKey != null && entry.getValue().getInternalId() == defaultKey.getInternalId()) {
-                        getGlobalConfiguration().setDefaultOauthKey(entry.getValue());
+                    OAuthKeyInfo defaultKey = getOAuthConfiguration().getDefaultOauthKey();
+                    if (defaultKey != null && entry.getValue().getLabel().equals(defaultKey.getLabel())) {
+                        getOAuthConfiguration().setDefaultOauthKey(entry.getValue());
                     }
                     if (saveGlobalConfig()) {
                         log.info("Trusted OAuth Provider with kid: " + kid + " successfully updated!");
@@ -110,21 +110,21 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     private boolean checkParametersAndSet(final ParameterContainer parameters,
             final OAuthKeyInfo keyInfoToBeEdited) {
-        final String newKid= parameters.get(NEW_KEY_IDENTIFIER);
+//        final String newKid= parameters.get(NEW_KEY_IDENTIFIER);
         final String newSkewLimit= parameters.get(NEW_SKEW_LIMIT);
-        final String newPublicKey = parameters.get(NEW_PUBLIC_KEY);
+//        final String newPublicKey = parameters.get(NEW_PUBLIC_KEY);
         final String newUrl = parameters.get(NEW_URL);
         final String newLabel = parameters.get(NEW_LABEL);
         final String newClient = parameters.get(NEW_CLIENT);
         final String newRealm = parameters.get(NEW_REALM);
-        if (newKid != null) {
-            if (canEditKid(newKid)) {
-                keyInfoToBeEdited.setKeyIdentifier(newKid);
-            } else {
-                log.info("New given kid is null or kid with same name already exists!");
-                return false;
-            }
-        }
+//        if (newKid != null) {
+//            if (canEditKid(newKid)) {
+//                keyInfoToBeEdited.setKeyIdentifier(newKid);
+//            } else {
+//                log.info("New given kid is null or kid with same name already exists!");
+//                return false;
+//            }
+//        }
             
         if (newSkewLimit != null) {
             if (validateSkewLimit(newSkewLimit) >= 0) {
@@ -135,14 +135,14 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             }
         }
 
-        if (newPublicKey != null) {
-            if(!ArrayUtils.isEmpty(getOauthKeyPublicKey(newPublicKey))) {
-                keyInfoToBeEdited.setPublicKeyBytes(getOauthKeyPublicKey(newPublicKey));
-            } else {
-                log.info("New given public key is invalid!");
-                return false;
-            }
-        }
+//        if (newPublicKey != null) {
+//            if(!ArrayUtils.isEmpty(getOauthKeyPublicKey(newPublicKey))) {
+//                keyInfoToBeEdited.setPublicKeyBytes(getOauthKeyPublicKey(newPublicKey));
+//            } else {
+//                log.info("New given public key is invalid!");
+//                return false;
+//            }
+//        }
         if (newUrl != null) {
             keyInfoToBeEdited.setUrl(newUrl);
         }

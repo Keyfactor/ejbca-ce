@@ -39,15 +39,15 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String REALM = "--realm";
 
     {
-        registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key identifier of the Trusted OAuth Provider which is going to be added."));
-        registerParameter(new Parameter(PUBLIC_KEY, "Public key", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(PUBLIC_KEY, "Public key", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Path to publickey file used by the OAuth Provider."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be used."));
         registerParameter(new Parameter(URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider url to the login page."));
-        registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider name to be shown"));
         registerParameter(new Parameter(REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider realm name."));
@@ -91,21 +91,22 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
-        OAuthKeyInfo keyInfo = new OAuthKeyInfo(kid, publicKeyByteArray, skewLimitInt);
+        OAuthKeyInfo keyInfo = new OAuthKeyInfo(label,  skewLimitInt);
         keyInfo.setUrl(url);
         keyInfo.setLabel(label);
         keyInfo.setClient(client);
         keyInfo.setRealm(realm);
+        keyInfo.addPublicKey(kid, publicKeyByteArray);
         
         if (!canAdd(keyInfo)) {
             log.info("Trusted OAuth Provider with same kid or internal Id exists!");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
-        getGlobalConfiguration().addOauthKey(keyInfo);
+        getOAuthConfiguration().addOauthKey(keyInfo);
         
         if (saveGlobalConfig()) {
-            log.info("Trusted OAuth Provider with kid: " + kid + " added successfuly!");
+            log.info("Trusted OAuth Provider with label: " + label + " added successfuly!");
             return CommandResult.SUCCESS;
         } else {
             log.info("Failed to update configuration due to authorization issue!");
