@@ -1545,18 +1545,21 @@
                     <h:outputLabel for="checkpkixqcsyntaxv2"
                         value="#{web.text.USE}" />
                 </h:panelGroup>
-
-                <h:outputLabel for="textfieldqcsemanticsid"
-                    value="#{web.text.EXT_PKIX_QCS_SEMANTICSID}"
-                    rendered="#{certProfileBean.certificateProfile.useQCStatement}"
-                    styleClass="subItem" />
+                
+               	<h:outputLabel for="textfieldqcsemanticsid"
+                   	value="#{web.text.EXT_PKIX_QCS_SEMANTICSID}"
+                   	rendered="#{certProfileBean.certificateProfile.useQCStatement}"
+                   	styleClass="subItem" />
                 <h:inputText id="textfieldqcsemanticsid"
-                    value="#{certProfileBean.certificateProfile.QCSemanticsId}"
-                    size="20" maxlength="255"
-                    title="#{web.text.FORMAT_OID}"
-                    rendered="#{certProfileBean.certificateProfile.useQCStatement}"
-                    disabled="#{certProfileBean.viewOnly}" />
-
+	                value="#{certProfileBean.QCSemanticsOids}"
+	                size="20" maxlength="255"
+	                title="#{web.text.FORMAT_OIDS}"
+	                rendered="#{certProfileBean.certificateProfile.useQCStatement}"
+	                disabled="#{certProfileBean.viewOnly}"
+	                validatorMessage="#{web.text.ONLYOIDSINQCSEMANTICSOID}">
+	                <f:validateRegex pattern="^(((\d+\.{1})+(\d+\.{0}){1}),?)*$" />
+	            </h:inputText>
+                   
                 <h:outputLabel for="textfieldqcstatementraname"
                     value="#{web.text.EXT_PKIX_QCS_NAMERAS}"
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}"
@@ -1698,6 +1701,35 @@
                     </h:selectOneMenu>
                 </h:panelGroup>
 
+				<h:outputLabel for="checkqcetsicountriesgroup"
+                    value="#{web.text.EXT_ETSI_QCS_COUNTRIES}"
+                    rendered="#{certProfileBean.certificateProfile.useQCStatement}"
+                    styleClass="subItem" />
+                <h:panelGroup id="checkqcetsicountriesgroup"
+                    rendered="#{certProfileBean.certificateProfile.useQCStatement}">
+                    <h:selectBooleanCheckbox id="checkqcetsicountries"
+                        styleClass="checkBoxOverlay"
+                        value="#{certProfileBean.certificateProfile.useQCCountries}"
+                        rendered="#{!web.legacyInternetExplorer}"
+                        disabled="#{certProfileBean.viewOnly}">
+                        <f:ajax
+                            render=":content:checkqcetsicountriesgroup textfieldqccountriesstringtext" />
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel for="checkqcetsicountries"
+                        value="#{web.text.USE}…"
+                        styleClass="checkBoxOverlay" />
+                    <h:outputLabel for="textfieldqccountriesstringtext"
+                        value="#{web.text.EXT_PKIX_QCS_COUNTRIESSTR} " />
+                    <h:inputText id="textfieldqccountriesstringtext"
+                        value="#{certProfileBean.certificateProfile.QCCountriesString}"
+                        size="20" maxlength="255"
+                        title="#{web.text.FORMAT_ISO3166_2_COUNTRIES}"
+                        disabled="#{!certProfileBean.certificateProfile.useQCCountries or certProfileBean.viewOnly}"
+                        validatorMessage="#{web.text.EXT_ETSI_QCS_COUNTRIES_error_message}">
+                        <f:validateRegex pattern="^([A-Z]{2})(,[A-Z]{2})*$" />
+                    </h:inputText>
+                </h:panelGroup>
+                
                 <h:outputLabel for="qcetsipdsgroup"
                     value="#{web.text.EXT_ETSI_QCS_PDS}"
                     rendered="#{certProfileBean.certificateProfile.useQCStatement}"

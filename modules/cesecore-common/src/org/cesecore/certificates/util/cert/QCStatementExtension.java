@@ -18,6 +18,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -35,8 +36,6 @@ import org.cesecore.util.CertTools;
 
 /**
  * A class for reading values from QC-statement extension.
- *
- * @version $Id$
  */
 public final class QCStatementExtension extends CertTools {
 
@@ -196,28 +195,39 @@ public final class QCStatementExtension extends CertTools {
         return ret;
     }
 
-    /** Assumes that the statementoid in the QcStatements Sequence, seq, is a String and extracts that value from position, pos, of sequence */
-    public static String getStatementStringValue(final ASN1Sequence seq, final String statementoid, final int pos) {
-        // Look through all the QCStatements and see if we have a standard ETSI PDS URL
-        for (int i = 0; i < seq.size(); i++) {
-            final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
+    /** 
+     * Assumes that the statement OID in the QcStatements is a String and 
+     * extracts that value from the given position of its ASN.1 sequence.
+     * 
+     * Only used for testing.
+     * 
+     * @param seq the ASN.1 sequence of QC certificate extensions.
+     * @param statementoid the QC statements OID
+     * @param pos position of object in ASN.1 sequence of the QC statement. 
+     * 
+     * @return the list of string values or an empty list.
+     */
+    public static List<String> getStatementStringValues(final ASN1Sequence sequence, final String oidString, final int position) {
+        // Look through all the QCStatements.
+        final List<String> result = new ArrayList<>();
+        for (int i = 0; i < sequence.size(); i++) {
+            final QCStatement qc = QCStatement.getInstance(sequence.getObjectAt(i));
             final ASN1ObjectIdentifier oid = qc.getStatementId();
-            if ((oid != null) && oid.toString().equals(statementoid)) {
-                // We MUST have a URL and LANG here
-                final ASN1Encodable enc = qc.getStatementInfo();
-                if (enc != null) {
-                    ASN1Encodable str;
-                    if (enc instanceof ASN1Sequence) {
-                        ASN1Sequence valueseq = ASN1Sequence.getInstance(enc);
-                        str = valueseq.getObjectAt(pos);
+            if ((oid != null) && oid.toString().equals(oidString)) {
+                final ASN1Encodable statementInfo = qc.getStatementInfo();
+                if (statementInfo != null) {
+                    ASN1Encodable encodable;
+                    if (statementInfo instanceof ASN1Sequence) {
+                        final ASN1Sequence valueSequence = ASN1Sequence.getInstance(statementInfo);
+                        encodable = valueSequence.getObjectAt(position);
                     } else {
-                        str = enc; 
+                        encodable = statementInfo; 
                     }
-                    return str.toString();
+                    result.add(encodable.toString());
                 }
             }
         }
-        return null;
+        return result;
     }
 
 }

@@ -39,6 +39,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_URL = "--new-url";
     private static final String NEW_LABEL = "--new-label";
     private static final String NEW_CLIENT = "--new-client";
+    private static final String NEW_CLIENT_SECRET = "--new-clientsecret";
     private static final String NEW_REALM = "--new-realm";
 
     {
@@ -58,6 +59,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider realm name to be updated."));
         registerParameter(new Parameter(NEW_CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client name for EJBCA in Trusted OAuth Provider to be updated."));
+        registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Client secret in Trusted OAuth Provider to be updated."));
     }
 
     @Override
@@ -116,6 +119,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         final String newUrl = parameters.get(NEW_URL);
         final String newLabel = parameters.get(NEW_LABEL);
         final String newClient = parameters.get(NEW_CLIENT);
+        final String newClientSecret = parameters.get(NEW_CLIENT_SECRET);
         final String newRealm = parameters.get(NEW_REALM);
         if (newKid != null) {
             if (canEditKid(newKid)) {
@@ -151,6 +155,9 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         if (newClient != null) {
             keyInfoToBeEdited.setClient(newClient);
+        }
+        if (newClientSecret != null) {
+            keyInfoToBeEdited.setClientSecretAndEncrypt(newClientSecret);
         }
         if (newRealm != null) {
             keyInfoToBeEdited.setRealm(newRealm);
