@@ -51,9 +51,6 @@ import org.cesecore.certificates.certificate.ssh.SshPublicKey;
  *  90:     string    reserved <-- Ignored
  *  91:     string    signature key
  *  92:     string    signature
- *
- * @version $Id$
- *
  */
 public abstract class SshCertificateBase extends Certificate implements SshCertificate {
 

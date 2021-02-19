@@ -47,8 +47,6 @@ import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 
 /**
  * SSH EC Certificate.
- *
- * @version $Id$
  */
 public class SshEcCertificate extends SshCertificateBase {
 

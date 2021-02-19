@@ -12,6 +12,8 @@ package org.ejbca.ssh.certificate.signature.rsa;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.ejbca.ssh.certificate.signature.SshSigningAlgorithm;
@@ -27,6 +29,14 @@ public enum RsaSigningAlgorithms implements SshSigningAlgorithm {
 
     private final String identifier;
     private final String prefix;
+
+    private static final Map<String, RsaSigningAlgorithms> identifierMap = new HashMap<>();
+
+    static {
+        for(RsaSigningAlgorithms rsaSigningAlgorithm : RsaSigningAlgorithms.values()) {
+            identifierMap.put(rsaSigningAlgorithm.getIdentifier(), rsaSigningAlgorithm);
+        }
+    }
 
     RsaSigningAlgorithms(final String identifier, final String prefix) {
         this.identifier = identifier;
@@ -52,6 +62,10 @@ public enum RsaSigningAlgorithms implements SshSigningAlgorithm {
     @Override
     public String getPrefix() {
         return prefix;
+    }
+
+    public static RsaSigningAlgorithms getFromIdentifier(final String identifier) {
+        return identifierMap.get(identifier);
     }
 
 }
