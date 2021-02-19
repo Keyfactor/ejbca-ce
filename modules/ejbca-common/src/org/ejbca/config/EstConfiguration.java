@@ -35,8 +35,6 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 /**
  * This is a  class containing EST configuration parameters.
- *
- * @version $Id$
  */
 public class EstConfiguration extends ConfigurationBase implements Serializable {
 
@@ -221,7 +219,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         return keys;
     }
 
-    /**
+    /** The CA that is used to sign certificate for this EST alias
      * @param alias the EST alias to get value from
      * @return CA ID in String format, String format to be backwards compatible with EJBCA 6.11 when it was stored as CA Name instead of ID
      */
@@ -229,11 +227,19 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_DEFAULTCA;
         return getValue(key, alias);
     }
+    
+    /** The CA that is used to sign certificate for this EST alias
+     * @param alias the EST alias to set value in
+     * @param defaultCAID CA ID in String format, String format to be backwards compatible with EJBCA 6.11 when it was stored as CA Name instead of ID
+     */
     public void setDefaultCAID(String alias, int defaultCAID) {
         String key = alias + "." + CONFIG_DEFAULTCA;
         setValue(key, String.valueOf(defaultCAID), alias);
     }
 
+    /** The CA that is used to sign certificate for this EST alias, this method sets that option to empty, which is just a default value that can not be used
+     * @param alias the EST alias to set value in
+     */
     public void setDefaultCAID(String alias) {
         String key = alias + "." + CONFIG_DEFAULTCA;
         setValue(key, DEFAULT_DEFAULTCA, alias);
@@ -276,54 +282,63 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
 
     /**
-     * @param alias the alias to check for
-     *
-     * @return true if we require a certificate for authentication
+     * @param alias the alias to get parameter from
+     * @return true if we require a certificate for authentication of the RA
      */
     public boolean getCert(String alias) {
         String key = alias + "." + CONFIG_REQCERT;
         return StringUtils.equalsIgnoreCase(getValue(key, alias), "true");
     }
 
+    /** If the EST Alias RA mode requires client certificate authentication from the RA
+     * 
+     * @param alias the alias to get parameter from
+     * @param reqCert true if EST alias requires client certificate authentication from RA
+     */
     public void setCert(String alias, boolean reqCert) {
         String key = alias + "." + CONFIG_REQCERT;
         setValue(key, Boolean.toString(reqCert), alias);
     }
 
-    /**
-     * @param alias the alias to check for
-     *
-     * @return username if any, or null if none
+    /** Username required for RA password authentication
+     * @param alias the alias to get parameter from
+     * @return username if any for RA password authentication, or null if none
      */
     public String getUsername(String alias) {
         String key = alias + "." + CONFIG_REQUSERNAME;
         return getValue(key, alias);
     }
 
+    /** Username required for RA password authentication
+     * @param alias the alias to set parameter in
+     * @param username if any for RA password authentication, or null if none
+     */
     public void setUsername(String alias, String username) {
         String key = alias + "." + CONFIG_REQUSERNAME;
         setValue(key, username, alias);
     }
 
-    /**
-     * @param alias the alias to check for
-     *
-     * @return password if any, or null if none
+    /** Password required for RA password authentication
+     * @param alias the alias to get parameter from
+     * @return password if any is required for RA authentication, or null if none
      */
     public String getPassword(String alias) {
         String key = alias + "." + CONFIG_REQPASSWORD;
         return getValue(key, alias);
     }
 
+    /** Username required for RA password authentication
+     * @param alias the alias to set parameter in
+     * @param password if any for RA password authentication, or null if none
+     */
     public void setPassword(String alias, String password) {
         String key = alias + "." + CONFIG_REQPASSWORD;
         setValue(key, password, alias);
     }
 
     /**
-     * @param alias the alias to check for
-     *
-     * @return true if allowed to reenroll with the same key
+     * @param alias the alias to get parameter from
+     * @return true if allowed to reenroll with the same user public key
      */
     public boolean getKurAllowSameKey(String alias) {
         String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
@@ -331,6 +346,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
+    /**
+     * @param alias the alias to set parameter in
+     * @param allowSameKey true if allowed to reenroll with the same user public key
+     */
     public void setKurAllowSameKey(String alias, boolean allowSameKey) {
         String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         setValue(key, Boolean.toString(allowSameKey), alias);
@@ -598,7 +617,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     /**
      * Getter for RA Name Generation Scheme for given alias
      * @param alias the EST alias to get the name generation scheme for
-     *
+     * @return name generation scheme, one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
      */
     public String getRANameGenScheme(String alias) {
         String key = alias + "." + CONFIG_RA_NAMEGENERATIONSCHEME;
@@ -614,8 +633,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     /**
      * Setter for RA Name Generation Scheme
      * @param alias the EST alias to set the name generation scheme for
-     * @param scheme RA name generation scheme
-     *
+     * @param scheme one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
      */
     public void setRANameGenScheme(String alias, String scheme) {
         String key = alias + "." + CONFIG_RA_NAMEGENERATIONSCHEME;
@@ -625,7 +643,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     /**
      * Getter for RA Name Generation Params for given alias
      * @param alias the EST alias to get the name generation DN parameters for
-     *
+     * @return RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
      */
     public String getRANameGenParams(String alias) {
         String key = alias + "." + CONFIG_RA_NAMEGENERATIONPARAMS;
@@ -635,8 +653,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     /**
      * Setter for RA Name Generation Parameters
      * @param alias the EST alias to set the name generation DN parameters for
-     * @param params RA name generation scheme DN parameters
-     *
+     * @param params RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
      */    
     public void setRANameGenParams(String alias, String params) {
         String key = alias + "." + CONFIG_RA_NAMEGENERATIONPARAMS;
