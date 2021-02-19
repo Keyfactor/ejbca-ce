@@ -14,6 +14,8 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +54,9 @@ import org.cesecore.util.CertTools;
  * Class for standard X509 certificate extension. 
  * This extension have some basics defined in RFC 3739, but the majority of fields are used in EU purposes 
  * and specified in EU standards.
- * ETSI EN 319 412-5 (v2.1.1, 2016-02 or later)
- * https://www.etsi.org/deliver/etsi_en/319400_319499/31941205/02.01.01_60/en_31941205v020101p.pdf
+ *
+ * ETSI EN 319 412-5 (v2.3.1, 2020-04 or later)
+ * https://www.etsi.org/deliver/etsi_en/319400_319499/31941205/02.03.01_60/en_31941205v020301p.pdf
  * ETSI TS 101 862 (v1.3.3, 2006-01 or later)
  * https://www.etsi.org/deliver/etsi_ts/101800_101899/101862/01.03.03_60/ts_101862v010303p.pdf
  * ETSI TS 119 495 (v1.1.2, 2018-07 or later)
@@ -71,8 +74,6 @@ import org.cesecore.util.CertTools;
  *        ({SupportedStatements}{@statementId}) OPTIONAL }
  *
  *    SupportedStatements QC-STATEMENT ::= { qcStatement-1,...}
- * 
- * @version $Id$
  */
 public class QcStatement extends StandardCertificateExtension {
     private static final long serialVersionUID = 1L;
@@ -84,12 +85,42 @@ public class QcStatement extends StandardCertificateExtension {
     public static final String id_etsi_psd2_role_psp_ai = "0.4.0.19495.1.3";
     public static final String id_etsi_psd2_role_psp_ic = "0.4.0.19495.1.4";
     
+    public static final String id_esi4_qcStatement_7 = "0.4.0.1862.1.7";
+    
+    public static final String id_etsi_qcs_semanticsId_Natural = "0.4.0.194121.1.1";
+    public static final String id_etsi_qcs_semanticsId_Legal = "0.4.0.194121.1.2";
+    public static final String id_etsi_qcs_semanticsId_eIDAS_Natural = "0.4.0.194121.1.3";
+    public static final String id_etsi_qcs_semanticsId_eIDAS_Legal = "0.4.0.194121.1.4";
+    
+    private static final List<String> availableSemanticsOids;
+    
     private static final Map<String, String> psd2RoleIdNameMap = new HashMap<>();
+    
     static {
+        final List<String> sematicsOids = new ArrayList<>();
+        sematicsOids.add(id_etsi_qcs_semanticsId_Natural);
+        sematicsOids.add(id_etsi_qcs_semanticsId_Legal);
+        sematicsOids.add(id_etsi_qcs_semanticsId_eIDAS_Natural);
+        sematicsOids.add(id_etsi_qcs_semanticsId_eIDAS_Legal);
+        availableSemanticsOids = Collections.unmodifiableList(sematicsOids);
+        
         psd2RoleIdNameMap.put("PSP_AS", id_etsi_psd2_role_psp_as);
         psd2RoleIdNameMap.put("PSP_PI", id_etsi_psd2_role_psp_pi);
         psd2RoleIdNameMap.put("PSP_AI", id_etsi_psd2_role_psp_ai);
         psd2RoleIdNameMap.put("PSP_IC", id_etsi_psd2_role_psp_ic);
+    }
+    
+    /**
+     * Returns the available semantics OIDs 0.4.0.194121.1.*. for the ETSI semantics 
+     * information QC certificate extension (id-qcs-pkixQCSyntax-v1 or id-qcs-pkixQCSyntax-v2).
+     * 
+     * @see https://tools.ietf.org/html/rfc3039
+     * @see https://tools.ietf.org/html/rfc3739
+     * 
+     * @return the list of OIDs.
+     */
+    public static List<String> getAvailableSemanticsOids() {
+        return availableSemanticsOids;
     }
     
     /** @return the ETSI PSD2 role OID of the corresponding given role name */
@@ -107,32 +138,14 @@ public class QcStatement extends StandardCertificateExtension {
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
 		DERSequence ret = null;
-		final String names = certProfile.getQCStatementRAName();
-		final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
-		SemanticsInformation si = null;
-		if (san != null) {
-			if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-				si = new SemanticsInformation(new ASN1ObjectIdentifier(certProfile.getQCSemanticsId()), san.getNames());
-			} else {
-				si = new SemanticsInformation(san.getNames());                     
-			}
-		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-			si = new SemanticsInformation(new ASN1ObjectIdentifier(certProfile.getQCSemanticsId()));                 
-		}
 		final ArrayList<QCStatement> qcs = new ArrayList<>();
 		QCStatement qc = null;
 		// First the standard rfc3739 QCStatement with an optional SematicsInformation
-		// We never add RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1. This is so old so we think it has never been used in the wild basically.
-		// That means no need to have code we have to maintain for that.
+		// We never add RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1. This is so old so we 
+		// think it has never been used in the wild basically. That means no need to have code 
+		// we have to maintain for that.
 		if (certProfile.getUsePkixQCSyntaxV2()) {
-		    ASN1ObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2;
-	        if ( (si != null)  ) {
-	            qc = new QCStatement(pkixQcSyntax, si);
-	            qcs.add(qc);
-	        } else {
-	            qc = new QCStatement(pkixQcSyntax);
-	            qcs.add(qc);
-	        }
+	        qcs.addAll(getV2SemanticOidStatements(certProfile));
 		}
 		// ETSI Statement that the certificate is a Qualified Certificate
 		if (certProfile.getUseQCEtsiQCCompliance()) {
@@ -239,6 +252,21 @@ public class QcStatement extends StandardCertificateExtension {
             }            
         }
         
+        // ETSI EN 319 412-5 v2.3.1 section 4.2.4
+        // ETSI legal countries for qualified certificates:        
+        // esi4-qcStatement-7 QC-STATEMENT ::= { SYNTAX QcCClegislation IDENTIFIED BY id-etsi-qcsQcCClegislation }
+        // id-etsi-qcs-QcCClegislation OBJECT IDENTIFIER ::= { id-etsi-qcs 7 }
+        // QcCClegislation ::= SEQUENCE OF CountryName
+        // CountryName ::= PrintableString (SIZE (2)) (CONSTRAINED BY { -- ISO 3166-1 [6] alpha-2 codes only -- })
+        if (certProfile.getUseQCCountries() && !StringUtils.isEmpty(certProfile.getQCCountriesString())) {
+            final ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(id_esi4_qcStatement_7);
+            final ASN1EncodableVector vector = new ASN1EncodableVector();
+            for (String country : certProfile.getQCCountriesString().split(",")) {
+                vector.add(new DERPrintableString(country));
+            }
+            qc = new QCStatement(oid, new DERSequence(vector));
+            qcs.add(qc);         
+        }
         
 		// Custom UTF8String QC-statement:
 		// qcStatement-YourCustom QC-STATEMENT ::= { SYNTAX YourCustomUTF8String
@@ -267,5 +295,56 @@ public class QcStatement extends StandardCertificateExtension {
 		    throw new CertificateExtensionException("If qualified certificate statements extension has been enabled, at least one statement must be included!");
 		}
 		return ret;
-    }	
+    }
+    
+    private List<ASN1ObjectIdentifier> createOidList(final List<String> oidStrings) {
+    	final List<ASN1ObjectIdentifier> oids = new ArrayList<>();
+        for (String oid : oidStrings) {
+            oids.add(new ASN1ObjectIdentifier(oid));
+        }
+        return oids;
+    }
+    
+    /**
+     * Returns the list of QC V2 syntax statements derived by the chosen QC semantic OIDs 
+     * and available SANs.
+     * Only supports id_qcs_pkixQCSyntax_v2 from RFC3739.
+     * 
+     * NameRegistrationAuthorities (usually SANs) are added to the first QC semantics statement only.
+     *  
+     * @param profile the certificate profile.
+     * @return the list with size > 0 of QC statements. 
+     */
+    private List<QCStatement> getV2SemanticOidStatements(final CertificateProfile profile) {
+        final String names = profile.getQCStatementRAName();
+        final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
+        final List<QCStatement> result = new ArrayList<>();
+        if (StringUtils.isNotEmpty(profile.getQCSemanticsIds())) {
+            final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(profile.getQCSemanticsIds().split(",")));
+            if (oids.size() > 0) {
+                SemanticsInformation si;
+                for (int i=0;i<oids.size();i++) {
+                    final ASN1ObjectIdentifier oid = oids.get(i);
+                    if (i==0 && san != null) {
+                        si = new SemanticsInformation(oid, san.getNames());
+                    } else {
+                        si = new SemanticsInformation(oid);
+                    }
+                    result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
+                }
+            }
+        }
+        if (result.size() == 0 && san != null) {
+            SemanticsInformation si = new SemanticsInformation(san.getNames());
+            result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si));
+        }
+        if (result.size() == 0) {
+            // RFC3739: Note that the statementInfo component need not be present in a
+            // QCStatement value even if the statementID component is set to 
+            // id-qcs-pkix-QCSyntax-v1 or id-qcs-pkix-QCSyntax-v2.
+            result.add(new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2));
+        }
+        return result;
+    }
+    
 }

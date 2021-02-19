@@ -14,18 +14,24 @@ package org.ejbca.ui.psm.jsf;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import javax.faces.component.UISelectItems;
 import javax.faces.component.html.HtmlSelectOneMenu;
+import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.ui.DynamicUiComponent;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * MyFaces HTML UI drop-down box for component implementing the {@link PropertyChangeListener} interface 
  * to get noticed for dynamic UI property changes.
- * 
- * @version $Id$
  */
 public class JsfDynamicUiHtmlSelectOneMenu extends HtmlSelectOneMenu implements DynamicUiComponent, PropertyChangeListener {
 
@@ -48,6 +54,29 @@ public class JsfDynamicUiHtmlSelectOneMenu extends HtmlSelectOneMenu implements 
     void setDynamicUiProperty(final DynamicUiProperty<?> property) {
         this.dynamicUiProperty = property;
         this.dynamicUiProperty.addDynamicUiComponent(this);
+    }
+    
+    @Override
+    public void updateValueRange() {
+        final List<SelectItem> items = new ArrayList<>();
+        if (dynamicUiProperty != null) {
+            if (dynamicUiProperty.isI18NLabeled()) {
+                final Map<?, String> labels = dynamicUiProperty.getLabels();
+                for (Entry<?, String> entry : labels.entrySet()) {
+                    items.add(new SelectItem(entry.getKey(), EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue())));
+                    
+                }
+            } else {
+                final Collection<String> entries = dynamicUiProperty.getPossibleValuesAsStrings();
+                for (String entry : entries) {
+                    items.add(new SelectItem(entry,entry));
+                }
+            }
+            final UISelectItems selectItems = new UISelectItems();
+            selectItems.setValue(items);
+            getChildren().clear();
+            getChildren().add(selectItems);
+        }
     }
 
     @Override
