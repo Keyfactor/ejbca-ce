@@ -160,10 +160,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public String getRAMode(String alias) {
         String key = alias + "." + CONFIG_OPERATIONMODE; 
         String value = getValue(key, alias);
-        if (StringUtils.equalsIgnoreCase(value, "ra")) {
-            return "ra";
+        if (StringUtils.equalsIgnoreCase(value, "client")) {
+            return "client";
         }
-        return "client";
+        return "ra";
     }
     
     public boolean getVendorMode(String alias) {
@@ -586,7 +586,8 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
     public String getAuthenticationModule(String alias) {
         String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
-        return getValue(key, alias);
+        String module = getValue(key, alias) != null ? getValue(key, alias) : DEFAULT_CLIENT_AUTHENTICATION_MODULE;
+        return module;
     }
     public void setAuthenticationModule(String alias, String authModule) {
         String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
