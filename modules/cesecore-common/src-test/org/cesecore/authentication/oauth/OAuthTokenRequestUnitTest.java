@@ -100,7 +100,7 @@ public class OAuthTokenRequestUnitTest {
         expect(httpResponse.getHeaders("Content-Type")).andReturn(new Header[] { new BasicHeader("Content-Type", RESPONSE_MIMETYPE) });
         expect(httpResponse.getEntity()).andReturn(makeEntity(GOOD_RESPONSE, RESPONSE_MIMETYPE));
         replay(httpClientMock, httpResponse);
-        final OAuthGrantResponseInfo grantResponse = req.execute(AUTHORIZATION_CODE, httpClientMock);
+        final OAuthGrantResponseInfo grantResponse = req.execute(AUTHORIZATION_CODE, httpClientMock, false);
         verify(httpClientMock, httpResponse);
         final HttpUriRequest request = requestCapture.getValue();
         assertEquals("Wrong request URI", AUTHSERVER_URI, request.getURI().toString());
@@ -145,7 +145,7 @@ public class OAuthTokenRequestUnitTest {
         expect(httpResponse.getHeaders("Content-Type")).andReturn(new Header[] { new BasicHeader("Content-Type", "text/html") });
         replay(httpClientMock, httpResponse);
         try {
-            req.execute("auth123", httpClientMock);
+            req.execute("auth123", httpClientMock, false);
             fail("Should throw");
         } catch (IOException e) {
             assertEquals("Wrong exception message", "Invalid MIME type on response from authorization server: text/html", e.getMessage());

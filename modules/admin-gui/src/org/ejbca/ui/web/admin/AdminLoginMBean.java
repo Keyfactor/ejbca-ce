@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.authentication.oauth.OAuthTokenRequest;
+import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
@@ -53,14 +53,15 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private Collection<OAuthKeyInfoGui> oauthKeys = null;
     /** A random identifier used to link requests, to avoid CSRF attacks. */
     private String stateInSession = null;
+    private String oauthClicked = null;
 
     public class OAuthKeyInfoGui{
         String label;
-        String url;
+        String keyId;
 
         public OAuthKeyInfoGui(String label, String url) {
             this.label = label;
-            this.url = url;
+            this.keyId = url;
         }
 
         public String getLabel() {
@@ -71,12 +72,12 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             this.label = label;
         }
 
-        public String getUrl() {
-            return url;
+        public String getKeyId() {
+            return keyId;
         }
 
-        public void setUrl(String url) {
-            this.url = url;
+        public void setKeyId(String keyId) {
+            this.keyId = keyId;
         }
     }
 
@@ -165,7 +166,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             final byte[] stateBytes = new byte[32];
             new SecureRandom().nextBytes(stateBytes);
             stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
-            initOauthProviderUrls();
+            initOauthProviders();
             log.debug("Showing login links.");
         }
     }
@@ -175,15 +176,10 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         final String authCode = params.get("code");
         final String state = params.get("state");
         if (verifyStateParameter(state)) {
-            final String provider = params.get("provider");
-            log.debug("Provider:" + provider);
-            OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getGlobalConfiguration().getOauthKeyByKeyIdentifier(provider);
+            OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getGlobalConfiguration().getOauthKeyByKeyIdentifier(oauthClicked);
             if (oAuthKeyInfo != null) {
-                final OAuthTokenRequest request = new OAuthTokenRequest();
-                request.setUri(oAuthKeyInfo.getUrl() + "/realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token");
-                request.setClientId(oAuthKeyInfo.getClient());
-                request.setRedirectUri(getRedirectUri(oAuthKeyInfo));
-                final OAuthGrantResponseInfo token = request.execute(authCode);
+                final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
+                        getRedirectUri());
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
                     FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
@@ -192,7 +188,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                     errorMessage = "Internal error.";
                 }
             } else {
-                log.info("Received provider identifier does not correspond to existing oauth providers. Key indentifier = " + provider);
+                log.info("Received provider identifier does not correspond to existing oauth providers. Key indentifier = " + oauthClicked);
                 errorMessage = "Internal error";
             }
         } else {
@@ -201,14 +197,12 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    private String getRedirectUri(OAuthKeyInfo oAuthKeyInfo) {
-        String baseUrl = ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
+    private String getRedirectUri() {
+        return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
                 "https",
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
         ) + ejbcaWebBean.getGlobalConfiguration().getAdminWebPath();
-        log.info(" baseUrl " + baseUrl);
-        return baseUrl + "?provider="+oAuthKeyInfo.getKeyIdentifier();
     }
 
     private boolean verifyStateParameter(final String state) {
@@ -222,20 +216,19 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
      */
     public Collection<OAuthKeyInfoGui> getAllOauthKeys() {
         if (oauthKeys == null) {
-            initOauthProviderUrls();
+            initOauthProviders();
         }
         return oauthKeys;
     }
 
-    private void initOauthProviderUrls() {
+    private void initOauthProviders() {
         oauthKeys = new ArrayList<>();
         ejbcaWebBean.reloadGlobalConfiguration();
         Collection<OAuthKeyInfo> oAuthKeyInfos = ejbcaWebBean.getGlobalConfiguration().getOauthKeys().values();
         if (!oAuthKeyInfos.isEmpty()) {
             for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
                 if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
-                    String url = getOauthLoginUrl(oauthKeyInfo);
-                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getShowName(), url));
+                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getShowName(), oauthKeyInfo.getKeyIdentifier()));
                 }
             }
         }
@@ -260,9 +253,20 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         }
         uriBuilder
                 .queryParam("response_type", "code")
-                .queryParam("redirect_uri", getRedirectUri(oauthKeyInfo))
+                .queryParam("redirect_uri", getRedirectUri())
                 .queryParam("state", stateInSession);
         return uriBuilder.build().toString();
+    }
+
+    public void clickLoginLink(String keyId) throws IOException {
+        final OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getGlobalConfiguration().getOauthKeyByKeyIdentifier(keyId);
+        if (oAuthKeyInfo != null) {
+            oauthClicked = keyId;
+            String url = getOauthLoginUrl(oAuthKeyInfo);
+            FacesContext.getCurrentInstance().getExternalContext().redirect(url);
+        } else {
+            log.info("Trusted provider info not found for keyId =" + keyId);
+        }
     }
 
 }

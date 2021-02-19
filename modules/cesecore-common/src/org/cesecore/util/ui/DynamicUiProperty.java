@@ -42,8 +42,6 @@ import org.cesecore.util.LookAheadObjectInputStream;
 
 /**
  * Allows creation of dynamic properties for display in the UI.
- *
- * @version $Id$
  */
 public class DynamicUiProperty<T extends Serializable> implements Serializable, Cloneable {
 
@@ -499,8 +497,10 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     public List<String> getPossibleValuesAsStrings() {
         final List<String> strings = new ArrayList<>();
-        for (final T possibleValue : getPossibleValues()) {
-            strings.add(possibleValue.toString());
+        if (getPossibleValues() != null) {
+            for (final T possibleValue : getPossibleValues()) {
+                strings.add(possibleValue.toString());
+            }
         }
         return strings;
     }
@@ -528,6 +528,10 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     @SuppressWarnings("unchecked")
     public void setPossibleValues(Collection<? extends Serializable> collection) {
         this.possibleValues = (Collection<T>) collection;
+        // Usually simple property components do not have nested components.
+        if (dynamicUiModel != null && dynamicUiModel.getViewComponents(name).size() > 0) {
+            dynamicUiModel.getViewComponents(name).get(0).updateValueRange();
+        }
     }
 
     /**
