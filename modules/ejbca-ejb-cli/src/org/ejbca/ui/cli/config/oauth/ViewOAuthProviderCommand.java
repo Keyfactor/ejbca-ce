@@ -43,7 +43,7 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Displays information about the specified OAuth provider available in EJBCA";
+        return "Displays information about the specified Trusted OAuth Provider available in EJBCA";
     }
 
     @Override 
@@ -53,15 +53,14 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
         OAuthKeyInfo key = getGlobalConfiguration().getOauthKeyByKeyIdentifier(kid);
         
         if (key != null) {
-            log.info("Detailed information about Trusted OAuth Provider with key identifier " + kid);
+            log.info("Key Identifier: " + kid);
             log.info("Label: " + key.getLabel());
-            log.info("Skew limit: " + key.getSkewLimit());
-            log.info("Public key fingerprint: " + key.getKeyFingerprint());
-            log.info("Url: " + key.getUrl());
+            log.info("Skew Limit: " + key.getSkewLimit());
+            log.info("Public Key Fingerprint: " + key.getKeyFingerprint());
+            log.info("URL: " + key.getUrl());
             log.info("Realm: " + key.getRealm());
             log.info("Client: " + key.getClient());
-            // The line below has to be uncommented after ECA-9788 is merged to epic branch
-            //log.info("Client secret: " + key.getClientSecret());
+            log.info("Client Secret: " + key.getClientSecretAndDecrypt());
         }
 
         return CommandResult.SUCCESS;
