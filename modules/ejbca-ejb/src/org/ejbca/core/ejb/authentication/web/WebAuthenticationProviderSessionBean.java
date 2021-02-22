@@ -133,21 +133,29 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     return null;
                 }
                 OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(signedJwt.getHeader().getKeyID());
-                if (oAuthPublicKey == null) {
+                if (oAuthPublicKey != null) {
+                    if (verifyJwt(oAuthPublicKey, signedJwt)) {
+                        keyFingerprint = oAuthPublicKey.getKeyFingerprint();
+                    } else {
+                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
+                        return null;
+                    }
+                } else {
                     if (keyInfo.getKeys().isEmpty()) {
                         logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                         return null;
                     } else {
-                        oAuthPublicKey = keyInfo.getKeys().entrySet().iterator().next().getValue();
+                        for (OAuthPublicKey key : keyInfo.getKeys().values()) {
+                            if (verifyJwt(key, signedJwt)) {
+                                keyFingerprint = key.getKeyFingerprint();
+                                break;
+                            }
+                        }
+                        if (keyFingerprint == null) {
+                            logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
+                            return null;
+                        }
                     }
-                }
-                final byte[] keyBytes = oAuthPublicKey.getPublicKeyBytes();
-                keyFingerprint = oAuthPublicKey.getKeyFingerprint();
-                final Key key = KeyTools.getPublicKeyFromBytes(keyBytes);
-                final JWSVerifier verifier = new DefaultJWSVerifierFactory().createJWSVerifier(signedJwt.getHeader(), key);
-                if (!signedJwt.verify(verifier)) {
-                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
-                    return null;
                 }
             } else {
                 LOG.info("Received unsupported OAuth2 JWT type.");
@@ -174,6 +182,13 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             LOG.info("Configured not verify OAuth2 JWT signature: " + e.getMessage(), e);
             return null;
         }
+    }
+
+    private boolean verifyJwt(OAuthPublicKey oAuthPublicKey, SignedJWT signedJwt) throws JOSEException {
+        final byte[] keyBytes = oAuthPublicKey.getPublicKeyBytes();
+        final Key key = KeyTools.getPublicKeyFromBytes(keyBytes);
+        final JWSVerifier verifier = new DefaultJWSVerifierFactory().createJWSVerifier(signedJwt.getHeader(), key);
+        return signedJwt.verify(verifier);
     }
 
     @Override
