@@ -65,9 +65,9 @@ public class P11NGSlotListWrapperFactory implements PKCS11SlotListWrapperFactory
             }
             // no other thread has created the instance and no other will since this thread is locking.
             // CK_C_INITIALIZE_ARGS pInitArgs should include CKF_OS_LOCKING_OK
-            // We utilize the SunP11 provider for this, a liytle way around, especially if we are using P11NG, but it works
-            //Pkcs11SlotLabel.doC_Initialize(file);
-            // TODO: do P11NG C_Initialize
+            // P11-NG does that through:
+            // P11NgSlotListWrapper->CryptokiManager.getInstance().getDevice->new CryptokiDevice->c.Initialize();
+            // which in JackNJI11 calls Ci.Initialize that calls jna.C_Initialize with CK_C_INITIALIZE_ARGS.CKF_OS_LOCKING_OK
             final P11NGSlotListWrapper newP11 = new P11NGSlotListWrapper(canonicalFileName);
             instances.put(canonicalFileName, newP11);
             return newP11;
