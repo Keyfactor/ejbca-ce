@@ -49,7 +49,6 @@
 					<h:outputText value="Help Info" styleClass="help" />
 				</h:panelGroup>
 				<h:panelGroup>
-					<!--  ESTFIX -->
 					<h:selectOneRadio id="selectestmode"
 						value="#{editEstConfigMBean.estAlias.operationMode}"
 						disabled="#{editEstConfigMBean.viewOnly}">
@@ -149,7 +148,7 @@
 								value="#{editEstConfigMBean.estAlias.vendorMode}"
 								rendered="#{!editEstConfigMBean.raMode}"
 								disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected}">
-								<f:ajax render="estconfiguration:vendorcas usevendorcertcheckbox" />
+								<f:ajax render="estconfiguration:vendorcas usevendorcertcheckbox allowchangesubjectnamecheckbox" />
 					</h:selectBooleanCheckbox>
 							<h:outputText value="Use"
 								rendered="#{!editEstConfigMBean.raMode}" />
@@ -178,7 +177,7 @@
 					
 					<h:panelGroup id="vendorcas">
     	        		<h:selectOneMenu id="selectvendorca" value="#{editEstConfigMBean.estAlias.selectedVendorCa}"  disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
-                        	<f:selectItems value="#{editEstConfigMBean.vendorCaSelectItems}"/>
+                          	<f:selectItems value="#{editEstConfigMBean.vendorCaSelectItems}"/>
                		      	<f:ajax event="change" update="estconfiguration:vendorcas"/>
                 		</h:selectOneMenu>
                 		&nbsp;
@@ -192,7 +191,8 @@
     	            		<f:ajax render="estconfiguration:vendorcas"/>
                 		</h:commandButton>
                 		<br/>
-                		<h:outputText value="#{editEstConfigMBean.estAlias.selectedVendorCa}"/>
+                		<!-- h:outputText value="#{editEstConfigMBean.estAlias.selectedVendorCa}"/-->
+                		<h:outputText value="#{editEstConfigMBean.currentVendorCa}"/>
     	        	</h:panelGroup>
 					
 				</h:panelGrid>
@@ -323,7 +323,7 @@
 					<h:panelGroup>&nbsp;</h:panelGroup>
 				</h:panelGrid>
 			</h:panelGroup>
-			<!--  ESTFIX end RA Mode   -->
+			<!-- RA Mode   -->
 
 			<h:panelGroup id="general">
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
