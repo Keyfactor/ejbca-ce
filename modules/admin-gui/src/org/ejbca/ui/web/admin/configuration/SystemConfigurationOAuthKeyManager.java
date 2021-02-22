@@ -35,8 +35,6 @@ import org.cesecore.util.CertTools;
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
     private static final String OAUTH_KEY_SAVED = "saved";
-    private static final String TYPE_AZURE_LABEL = "Azure";
-    private static final String TYPE_KEYCLOAK_LABEL = "Keycloak";
     private static final Logger log = Logger.getLogger(SystemConfigurationOAuthKeyManager.class);
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final OAuthKeyEditor oauthKeyEditor;
