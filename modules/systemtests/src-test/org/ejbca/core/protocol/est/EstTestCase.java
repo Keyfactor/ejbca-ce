@@ -14,6 +14,10 @@
 package org.ejbca.core.protocol.est;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,11 +25,22 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
@@ -46,7 +61,11 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -56,6 +75,10 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
@@ -70,6 +93,8 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.ui.web.rest.api.resource.RestResourceSystemTestBase;
+import org.wildfly.security.authz.RoleMapper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -89,8 +114,10 @@ public abstract class EstTestCase extends CaTestCase {
     protected static final String EEP_NAME = "EST_TEST_EEP_NAME";
     protected int eepId;
     protected int cpId;
+    private static final String SUPER_ADMINISTRATOR_ROLE_NAME = "Super Administrator Role";
 
-    protected final String httpReqPath; // = "https://127.0.0.1:8442/.well-known/est/";
+    protected final String httpsPubReqPath; // = "https://127.0.0.1:8442/.well-known/est/";
+    protected final String httpsPrivReqPath; // = "https://127.0.0.1:8443/.well-known/est/";
     private final String EST_HOST; // = "127.0.0.1";
 
     protected final CertificateStoreSession certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -100,13 +127,22 @@ public abstract class EstTestCase extends CaTestCase {
     protected final CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     protected final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);            
+    protected final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    protected final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
 
     protected final static AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken("EstTestCase");
 
+    /** Keystore used for TLS client authentication, which is used for EST simplereenroll and RA mode with client cert authentication */ 
+    private static KeyStore CLIENT_KEYSTORE;
+    private static final String KEY_STORE_PASSWORD = "changeit";
+    private static final String LOGIN_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "esttestuser_" + new Date().getTime() + ".jks";
+
     public EstTestCase() {
         final String httpServerPubHttps = SystemTestsConfiguration.getRemotePortHttps(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTPS));
+        final String httpServerPrivHttps = SystemTestsConfiguration.getRemotePortHttps(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS));
         this.EST_HOST = SystemTestsConfiguration.getRemoteHost(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
-        this.httpReqPath = "https://" + this.EST_HOST + ":" + httpServerPubHttps + "/.well-known/est/";
+        this.httpsPubReqPath = "https://" + this.EST_HOST + ":" + httpServerPubHttps + "/.well-known/est/";
+        this.httpsPrivReqPath = "https://" + this.EST_HOST + ":" + httpServerPrivHttps + "/.well-known/est/";
     }
     
     @Override
@@ -188,10 +224,13 @@ public abstract class EstTestCase extends CaTestCase {
      * @param estAlias the alias that is specified in the URL
      * @param operation the EST operation, i.e. cacerts, simpleenroll, simplereenroll, etc
      * @param expectedReturnCode the HTTP return code that we expect for this request, i.e. success vs failure
+     * @param expectedErrMsg the error message returned when expectedReturnCode is not OK, f.ex "<html><head><title>Error</title></head><body>No client certificate supplied</body></html>"
+     * @throws KeyStoreException 
+     * @throws UnrecoverableKeyException 
      * @throws Exception if connection to server can not be established
      */
-    protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        return sendEstRequest(estAlias, operation, message, expectedReturnCode, null, null);
+    protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode, final String expectedErrMsg) throws IOException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, KeyStoreException {
+        return sendEstRequest(estAlias, operation, message, expectedReturnCode, expectedErrMsg, null, null);
     }
     
     /**
@@ -200,21 +239,41 @@ public abstract class EstTestCase extends CaTestCase {
      * @param the EST message to send, can be null if the request has no message bytes
      * @param estAlias the alias that is specified in the URL
      * @param operation the EST operation, i.e. cacerts, simpleenroll, simplereenroll, etc
-     * @param expectedReturnCode the HTTP return code that we expect for this request, i.e. success vs failure
+     * @param expectedReturnCode the HTTP return code that we expect for this request, i.e. success (200) vs failure (f.ex 401 Unauthorized)
+     * @param expectedErrMsg the error message returned when expectedReturnCode is not OK, f.ex "<html><head><title>Error</title></head><body>No client certificate supplied</body></html>"
      * @param username for basic authentication, if null no basic auth header will be added
      * @param password for basic authentication
+     * @throws KeyStoreException 
+     * @throws UnrecoverableKeyException 
      * @throws Exception if connection to server can not be established
      */
-    protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode, final String username, final String password) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        // POST the ESTrequest
-        final String urlString = getProperty("httpEstProxyURL", this.httpReqPath) + estAlias + '/' + operation;
+    protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode, final String expectedErrMsg, final String username, final String password) throws IOException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, KeyStoreException {
+        return sendEstRequest(false, estAlias, operation, message, expectedReturnCode, expectedErrMsg, username, password);
+    }
+    protected byte[] sendEstRequest(final boolean useTLSClientCert, final String estAlias, final String operation, final byte[] message, final int expectedReturnCode, final String expectedErrMsg, final String username, final String password) throws IOException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, KeyStoreException {
+        // POST the ESTrequest (URL can be set in systemtests.properties, and overridden by system property)
+        final String urlString;
+        if (useTLSClientCert) {
+            urlString = getProperty("httpEstClientCertProxyURL", this.httpsPrivReqPath) + estAlias + '/' + operation;            
+        } else {
+            urlString = getProperty("httpEstNoClientCertProxyURL", this.httpsPubReqPath) + estAlias + '/' + operation;
+        }
         log.info("http URL: " + urlString);
-        URL url = new URL(urlString);
+        final URL url = new URL(urlString);
 
         // Create TLS context that accepts all CA certificates and does not use client cert authentication
-        SSLContext context = SSLContext.getInstance("TLS");
-        TrustManager[] tm = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
-        context.init(null, tm, new SecureRandom());
+        final SSLContext context = SSLContext.getInstance("TLS");
+        final TrustManager[] tm = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
+        final KeyManager[] km;
+        if (useTLSClientCert) {
+            final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory.init(CLIENT_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
+            km = keyManagerFactory.getKeyManagers();            
+        } else {
+            km = null;
+        }
+        context.init(km, tm, new SecureRandom());
+
         SSLSocketFactory factory = context.getSocketFactory();
         HttpsURLConnection.setDefaultSSLSocketFactory(factory);
 
@@ -264,6 +323,7 @@ public abstract class EstTestCase extends CaTestCase {
         assertEquals("Unexpected HTTP response code: " + new String(errBytes) + ".", expectedReturnCode, con.getResponseCode());
         // Only try to read the response if we expected a 200 (ok) response
         if (expectedReturnCode != 200) {
+            assertEquals("Error message was not the expected", expectedErrMsg, new String(errBytes));
             return null;
         }
         // Check returned headers as specified in RFC7030 section 3.2.4
@@ -289,7 +349,6 @@ public abstract class EstTestCase extends CaTestCase {
         assertTrue(respBytes.length > 0);
         return respBytes;
     }
-
 
     private static String getProperty(String key, String defaultValue) {
         //If being run from command line
@@ -342,5 +401,116 @@ public abstract class EstTestCase extends CaTestCase {
         return p10request;
     }
 
+    /**
+     * 
+     * @param serverCertCaInfo CA that issued the client certificate, a CA trusted for TLS connections (configurable with target.servercert.ca)
+     * @param clientKeys client keys to be imported into client keystore
+     * @param clientCert client certificate to be imported into client keystore, need to be issued by serverCertCa in order for clint TLS to work
+     * @throws CertificateEncodingException 
+     * @throws KeyStoreException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
+    protected void setupClientKeyStore(final CAInfo serverCertCaInfo, final KeyPair clientKeys, final X509Certificate clientCert) 
+            throws CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
+        // Login Certificate setup:
+        // - - Import trusted CA (configurable with target.clientcert.ca) into loginKeyStore
+        // - Sign a certificate using this CA
+        // - RestApiTestUser certificate and private key import into loginKeyStore
+        // admin
+        CLIENT_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH);
+        /*
+        Only when we need to add the user to a role, which we don't for EST re-enroll
+        
+        final Role role = roleSession.getRole(ADMIN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
+        ROLE_MEMBER = roleMemberSession.persist(ADMIN,
+                new RoleMember(
+                        X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                        clientCertCaInfo.getCAId(),
+                        X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                        AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                        CERTIFICATE_USER_NAME,
+                        role.getRoleId(),
+                        CERTIFICATE_USER_NAME + " for REST API Tests"
+                )
+        );
+        */
+        importDataIntoJksKeystore(LOGIN_STORE_PATH, CLIENT_KEYSTORE, CertTools.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"), 
+                trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
+
+    }
+    /** @see RestResourceSystemTestBase
+     */
+    private static KeyStore initJksKeyStore(final String keyStoreFilePath) 
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
+        final File file = new File(keyStoreFilePath);
+        final KeyStore keyStore = KeyStore.getInstance("JKS");
+        if (file.exists()) {
+            keyStore.load(new FileInputStream(file), KEY_STORE_PASSWORD.toCharArray());
+        } else {
+            keyStore.load(null, null);
+            keyStore.store(new FileOutputStream(file), KEY_STORE_PASSWORD.toCharArray());
+        }
+        file.deleteOnExit(); // When this process stops (test completed) remove the temporary file 
+        return keyStore;
+    }
+    
+    /** Adds the common name to the Super Administrator Role
+     * 
+     * @param clientCertCaID the CA that issued the certificate to add to role
+     * @param certCN the common name of the certificate to add to role
+     * @throws AuthorizationDeniedException if unauthorized to modify role
+     */
+    protected RoleMember addToSuperAdminRole(final int clientCertCaID, final String certCN) throws AuthorizationDeniedException {
+        final Role role = roleSession.getRole(ADMIN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
+        RoleMember member = roleMemberSession.persist(ADMIN,
+                new RoleMember(
+                        X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                        clientCertCaID,
+                        X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                        AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                        certCN,
+                        role.getRoleId(),
+                        certCN + " for EST System Tests"
+                )
+        );
+        return member;
+    }
+
+    /** Removed the common name from the Super Administrator Role
+     * 
+     * @param roleMemberId the ID of the RoleMember that should be removed
+     * @throws AuthorizationDeniedException if unauthorized to modify role
+     */
+    protected void removeFromSuperAdminRole(final int roleMemberId) throws AuthorizationDeniedException {
+        roleMemberSession.remove(ADMIN, roleMemberId);
+    }
+
+    /** @see RestResourceSystemTestBase
+     * Assumes that keyStore already exists in keyStoreFilePath and simply adds content to this already existing keystore
+     */
+    private static void importDataIntoJksKeystore(
+            final String keyStoreFilePath,
+            final KeyStore keyStore,
+            final String keyStoreAlias,
+            final byte[] issuerCertificateBytes,
+            final KeyPair keyPair,
+            final byte[] certificateBytes
+    ) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        // Add the certificate
+        keyStore.deleteEntry(keyStoreAlias);
+        keyStore.setCertificateEntry(keyStoreAlias, CertTools.getCertfromByteArray(issuerCertificateBytes, Certificate.class));
+        // Add the key if exists
+        if(keyPair != null) {
+            final Certificate[] chain = { CertTools.getCertfromByteArray(certificateBytes, Certificate.class) };
+            keyStore.setKeyEntry(keyStoreAlias, keyPair.getPrivate(), KEY_STORE_PASSWORD.toCharArray(), chain);
+        }
+        // Save the new keystore contents
+        final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilePath);
+        keyStore.store(fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
+        fileOutputStream.close();
+    }
 
 }
