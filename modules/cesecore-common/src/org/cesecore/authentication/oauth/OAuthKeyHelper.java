@@ -23,10 +23,9 @@ public class OAuthKeyHelper {
         if (StringUtils.isEmpty(provider.getClient())) {
             throw new MissingOAuthKeyAttributeException("The Client field is mandatory for Azure Trusted OAuth Providers.");
         }
-        // Uncomment once the client secret gets merged to the epic branch
-        /*if (StringUtils.isEmpty(provider.getClientSecret())) {
-            throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for Azure Trusted OAuth Provider.");
-        }*/
+        if (StringUtils.isEmpty(provider.getClientSecretAndDecrypt())) {
+            throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for Azure Trusted OAuth Providers.");
+        }
     }
     
     public static void validateKeycloakType(OAuthKeyInfo provider) {
