@@ -96,7 +96,7 @@ public class EstAliasTest extends EstTestCase {
                 this.globalConfigurationSession.saveConfiguration(ADMIN, config);
             }
 
-            String urlString = this.httpReqPath;
+            String urlString = this.httpsPubReqPath;
             if(StringUtils.isNotEmpty(requestAlias)) {
                 urlString += requestAlias; 
                 urlString += "/" + operation;
