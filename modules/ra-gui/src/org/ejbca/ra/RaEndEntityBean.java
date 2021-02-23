@@ -13,11 +13,12 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
-import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +28,6 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.persistence.Id;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -80,6 +80,10 @@ public class RaEndEntityBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
+    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
+    private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
+
     private String username = null;
     private RaEndEntityDetails raEndEntityDetails = null;
     private Map<Integer, String> eepIdToNameMap = null;
@@ -95,11 +99,16 @@ public class RaEndEntityBean implements Serializable {
     private String enrollmentCodeConfirm = "";
     private boolean clearCsrChecked = false;
     private boolean authorized = false;
+    private int maxFailedLogins;
+    private int remainingLogin;
     private boolean resetRemainingLoginAttempts;
     private int eepId;
     private int cpId;
-    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles;
-    private Map<Integer, String> certificateProfiles;
+    private int caId;
+    private SubjectDn subjectDistinguishNames = null;
+    private SubjectAlternativeName subjectAlternativeNames = null;
+    private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
+    // private Map<Integer, String> endEntityProfiles; // TODO: use it for optimization
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -144,7 +153,16 @@ public class RaEndEntityBean implements Serializable {
                 }
                 raEndEntityDetails = new RaEndEntityDetails(endEntityInformation, raEndEntityDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caIdToNameMap);
                 selectedTokenType = endEntityInformation.getTokenType();
+
+                authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
                 authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
+                authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+
+                eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
+                cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
+                caId = raEndEntityDetails.getEndEntityInformation().getCAId();
+                maxFailedLogins = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getMaxLoginAttempts();
+                remainingLogin = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getRemainingLoginAttempts();
             }
         }
         issuedCerts = null;
@@ -152,8 +170,7 @@ public class RaEndEntityBean implements Serializable {
         selectableTokenTypes = null;
         selectedStatus = -1;
         clearCsrChecked = false;
-        eepId = raEndEntityDetails.getEepId();
-        cpId = raEndEntityDetails.getCpId();
+        resetRemainingLoginAttempts = false;
     }
     
     public boolean isAuthorized() {
@@ -193,7 +210,9 @@ public class RaEndEntityBean implements Serializable {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
-        final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
+        // EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username); // TODO: replace with the line above
+        ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
 
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
             // A new status was selected, verify the enrollment codes
@@ -226,44 +245,27 @@ public class RaEndEntityBean implements Serializable {
             }            
             changed = true;
         }
-        String subjectDn = raEndEntityDetails.getSubjectDistinguishedName().getValue();
+        String subjectDn = subjectDistinguishNames.getValue();
         if(!subjectDn.equals(endEntityInformation.getDN())) {
             endEntityInformation.setDN(subjectDn);
             changed = true;
         }
-        String subjectAn = raEndEntityDetails.getSubjectAlternativeName().getValue();
+        String subjectAn = subjectAlternativeNames.getValue();
         if (!subjectAn.equals(endEntityInformation.getSubjectAltName())) {
             endEntityInformation.setSubjectAltName(subjectAn);
             changed = true;
         }
-        String subjectDa = raEndEntityDetails.getSubjectDirectoryAttributes().getValue();
+        String subjectDa = subjectDirectoryAttributes.getValue();
         if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
             endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
-            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
-            if(extendedInformation == null) { // TODO: remove null safe-ing here
-                extendedInformation = new ExtendedInformation();
-            }
-            extendedInformation.setSubjectDirectoryAttributes(subjectDa);
-            endEntityInformation.setExtendedInformation(extendedInformation);
             changed = true;
         }
-        int maxLoginAttempts = raEndEntityDetails.getMaxLogin();
-        if (maxLoginAttempts != endEntityInformation.getExtendedInformation().getMaxLoginAttempts()) {
-            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
-            if(extendedInformation == null) {
-                extendedInformation = new ExtendedInformation();
-            }
-            extendedInformation.setMaxLoginAttempts(maxLoginAttempts);
-            endEntityInformation.setExtendedInformation(extendedInformation);
+        if (extendedInformation != null && maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
+            endEntityInformation.getExtendedInformation().setMaxLoginAttempts(maxFailedLogins);
             changed = true;
         }
-        if (resetRemainingLoginAttempts) {
-            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
-            if(extendedInformation == null) {
-                extendedInformation = new ExtendedInformation();
-            }
-            extendedInformation.setRemainingLoginAttempts(raEndEntityDetails.getMaxLogin());
-            endEntityInformation.setExtendedInformation(extendedInformation);
+        if (extendedInformation != null && resetRemainingLoginAttempts) {
+            endEntityInformation.getExtendedInformation().setRemainingLoginAttempts(maxFailedLogins);
             changed = true;
         }
         if (eepId != endEntityInformation.getEndEntityProfileId()) {
@@ -272,6 +274,10 @@ public class RaEndEntityBean implements Serializable {
         }
         if (cpId != endEntityInformation.getCertificateProfileId()) {
             endEntityInformation.setCertificateProfileId(cpId);
+            changed = true;
+        }
+        if (caId != endEntityInformation.getCAId()) {
+            endEntityInformation.setCAId(caId);
             changed = true;
         }
 
@@ -483,6 +489,34 @@ public class RaEndEntityBean implements Serializable {
         this.clearCsrChecked = checked;
     }
 
+    public int getMaxFailedLogins() {
+        return maxFailedLogins;
+    }
+
+    public void setMaxFailedLogins(int maxFailedLogins) {
+        this.maxFailedLogins = maxFailedLogins;
+    }
+
+    public boolean isUnlimited() {
+        return maxFailedLogins < 0;
+    }
+
+    public void setUnlimited(boolean unlimited) {
+        if (unlimited) {
+            maxFailedLogins = -1;
+        } else {
+            maxFailedLogins = 10; // hard coded default
+        }
+    }
+
+    public int getRemainingLogin() {
+        return remainingLogin;
+    }
+
+    public void setRemainingLogin(int remainingLogin) {
+        this.remainingLogin = remainingLogin;
+    }
+
     public boolean isResetRemainingLoginAttempts() {
         return resetRemainingLoginAttempts;
     }
@@ -491,8 +525,11 @@ public class RaEndEntityBean implements Serializable {
         this.resetRemainingLoginAttempts = resetRemainingLoginAttempts;
     }
 
-    public Map<Integer, String> getEepIdToNameMap() {
-        return eepIdToNameMap;
+    public Map<Integer, String> getEndEntityProfiles() {
+        return authorizedEndEntityProfiles.getIdMap()
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().getName()));
     }
 
     public int getEepId() {
@@ -500,25 +537,140 @@ public class RaEndEntityBean implements Serializable {
     }
 
     public void setEepId(int eepId) {
-        this.eepId = eepId;
-        cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
-    }
+        if (this.eepId != eepId) {
+            this.eepId = eepId;
+            EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+            if (eep.getAvailableCertificateProfileIds().contains(cpId)) {
+                setCpId(cpId);
+            } else {
+                setCpId(eep.getDefaultCertificateProfile());
+            }
 
-    public Map<Integer, String> getCpIdToNameMap() {
-        return cpIdToNameMap;
+            subjectDistinguishNames = null;
+            subjectAlternativeNames = null;
+            subjectDirectoryAttributes = null;
+        }
     }
 
     public int getCpId() {
         return cpId;
     }
 
+    /*public void setCpId(int cpId) {
+        this.cpId = cpId;
+        List<Integer> availableCAs = authorizedCertificateProfiles.getIdMap().get(cpId).getValue().getAvailableCAs();
+        if (availableCAs.size() == 1) {
+            if (availableCAs.get(0) == CertificateProfile.ANYCA) {
+                caId = authorizedCAInfos.getIdMap().entrySet().iterator().next().getKey();
+            } else {
+                caId = availableCAs.get(0);
+            }
+        } else if (!availableCAs.contains(caId)) {
+            caId = availableCAs.get(0);
+        }
+    }*/
+
+    /*public void setCpId(int cpId) {
+        this.cpId = cpId;
+        List<Integer> availableCAs = authorizedCertificateProfiles.getIdMap().get(cpId).getValue().getAvailableCAs();
+        int defaultCA = authorizedEndEntityProfiles.get(eepId).getValue().getDefaultCA();
+
+        if (availableCAs.size() == 1) {
+            if (availableCAs.get(0) == CertificateProfile.ANYCA) {
+                caId = authorizedCAInfos.idKeySet().contains(defaultCA) ? defaultCA : authorizedCAInfos.getIdMap().entrySet().iterator().next().getKey();
+            } else {
+                caId = availableCAs.get(0);
+            }
+        } else {
+            caId = availableCAs.contains(defaultCA) ? defaultCA : availableCAs.get(0);
+        }
+    }*/
+
     public void setCpId(int cpId) {
         this.cpId = cpId;
+        int defaultCA = authorizedEndEntityProfiles.get(eepId).getValue().getDefaultCA();
+        Map<Integer, String> cAs = getCertificateAuthorities();
+        if (cAs.size() == 0) {
+            caId = 0;
+        } else {
+            caId = cAs.keySet().contains(defaultCA) ? defaultCA : cAs.keySet().iterator().next();
+        }
     }
 
     public Map<Integer, String> getCertificateProfiles() {
-        return raEndEntityDetails.getAvailableCertificateProfilesByEepId(eepId)
-            .stream()
-            .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
+        List<Integer> availableCpIds = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCertificateProfileIds();
+        return availableCpIds.stream()
+                .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
+    }
+
+    public int getCaId() {
+        return caId;
+    }
+
+    public void setCaId(int caId) {
+        this.caId = caId;
+    }
+
+    public Map<Integer, String> getCertificateAuthorities() {
+        int eepAnyCa = 1;
+        List<Integer> eepCAs = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs();
+        CertificateProfile cp = authorizedCertificateProfiles.get(cpId).getValue();
+        List<Integer> cpCAs = authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs();
+        List<Integer> allCAs = new ArrayList<>(authorizedCAInfos.idKeySet());
+        List<Integer> usableCAs;
+        if (eepCAs.contains(eepAnyCa)) {
+            if (cp.isApplicableToAnyCA()) {
+                usableCAs = allCAs;
+            } else {
+                usableCAs = cpCAs;
+            }
+        } else {
+            if (cp.isApplicableToAnyCA()) {
+                usableCAs = eepCAs;
+            } else {
+                usableCAs = eepCAs.stream()
+                    .filter(cpCAs::contains)
+                    .collect(Collectors.toList());
+            }
+        }
+
+        return usableCAs.stream()
+            .collect(Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
+    }
+
+    public SubjectDn getSubjectDistinguishNames() {
+        if (subjectDistinguishNames == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            subjectDistinguishNames = new SubjectDn(eep, raEndEntityDetails.getSubjectDn());
+        }
+        return subjectDistinguishNames;
+    }
+
+    public void setSubjectDistinguishNames(SubjectDn subjectDistinguishNames) {
+        this.subjectDistinguishNames = subjectDistinguishNames;
+    }
+
+    public SubjectAlternativeName getSubjectAlternativeNames() {
+        if (subjectAlternativeNames == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            subjectAlternativeNames = new SubjectAlternativeName(eep, raEndEntityDetails.getSubjectAn());
+        }
+        return subjectAlternativeNames;
+    }
+
+    public void setSubjectAlternativeNames(SubjectAlternativeName subjectAlternativeNames) {
+        this.subjectAlternativeNames = subjectAlternativeNames;
+    }
+
+    public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
+        if (subjectDirectoryAttributes == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            subjectDirectoryAttributes = new SubjectDirectoryAttributes(eep, raEndEntityDetails.getSubjectDa());
+        }
+        return subjectDirectoryAttributes;
+    }
+
+    public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
+        this.subjectDirectoryAttributes = subjectDirectoryAttributes;
     }
 }
