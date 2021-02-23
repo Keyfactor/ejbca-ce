@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -157,11 +156,8 @@ public class RaEndEntityDetails {
         }
         return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_missingeep", eepId);
     }
-    public int getEepId() {
-        return eepId;
-    }
-    public int getCpId() {
-        return cpId;
+    public int getCaId() {
+        return endEntityInformation.getCAId();
     }
     public String getCreated() { return created; }
     public String getModified() { return modified; }
@@ -427,15 +423,6 @@ public class RaEndEntityDetails {
             this.subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile(), subjectDa);
         }
         return subjectDirectoryAttributes;
-
-    }
-
-    public List<Integer> getAvailableCertificateProfilesByEepId(int eepId) {
-        EndEntityProfile endEntityProfile = callbacks.getEndEntityProfile(eepId);
-        return Arrays.stream(endEntityProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0)
-            .split(EndEntityProfile.SPLITCHAR))
-            .map(Integer::valueOf)
-            .collect(Collectors.toList());
     }
 
     private EndEntityProfile getEndEntityProfile() {
@@ -497,34 +484,6 @@ public class RaEndEntityDetails {
             }
         }
         return ret.toString();
-    }
-
-    public int getMaxLogin() {
-        return getEndEntityInformation().getExtendedInformation().getMaxLoginAttempts();
-    }
-
-    public void setMaxLogin(int number) {
-        getEndEntityInformation().getExtendedInformation().setMaxLoginAttempts(number);
-    }
-
-    public boolean isUnlimited() {
-        return getMaxLogin() < 0;
-    }
-
-    public void setUnlimited(boolean unlimited) {
-        if (unlimited) {
-            setMaxLogin(-1);
-        } else {
-            setMaxLogin(1);
-        }
-    }
-
-    public int getRemainingLogin() {
-        return getEndEntityInformation().getExtendedInformation().getRemainingLoginAttempts();
-    }
-
-    public void setRemainingLogin(int number) {
-        getEndEntityInformation().getExtendedInformation().setRemainingLoginAttempts(number);
     }
 
     /** @return true every twice starting with every forth call */
