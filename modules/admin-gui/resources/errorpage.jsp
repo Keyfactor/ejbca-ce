@@ -27,11 +27,11 @@
         <H4><c:out value='<%= ejbcawebbean.getText(\"CAUSE\") + \" : \" + exception.getMessage() %>' /></H4><%
         response.setStatus(HttpServletResponse.SC_OK);
         response.addHeader("X-FRAME-OPTIONS", "DENY" );
-	} else if (exception instanceof AuthenticationFailedException) {
-	    // Print Authorization Denied Exception.
-	    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-	    response.addHeader("X-FRAME-OPTIONS", "DENY" );
-	    response.sendRedirect("/ejbca/adminweb/login.xhtml");;
+    } else if (exception instanceof AuthenticationFailedException) {
+        // Print Authorization Denied Exception.
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.addHeader("X-FRAME-OPTIONS", "DENY" );
+        response.sendRedirect("/ejbca/adminweb/login.xhtml");;
     } else if (exception instanceof CryptoTokenOfflineException) {
         // Print CryptoTokenOfflineException. %>
         <H2><c:out value='<%= ejbcawebbean.getText(\"CATOKENISOFFLINE\") %>' /></H2>
