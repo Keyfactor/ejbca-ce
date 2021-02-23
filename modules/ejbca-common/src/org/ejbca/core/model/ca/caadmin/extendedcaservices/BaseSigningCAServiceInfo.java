@@ -22,15 +22,13 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 
 /**
  * Base class for CAServiceInfo used by extended services that does signing 
- * 
- * @version $Id$
  */
 public abstract class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
        
     private static final long serialVersionUID = -6607852949410303766L;
     private String subjectdn      = null;
     private String subjectaltname = null;   
-	private String keyspec        = "1024"; // Default key length
+	private String keyspec        = "2048"; // Default key length
     private String keyalgorithm   = AlgorithmConstants.KEYALGORITHM_RSA; // Default key algo
     private List<Certificate>   certchain  = null;
     
