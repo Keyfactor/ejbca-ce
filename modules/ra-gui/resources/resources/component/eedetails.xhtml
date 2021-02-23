@@ -113,16 +113,16 @@
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="maxfailedlogin"
                 rendered="#{not cc.attrs.editMode}"
-                value="#{cc.attrs.raEndEntityDetails.maxLogin lt 0 ? msg.component_eedetails_field_max_failed_unlimited : cc.attrs.raEndEntityDetails.maxLogin}"
+                value="#{cc.attrs.raEndEntityBean.maxFailedLogins lt 0 ? msg.component_eedetails_field_max_failed_unlimited : cc.attrs.raEndEntityBean.maxFailedLogins}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
-                <h:selectOneRadio value="#{cc.attrs.raEndEntityDetails.unlimited}">
+                <h:selectOneRadio value="#{cc.attrs.raEndEntityBean.unlimited}">
                     <f:selectItem itemValue="#{true}" itemLabel="#{msg.component_eedetails_field_max_failed_unlimited} "/>
                     <f:selectItem itemValue="#{false}" itemLabel="#{msg.component_eedetails_field_max_failed_specify}"/>
                     <f:ajax event="change" render="maxnumber"/>
                 </h:selectOneRadio>
-                <h:inputText id="maxnumber" value="#{cc.attrs.raEndEntityDetails.maxLogin}" disabled="#{cc.attrs.raEndEntityDetails.unlimited}">
+                <h:inputText id="maxnumber" value="#{cc.attrs.raEndEntityBean.maxFailedLogins}" disabled="#{cc.attrs.raEndEntityBean.unlimited}">
                     <f:validateLength minimum="1"/>
                 </h:inputText>
             </h:panelGroup>
@@ -131,13 +131,13 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="remaininglogin"
                 rendered="#{not cc.attrs.editMode}"
-                value="#{cc.attrs.raEndEntityDetails.remainingLogin}"
+                value="#{cc.attrs.raEndEntityBean.remainingLogin}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
                 <h:inputText id="remainingloginnumber"
                     styleClass="remaining-number-of-login-attempts"
-                    value="#{cc.attrs.raEndEntityDetails.remainingLogin}"
+                    value="#{cc.attrs.raEndEntityBean.remainingLogin}"
                     disabled="true"/>
                 <h:selectBooleanCheckbox id="resetremaininglogin" value="#{cc.attrs.raEndEntityBean.resetRemainingLoginAttempts}"/>
                 <h:outputText value="Reset login attempts"/>
@@ -155,8 +155,8 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
                 rendered="#{cc.attrs.editMode}">
                 <h:selectOneMenu id="eepId" value="#{cc.attrs.raEndEntityBean.eepId}" styleClass="pure-input-1-4">
-                    <f:selectItems value="#{cc.attrs.raEndEntityBean.eepIdToNameMap.entrySet()}" var="eep" itemLabel="#{eep.value}" itemValue="#{eep.key}" />
-                    <f:ajax render="cpId"/>
+                    <f:selectItems value="#{cc.attrs.raEndEntityBean.endEntityProfiles.entrySet()}" var="eep" itemLabel="#{eep.value}" itemValue="#{eep.key}" />
+                    <f:ajax event="change" render="cpId caId subjectDistinguishNames subjectAlternativeNames subjectDirectoryAttributes"/>
                 </h:selectOneMenu>
             </h:panelGroup>
 
@@ -169,14 +169,23 @@
                 rendered="#{cc.attrs.editMode}">
                 <h:selectOneMenu id="cpId" value="#{cc.attrs.raEndEntityBean.cpId}" styleClass="pure-input-1-4">
                     <f:selectItems value="#{cc.attrs.raEndEntityBean.certificateProfiles.entrySet()}" var="cp" itemLabel="#{cp.value}" itemValue="#{cp.key}" />
+                    <f:ajax render="caId"/>
                 </h:selectOneMenu>
             </h:panelGroup>
 
 
             <h:outputLabel for="caname" value="#{msg.component_eedetails_field_caname}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="caname" value="#{cc.attrs.raEndEntityDetails.caName}"
+            <h:outputText id="caname" rendered="#{not cc.attrs.editMode}" value="#{cc.attrs.raEndEntityDetails.caName}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                    rendered="#{cc.attrs.editMode}">
+                <h:selectOneMenu id="caId" value="#{cc.attrs.raEndEntityBean.caId}" styleClass="pure-input-1-4">
+                    <f:selectItems value="#{cc.attrs.raEndEntityBean.certificateAuthorities.entrySet()}" var="ca" itemLabel="#{ca.value}" itemValue="#{ca.key}" />
+                </h:selectOneMenu>
+            </h:panelGroup>
+
             <h:outputLabel for="tokentype" value="#{msg.component_eedetails_field_tokentype}" rendered="#{!cc.attrs.editMode}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup id="tokentype" styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" rendered="#{!cc.attrs.editMode}">
@@ -319,10 +328,12 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <ui:fragment rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances and not cc.attrs.approvalRequestMode}">
+            <h:panelGroup id="subjectDistinguishNames"
+                styleClass="subjects"
+                rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances and not cc.attrs.approvalRequestMode}">
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectdn}"/>
-                <component:subjects fieldInstances="#{cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}" msgPrefix="#{'subject_dn_'}" />
-            </ui:fragment>
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDistinguishNames.fieldInstances}" msgPrefix="#{'subject_dn_'}" />
+            </h:panelGroup>
 
             <h:outputLabel for="subjectan" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -347,11 +358,13 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <ui:fragment rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances and not cc.attrs.approvalRequestMode}">
+            <h:panelGroup id="subjectAlternativeNames"
+                styleClass="subjects"
+                rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityBean.subjectAlternativeNames.fieldInstances and not cc.attrs.approvalRequestMode}">
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectan}"/>
-                <component:subjects fieldInstances="#{cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}" msgPrefix="#{'subject_alternative_name_'}" />
-            </ui:fragment>
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectAlternativeNames.fieldInstances}" msgPrefix="#{'subject_alternative_name_'}" />
+            </h:panelGroup>
 
             <h:outputLabel for="subjectda" rendered="#{not cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -362,7 +375,7 @@
                 value=" "/>
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances and cc.attrs.approvalRequestMode}">
                 <h3 class="h3Margin"><h:outputText value="#{msg.component_eedetails_header_subjectda}"/></h3>
-                <ui:repeat id="subjectDirectoryAttributes" value="#{cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}" var="instance">
+                <ui:repeat id="subjectDirectoryAttribute" value="#{cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                         <h:outputLabel for="subjectDirectoryAttributesFieldGroup" value="#{msg['subject_directory_attributes_'.concat(instance.name)]}" styleClass="#{cc.attrs.styleLabel}"/>
                         <h:panelGroup id="subjectDirectoryAttributesFieldGroup" styleClass="#{cc.attrs.styleValue}">
@@ -376,11 +389,13 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <ui:fragment rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances and not cc.attrs.approvalRequestMode}">
+            <h:panelGroup id="subjectDirectoryAttributes"
+                styleClass="subjects"
+                rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityBean.subjectDirectoryAttributes.fieldInstances and not cc.attrs.approvalRequestMode}">
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                 <h:outputLabel styleClass="#{cc.attrs.styleFull}" value="#{msg.component_eedetails_header_subjectda}"/>
-                <component:subjects fieldInstances="#{cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}" msgPrefix="#{'subject_directory_attributes_'}" />
-            </ui:fragment>
+                <component:subjects fieldInstances="#{cc.attrs.raEndEntityBean.subjectDirectoryAttributes.fieldInstances}" msgPrefix="#{'subject_directory_attributes_'}" />
+            </h:panelGroup>
 
             <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
                            rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
