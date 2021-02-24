@@ -108,8 +108,8 @@ public class RaEndEntityBean implements Serializable {
     private SubjectDn subjectDistinguishNames = null;
     private SubjectAlternativeName subjectAlternativeNames = null;
     private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
-    // private Map<Integer, String> endEntityProfiles; // TODO: use it for optimization
-
+    private Map<Integer, String> endEntityProfiles;
+    // TODO: java doc for all new methods
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -157,6 +157,10 @@ public class RaEndEntityBean implements Serializable {
                 authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
                 authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
                 authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+                endEntityProfiles = authorizedEndEntityProfiles.getIdMap()
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().getName()));
 
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
@@ -211,7 +215,6 @@ public class RaEndEntityBean implements Serializable {
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
         EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
-        // EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username); // TODO: replace with the line above
         ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
 
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
@@ -526,10 +529,7 @@ public class RaEndEntityBean implements Serializable {
     }
 
     public Map<Integer, String> getEndEntityProfiles() {
-        return authorizedEndEntityProfiles.getIdMap()
-            .entrySet()
-            .stream()
-            .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().getName()));
+        return endEntityProfiles;
     }
 
     public int getEepId() {
@@ -555,36 +555,6 @@ public class RaEndEntityBean implements Serializable {
     public int getCpId() {
         return cpId;
     }
-
-    /*public void setCpId(int cpId) {
-        this.cpId = cpId;
-        List<Integer> availableCAs = authorizedCertificateProfiles.getIdMap().get(cpId).getValue().getAvailableCAs();
-        if (availableCAs.size() == 1) {
-            if (availableCAs.get(0) == CertificateProfile.ANYCA) {
-                caId = authorizedCAInfos.getIdMap().entrySet().iterator().next().getKey();
-            } else {
-                caId = availableCAs.get(0);
-            }
-        } else if (!availableCAs.contains(caId)) {
-            caId = availableCAs.get(0);
-        }
-    }*/
-
-    /*public void setCpId(int cpId) {
-        this.cpId = cpId;
-        List<Integer> availableCAs = authorizedCertificateProfiles.getIdMap().get(cpId).getValue().getAvailableCAs();
-        int defaultCA = authorizedEndEntityProfiles.get(eepId).getValue().getDefaultCA();
-
-        if (availableCAs.size() == 1) {
-            if (availableCAs.get(0) == CertificateProfile.ANYCA) {
-                caId = authorizedCAInfos.idKeySet().contains(defaultCA) ? defaultCA : authorizedCAInfos.getIdMap().entrySet().iterator().next().getKey();
-            } else {
-                caId = availableCAs.get(0);
-            }
-        } else {
-            caId = availableCAs.contains(defaultCA) ? defaultCA : availableCAs.get(0);
-        }
-    }*/
 
     public void setCpId(int cpId) {
         this.cpId = cpId;
