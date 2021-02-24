@@ -59,24 +59,6 @@
 					</h:selectOneRadio>
 				</h:panelGroup>
 				
-				<h:panelGroup>
-					<h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX}"
-						styleClass="titles" />
-					<br />
-					<h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX_HELP}"
-						styleClass="help" />
-				</h:panelGroup>
-				<h:inputText value="#{editEstConfigMBean.raNameGenPrefix}"
-					disabled="#{editEstConfigMBean.viewOnly}" />
-				<h:panelGroup>
-					<h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX}"
-						styleClass="titles" />
-					<br />
-					<h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX_HELP}"
-						styleClass="help" />
-				</h:panelGroup>
-				<h:inputText value="#{editEstConfigMBean.raNameGenPostfix}"
-					disabled="#{editEstConfigMBean.viewOnly}" />
 			</h:panelGrid>
 			
 			<!-- Client Mode   -->
@@ -191,7 +173,6 @@
     	            		<f:ajax render="estconfiguration:vendorcas"/>
                 		</h:commandButton>
                 		<br/>
-                		<!-- h:outputText value="#{editEstConfigMBean.estAlias.selectedVendorCa}"/-->
                 		<h:outputText value="#{editEstConfigMBean.currentVendorCa}"/>
     	        	</h:panelGroup>
 					
@@ -271,7 +252,24 @@
 							value="#{editEstConfigMBean.raNameGenParams}"
 							rendered="#{editEstConfigMBean.raNameGenScheme eq 'DN'}" />
 					</h:panelGroup>
-
+					<h:panelGroup>
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX}"
+							styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX_HELP}"
+							styleClass="help" />
+					</h:panelGroup>
+					<h:inputText value="#{editEstConfigMBean.raNameGenPrefix}"
+						disabled="#{editEstConfigMBean.viewOnly}" />
+					<h:panelGroup>
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX}"
+							styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX_HELP}"
+							styleClass="help" />
+					</h:panelGroup>
+					<h:inputText value="#{editEstConfigMBean.raNameGenPostfix}"
+						disabled="#{editEstConfigMBean.viewOnly}" />
 					<h:panelGroup>
 						<h:outputLabel for="listestdefaultca"
 							value="#{web.text.ESTDEFAULTCA}" styleClass="titles" />
@@ -317,24 +315,7 @@
 						<f:selectItems
 							value="#{editEstConfigMBean.certificateProfileItemList}" />
 					</h:selectOneMenu>
-
-					<h:panelGroup>&nbsp;</h:panelGroup>
-					<h:panelGroup>&nbsp;</h:panelGroup>
-					<h:panelGroup>&nbsp;</h:panelGroup>
-				</h:panelGrid>
-			</h:panelGroup>
-			<!-- RA Mode   -->
-
-			<h:panelGroup id="general">
-				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-					cellpadding="3" border="0" width="100%"
-					columnClasses="editColumnSystem1,editColumn2"
-					rowClasses="Row0,Row1">
-					<h:panelGroup>
-						<h:outputLabel value="General Configuration"
-							style="font-weight: bold;" />
-					</h:panelGroup>
-					<h:panelGroup>&nbsp;</h:panelGroup>
+									
 					<h:panelGroup>
 						<h:outputLabel for="checkboxrequirecert"
 							value="#{web.text.ESTREQUIRECERT}" styleClass="titles" />
@@ -378,6 +359,21 @@
 						<h:outputText value="*****"
 							rendered="#{editEstConfigMBean.viewOnly}" />
 					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
+				</h:panelGrid>
+			</h:panelGroup>
+			<!-- RA Mode   -->
+
+			<h:panelGroup id="general">
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+					cellpadding="3" border="0" width="100%"
+					columnClasses="editColumnSystem1,editColumn2"
+					rowClasses="Row0,Row1">
+					<h:panelGroup>
+						<h:outputLabel value="General Configuration"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
 					<h:panelGroup>
 						<h:outputLabel for="checkboxkurusesamekeys"
 							value="#{web.text.ESTALLOWKURWITHSAMEKEY}" styleClass="titles" />
