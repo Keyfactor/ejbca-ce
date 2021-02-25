@@ -67,7 +67,7 @@ public class RemoveOAuthProviderCommand extends BaseOAuthConfigCommand {
                     getOAuthConfiguration().setDefaultOauthKey(null);
                 }
                 if(saveGlobalConfig()) {
-                    log.info("Trusted OAuth Provider with kid: " + labelToRemove + " successfully removed!");
+                    log.info("Trusted OAuth Provider with label: " + labelToRemove + " successfully removed!");
                     return CommandResult.SUCCESS;
                 } else {
                     log.info("Failed to update configuration due to authorization issue!");
@@ -76,7 +76,7 @@ public class RemoveOAuthProviderCommand extends BaseOAuthConfigCommand {
             }
         }
 
-        log.info("Trusted OAuth Provider with kid: " + labelToRemove + " not found!");
+        log.info("Trusted OAuth Provider with label: " + labelToRemove + " not found!");
         return CommandResult.FUNCTIONAL_FAILURE;
     }
 
