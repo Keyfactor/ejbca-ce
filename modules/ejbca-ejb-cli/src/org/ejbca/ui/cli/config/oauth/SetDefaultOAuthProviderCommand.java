@@ -71,14 +71,14 @@ public class SetDefaultOAuthProviderCommand extends BaseOAuthConfigCommand {
             // The user wants to clear the defaultKey entry by explicitly setting it as 'null'
             defaultKey = null;
         } else if (defaultKey == null) {
-            log.info("Trusted OAuth Provider with the kid " + label + " doesn't exist. Can't set a nonexistent Trusted OAuth Provider as default.");
+            log.info("Trusted OAuth Provider with the label " + label + " doesn't exist. Can't set a nonexistent Trusted OAuth Provider as default.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
         getOAuthConfiguration().setDefaultOauthKey(defaultKey);
         
         if (saveGlobalConfig()) {
-            log.info("Default Trusted OAuth Provider with kid: " + label + " set successfuly!");
+            log.info("Default Trusted OAuth Provider with label: " + label + " set successfuly!");
             return CommandResult.SUCCESS;
         } else {
             log.info("Failed to update configuration due to authorization issue!");

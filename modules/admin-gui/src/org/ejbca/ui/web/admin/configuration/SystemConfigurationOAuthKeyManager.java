@@ -160,7 +160,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void loadIntoEditor(final OAuthKeyInfo oauthKey, String defaultKeyLabel) {
             // Only replace the key if a new one was uploaded
             this.publicKeyFile = null;
-            this.publicKeys = new ArrayList<>(oauthKey.getKeys().values());
+            if (oauthKey.getKeys() == null) {
+                this.publicKeys = new ArrayList<>();
+            } else {
+                this.publicKeys = new ArrayList<>(oauthKey.getKeys().values());
+            }
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();

@@ -49,12 +49,12 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
         setOauthKeys(keys);
     }
 
-    public void removeOauthKey(String oauthKeyId) {
+    public void removeOauthKey(String label) {
         LinkedHashMap<String, OAuthKeyInfo> keys = new LinkedHashMap<>(getOauthKeys());
-        if (getDefaultOauthKey() != null && getDefaultOauthKey().getLabel().equals(oauthKeyId)) {
+        if (getDefaultOauthKey() != null && getDefaultOauthKey().getLabel().equals(label)) {
             setDefaultOauthKey(null);
         }
-        keys.remove(oauthKeyId);
+        keys.remove(label);
         setOauthKeys(keys);
     }
 
