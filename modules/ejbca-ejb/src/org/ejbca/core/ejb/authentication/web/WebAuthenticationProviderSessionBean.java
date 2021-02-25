@@ -134,6 +134,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 }
                 OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(signedJwt.getHeader().getKeyID());
                 if (oAuthPublicKey != null) {
+                    // Default provider (Key ID does not match)
                     if (verifyJwt(oAuthPublicKey, signedJwt)) {
                         keyFingerprint = oAuthPublicKey.getKeyFingerprint();
                     } else {
