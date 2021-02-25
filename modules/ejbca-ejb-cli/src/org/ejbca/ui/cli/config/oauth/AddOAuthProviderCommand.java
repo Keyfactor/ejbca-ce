@@ -99,7 +99,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         keyInfo.addPublicKey(kid, publicKeyByteArray);
         
         if (!canAdd(keyInfo)) {
-            log.info("Trusted OAuth Provider with same kid or internal Id exists!");
+            log.info("Trusted OAuth Provider with same label exists!");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         

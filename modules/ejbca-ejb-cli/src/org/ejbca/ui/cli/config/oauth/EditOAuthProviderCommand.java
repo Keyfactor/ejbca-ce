@@ -73,17 +73,17 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
 
-        String kid = parameters.get(KEYLABEL);
+        String label = parameters.get(KEYLABEL);
 
         for (Map.Entry<String, OAuthKeyInfo> entry : getOAuthConfiguration().getOauthKeys().entrySet()) {
-            if (entry.getValue().getLabel().equals(kid)) {
+            if (entry.getValue().getLabel().equals(label)) {
                 if (checkParametersAndSet(parameters, entry.getValue())) {
                     OAuthKeyInfo defaultKey = getOAuthConfiguration().getDefaultOauthKey();
                     if (defaultKey != null && entry.getValue().getLabel().equals(defaultKey.getLabel())) {
                         getOAuthConfiguration().setDefaultOauthKey(entry.getValue());
                     }
                     if (saveGlobalConfig()) {
-                        log.info("Trusted OAuth Provider with kid: " + kid + " successfully updated!");
+                        log.info("Trusted OAuth Provider with label: " + label + " successfully updated!");
                         return CommandResult.SUCCESS;
                     } else {
                         log.info("Failed to update configuration due to authorization issue!");
@@ -94,7 +94,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 }
             }
         }
-        log.info("No Trusted OAuth Provider with given kid: " + kid + " exists!");
+        log.info("No Trusted OAuth Provider with given label: " + label + " exists!");
         return CommandResult.FUNCTIONAL_FAILURE;
     }
 
@@ -117,6 +117,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         final String newLabel = parameters.get(NEW_LABEL);
         final String newClient = parameters.get(NEW_CLIENT);
         final String newRealm = parameters.get(NEW_REALM);
+        //TODO ECA-9820 suport multiple oauth public keys with CLI
 //        if (newKid != null) {
 //            if (canEditKid(newKid)) {
 //                keyInfoToBeEdited.setKeyIdentifier(newKid);
@@ -135,6 +136,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             }
         }
 
+        //TODO ECA-9820 suport multiple oauth public keys with CLI
 //        if (newPublicKey != null) {
 //            if(!ArrayUtils.isEmpty(getOauthKeyPublicKey(newPublicKey))) {
 //                keyInfoToBeEdited.setPublicKeyBytes(getOauthKeyPublicKey(newPublicKey));

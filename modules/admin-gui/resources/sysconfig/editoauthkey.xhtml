@@ -96,8 +96,10 @@
                                  id="removePublicKeyButton"/>
             </h:column>
         </h:dataTable>
-        <h:panelGrid columns="2"
+        <h:panelGrid columns="2" styleClass="Row1"
                      rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode and systemConfigMBean.allowedToEditOauthKeys}">
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ADD_KEY}" styleClass="titles"/>
+            <div></div>
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REPLACE_PUBLICKEY} "
                           rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
             <t:inputFileUpload id="editedOAuthKeyFile"
@@ -110,7 +112,7 @@
                          disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
-            <h:commandButton id="addPublicKey" value="Upload public key"
+            <h:commandButton id="addPublicKey" value="#{web.text.OAUTHKEYCONFIGURATION_UPLOAD_KEY}"
                              action="#{systemConfigMBean.oauthKeyManager.addPublicKey}"/>
 
         </h:panelGrid>
