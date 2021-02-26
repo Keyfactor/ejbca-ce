@@ -58,7 +58,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -1061,12 +1060,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public boolean isSessionTimeoutEnabled() {
-        return globalconfiguration == null ? null : globalconfiguration.getUseSessionTimeout();
+        return globalconfiguration == null ? GlobalConfiguration.DEFAULTSESSIONTIMEOUT : globalconfiguration.getUseSessionTimeout();
     }
 
     @Override
     public int getSessionTimeoutTime() {
-        return globalconfiguration == null ? null : globalconfiguration.getSessionTimeoutTime();
+        return globalconfiguration == null ? GlobalConfiguration.DEFAULTSESSIONTIMEOUTTIME : globalconfiguration.getSessionTimeoutTime();
     }
 
     @Override
