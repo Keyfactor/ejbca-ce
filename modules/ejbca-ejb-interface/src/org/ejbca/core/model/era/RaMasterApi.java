@@ -749,7 +749,7 @@ public interface RaMasterApi {
      * @throws CustomFieldException if the EE was not validated by a locally defined field validator
      * @since RA Master API version 2 (EJBCA 6.11.0)
      */
-    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;

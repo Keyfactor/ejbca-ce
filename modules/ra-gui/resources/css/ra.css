@@ -289,13 +289,27 @@ img.menu_logo {
 }
 
 /* End Entity status change */
-.ra-editEndEntity select, .ra-editEndEntity input {
+.ra-editEndEntity select, .ra-editEndEntity input, .ra-editEndEntity .warning {
     color: #000000;
+	margin-right: 5px;
 }
 
-.ra-editEndEntity .remaining-number-of-login-attempts {
+#detailsForm .ra-editEndEntity table {
+	display: inline-block;
+}
+
+#detailsForm .ra-editEndEntity table td{
+	padding-right: 10px;
+}
+
+.ra-editEndEntity .remaining-number-of-login-attempts, .ra-editEndEntity .next-to-radio {
 	width: 40px;
 	margin-right: 15px;
+}
+
+#detailsForm .ra-editEndEntity table+.next-to-radio {
+	position: relative;
+	top: -10px;
 }
 
 /* End Entity status change */
