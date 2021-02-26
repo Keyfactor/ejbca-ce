@@ -42,12 +42,24 @@
         <composite:implementation>
             <h:outputLabel for="username" value="#{msg.component_eedetails_field_username}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:panelGroup id="username" styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+            <h:panelGroup id="username"
+                rendered="#{!cc.attrs.editMode}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                 <h:outputText value="#{cc.attrs.raEndEntityDetails.username} "/>
                 <h:outputLink value="endentity.xhtml" styleClass="fineprint">
                     <f:param name="ee" value="#{cc.attrs.raEndEntityDetails.username}"/>
                     <h:outputText value="#{msg.component_eedetails_link_perm}"/>
                 </h:outputLink>
+            </h:panelGroup>
+            <h:panelGroup id="newUsername"
+                          rendered="#{cc.attrs.editMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}  ra-editEndEntity">
+                <h:inputText id="ajaxUsername" value="#{cc.attrs.raEndEntityBean.username}">
+                    <f:ajax event="keyup" render="usernameWarning"/>
+                    <f:validator validatorId="extendedRequiredValidator"/>
+                    <f:attribute name="_required" value="true"/>
+                </h:inputText>
+                <h:outputText id="usernameWarning" value="#{cc.attrs.raEndEntityBean.usernameWarning} " styleClass="warning"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{not cc.attrs.approvalRequestMode}">
@@ -122,7 +134,7 @@
                     <f:selectItem itemValue="#{false}" itemLabel="#{msg.component_eedetails_field_max_failed_specify}"/>
                     <f:ajax event="change" render="maxnumber"/>
                 </h:selectOneRadio>
-                <h:inputText id="maxnumber" value="#{cc.attrs.raEndEntityBean.maxFailedLogins}" disabled="#{cc.attrs.raEndEntityBean.unlimited}">
+                <h:inputText id="maxnumber" styleClass="next-to-radio" value="#{cc.attrs.raEndEntityBean.maxFailedLogins}" disabled="#{cc.attrs.raEndEntityBean.unlimited}">
                     <f:validateLength minimum="1"/>
                 </h:inputText>
             </h:panelGroup>
