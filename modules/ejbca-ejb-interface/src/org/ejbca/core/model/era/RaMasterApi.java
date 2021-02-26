@@ -485,6 +485,14 @@ public interface RaMasterApi {
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EjbcaException;
 
     /**
+     * Revoke and then delete a user.
+     * @throws ApprovalException if an approval already exists for this request.
+     * @throws NoSuchEndEntityException if the end entity was not found.
+     * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
+     */
+    void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason) throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException;
+
+    /**
      * Deletes (end entity) user. Does not propagate the exceptions but logs them, i.e. if end entity does not exist the method still succeeds.
      * @param authenticationToken authentication token
      * @param username the username of the end entity user to be deleted

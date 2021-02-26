@@ -37,9 +37,11 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -114,6 +116,7 @@ public class RaEndEntityBean implements Serializable {
     private SubjectAlternativeName subjectAlternativeNames = null;
     private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
     private Map<Integer, String> endEntityProfiles;
+    private boolean deleted = false;
     // TODO: java doc for all new methods
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -324,6 +327,32 @@ public class RaEndEntityBean implements Serializable {
                 raLocaleBean.addMessageError("editendentity_failure");
             }
         }
+        editEditEndEntityCancel();
+    }
+
+    /**
+     * Cancels edit mode and reloads
+     */
+    public void revokeCertificatesAndDeleteEndEntity() {
+        try {
+            raMasterApiProxyBean.revokeAndDeleteUser(
+                raAuthenticationBean.getAuthenticationToken(),
+                raEndEntityDetails.getEndEntityInformation().getUsername(),
+                RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED
+            );
+            raLocaleBean.addMessageError("editendentity_deleted");
+        } catch (AuthorizationDeniedException e) {
+            raLocaleBean.addMessageError("editendentity_unauthorized");
+        } catch (NoSuchEndEntityException e) {
+            raLocaleBean.addMessageError("editendentity_no_such_ca"); // TODO: change end entity not found
+        } catch (WaitingForApprovalException e) {
+            raLocaleBean.addMessageError("editendentity_approval_sent");
+        } catch (CouldNotRemoveEndEntityException e) {
+            raLocaleBean.addMessageError("editendentity_failure"); // TODO: find an appropriate text
+        } catch (ApprovalException e) {
+            raLocaleBean.addMessageError("editendentity_approval_sent"); // TODO: find an appropriate text
+        }
+        deleted = true;
         editEditEndEntityCancel();
     }
 
@@ -667,5 +696,9 @@ public class RaEndEntityBean implements Serializable {
 
     public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
         this.subjectDirectoryAttributes = subjectDirectoryAttributes;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
 }
