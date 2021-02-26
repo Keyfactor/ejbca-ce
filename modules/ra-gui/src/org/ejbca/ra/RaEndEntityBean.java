@@ -14,11 +14,10 @@ package org.ejbca.ra;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -79,6 +78,12 @@ public class RaEndEntityBean implements Serializable {
     @ManagedProperty(value="#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
+
+    @ManagedProperty(value="#{msg}")
+    private ResourceBundle msg;
+    public void setMsg(ResourceBundle msg) {
+        this.msg = msg;
+    }
 
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
@@ -182,6 +187,11 @@ public class RaEndEntityBean implements Serializable {
     }
 
     public String getUsername() { return username; }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public RaEndEntityDetails getEndEntity() { return raEndEntityDetails; }
 
     /**
@@ -248,6 +258,11 @@ public class RaEndEntityBean implements Serializable {
             }            
             changed = true;
         }
+        String newUsername = null;
+        if (!username.equals(endEntityInformation.getUsername())) {
+            newUsername = username;
+            changed = true;
+        }
         String subjectDn = subjectDistinguishNames.getValue();
         if(!subjectDn.equals(endEntityInformation.getDN())) {
             endEntityInformation.setDN(subjectDn);
@@ -287,7 +302,7 @@ public class RaEndEntityBean implements Serializable {
         if (changed) {
             // Edit the End Entity if changes were made
             try {
-                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
+                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false, newUsername);
                 if (result) {
                     raLocaleBean.addMessageError("editendentity_success");
                 } else {
@@ -490,6 +505,16 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setClearCsrChecked(boolean checked) {
         this.clearCsrChecked = checked;
+    }
+
+    public String getUsernameWarning() {
+        if (!username.equals(raEndEntityDetails.getUsername())
+            && username != null
+            && !username.isEmpty()
+            && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username) != null) {
+            return msg.getString("enroll_already_exists");
+        } else
+            return "";
     }
 
     public int getMaxFailedLogins() {
