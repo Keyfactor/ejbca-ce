@@ -117,7 +117,7 @@ public class RaEndEntityBean implements Serializable {
     private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
     private Map<Integer, String> endEntityProfiles;
     private boolean deleted = false;
-    // TODO: java doc for all new methods
+
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -189,8 +189,16 @@ public class RaEndEntityBean implements Serializable {
         return authorized;
     }
 
+    /**
+     * @return the new username (can be same to old one)
+     */
     public String getUsername() { return username; }
 
+    /**
+     * Sets the username to a new username
+     *
+     * @param username the new username
+     */
     public void setUsername(String username) {
         this.username = username;
     }
@@ -344,13 +352,13 @@ public class RaEndEntityBean implements Serializable {
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageError("editendentity_unauthorized");
         } catch (NoSuchEndEntityException e) {
-            raLocaleBean.addMessageError("editendentity_no_such_ca"); // TODO: change end entity not found
+            raLocaleBean.addMessageError("editendentity_no_such_ee");
         } catch (WaitingForApprovalException e) {
             raLocaleBean.addMessageError("editendentity_approval_sent");
         } catch (CouldNotRemoveEndEntityException e) {
-            raLocaleBean.addMessageError("editendentity_failure"); // TODO: find an appropriate text
+            raLocaleBean.addMessageError("editendentity_reference_issue");
         } catch (ApprovalException e) {
-            raLocaleBean.addMessageError("editendentity_approval_sent"); // TODO: find an appropriate text
+            raLocaleBean.addMessageError("editendentity_approval_issue");
         }
         deleted = true;
         editEditEndEntityCancel();
@@ -445,7 +453,7 @@ public class RaEndEntityBean implements Serializable {
     /**
      * Sets the enrollment code (confirm) field
      * 
-     * @param enrollmentCode the new enrollment code (confirm)
+     * @param enrollmentCodeConfirm the new enrollment code (confirm)
      */
     public void setEnrollmentCodeConfirm(String enrollmentCodeConfirm) {
         this.enrollmentCodeConfirm = enrollmentCodeConfirm;
@@ -536,6 +544,9 @@ public class RaEndEntityBean implements Serializable {
         this.clearCsrChecked = checked;
     }
 
+    /**
+     * @return blank String ("") if username is unchanged or unique, otherwise return a message saying already exists
+     */
     public String getUsernameWarning() {
         if (!username.equals(raEndEntityDetails.getUsername())
             && username != null
@@ -546,6 +557,9 @@ public class RaEndEntityBean implements Serializable {
             return "";
     }
 
+    /**
+     * @return maximum number of failed login attempts allowed
+     */
     public int getMaxFailedLogins() {
         return maxFailedLogins;
     }
@@ -554,10 +568,19 @@ public class RaEndEntityBean implements Serializable {
         this.maxFailedLogins = maxFailedLogins;
     }
 
+    /**
+     * @return true if unlimited number of failed login attempts allowed, otherwise false
+     */
     public boolean isUnlimited() {
         return maxFailedLogins < 0;
     }
 
+    /**
+     * Sets the maximum number of failed login attempts to -1 if unlimited is true
+     * Sets the maximum number of failed login attempts to 10 if unlimited is false
+     *
+     * @param unlimited the new value of unlimited
+     */
     public void setUnlimited(boolean unlimited) {
         if (unlimited) {
             maxFailedLogins = -1;
@@ -566,30 +589,57 @@ public class RaEndEntityBean implements Serializable {
         }
     }
 
+    /**
+     * @return true if enrollment code or confirm enrollment code is blank
+     */
     public int getRemainingLogin() {
         return remainingLogin;
     }
 
+    /**
+     * Sets the
+     *
+     * @param remainingLogin the new remaining number of login attempts
+     */
     public void setRemainingLogin(int remainingLogin) {
         this.remainingLogin = remainingLogin;
     }
 
+    /**
+     * @return true if enrollment code or confirm enrollment code is blank
+     */
     public boolean isResetRemainingLoginAttempts() {
         return resetRemainingLoginAttempts;
     }
 
+    /**
+     * Sets the flag to reset remaining number of login attempts
+     *
+     * @param resetRemainingLoginAttempts the new value of the
+     */
     public void setResetRemainingLoginAttempts(boolean resetRemainingLoginAttempts) {
         this.resetRemainingLoginAttempts = resetRemainingLoginAttempts;
     }
 
+    /**
+     * @return a map with end entity profile id as key and end entity profile name as value (for end entity profile select options)
+     */
     public Map<Integer, String> getEndEntityProfiles() {
         return endEntityProfiles;
     }
 
+    /**
+     * @return selected end entity profile id
+     */
     public int getEepId() {
         return eepId;
     }
 
+    /**
+     * Sets the selected end entity profile id
+     *
+     * @param eepId the new end entity profile id
+     */
     public void setEepId(int eepId) {
         if (this.eepId != eepId) {
             this.eepId = eepId;
@@ -606,10 +656,18 @@ public class RaEndEntityBean implements Serializable {
         }
     }
 
+    /**
+     * @return selected certificate profile id
+     */
     public int getCpId() {
         return cpId;
     }
 
+    /**
+     * Sets the selected certificate profile id
+     *
+     * @param cpId the new certificate profile id
+     */
     public void setCpId(int cpId) {
         this.cpId = cpId;
         int defaultCA = authorizedEndEntityProfiles.get(eepId).getValue().getDefaultCA();
@@ -621,20 +679,34 @@ public class RaEndEntityBean implements Serializable {
         }
     }
 
+    /**
+     * @return a map with certificate profile id as key and certificate profile name as value (for certificate profile select options)
+     */
     public Map<Integer, String> getCertificateProfiles() {
         List<Integer> availableCpIds = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCertificateProfileIds();
         return availableCpIds.stream()
                 .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
     }
 
+    /**
+     * @return selected certificate authority id
+     */
     public int getCaId() {
         return caId;
     }
 
+    /**
+     * Sets the selected certificate authority id
+     *
+     * @param caId the new certificate authority id
+     */
     public void setCaId(int caId) {
         this.caId = caId;
     }
 
+    /**
+     * @return a map with certificate authority id as key and certificate authority name as value (for certificate authority select options)
+     */
     public Map<Integer, String> getCertificateAuthorities() {
         int eepAnyCa = 1;
         List<Integer> eepCAs = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs();
@@ -662,6 +734,9 @@ public class RaEndEntityBean implements Serializable {
             .collect(Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
     }
 
+    /**
+     * @return subject distinguish names currently typed in edit mode
+     */
     public SubjectDn getSubjectDistinguishNames() {
         if (subjectDistinguishNames == null) {
             EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
@@ -670,10 +745,18 @@ public class RaEndEntityBean implements Serializable {
         return subjectDistinguishNames;
     }
 
+    /**
+     * Sets the subject distinguish names
+     *
+     * @param subjectDistinguishNames the new subject distinguish names
+     */
     public void setSubjectDistinguishNames(SubjectDn subjectDistinguishNames) {
         this.subjectDistinguishNames = subjectDistinguishNames;
     }
 
+    /**
+     * @return subject alternative names currently typed in edit mode
+     */
     public SubjectAlternativeName getSubjectAlternativeNames() {
         if (subjectAlternativeNames == null) {
             EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
@@ -682,10 +765,18 @@ public class RaEndEntityBean implements Serializable {
         return subjectAlternativeNames;
     }
 
+    /**
+     * Sets the subject alternative names
+     *
+     * @param subjectAlternativeNames the new subject alternative names
+     */
     public void setSubjectAlternativeNames(SubjectAlternativeName subjectAlternativeNames) {
         this.subjectAlternativeNames = subjectAlternativeNames;
     }
 
+    /**
+     * @return subject directory attributes currently typed in edit mode
+     */
     public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
         if (subjectDirectoryAttributes == null) {
             EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
@@ -694,10 +785,18 @@ public class RaEndEntityBean implements Serializable {
         return subjectDirectoryAttributes;
     }
 
+    /**
+     * Sets the subject directory attributes
+     *
+     * @param subjectDirectoryAttributes the new subject directory attributes
+     */
     public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
         this.subjectDirectoryAttributes = subjectDirectoryAttributes;
     }
 
+    /**
+     * @return true if attempted to delete end entity in edit mode, otherwise false
+     */
     public boolean isDeleted() {
         return deleted;
     }
