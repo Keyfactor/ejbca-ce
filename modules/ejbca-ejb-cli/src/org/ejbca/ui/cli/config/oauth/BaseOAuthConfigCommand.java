@@ -80,9 +80,9 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
         return true;
     }
     
-    protected boolean canEditKid(final String kid) {
+    protected boolean canEditLabel(final String label) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
-            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), kid);
+            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), label);
             if (hasSameLabel) {
                 return false;
             }
