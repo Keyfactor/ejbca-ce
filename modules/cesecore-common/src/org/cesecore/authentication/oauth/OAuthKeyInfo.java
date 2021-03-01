@@ -13,6 +13,7 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -103,6 +104,23 @@ public final class OAuthKeyInfo implements Serializable {
 
     public Set<String> getAllKeyIdentifiers(){
         return keys.keySet();
+    }
+
+    public Collection<OAuthPublicKey> getKeyValues() {
+        if (keys != null) {
+            return keys.values();
+        } else {
+            return null;
+        }
+    }
+
+    public void setKeyValues(Collection<OAuthPublicKey> values) {
+        if (keys == null) {
+            keys = new LinkedHashMap<>();
+        }
+        for (OAuthPublicKey key : values) {
+            keys.put(key.getKeyIdentifier(), key);
+        }
     }
 
 
