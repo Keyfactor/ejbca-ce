@@ -67,7 +67,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     }
 
 
-    public OAuthKeyInfo getOauthKeyByKeyLabel(String label){
+    public OAuthKeyInfo getOauthKeyByLabel(String label){
         Map<String, OAuthKeyInfo> oauthKeys = getOauthKeys();
         final Optional<OAuthKeyInfo> optionalEntry = oauthKeys.values().stream().filter(
                 oauthInfo ->
