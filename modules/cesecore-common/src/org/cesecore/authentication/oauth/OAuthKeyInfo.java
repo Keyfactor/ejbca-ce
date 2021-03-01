@@ -98,11 +98,18 @@ public final class OAuthKeyInfo implements Serializable {
     }
 
     public void addPublicKey(String kid, byte[] bytes) {
+        if (keys == null) {
+            keys = new LinkedHashMap<>();
+        }
         keys.put(kid, new OAuthPublicKey(bytes, kid));
     }
 
-    public Set<String> getAllKeyIdentifiers(){
-        return keys.keySet();
+    public Set<String> getAllKeyIdentifiers() {
+        if (keys != null) {
+            return keys.keySet();
+        } else {
+            return null;
+        }
     }
 
 
