@@ -166,7 +166,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         final String authCode = params.get("code");
         final String state = params.get("state");
         if (verifyStateParameter(state)) {
-            OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByKeyLabel(oauthClicked);
+            OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
                 final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
                         getRedirectUri());
@@ -249,7 +249,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     }
 
     public void clickLoginLink(String keyLabel) throws IOException {
-        final OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByKeyLabel(keyLabel);
+        final OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(keyLabel);
         if (oAuthKeyInfo != null) {
             oauthClicked = keyLabel;
             String url = getOauthLoginUrl(oAuthKeyInfo);

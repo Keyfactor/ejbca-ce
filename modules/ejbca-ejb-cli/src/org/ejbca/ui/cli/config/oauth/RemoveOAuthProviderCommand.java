@@ -35,8 +35,8 @@ public class RemoveOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String LABEL = "--label";
 
     {
-        registerParameter(new Parameter(LABEL, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the Trusted OAuth Provider which is going to be removed."));
+        registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider name."));
     }
     
     @Override

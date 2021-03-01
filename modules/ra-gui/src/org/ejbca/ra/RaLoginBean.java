@@ -110,7 +110,7 @@ public class RaLoginBean implements Serializable {
         if (globalConfiguration == null) {
             initGlobalConfiguration();
         }
-        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByKeyLabel(oauthClicked);
+        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
             final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
                     getRedirectUri());
@@ -191,7 +191,7 @@ public class RaLoginBean implements Serializable {
     }
 
     public void clickLoginLink(String keyLabel) throws IOException {
-        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByKeyLabel(keyLabel);
+        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(keyLabel);
         if (oAuthKeyInfo != null) {
             oauthClicked = keyLabel;
             String url = getOauthLoginUrl(oAuthKeyInfo);
