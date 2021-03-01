@@ -28,8 +28,7 @@
         response.setStatus(HttpServletResponse.SC_OK);
         response.addHeader("X-FRAME-OPTIONS", "DENY" );
     } else if (exception instanceof AuthenticationFailedException) {
-        // Print Authorization Denied Exception.
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        // Redirect to the login page.
         response.addHeader("X-FRAME-OPTIONS", "DENY" );
         response.sendRedirect("/ejbca/adminweb/login.xhtml");;
     } else if (exception instanceof CryptoTokenOfflineException) {
