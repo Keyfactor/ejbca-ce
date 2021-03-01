@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.config.oauth;
 
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -32,7 +31,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     private static final Logger log = Logger.getLogger(EditOAuthProviderCommand.class);
 
-    private static final String KEYLABEL = "--keylabel";
+    private static final String LABEL = "--label";
     private static final String NEW_SKEW_LIMIT = "--new-skewlimit";
     private static final String NEW_URL = "--new-url";
     private static final String NEW_LABEL = "--new-label";
@@ -40,7 +39,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_REALM = "--new-realm";
 
     {
-        registerParameter(new Parameter(KEYLABEL, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(LABEL, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key identifier of the Trusted OAuth Provider to update its parameters."));
         registerParameter(new Parameter(NEW_SKEW_LIMIT, "Skew limit", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be updated."));
@@ -67,7 +66,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
 
-        String label = parameters.get(KEYLABEL);
+        String label = parameters.get(LABEL);
 
         for (Map.Entry<String, OAuthKeyInfo> entry : getOAuthConfiguration().getOauthKeys().entrySet()) {
             if (entry.getValue().getLabel().equals(label)) {
