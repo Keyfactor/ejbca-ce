@@ -59,12 +59,15 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testAddOAuthKey() {
-        keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0, OAuthProviderType.TYPE_AZURE));
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("test", 0, OAuthProviderType.TYPE_AZURE);
+        oAuthKeyInfo.addPublicKey("test", publicKey1);
+        keyManager.addOauthKey(oAuthKeyInfo);
         List<OAuthKeyInfo> keys = keyManager.getAllOauthKeys();        
         assertTrue(keys.size() == 1);
-        assertTrue(keys.get(0).getKeyFingerprint() != null);
-        assertTrue(keys.get(0).getKeyIdentifier().equals("test"));
-        assertTrue(Arrays.equals(keys.get(0).getPublicKeyBytes(), publicKey1));
+        final OAuthPublicKey oAuthPublicKey = keys.get(0).getKeys().entrySet().iterator().next().getValue();
+        assertTrue(oAuthPublicKey.getKeyFingerprint() != null);
+        assertTrue(oAuthPublicKey.getKeyIdentifier().equals("test"));
+        assertTrue(Arrays.equals(oAuthPublicKey.getPublicKeyBytes(), publicKey1));
         assertTrue(keys.get(0).getSkewLimit() == 0);
     }
     
@@ -73,9 +76,9 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveMissingOAuthKey() {
-        keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0, OAuthProviderType.TYPE_AZURE));
+        keyManager.addOauthKey(new OAuthKeyInfo("test", 0, OAuthProviderType.TYPE_AZURE));
         try {
-            keyManager.removeOauthKey(new OAuthKeyInfo("test2", publicKey1, 0, OAuthProviderType.TYPE_AZURE));
+            keyManager.removeOauthKey(new OAuthKeyInfo("test2", 0, OAuthProviderType.TYPE_AZURE));
         } finally {
             assertFalse(keyManager.getAllOauthKeys().isEmpty());
         }
@@ -86,7 +89,7 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testRemoveExistingOAuthKey() {
-        OAuthKeyInfo key = new OAuthKeyInfo("test", publicKey1, 0, OAuthProviderType.TYPE_AZURE);
+        OAuthKeyInfo key = new OAuthKeyInfo("test", 0, OAuthProviderType.TYPE_AZURE);
         keyManager.addOauthKey(key);
         keyManager.removeOauthKey(key);
         assertTrue(keyManager.getAllOauthKeys().isEmpty());
@@ -97,9 +100,9 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testCanAddOAuthKey() {
-        keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0, OAuthProviderType.TYPE_AZURE));
-        assertFalse(keyManager.canAdd(new OAuthKeyInfo("test", publicKey1, 100, OAuthProviderType.TYPE_AZURE)));
-        assertTrue(keyManager.canAdd(new OAuthKeyInfo("test1", publicKey1, 100, OAuthProviderType.TYPE_AZURE)));
+        keyManager.addOauthKey(new OAuthKeyInfo("test", 0, OAuthProviderType.TYPE_AZURE));
+        assertFalse(keyManager.canAdd(new OAuthKeyInfo("test", 100, OAuthProviderType.TYPE_AZURE)));
+        assertTrue(keyManager.canAdd(new OAuthKeyInfo("test1", 100, OAuthProviderType.TYPE_AZURE)));
     }
     
     /**
@@ -107,8 +110,8 @@ public class OAuthKeyManagerUnitTest {
      */
     @Test
     public void testCanEditOAuthKey() {
-        keyManager.addOauthKey(new OAuthKeyInfo("test", publicKey1, 0, OAuthProviderType.TYPE_AZURE));
-        OAuthKeyInfo keyToEdit = new OAuthKeyInfo("test2", publicKey1, 100, OAuthProviderType.TYPE_AZURE);
+        keyManager.addOauthKey(new OAuthKeyInfo("test", 0, OAuthProviderType.TYPE_AZURE));
+        OAuthKeyInfo keyToEdit = new OAuthKeyInfo("test2", 100, OAuthProviderType.TYPE_AZURE);
         keyManager.addOauthKey(keyToEdit);
         assertFalse(keyManager.canEdit(keyToEdit, "test"));
         assertTrue(keyManager.canEdit(keyToEdit, "test3"));
