@@ -29,6 +29,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -44,8 +45,6 @@ import org.junit.runners.MethodSorters;
 
 /**
  * Tests certificate store.
- *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CertReqHistorySessionTest {
@@ -79,7 +78,7 @@ public class CertReqHistorySessionTest {
      */
     @Test
     public void test01addCertReqHist() throws Exception {
-        log.trace(">test09addCertReqHist()");
+        log.trace(">test01addCertReqHist()");
 
         cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
@@ -87,6 +86,10 @@ public class CertReqHistorySessionTest {
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
 
         EndEntityInformation userdata = new EndEntityInformation();
+        userdata.setCAId(11111);
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.addEditEndEntityApprovalRequestId(12345);
+        userdata.setExtendedInformation(ei);
         Random rand = new Random(new Date().getTime() + 4711);
         for (int i = 0; i < 6; i++) {
             int randint = rand.nextInt(9);
@@ -99,7 +102,7 @@ public class CertReqHistorySessionTest {
 
         userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2");
         certReqHistoryProxySession.addCertReqHistoryData(cert2, userdata);
-        log.trace("<test09addCertReqHist()");
+        log.trace("<test01addCertReqHist()");
     }
 
     /**
