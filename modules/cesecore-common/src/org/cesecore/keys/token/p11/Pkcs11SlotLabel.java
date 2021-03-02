@@ -35,14 +35,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.keys.token.PKCS11SlotListWrapper;
+import org.cesecore.keys.token.PKCS11SlotListWrapperHelper;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11.exception.P11RuntimeException;
 
 /**
- * @version $Id$
- *
  * Object for handling a PKCS#11 Slot Label.
- *
  */
 public class Pkcs11SlotLabel {
 
@@ -120,7 +119,7 @@ public class Pkcs11SlotLabel {
             }
         }
         final long slot;
-        final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile); // must be called before any provider is created for libFile
+        final PKCS11SlotListWrapper p11 = PKCS11SlotListWrapperHelper.getSlotListWrapper(libFile); // must be called before any provider is created for libFile
         switch (this.type) {
         case SLOT_LABEL:
             slot = getSlotID(this.value, p11);
@@ -158,7 +157,7 @@ public class Pkcs11SlotLabel {
     /** @return a List of "slotId;tokenLabel" in the (indexed) order we get the from the P11 */
     public static List<String> getExtendedTokenLabels(final File libFile) {
         final List<String> tokenLabels = new ArrayList<>();
-        final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile);
+        final PKCS11SlotListWrapper p11 = PKCS11SlotListWrapperHelper.getSlotListWrapper(libFile);
         final long slots[] = p11.getSlotList();
         if (log.isDebugEnabled()) {
             log.debug("Found " + slots.length + " slots for '" +libFile + "'");
@@ -186,7 +185,7 @@ public class Pkcs11SlotLabel {
      * @throws NoSuchSlotException if no slot as defined by tokenLabel was found
 
      */
-    private static long getSlotID(final String tokenLabel, final Pkcs11Wrapper p11) throws NoSuchSlotException {
+    private static long getSlotID(final String tokenLabel, final PKCS11SlotListWrapper p11) throws NoSuchSlotException {
         final long slots[] = p11.getSlotList();
         if (log.isDebugEnabled()) {
             log.debug("Searching for token label:\t" + tokenLabel);
@@ -466,7 +465,7 @@ public class Pkcs11SlotLabel {
 
     /**
      * Creating dummy provider just to have C_Initialize executed with multiple
-     * thread argument. {@link Pkcs11Wrapper#getInstance(File)} should call it
+     * thread argument. {@link Pkcs11WrapperXX#getInstance(File)} should call it
      * before making any PKCS#11 calls. If not then C_Initialize will be called
      * with null argument causing multi threading to be disabled for the token.
      * 

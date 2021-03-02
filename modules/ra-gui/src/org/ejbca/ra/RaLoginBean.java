@@ -29,6 +29,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.apache.commons.codec.binary.Base64;
@@ -48,7 +49,8 @@ public class RaLoginBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaLoginBean.class);
     private GlobalConfiguration globalConfiguration;
-    
+    private OAuthConfiguration oAuthConfiguration;
+
     private Collection<OAuthKeyInfoGui> oauthKeys = null;
     /** A random identifier used to link requests, to avoid CSRF attacks. */
     private String stateInSession = null;
@@ -64,19 +66,9 @@ public class RaLoginBean implements Serializable {
     public class OAuthKeyInfoGui implements Serializable {
         private static final long serialVersionUID = 1L;
         String label;
-        String keyId;
 
-        public OAuthKeyInfoGui(String label, String keyId) {
+        public OAuthKeyInfoGui(String label) {
             this.label = label;
-            this.keyId = keyId;
-        }
-
-        public String getKeyId() {
-            return keyId;
-        }
-
-        public void setKeyId(String keyId) {
-            this.keyId = keyId;
         }
 
         public String getLabel() {
@@ -118,7 +110,7 @@ public class RaLoginBean implements Serializable {
         if (globalConfiguration == null) {
             initGlobalConfiguration();
         }
-        OAuthKeyInfo oAuthKeyInfo = globalConfiguration.getOauthKeyByKeyIdentifier(oauthClicked);
+        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
             final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
                     getRedirectUri());
@@ -134,15 +126,15 @@ public class RaLoginBean implements Serializable {
         }
 
     }
-    
+
     private void initOauthKeys() {
         oauthKeys = new ArrayList<>();
         initGlobalConfiguration();
-        Collection<OAuthKeyInfo> oAuthKeyInfos = globalConfiguration.getOauthKeys().values();
+        Collection<OAuthKeyInfo> oAuthKeyInfos = oAuthConfiguration.getOauthKeys().values();
         if (!oAuthKeyInfos.isEmpty()) {
             for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
                 if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
-                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getShowName(), oauthKeyInfo.getKeyIdentifier()));
+                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getLabel()));
                 }
             }
         }
@@ -189,6 +181,7 @@ public class RaLoginBean implements Serializable {
     }
     
     private void initGlobalConfiguration() {
+        oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalConfiguration.initializeRaWeb();
     }
@@ -197,14 +190,14 @@ public class RaLoginBean implements Serializable {
         return stateInSession != null && stateInSession.equals(state);
     }
 
-    public void clickLoginLink(String keyId) throws IOException {
-        OAuthKeyInfo oAuthKeyInfo = globalConfiguration.getOauthKeyByKeyIdentifier(keyId);
+    public void clickLoginLink(String keyLabel) throws IOException {
+        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(keyLabel);
         if (oAuthKeyInfo != null) {
-            oauthClicked = keyId;
+            oauthClicked = keyLabel;
             String url = getOauthLoginUrl(oAuthKeyInfo);
             FacesContext.getCurrentInstance().getExternalContext().redirect(url);
         } else {
-            log.info("Trusted provider info not found for keyId =" + keyId);
+            log.info("Trusted provider info not found for keyId =" + keyLabel);
         }
     }
 }

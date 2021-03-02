@@ -57,11 +57,9 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
 
     public class OAuthKeyInfoGui{
         String label;
-        String keyId;
 
-        public OAuthKeyInfoGui(String label, String url) {
+        public OAuthKeyInfoGui(String label) {
             this.label = label;
-            this.keyId = url;
         }
 
         public String getLabel() {
@@ -70,14 +68,6 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
 
         public void setLabel(String label) {
             this.label = label;
-        }
-
-        public String getKeyId() {
-            return keyId;
-        }
-
-        public void setKeyId(String keyId) {
-            this.keyId = keyId;
         }
     }
 
@@ -176,7 +166,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         final String authCode = params.get("code");
         final String state = params.get("state");
         if (verifyStateParameter(state)) {
-            OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getGlobalConfiguration().getOauthKeyByKeyIdentifier(oauthClicked);
+            OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
                 final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
                         getRedirectUri());
@@ -224,11 +214,11 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private void initOauthProviders() {
         oauthKeys = new ArrayList<>();
         ejbcaWebBean.reloadGlobalConfiguration();
-        Collection<OAuthKeyInfo> oAuthKeyInfos = ejbcaWebBean.getGlobalConfiguration().getOauthKeys().values();
+        Collection<OAuthKeyInfo> oAuthKeyInfos = ejbcaWebBean.getOAuthConfiguration().getOauthKeys().values();
         if (!oAuthKeyInfos.isEmpty()) {
             for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
                 if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
-                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getShowName(), oauthKeyInfo.getKeyIdentifier()));
+                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getLabel()));
                 }
             }
         }
@@ -258,14 +248,14 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         return uriBuilder.build().toString();
     }
 
-    public void clickLoginLink(String keyId) throws IOException {
-        final OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getGlobalConfiguration().getOauthKeyByKeyIdentifier(keyId);
+    public void clickLoginLink(String keyLabel) throws IOException {
+        final OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(keyLabel);
         if (oAuthKeyInfo != null) {
-            oauthClicked = keyId;
+            oauthClicked = keyLabel;
             String url = getOauthLoginUrl(oAuthKeyInfo);
             FacesContext.getCurrentInstance().getExternalContext().redirect(url);
         } else {
-            log.info("Trusted provider info not found for keyId =" + keyId);
+            log.info("Trusted provider info not found for keyId =" + keyLabel);
         }
     }
 
