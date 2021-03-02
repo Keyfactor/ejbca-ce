@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.config.oauth;
 
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -33,9 +32,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     private static final Logger log = Logger.getLogger(EditOAuthProviderCommand.class);
 
-    private static final String KEY_IDENTIFIER = "--keyidentifier";
-    private static final String NEW_KEY_IDENTIFIER = "--new-keyidentifier";
-    private static final String NEW_PUBLIC_KEY = "--new-publickey";
+    private static final String LABEL = "--label";
     private static final String NEW_SKEW_LIMIT = "--new-skewlimit";
     private static final String NEW_URL = "--new-url";
     private static final String NEW_LABEL = "--new-label";
@@ -44,12 +41,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_REALM = "--new-realm";
 
     {
-        registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(LABEL, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key identifier of the Trusted OAuth Provider to update its parameters."));
-        registerParameter(new Parameter(NEW_KEY_IDENTIFIER, "Key identifier", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "New key identifier of the Trusted OAuth Provider."));
-        registerParameter(new Parameter(NEW_PUBLIC_KEY, "Public key", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Public key to be updated."));
         registerParameter(new Parameter(NEW_SKEW_LIMIT, "Skew limit", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be updated."));
         registerParameter(new Parameter(NEW_URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -77,14 +70,14 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
 
-        String kid = parameters.get(KEY_IDENTIFIER);
+        String label = parameters.get(LABEL);
 
-        for (Map.Entry<Integer, OAuthKeyInfo> entry : getGlobalConfiguration().getOauthKeys().entrySet()) {
-            if (entry.getValue().getKeyIdentifier().equals(kid)) {
+        for (Map.Entry<String, OAuthKeyInfo> entry : getOAuthConfiguration().getOauthKeys().entrySet()) {
+            if (entry.getValue().getLabel().equals(label)) {
                 if (checkParametersAndSet(parameters, entry.getValue())) {
-                    OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
-                    if (defaultKey != null && entry.getValue().getInternalId() == defaultKey.getInternalId()) {
-                        getGlobalConfiguration().setDefaultOauthKey(entry.getValue());
+                    OAuthKeyInfo defaultKey = getOAuthConfiguration().getDefaultOauthKey();
+                    if (defaultKey != null && entry.getValue().getLabel().equals(defaultKey.getLabel())) {
+                        getOAuthConfiguration().setDefaultOauthKey(entry.getValue());
                     }
                     try {
                         OAuthKeyHelper.validateProvider(entry.getValue());
@@ -93,7 +86,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                         return CommandResult.FUNCTIONAL_FAILURE;
                     }
                     if (saveGlobalConfig()) {
-                        log.info("Trusted OAuth Provider with kid: " + kid + " successfully updated!");
+                        log.info("Trusted OAuth Provider with label: " + label + " successfully updated!");
                         return CommandResult.SUCCESS;
                     } else {
                         log.info("Failed to update configuration due to authorization issue!");
@@ -104,7 +97,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 }
             }
         }
-        log.info("No Trusted OAuth Provider with given kid: " + kid + " exists!");
+        log.info("No Trusted OAuth Provider with given label: " + label + " exists!");
         return CommandResult.FUNCTIONAL_FAILURE;
     }
 
@@ -120,22 +113,12 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     private boolean checkParametersAndSet(final ParameterContainer parameters,
             final OAuthKeyInfo keyInfoToBeEdited) {
-        final String newKid= parameters.get(NEW_KEY_IDENTIFIER);
         final String newSkewLimit= parameters.get(NEW_SKEW_LIMIT);
-        final String newPublicKey = parameters.get(NEW_PUBLIC_KEY);
         final String newUrl = parameters.get(NEW_URL);
         final String newLabel = parameters.get(NEW_LABEL);
         final String newClient = parameters.get(NEW_CLIENT);
         final String newClientSecret = parameters.get(NEW_CLIENT_SECRET);
         final String newRealm = parameters.get(NEW_REALM);
-        if (newKid != null) {
-            if (canEditKid(newKid)) {
-                keyInfoToBeEdited.setKeyIdentifier(newKid);
-            } else {
-                log.info("New given kid is null or kid with same name already exists!");
-                return false;
-            }
-        }
             
         if (newSkewLimit != null) {
             if (validateSkewLimit(newSkewLimit) >= 0) {
@@ -146,19 +129,16 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             }
         }
 
-        if (newPublicKey != null) {
-            if(!ArrayUtils.isEmpty(getOauthKeyPublicKey(newPublicKey))) {
-                keyInfoToBeEdited.setPublicKeyBytes(getOauthKeyPublicKey(newPublicKey));
+        if (newLabel != null) {
+            if(canEditLabel(newLabel)) {
+                keyInfoToBeEdited.setLabel(newLabel);
             } else {
-                log.info("New given public key is invalid!");
+                log.info("Trusted OAuth Provider with same label exists!");
                 return false;
             }
         }
         if (newUrl != null) {
             keyInfoToBeEdited.setUrl(newUrl);
-        }
-        if (newLabel != null) {
-            keyInfoToBeEdited.setLabel(newLabel);
         }
         if (newClient != null) {
             keyInfoToBeEdited.setClient(newClient);

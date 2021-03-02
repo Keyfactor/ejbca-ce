@@ -67,6 +67,7 @@ import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.keys.token.CryptoTokenInfo;
@@ -131,8 +132,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
         private boolean enableExternalScripts;
-        private List<OAuthKeyInfo> oauthKeys;
-        private String defaultOauthKeyIdentifier;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
@@ -185,15 +184,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
                 this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
-                this.oauthKeys = new ArrayList<>(globalConfig.getOauthKeys().values());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
                 this.ocspCleanupUse = globalConfig.getOcspCleanupUse();
                 this.ocspCleanupSchedule = globalConfig.getOcspCleanupSchedule();
                 this.ocspCleanupScheduleUnit = globalConfig.getOcspCleanupScheduleUnit();
-                
-                if (globalConfig.getDefaultOauthKey() != null) {
-                    this.defaultOauthKeyIdentifier = globalConfig.getDefaultOauthKey().getKeyIdentifier();
-                }
 
                 // Admin Preferences
                 if(adminPreference == null) {
@@ -253,10 +247,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableCommandLineDefaultUser(boolean enableCommandLineDefaultUser) { this.enableCommandLineDefaultUser=enableCommandLineDefaultUser; }
         public boolean getEnableExternalScripts() { return this.enableExternalScripts; }
         public void setEnableExternalScripts(boolean enableExternalScripts) { this.enableExternalScripts=enableExternalScripts; }
-        public List<OAuthKeyInfo> getOauthKeys() { return this.oauthKeys; }
-        public void setOauthKeys(List<OAuthKeyInfo> oauthKeys) { this.oauthKeys = oauthKeys; }
-        public String getDefaultOauthKeyIdentifier() { return this.defaultOauthKeyIdentifier; }
-        public void setDefaultOauthKeyIdentifier(String defaultOauthKeyIdentifier) { this.defaultOauthKeyIdentifier = defaultOauthKeyIdentifier; }
         public List<CTLogInfo> getCtLogs() { return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs = ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
@@ -341,6 +331,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private String selectedTab = null;
     private GlobalConfiguration globalConfig = null;
     private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
+    private OAuthConfiguration oAuthConfiguration = null;
     private AdminPreference adminPreference = null;
     private GuiInfo currentConfig = null;
     private ValidatorSettings validatorSettings;
@@ -402,6 +393,30 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
+    // ----------------------------------------------------
+    //               Trusted OAuth Providers
+    // ----------------------------------------------------
+
+
+    private List<OAuthKeyInfo> oauthKeys = null;
+    private String defaultOauthKeyLabel = null;
+
+    public List<OAuthKeyInfo> getOauthKeys() {
+        if (oauthKeys == null) {
+            this.oauthKeys = new ArrayList<>(getOAuthConfiguration().getOauthKeys().values());
+        }
+        return oauthKeys;
+    }
+    public void setOauthKeys(List<OAuthKeyInfo> oauthKeys) { this.oauthKeys = oauthKeys; }
+
+    public String getDefaultOauthKeyLabel() {
+        if (getOAuthConfiguration().getDefaultOauthKey() != null) {
+            defaultOauthKeyLabel = getOAuthConfiguration().getDefaultOauthKey().getLabel();
+        }
+        return defaultOauthKeyLabel;
+    }
+    public void setDefaultOauthKeyLabel(String defaultOauthKeyLabel) { this.defaultOauthKeyLabel = defaultOauthKeyLabel; }
+
     /**
      * Get an object which can be used to manage the OAuth Key configuration. This will create a new OAuth Key manager for
      * the OAuth Keys in the current configuration if no OAuth Key manager has been created, or the old OAuth Key manager
@@ -410,22 +425,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
      */
     public SystemConfigurationOAuthKeyManager getOauthKeyManager() {
         if (oauthKeyManager == null) {
-            this.currentConfig = null;
-            this.globalConfig = null;
-            getEjbcaWebBean().reloadGlobalConfiguration();
-            oauthKeyManager = new SystemConfigurationOAuthKeyManager(getCurrentConfig().getOauthKeys(),
+            this.oAuthConfiguration = null;
+            getEjbcaWebBean().reloadOAuthConfiguration();
+            oauthKeyManager = new SystemConfigurationOAuthKeyManager(getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
                     @Override
                     public void saveOauthKeys(final List<OAuthKeyInfo> oauthKeys) {
-                        getCurrentConfig().setOauthKeys(oauthKeys);
-                        saveCurrentConfig();
+                        setOauthKeys(oauthKeys);
+                        saveOAuthConfig();
                     }
                     
                     @Override
                     public void saveDefaultOauthKey(OAuthKeyInfo defaultKey) {
                         if (defaultKey != null) {
-                            getCurrentConfig().setDefaultOauthKeyIdentifier(defaultKey.getKeyIdentifier());
-                            saveCurrentConfig();
+                            setDefaultOauthKeyLabel(defaultKey.getLabel());
+                            saveOAuthConfig();
                         }
                     }
 
@@ -448,19 +462,42 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         oauthKeyManager.setAdminToken(getAdmin());
         return oauthKeyManager;
     }
+
+    public void saveOAuthConfig(){
+        try {
+            LinkedHashMap<String, OAuthKeyInfo> oauthKeysMap = new LinkedHashMap<>();
+            for (OAuthKeyInfo oauthKey : getOauthKeys()) {
+                oauthKeysMap.put(oauthKey.getLabel(), oauthKey);
+            }
+            getOAuthConfiguration().setOauthKeys(oauthKeysMap);
+
+            if (defaultOAuthKeySafeToChange(getDefaultOauthKeyLabel())) {
+                getOAuthConfiguration().setDefaultOauthKey(getOauthKeyByLabel(getDefaultOauthKeyLabel()));
+            } else {
+                addErrorMessage("OAUTHKEYTAB_EDITDEFAULTKEYNOTPOSSIBLE");
+            }
+
+            getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+            log.info(msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+        flushCache();
+    }
     
     /**
      * Verify that the current administrator can safely configure a new default oauth provider without getting locked out
-     * @param keyId is the key id for the provider to configure
+     * @param label is the key id for the provider to configure
      * @return true if safe to configure
      */
-    private boolean defaultOAuthKeySafeToChange(String keyId) {
+    private boolean defaultOAuthKeySafeToChange(String label) {
         if (getAdmin() instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
             try {
                 SignedJWT signedJwt = SignedJWT.parse(currentAdminToken.getEncodedToken());
                 String adminTokenkeyId = signedJwt.getHeader().getKeyID();
-                if (adminTokenkeyId == null && !keyId.equals(globalConfig.getDefaultOauthKey().getKeyIdentifier())) {
+                if (adminTokenkeyId == null && !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel())) {
                     return false;
                 }
             } catch (ParseException e) {
@@ -541,6 +578,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return globalConfig;
     }
 
+    private OAuthConfiguration getOAuthConfiguration() {
+        if (oAuthConfiguration == null) {
+            oAuthConfiguration = getEjbcaWebBean().getOAuthConfiguration();
+        }
+        return oAuthConfiguration;
+    }
+
     public AdminPreference getAdminPreference() throws Exception {
         if(adminPreference == null) {
             adminPreference = getEjbcaWebBean().getDefaultAdminPreference();
@@ -550,7 +594,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return cached or populate a new system configuration GUI representation for view or edit */
     public GuiInfo getCurrentConfig() {
-        if(this.currentConfig == null) {
+        if (this.currentConfig == null) {
             try {
                 this.currentConfig = new GuiInfo(getGlobalConfiguration(), getGlobalCesecoreConfiguration(), getAdminPreference());
             } catch (Exception e) {
@@ -630,9 +674,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    public OAuthKeyInfo getOauthKeyByIdentifier(String oauthKeyIdentifier) {
-        for (OAuthKeyInfo key : currentConfig.getOauthKeys()) {
-            if (key.getKeyIdentifier().equals(oauthKeyIdentifier)) {
+    public OAuthKeyInfo getOauthKeyByLabel(String oauthKeyLabel) {
+        for (OAuthKeyInfo key : getOauthKeys()) {
+            if (key.getLabel().equals(oauthKeyLabel)) {
                 return key;
             }
         }
@@ -888,7 +932,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final List<OAuthKeyInfo> keys = getOauthKeyManager().getAllOauthKeys();
         final List<SelectItem> ret = new ArrayList<>();
         for (final OAuthKeyInfo key : keys) {
-            ret.add(new SelectItem(key.getKeyIdentifier()));
+            ret.add(new SelectItem(key.getLabel()));
         }
         return ret;
     }
@@ -930,18 +974,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
                     globalConfig.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
                     globalConfig.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
-                }
-
-                LinkedHashMap<Integer, OAuthKeyInfo> oauthKeysMap = new LinkedHashMap<>();
-                for (OAuthKeyInfo oauthKey : currentConfig.getOauthKeys()) {
-                    oauthKeysMap.put(oauthKey.getInternalId(), oauthKey);
-                }
-                globalConfig.setOauthKeys(oauthKeysMap);
-                
-                if (defaultOAuthKeySafeToChange(currentConfig.getDefaultOauthKeyIdentifier())) {
-                    globalConfig.setDefaultOauthKey(getOauthKeyByIdentifier(currentConfig.getDefaultOauthKeyIdentifier()));
-                } else {
-                    addErrorMessage("OAUTHKEYTAB_EDITDEFAULTKEYNOTPOSSIBLE");
                 }
 
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
@@ -1023,10 +1055,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void flushCache() {
         globalConfig = null;
+        oAuthConfiguration = null;
         adminPreference = null;
         currentConfig = null;
         nodesInCluster = null;
         oauthKeyManager = null;
+        oauthKeys = null;
         ctLogManager = null;
         raStyleInfos = null;
         excludeActiveCryptoTokensFromClearCaches = true;

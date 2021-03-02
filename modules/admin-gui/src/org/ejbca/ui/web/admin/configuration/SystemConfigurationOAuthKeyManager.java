@@ -11,8 +11,12 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -22,6 +26,7 @@ import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.oauth.OAuthKeyManager;
+import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.keys.util.KeyTools;
@@ -55,15 +60,16 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private String clientSecret;
         private String realm;
         private UploadedFile publicKeyFile;
+        private List<OAuthPublicKey> publicKeys;
         private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
-        private String defaultKeyIdentifier;
+        private String defaultKeyLabel;
         private OAuthKeyEditorMode editorMode;
         
         public String getKeyIdentifier() {
             return keyIdentifier;
         }
-        
+
         public OAuthProviderType getType() {
             return type;
         }
@@ -88,8 +94,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return skewLimit;
         }
         
-        public String getDefaultKeyIdentifier() {
-            return defaultKeyIdentifier;
+        public String getDefaultKeyLabel() {
+            return defaultKeyLabel;
         }
         
         public void setKeyIdentifier(final String keyIdentifier) {
@@ -100,12 +106,23 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.publicKeyFile = publicKeyFile;
         }
 
+        public List<OAuthPublicKey> getPublicKeys() {
+            if (publicKeys == null) {
+                publicKeys = new ArrayList<>();
+            }
+            return publicKeys;
+        }
+
+        public void setPublicKeys(List<OAuthPublicKey> publicKeys) {
+            this.publicKeys = publicKeys;
+        }
+
         public void setSkewLimit(final int skewLimit) {
             this.skewLimit = skewLimit;
         }
         
-        public void setDefaultKeyIdentifier(final String defaultKeyIdentifier) {
-            this.defaultKeyIdentifier = defaultKeyIdentifier;
+        public void setDefaultKeyLabel(final String defaultKeyLabel) {
+            this.defaultKeyLabel = defaultKeyLabel;
         }
 
         public String getLabel() {
@@ -157,7 +174,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public boolean isAddMode(){
             return this.editorMode.equals(OAuthKeyEditorMode.ADD);
         }
-        
+
         public boolean isRealmRendered() {
             return OAuthProviderType.TYPE_KEYCLOAK.getIndex() == type.getIndex();
         }
@@ -165,10 +182,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         /**
          * Load an existing OAuth Key into the editor.
          */
-        public void loadIntoEditor(final OAuthKeyInfo oauthKey, String defaultKeyIdentifier) {
+        public void loadIntoEditor(final OAuthKeyInfo oauthKey, String defaultKeyLabel) {
             // Only replace the key if a new one was uploaded
             this.publicKeyFile = null;
-            this.keyIdentifier = oauthKey.getKeyIdentifier();
+            if (oauthKey.getKeys() == null) {
+                this.publicKeys = new ArrayList<>();
+            } else {
+                this.publicKeys = new ArrayList<>(oauthKey.getKeys().values());
+            }
             this.type = oauthKey.getType();
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
@@ -177,7 +198,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.realm = oauthKey.getRealm();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
-            this.defaultKeyIdentifier = defaultKeyIdentifier;
+            this.defaultKeyLabel = defaultKeyLabel;
         }
 
         /**
@@ -187,6 +208,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             keyIdentifier = null;
             type = OAuthProviderType.TYPE_AZURE;
             publicKeyFile = null;
+            publicKeys = null;
             url = null;
             label = null;
             client = null;
@@ -275,12 +297,58 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
     }
 
+    //Adds public key to list of keys
+    public String addPublicKey() {
+        if (StringUtils.isEmpty(oauthKeyEditor.getKeyIdentifier())) {
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_KEYIDENTIFIER_EMPTY");
+            return StringUtils.EMPTY;
+        }
+        if (oauthKeyEditor.getPublicKeyFile() == null) {
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_UPLOADFAILED");
+            return StringUtils.EMPTY;
+        }
+        //check same public key does not present
+        for(OAuthPublicKey key : oauthKeyEditor.getPublicKeys()){
+            if (key.getKeyIdentifier().equals(oauthKeyEditor.getKeyIdentifier())){
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTSKEY");
+                return StringUtils.EMPTY;
+            }
+        }
+
+        final byte[] newOauthKeyPublicKey = getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile());
+        if (newOauthKeyPublicKey == null) {
+            // Error already reported
+            return StringUtils.EMPTY;
+        }
+        oauthKeyEditor.getPublicKeys().add(
+                new OAuthPublicKey(newOauthKeyPublicKey, oauthKeyEditor.getKeyIdentifier()));
+        oauthKeyEditor.setKeyIdentifier(null);
+        oauthKeyEditor.setPublicKeyFile(null);
+        return StringUtils.EMPTY;
+    }
+
+    public String removePublicKey(OAuthPublicKey key){
+        /*
+         * Check that we don't lock out current administrator by changing the key id of currently used token
+         */
+        if ( getAdminToken()instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) getAdminToken();
+            String str = Base64.toBase64String(CertTools.generateSHA256Fingerprint(key.getPublicKeyBytes()));
+            if (str.equals(token.getPublicKeyBase64Fingerprint()) && !key.getKeyIdentifier().equals(oauthKeyEditor.getKeyIdentifier())) {
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_EDITKEYIDNOTPOSSIBLE");
+                return StringUtils.EMPTY;
+            }
+        }
+        getOauthKeyEditor().getPublicKeys().remove(key);
+        return StringUtils.EMPTY;
+    }
+
     /**
      * Adds an OAuth Key with the information stored in the OAuth Key editor.
      */
     public String addOauthKey() {
-        if (oauthKeyEditor.getPublicKeyFile() == null) {
-            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_UPLOADFAILED");
+        if (StringUtils.isEmpty(oauthKeyEditor.getLabel())) {
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_LABEL_EMPTY");
             return StringUtils.EMPTY;
         }
 
@@ -289,19 +357,22 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         }
 
-        final byte[] newOauthKeyPublicKey = getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile());
-        if (newOauthKeyPublicKey == null) {
-            // Error already reported
-            return StringUtils.EMPTY;
-        }
-
-        final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getKeyIdentifier(), newOauthKeyPublicKey, oauthKeyEditor.getSkewLimit(), 
+        final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getLabel(), oauthKeyEditor.getSkewLimit(),
                 oauthKeyEditor.getType());
         newOauthKey.setUrl(oauthKeyEditor.getUrl());
-        newOauthKey.setLabel(oauthKeyEditor.getLabel());
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setClient(oauthKeyEditor.getClient());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
+
+        if (oauthKeyEditor.getPublicKeys().isEmpty()) {
+            newOauthKey.setKeys(null);
+        } else {
+            final Map<String, OAuthPublicKey> newOauthKeyMap = new LinkedHashMap<>();
+            for (OAuthPublicKey key : oauthKeyEditor.getPublicKeys()) {
+                newOauthKeyMap.put(key.getKeyIdentifier(), key);
+            }
+            newOauthKey.setKeys(newOauthKeyMap);
+        }
 
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
@@ -324,12 +395,15 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     public void removeOauthKey(final OAuthKeyInfo oauthKey) {
         if (getAdminToken() instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken oauth2token = (OAuth2AuthenticationToken) getAdminToken();
-            oauthKeyEditor.loadIntoEditor(oauthKey, oauthKey.getKeyIdentifier());
-            String oauthKeyToBeRemovedString = Base64.toBase64String(CertTools.generateSHA256Fingerprint(oauthKeyEditor.oauthKeyBeingEdited.getPublicKeyBytes()));
+            oauthKeyEditor.loadIntoEditor(oauthKey, oauthKey.getLabel());
             oauthKeyEditor.stopEditing();
-            if (oauth2token.getPublicKeyBase64Fingerprint().equals(oauthKeyToBeRemovedString)) {
-                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_PUBLICKEYREMOVALNOTPOSSIBLE");
-                return;
+            final Collection<OAuthPublicKey> publicKeys = oauthKeyEditor.oauthKeyBeingEdited.getKeys().values();
+            for (OAuthPublicKey key : publicKeys) {
+                String oauthKeyToBeRemovedString = Base64.toBase64String(CertTools.generateSHA256Fingerprint(key.getPublicKeyBytes()));
+                if (oauth2token.getPublicKeyBase64Fingerprint().equals(oauthKeyToBeRemovedString)) {
+                    systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_PUBLICKEYREMOVALNOTPOSSIBLE");
+                    return;
+                }
             }
         }
         super.removeOauthKey(oauthKey);
@@ -380,7 +454,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     public OAuthKeyEditor getOauthKeyEditor() {
         return oauthKeyEditor;
     }
-    
+
     public List<OAuthProviderType> getAvailableProviderTypes() {
         return Arrays.asList(OAuthProviderType.values());
     }
@@ -394,44 +468,27 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         if (oauthKeyEditor.getOauthKeyBeingEdited() == null) {
             throw new IllegalStateException("The OAuth Key being edited has already been saved or was never loaded.");
         }
-        if (oauthKeyEditor.getPublicKeyFile() != null) {
-            final byte[] keyBytes = getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile());
-            if (keyBytes == null) {
-                // Error already reported
-                return StringUtils.EMPTY;
-            }
-        }
+
         if (oauthKeyEditor.getSkewLimit() < 0) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_SKEWLIMITNEGATIVE");
             return StringUtils.EMPTY;
         }
         final OAuthKeyInfo oauthKeyToUpdate = oauthKeyEditor.getOauthKeyBeingEdited();
-        
-        /*
-         * Check that we don't lock out current administrator by changing the key id of currently used token
-         */
-        if ((getAdminToken() != null) && getAdminToken()instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken adminToken = (OAuth2AuthenticationToken) getAdminToken();
-            String str = Base64.toBase64String(CertTools.generateSHA256Fingerprint(oauthKeyToUpdate.getPublicKeyBytes()));
-            if (str.equals(adminToken.getPublicKeyBase64Fingerprint()) && !oauthKeyToUpdate.getKeyIdentifier().equals(oauthKeyEditor.getKeyIdentifier())) {
-                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_EDITKEYIDNOTPOSSIBLE");
-                return StringUtils.EMPTY;
-            }
-        }
-        final String keyIdentifier = oauthKeyEditor.getKeyIdentifier();
-        if (!super.canEdit(oauthKeyToUpdate, keyIdentifier)) {
+
+        final String keyLabel = oauthKeyEditor.getLabel();
+        if (!oauthKeyToUpdate.getLabel().equals(keyLabel) && !super.canEdit(oauthKeyToUpdate, keyLabel)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
             return StringUtils.EMPTY;
         }
         /* Check if the OAuth key being edited is also set as the default key. Also check whether the key id is being changed. 
          * If both are true, update the default OAuth key entry.
          */
-        if (oauthKeyEditor.getDefaultKeyIdentifier() != null && oauthKeyEditor.getDefaultKeyIdentifier().equals(oauthKeyEditor.getOauthKeyBeingEdited().getKeyIdentifier())
-                && !oauthKeyEditor.getOauthKeyBeingEdited().getKeyIdentifier().equals(keyIdentifier)) {
+        if (oauthKeyEditor.getDefaultKeyLabel() != null && oauthKeyEditor.getDefaultKeyLabel().equals(oauthKeyEditor.getOauthKeyBeingEdited().getLabel())
+                && !oauthKeyEditor.getOauthKeyBeingEdited().getLabel().equals(keyLabel)) {
             // Find the default key among the current OAuth keys
             OAuthKeyInfo defaultKey = null;
             for (OAuthKeyInfo info : getAllOauthKeys()) {
-                if (oauthKeyEditor.getDefaultKeyIdentifier().equals(info.getKeyIdentifier())) {
+                if (oauthKeyEditor.getDefaultKeyLabel().equals(info.getLabel())) {
                     defaultKey = info;
                 }
             }
@@ -441,17 +498,22 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
 
         /* Update the configuration */
-        final byte[] keyBytes = oauthKeyEditor.getPublicKeyFile() != null ? getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile())
-                : oauthKeyEditor.getOauthKeyBeingEdited().getPublicKeyBytes();
-        oauthKeyToUpdate.setPublicKeyBytes(keyBytes);
         oauthKeyToUpdate.setSkewLimit(oauthKeyEditor.getSkewLimit());
-        oauthKeyToUpdate.setKeyIdentifier(keyIdentifier);
+        if (oauthKeyEditor.getPublicKeys().isEmpty()) {
+            oauthKeyToUpdate.setKeys(null);
+        } else {
+            final Map<String, OAuthPublicKey> newOauthKeyMap = new LinkedHashMap<>();
+            for (OAuthPublicKey key : oauthKeyEditor.getPublicKeys()) {
+                newOauthKeyMap.put(key.getKeyIdentifier(), key);
+            }
+            oauthKeyToUpdate.setKeys(newOauthKeyMap);
+        }
         oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
-        
+
         /* Make sure the edited provider does not have any unfilled mandatory fields */
         try {
             OAuthKeyHelper.validateProvider(oauthKeyToUpdate);
@@ -459,7 +521,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
         }
-        
+
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;

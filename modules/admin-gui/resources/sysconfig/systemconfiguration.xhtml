@@ -579,12 +579,12 @@
 		<h:panelGrid columns="2">
 			<h:panelGroup>
 				<h:outputLabel for="oauthdefaultkey" value="#{web.text.OAUTHKEYCONFIGURATION_DEFAULT}"/>
-				<h:selectOneMenu id="oauthdefaultkey" value="#{systemConfigMBean.currentConfig.defaultOauthKeyIdentifier}">
+				<h:selectOneMenu id="oauthdefaultkey" value="#{systemConfigMBean.defaultOauthKeyLabel}">
 					<f:selectItem itemValue="#{null}" itemLabel="None" />
 					<f:selectItems value="#{systemConfigMBean.oauthKeySelectItems}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
-			<h:commandButton action="#{systemConfigMBean.saveCurrentConfig}" value="#{web.text.OAUTHKEYCONFIGURATION_SAVE}"/>
+			<h:commandButton action="#{systemConfigMBean.saveOAuthConfig}" value="#{web.text.OAUTHKEYCONFIGURATION_SAVE}"/>
 		</h:panelGrid>
 	</h:form>
 	<h:form id="oauthkeysform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Trusted OAuth Providers'}">
@@ -599,10 +599,10 @@
 		    styleClass="grid oauthkeyTable" style="margin: 5px;">
 			<h:column>
    				<f:facet name="header">
-   				   <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
+   				   <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_LABEL}"/>
    			    </f:facet>
-				<h:outputText value="#{oauthkey.showName}"
-				    title="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
+				<h:outputText value="#{oauthkey.label}"
+				    title="#{web.text.OAUTHKEYCONFIGURATION_LABEL}"/>
 			</h:column>
 			<h:column>
 				<f:facet name="header">
@@ -616,11 +616,11 @@
         <f:facet name="header">
            <h:outputText value="#{web.text.ACTIONS}"/>
         </f:facet>
-		<h:commandButton action="#{systemConfigMBean.oauthKeyManager.viewOauthKey(oauthkey, systemConfigMBean.currentConfig.defaultOauthKeyIdentifier)}"
+		<h:commandButton action="#{systemConfigMBean.oauthKeyManager.viewOauthKey(oauthkey, systemConfigMBean.defaultOauthKeyLabel)}"
 		   value="#{web.text.VIEW}"
 		   rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
 		   id="viewOauthKeyButton"/>
-        <h:commandButton action="#{systemConfigMBean.oauthKeyManager.editOauthKey(oauthkey, systemConfigMBean.currentConfig.defaultOauthKeyIdentifier)}"
+        <h:commandButton action="#{systemConfigMBean.oauthKeyManager.editOauthKey(oauthkey, systemConfigMBean.defaultOauthKeyLabel)}"
             value="#{web.text.EDIT}"
             rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
             id="editOauthKeyButton"/>

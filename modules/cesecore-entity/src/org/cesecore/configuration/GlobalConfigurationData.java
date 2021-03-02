@@ -36,6 +36,7 @@ import javax.persistence.Transient;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
@@ -77,6 +78,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             LinkedHashMap.class,
             LinkedHashSet.class,
             OAuthKeyInfo.class,
+            OAuthPublicKey.class,
             OcspKeyBinding.ResponderIdType.class,
             Properties.class,
             RaCssInfo.class,
