@@ -2,6 +2,8 @@ package org.cesecore.authentication.oauth;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.util.Arrays;
+
 /**
  * Utility class for OAuth Provider related operations
  *
@@ -38,11 +40,8 @@ public class OAuthKeyHelper {
     }
     
     private static void validateCommonType(OAuthKeyInfo provider) {
-        if (StringUtils.isEmpty(provider.getKeyIdentifier())) {
-            throw new MissingOAuthKeyAttributeException("The Key Identifier field is mandatory for all Trusted OAuth Providers.");
-        }
-        if (provider.getPublicKeyBytes() == null) {
-            throw new MissingOAuthKeyAttributeException("The Public Key field is mandatory for all Trusted OAuth Providers.");
+        if (provider.getKeys()== null || provider.getKeys().isEmpty()) {
+            throw new MissingOAuthKeyAttributeException("At least one The Public Key  is mandatory for all Trusted OAuth Providers.");
         }
     }
 }
