@@ -29,6 +29,7 @@ import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
@@ -160,7 +161,7 @@ public class OAuthSystemTest {
     private static final String HTTP_HOST = SystemTestsConfiguration.getRemoteHost(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
     private static final String HTTP_PORT = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTPS));
     private static final String HTTP_REQ_PATH = "https://" + HTTP_HOST + ":" + HTTP_PORT + "/ejbca";
-    private static int oAuthKeyInfoInternalId;
+    private static String oAuthKeyInfoLabel;
     private static CA adminca;
     private static RoleMember roleMember;
     private static String token;
@@ -185,13 +186,14 @@ public class OAuthSystemTest {
         final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey privKey = keyFactory.generatePrivate(pkKeySpec);
 
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        globalConfiguration.getOauthKeys();
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        oAuthConfiguration.getOauthKeys();
         //add oauth key
-        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, pubKeyBytes, 6000);
-        oAuthKeyInfoInternalId = oAuthKeyInfo.getInternalId();
-        globalConfiguration.addOauthKey(oAuthKeyInfo);
-        globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
+        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, 6000);
+        oAuthKeyInfo.addPublicKey(OAUTH_KEY, pubKeyBytes);
+        oAuthKeyInfoLabel = oAuthKeyInfo.getLabel();
+        oAuthConfiguration.addOauthKey(oAuthKeyInfo);
+        globalConfigSession.saveConfiguration(authenticationToken, oAuthConfiguration);
 
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
@@ -234,10 +236,10 @@ public class OAuthSystemTest {
         if (adminca != null) {
             CaTestUtils.removeCa(authenticationToken, adminca.getCAInfo());
         }
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (globalConfiguration.getOauthKeys().get(oAuthKeyInfoInternalId) != null) {
-            globalConfiguration.removeOauthKey(oAuthKeyInfoInternalId);
-            globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        if (oAuthConfiguration.getOauthKeys().get(oAuthKeyInfoLabel) != null) {
+            oAuthConfiguration.removeOauthKey(oAuthKeyInfoLabel);
+            globalConfigSession.saveConfiguration(authenticationToken, oAuthConfiguration);
         }
         if (roleMember != null) {
             roleMemberSession.remove(authenticationToken, roleMember.getId());
