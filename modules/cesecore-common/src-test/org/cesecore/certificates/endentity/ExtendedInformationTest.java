@@ -12,28 +12,34 @@
  *************************************************************************/
 package org.cesecore.certificates.endentity;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 
 /**
  * Unit tests for the EndEntity and ExtendedInformation classes.
- *
- * @version $Id$
- *
  */
 public class ExtendedInformationTest {
+
+    private final static Logger log = Logger.getLogger(ExtendedInformationTest.class);
 
     /** A test P10 encoded as a single line of Base64 */
     public static final String pkcs10 =
@@ -187,4 +193,81 @@ public class ExtendedInformationTest {
         assertEquals("Wrong state or province value was extracted", "CA", extendedInformation.getCabfRegistrationStateOrProvince());
         assertEquals("Wrong registration reference was extracted.", "12345678", extendedInformation.getCabfRegistrationReference());
     }
+
+    /** Tests encoding with XMLEncoder, decoding with SecureXMLDecoder that is used by CertReqHistoryData, 
+     * using simple data, that follows Java Beans pattern in ExtendedInformation
+     */
+    @Test
+    public void testEmptyExtendedInformationXMLEncoder() throws Exception {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            ExtendedInformation ei = new ExtendedInformation();
+            ei.setCertificateRequest("foo123".getBytes());
+            encoder.writeObject(ei);
+        }
+        log.info(new String(baos.toByteArray()));
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            final ExtendedInformation ei = (ExtendedInformation) decoder.readObject();
+            log.info(ei.getData());
+            assertEquals("foo123", new String(ei.getCertificateRequest()));
+        }
+    }
+
+
+    /** Tests encoding with XMLEncoder, decoding with SecureXMLDecoder that is used by CertReqHistoryData,
+     * using complex data, that does not follow Java Beans pattern in ExtendedInformation
+     */
+    @Test
+    public void testComplexExtendedInformationXMLEncoder() throws Exception {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            ExtendedInformation ei = new ExtendedInformation();
+            ei.setCertificateRequest("foo123".getBytes());
+            ei.setAddEndEntityApprovalRequestId(123);
+            ei.addEditEndEntityApprovalRequestId(123);
+            ei.setQCEtsiPSD2NcaId("NcaId-123");
+            final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+            pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_AS"), "PSP_AS"));
+            pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_PI"), "PSP_PI"));
+            ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
+            ei.setQCEtsiPSD2NcaName("QCEtsiPSD2NcaName");
+            encoder.writeObject(ei);
+        }
+        log.info(new String(baos.toByteArray()));
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            final ExtendedInformation ei = (ExtendedInformation) decoder.readObject();
+            assertEquals("foo123", new String(ei.getCertificateRequest()));
+            final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = ei.getQCEtsiPSD2RolesOfPSP();
+            assertEquals(2, psd2RoleOfPSPStatements.size());
+        }
+    }
+
+    /** Tests encoding with XMLSerializer, decoding with SecureXMLDecoder that is used by UserData to fast encode/decode ExtendedInformation
+     * when saved as a simple map
+     */
+    @Test
+    public void testComplexExtendedInformationXMLSerializer() throws Exception {
+        final ExtendedInformation ei = new ExtendedInformation();
+        ei.setQCEtsiPSD2NcaId("NcaId-123");
+        ei.setAddEndEntityApprovalRequestId(123);
+        ei.addEditEndEntityApprovalRequestId(123);
+        final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+        pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_AS"), "PSP_AS"));
+        pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_PI"), "PSP_PI"));
+        ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
+        ei.setQCEtsiPSD2NcaName("QCEtsiPSD2NcaName");
+        ei.setCabfOrganizationIdentifier("cabf");
+        ei.cacheScepRequest("1234567890"); // should be base64 encoded message actually
+        final String xml = EndEntityInformation.extendedInformationToStringData(ei);
+        log.info(xml);
+        final ExtendedInformation ei1 = EndEntityInformation.getExtendedInformationFromStringData(xml); // SecureXMLDecoder
+        log.info(ei1.getData());
+        assertEquals("NcaId-123", ei1.getQCEtsiPSD2NCAId());
+        assertEquals(Integer.valueOf(123), ei1.getAddEndEntityApprovalRequestId());
+        assertEquals("cabf", ei1.getCabfOrganizationIdentifier());
+        assertEquals("1234567890", ei1.getCachedScepRequest());
+        final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = ei1.getQCEtsiPSD2RolesOfPSP();
+        assertEquals(2, psd2RoleOfPSPStatements.size());
+    }
+
 }
