@@ -14,6 +14,7 @@ package org.ejbca.ui.cli.config.oauth;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -29,11 +30,11 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
     
     private static final Logger log = Logger.getLogger(ViewOAuthProviderCommand.class);
     
-    private static final String KEY_IDENTIFIER = "--keyidentifier";
+    private static final String LABEL = "--label";
     
     {
-        registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the Trusted OAuth Provider which is going to be added."));
+        registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Label of the Trusted OAuth Provider."));
     }
 
     @Override
@@ -48,19 +49,21 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     @Override 
     protected CommandResult execute(ParameterContainer parameters) {
-        String kid = parameters.get(KEY_IDENTIFIER);
+        String label = parameters.get(LABEL);
+        OAuthKeyInfo info = getOAuthConfiguration().getOauthKeyByLabel(label);
         
-        OAuthKeyInfo key = getGlobalConfiguration().getOauthKeyByKeyIdentifier(kid);
-        
-        if (key != null) {
-            log.info("Key Identifier: " + kid);
-            log.info("Label: " + key.getLabel());
-            log.info("Skew Limit: " + key.getSkewLimit());
-            log.info("Public Key Fingerprint: " + key.getKeyFingerprint());
-            log.info("URL: " + key.getUrl());
-            log.info("Realm: " + key.getRealm());
-            log.info("Client: " + key.getClient());
-            log.info("Client Secret: " + key.getClientSecretAndDecrypt());
+        if (info != null) {
+            log.info("Label: " + info.getLabel());
+            log.info("Skew Limit: " + info.getSkewLimit());
+            if (info.getKeyValues() != null) {
+                for (OAuthPublicKey publicKey : info.getKeyValues()) {
+                    log.info("Public Key Identifier: " + publicKey.getKeyIdentifier() + " | Public Key Fingerprint: " + publicKey.getKeyFingerprint());
+                }
+            }
+            log.info("URL: " + info.getUrl());
+            log.info("Realm: " + info.getRealm());
+            log.info("Client: " + info.getClient());
+            log.info("Client Secret: " + info.getClientSecretAndDecrypt());
         }
 
         return CommandResult.SUCCESS;
