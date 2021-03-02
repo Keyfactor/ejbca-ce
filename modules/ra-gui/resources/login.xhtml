@@ -39,7 +39,7 @@
                              var="oauthkey" rendered="#{raLoginBean.oauthKeys.size() > 0}"
                              style="margin: 5px;">
                     <h:column>
-                        <h:commandLink action="#{raLoginBean.clickLoginLink(oauthkey.keyId)}"
+                        <h:commandLink action="#{raLoginBean.clickLoginLink(oauthkey.label)}"
                                        styleClass="pure-button ra-button" style="min-width:20rem; min-height:1.4rem;">
                             <h:outputText value="#{oauthkey.label}" style="font-size:1.0rem;"/>
                         </h:commandLink>
