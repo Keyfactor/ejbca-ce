@@ -13,6 +13,10 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -34,9 +38,7 @@ import org.cesecore.util.StringTools;
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final int internalId;
-    private byte[] publicKeyBytes;
-    private String keyIdentifier;
+    private Map<String, OAuthPublicKey> keys = new LinkedHashMap<>();
     private String label;
     private String client;
     private String realm;
@@ -44,80 +46,23 @@ public final class OAuthKeyInfo implements Serializable {
     private String clientSecret;
     private int skewLimit = 60000;
 
-    private transient PublicKey publicKey;
-
-    private static final Random random = new Random();
 
     /**
-     * Creates a OAuth Key info object, but does not parse the public key yet
-     * (so it can be created from static blocks etc.)
+     * Creates a OAuth Key info object
      *
-     * @param keyIdentifier  Key identifier
-     * @param publicKeyBytes  The ASN1 encoded public key.
+     * @param label  Provider label
+     * @param skewLimit  skew limit.
      */
-    public OAuthKeyInfo(final String keyIdentifier, final byte[] publicKeyBytes, final int skewLimit) {
-        this.internalId = random.nextInt();
-        this.keyIdentifier = keyIdentifier;
-        if (publicKeyBytes == null) {
-            throw new IllegalArgumentException("publicKeyBytes is null");
+    public OAuthKeyInfo(final String label, final int skewLimit) {
+        if (label == null) {
+            throw new IllegalArgumentException("label is null");
         }
-        this.publicKeyBytes = publicKeyBytes.clone();
+        this.label = label;
         this.skewLimit = skewLimit;
-    }
-
-    private void ensureParsed() {
-        if (publicKey == null) {
-            publicKey = KeyTools.getPublicKeyFromBytes(publicKeyBytes);
-            if (publicKey == null) {
-                throw new IllegalStateException("Failed to parse key");
-            }
-        }
-    }
-
-    /** @return Internal Id*/
-    public int getInternalId() {
-        return internalId;
-    }
-
-    public PublicKey getOauthPublicKey() {
-        ensureParsed();
-        return publicKey;
-    }
-
-    public byte[] getPublicKeyBytes() {
-        return publicKeyBytes;
-    }
-
-    public void setPublicKeyBytes(final byte[] publicKeyBytes) {
-        this.publicKey = null;
-        this.publicKeyBytes = publicKeyBytes;
-    }
-
-    /** @return OAuth Public Key fingerprint */
-    public String getKeyFingerprint() {
-        try {
-            ensureParsed();
-            final byte[] fingerprint = CertTools.generateSHA256Fingerprint(publicKey.getEncoded());
-            return Base64.toBase64String(fingerprint);
-        } catch (Exception e) {
-            return e.getLocalizedMessage();
-        }
     }
 
     public int getSkewLimit() {
         return skewLimit;
-    }
-
-    public String getKeyIdentifier() {
-        return keyIdentifier;
-    }
-
-    public String getShowName(){
-        return StringUtils.isNotEmpty(label) ? label : keyIdentifier;
-    }
-
-    public void setKeyIdentifier(final String keyIdentifier) {
-        this.keyIdentifier = keyIdentifier;
     }
 
     public String getUrl() {
@@ -127,7 +72,7 @@ public final class OAuthKeyInfo implements Serializable {
     public void setUrl(String url) {
         this.url = url;
     }
-    
+
     public String getClientSecret() {
         return clientSecret;
     }
@@ -135,7 +80,7 @@ public final class OAuthKeyInfo implements Serializable {
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
     }
-    
+
     public String getClientSecretAndDecrypt() {
         if (clientSecret != null) {
             try {
@@ -158,6 +103,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public Map<String, OAuthPublicKey> getKeys() {
+        return keys;
+    }
+
+    public void setKeys(Map<String, OAuthPublicKey> keys) {
+        this.keys = keys;
     }
 
     public String getClient() {
@@ -183,6 +136,39 @@ public final class OAuthKeyInfo implements Serializable {
         this.skewLimit = skewLimit;
     }
 
+    public void addPublicKey(String kid, byte[] bytes) {
+        if (keys == null) {
+            keys = new LinkedHashMap<>();
+        }
+        keys.put(kid, new OAuthPublicKey(bytes, kid));
+    }
+
+    public Set<String> getAllKeyIdentifiers() {
+        if (keys != null) {
+            return keys.keySet();
+        } else {
+            return null;
+        }
+    }
+
+    public Collection<OAuthPublicKey> getKeyValues() {
+        if (keys != null) {
+            return keys.values();
+        } else {
+            return null;
+        }
+    }
+
+    public void setKeyValues(Collection<OAuthPublicKey> values) {
+        if (keys == null) {
+            keys = new LinkedHashMap<>();
+        }
+        for (OAuthPublicKey key : values) {
+            keys.put(key.getKeyIdentifier(), key);
+        }
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (o == null || o.getClass() != OAuthKeyInfo.class) {
@@ -190,17 +176,22 @@ public final class OAuthKeyInfo implements Serializable {
         }
 
         final OAuthKeyInfo oauthKeyInfo = (OAuthKeyInfo) o;
-        return internalId == oauthKeyInfo.getInternalId() &&
-                keyIdentifier.equals(oauthKeyInfo.getKeyIdentifier());
+        //support old data
+        if (oauthKeyInfo.getLabel() == null || label == null) {
+            return false;
+        }
+        return label.equals(oauthKeyInfo.getLabel())
+                &&
+                keys.equals(oauthKeyInfo.getKeys());
     }
 
     @Override
     public int hashCode() {
-        return internalId + (keyIdentifier.hashCode() * 4711);
+        return  (keys.hashCode() * 4711);
     }
 
     @Override
     public String toString() {
-        return getKeyIdentifier();
+        return label;
     }
 }

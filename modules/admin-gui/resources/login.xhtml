@@ -46,7 +46,7 @@
                  var="oauthkey"
                  styleClass="oauthkeyTable" style="margin: 5px;">
         <h:column>
-            <h:commandLink action="#{adminLoginMBean.clickLoginLink(oauthkey.keyId)}">
+            <h:commandLink action="#{adminLoginMBean.clickLoginLink(oauthkey.label)}">
                 <h:outputText value="#{oauthkey.label}" />
             </h:commandLink>
         </h:column>
