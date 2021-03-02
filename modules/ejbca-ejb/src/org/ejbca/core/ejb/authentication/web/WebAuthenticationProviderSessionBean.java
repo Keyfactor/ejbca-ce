@@ -34,6 +34,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -44,6 +45,7 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -130,13 +132,31 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                     return null;
                 }
-                final byte[] keyBytes = keyInfo.getPublicKeyBytes();
-                keyFingerprint = keyInfo.getKeyFingerprint();
-                final Key key = KeyTools.getPublicKeyFromBytes(keyBytes);
-                final JWSVerifier verifier = new DefaultJWSVerifierFactory().createJWSVerifier(signedJwt.getHeader(), key);
-                if (!signedJwt.verify(verifier)) {
-                    logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
-                    return null;
+                OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(signedJwt.getHeader().getKeyID());
+                if (oAuthPublicKey != null) {
+                    // Default provider (Key ID does not match)
+                    if (verifyJwt(oAuthPublicKey, signedJwt)) {
+                        keyFingerprint = oAuthPublicKey.getKeyFingerprint();
+                    } else {
+                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
+                        return null;
+                    }
+                } else {
+                    if (keyInfo.getKeys().isEmpty()) {
+                        logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
+                        return null;
+                    } else {
+                        for (OAuthPublicKey key : keyInfo.getKeys().values()) {
+                            if (verifyJwt(key, signedJwt)) {
+                                keyFingerprint = key.getKeyFingerprint();
+                                break;
+                            }
+                        }
+                        if (keyFingerprint == null) {
+                            logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
+                            return null;
+                        }
+                    }
                 }
             } else {
                 LOG.info("Received unsupported OAuth2 JWT type.");
@@ -163,6 +183,13 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             LOG.info("Configured not verify OAuth2 JWT signature: " + e.getMessage(), e);
             return null;
         }
+    }
+
+    private boolean verifyJwt(OAuthPublicKey oAuthPublicKey, SignedJWT signedJwt) throws JOSEException {
+        final byte[] keyBytes = oAuthPublicKey.getPublicKeyBytes();
+        final Key key = KeyTools.getPublicKeyFromBytes(keyBytes);
+        final JWSVerifier verifier = new DefaultJWSVerifierFactory().createJWSVerifier(signedJwt.getHeader(), key);
+        return signedJwt.verify(verifier);
     }
 
     @Override
@@ -201,16 +228,16 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private OAuthKeyInfo getJwtKey(final String keyId) {
-        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final Map<Integer,OAuthKeyInfo> availableKeys = globalConfig.getOauthKeys();
+        final OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        final Map<String,OAuthKeyInfo> availableKeys = oAuthConfiguration.getOauthKeys();
         if (keyId != null) {
-            for (final OAuthKeyInfo key : availableKeys.values()) {
-                if (keyId.equals(key.getKeyIdentifier())) {
-                    return key;
+            for (final OAuthKeyInfo oAuthKeyInfo : availableKeys.values()) {
+                if (oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
+                    return oAuthKeyInfo;
                 }
             }
         } else {
-            return globalConfig.getDefaultOauthKey();
+             return oAuthConfiguration.getDefaultOauthKey();
         }
         return null;
     }
@@ -274,11 +301,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     private String getBaseUrl(){
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        String baseUrl = globalConfiguration.getBaseUrl(
+        return globalConfiguration.getBaseUrl(
                 "https",
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
         ) + globalConfiguration.getAdminWebPath();
-        return baseUrl;
     }
 }
