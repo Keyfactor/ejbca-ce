@@ -21,12 +21,16 @@
 <body>
 <br/>
 <br/>
-<%  if (exception instanceof AuthorizationDeniedException || exception instanceof AuthenticationFailedException) {
+<%  if (exception instanceof AuthorizationDeniedException) {
         // Print Authorization Denied Exception.%>
         <H2><c:out value='<%= ejbcawebbean.getText(\"AUTHORIZATIONDENIED\") %>' /></H2>
         <H4><c:out value='<%= ejbcawebbean.getText(\"CAUSE\") + \" : \" + exception.getMessage() %>' /></H4><%
         response.setStatus(HttpServletResponse.SC_OK);
         response.addHeader("X-FRAME-OPTIONS", "DENY" );
+    } else if (exception instanceof AuthenticationFailedException) {
+        // Redirect to the login page.
+        response.addHeader("X-FRAME-OPTIONS", "DENY" );
+        response.sendRedirect("/ejbca/adminweb/login.xhtml");;
     } else if (exception instanceof CryptoTokenOfflineException) {
         // Print CryptoTokenOfflineException. %>
         <H2><c:out value='<%= ejbcawebbean.getText(\"CATOKENISOFFLINE\") %>' /></H2>
