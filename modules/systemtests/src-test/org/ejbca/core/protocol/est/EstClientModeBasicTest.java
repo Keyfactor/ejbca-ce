@@ -181,7 +181,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             endEntityInfo.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             endEntityInfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             endEntityInfo.setCAId(getTestCAId(TESTCA_NAME));
-            endEntityInfo.setDN("CN=OP,O=EJBCA,C=SE");
+            endEntityInfo.setDN("CN=" + CN + ",O=EJBCA,C=SE");
             endEntityInfo.setTokenType(EndEntityConstants.TOKEN_USERGEN);
             endEntityInfo.setType(EndEntityTypes.ENDUSER.toEndEntityType());
             endEntityInfo.setStatus(EndEntityConstants.STATUS_NEW);
@@ -206,7 +206,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
-            assertEquals("simpleenroll response subjectDN must be DN from the pre-registered user, not the PKCS#10 DN", "CN=OP,O=EJBCA,C=SE", CertTools.getSubjectDN(cert));
+            assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",requestDN, CertTools.getSubjectDN(cert));
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));            
         } finally {
             // Remove the certificates
