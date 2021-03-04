@@ -18,17 +18,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.security.InvalidKeyException;
-import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
-import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.util.encoders.Base64;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
 /**
@@ -40,8 +34,9 @@ public final class OAuthKeyInfo implements Serializable {
 
     // dbIndexes of existing provider types should not be changed
     public enum OAuthProviderType {
-        TYPE_AZURE(0, "Azure"),
-        TYPE_KEYCLOAK(1, "Keycloak");
+        TYPE_NONE(0, "None"),
+        TYPE_AZURE(1, "Azure"),
+        TYPE_KEYCLOAK(2, "Keycloak");
 
         private final int index;
         private final String label;
