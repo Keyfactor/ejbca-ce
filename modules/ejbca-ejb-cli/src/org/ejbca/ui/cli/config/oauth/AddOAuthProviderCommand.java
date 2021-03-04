@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -39,6 +38,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String CLIENT = "--client";
     private static final String CLIENT_SECRET = "--clientsecret";
     private static final String REALM = "--realm";
+    private static final String NONE = "NONE";
     private static final String KEYCLOAK = "KEYCLOAK";
     private static final String AZURE = "AZURE";
 
@@ -82,6 +82,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
 
 
         switch (typeString) {
+            case NONE:
+                type = OAuthProviderType.TYPE_NONE;
+                break;
             case KEYCLOAK:
                 type = OAuthProviderType.TYPE_KEYCLOAK;
                 break;

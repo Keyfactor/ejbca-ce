@@ -64,6 +64,8 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
             log.info("Realm: " + info.getRealm());
             log.info("Client: " + info.getClient());
             log.info("Client Secret: " + info.getClientSecretAndDecrypt());
+        } else {
+            log.info("An OAuth Provider with the label " + label + " was not found.");
         }
 
         return CommandResult.SUCCESS;

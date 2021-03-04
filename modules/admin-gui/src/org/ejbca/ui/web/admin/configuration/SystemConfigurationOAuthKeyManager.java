@@ -54,7 +54,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     public class OAuthKeyEditor {
         private String label;
         private String keyIdentifier;
-        private OAuthProviderType type = OAuthProviderType.TYPE_AZURE;
+        private OAuthProviderType type = OAuthProviderType.TYPE_NONE;
         private String url;
         private String client;
         private String clientSecret;
@@ -175,8 +175,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return this.editorMode.equals(OAuthKeyEditorMode.ADD);
         }
 
-        public boolean isRealmRendered() {
+        public boolean isTypeKeycloak() {
             return OAuthProviderType.TYPE_KEYCLOAK.getIndex() == type.getIndex();
+        }
+        
+        public boolean isTypeAzure() {
+            return OAuthProviderType.TYPE_AZURE.getIndex() == type.getIndex();
         }
 
         /**
@@ -206,7 +210,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
          */
         public void clear() {
             keyIdentifier = null;
-            type = OAuthProviderType.TYPE_AZURE;
+            type = OAuthProviderType.TYPE_NONE;
             publicKeyFile = null;
             publicKeys = null;
             url = null;
