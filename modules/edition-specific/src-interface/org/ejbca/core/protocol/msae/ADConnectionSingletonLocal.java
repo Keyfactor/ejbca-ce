@@ -39,15 +39,15 @@ public interface ADConnectionSingletonLocal {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
     
-    default boolean publishCertificateToLDAP(String distinguishedName, X509Certificate cert, String domain) throws EnrollmentException, NamingException {
+    default boolean publishCertificateToLDAP(String distinguishedName, X509Certificate cert, String domain) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
     
-    default SearchResult getADDetails(String searchBase, String searchFilter, SearchControls searchCtls, String domain) throws EnrollmentException, NamingException {
+    default SearchResult getADDetails(String searchBase, String searchFilter, SearchControls searchCtls) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
 
-    default SearchResult getDomainAndNETBIOS(String distinguishedName, String domain) throws EnrollmentException, NamingException {
+    default SearchResult getDomainAndNETBIOS(String distinguishedName, String domain) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
     
