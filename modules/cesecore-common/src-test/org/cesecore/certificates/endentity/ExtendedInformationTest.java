@@ -258,6 +258,8 @@ public class ExtendedInformationTest {
         ei.setQCEtsiPSD2NcaName("QCEtsiPSD2NcaName");
         ei.setCabfOrganizationIdentifier("cabf");
         ei.cacheScepRequest("1234567890"); // should be base64 encoded message actually
+        ei.cacheApprovalType(TestApprovalRequest.class);
+        ei.setExtensionData("extensiondata", "value");
         final String xml = EndEntityInformation.extendedInformationToStringData(ei);
         log.info(xml);
         final ExtendedInformation ei1 = EndEntityInformation.getExtendedInformationFromStringData(xml); // SecureXMLDecoder
@@ -268,6 +270,14 @@ public class ExtendedInformationTest {
         assertEquals("1234567890", ei1.getCachedScepRequest());
         final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = ei1.getQCEtsiPSD2RolesOfPSP();
         assertEquals(2, psd2RoleOfPSPStatements.size());
+    }
+
+    // We need our own approvalClass since we don't have an impl in CESeCore
+    private static class TestApprovalRequest implements EndEntityApprovalRequest {
+        @Override
+        public EndEntityInformation getEndEntityInformation() {
+            return null;
+        }
     }
 
 }
