@@ -16,12 +16,15 @@ public class OAuthKeyHelper {
             validateAzureType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK.getIndex() == provider.getTypeInt()) {
             validateKeycloakType(provider);
-        } else {
+        } else if (OAuthKeyInfo.OAuthProviderType.TYPE_NONE.getIndex() != provider.getTypeInt()) {
             throw new MissingOAuthKeyAttributeException("The Provider Type field is mandatory for all Trusted OAuth Providers.");
         }
     }
-
+    
     public static void validateAzureType(OAuthKeyInfo provider) {
+        if (StringUtils.isEmpty(provider.getUrl())) {
+            throw new MissingOAuthKeyAttributeException("The URL field is mandatory for all Trusted OAuth Providers.");
+        }
         if (StringUtils.isEmpty(provider.getClient())) {
             throw new MissingOAuthKeyAttributeException("The Client field is mandatory for Azure Trusted OAuth Providers.");
         }
@@ -31,17 +34,20 @@ public class OAuthKeyHelper {
     }
     
     public static void validateKeycloakType(OAuthKeyInfo provider) {
+        if (StringUtils.isEmpty(provider.getUrl())) {
+            throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Trusted OAuth Providers.");
+        }
         if (StringUtils.isEmpty(provider.getRealm())) {
             throw new MissingOAuthKeyAttributeException("The Realm field is mandatory for Keycloak Trusted OAuth Providers.");
-        }
-        if (StringUtils.isEmpty(provider.getUrl())) {
-            throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Keycloak Trusted OAuth Providers.");
         }
     }
     
     private static void validateCommonType(OAuthKeyInfo provider) {
-        if (provider.getKeys()== null || provider.getKeys().isEmpty()) {
-            throw new MissingOAuthKeyAttributeException("At least one The Public Key  is mandatory for all Trusted OAuth Providers.");
+        if (StringUtils.isEmpty(provider.getLabel())) {
+            throw new MissingOAuthKeyAttributeException("The Label field is mandatory for all Trusted OAuth Providers.");
+        }
+        if (provider.getKeys() == null || provider.getKeys().isEmpty()) {
+            throw new MissingOAuthKeyAttributeException("At least one Public Key is mandatory for all Trusted OAuth Providers.");
         }
     }
 }
