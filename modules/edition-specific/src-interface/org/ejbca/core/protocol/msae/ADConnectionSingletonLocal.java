@@ -13,10 +13,12 @@
 
 package org.ejbca.core.protocol.msae;
 
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.ejb.Local;
 import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
@@ -29,9 +31,24 @@ public interface ADConnectionSingletonLocal {
     
     public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL) throws LDAPException;
 
-
     public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings();
 
-
     public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls) throws LDAPException;
+    
+    default void setLoginDN(final String loginDN) {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
+    
+    default boolean publishCertificateToLDAP(String distinguishedName, X509Certificate cert, String domain) throws EnrollmentException, NamingException {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
+    
+    default SearchResult getADDetails(String searchBase, String searchFilter, SearchControls searchCtls, String domain) throws EnrollmentException, NamingException {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
+
+    default SearchResult getDomainAndNETBIOS(String distinguishedName, String domain) throws EnrollmentException, NamingException {
+        throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
+    }
+    
 }
