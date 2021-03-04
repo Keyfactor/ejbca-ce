@@ -45,6 +45,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -103,13 +104,17 @@ public class CertReqHistorySessionTest {
         userdata.setTimeCreated(new Date());
         userdata.setTimeModified(new Date());
         final ExtendedInformation ei = new ExtendedInformation();
-        ei.addEditEndEntityApprovalRequestId(12345);
+        ei.setAddEndEntityApprovalRequestId(123);
+        ei.addEditEndEntityApprovalRequestId(123);
+        ei.addEditEndEntityApprovalRequestId(456);
         final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
         pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_AS"), "PSP_AS"));
         pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_PI"), "PSP_PI"));
         ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
         ei.setQCEtsiPSD2NcaName("QCEtsiPSD2NcaName");
+        ei.setQCEtsiPSD2NcaId("NcaId-123");
         ei.setCabfOrganizationIdentifier("cabf");
+        ei.setCertificateRequest("foo123".getBytes());
         ei.cacheScepRequest("1234567890"); // should be base64 encoded message actually
         ei.cacheApprovalType(EditEndEntityApprovalRequest.class);
         ei.setExtensionData("extensiondata", "value");
@@ -132,7 +137,7 @@ public class CertReqHistorySessionTest {
     /**
      * checks that getCertReqHistory(Admin admin, BigInteger certificateSN,
      * String issuerDN) returns the right data.
-     * 
+     * Needs to be run after test01addCertReqHist as it reads the information stored by that test
      */
     @Test
     public void test02getCertReqHistByIssuerDNAndSerial() throws Exception {
@@ -145,6 +150,25 @@ public class CertReqHistorySessionTest {
         EndEntityInformation userdata = certreqhist.getEndEntityInformation();
         assertTrue("Error wrong username.", (userdata.getUsername().equals(username)));
         assertTrue("Error wrong DN.", (userdata.getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")));
+        final ExtendedInformation ei = userdata.getExtendedInformation();
+        assertEquals(Integer.valueOf(123), ei.getAddEndEntityApprovalRequestId());
+        final List<Integer> list = ei.getEditEndEntityApprovalRequestIds();
+        assertEquals(2, list.size());
+        assertEquals(Integer.valueOf(123), list.get(0));
+        assertEquals(Integer.valueOf(456), list.get(1));
+        assertEquals("foo123", new String(ei.getCertificateRequest()));
+        final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = ei.getQCEtsiPSD2RolesOfPSP();
+        assertEquals(2, psd2RoleOfPSPStatements.size());
+        assertEquals("PSP_AS", psd2RoleOfPSPStatements.get(0).getName());
+        assertEquals(QcStatement.getPsd2Oid("PSP_AS"), psd2RoleOfPSPStatements.get(0).getOid());
+        assertEquals("PSP_PI", psd2RoleOfPSPStatements.get(1).getName());
+        assertEquals(QcStatement.getPsd2Oid("PSP_PI"), psd2RoleOfPSPStatements.get(1).getOid());
+        assertEquals("NcaId-123", ei.getQCEtsiPSD2NCAId());
+        assertEquals("QCEtsiPSD2NcaName", ei.getQCEtsiPSD2NCAName());
+        assertEquals("cabf", ei.getCabfOrganizationIdentifier());
+        assertEquals("1234567890", ei.getCachedScepRequest());
+        assertEquals("value", ei.getExtensionData("extensiondata"));
+        assertEquals(EditEndEntityApprovalRequest.class.getName(), ei.getCachedApprovalType().getName());
 
         log.trace("<test10getCertReqHistByIssuerDNAndSerial()");
     }
