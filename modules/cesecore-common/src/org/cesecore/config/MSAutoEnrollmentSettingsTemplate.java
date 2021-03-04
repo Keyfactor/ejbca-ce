@@ -160,7 +160,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         this.includeObjectGuidInSubjectSAN = includeObjectGuidInSubjectSAN;
     }
 
-    public String isAdditionalSubjectDNAttributes() {
+    public String getAdditionalSubjectDNAttributes() {
         return additionalSubjectDNAttributes;
     }
 
@@ -217,7 +217,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         "\nIncludeNetBiosInSubjectSAN: " + isIncludeNetBiosInSubjectSAN() + 
         "\nIncludeDomainInSubjectSAN: " + isIncludeDomainInSubjectSAN() + 
         "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() + 
-        "\nAdditionalSubjectDNAttributes: " + isAdditionalSubjectDNAttributes() + 
+        "\nAdditionalSubjectDNAttributes: " + getAdditionalSubjectDNAttributes() + 
         "\nPublishToActiveDirectory: " + isPublishToActiveDirectory();
     }
 }
