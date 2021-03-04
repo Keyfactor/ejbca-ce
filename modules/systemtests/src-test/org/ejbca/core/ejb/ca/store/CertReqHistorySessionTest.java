@@ -13,28 +13,30 @@
 
 package org.ejbca.core.ejb.ca.store;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.junit.After;
 import org.junit.Before;
@@ -42,6 +44,10 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests certificate store.
@@ -85,10 +91,28 @@ public class CertReqHistorySessionTest {
         cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
 
-        EndEntityInformation userdata = new EndEntityInformation();
+        final EndEntityInformation userdata = new EndEntityInformation();
+        userdata.setUsername("1111");
         userdata.setCAId(11111);
-        ExtendedInformation ei = new ExtendedInformation();
+        userdata.setDN("CN=1111");
+        userdata.setCertificateProfileId(1);
+        userdata.setEndEntityProfileId(1);
+        userdata.setSubjectAltName("rfc822Name=1@se");
+        userdata.setTokenType(1);
+        userdata.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+        userdata.setTimeCreated(new Date());
+        userdata.setTimeModified(new Date());
+        final ExtendedInformation ei = new ExtendedInformation();
         ei.addEditEndEntityApprovalRequestId(12345);
+        final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+        pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_AS"), "PSP_AS"));
+        pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_PI"), "PSP_PI"));
+        ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
+        ei.setQCEtsiPSD2NcaName("QCEtsiPSD2NcaName");
+        ei.setCabfOrganizationIdentifier("cabf");
+        ei.cacheScepRequest("1234567890"); // should be base64 encoded message actually
+        ei.cacheApprovalType(EditEndEntityApprovalRequest.class);
+        ei.setExtensionData("extensiondata", "value");
         userdata.setExtendedInformation(ei);
         Random rand = new Random(new Date().getTime() + 4711);
         for (int i = 0; i < 6; i++) {
