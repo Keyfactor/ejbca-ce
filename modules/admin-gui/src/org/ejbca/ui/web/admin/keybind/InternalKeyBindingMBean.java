@@ -273,7 +273,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private Boolean nonceEnabled;
     private OcspKeyBinding.ResponderIdType responderIdType;
     private Boolean ocspSigningCacheUpdate;
-    private Boolean browserCacheUnknownStatus;
+    private Boolean explicitNoCacheUnauthorizedStatus;
 
     public String getSelectedInternalKeyBindingType() {
         final String typeHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("type");
@@ -453,11 +453,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         }
     }
 
-    public void saveEnableBrowserCacheUnknownStatus() {
+    public void saveEnableBrowserExplicitNoCacheUnauthorizedStatus() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
             .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (!browserCacheUnknownStatus.equals(globalConfiguration.getBrowserCacheUnknownStatusEnabled())) {
-            globalConfiguration.setBrowserCacheUnknownStatusEnabled(browserCacheUnknownStatus);
+        if (!explicitNoCacheUnauthorizedStatus.equals(globalConfiguration.getBrowserExplicitNoCacheUnauthorizedStatusEnabled())) {
+            globalConfiguration.setBrowserCacheUnknownStatusEnabled(explicitNoCacheUnauthorizedStatus);
             try {
                 globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
             } catch (AuthorizationDeniedException e) {
@@ -486,14 +486,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         this.ocspSigningCacheUpdate = ocspSigningCacheUpdateEnabled;
     }
 
-    public boolean getBrowserCacheUnknownStatus() {
+    public boolean getExplicitNoCacheUnauthorizedStatus() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
             .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        return configuration.getBrowserCacheUnknownStatusEnabled();
+        return configuration.getBrowserExplicitNoCacheUnauthorizedStatusEnabled();
     }
 
-    public void setBrowserCacheUnknownStatus(final boolean browserCacheUnknownStatus) {
-        this.browserCacheUnknownStatus = browserCacheUnknownStatus;
+    public void setExplicitNoCacheUnauthorizedStatus(final boolean explicitNoCacheUnauthorizedStatus) {
+        this.explicitNoCacheUnauthorizedStatus = explicitNoCacheUnauthorizedStatus;
     }
 
     public String getDefaultResponderTarget() {
