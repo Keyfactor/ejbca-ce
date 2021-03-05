@@ -236,8 +236,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     public void setSelectedCertificateProfileId(Integer selectedCertificateProfileId) {
-        this.selectedCertificateProfileId = selectedCertificateProfileId;
-        setSelectedCertificateProfileName(authorizedCertificateProfiles.get(getSelectedCertificateProfileId()).getName());
+        if (selectedCertificateProfileId != -1) {
+            this.selectedCertificateProfileId = selectedCertificateProfileId;
+            setSelectedCertificateProfileName(authorizedCertificateProfiles.get(getSelectedCertificateProfileId()).getName());
+        }
     }
 
     public String getSelectedEndEntityProfileName() {
@@ -253,8 +255,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     public void setSelectedEndEntityProfileId(Integer selectedEndEntityProfileId) {
-        this.selectedEndEntityProfileId = selectedEndEntityProfileId;
-        setSelectedEndEntityProfileName(authorizedEndEntityProfiles.get(getSelectedEndEntityProfileId()).getName());
+        if (selectedEndEntityProfileId != -1) {
+            this.selectedEndEntityProfileId = selectedEndEntityProfileId;
+            setSelectedEndEntityProfileName(authorizedEndEntityProfiles.get(getSelectedEndEntityProfileId()).getName());
+        }
     }
 
     /**
