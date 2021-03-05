@@ -208,19 +208,19 @@
 
 	<h:form id="enableCacheForUnknownStatus" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
 		<h3>
-			<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNKNOWN_STATUS}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_CACHE_FOR_UNKNOWN_STATUS}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNAUTHORIZED_STATUS}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_CACHE_FOR_UNAUTHORIZED_STATUS}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Management.html')}" escape="false"/>
 		</h3>
 		<h:panelGrid columns="2">
 			<h:panelGroup>
 				<h:selectBooleanCheckbox id="globallyEnableOcspBrowserCacheUnknownStatus"
 					 disabled="#{internalKeyBindingMBean.forbiddenToEdit}"
-					 value="#{internalKeyBindingMBean.browserCacheUnknownStatus}"
+					 value="#{internalKeyBindingMBean.explicitNoCacheUnauthorizedStatus}"
 				/>
 				<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
 			</h:panelGroup>
-			<h:commandButton action="#{internalKeyBindingMBean.saveEnableBrowserCacheUnknownStatus}"
+			<h:commandButton action="#{internalKeyBindingMBean.saveEnableBrowserExplicitNoCacheUnauthorizedStatus}"
 				 rendered="#{internalKeyBindingMBean.allowedToEdit}"
 				 value="#{web.text.INTERNALKEYBINDING_SAVE}"
 			/>
