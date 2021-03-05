@@ -533,6 +533,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             // MSAE Kerberos Settings
             autoEnrollmentConfiguration.setMsaeDomain(msaeDomain);
             autoEnrollmentConfiguration.setPolicyName(policyName);
+            autoEnrollmentConfiguration.setPolicyUid();
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(isUseSSL);
