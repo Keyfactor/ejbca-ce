@@ -20,10 +20,6 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.util.CertTools;
 
-/**
- * @version $Id$
- *
- */
 public class GlobalOcspConfiguration extends ConfigurationBase implements Serializable {
 
     public static final String OCSP_CONFIGURATION_ID = "OCSP";
@@ -34,7 +30,19 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String OCSP_RESPONDER_ID_TYPE_REFERENCE = "ocspResponderIdType";
     private static final String DEFAULT_NONCE_ENABLED_REFERENCE = "defaultNonceEnabled";
     private static final String OCSP_SIGNING_CACHE_UPDATE_ENABLED = "ocspSigningCacheUpdateEnabled";
-    
+    private static final String BROWSER_EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED = "browserExplicitNoCacheUnauthorizedStatusEnabled";
+
+    public boolean getBrowserExplicitNoCacheUnauthorizedStatusEnabled() {
+        if (Objects.isNull(data.get(BROWSER_EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED))) {
+            setBrowserCacheUnknownStatusEnabled(false); // Put the default if not already present
+        }
+        return (Boolean) data.get(BROWSER_EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED);
+    }
+
+    public void setBrowserCacheUnknownStatusEnabled(final boolean cacheForUnknownStatusEnabled) {
+        data.put(BROWSER_EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED, cacheForUnknownStatusEnabled);
+    }
+
     public boolean getOcspSigningCacheUpdateEnabled() {
         if (Objects.isNull(data.get(OCSP_SIGNING_CACHE_UPDATE_ENABLED))) {
             setOcspSigningCacheUpdateEnabled(false); // Put the default if not already present 
