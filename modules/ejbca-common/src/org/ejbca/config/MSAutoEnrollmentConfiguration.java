@@ -107,7 +107,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     public void setPolicyUid() {
         // Only set this once per node.
         if (data.get(POLICY_UID) == null) {
-            final String policyUid = UUID.randomUUID().toString();
+            final String policyUid = "{" + UUID.randomUUID().toString() + "}";
             data.put(POLICY_UID, policyUid);
         }
     }
