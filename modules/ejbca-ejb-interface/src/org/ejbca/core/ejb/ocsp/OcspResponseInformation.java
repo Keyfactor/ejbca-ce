@@ -38,16 +38,16 @@ public class OcspResponseInformation implements Serializable {
     private static final long serialVersionUID = -4177593916232755218L;
     private static final Logger log = Logger.getLogger(OcspResponseInformation.class);
     private final byte[] ocspResponse;
+    private final int status;
     private final long maxAge;
     private boolean addCacheHeaders = true;
-    private boolean cacheUnknown = false;
     private boolean explicitNoCache = false;
     private Long nextUpdate = null;
     private Long thisUpdate = null;
     private String responseHeader = null;
     private X509Certificate signerCert = null;
 
-    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge, X509Certificate signerCert, boolean cacheUnknown) throws OCSPException {
+    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge, X509Certificate signerCert) throws OCSPException {
         try {
             this.ocspResponse = ocspResponse.getEncoded();
         } catch (IOException e) {
@@ -55,7 +55,7 @@ public class OcspResponseInformation implements Serializable {
         }
         this.maxAge = maxAge;
         this.signerCert = signerCert;
-        this.cacheUnknown = cacheUnknown;
+        this.status = ocspResponse.getStatus();
         /*
          * This may seem like a somewhat odd place to perform the below operations (instead of in the end servlet which demanded 
          * this object), but BouncyCastle (up to 1.47) is  a bit shy about making their classes serializable. This means that 
@@ -98,7 +98,7 @@ public class OcspResponseInformation implements Serializable {
                     throw new OcspFailureException("SHA-1 was not an available algorithm for MessageDigester", e);
                 }
             }
-            if (!cacheUnknown && addCacheHeaders && singleResponses[0].getCertStatus() instanceof UnknownStatus) {
+            if (addCacheHeaders && singleResponses[0].getCertStatus() instanceof UnknownStatus) {
                 explicitNoCache = true;
             }
         }
@@ -146,8 +146,8 @@ public class OcspResponseInformation implements Serializable {
         return signerCert;
     }
 
-    /** @return true if we should add cache header for unknown status. */
-    public boolean isCacheUnknown() {
-        return cacheUnknown;
+    /** @return one of OCSPResp.SUCCESSFUL... */
+    public int getStatus() {
+        return status;
     }
 }

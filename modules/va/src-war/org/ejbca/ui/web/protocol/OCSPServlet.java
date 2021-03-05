@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
@@ -265,14 +266,11 @@ public class OCSPServlet extends HttpServlet {
                     log.debug(errMsg, e);
                 }
 
-                GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(
                     responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null),
                     OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
-                    null,
-                    ocspConfig.getBrowserCacheUnknownStatusEnabled()
+                    null
                 );
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
@@ -294,14 +292,11 @@ public class OCSPServlet extends HttpServlet {
                     log.debug(errMsg, e);
                 }
 
-                GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(
                     responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null),
                     OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
-                    null,
-                    ocspConfig.getBrowserCacheUnknownStatusEnabled()
+                    null
                 );
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
@@ -315,6 +310,12 @@ public class OCSPServlet extends HttpServlet {
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
             response.setContentType("application/ocsp-response");
             response.setContentLength(ocspResponseBytes.length);
+
+            GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            if (ocspResponseInformation.getStatus() == OCSPResp.UNAUTHORIZED && ocspConfig.getBrowserExplicitNoCacheUnauthorizedStatusEnabled()) {
+                addHeaderNoCache(response);
+            }
             addRfc5019CacheHeaders(request, response, ocspResponseInformation);
       
             
@@ -390,10 +391,7 @@ public class OCSPServlet extends HttpServlet {
         // RFC 5019 6.2: This profile RECOMMENDS that the ETag value be the ASCII HEX representation of the SHA1 hash of the OCSPResponse structure.
         response.setHeader("ETag", "\"" + ocspResponseInformation.getResponseHeader() + "\"");
         if (ocspResponseInformation.isExplicitNoCache()) {
-            // Note that using no-cache here is not conforming to RFC5019, but with more recent CABForum discussions it seems RFC5019 will not
-            // be followed, or will be changed. (See ECA-3289)
-            response.setHeader("Cache-Control", "no-cache, must-revalidate"); //HTTP 1.1
-            response.setHeader("Pragma", "no-cache"); //HTTP 1.0 
+            addHeaderNoCache(response);
         } else {
             // Max age is retrieved in milliseconds, but it must be in seconds in the cache-control header
             long maxAge = ocspResponseInformation.getMaxAge();
@@ -408,12 +406,19 @@ public class OCSPServlet extends HttpServlet {
         }
     }
 
+    private void addHeaderNoCache(HttpServletResponse response) {
+        // Note that using no-cache here is not conforming to RFC5019, but with more recent CABForum discussions it seems RFC5019 will not
+        // be followed, or will be changed. (See ECA-3289)
+        response.setHeader("Cache-Control", "no-cache, must-revalidate"); //HTTP 1.1
+        response.setHeader("Pragma", "no-cache"); //HTTP 1.0
+    }
+
     /**
      * Reads the request bytes and verifies min and max size of the request. If an error occurs it throws a MalformedRequestException. 
      * Can get request bytes both from a HTTP GET and POST request
      * 
      * @param request
-     * @param response
+     * @param httpMethod
      * @return the request bytes or null if an error occured.
      * @throws IOException In case there is no stream to read
      * @throws MalformedRequestException 
