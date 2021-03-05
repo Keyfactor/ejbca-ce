@@ -23,10 +23,10 @@ public class OAuthKeyHelper {
     
     public static void validateAzureType(final OAuthKeyInfo provider) {
         if (StringUtils.isEmpty(provider.getUrl())) {
-            throw new MissingOAuthKeyAttributeException("The URL field is mandatory for all Trusted OAuth Providers.");
+            throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getClient())) {
-            throw new MissingOAuthKeyAttributeException("The Tenant field is mandatory for Azure Trusted OAuth Providers.");
+            throw new MissingOAuthKeyAttributeException("The Tenant field (use --client) is mandatory for Azure Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getClientSecretAndDecrypt())) {
             throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for Azure Trusted OAuth Providers.");
@@ -38,7 +38,7 @@ public class OAuthKeyHelper {
             throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getClient())) {
-            throw new MissingOAuthKeyAttributeException("The Client Name field is mandatory for Azure Trusted OAuth Providers.");
+            throw new MissingOAuthKeyAttributeException("The Client Name field is mandatory for Keycloak Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getRealm())) {
             throw new MissingOAuthKeyAttributeException("The Realm field is mandatory for Keycloak Trusted OAuth Providers.");

@@ -43,7 +43,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String AZURE = "AZURE";
 
     {
-        registerParameter(new Parameter(TYPE, "Provider type. Supported types are KEYCLOAK and AZURE.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(TYPE, "Provider type. Supported types are NONE, KEYCLOAK and AZURE.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Type of the Trusted OAuth Provider."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be used."));
@@ -53,7 +53,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider name."));
         registerParameter(new Parameter(REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider realm name."));
-        registerParameter(new Parameter(CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(CLIENT, "Client/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client name for EJBCA in Trusted OAuth Provider."));
         registerParameter(new Parameter(CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client secret in Trusted OAuth Provider."));
