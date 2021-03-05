@@ -17,6 +17,7 @@ import org.cesecore.configuration.ConfigurationBase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Configuration for the Microsoft Auto Enrollment
@@ -30,6 +31,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
     private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
     private static final String POLICY_NAME = "policyName";
+    private static final String POLICY_UID = "policyUid";
 
 
     // MSAE Settings
@@ -96,6 +98,18 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     public void setPolicyName(final String policyName) {
         data.put(POLICY_NAME, policyName);
+    }
+    
+    public String getPolicyUid() {
+        return (String) data.get(POLICY_UID);
+    }
+
+    public void setPolicyUid() {
+        // Only set this once per node.
+        if (data.get(POLICY_UID) == null) {
+            final String policyUid = "{" + UUID.randomUUID().toString() + "}";
+            data.put(POLICY_UID, policyUid);
+        }
     }
 
     public String getMsaeKeyTabFilename() {
