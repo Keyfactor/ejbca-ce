@@ -383,7 +383,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         }
         try {
-            OAuthKeyHelper.validateProvider(newOauthKey);
+            OAuthKeyHelper.validateProvider(newOauthKey, false);
         } catch(Exception e) {
             systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
@@ -520,7 +520,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         /* Make sure the edited provider does not have any unfilled mandatory fields */
         try {
-            OAuthKeyHelper.validateProvider(oauthKeyToUpdate);
+            OAuthKeyHelper.validateProvider(oauthKeyToUpdate, false);
         } catch(Exception e) {
             systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
