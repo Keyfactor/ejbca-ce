@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -32,13 +30,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
@@ -85,9 +84,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedCertificateProfileId;
     private String selectedEndEntityProfileName;
     private Integer selectedEndEntityProfileId;
-
-    private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
-    private final EndEntityProfileSessionLocal endEntityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
+    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -95,12 +93,18 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     @EJB
     private ADConnectionSingletonLocal adConnection;
     
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    
     @PostConstruct
     public void loadConfiguration() {
 
         final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                 globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
 
+        this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
+        this.authorizedCertificateProfiles = raMasterApiProxyBean.getAuthorizedCertificateProfiles(getAdmin());
+        
         if (autoEnrollmentConfiguration != null) {
             msaeDomain = autoEnrollmentConfiguration.getMsaeDomain();
             policyName = autoEnrollmentConfiguration.getPolicyName();
@@ -233,8 +237,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setSelectedCertificateProfileId(Integer selectedCertificateProfileId) {
         this.selectedCertificateProfileId = selectedCertificateProfileId;
-
-        setSelectedCertificateProfileName(certificateProfileSession.getCertificateProfileName(getSelectedCertificateProfileId()));
+        setSelectedCertificateProfileName(authorizedCertificateProfiles.get(getSelectedCertificateProfileId()).getName());
     }
 
     public String getSelectedEndEntityProfileName() {
@@ -251,8 +254,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setSelectedEndEntityProfileId(Integer selectedEndEntityProfileId) {
         this.selectedEndEntityProfileId = selectedEndEntityProfileId;
-
-        setSelectedEndEntityProfileName(endEntityProfileSession.getEndEntityProfileName(getSelectedEndEntityProfileId()));
+        setSelectedEndEntityProfileName(authorizedEndEntityProfiles.get(getSelectedEndEntityProfileId()).getName());
     }
 
     /**
@@ -383,15 +385,16 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         availableCertificateProfiles.add(new SelectItem(-1, SELECT_CEP));
 
         if (getSelectedEndEntityProfileId() != null) {
-            EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(getSelectedEndEntityProfileId());
+            EndEntityProfile eep = authorizedEndEntityProfiles.getValue(getSelectedEndEntityProfileId());
 
             if (eep != null) {
                 for (Integer certProfileId: eep.getAvailableCertificateProfileIds()) {
-                    final String certProfileName = certificateProfileSession.getCertificateProfileName(certProfileId);
-                    availableCertificateProfiles.add(new SelectItem(certProfileId, certProfileName));
+                    if(authorizedCertificateProfiles.containsKey(certProfileId)) {
+                        final String certProfileName = authorizedCertificateProfiles.get(certProfileId).getName();
+                        availableCertificateProfiles.add(new SelectItem(certProfileId, certProfileName));
+                    }
                 }
             }
-
         }
         return availableCertificateProfiles;
     }
@@ -406,13 +409,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         List<SelectItem> availableEndEntityProfiles = new ArrayList<>();
         availableEndEntityProfiles.add(new SelectItem(-1, SELECT_EEP));
 
-        final TreeMap<String, String> endEntityProfileNames = getEjbcaWebBean().getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY);
-
-        for (final Map.Entry<String,String> entry : endEntityProfileNames.entrySet()) {
-            final String eepId = entry.getValue();
-            final String eepName = entry.getKey();
-            availableEndEntityProfiles.add(new SelectItem(eepId, eepName));
-        }
+        for (final Integer id : authorizedEndEntityProfiles.idKeySet()) {
+            availableEndEntityProfiles.add(new SelectItem(String.valueOf(id), authorizedEndEntityProfiles.get(id).getName()));
+        }        
 
         return availableEndEntityProfiles;
     }
