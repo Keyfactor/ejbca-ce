@@ -120,7 +120,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         try {
-            OAuthKeyHelper.validateProvider(keyInfo);
+            OAuthKeyHelper.validateProvider(keyInfo, true);
         } catch(Exception e) {
             log.info(e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;

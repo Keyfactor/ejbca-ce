@@ -10,8 +10,8 @@ import java.util.Arrays;
  */
 public class OAuthKeyHelper {
         
-    public static void validateProvider(OAuthKeyInfo provider) {
-        validateCommonType(provider);
+    public static void validateProvider(final OAuthKeyInfo provider, final boolean isCli) {
+        validateCommonType(provider, isCli);
         if (OAuthKeyInfo.OAuthProviderType.TYPE_AZURE.getIndex() == provider.getTypeInt()) {
             validateAzureType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK.getIndex() == provider.getTypeInt()) {
@@ -21,32 +21,35 @@ public class OAuthKeyHelper {
         }
     }
     
-    public static void validateAzureType(OAuthKeyInfo provider) {
+    public static void validateAzureType(final OAuthKeyInfo provider) {
         if (StringUtils.isEmpty(provider.getUrl())) {
             throw new MissingOAuthKeyAttributeException("The URL field is mandatory for all Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getClient())) {
-            throw new MissingOAuthKeyAttributeException("The Client field is mandatory for Azure Trusted OAuth Providers.");
+            throw new MissingOAuthKeyAttributeException("The Tenant field is mandatory for Azure Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getClientSecretAndDecrypt())) {
             throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for Azure Trusted OAuth Providers.");
         }
     }
     
-    public static void validateKeycloakType(OAuthKeyInfo provider) {
+    public static void validateKeycloakType(final OAuthKeyInfo provider) {
         if (StringUtils.isEmpty(provider.getUrl())) {
             throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Trusted OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getClient())) {
+            throw new MissingOAuthKeyAttributeException("The Client Name field is mandatory for Azure Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getRealm())) {
             throw new MissingOAuthKeyAttributeException("The Realm field is mandatory for Keycloak Trusted OAuth Providers.");
         }
     }
     
-    private static void validateCommonType(OAuthKeyInfo provider) {
+    private static void validateCommonType(final OAuthKeyInfo provider, final boolean isCli) {
         if (StringUtils.isEmpty(provider.getLabel())) {
             throw new MissingOAuthKeyAttributeException("The Label field is mandatory for all Trusted OAuth Providers.");
         }
-        if (provider.getKeys() == null || provider.getKeys().isEmpty()) {
+        if (!isCli && (provider.getKeys() == null || provider.getKeys().isEmpty())) {
             throw new MissingOAuthKeyAttributeException("At least one Public Key is mandatory for all Trusted OAuth Providers.");
         }
     }

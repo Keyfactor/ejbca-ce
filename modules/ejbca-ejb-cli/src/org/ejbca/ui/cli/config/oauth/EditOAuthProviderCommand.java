@@ -80,7 +80,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                         getOAuthConfiguration().setDefaultOauthKey(entry.getValue());
                     }
                     try {
-                        OAuthKeyHelper.validateProvider(entry.getValue());
+                        OAuthKeyHelper.validateProvider(entry.getValue(), true);
                     } catch(Exception e) {
                         log.info(e.getMessage());
                         return CommandResult.FUNCTIONAL_FAILURE;
