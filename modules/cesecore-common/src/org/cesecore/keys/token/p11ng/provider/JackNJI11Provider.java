@@ -80,6 +80,7 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", "SHA256withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA384withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA512withRSAandMGF1", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, MySignature.class.getName()));
@@ -291,10 +292,10 @@ public class JackNJI11Provider extends Provider {
                     throw new ProviderException("Internal error");
                 }
             } catch (NoSuchAlgorithmException e) {
-                log.error("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.");
+                log.warn("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.", e);
                 throw new SignatureException(e);
             } catch (IOException e) {
-                log.error("I/O exception occurred when writing byte array to output stream (offset = " + offset + "), length = (" + length + ").");
+                log.warn("I/O exception occurred when writing byte array to output stream (offset = " + offset + "), length = (" + length + ").");
                 throw new SignatureException(e);
             } catch (NoSuchProviderException e) {
                 log.error("The Bouncy Castle provider has not been installed.");
