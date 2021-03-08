@@ -47,8 +47,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * UI representation of a result set item from the back end.
  *
  * For printing user data fields.
- *
- * @version $Id$
  */
 public class RaEndEntityDetails {
 
