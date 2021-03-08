@@ -222,13 +222,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         log.debug("Creating certs-only CMS message as response for GetCACert for CA chain: " + caname);
                     }
                     List<X509Certificate> certList = CertTools.convertCertificateChainToX509Chain(certs);
-                    // TODO: test workaround for certificate order when using a three level hierarchy
-                    if (certList.size() == 3) {
-                        final X509Certificate two = certList.get(1);
-                        final X509Certificate three = certList.get(2);
-                        certList.set(1, three);
-                        certList.set(2, two);
-                    }
+                    // TODO: test workaround for certificate order, MS likes it reverse?
+                    Collections.reverse(certList);
                     byte[] resp = CertTools.createCertsOnlyCMS(certList);
                     if (log.isDebugEnabled()) {
                         log.debug("Sent certificates-only CMS for CA '" + caname + "' to SCEP client.");
