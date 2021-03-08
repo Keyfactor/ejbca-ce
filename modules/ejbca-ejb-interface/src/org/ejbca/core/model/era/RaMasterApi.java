@@ -752,6 +752,7 @@ public interface RaMasterApi {
      * @param authenticationToken the administrator performing the action
      * @param endEntityInformation an EndEntityInformation object with the new information
      * @param isClearPwd true if the password will be stored in clear form in the  db, otherwise it is hashed.
+     * @param newUsername the new username to be changed to.
      * @throws AuthorizationDeniedException administrator not authorized to edit user
      * @throws EndEntityProfileValidationException data doesn't fulfill EEP requirements
      * @throws ApprovalException if an approval already is waiting for specified action
