@@ -39,8 +39,12 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
+import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -81,6 +85,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -102,13 +107,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
-import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
-import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
-
-/**
- * 
- * @version $Id$
- *
+/** Implements processing of SCEP requests.
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ScepMessageDispatcherSessionRemote")
 public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSessionLocal, ScepMessageDispatcherSessionRemote {
@@ -207,13 +206,38 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (cainfo != null) {
                 certs = cainfo.getCertificateChain();
             }
-            if ((certs != null) && (certs.size() > 0)) {
+            if ((certs != null) && (certs.size() == 1)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Returning X.509 certificate as response for GetCACert for single CA: " + caname);
+                }
                 // CAs certificate is in the first position in the Collection
                 X509Certificate cert = (X509Certificate) certs.iterator().next();
                 if (log.isDebugEnabled()) {
                     log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
                 }
                 return cert.getEncoded();
+            } else if ((certs != null) && (certs.size() > 1)) {
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Creating certs-only CMS message as response for GetCACert for CA chain: " + caname);
+                    }
+                    List<X509Certificate> certList = CertTools.convertCertificateChainToX509Chain(certs);
+                    // TODO: test workaround for certificate order when using a three level hierarchy
+                    if (certList.size() == 3) {
+                        final X509Certificate two = certList.get(1);
+                        final X509Certificate three = certList.get(2);
+                        certList.set(1, three);
+                        certList.set(2, two);
+                    }
+                    byte[] resp = CertTools.createCertsOnlyCMS(certList);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Sent certificates-only CMS for CA '" + caname + "' to SCEP client.");
+                    }
+                    return resp;
+                } catch (ClassCastException | CMSException e) {
+                    log.info("Error creating certs-only CMS message as response for GetCACert for CA: " + caname);
+                    return null;
+                }
             } else {
                 return null;
             }
