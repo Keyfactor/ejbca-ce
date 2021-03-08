@@ -56,8 +56,6 @@ import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
  * Backing bean for end entity details view.
- *  
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -348,7 +346,7 @@ public class RaEndEntityBean implements Serializable {
                 raEndEntityDetails.getEndEntityInformation().getUsername(),
                 RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED
             );
-            raLocaleBean.addMessageError("editendentity_deleted");
+            raLocaleBean.addMessageInfo("editendentity_deleted");
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageError("editendentity_unauthorized");
         } catch (NoSuchEndEntityException e) {
@@ -549,8 +547,7 @@ public class RaEndEntityBean implements Serializable {
      */
     public String getUsernameWarning() {
         if (!username.equals(raEndEntityDetails.getUsername())
-            && username != null
-            && !username.isEmpty()
+            && StringUtils.isNotBlank(username)
             && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username) != null) {
             return msg.getString("enroll_already_exists");
         } else
@@ -590,14 +587,14 @@ public class RaEndEntityBean implements Serializable {
     }
 
     /**
-     * @return true if enrollment code or confirm enrollment code is blank
+     * @return remaining number of failed login attempts
      */
     public int getRemainingLogin() {
         return remainingLogin;
     }
 
     /**
-     * Sets the
+     * Sets the remaining number of failed login attempts
      *
      * @param remainingLogin the new remaining number of login attempts
      */
@@ -708,13 +705,12 @@ public class RaEndEntityBean implements Serializable {
      * @return a map with certificate authority id as key and certificate authority name as value (for certificate authority select options)
      */
     public Map<Integer, String> getCertificateAuthorities() {
-        int eepAnyCa = 1;
         List<Integer> eepCAs = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs();
         CertificateProfile cp = authorizedCertificateProfiles.get(cpId).getValue();
         List<Integer> cpCAs = authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs();
         List<Integer> allCAs = new ArrayList<>(authorizedCAInfos.idKeySet());
         List<Integer> usableCAs;
-        if (eepCAs.contains(eepAnyCa)) {
+        if (eepCAs.contains(EndEntityConstants.EEP_ANY_CA)) {
             if (cp.isApplicableToAnyCA()) {
                 usableCAs = allCAs;
             } else {
