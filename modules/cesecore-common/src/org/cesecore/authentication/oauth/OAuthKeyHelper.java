@@ -13,7 +13,7 @@ public class OAuthKeyHelper {
     public static void validateProvider(final OAuthKeyInfo provider, final boolean isCli) {
         validateCommonType(provider, isCli);
         if (OAuthKeyInfo.OAuthProviderType.TYPE_AZURE.getIndex() == provider.getTypeInt()) {
-            validateAzureType(provider);
+            validateAzureType(provider, isCli);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK.getIndex() == provider.getTypeInt()) {
             validateKeycloakType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_NONE.getIndex() != provider.getTypeInt()) {
@@ -21,12 +21,16 @@ public class OAuthKeyHelper {
         }
     }
     
-    public static void validateAzureType(final OAuthKeyInfo provider) {
+    public static void validateAzureType(final OAuthKeyInfo provider, final boolean isCli) {
         if (StringUtils.isEmpty(provider.getUrl())) {
             throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getClient())) {
-            throw new MissingOAuthKeyAttributeException("The Tenant field (use --client) is mandatory for Azure Trusted OAuth Providers.");
+            if (isCli) {
+                throw new MissingOAuthKeyAttributeException("The Tenant field (use --client) is mandatory for Azure Trusted OAuth Providers.");
+            } else {
+                throw new MissingOAuthKeyAttributeException("The Tenant field is mandatory for Azure Trusted OAuth Providers.");
+            }
         }
         if (StringUtils.isEmpty(provider.getClientSecretAndDecrypt())) {
             throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for Azure Trusted OAuth Providers.");

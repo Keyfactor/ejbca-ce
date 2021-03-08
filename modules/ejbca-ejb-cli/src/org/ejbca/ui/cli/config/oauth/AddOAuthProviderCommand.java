@@ -43,8 +43,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String AZURE = "AZURE";
 
     {
-        registerParameter(new Parameter(TYPE, "Provider type. Supported types are NONE, KEYCLOAK and AZURE.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Type of the Trusted OAuth Provider."));
+        registerParameter(new Parameter(TYPE, "Provider type.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Type of the Trusted OAuth Provider. Supported types are NONE, KEYCLOAK and AZURE."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be used."));
         registerParameter(new Parameter(URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -94,10 +94,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
 
         if (type == null) {
-            log.info("No provider type was specified.");
+            log.info("Unsupported provider type was specified. Currently supported provider types are " + NONE + ", " + AZURE + " and " + KEYCLOAK);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-
         
         int skewLimitInt = 0;
 
