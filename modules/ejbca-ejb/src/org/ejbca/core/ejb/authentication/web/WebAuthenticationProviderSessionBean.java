@@ -138,7 +138,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     if (verifyJwt(oAuthPublicKey, signedJwt)) {
                         keyFingerprint = oAuthPublicKey.getKeyFingerprint();
                     } else {
-                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
+                        logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", oAuthPublicKey.getKeyFingerprint()));
                         return null;
                     }
                 } else {
@@ -153,7 +153,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                             }
                         }
                         if (keyFingerprint == null) {
-                            logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature", keyFingerprint));
+                            logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.invalid_signature_provider", keyInfo.getLabel()));
                             return null;
                         }
                     }
