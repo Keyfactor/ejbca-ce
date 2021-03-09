@@ -409,6 +409,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     public void setOauthKeys(List<OAuthKeyInfo> oauthKeys) { this.oauthKeys = oauthKeys; }
 
+    // This method is for pre-filling the default provider in the UI
     public String getDefaultOauthKeyLabel() {
         if (getOAuthConfiguration().getDefaultOauthKey() != null) {
             defaultOauthKeyLabel = getOAuthConfiguration().getDefaultOauthKey().getLabel();
@@ -417,6 +418,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     public void setDefaultOauthKeyLabel(String defaultOauthKeyLabel) { this.defaultOauthKeyLabel = defaultOauthKeyLabel; }
 
+    // This method is for getting the currently selected default provider
     public String getNewDefaultOauthKeyLabel() {
         return defaultOauthKeyLabel;
     }
