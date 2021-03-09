@@ -456,8 +456,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public void saveEnableExplicitNoCacheUnauthorizedResponses() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
             .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (!cacheHeaderUnauthorizedResponses.equals(globalConfiguration.getBrowserExplicitNoCacheUnauthorizedStatusEnabled())) {
-            globalConfiguration.setBrowserCacheUnknownStatusEnabled(cacheHeaderUnauthorizedResponses);
+        if (!cacheHeaderUnauthorizedResponses.equals(globalConfiguration.getExplicitNoCacheUnauthorizedResponsesEnabled())) {
+            globalConfiguration.setExplicitNoCacheUnauthorizedResponsesEnabled(cacheHeaderUnauthorizedResponses);
             try {
                 globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
             } catch (AuthorizationDeniedException e) {
@@ -489,7 +489,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public boolean getCacheHeaderUnauthorizedResponses() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
             .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        return configuration.getBrowserExplicitNoCacheUnauthorizedStatusEnabled();
+        return configuration.getExplicitNoCacheUnauthorizedResponsesEnabled();
     }
 
     public void setCacheHeaderUnauthorizedResponses(final boolean cacheHeaderUnauthorizedResponses) {
