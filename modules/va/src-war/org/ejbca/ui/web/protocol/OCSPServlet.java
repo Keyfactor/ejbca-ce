@@ -313,7 +313,7 @@ public class OCSPServlet extends HttpServlet {
 
             GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            if (ocspResponseInformation.getStatus() == OCSPResp.UNAUTHORIZED && ocspConfig.getBrowserExplicitNoCacheUnauthorizedStatusEnabled()) {
+            if (ocspResponseInformation.getStatus() == OCSPResp.UNAUTHORIZED && ocspConfig.getExplicitNoCacheUnauthorizedResponsesEnabled()) {
                 addHeaderNoCache(response);
             }
             addRfc5019CacheHeaders(request, response, ocspResponseInformation);
