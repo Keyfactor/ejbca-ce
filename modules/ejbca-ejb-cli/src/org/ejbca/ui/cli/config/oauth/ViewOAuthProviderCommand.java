@@ -63,7 +63,6 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
             log.info("URL: " + info.getUrl());
             log.info("Realm: " + info.getRealm());
             log.info("Client: " + info.getClient());
-            log.info("Client Secret: " + info.getClientSecretAndDecrypt());
         }
 
         return CommandResult.SUCCESS;
