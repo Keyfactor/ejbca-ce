@@ -91,7 +91,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private OAuthKeyInfo oauthKeyBeingEdited;
         private String defaultKeyLabel;
         private OAuthKeyEditorMode editorMode;
-        PublicKeyUploadInFormOf keyInTheFormOf;
+        PublicKeyUploadInFormOf keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
         String publicKeyValue;
         String publicKeyUrl;
 
@@ -289,7 +289,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             skewLimit = 60000;
             publicKeyValue = null;
             publicKeyUrl = null;
-            keyInTheFormOf = null;
+            keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
         }
 
         /**
