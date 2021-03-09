@@ -30,17 +30,17 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String OCSP_RESPONDER_ID_TYPE_REFERENCE = "ocspResponderIdType";
     private static final String DEFAULT_NONCE_ENABLED_REFERENCE = "defaultNonceEnabled";
     private static final String OCSP_SIGNING_CACHE_UPDATE_ENABLED = "ocspSigningCacheUpdateEnabled";
-    private static final String EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED = "explicitNoCacheUnauthorizedStatusEnabled";
+    private static final String EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED = "explicitNoCacheUnauthorizedResponsesEnabled";
 
-    public boolean getBrowserExplicitNoCacheUnauthorizedStatusEnabled() {
-        if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED))) {
-            setBrowserCacheUnknownStatusEnabled(false); // Put the default if not already present
+    public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
+        if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
+            setExplicitNoCacheUnauthorizedResponsesEnabled(false); // Put the default if not already present
         }
-        return (Boolean) data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED);
+        return (Boolean) data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED);
     }
 
-    public void setBrowserCacheUnknownStatusEnabled(final boolean cacheForUnknownStatusEnabled) {
-        data.put(EXPLICIT_NO_CACHE_UNAUTHORIZED_STATUS_ENABLED, cacheForUnknownStatusEnabled);
+    public void setExplicitNoCacheUnauthorizedResponsesEnabled(final boolean cacheForUnknownStatusEnabled) {
+        data.put(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED, cacheForUnknownStatusEnabled);
     }
 
     public boolean getOcspSigningCacheUpdateEnabled() {
