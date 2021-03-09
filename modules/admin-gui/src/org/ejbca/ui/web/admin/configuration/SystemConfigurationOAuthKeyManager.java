@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.oauth.OAuthKeyManager;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -76,11 +79,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
     public class OAuthKeyEditor {
         private String label;
+        private String keyIdentifier;
+        private OAuthProviderType type = OAuthProviderType.TYPE_NONE;
         private String url;
         private String client;
         private String clientSecret;
         private String realm;
-        private String keyIdentifier;
         private UploadedFile publicKeyFile;
         private List<OAuthPublicKey> publicKeys;
         private int skewLimit = 60000;
@@ -91,9 +95,17 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         String publicKeyValue;
         String publicKeyUrl;
 
-        
+
         public String getKeyIdentifier() {
             return keyIdentifier;
+        }
+
+        public OAuthProviderType getType() {
+            return type;
+        }
+
+        public void setType(OAuthProviderType type) {
+            this.type = type;
         }
 
         public String getUrl() {
@@ -217,6 +229,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return this.editorMode.equals(OAuthKeyEditorMode.ADD);
         }
 
+        public boolean isTypeKeycloak() {
+            return OAuthProviderType.TYPE_KEYCLOAK.getIndex() == type.getIndex();
+        }
+
+        public boolean isTypeAzure() {
+            return OAuthProviderType.TYPE_AZURE.getIndex() == type.getIndex();
+        }
+
         public boolean isFileForm() {
             return this.keyInTheFormOf.equals(PublicKeyUploadInFormOf.FILE);
         }
@@ -240,6 +260,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             } else {
                 this.publicKeys = new ArrayList<>(oauthKey.getKeys().values());
             }
+            this.type = oauthKey.getType();
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
@@ -256,6 +277,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
          */
         public void clear() {
             keyIdentifier = null;
+            type = OAuthProviderType.TYPE_NONE;
             publicKeyFile = null;
             publicKeys = null;
             url = null;
@@ -523,7 +545,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         }
 
-        final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getLabel(), oauthKeyEditor.getSkewLimit());
+        final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getLabel(), oauthKeyEditor.getSkewLimit(),
+                oauthKeyEditor.getType());
         newOauthKey.setUrl(oauthKeyEditor.getUrl());
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setClient(oauthKeyEditor.getClient());
@@ -541,6 +564,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         if (!super.canAdd(newOauthKey)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
+            return StringUtils.EMPTY;
+        }
+        try {
+            OAuthKeyHelper.validateProvider(newOauthKey, false);
+        } catch(Exception e) {
+            systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
         }
 
@@ -614,6 +643,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         return oauthKeyEditor;
     }
 
+    public List<OAuthProviderType> getAvailableProviderTypes() {
+        return Arrays.asList(OAuthProviderType.values());
+    }
+
     /**
      * Save the OAuth Key currently being edited.
      * @return an empty string on failure or the constant string OAUTH_KEY_SAVED on success
@@ -668,6 +701,15 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
+
+        /* Make sure the edited provider does not have any unfilled mandatory fields */
+        try {
+            OAuthKeyHelper.validateProvider(oauthKeyToUpdate, false);
+        } catch(Exception e) {
+            systemConfigurationHelper.addErrorMessage(e.getMessage());
+            return StringUtils.EMPTY;
+        }
+
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;

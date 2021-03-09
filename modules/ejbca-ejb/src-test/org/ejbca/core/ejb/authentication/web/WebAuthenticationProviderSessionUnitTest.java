@@ -43,6 +43,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
@@ -220,7 +221,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void missingSignature() throws TokenExpiredException {
         log.trace(">missingSignature");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         replay(globalConfigurationSessionMock);
@@ -233,7 +234,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void malformedSignature() throws TokenExpiredException {
         log.trace(">malformedSignature");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         replay(globalConfigurationSessionMock);
@@ -246,7 +247,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void unknownSignatureAlgorithm() throws TokenExpiredException {
         log.trace(">unknownSignatureAlgorithm");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         replay(globalConfigurationSessionMock);
@@ -259,7 +260,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void expiredToken()  {
         log.trace(">expiredToken");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         replay(globalConfigurationSessionMock, securityEventsSessionMock);
@@ -277,7 +278,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void notYetValidToken() throws TokenExpiredException {
         log.trace(">notYetValidToken");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         expectAuditLog("authentication.jwt.not_yet_valid", "johndoe", pubKeyFingerprint);
@@ -292,7 +293,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void tamperedWithContents() throws TokenExpiredException {
         log.trace(">tamperedWithContents");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         expectAuditLog("authentication.jwt.invalid_signature", pubKeyFingerprint);
@@ -327,7 +328,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulRsaDefaultKey() throws TokenExpiredException {
         log.trace(">successfulRsaDefaultKey");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         replay(globalConfigurationSessionMock);
@@ -347,7 +348,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulRsaWithKeyId() throws TokenExpiredException {
         log.trace(">successfulRsaWithKeyId");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectConfigRead(oAuthKeyInfo);
         replay(globalConfigurationSessionMock);
@@ -368,7 +369,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulComplexToken() throws TokenExpiredException {
         log.trace(">successfulComplexToken");
-        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);        expectConfigRead(oAuthKeyInfo);
         replay(globalConfigurationSessionMock);
         final String expiry = timestampFromNow(60*60*1000); // 1 hour ahead
