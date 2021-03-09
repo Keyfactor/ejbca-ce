@@ -307,7 +307,7 @@ public class OCSPServlet extends HttpServlet {
                 }
             }
 
-            byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
+            byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();
             response.setContentType("application/ocsp-response");
             response.setContentLength(ocspResponseBytes.length);
 
