@@ -37,6 +37,16 @@
             <h:panelGroup id="placeholder1" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
             <h:commandButton action="#{systemConfigMBean.oauthKeyManager.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}"
                              rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode and systemConfigMBean.allowedToEditOauthKeys}"/>
+                             
+            <h:outputLabel for="providerType" value="#{web.text.OAUTHKEYCONFIGURATION_PROVIDERTYPE}" />
+            <h:panelGroup id="providerType" >
+                <h:selectOneMenu id="selectOneMenuProviderType" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.type}"
+                                 disabled="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.addMode}">
+                    <f:selectItems value="#{systemConfigMBean.oauthKeyManager.availableProviderTypes}" var="providerType" itemValue="#{providerType}" 
+                                   itemLabel="#{providerType.label}"/>
+                    <f:ajax render="@form" />
+                </h:selectOneMenu>
+            </h:panelGroup>
 
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_LABEL}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.label}" size="46" id="label"
@@ -57,21 +67,23 @@
                 value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.skewLimit}"
                 title="#{web.text.FORMAT_MILLISECONDS}"
                 size="10"/>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REALM}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REALM}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeKeycloak}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.realm}" size="46" id="realm"
-                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
+                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeKeycloak}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENT}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENT}" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_TENANT}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.client}" size="46" id="client"
                          disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENTSECRET}"/>
-            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.clientSecret}" size="46" id="clientSecret"
-                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENTSECRET}" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
+            <h:inputSecret value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.clientSecret}" size="46" id="clientSecret"
+                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}" autocomplete="off">
                 <f:converter converterId="trimConverter"/>
-            </h:inputText>
+            </h:inputSecret>
 
         </h:panelGrid>
         <h:dataTable value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeys}"
@@ -110,7 +122,7 @@
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_UPLOAD_KEY_WAY}"
                           rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
             <h:panelGroup id="keyAs" >
-                <h:selectOneMenu id="selectOneMenuProviderType" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyInTheFormOf}">
+                <h:selectOneMenu id="selectOneMenuUploadWay" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyInTheFormOf}">
                     <f:selectItems value="#{systemConfigMBean.oauthKeyManager.availableKeyUploadForms}" var="keyForm" itemValue="#{keyForm}"
                                    itemLabel="#{keyForm.label}"/>
                     <f:ajax render="@form" />
