@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.config.oauth;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -50,8 +51,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider name to be updated"));
         registerParameter(new Parameter(NEW_REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider realm name to be updated."));
-        registerParameter(new Parameter(NEW_CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Client name for EJBCA in Trusted OAuth Provider to be updated."));
+        registerParameter(new Parameter(NEW_CLIENT, "Client/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Client/Tenant name for EJBCA in Trusted OAuth Provider to be updated."));
         registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client secret in Trusted OAuth Provider to be updated."));
     }
@@ -77,6 +78,12 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                     OAuthKeyInfo defaultKey = getOAuthConfiguration().getDefaultOauthKey();
                     if (defaultKey != null && entry.getValue().getLabel().equals(defaultKey.getLabel())) {
                         getOAuthConfiguration().setDefaultOauthKey(entry.getValue());
+                    }
+                    try {
+                        OAuthKeyHelper.validateProvider(entry.getValue(), true);
+                    } catch(Exception e) {
+                        log.info(e.getMessage());
+                        return CommandResult.FUNCTIONAL_FAILURE;
                     }
                     if (saveGlobalConfig()) {
                         log.info("Trusted OAuth Provider with label: " + label + " successfully updated!");

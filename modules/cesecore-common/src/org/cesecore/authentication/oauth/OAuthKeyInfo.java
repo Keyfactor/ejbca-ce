@@ -18,17 +18,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.security.InvalidKeyException;
-import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
-import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.util.encoders.Base64;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
 /**
@@ -38,6 +32,39 @@ import org.cesecore.util.StringTools;
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    // dbIndexes of existing provider types should not be changed
+    public enum OAuthProviderType {
+        TYPE_NONE(0, "None"),
+        TYPE_AZURE(1, "Azure"),
+        TYPE_KEYCLOAK(2, "Keycloak");
+
+        private final int index;
+        private final String label;
+
+        OAuthProviderType(int dbIndex, String label) {
+            this.index = dbIndex;
+            this.label = label;
+        }
+
+        public int getIndex() {
+            return this.index;
+        }
+
+        public String getLabel() {
+            return this.label;
+        }
+
+        public static OAuthProviderType getByIndex(final int index) {
+            for (OAuthProviderType type : values()) {
+                if (index == type.index) {
+                    return type;
+                }
+            }
+            return null;
+        }
+    }
+
+    private int typeInt;
     private Map<String, OAuthPublicKey> keys = new LinkedHashMap<>();
     private String label;
     private String client;
@@ -53,16 +80,29 @@ public final class OAuthKeyInfo implements Serializable {
      * @param label  Provider label
      * @param skewLimit  skew limit.
      */
-    public OAuthKeyInfo(final String label, final int skewLimit) {
+    public OAuthKeyInfo(final String label, final int skewLimit, OAuthProviderType type) {
         if (label == null) {
             throw new IllegalArgumentException("label is null");
         }
         this.label = label;
         this.skewLimit = skewLimit;
+        this.typeInt = type.getIndex();
     }
 
     public int getSkewLimit() {
         return skewLimit;
+    }
+
+    public OAuthProviderType getType() {
+        return OAuthProviderType.getByIndex(typeInt);
+    }
+
+    public int getTypeInt() {
+        return typeInt;
+    }
+
+    public void setTypeInt(int typeInt) {
+        this.typeInt = typeInt;
     }
 
     public String getUrl() {
