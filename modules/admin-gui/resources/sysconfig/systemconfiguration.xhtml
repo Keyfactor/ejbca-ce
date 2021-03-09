@@ -982,11 +982,12 @@
 				<h:outputText value="#{web.text.MSAE_AD_LOGIN_PASSWORD_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:inputText id="msaeAdLoginPassword" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+				<h:inputSecret id="msaeAdLoginPassword" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+							 autocomplete="off"
 							 value="#{msAutoEnrollmentSettings.adLoginPassword}" size="45"
 							 title="#{web.text.FORMAT_STRING}">
 					<f:converter converterId="trimConverter"/>
-				</h:inputText>
+				</h:inputSecret>
 			</h:panelGroup>
 
 			<!-- Ca Name -->
