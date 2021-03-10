@@ -167,6 +167,7 @@ public class OAuthTokenRequest {
                     final byte[] responseBytes = FileTools.readStreamToByteArray(entity.getContent(), -1, maxResponseBytes);
                     String content = new String(responseBytes, StandardCharsets.UTF_8);
                     log.info("Failed to get token from authorization server. HTTP status code " + response.getStatusLine().getStatusCode()
+                            + " reason: " + response.getStatusLine().getReasonPhrase()
                             + " response content " + content);
                 }
                 throw new IOException("Failed to get token from authorization server. HTTP status code " + response.getStatusLine().getStatusCode());
