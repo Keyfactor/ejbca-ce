@@ -54,6 +54,9 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
         
         if (info != null) {
             log.info("Label: " + info.getLabel());
+            if (info.getType() != null) {
+                log.info("Type: " + info.getType().getLabel());
+            }
             log.info("Skew Limit: " + info.getSkewLimit());
             if (info.getKeyValues() != null) {
                 for (OAuthPublicKey publicKey : info.getKeyValues()) {
@@ -63,6 +66,8 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
             log.info("URL: " + info.getUrl());
             log.info("Realm: " + info.getRealm());
             log.info("Client: " + info.getClient());
+        } else {
+            log.info("An OAuth Provider with the label " + label + " was not found.");
         }
 
         return CommandResult.SUCCESS;
