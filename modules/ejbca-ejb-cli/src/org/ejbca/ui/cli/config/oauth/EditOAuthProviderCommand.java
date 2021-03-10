@@ -39,6 +39,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_CLIENT = "--new-client";
     private static final String NEW_CLIENT_SECRET = "--new-clientsecret";
     private static final String NEW_REALM = "--new-realm";
+    private static final String NEW_SCOPE = "--new-scope";
 
     {
         registerParameter(new Parameter(LABEL, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -49,10 +50,12 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider url to the login page to be updated."));
         registerParameter(new Parameter(NEW_LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider name to be updated"));
-        registerParameter(new Parameter(NEW_REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(NEW_REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider realm name to be updated."));
-        registerParameter(new Parameter(NEW_CLIENT, "Client/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Client/Tenant name for EJBCA in Trusted OAuth Provider to be updated."));
+        registerParameter(new Parameter(NEW_SCOPE, "Scope", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider scope to be updated."));
+        registerParameter(new Parameter(NEW_CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Client name for EJBCA in Trusted OAuth Provider to be updated."));
         registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client secret in Trusted OAuth Provider to be updated."));
     }
@@ -119,7 +122,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         final String newClient = parameters.get(NEW_CLIENT);
         final String newClientSecret = parameters.get(NEW_CLIENT_SECRET);
         final String newRealm = parameters.get(NEW_REALM);
-            
+        final String newScope = parameters.get(NEW_SCOPE);
+
         if (newSkewLimit != null) {
             if (validateSkewLimit(newSkewLimit) >= 0) {
                 keyInfoToBeEdited.setSkewLimit(validateSkewLimit(newSkewLimit));
@@ -148,6 +152,9 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         if (newRealm != null) {
             keyInfoToBeEdited.setRealm(newRealm);
+        }
+        if (newScope != null) {
+            keyInfoToBeEdited.setScope(newScope);
         }
             
         return true;
