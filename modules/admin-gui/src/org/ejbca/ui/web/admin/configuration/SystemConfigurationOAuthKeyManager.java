@@ -59,6 +59,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private String client;
         private String clientSecret;
         private String realm;
+        private String scope;
         private UploadedFile publicKeyFile;
         private List<OAuthPublicKey> publicKeys;
         private int skewLimit = 60000;
@@ -157,6 +158,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.realm = realm;
         }
 
+        public String getScope() {
+            return scope;
+        }
+
+        public void setScope(String scope) {
+            this.scope = scope;
+        }
+
         public OAuthKeyEditorMode getEditorMode() {
             return editorMode;
         }
@@ -173,6 +182,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
         public boolean isAddMode(){
             return this.editorMode.equals(OAuthKeyEditorMode.ADD);
+        }
+
+        public boolean isTypeNone() {
+            return OAuthProviderType.TYPE_NONE.getIndex() == type.getIndex();
         }
 
         public boolean isTypeKeycloak() {
@@ -200,6 +213,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.client = oauthKey.getClient();
             this.clientSecret = oauthKey.getClientSecretAndDecrypt();
             this.realm = oauthKey.getRealm();
+            this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
             this.defaultKeyLabel = defaultKeyLabel;
@@ -218,6 +232,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             client = null;
             clientSecret = null;
             realm = null;
+            scope = null;
             oauthKeyBeingEdited = null;
             skewLimit = 60000;
         }
@@ -365,6 +380,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 oauthKeyEditor.getType());
         newOauthKey.setUrl(oauthKeyEditor.getUrl());
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
+        newOauthKey.setScope(oauthKeyEditor.getScope());
         newOauthKey.setClient(oauthKeyEditor.getClient());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
 
@@ -517,6 +533,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
+        oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
 
         /* Make sure the edited provider does not have any unfilled mandatory fields */
         try {
