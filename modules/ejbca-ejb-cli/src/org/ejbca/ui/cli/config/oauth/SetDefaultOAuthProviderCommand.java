@@ -36,7 +36,7 @@ public class SetDefaultOAuthProviderCommand extends BaseOAuthConfigCommand {
     {
         registerParameter(new Parameter(LABEL, "Label", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Label of the Trusted OAuth Provider which is going to be set as default. "
-                + "Setting it as 'null' will clear the default Trusted OAuth Provider."));
+                + "Setting it as 'none' will clear the default Trusted OAuth Provider."));
     }   
     
     @Override
@@ -67,8 +67,8 @@ public class SetDefaultOAuthProviderCommand extends BaseOAuthConfigCommand {
             }
         }
         
-        if (label.equalsIgnoreCase("null")) {
-            // The user wants to clear the defaultKey entry by explicitly setting it as 'null'
+        if (label.equalsIgnoreCase("none") || label.equalsIgnoreCase("null")) {
+            // The user wants to clear the defaultKey entry
             defaultKey = null;
         } else if (defaultKey == null) {
             log.info("Trusted OAuth Provider with the label " + label + " doesn't exist. Can't set a nonexistent Trusted OAuth Provider as default.");
@@ -78,7 +78,11 @@ public class SetDefaultOAuthProviderCommand extends BaseOAuthConfigCommand {
         getOAuthConfiguration().setDefaultOauthKey(defaultKey);
         
         if (saveGlobalConfig()) {
-            log.info("Default Trusted OAuth Provider with label: " + label + " set successfuly!");
+            if (defaultKey == null) {
+                log.info("Default Trusted OAuth Provider cleared successfully.");
+            } else {
+                log.info("Default Trusted OAuth Provider with label " + label + " set successfully.");
+            }
             return CommandResult.SUCCESS;
         } else {
             log.info("Failed to update configuration due to authorization issue!");

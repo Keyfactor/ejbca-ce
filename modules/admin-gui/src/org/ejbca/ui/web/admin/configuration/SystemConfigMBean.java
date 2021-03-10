@@ -409,6 +409,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     public void setOauthKeys(List<OAuthKeyInfo> oauthKeys) { this.oauthKeys = oauthKeys; }
 
+    // This method is for pre-filling the default provider in the UI
     public String getDefaultOauthKeyLabel() {
         if (getOAuthConfiguration().getDefaultOauthKey() != null) {
             defaultOauthKeyLabel = getOAuthConfiguration().getDefaultOauthKey().getLabel();
@@ -417,6 +418,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     public void setDefaultOauthKeyLabel(String defaultOauthKeyLabel) { this.defaultOauthKeyLabel = defaultOauthKeyLabel; }
 
+    // This method is for getting the currently selected default provider
+    public String getNewDefaultOauthKeyLabel() {
+        return defaultOauthKeyLabel;
+    }
     /**
      * Get an object which can be used to manage the OAuth Key configuration. This will create a new OAuth Key manager for
      * the OAuth Keys in the current configuration if no OAuth Key manager has been created, or the old OAuth Key manager
@@ -471,8 +476,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             getOAuthConfiguration().setOauthKeys(oauthKeysMap);
 
-            if (defaultOAuthKeySafeToChange(getDefaultOauthKeyLabel())) {
-                getOAuthConfiguration().setDefaultOauthKey(getOauthKeyByLabel(getDefaultOauthKeyLabel()));
+            if (defaultOAuthKeySafeToChange(getNewDefaultOauthKeyLabel())) {
+                getOAuthConfiguration().setDefaultOauthKey(getOauthKeyByLabel(getNewDefaultOauthKeyLabel()));
             } else {
                 addErrorMessage("OAUTHKEYTAB_EDITDEFAULTKEYNOTPOSSIBLE");
             }
@@ -497,7 +502,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             try {
                 SignedJWT signedJwt = SignedJWT.parse(currentAdminToken.getEncodedToken());
                 String adminTokenkeyId = signedJwt.getHeader().getKeyID();
-                if (adminTokenkeyId == null && !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel())) {
+                if (adminTokenkeyId == null && (label == null || !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel()))) {
                     return false;
                 }
             } catch (ParseException e) {
