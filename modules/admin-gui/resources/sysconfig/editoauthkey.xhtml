@@ -113,7 +113,7 @@
                                  id="removePublicKeyButton"/>
             </h:column>
         </h:dataTable>
-        <h:panelGrid columns="2" styleClass="Row1"
+        <h:panelGrid columns="2" styleClass="Row1" id="keyForm"
                      rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode and systemConfigMBean.allowedToEditOauthKeys}">
             <f:facet name="header">
                 <h:column colspan="2"><h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ADD_KEY}" styleClass="titles"/></h:column>
@@ -125,7 +125,7 @@
                 <h:selectOneMenu id="selectOneMenuUploadWay" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyInTheFormOf}">
                     <f:selectItems value="#{systemConfigMBean.oauthKeyManager.availableKeyUploadForms}" var="keyForm" itemValue="#{keyForm}"
                                    itemLabel="#{keyForm.label}"/>
-                    <f:ajax render="@form" />
+                    <f:ajax render="editOAuthKeyForm:keyForm" />
                 </h:selectOneMenu>
             </h:panelGroup>
 
