@@ -513,10 +513,10 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 }
                 return (String) data.get(key);
             } else {
-                log.error("Could not find key '" + key + "' in the SCEP configuration data");
+                log.info("Could not find key '" + key + "' in the SCEP configuration data");
             }
         } else {
-            log.error("SCEP alias '" + alias + "' does not exist");
+            log.info("SCEP alias '" + alias + "' does not exist trying to get value for '" + key + "'");
         }
         return null;
     }
@@ -528,10 +528,10 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                     log.debug("Added '" + key + "=" + value + "' to the SCEP configuration data");
                 }
             } else {
-                log.error("Key '" + key + "' does not exist in the SCEP configuration data");
+                log.info("Key '" + key + "' does not exist in the SCEP configuration data");
             }
         } else {
-            log.error("SCEP alias '" + alias + "' does not exist");
+            log.info("SCEP alias '" + alias + "' does not exist trying to set value for '" + key + "'");
         }
     }
     
@@ -716,7 +716,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     @Override
     public void upgrade(){
-        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+        if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
+            log.info("Upgrading ScepConfiguration from version " + getVersion() + " to " + LATEST_VERSION);
             //V4.0
             for (String alias : getAliasList()) {
                 data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
