@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
@@ -407,14 +407,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
 
     private String addOauthPublicKeyFromTextValue() {
-        if (validateInputNotEmpty(oauthKeyEditor.getKeyIdentifier(), "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY")) {
+        if (!validateInputNotEmpty(oauthKeyEditor.getKeyIdentifier(), "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY")) {
             return StringUtils.EMPTY;
         }
         //check same public key does not present
         if (validateSameKeyExists(oauthKeyEditor.getKeyIdentifier())) {
             return StringUtils.EMPTY;
         }
-        if (validateInputNotEmpty(oauthKeyEditor.getPublicKeyValue(), "OAUTHKEYTAB_KEYVALUE_EMPTY")) {
+        if (!validateInputNotEmpty(oauthKeyEditor.getPublicKeyValue(), "OAUTHKEYTAB_KEYVALUE_EMPTY")) {
             return StringUtils.EMPTY;
         }
         byte[] newOauthKeyPublicKey ;
@@ -437,7 +437,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 final PublicKey publicKey = certificate.getPublicKey();
                 newOauthKeyPublicKey = publicKey.getEncoded();
                 oAuthPublicKey = new OAuthPublicKey(newOauthKeyPublicKey, oauthKeyEditor.getKeyIdentifier());
-            } catch (CertificateParsingException exception) {
+            } catch (CertificateParsingException | DecoderException exception) {
                 log.info("Could not parse public key from certificate string " + oauthKeyEditor.getPublicKeyValue());
                 systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYSTRING");
                 return null;
@@ -450,7 +450,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
 
     private String addOauthPublicKeyFromUrl() {
-        if (validateInputNotEmpty(oauthKeyEditor.getPublicKeyUrl(), "OAUTHKEYTAB_KEYURL_EMPTY"))
+        if (!validateInputNotEmpty(oauthKeyEditor.getPublicKeyUrl(), "OAUTHKEYTAB_KEYURL_EMPTY"))
             return StringUtils.EMPTY;
         try {
             JWKSet jwkSet = JWKSet.load(new URL(oauthKeyEditor.getPublicKeyUrl()));
@@ -477,7 +477,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
 
     private String addOauthPublicKeyFromFile() {
-        if (validateInputNotEmpty(oauthKeyEditor.getKeyIdentifier(), "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY"))
+        if (!validateInputNotEmpty(oauthKeyEditor.getKeyIdentifier(), "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY"))
             return StringUtils.EMPTY;
         if (oauthKeyEditor.getPublicKeyFile() == null) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_UPLOADFAILED");
@@ -512,9 +512,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private boolean validateInputNotEmpty(String keyIdentifier, String errorMessage) {
         if (StringUtils.isEmpty(keyIdentifier)) {
             systemConfigurationHelper.addErrorMessage(errorMessage);
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     public String removePublicKey(OAuthPublicKey key){
@@ -537,7 +537,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
      * Adds an OAuth Key with the information stored in the OAuth Key editor.
      */
     public String addOauthKey() {
-        if (validateInputNotEmpty(oauthKeyEditor.getLabel(), "OAUTHKEYTAB_LABEL_EMPTY"))
+        if (!validateInputNotEmpty(oauthKeyEditor.getLabel(), "OAUTHKEYTAB_LABEL_EMPTY"))
             return StringUtils.EMPTY;
 
         if (oauthKeyEditor.getSkewLimit() < 0) {
