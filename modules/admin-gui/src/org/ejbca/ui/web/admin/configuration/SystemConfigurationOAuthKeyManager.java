@@ -10,18 +10,29 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
@@ -51,6 +62,21 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         EDIT
     }
 
+    public enum PublicKeyUploadInFormOf {
+        FILE("File Upload"),
+        TEXT("Input text value"),
+        URL("Provide key config url");
+        private final String label;
+
+        PublicKeyUploadInFormOf(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+    }
+
     public class OAuthKeyEditor {
         private String label;
         private String keyIdentifier;
@@ -65,7 +91,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private OAuthKeyInfo oauthKeyBeingEdited;
         private String defaultKeyLabel;
         private OAuthKeyEditorMode editorMode;
-        
+        PublicKeyUploadInFormOf keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
+        String publicKeyValue;
+        String publicKeyUrl;
+
+
         public String getKeyIdentifier() {
             return keyIdentifier;
         }
@@ -157,6 +187,30 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.realm = realm;
         }
 
+        public PublicKeyUploadInFormOf getKeyInTheFormOf() {
+            return keyInTheFormOf;
+        }
+
+        public void setKeyInTheFormOf(PublicKeyUploadInFormOf keyInTheFormOf) {
+            this.keyInTheFormOf = keyInTheFormOf;
+        }
+
+        public String getPublicKeyValue() {
+            return publicKeyValue;
+        }
+
+        public void setPublicKeyValue(String publicKeyValue) {
+            this.publicKeyValue = publicKeyValue;
+        }
+
+        public String getPublicKeyUrl() {
+            return publicKeyUrl;
+        }
+
+        public void setPublicKeyUrl(String publicKeyUrl) {
+            this.publicKeyUrl = publicKeyUrl;
+        }
+
         public OAuthKeyEditorMode getEditorMode() {
             return editorMode;
         }
@@ -178,9 +232,21 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public boolean isTypeKeycloak() {
             return OAuthProviderType.TYPE_KEYCLOAK.getIndex() == type.getIndex();
         }
-        
+
         public boolean isTypeAzure() {
             return OAuthProviderType.TYPE_AZURE.getIndex() == type.getIndex();
+        }
+
+        public boolean isFileForm() {
+            return this.keyInTheFormOf.equals(PublicKeyUploadInFormOf.FILE);
+        }
+
+        public boolean isTextForm() {
+            return this.keyInTheFormOf.equals(PublicKeyUploadInFormOf.TEXT);
+        }
+
+        public boolean isUrlForm() {
+            return this.keyInTheFormOf.equals(PublicKeyUploadInFormOf.URL);
         }
 
         /**
@@ -203,6 +269,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
             this.defaultKeyLabel = defaultKeyLabel;
+            this.keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
         }
 
         /**
@@ -220,6 +287,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             realm = null;
             oauthKeyBeingEdited = null;
             skewLimit = 60000;
+            publicKeyValue = null;
+            publicKeyUrl = null;
+            keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
         }
 
         /**
@@ -283,7 +353,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         this.adminToken = adminToken;
     }
 
-    private byte[] getOauthKeyPublicKey(final UploadedFile upload) {
+    public List<PublicKeyUploadInFormOf> getAvailableKeyUploadForms() {
+        return Arrays.asList(PublicKeyUploadInFormOf.values());
+    }
+
+    private byte[] getOauthKeyPublicKeyFromFile(final UploadedFile upload) {
         if (log.isDebugEnabled()) {
             log.debug("Received uploaded public key file: " + upload.getName());
         }
@@ -292,7 +366,22 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
         } catch (final CertificateParsingException e) {
             log.info("Could not parse the public key file.", e);
-            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYFILE", upload.getName(), e.getMessage());
+            try {
+                final List<Certificate> certificates = CertTools.getCertsFromPEM(upload.getInputStream(), Certificate.class);
+                if (certificates == null || certificates.isEmpty() || certificates.get(0).getPublicKey() == null) {
+                    log.info("Could not parse the certificate file.");
+                    systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYFILE", upload.getName());
+                    return null;
+                }
+                final PublicKey publicKey = certificates.get(0).getPublicKey();
+                return publicKey.getEncoded();
+            } catch (CertificateParsingException exception) {
+                log.info("Could not parse the certificate file.", exception);
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYFILE", upload.getName(), exception.getMessage());
+            } catch ( IOException ioException) {
+                log.info("Failed to add OAuth Key.", e);
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_GENERICADDERROR", e.getLocalizedMessage());
+            }
             return null;
         } catch (final Exception e) {
             log.info("Failed to add OAuth Key.", e);
@@ -303,32 +392,129 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
     //Adds public key to list of keys
     public String addPublicKey() {
-        if (StringUtils.isEmpty(oauthKeyEditor.getKeyIdentifier())) {
-            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_KEYIDENTIFIER_EMPTY");
+        switch (oauthKeyEditor.getKeyInTheFormOf()) {
+            case FILE: {
+                return addOauthPublicKeyFromFile();
+            }
+            case URL: {
+                return addOauthPublicKeyFromUrl();
+            }
+            case TEXT: {
+                return addOauthPublicKeyFromTextValue();
+            }
+        }
+        return StringUtils.EMPTY;
+    }
+
+    private String addOauthPublicKeyFromTextValue() {
+        if (!validateInputNotEmpty(oauthKeyEditor.getKeyIdentifier(), "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY")) {
             return StringUtils.EMPTY;
         }
+        //check same public key does not present
+        if (validateSameKeyExists(oauthKeyEditor.getKeyIdentifier())) {
+            return StringUtils.EMPTY;
+        }
+        if (!validateInputNotEmpty(oauthKeyEditor.getPublicKeyValue(), "OAUTHKEYTAB_KEYVALUE_EMPTY")) {
+            return StringUtils.EMPTY;
+        }
+        byte[] newOauthKeyPublicKey ;
+        OAuthPublicKey oAuthPublicKey;
+        try {
+            newOauthKeyPublicKey = org.cesecore.util.Base64.decode(
+                    oauthKeyEditor.getPublicKeyValue().getBytes(StandardCharsets.US_ASCII));
+            oAuthPublicKey = new OAuthPublicKey(newOauthKeyPublicKey, oauthKeyEditor.getKeyIdentifier());
+            oAuthPublicKey.getOauthPublicKey();
+        } catch (IllegalStateException e){
+            log.info("Could not parse public key from string " + oauthKeyEditor.getPublicKeyValue());
+            try {
+                final Certificate certificate = CertTools.getCertfromByteArray(
+                        org.cesecore.util.Base64.decode(oauthKeyEditor.getPublicKeyValue().getBytes()), Certificate.class);
+                if (certificate == null || certificate.getPublicKey() == null) {
+                    log.info("Could not parse the public key from  certificate.");
+                    systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYSTRING");
+                    return null;
+                }
+                final PublicKey publicKey = certificate.getPublicKey();
+                newOauthKeyPublicKey = publicKey.getEncoded();
+                oAuthPublicKey = new OAuthPublicKey(newOauthKeyPublicKey, oauthKeyEditor.getKeyIdentifier());
+            } catch (CertificateParsingException | DecoderException exception) {
+                log.info("Could not parse public key from certificate string " + oauthKeyEditor.getPublicKeyValue());
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYSTRING");
+                return null;
+            }
+        }
+        oauthKeyEditor.getPublicKeys().add(oAuthPublicKey);
+        oauthKeyEditor.setKeyIdentifier(null);
+        oauthKeyEditor.setPublicKeyValue(null);
+        return StringUtils.EMPTY;
+    }
+
+    private String addOauthPublicKeyFromUrl() {
+        if (!validateInputNotEmpty(oauthKeyEditor.getPublicKeyUrl(), "OAUTHKEYTAB_KEYURL_EMPTY"))
+            return StringUtils.EMPTY;
+        try {
+            JWKSet jwkSet = JWKSet.load(new URL(oauthKeyEditor.getPublicKeyUrl()));
+            for (JWK jwk : jwkSet.getKeys()) {
+                if (validateSameKeyExists(jwk.getKeyID())) {
+                    continue;
+                }
+                final PublicKey publicKey = jwk.toRSAKey().toPublicKey();
+                final byte[] encoded = publicKey.getEncoded();
+                oauthKeyEditor.getPublicKeys().add(
+                        new OAuthPublicKey(encoded, jwk.getKeyID()));
+            }
+        } catch (MalformedURLException e) {
+            log.info("Could not parse public key config url " + oauthKeyEditor.getPublicKeyUrl());
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYURL", oauthKeyEditor.getPublicKeyUrl());
+            return StringUtils.EMPTY;
+        } catch (ParseException | IOException | JOSEException e) {
+            log.info("Could not load keys using config url " + oauthKeyEditor.getPublicKeyUrl());
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_FAILEDKEYURL", oauthKeyEditor.getPublicKeyUrl());
+            return StringUtils.EMPTY;
+        }
+        oauthKeyEditor.setPublicKeyUrl(null);
+        return null;
+    }
+
+    private String addOauthPublicKeyFromFile() {
+        if (!validateInputNotEmpty(oauthKeyEditor.getKeyIdentifier(), "OAUTHKEYTAB_KEYIDENTIFIER_EMPTY"))
+            return StringUtils.EMPTY;
         if (oauthKeyEditor.getPublicKeyFile() == null) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_UPLOADFAILED");
             return StringUtils.EMPTY;
         }
-        //check same public key does not present
-        for(OAuthPublicKey key : oauthKeyEditor.getPublicKeys()){
-            if (key.getKeyIdentifier().equals(oauthKeyEditor.getKeyIdentifier())){
-                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTSKEY");
-                return StringUtils.EMPTY;
-            }
+        if (validateSameKeyExists(oauthKeyEditor.getKeyIdentifier())) {
+            return StringUtils.EMPTY;
         }
-
-        final byte[] newOauthKeyPublicKey = getOauthKeyPublicKey(oauthKeyEditor.getPublicKeyFile());
+        final byte[] newOauthKeyPublicKey = getOauthKeyPublicKeyFromFile(oauthKeyEditor.getPublicKeyFile());
         if (newOauthKeyPublicKey == null) {
             // Error already reported
             return StringUtils.EMPTY;
         }
+        final OAuthPublicKey key = new OAuthPublicKey(newOauthKeyPublicKey, oauthKeyEditor.getKeyIdentifier());
         oauthKeyEditor.getPublicKeys().add(
-                new OAuthPublicKey(newOauthKeyPublicKey, oauthKeyEditor.getKeyIdentifier()));
+                key);
         oauthKeyEditor.setKeyIdentifier(null);
         oauthKeyEditor.setPublicKeyFile(null);
-        return StringUtils.EMPTY;
+        return null;
+    }
+
+    private boolean validateSameKeyExists(String newKeyIdentifier) {
+        for (OAuthPublicKey key : oauthKeyEditor.getPublicKeys()) {
+            if (key.getKeyIdentifier().equals(newKeyIdentifier)) {
+                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTSKEY", newKeyIdentifier);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean validateInputNotEmpty(String keyIdentifier, String errorMessage) {
+        if (StringUtils.isEmpty(keyIdentifier)) {
+            systemConfigurationHelper.addErrorMessage(errorMessage);
+            return false;
+        }
+        return true;
     }
 
     public String removePublicKey(OAuthPublicKey key){
@@ -351,10 +537,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
      * Adds an OAuth Key with the information stored in the OAuth Key editor.
      */
     public String addOauthKey() {
-        if (StringUtils.isEmpty(oauthKeyEditor.getLabel())) {
-            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_LABEL_EMPTY");
+        if (!validateInputNotEmpty(oauthKeyEditor.getLabel(), "OAUTHKEYTAB_LABEL_EMPTY"))
             return StringUtils.EMPTY;
-        }
 
         if (oauthKeyEditor.getSkewLimit() < 0) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_SKEWLIMITNEGATIVE");
@@ -530,4 +714,6 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;
     }
+
+
 }
