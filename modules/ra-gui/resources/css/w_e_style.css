@@ -427,11 +427,11 @@ textarea#enrollWithRequestIdForm\:certificateRequest {
     display: block;
     font-weight: bold; }
 
-#detailsForm > span.pure-u-1:nth-of-type(2)/*, #detailsForm  .subjects*/{
+#detailsForm > span.pure-u-1:nth-of-type(2), #detailsForm  .subjects {
   width: 97%;
   margin-bottom: 2%;
   word-break: break-word; }
-  #detailsForm > span.pure-u-1:nth-of-type(2) > label/*, #detailsForm > span.pure-u-1:nth-of-type(2) > .subjects > label*/ {
+  #detailsForm > span.pure-u-1:nth-of-type(2) > label {
     width: 95%;
     margin-left: 2.5% !important;
     display: block;
