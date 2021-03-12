@@ -14,6 +14,7 @@ package org.ejbca.ui.cli.config.oauth;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -23,6 +24,7 @@ import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
@@ -58,11 +60,21 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     }
     
     protected byte[] getOauthKeyPublicKey(final String publicKey) {
+        byte[] uploadedFileBytes = null;
         try {
-            byte[] uploadedFileBytes = Files.readAllBytes(Paths.get(publicKey));
+            uploadedFileBytes = Files.readAllBytes(Paths.get(publicKey));
             return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
         } catch (final CertificateParsingException e) {
-            log.info("Could not parse the public key file.", e);
+            try {
+                final Certificate certificate = CertTools.getCertfromByteArray(uploadedFileBytes, Certificate.class);
+                if (certificate == null || certificate.getPublicKey() == null) {
+                    log.info("Could not parse the certificate file.");
+                    return ArrayUtils.EMPTY_BYTE_ARRAY;
+                }
+                return certificate.getPublicKey().getEncoded();
+            } catch (CertificateParsingException exception) {
+                log.info("Could not parse the certificate file.", exception);
+            }
             return ArrayUtils.EMPTY_BYTE_ARRAY;
         } catch (final Exception e) {
             log.info("Failed to add Public Key.", e);
