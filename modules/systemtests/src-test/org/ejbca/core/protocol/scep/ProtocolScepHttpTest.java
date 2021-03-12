@@ -502,7 +502,7 @@ public class ProtocolScepHttpTest {
             assertEquals("Response code is not 200 (OK)", 200, con.getResponseCode());
             // Some appserver (Weblogic) responds with
             // "application/x-x509-ca-cert; charset=UTF-8"
-            assertTrue(con.getContentType().startsWith("application/x-x509-ca-cert"));
+            assertEquals("application/x-x509-ca-cert", con.getContentType());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // This works for small requests, and SCEP requests are small enough
             InputStream in = con.getInputStream();

@@ -197,6 +197,7 @@ public class JackNJI11ProviderTest {
     
     @Test
     public void testSignatureEcdsa() throws Exception {
+        signWithProvider("SHA224withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA256withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA384withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());
         signWithProvider("SHA512withECDSA", PKCS11TestUtils.ECC_TEST_KEY_1, cryptoToken.getSignProviderName());

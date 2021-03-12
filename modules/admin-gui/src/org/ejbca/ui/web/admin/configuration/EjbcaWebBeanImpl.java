@@ -1105,12 +1105,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public boolean isSessionTimeoutEnabled() {
-        return globalconfiguration == null ? null : globalconfiguration.getUseSessionTimeout();
+        return globalconfiguration == null ? GlobalConfiguration.DEFAULTSESSIONTIMEOUT : globalconfiguration.getUseSessionTimeout();
     }
 
     @Override
     public int getSessionTimeoutTime() {
-        return globalconfiguration == null ? null : globalconfiguration.getSessionTimeoutTime();
+        return globalconfiguration == null ? GlobalConfiguration.DEFAULTSESSIONTIMEOUTTIME : globalconfiguration.getSessionTimeoutTime();
     }
 
     @Override
