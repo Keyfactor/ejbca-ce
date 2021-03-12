@@ -110,8 +110,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
 
     // Default values for session timeout
-    private static final boolean DEFAULTSESSIONTIMEOUT = false;
-    private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
+    public static final boolean DEFAULTSESSIONTIMEOUT = false;
+    public static final int DEFAULTSESSIONTIMEOUTTIME = 30;
 
     // Default values for healthcheck
     /**
