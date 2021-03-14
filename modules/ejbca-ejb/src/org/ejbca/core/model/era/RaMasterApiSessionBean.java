@@ -2355,13 +2355,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean scepMsIntuneVerifyCsr(final AuthenticationToken authenticationToken, final String scepConfigurationAlias, final byte[] message)
             throws CertificateCreateException {
-    	// ECA-9270 Handle exception.
         return scepMessageDispatcherSession.doMsIntuneCsrVerification(authenticationToken, scepConfigurationAlias, message);
     }
     
     @Override
     public byte[] verifyScepPkcs10RequestMessage(AuthenticationToken authenticationToken, String alias, byte[] message) throws CertificateCreateException {
-    	// ECA-9270 Handle exception.
         return scepMessageDispatcherSession.verifyRequestMessage(authenticationToken, alias, message);
     }
 
