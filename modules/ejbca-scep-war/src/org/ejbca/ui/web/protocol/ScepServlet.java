@@ -246,7 +246,10 @@ public class ScepServlet extends HttpServlet {
             	            reqmsg = new ScepRequestMessage(scepmsg, false);
             	            final int messageType = reqmsg.getMessageType();
             	            if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
-            	                raMasterApiProxyBean.scepMsIntuneVerifyCsr(administrator, alias, message.getBytes());
+            	                final boolean verified = raMasterApiProxyBean.scepMsIntuneVerifyCsr(administrator, alias, message.getBytes());
+            	                if (!verified) {
+            	                    throw new CertificateCreateException("MS Intune validation failed for alias " + alias + "'.");
+            	                }
             	            }
             	        } catch (IOException e) {
             	            log.info("Error receiving ScepMessage: ", e);
