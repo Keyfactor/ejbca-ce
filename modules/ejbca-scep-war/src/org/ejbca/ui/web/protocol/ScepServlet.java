@@ -48,6 +48,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
@@ -84,6 +85,9 @@ public class ScepServlet extends HttpServlet {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    
+    @EJB
+    private ScepMessageDispatcherSessionLocal scepMessageDispatcherSession;
     
     private static final String DEFAULT_SCEP_ALIAS = "scep";
 
@@ -246,7 +250,7 @@ public class ScepServlet extends HttpServlet {
             	            reqmsg = new ScepRequestMessage(scepmsg, false);
             	            final int messageType = reqmsg.getMessageType();
             	            if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
-            	                final boolean verified = raMasterApiProxyBean.scepMsIntuneVerifyCsr(administrator, alias, message.getBytes());
+            	                final boolean verified = scepMessageDispatcherSession.doMsIntuneCsrVerification(administrator, alias, message.getBytes()); 
             	                if (!verified) {
             	                    throw new CertificateCreateException("MS Intune validation failed for alias " + alias + "'.");
             	                }
