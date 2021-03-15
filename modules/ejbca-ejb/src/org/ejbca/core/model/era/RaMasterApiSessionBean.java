@@ -2351,12 +2351,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
         return scepMessageDispatcherSession.dispatchRequest(authenticationToken, operation, message, scepConfigurationAlias);
     }
-
-    @Override
-    public boolean scepMsIntuneVerifyCsr(final AuthenticationToken authenticationToken, final String scepConfigurationAlias, final byte[] message)
-            throws CertificateCreateException {
-        return scepMessageDispatcherSession.doMsIntuneCsrVerification(authenticationToken, scepConfigurationAlias, message);
-    }
     
     @Override
     public byte[] verifyScepPkcs10RequestMessage(AuthenticationToken authenticationToken, String alias, byte[] message) throws CertificateCreateException {
