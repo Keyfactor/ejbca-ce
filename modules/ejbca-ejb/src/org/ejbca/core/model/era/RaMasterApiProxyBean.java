@@ -1972,35 +1972,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public boolean scepMsIntuneVerifyCsr(final AuthenticationToken authenticationToken, final String scepConfigurationAlias, final byte[] message)
-            throws CertificateCreateException {
-        CertificateCreateException caughtException = null;
-
-        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            // raMasterApi.isBackendAvailable() && 
-            if (raMasterApi.getApiVersion() >= 3) {
-                try {
-                    // Try first instance only.
-                    try {
-                        return raMasterApi.scepMsIntuneVerifyCsr(authenticationToken, scepConfigurationAlias, message);
-                    } catch (CertificateCreateException e) {
-                        caughtException = e;
-                        break;
-                    }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        
-        if (caughtException != null) {
-            throw caughtException;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
     public byte[] verifyScepPkcs10RequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException {
         CertificateCreateException caughtException = null;
 
