@@ -367,19 +367,14 @@ public class CAInterfaceBean implements Serializable {
                 // Next, create a CA signing key
                 final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(caInfoDto.getSignatureAlgorithmParam());
                 String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + EditCaUtil.DEFAULT_KEY_SIZE;
-                caInfoDto.setSignKeySpec(EditCaUtil.DEFAULT_KEY_SIZE);
                 if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
                     caSignKeySpec = "prime256v1";
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 }
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), caSignKeySpec);
             }
