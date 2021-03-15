@@ -171,7 +171,7 @@ public class RaEndEntityBean implements Serializable {
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
-                if (raEndEntityDetails.getEndEntityInformation() == null) {
+                if (raEndEntityDetails.getEndEntityInformation().getExtendedInformation() == null) {
                     maxFailedLogins = -1;
                     remainingLogin = -1;
                 } else {
