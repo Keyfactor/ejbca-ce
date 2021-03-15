@@ -143,7 +143,7 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="remaininglogin"
                 rendered="#{not cc.attrs.editMode}"
-                value="#{cc.attrs.raEndEntityDetails.loginsRemaining}"
+                value="#{cc.attrs.raEndEntityDetails.loginsRemaining lt 0 ? msg.component_eedetails_field_max_failed_unlimited : cc.attrs.raEndEntityDetails.loginsRemaining}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
