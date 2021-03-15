@@ -41,6 +41,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -288,7 +289,13 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
         String subjectDa = subjectDirectoryAttributes.getValue();
-        if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
+        if (extendedInformation == null) {
+            if (StringUtils.isNotBlank(subjectDa)) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+                endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
+                changed = true;
+            }
+        } else if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
             endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
             changed = true;
         }
@@ -735,14 +742,18 @@ public class RaEndEntityBean implements Serializable {
             .collect(Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
     }
 
-    /**
-     * @return subject distinguish names currently typed in edit mode
-     */
-    public SubjectDn getSubjectDistinguishNames() {
+    private void handleNullSubjectDistinguishNames() {
         if (subjectDistinguishNames == null) {
             EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
             subjectDistinguishNames = new SubjectDn(eep, raEndEntityDetails.getSubjectDn());
         }
+    }
+
+    /**
+     * @return subject distinguish names currently typed in edit mode
+     */
+    public SubjectDn getSubjectDistinguishNames() {
+        handleNullSubjectDistinguishNames();
         return subjectDistinguishNames;
     }
 
@@ -756,13 +767,32 @@ public class RaEndEntityBean implements Serializable {
     }
 
     /**
+     * @return true if subjectDistinguishNames has at least 1 fieldInstance, otherwise false
+     */
+    public boolean getAnySubjectDistinguishName() {
+        handleNullSubjectDistinguishNames();
+        return subjectDistinguishNames == null ? false : subjectDistinguishNames.getFieldInstances().size() > 0;
+    }
+
+    private void handleNullSubjectAlternativeNames() {
+        if (subjectAlternativeNames == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            String subjectAn = raEndEntityDetails.getSubjectAn();
+            if (eep.getSubjectAltNameFieldOrderLength() > 0) {
+                if (StringUtils.isBlank(subjectAn)) {
+                    subjectAlternativeNames = new SubjectAlternativeName(eep);
+                } else {
+                    subjectAlternativeNames = new SubjectAlternativeName(eep, subjectAn);
+                }
+            }
+        }
+    }
+
+    /**
      * @return subject alternative names currently typed in edit mode
      */
     public SubjectAlternativeName getSubjectAlternativeNames() {
-        if (subjectAlternativeNames == null) {
-            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
-            subjectAlternativeNames = new SubjectAlternativeName(eep, raEndEntityDetails.getSubjectAn());
-        }
+        handleNullSubjectAlternativeNames();
         return subjectAlternativeNames;
     }
 
@@ -776,13 +806,31 @@ public class RaEndEntityBean implements Serializable {
     }
 
     /**
+     * @return true if subjectAlternativeNames has at least 1 fieldInstance, otherwise false
+     */
+    public boolean getAnySubjectAlternativeName() {
+        return subjectAlternativeNames.getFieldInstances().size() > 0;
+    }
+
+    private void handleNullSubjectDirectoryAttributes() {
+        if (subjectDirectoryAttributes == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            String subjectDa = raEndEntityDetails.getSubjectDa();
+            if (eep.getSubjectDirAttrFieldOrderLength() > 0) {
+                if (StringUtils.isBlank(subjectDa)) {
+                    subjectDirectoryAttributes = new SubjectDirectoryAttributes(eep);
+                } else {
+                    subjectDirectoryAttributes = new SubjectDirectoryAttributes(eep, subjectDa);
+                }
+            }
+        }
+    }
+
+    /**
      * @return subject directory attributes currently typed in edit mode
      */
     public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
-        if (subjectDirectoryAttributes == null) {
-            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
-            subjectDirectoryAttributes = new SubjectDirectoryAttributes(eep, raEndEntityDetails.getSubjectDa());
-        }
+        handleNullSubjectDirectoryAttributes();
         return subjectDirectoryAttributes;
     }
 
@@ -793,6 +841,13 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
         this.subjectDirectoryAttributes = subjectDirectoryAttributes;
+    }
+
+    /**
+     * @return true if subjectDirectoryAttributes has at least 1 fieldInstance, otherwise false
+     */
+    public boolean getAnySubjectDirectoryAttribute() {
+        return subjectDirectoryAttributes.getFieldInstances().size() > 0;
     }
 
     /**
