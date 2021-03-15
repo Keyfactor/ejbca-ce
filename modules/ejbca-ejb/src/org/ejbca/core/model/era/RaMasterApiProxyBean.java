@@ -171,6 +171,25 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @EJB
     private KeyRecoverySessionLocal localNodeKeyRecoverySession;
 
+    /** Two arrays of Master API implementations (RA/VA/CA hosts connected over Peers).
+     * You can have more than one level of proxy, i.e. "Satellite RA -> DMZ RA -> CA"
+     * Different types of requests should either:
+     * - be processed as far inside the chain as possible (in the CA), or
+     * - be processed as close to the end user as possible (local first)
+     * 
+     * For example certificate issuance you want to always happen as far in as possible (the CA), while
+     * key recovery you want as far out as possible (i.e. customer have a satellite RA to do local escrow/key recovery if possible)
+     * 
+     * Wether a node (raMasterApi implementation) is usable or not is determined by calling isBackendAvailable() on the api implementation
+     * being tried. In RaMasterAPISessionBean, isBackendAvailable() is implemented so that a node is available for API processing if there 
+     * is any _active_ CA available locally. Normally this is only available farthest in, on the CA.
+     * But for the local key recovery use case the customer will add a local CA (with keys and signing cert) on the satellite RA 
+     * for handling encryption of key recovery data, and then managing local roles for performing key recovery etc.
+     * 
+     * Take care which API array is used, considering the use cases above. Typically a VA or RA must have no active CAs, and thus forward all 
+     * requests to the CA (use raMasterApis), while the "local key recovery on satellite RA" needs to work a little 
+     * different (use raMasterApisLocalFirst for methods needed for this use case).
+     */
     private RaMasterApi[] raMasterApis = null;
     private RaMasterApi[] raMasterApisLocalFirst = null;
 
