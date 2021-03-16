@@ -201,15 +201,15 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         
         public boolean getDnPartPwdSelected() {
             if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD)) {
-              return true;  
+                return true;  
             }
-              return false;
+            return false;
         }
         
         public void setDnPartPwdSelected(boolean dnPartPwdSelected) {
             if (dnPartPwdSelected) {
                 setAuthenticationModule(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD);
-            }else if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD)) {
+            } else if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD)) {
                 setAuthenticationModule("");
             }
         }
@@ -218,14 +218,14 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         public boolean getChallengePwdSelected() {
             if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD)) {
                 return true;  
-              }
-                return false;
+            }
+            return false;
         }
         
         public void setChallengePwdSelected(boolean challengePwdSelected) {
             if (challengePwdSelected) {
                 setAuthenticationModule(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
-            }else if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD)) {
+            } else if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD)) {
                 setAuthenticationModule("");
             }
         }
