@@ -667,11 +667,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         
         try {
             final byte[] derEncodedCsr = raMasterApiProxyBean.verifyScepPkcs10RequestMessage(authenticationToken, alias, message);
-            log.info("Try MS Intune validation for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
-            intuneScepServiceClient.ValidateRequest(transactionId, new String(Base64.encode(derEncodedCsr)));
             if (log.isDebugEnabled()) {
-                log.debug("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+                log.debug("Try MS Intune validation for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
             }
+            intuneScepServiceClient.ValidateRequest(transactionId, new String(Base64.encode(derEncodedCsr)));
+            log.info("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
             return true;
         } catch (IntuneScepServiceException e) {
             final String msg = "MS Intune validation failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
