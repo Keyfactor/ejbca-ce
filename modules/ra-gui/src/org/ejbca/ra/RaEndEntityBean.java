@@ -228,6 +228,10 @@ public class RaEndEntityBean implements Serializable {
      * Cancels edit mode and reloads
      */
     public void editEditEndEntityCancel() {
+        subjectDistinguishNames = null;
+        subjectAlternativeNames = null;
+        subjectDirectoryAttributes = null;
+
         editEditEndEntityMode = false;
         reload();
     }
@@ -283,22 +287,39 @@ public class RaEndEntityBean implements Serializable {
             endEntityInformation.setDN(subjectDn);
             changed = true;
         }
-        String subjectAn = subjectAlternativeNames.getValue();
-        if (!subjectAn.equals(endEntityInformation.getSubjectAltName())) {
-            endEntityInformation.setSubjectAltName(subjectAn);
-            changed = true;
+        if (subjectAlternativeNames == null) {
+            if (StringUtils.isNotBlank(endEntityInformation.getSubjectAltName())) {
+                endEntityInformation.setSubjectAltName(null);
+                changed = true;
+            }
+        } else {
+            String subjectAn = subjectAlternativeNames.getValue();
+            if (!subjectAn.equals(endEntityInformation.getSubjectAltName())) {
+                endEntityInformation.setSubjectAltName(subjectAn);
+                changed = true;
+            }
         }
-        String subjectDa = subjectDirectoryAttributes.getValue();
-        if (extendedInformation == null) {
-            if (StringUtils.isNotBlank(subjectDa)) {
-                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+        if (subjectDirectoryAttributes == null) {
+            if (extendedInformation != null) {
+                if (StringUtils.isNotBlank(extendedInformation.getSubjectDirectoryAttributes())) {
+                    endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(null);
+                    changed = true;
+                }
+            }
+        } else {
+            String subjectDa = subjectDirectoryAttributes.getValue();
+            if (extendedInformation == null) {
+                if (StringUtils.isNotBlank(subjectDa)) {
+                    endEntityInformation.setExtendedInformation(new ExtendedInformation());
+                    endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
+                    changed = true;
+                }
+            } else if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
                 endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
                 changed = true;
             }
-        } else if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
-            endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
-            changed = true;
         }
+
         if (extendedInformation != null && maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
             endEntityInformation.getExtendedInformation().setMaxLoginAttempts(maxFailedLogins);
             changed = true;
@@ -766,14 +787,6 @@ public class RaEndEntityBean implements Serializable {
         this.subjectDistinguishNames = subjectDistinguishNames;
     }
 
-    /**
-     * @return true if subjectDistinguishNames has at least 1 fieldInstance, otherwise false
-     */
-    public boolean getAnySubjectDistinguishName() {
-        handleNullSubjectDistinguishNames();
-        return subjectDistinguishNames == null ? false : subjectDistinguishNames.getFieldInstances().size() > 0;
-    }
-
     private void handleNullSubjectAlternativeNames() {
         if (subjectAlternativeNames == null) {
             EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
@@ -809,7 +822,8 @@ public class RaEndEntityBean implements Serializable {
      * @return true if subjectAlternativeNames has at least 1 fieldInstance, otherwise false
      */
     public boolean getAnySubjectAlternativeName() {
-        return subjectAlternativeNames.getFieldInstances().size() > 0;
+        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+        return eep.getSubjectAltNameFieldOrderLength() > 0;
     }
 
     private void handleNullSubjectDirectoryAttributes() {
@@ -847,7 +861,8 @@ public class RaEndEntityBean implements Serializable {
      * @return true if subjectDirectoryAttributes has at least 1 fieldInstance, otherwise false
      */
     public boolean getAnySubjectDirectoryAttribute() {
-        return subjectDirectoryAttributes.getFieldInstances().size() > 0;
+        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+        return eep.getSubjectDirAttrFieldOrderLength() > 0;
     }
 
     /**
