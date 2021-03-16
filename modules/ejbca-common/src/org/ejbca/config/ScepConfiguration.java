@@ -127,33 +127,32 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     /** Initializes a new scep configuration with default values. */
     public void initialize(String alias){
         alias += ".";
-        if(StringUtils.isNotEmpty(alias)) {
-            data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
-            data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
-            data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
-            data.put(alias + SCEP_RA_ENTITYPROFILE, DEFAULT_RA_ENTITYPROFILE);
-            data.put(alias + SCEP_RA_DEFAULTCA, DEFAULT_RA_DEFAULTCA);
-            data.put(alias + SCEP_RA_AUTHPWD, DEFAULT_RA_AUTHPWD);
-            data.put(alias + SCEP_RA_NAME_GENERATION_SCHEME, DEFAULT_RA_NAME_GENERATION_SCHEME);
-            data.put(alias + SCEP_RA_NAME_GENERATION_PARAMETERS, DEFAULT_RA_NAME_GENERATION_PARAMETERS);
-            data.put(alias + SCEP_RA_NAME_GENERATION_PREFIX, DEFAULT_RA_NAME_GENERATION_PREFIX);
-            data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
-            data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
-            data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
-            
-            data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
-            data.put(alias + AUTH_AUTHORITY, "");
-            data.put(alias + AAD_APP_ID, "");
-            data.put(alias + AAD_APP_KEY, "");
-            data.put(alias + TENANT, "");
-            data.put(alias + INTUNE_RESOURCE_URL, "");
-            data.put(alias + GRAPH_API_VERSION, "");
-            data.put(alias + GRAPH_RESOURCE_URL, "");
-            data.put(alias + PROXY_HOST, "");
-            data.put(alias + PROXY_PORT, "");
-            data.put(alias + PROXY_USER, "");
-            data.put(alias + PROXY_PASS, "");
-        }
+    
+        data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
+        data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
+        data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
+        data.put(alias + SCEP_RA_ENTITYPROFILE, DEFAULT_RA_ENTITYPROFILE);
+        data.put(alias + SCEP_RA_DEFAULTCA, DEFAULT_RA_DEFAULTCA);
+        data.put(alias + SCEP_RA_AUTHPWD, DEFAULT_RA_AUTHPWD);
+        data.put(alias + SCEP_RA_NAME_GENERATION_SCHEME, DEFAULT_RA_NAME_GENERATION_SCHEME);
+        data.put(alias + SCEP_RA_NAME_GENERATION_PARAMETERS, DEFAULT_RA_NAME_GENERATION_PARAMETERS);
+        data.put(alias + SCEP_RA_NAME_GENERATION_PREFIX, DEFAULT_RA_NAME_GENERATION_PREFIX);
+        data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
+        data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+        data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        
+        data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
+        data.put(alias + AUTH_AUTHORITY, "");
+        data.put(alias + AAD_APP_ID, "");
+        data.put(alias + AAD_APP_KEY, "");
+        data.put(alias + TENANT, "");
+        data.put(alias + INTUNE_RESOURCE_URL, "");
+        data.put(alias + GRAPH_API_VERSION, "");
+        data.put(alias + GRAPH_RESOURCE_URL, "");
+        data.put(alias + PROXY_HOST, "");
+        data.put(alias + PROXY_PORT, "");
+        data.put(alias + PROXY_USER, "");
+        data.put(alias + PROXY_PASS, "");
     }
     
     // return all the key with an alias
@@ -720,6 +719,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             log.info("Upgrading ScepConfiguration from version " + getVersion() + " to " + LATEST_VERSION);
             //V4.0
             for (String alias : getAliasList()) {
+                alias += ".";
                 data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
                 data.put(alias + AUTH_AUTHORITY, "");
                 data.put(alias + AAD_APP_ID, "");
