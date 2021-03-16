@@ -60,15 +60,13 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_EXTRACTUSERNAMECOMPONENT= "extractusernamecomponent";
     public static final String CONFIG_EXTRACTDNPARTPWDCOMPONENT = "extractdnpartpwdcomponent";
     public static final String CONFIG_AUTHENTICATIONMODULE    = "authenticationmodule";
-    public static final String CONFIG_AUTHMODULE_CHALLENGE_PWD         = "ChallengePwd";
-    public static final String CONFIG_AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
     public static final String CONFIG_CHANGESUBJECTNAME = "changesubjectname";
         
     private final String ALIAS_LIST = "aliaslist";
     public static final String EST_CONFIGURATION_ID = "4";
 
     // Default Values
-    public static final float LATEST_VERSION = 3f;
+    public static final float LATEST_VERSION = 4f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
     // Default values
@@ -146,6 +144,18 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         }
     }
     
+    @Override
+    public String getConfigurationId() {
+        return EST_CONFIGURATION_ID;
+    }
+    
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
+    public float getLatestVersion() {
+       return LATEST_VERSION;
+    }
+
+
     public void setRAMode(String alias, String mode) {
         setRAMode(alias, StringUtils.equalsIgnoreCase(mode, "ra"));
     }
@@ -356,7 +366,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
 
     public String getValue(String key, String alias) {
-        if(aliasExists(alias)) {
+        if (aliasExists(alias)) {
             if(data.containsKey(key)) {
                 return (String) data.get(key);
             } else {
@@ -369,7 +379,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
 
     public void setValue(String key, String value, String alias) {
-        if(aliasExists(alias)) {
+        if (aliasExists(alias)) {
             if(data.containsKey(key)) {
                 data.put(key, value);
                 if(log.isDebugEnabled()) {
@@ -568,25 +578,6 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         return null;
     }
 
-    /** Implementation of UpgradableDataHashMap function getLatestVersion */
-    @Override
-    public float getLatestVersion() {
-       return LATEST_VERSION;
-    }
-
-    /** Implementation of UpgradableDataHashMap function upgrade. */
-    @Override
-    public void upgrade() {
-        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            data.put(VERSION,  Float.valueOf(LATEST_VERSION));
-        }
-    }
-
-    @Override
-    public String getConfigurationId() {
-        return EST_CONFIGURATION_ID;
-    }
-    
     public String getExtractUsernameComponent(String alias) {
         String key = alias + "." + CONFIG_EXTRACTUSERNAMECOMPONENT;
         return getValue(key, alias);
@@ -714,6 +705,29 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public void setRANameGenPostfix(String alias, String postfix) {
         String key = alias + "." + CONFIG_RA_NAMEGENERATIONPOSTFIX;
         setValue(key, postfix, alias);
+    }
+
+    /** Implementation of UpgradableDataHashMap function upgrade. */
+    @Override
+    public void upgrade() {
+        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+            log.info("Upgrading EstConfiguration from version " + getVersion() + " to " + LATEST_VERSION);
+            for (String alias : getAliasList()) {
+                alias = alias + ".";
+                data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_CERTIFICATE_MODE);
+                data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+                data.put(alias + CONFIG_OPERATIONMODE, DEFAULT_OPERATION_MODE);
+                data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
+                data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
+                data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
+                data.put(alias + CONFIG_CHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+                data.put(alias + CONFIG_RA_NAMEGENERATIONSCHEME, DEFAULT_RA_USERNAME_GENERATION_SCHEME);
+                data.put(alias + CONFIG_RA_NAMEGENERATIONPARAMS, DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+                data.put(alias + CONFIG_RA_NAMEGENERATIONPREFIX, DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+                data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
+            }
+            data.put(VERSION,  Float.valueOf(LATEST_VERSION));
+        }
     }
 
 }
