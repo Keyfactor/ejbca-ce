@@ -77,10 +77,10 @@
                         <h:outputText value="&lt; #{web.text.VIEWOLDER}"/>
                     </h:outputLink>
                     <h:outputLink rendered="#{viewCertificateMBean.cacerts}"  id="viewIssuing"
-                                  value="&lt; #{web.text.VIEWISSUING}" styleClass="button">
+                                  value="#{viewCertificateMBean.link}" styleClass="button">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.nextIndex}"/>
-                        <f:param name="username" value="#{viewCertificateMBean.userName}"/>
-                        <h:outputText value="&lt; #{web.text.VIEWOLDER}"/>
+                        <f:param name="caid" value="#{viewCertificateMBean.caId}"/>
+                        <h:outputText value="&lt; #{web.text.VIEWISSUING}"/>
                     </h:outputLink>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.displayShowOlderButton and viewCertificateMBean.displayShowNewerButton}">
@@ -97,8 +97,8 @@
                     <h:outputLink rendered="#{viewCertificateMBean.cacerts}" id="viewSubordinate"
                                   value="#{viewCertificateMBean.link}" styleClass="button">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex-1}"/>
-                        <f:param name="username" value="#{viewCertificateMBean.userName}"/>
-                        <h:outputText value="#{web.text.VIEWNEWER} &gt;" />
+                        <f:param name="caid" value="#{viewCertificateMBean.caId}"/>
+                        <h:outputText value="#{web.text.VIEWSUBORDINATE} &gt;" />
                     </h:outputLink>
                 </h:panelGroup>
                 
