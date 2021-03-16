@@ -41,6 +41,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
 
+    public static final int ALIAS_MIN_LENGTH = 1;
+    public static final int ALIAS_MAX_LENGTH = 250;
+    
     private static final String KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING = "requireExternalAccountBinding";
     private static final String KEY_EXTERNAL_ACCOUNT_BINDING = "externalAccountBinding";
     private static final String KEY_PRE_AUTHORIZATION_ALLOWED = "preAuthorizationAllowed";
