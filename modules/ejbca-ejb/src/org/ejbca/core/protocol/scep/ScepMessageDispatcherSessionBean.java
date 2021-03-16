@@ -674,10 +674,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
             return true;
         } catch (IntuneScepServiceException e) {
-            log.info("Failed MS Intune validation for alias " + alias, e);
-            throw new CertificateCreateException("MS Intune validation failed for alias " + alias + "'.", e);
+            final String msg = "Failed MS Intune validation for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
+            log.info(msg, e);
+            throw new CertificateCreateException(msg, e);
         } catch (Exception e) {
-            throw new CertificateCreateException("MS Intune enrollment failed for alias " + alias + "'.", e);
+            throw new CertificateCreateException("MS Intune enrollment failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ", e);
         }
     }
     
