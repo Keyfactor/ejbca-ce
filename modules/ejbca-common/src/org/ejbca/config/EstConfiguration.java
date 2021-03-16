@@ -59,8 +59,11 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_OPERATIONMODE = "operationmode";
     public static final String CONFIG_EXTRACTUSERNAMECOMPONENT= "extractusernamecomponent";
     public static final String CONFIG_EXTRACTDNPARTPWDCOMPONENT = "extractdnpartpwdcomponent";
-    public static final String CONFIG_AUTHENTICATIONMODULE    = "authenticationmodule";
     public static final String CONFIG_CHANGESUBJECTNAME = "changesubjectname";
+    public static final String CONFIG_AUTHENTICATIONMODULE    = "authenticationmodule";
+    // Possible values for CONFIG_AUTHENTICATIONMODULE
+    public static final String CONFIG_AUTHMODULE_CHALLENGE_PWD         = "ChallengePwd";
+    public static final String CONFIG_AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
         
     private final String ALIAS_LIST = "aliaslist";
     public static final String EST_CONFIGURATION_ID = "4";
@@ -87,8 +90,8 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_OPERATION_MODE = "client";
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
-    private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
     private static final String DEFAULT_ALLOW_CHANGESUBJECTNAME = "false";
+    private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
         
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
