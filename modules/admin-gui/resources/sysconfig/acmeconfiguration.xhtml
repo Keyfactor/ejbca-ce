@@ -15,8 +15,6 @@
  	 *  commercial license terms.                                            *
  	 *                                                                       *
  	 *************************************************************************/
-     
-     $Id$
      -->
 </ui:remove>
 
@@ -36,7 +34,8 @@
 
             <h:form id="aliases">
 
-                <h:inputHidden id="newAlias" value="#{acmeConfigMBean.newAlias}">
+                <h:inputHidden id="newAlias" value="#{acmeConfigMBean.newAlias}" validatorMessage="#{web.text.ONLYLEGALCHARSMAX250_INACMEALIAS}">
+                    <f:validateRegex pattern="^([\w\-\_]{1,250})$" />
                     <f:validator validatorId="legalCharsValidator" />
                     <f:converter converterId="trimConverter"/>
                 </h:inputHidden>
