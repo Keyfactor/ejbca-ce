@@ -94,7 +94,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 4f;
+    public static final float LATEST_VERSION = 5f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
