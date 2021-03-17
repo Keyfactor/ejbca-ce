@@ -55,6 +55,9 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.OAuthKeyHelper;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -291,6 +294,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 if (principal.getAudience() != null) {
                     details.put("audience", Arrays.toString(principal.getAudience().toArray()));
                 }
+                if (getProviderByPublicKeyFingerprint(oauth2Admin.getPublicKeyBase64Fingerprint()) != null
+                        && getProviderByPublicKeyFingerprint(oauth2Admin.getPublicKeyBase64Fingerprint()).getLabel() != null) {
+                    details.put("provider", getProviderByPublicKeyFingerprint(oauth2Admin.getPublicKeyBase64Fingerprint()).getLabel());
+                }
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
@@ -408,6 +415,24 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             errorpage_initialized = true;
         }
         return globalconfiguration;
+    }
+    
+    
+    public OAuthKeyInfo getProviderByPublicKeyFingerprint(String keyFingerprint) {
+        OAuthConfiguration oauthConfig = getOAuthConfiguration();
+        if (oauthConfig != null && oauthConfig.getOauthKeys() != null) {
+            Collection<OAuthKeyInfo> providers = oauthConfig.getOauthKeys().values();
+            for (OAuthKeyInfo provider : providers) {
+                if (provider.getKeyValues() != null && !provider.getKeyValues().isEmpty()) {
+                    for (OAuthPublicKey publicKey : provider.getKeyValues()) {
+                        if (keyFingerprint.equals(publicKey.getKeyFingerprint())) {
+                            return provider;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /** Returns the current users common name */
