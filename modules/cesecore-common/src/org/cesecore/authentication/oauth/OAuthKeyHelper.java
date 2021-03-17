@@ -1,8 +1,10 @@
 package org.cesecore.authentication.oauth;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.Collection;
 
-import java.util.Arrays;
+import javax.ejb.EJB;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility class for OAuth Provider related operations

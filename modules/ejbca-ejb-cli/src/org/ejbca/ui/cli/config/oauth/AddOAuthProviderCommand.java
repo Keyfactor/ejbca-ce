@@ -79,18 +79,22 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String clientSecret = parameters.get(CLIENT_SECRET);
         String realm = parameters.get(REALM);
         OAuthProviderType type = null;
-
-
-        switch (typeString) {
-            case NONE:
-                type = OAuthProviderType.TYPE_NONE;
-                break;
-            case KEYCLOAK:
-                type = OAuthProviderType.TYPE_KEYCLOAK;
-                break;
-            case AZURE:
-                type = OAuthProviderType.TYPE_AZURE;
-                break;
+        
+        if (typeString != null) {
+            typeString = typeString.toUpperCase();
+            switch (typeString) {
+                case NONE:
+                    type = OAuthProviderType.TYPE_NONE;
+                    break;
+                case KEYCLOAK:
+                    type = OAuthProviderType.TYPE_KEYCLOAK;
+                    break;
+                case AZURE:
+                    type = OAuthProviderType.TYPE_AZURE;
+                    break;
+                default:
+                    break;
+            }
         }
 
         if (type == null) {
