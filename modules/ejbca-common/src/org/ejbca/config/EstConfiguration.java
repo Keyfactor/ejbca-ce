@@ -198,11 +198,11 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
     
     
-    public String getVendorCA(String alias) {
+    public String getVendorCAs(String alias) {
         String key = alias + "." + CONFIG_VENDORCA;
         return getValue(key, alias);
     }
-    public void setVendorCA(String alias, String vendorCA) {
+    public void setVendorCAs(String alias, String vendorCA) {
         String key = alias + "." + CONFIG_VENDORCA;
         setValue(key, vendorCA, alias);
     }
