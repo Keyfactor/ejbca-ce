@@ -21,8 +21,6 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
 /**
  * Wrapper class for holding CaInfo properties.
- *
- * @version $Id$
  */
 public class CaInfoDto {
 
@@ -145,10 +143,16 @@ public class CaInfoDto {
         this.signatureAlgorithmParam = signatureAlgorithmParam;
     }
 
+    /** Key specification for extended CA services, used to generate the soft key used for i.e. the CMS Service 
+     * @return a key specification, for example 2048.
+     */
     public String getSignKeySpec() {
         return signKeySpec;
     }
 
+    /** Key specification for extended CA services, used to generate the soft key used for i.e. the CMS Service 
+     * @param signKeySpec a key specification, for example 2048.
+     */
     public void setSignKeySpec(String signKeySpec) {
         this.signKeySpec = signKeySpec;
     }
