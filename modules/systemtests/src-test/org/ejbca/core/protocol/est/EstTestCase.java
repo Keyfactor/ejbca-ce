@@ -35,6 +35,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
@@ -93,6 +94,8 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.ui.web.rest.api.resource.RestResourceSystemTestBase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -496,8 +499,13 @@ public abstract class EstTestCase extends CaTestCase {
             final KeyPair keyPair,
             final byte[] certificateBytes
     ) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        // Remove any old entries
+        @SuppressWarnings("rawtypes")
+        final Enumeration aliases = keyStore.aliases();
+        while (aliases.hasMoreElements()) {
+            keyStore.deleteEntry((String)aliases.nextElement());            
+        }
         // Add the certificate
-        keyStore.deleteEntry(keyStoreAlias);
         keyStore.setCertificateEntry(keyStoreAlias, CertTools.getCertfromByteArray(issuerCertificateBytes, Certificate.class));
         // Add the key if exists
         if(keyPair != null) {

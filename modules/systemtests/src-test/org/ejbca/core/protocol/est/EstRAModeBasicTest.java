@@ -176,6 +176,8 @@ public class EstRAModeBasicTest extends EstTestCase {
             config.setCert(estAlias, false);
             config.setUsername(estAlias, username);
             config.setPassword(estAlias, pwd);
+            // Test case with invalid CA
+            config.setDefaultCAID(estAlias, getTestCAId(TESTCA_NAME));
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             
             //
@@ -185,18 +187,24 @@ public class EstRAModeBasicTest extends EstTestCase {
             PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             // Send request first without username, should give unauthorized
-            // TODO: information leak here, message should probably be "Invalid username or password"
-            sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Missing username</body></html>"); 
+            sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid username or password</body></html>"); 
             // Send request without password, should give unauthorized
-            sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid password</body></html>", username, null); 
+            sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid username or password</body></html>", username, null); 
             // Send request with wrong password, should give unauthorized
-            sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid password</body></html>", username, "foo123"); 
+            sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid username or password</body></html>", username, "foo123"); 
             // Send request with correct username and password, but alias requiring certificate, should give unauthorized
             config.setCert(estAlias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>No client certificate supplied</body></html>", username, pwd); 
-            // Send request with correct username and password, should work
+
+            // Send request with correct username and password, but alias configured with an invalid CA, should not work
             config.setCert(estAlias, false);
+            config.setDefaultCAID(estAlias, 123);
+            globalConfigurationSession.saveConfiguration(ADMIN, config);
+            sendEstRequest(estAlias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>The requested CA for EST alias 'EstRAModeBasicTest' could not be found: 123</body></html>", username, pwd); 
+
+            // Send request with correct username and password, should work
+            config.setDefaultCAID(estAlias, getTestCAId(TESTCA_NAME));
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             byte[] resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd); 
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
@@ -270,13 +278,13 @@ public class EstRAModeBasicTest extends EstTestCase {
             PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             // Send request first client cert auth, but no username, should give unauthorized
-            sendEstRequest(true, estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Missing username</body></html>", null, null); 
+            sendEstRequest(true, estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid username or password</body></html>", null, null); 
             // Require certificate now
             config.setCert(estAlias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
             // Send request now first client cert auth, but no username, should give unauthorized, since our cert is not authorized in any role
             // A bit different depending on if we send username or not, but all cases should fail
-            sendEstRequest(true, estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Missing username</body></html>", null, null); 
+            sendEstRequest(true, estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid username or password</body></html>", null, null); 
             final String msg = "Administrator '" + adminRequestDN + "' not authorized to CA " + serverCertCaInfo.getCAId() + ".";
             sendEstRequest(true, estAlias, "simpleenroll", reqmsg, 403, "<html><head><title>Error</title></head><body>" + msg + "</body></html>", adminUsername, pwd);
             // If we remove username possibility we will always get cet auth failure
@@ -322,13 +330,13 @@ public class EstRAModeBasicTest extends EstTestCase {
     }
 
     /**
-     * Tests re-enrollment with EST alias in RA mode including wrong enrolment with missmmissmatch between TLS cert and CSR as well as revoked TLS cert.
+     * Tests re-enrollment with EST alias in RA mode including wrong enrolment with missmatch between TLS cert and CSR as well as revoked TLS cert.
      */
     @Test
     public void testRASimpleReenroll() throws Exception {
         log.trace(">testRASimpleReenroll()");
         final String pwd = genRandomPwd();
-        final String username = "ESTRARAReenroll" + genRandomUserName();
+        final String username = "ESTRAReenroll" + genRandomUserName();
         try {
             final EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
             // In order to re-enroll we need to be able to establish a TLS connection with client authentication, which means
