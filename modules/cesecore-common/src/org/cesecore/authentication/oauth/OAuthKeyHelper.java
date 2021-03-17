@@ -1,13 +1,10 @@
 package org.cesecore.authentication.oauth;
 
-import java.util.Collection;
-
-import javax.ejb.EJB;
-
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility class for OAuth Provider related operations
+ * Currently only used for the CLI
  *
  */
 public class OAuthKeyHelper {
