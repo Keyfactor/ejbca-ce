@@ -1850,7 +1850,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
-
+        caInfoDto.setSignKeySpec(extendedServicesKeySpecParam != null ? extendedServicesKeySpecParam : EditCaUtil.DEFAULT_KEY_SIZE);
         caInfoDto.setDescription(cainfo.getDescription());
         caInfoDto.setDoEnforceUniquePublickeys(cainfo.isDoEnforceUniquePublicKeys());
         caInfoDto.setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
