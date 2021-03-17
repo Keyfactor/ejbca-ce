@@ -717,17 +717,28 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             log.info("Upgrading EstConfiguration from version " + getVersion() + " to " + LATEST_VERSION);
             for (String alias : getAliasList()) {
                 alias = alias + ".";
-                data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_CERTIFICATE_MODE);
-                data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
-                data.put(alias + CONFIG_OPERATIONMODE, DEFAULT_OPERATION_MODE);
-                data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
-                data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
-                data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
-                data.put(alias + CONFIG_CHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
-                data.put(alias + CONFIG_RA_NAMEGENERATIONSCHEME, DEFAULT_RA_USERNAME_GENERATION_SCHEME);
-                data.put(alias + CONFIG_RA_NAMEGENERATIONPARAMS, DEFAULT_RA_USERNAME_GENERATION_PARAMS);
-                data.put(alias + CONFIG_RA_NAMEGENERATIONPREFIX, DEFAULT_RA_USERNAME_GENERATION_PREFIX);
-                data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
+                // v4 Client mode
+                if (data.get(alias + CONFIG_VENDORCERTIFICATEMODE) == null) {
+                    data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_CERTIFICATE_MODE);
+                }
+                if (data.get(alias + CONFIG_VENDORCA) == null) {
+                    data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+                }
+                if (data.get(alias + CONFIG_OPERATIONMODE) == null) {
+                    data.put(alias + CONFIG_OPERATIONMODE, "ra"); // when upgrading from previous version when ra was the only mode available
+                }
+                if (data.get(alias + CONFIG_EXTRACTUSERNAMECOMPONENT) == null) {
+                    data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
+                }
+                if (data.get(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT) == null) {
+                    data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
+                }
+                if (data.get(alias + CONFIG_AUTHENTICATIONMODULE) == null) {
+                    data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
+                }
+                if (data.get(alias + CONFIG_CHANGESUBJECTNAME) == null) {
+                    data.put(alias + CONFIG_CHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+                }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
         }
