@@ -118,7 +118,7 @@ public class EstRAModeBasicTest extends EstTestCase {
         // Create a basic EST alias configuration, which is the same for all tests, apart from minor modification we do in each test
         final EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         config.addAlias(estAlias);
-        config.setRAMode(estAlias, true); // RA mode
+        config.setOperationMode(estAlias, EstConfiguration.OPERATION_MODE_RA); // RA mode
         config.setDefaultCAID(estAlias, getTestCAId(TESTCA_NAME));
         config.setEndEntityProfileID(estAlias, eepId);
         config.setCertProfileID(estAlias, cpId);
