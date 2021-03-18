@@ -720,18 +720,42 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             //V4.0
             for (String alias : getAliasList()) {
                 alias += ".";
-                data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
-                data.put(alias + AUTH_AUTHORITY, "");
-                data.put(alias + AAD_APP_ID, "");
-                data.put(alias + AAD_APP_KEY, "");
-                data.put(alias + TENANT, "");
-                data.put(alias + INTUNE_RESOURCE_URL, "");
-                data.put(alias + GRAPH_API_VERSION, "");
-                data.put(alias + GRAPH_RESOURCE_URL, "");
-                data.put(alias + PROXY_HOST, "");
-                data.put(alias + PROXY_PORT, "");
-                data.put(alias + PROXY_USER, "");
-                data.put(alias + PROXY_PASS, "");
+                if (data.get(alias + SCEP_USE_INTUNE) == null) {
+                    data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
+                }
+                if (data.get(alias + AUTH_AUTHORITY) == null) {
+                    data.put(alias + AUTH_AUTHORITY, "");
+                }
+                if (data.get(alias + AAD_APP_ID) == null) {
+                    data.put(alias + AAD_APP_ID, "");
+                }
+                if (data.get(alias + AAD_APP_KEY) == null) {
+                    data.put(alias + AAD_APP_KEY, "");
+                }
+                if (data.get(alias + TENANT) == null) {
+                    data.put(alias + TENANT, "");
+                }
+                if (data.get(alias + INTUNE_RESOURCE_URL) == null) {
+                    data.put(alias + INTUNE_RESOURCE_URL, "");
+                }
+                if (data.get(alias + GRAPH_API_VERSION) == null) {
+                    data.put(alias + GRAPH_API_VERSION, "");
+                }
+                if (data.get(alias + GRAPH_RESOURCE_URL) == null) {
+                    data.put(alias + GRAPH_RESOURCE_URL, "");
+                }
+                if (data.get(alias + PROXY_HOST) == null) {
+                    data.put(alias + PROXY_HOST, "");
+                }
+                if (data.get(alias + PROXY_PORT) == null) {
+                    data.put(alias + PROXY_PORT, "");
+                }
+                if (data.get(alias + PROXY_USER) == null) {
+                    data.put(alias + PROXY_USER, "");
+                }
+                if (data.get(alias + PROXY_PASS) == null) {
+                    data.put(alias + PROXY_PASS, "");
+                }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));         
         }
