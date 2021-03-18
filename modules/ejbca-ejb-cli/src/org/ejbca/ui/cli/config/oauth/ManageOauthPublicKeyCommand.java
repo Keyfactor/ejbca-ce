@@ -15,11 +15,13 @@ package org.ejbca.ui.cli.config.oauth;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import org.apache.commons.lang.ArrayUtils;
+import java.security.cert.CertificateParsingException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.util.CertTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -35,7 +37,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
 import java.text.ParseException;
 
 /**
@@ -55,13 +56,13 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
 
     {
         registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Trusted OAuth Provider name to be shown"));
+                "Trusted OAuth Provider name to add the key to"));
         registerParameter(new Parameter(ACTION, "Action: add or remove", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Action: add or remove"));
         registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the key which is going to be added/removed."));
+                "Key identifier of the key which is going to be added/removed. When adding JWK keys, it can be omitted."));
         registerParameter(new Parameter(KEY_FILE, "Public key file", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Path to publickey file of public key."));
+                "Path to publickey file of public key. Can be in PEM, DER, X.509 certificate or JWK format."));
         registerParameter(new Parameter(KEY_WAY, "Public key", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Way to provide public key(--keyway): within file (FILE), configuration url (URL) or as text value (TEXT)"));
         registerParameter(new Parameter(KEY_URL, "Config url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -104,11 +105,11 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
         return result;
     }
 
-    private CommandResult addKey(String label, String kid, ParameterContainer parameters){
- final OAuthKeyInfo oAuthKeyInfo = getOAuthConfiguration().getOauthKeyByLabel(label);
+    private CommandResult addKey(final String label, final String kidParam, final ParameterContainer parameters){
+        final OAuthKeyInfo oAuthKeyInfo = getOAuthConfiguration().getOauthKeyByLabel(label);
 
         if (oAuthKeyInfo == null) {
-            log.info("Trusted OAuth Provider with label: " + label + " not found!");
+            log.info("Error: Trusted OAuth Provider with label: " + label + " not found!");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         String keyWay = parameters.get(KEY_WAY);
@@ -119,7 +120,7 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
         switch (keyWay.toLowerCase()) {
             case "file": {
                 String publicKey = parameters.get(KEY_FILE);
-                if (!parsePublicKeyFromFile(kid, oAuthKeyInfo, publicKey)) {
+                if (!parsePublicKeyFromFile(kidParam, oAuthKeyInfo, publicKey)) {
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
                 break;
@@ -131,7 +132,7 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
                 break;
             }
             case "text": {
-                if (!parsePublicKeyFromText(oAuthKeyInfo, kid, parameters.get(KEY_VALUE))) {
+                if (!parsePublicKeyFromText(oAuthKeyInfo, kidParam, parameters.get(KEY_VALUE))) {
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
                 break;
@@ -142,26 +143,37 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             log.info("Public key successfuly added to Trusted OAuth Provider with label: " + label + "!");
             return CommandResult.SUCCESS;
         } else {
-            log.info("Failed to update configuration due to authorization issue!");
+            log.info("Error: Failed to update configuration due to authorization issue!");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
     }
 
-    private boolean parsePublicKeyFromFile(String kid, OAuthKeyInfo oAuthKeyInfo, String publicKey) {
-        if (StringUtils.isEmpty(kid)) {
-            log.info("Public key identifier is not defined!");
-            return false;
-        }
+    private boolean parsePublicKeyFromFile(String kidParam, OAuthKeyInfo oAuthKeyInfo, String publicKey) {
         if (StringUtils.isEmpty(publicKey)) {
-            log.info("Public key file is not defined!");
+            log.info("Error: Public key file is not defined!");
             return false;
         }
-        byte[] publicKeyByteArray = getOauthKeyPublicKey(publicKey);
-        if (ArrayUtils.isEmpty(publicKeyByteArray)) {
+        byte[] fileBytes = getFileBytes(publicKey);
+        byte[] publicKeyByteArray;
+        try {
+            publicKeyByteArray = KeyTools.getBytesFromOauthKey(fileBytes);
+        } catch (final CertificateParsingException e) {
+            log.info("Could not parse the public key file.", e);
             return false;
         }
+        final String kid;
+        if (StringUtils.isBlank(kidParam)) {
+            kid = KeyTools.getKeyIdFromJwkKey(fileBytes);
+            if (kid == null) {
+                log.info("Error: This key format does not include the key identifier. Please specify the key identifier manually with " + KEY_IDENTIFIER);
+                return false;
+            }
+        } else {
+            kid = kidParam;
+        }
+
         if (oAuthKeyInfo.getAllKeyIdentifiers()!= null && oAuthKeyInfo.getAllKeyIdentifiers().contains(kid)) {
-            log.info("Key with identifier " + kid + " already exists.");
+            log.info("Error: Key with identifier " + kid + " already exists.");
             return false;
         }
         oAuthKeyInfo.addPublicKey(kid, publicKeyByteArray);
