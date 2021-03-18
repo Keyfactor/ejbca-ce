@@ -318,7 +318,7 @@
 
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+                    rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="selectsize"
 						value="#{web.text.EXTSERVICESKEYSPEC}" />
 					<h:outputText
@@ -327,9 +327,10 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+                    rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu id="selectsize"
-						value="#{editCAsMBean.caInfoDto.signKeySpec}">
+						value="#{editCAsMBean.caInfoDto.signKeySpec}"
+                        disabled="#{not editCAsMBean.hasEditRight}">
 						<f:selectItems value="#{editCAsMBean.exTServicesKeySpecList}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
@@ -1421,6 +1422,9 @@
 				<h:panelGroup rendered="#{editCAsMBean.renderCmsInfo}">
 					<h:outputLabel for="checkboxactivatecmsservice"
 						value="#{web.text.CMSSERVICE}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Extended_Services_Key_Specification')}"
+						escape="false" styleClass="helpReference" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.renderCmsInfo}">
