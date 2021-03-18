@@ -261,7 +261,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setPassword(estConfiguration.getPassword(aliasName));
             estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
             estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
-            estAliasGui.setOperationMode(estConfiguration.getRAMode(aliasName));
+            estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
             estAliasGui.setVendorMode(estConfiguration.getVendorMode(aliasName));
             estAliasGui.setSelectedVendorCa(estConfiguration.getVendorCAs(aliasName));
             estAliasGui.setAuthenticationModule(estConfiguration.getAuthenticationModule(aliasName));
@@ -354,7 +354,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estConfiguration.setKurAllowSameKey(alias, estAliasGui.getAllowSameKey());
         estConfiguration.setExtractUsernameComponent(alias, estAliasGui.getExtUsernameComponent());
         estConfiguration.setExtractDnPwdComponent(alias, estAliasGui.getExtDnPartPwdComponent());
-        estConfiguration.setRAMode(alias, estAliasGui.getOperationMode());
+        estConfiguration.setOperationMode(alias, estAliasGui.getOperationMode());
         estConfiguration.setVendorMode(alias, estAliasGui.getVendorMode());
         estConfiguration.setVendorCAs(alias, estAliasGui.getSelectedVendorCa());
         estConfiguration.setAuthenticationModule(alias, estAliasGui.getAuthenticationModule());
