@@ -42,6 +42,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
 
     private static final Logger log = Logger.getLogger(EstConfiguration.class);
 
+    // Possible operation modes
+    public static final String OPERATION_MODE_RA     = "ra";
+    public static final String OPERATION_MODE_CLIENT = "client";
+    
     // Constants: Configuration keys
     public static final String CONFIG_DEFAULTCA     = "defaultca";
     public static final String CONFIG_CERTPROFILE   = "certprofile";
@@ -87,7 +91,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
     private static final String DEFAULT_VENDOR_CERTIFICATE_MODE = "false";
     private static final String DEFAULT_VENDOR_CA = "";
-    private static final String DEFAULT_OPERATION_MODE = "client";
+    private static final String DEFAULT_OPERATION_MODE = EstConfiguration.OPERATION_MODE_RA; // Use what we had before EJBCA 7.5.0 as default
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
     private static final String DEFAULT_ALLOW_CHANGESUBJECTNAME = "false";
@@ -159,22 +163,18 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
 
 
-    public void setRAMode(String alias, String mode) {
-        setRAMode(alias, StringUtils.equalsIgnoreCase(mode, "ra"));
-    }
-    
-    public void setRAMode(String alias, boolean ramode) {
+    public void setOperationMode(String alias, String mode) {
         String key = alias + "." + CONFIG_OPERATIONMODE;
-        setValue(key, ramode? "ra" : "client", alias);
+        setValue(key, mode, alias);
     }
     
-    public String getRAMode(String alias) {
+    public String getOperationMode(String alias) {
         String key = alias + "." + CONFIG_OPERATIONMODE; 
         String value = getValue(key, alias);
-        if (StringUtils.equalsIgnoreCase(value, "client")) {
-            return "client";
+        if (StringUtils.equalsIgnoreCase(value, EstConfiguration.OPERATION_MODE_CLIENT)) {
+            return EstConfiguration.OPERATION_MODE_CLIENT;
         }
-        return "ra";
+        return EstConfiguration.OPERATION_MODE_RA;
     }
     
     public boolean getVendorMode(String alias) {
