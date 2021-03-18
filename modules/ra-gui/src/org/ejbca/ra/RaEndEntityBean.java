@@ -172,13 +172,14 @@ public class RaEndEntityBean implements Serializable {
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
-                if (raEndEntityDetails.getEndEntityInformation().getExtendedInformation() == null) {
+                resetMaxFailedLogins();
+                /*if (raEndEntityDetails.getEndEntityInformation().getExtendedInformation() == null) {
                     maxFailedLogins = -1;
                     remainingLogin = -1;
                 } else {
                     maxFailedLogins = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getMaxLoginAttempts();
                     remainingLogin = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getRemainingLoginAttempts();
-                }
+                }*/
             }
         }
         issuedCerts = null;
@@ -594,6 +595,31 @@ public class RaEndEntityBean implements Serializable {
         return maxFailedLogins;
     }
 
+    /**
+     * @return true if modifiable, otherwise false
+     */
+    public boolean isMaxFailedLoginsModifiable() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+        return eep.isMaxFailedLoginsModifiable();
+    }
+
+    private void resetMaxFailedLogins() {
+        if (eepId == raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId()) {
+            if (raEndEntityDetails.getEndEntityInformation().getExtendedInformation() == null) {
+                maxFailedLogins = -1;
+                remainingLogin = -1;
+            } else {
+                maxFailedLogins = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getMaxLoginAttempts();
+                remainingLogin = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getRemainingLoginAttempts();
+            }
+        } else {
+            EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+            maxFailedLogins = eep.getMaxFailedLogins();
+            remainingLogin = -1;
+        }
+
+    }
+
     public void setMaxFailedLogins(int maxFailedLogins) {
         this.maxFailedLogins = maxFailedLogins;
     }
@@ -680,6 +706,7 @@ public class RaEndEntityBean implements Serializable {
                 setCpId(eep.getDefaultCertificateProfile());
             }
 
+            resetMaxFailedLogins();
             subjectDistinguishNames = null;
             subjectAlternativeNames = null;
             subjectDirectoryAttributes = null;
