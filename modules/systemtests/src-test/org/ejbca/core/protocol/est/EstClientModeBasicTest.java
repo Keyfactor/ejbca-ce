@@ -135,7 +135,7 @@ public class EstClientModeBasicTest extends EstTestCase {
         EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         try {
             config.addAlias(alias);
-            config.setRAMode(alias, false); // client mode
+            config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             // We don't need much in this alias to just get CA certificate
             config.setDefaultCAID(alias, getTestCAId(TESTCA_NAME));
             globalConfigurationSession.saveConfiguration(ADMIN, config);
@@ -174,7 +174,7 @@ public class EstClientModeBasicTest extends EstTestCase {
         try {
             // Create alias
             config.addAlias(alias);
-            config.setRAMode(alias, false); 
+            config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "CN");
             config.setDefaultCAID(alias, getTestCAId(TESTCA_NAME));
@@ -250,7 +250,7 @@ public class EstClientModeBasicTest extends EstTestCase {
         try {
             // Create alias
             config.addAlias(alias);
-            config.setRAMode(alias, false); 
+            config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD);
             config.setExtractDnPwdComponent(alias, "SN"); // SN == SERIALNUMBER 
             config.setExtractUsernameComponent(alias, "CN");
@@ -339,7 +339,7 @@ public class EstClientModeBasicTest extends EstTestCase {
         try {
             // Create EST Alias
             config.addAlias(alias);
-            config.setRAMode(alias, false); 
+            config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
             config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
             config.setExtractUsernameComponent(alias, "CN");
             config.setKurAllowSameKey(alias, false);
