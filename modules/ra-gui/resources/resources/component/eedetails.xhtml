@@ -127,14 +127,14 @@
                 rendered="#{not cc.attrs.editMode}"
                 value="#{cc.attrs.raEndEntityDetails.loginsMax lt 0 ? msg.component_eedetails_field_max_failed_unlimited : cc.attrs.raEndEntityDetails.loginsMax}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:panelGroup rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+            <h:panelGroup id="maxfailedlogineditor" rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
-                <h:selectOneRadio value="#{cc.attrs.raEndEntityBean.unlimited}">
+                <h:selectOneRadio value="#{cc.attrs.raEndEntityBean.unlimited}" disabled="#{not cc.attrs.raEndEntityBean.maxFailedLoginsModifiable}">
                     <f:selectItem itemValue="#{true}" itemLabel="#{msg.component_eedetails_field_max_failed_unlimited} "/>
                     <f:selectItem itemValue="#{false}" itemLabel="#{msg.component_eedetails_field_max_failed_specify}"/>
                     <f:ajax event="change" render="maxnumber"/>
                 </h:selectOneRadio>
-                <h:inputText id="maxnumber" styleClass="next-to-radio" value="#{cc.attrs.raEndEntityBean.maxFailedLogins}" disabled="#{cc.attrs.raEndEntityBean.unlimited}">
+                <h:inputText id="maxnumber" styleClass="next-to-radio" value="#{cc.attrs.raEndEntityBean.maxFailedLogins}" disabled="#{cc.attrs.raEndEntityBean.unlimited or not cc.attrs.raEndEntityBean.maxFailedLoginsModifiable}">
                     <f:validateLength minimum="1"/>
                 </h:inputText>
             </h:panelGroup>
@@ -168,7 +168,7 @@
                 rendered="#{cc.attrs.editMode}">
                 <h:selectOneMenu id="eepId" value="#{cc.attrs.raEndEntityBean.eepId}" styleClass="pure-input-1-4">
                     <f:selectItems value="#{cc.attrs.raEndEntityBean.endEntityProfiles.entrySet()}" var="eep" itemLabel="#{eep.value}" itemValue="#{eep.key}" />
-                    <f:ajax event="change" render="cpId caId subjectDistinguishNames subjectAlternativeNames subjectDirectoryAttributes"/>
+                    <f:ajax event="change" render="maxfailedlogineditor cpId caId subjectDistinguishNames subjectAlternativeNames subjectDirectoryAttributes"/>
                 </h:selectOneMenu>
             </h:panelGroup>
 
