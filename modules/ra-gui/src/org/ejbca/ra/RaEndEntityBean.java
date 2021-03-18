@@ -173,13 +173,6 @@ public class RaEndEntityBean implements Serializable {
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
                 resetMaxFailedLogins();
-                /*if (raEndEntityDetails.getEndEntityInformation().getExtendedInformation() == null) {
-                    maxFailedLogins = -1;
-                    remainingLogin = -1;
-                } else {
-                    maxFailedLogins = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getMaxLoginAttempts();
-                    remainingLogin = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getRemainingLoginAttempts();
-                }*/
             }
         }
         issuedCerts = null;
@@ -792,7 +785,7 @@ public class RaEndEntityBean implements Serializable {
 
     private void handleNullSubjectDistinguishNames() {
         if (subjectDistinguishNames == null) {
-            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
             subjectDistinguishNames = new SubjectDn(eep, raEndEntityDetails.getSubjectDn());
         }
     }
@@ -816,7 +809,7 @@ public class RaEndEntityBean implements Serializable {
 
     private void handleNullSubjectAlternativeNames() {
         if (subjectAlternativeNames == null) {
-            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
             String subjectAn = raEndEntityDetails.getSubjectAn();
             if (eep.getSubjectAltNameFieldOrderLength() > 0) {
                 if (StringUtils.isBlank(subjectAn)) {
@@ -849,13 +842,13 @@ public class RaEndEntityBean implements Serializable {
      * @return true if subjectAlternativeNames has at least 1 fieldInstance, otherwise false
      */
     public boolean getAnySubjectAlternativeName() {
-        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
         return eep.getSubjectAltNameFieldOrderLength() > 0;
     }
 
     private void handleNullSubjectDirectoryAttributes() {
         if (subjectDirectoryAttributes == null) {
-            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
             String subjectDa = raEndEntityDetails.getSubjectDa();
             if (eep.getSubjectDirAttrFieldOrderLength() > 0) {
                 if (StringUtils.isBlank(subjectDa)) {
@@ -888,7 +881,7 @@ public class RaEndEntityBean implements Serializable {
      * @return true if subjectDirectoryAttributes has at least 1 fieldInstance, otherwise false
      */
     public boolean getAnySubjectDirectoryAttribute() {
-        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(getEepId()).getValue();
+        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
         return eep.getSubjectDirAttrFieldOrderLength() > 0;
     }
 
