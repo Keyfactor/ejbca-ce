@@ -770,7 +770,7 @@ public class KeyToolsTest {
             KeyTools.getBytesFromOauthKey(new byte[] {'x'});
             fail("Should throw");
         } catch (CertificateParsingException e) {
-            assertEquals("Key could neither be parsed as PEM, DER or JWK", e.getMessage());
+            assertEquals("Key could neither be parsed as PEM, DER, certificate or JWK", e.getMessage());
         }
     }
 

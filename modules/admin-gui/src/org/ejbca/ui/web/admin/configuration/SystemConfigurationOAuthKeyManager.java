@@ -410,7 +410,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         final OAuthPublicKey key = new OAuthPublicKey(parsedPublicKey, keyIdentifier);
         oauthKeyEditor.getPublicKeys().add(key);
         oauthKeyEditor.setKeyIdentifier(null);
-        oauthKeyEditor.setPublicKeyFile(null);
+        oauthKeyEditor.setPublicKeyValue(null);
         return null;
     }
 
