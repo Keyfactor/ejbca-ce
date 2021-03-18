@@ -24,6 +24,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
@@ -212,6 +213,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     }
 
     private void initOauthProviders() {
+        StringBuilder providerUrls = new StringBuilder();
         oauthKeys = new ArrayList<>();
         ejbcaWebBean.reloadGlobalConfiguration();
         Collection<OAuthKeyInfo> oAuthKeyInfos = ejbcaWebBean.getOAuthConfiguration().getOauthKeys().values();
@@ -219,8 +221,10 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
                 if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
                     oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getLabel()));
+                    providerUrls.append(oauthKeyInfo.getUrl()).append(" ");
                 }
             }
+            replaceHeader(providerUrls.toString());
         }
     }
 
@@ -270,4 +274,11 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         }
     }
 
+    private void replaceHeader(String urls) {
+        HttpServletResponse httpResponse = (HttpServletResponse)FacesContext.getCurrentInstance().getExternalContext().getResponse();
+        String header = httpResponse.getHeader("Content-Security-Policy");
+        header = header.replace("form-action 'self'", "form-action " + urls + "'self'");
+        httpResponse.setHeader("Content-Security-Policy", header);
+        httpResponse.setHeader("X-Content-Security-Policy", header);
+    }
 }
