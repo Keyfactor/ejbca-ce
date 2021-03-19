@@ -69,6 +69,7 @@ public final class OAuthKeyInfo implements Serializable {
     private String label;
     private String client;
     private String realm;
+    private String scope;
     private String url;
     private String clientSecret;
     private int skewLimit = 60000;
@@ -167,6 +168,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setRealm(String realm) {
         this.realm = realm;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
     public void setSkewLimit(final int skewLimit) {

@@ -45,7 +45,26 @@ public class OauthRequestHelper {
 
     private static OAuthGrantResponseInfo sendRequest(String codeOrToken, boolean isRefresh, OAuthKeyInfo oAuthKeyInfo, String redirectUri) throws IOException {
         final OAuthTokenRequest request = new OAuthTokenRequest();
-        request.setUri(oAuthKeyInfo.getUrl() + "/realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token");
+        switch (oAuthKeyInfo.getType()) {
+            case TYPE_KEYCLOAK: {
+                String uri = oAuthKeyInfo.getUrl();
+                uri += oAuthKeyInfo.getUrl().endsWith("/") ? "" : "/";
+                uri += "realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token";
+                request.setUri(uri);
+                break;
+            }
+            case TYPE_AZURE: {
+                String uri = oAuthKeyInfo.getUrl();
+                uri += oAuthKeyInfo.getUrl().endsWith("/") ? "" : "/";
+                uri += oAuthKeyInfo.getRealm() + "/oauth2/v2.0/token";
+                request.setUri(uri);
+                break;
+            }
+            case TYPE_NONE: {
+                request.setUri(oAuthKeyInfo.getUrl());
+                break;
+            }
+        }
         request.setClientId(oAuthKeyInfo.getClient());
         request.setClientSecret(oAuthKeyInfo.getClientSecretAndDecrypt());
         request.setRedirectUri(redirectUri);
