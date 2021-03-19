@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.config.oauth;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.cert.CertificateParsingException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.keys.util.KeyTools;
 import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
