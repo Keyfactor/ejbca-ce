@@ -529,6 +529,25 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
     }
 
+    // Updates persisted template mappings with new values from AD
+    public void updateMappedTemplates() {
+        List<MSAutoEnrollmentSettingsTemplate> newTemplates = getAvailableTemplateSettingsFromAD();
+        for (MSAutoEnrollmentSettingsTemplate persistedTemplate : mappedMsTemplates) {
+            MSAutoEnrollmentSettingsTemplate newTemplateSettings = findMsTemplateByOid(newTemplates, persistedTemplate.getOid());
+            persistedTemplate.setDisplayName(newTemplateSettings.getDisplayName());
+            persistedTemplate.setAdditionalSubjectDNAttributes(newTemplateSettings.getAdditionalSubjectDNAttributes());
+            persistedTemplate.setSubjectNameFormat(newTemplateSettings.getSubjectNameFormat());
+            persistedTemplate.setIncludeDomainInSubjectSAN(newTemplateSettings.isIncludeDomainInSubjectSAN());
+            persistedTemplate.setIncludeEmailInSubjectDN(newTemplateSettings.isIncludeEmailInSubjectDN());
+            persistedTemplate.setIncludeEmailInSubjectSAN(newTemplateSettings.isIncludeEmailInSubjectSAN());
+            persistedTemplate.setIncludeNetBiosInSubjectSAN(newTemplateSettings.isIncludeNetBiosInSubjectSAN());
+            persistedTemplate.setIncludeObjectGuidInSubjectSAN(newTemplateSettings.isIncludeObjectGuidInSubjectSAN());
+            persistedTemplate.setIncludeSPNInSubjectSAN(newTemplateSettings.isIncludeSPNInSubjectSAN());
+            persistedTemplate.setIncludeUPNInSubjectSAN(newTemplateSettings.isIncludeUPNInSubjectSAN());
+            persistedTemplate.setPublishToActiveDirectory(newTemplateSettings.isPublishToActiveDirectory());
+        }
+    }
+    
     public void save() {
         try {
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
@@ -549,6 +568,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setCaName(caName);
 
             // MS Template Settings
+            updateMappedTemplates();
             autoEnrollmentConfiguration.setMsTemplateSettings(mappedMsTemplates);
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
