@@ -38,6 +38,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String CLIENT = "--client";
     private static final String CLIENT_SECRET = "--clientsecret";
     private static final String REALM = "--realm";
+    private static final String SCOPE = "--scope";
     private static final String NONE = "NONE";
     private static final String KEYCLOAK = "KEYCLOAK";
     private static final String AZURE = "AZURE";
@@ -51,9 +52,11 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider url to the login page."));
         registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider name."));
-        registerParameter(new Parameter(REALM, "Realm name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider realm name."));
-        registerParameter(new Parameter(CLIENT, "Client/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(SCOPE, "Scope", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider scope. Used for Azure Trusted OAuth Providers."));
+        registerParameter(new Parameter(CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client name for EJBCA in Trusted OAuth Provider."));
         registerParameter(new Parameter(CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client secret in Trusted OAuth Provider."));
@@ -78,6 +81,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String client = parameters.get(CLIENT);
         String clientSecret = parameters.get(CLIENT_SECRET);
         String realm = parameters.get(REALM);
+        String scope = parameters.get(SCOPE);
         OAuthProviderType type = null;
 
 
@@ -113,7 +117,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         keyInfo.setClient(client != null ? client : "");
         keyInfo.setClientSecretAndEncrypt(clientSecret != null ? clientSecret : "");
         keyInfo.setRealm(realm != null ? realm : "");
-        
+        keyInfo.setScope(scope != null ? scope : "");
+
         if (!canAdd(keyInfo)) {
             log.info("Trusted OAuth Provider with same label exists!");
             return CommandResult.FUNCTIONAL_FAILURE;
