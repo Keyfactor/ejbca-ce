@@ -50,7 +50,7 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
     private static final String ACTION = "--action";
     private static final String KEY_IDENTIFIER = "--keyidentifier";
     private static final String KEY_FILE = "--keyfile";
-    private static final String KEY_WAY = "--keyway";
+    private static final String KEY_METHOD = "--keymethod";
     private static final String KEY_URL = "--keyurl";
     private static final String KEY_VALUE = "--key";
 
@@ -63,8 +63,8 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
                 "Key identifier of the key which is going to be added/removed. When adding JWK keys, it can be omitted."));
         registerParameter(new Parameter(KEY_FILE, "Public key file", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Path to publickey file of public key. Can be in PEM, DER, X.509 certificate or JWK format."));
-        registerParameter(new Parameter(KEY_WAY, "Public key", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Way to provide public key(--keyway): within file (FILE), configuration url (URL) or as text value (TEXT)"));
+        registerParameter(new Parameter(KEY_METHOD, "Public Key input method", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Method to provide public key(--keymethod): within file (FILE), configuration url (URL) or as text value (TEXT)"));
         registerParameter(new Parameter(KEY_URL, "Config url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Public key configuration URL"));
         registerParameter(new Parameter(KEY_VALUE, "Public key", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -112,12 +112,12 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             log.info("Error: Trusted OAuth Provider with label: " + label + " not found!");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        String keyWay = parameters.get(KEY_WAY);
-        if (StringUtils.isEmpty(keyWay)) {
-            log.info("Please specify how you want to provide public key(--keyway): within file (FILE), configuration url (URL) or as text value (TEXT)");
+        String keyMethod = parameters.get(KEY_METHOD);
+        if (StringUtils.isEmpty(keyMethod)) {
+            log.info("Please specify method to provide public key(--keymethod): within file (FILE), configuration url (URL) or as text value (TEXT)");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        switch (keyWay.toLowerCase()) {
+        switch (keyMethod.toLowerCase()) {
             case "file": {
                 String publicKey = parameters.get(KEY_FILE);
                 if (!parsePublicKeyFromFile(kidParam, oAuthKeyInfo, publicKey)) {
@@ -138,7 +138,6 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
                 break;
             }
         }
-
         if (saveGlobalConfig()) {
             log.info("Public key successfuly added to Trusted OAuth Provider with label: " + label + "!");
             return CommandResult.SUCCESS;
@@ -207,6 +206,31 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
     }
 
     private boolean parsePublicKeyFromText(OAuthKeyInfo oAuthKeyInfo, String kid, String value){
+        if (StringUtils.isEmpty(value)) {
+            log.info("Public key value is not defined!");
+            return false;
+        }
+
+        byte[] inputKeyBytes = value.getBytes(StandardCharsets.US_ASCII);
+        try {
+            inputKeyBytes = org.cesecore.util.Base64.decode(inputKeyBytes);
+        } catch (RuntimeException e) {
+            log.info("New key is not in Base64 format. Assuming it is PEM or JWK format.");
+        }
+        final byte[] parsedPublicKey;
+        try {
+            parsedPublicKey = KeyTools.getBytesFromOauthKey(inputKeyBytes);
+        } catch (CertificateParsingException e) {
+            log.info("Could not parse public key from input string ");
+            return false;
+        }
+        if (StringUtils.isBlank(kid)) {
+            kid = KeyTools.getKeyIdFromJwkKey(inputKeyBytes);
+            if (kid == null) {
+                log.info("Error: This key format does not include the key identifier. Please specify the key identifier manually with " + KEY_IDENTIFIER);
+                return false;
+            }
+        }
         if (StringUtils.isEmpty(kid)) {
             log.info("Public key identifier is not defined!");
             return false;
@@ -215,33 +239,7 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             log.info("Key with identifier " + kid + " already exists.");
             return false;
         }
-        if (StringUtils.isEmpty(value)) {
-            log.info("Public key value is not defined!");
-            return false;
-        }
-        byte[] newOauthKeyPublicKey ;
-        OAuthPublicKey oAuthPublicKey;
-        try {
-            newOauthKeyPublicKey = org.cesecore.util.Base64.decode(
-                    value.getBytes(StandardCharsets.US_ASCII));
-            oAuthPublicKey = new OAuthPublicKey(newOauthKeyPublicKey, kid);
-            oAuthPublicKey.getOauthPublicKey();
-        } catch (IllegalStateException e){
-            try {
-                final Certificate certificate = CertTools.getCertfromByteArray(
-                        org.cesecore.util.Base64.decode(value.getBytes()), Certificate.class);
-                if (certificate == null || certificate.getPublicKey() == null) {
-                    log.info("Could not parse the public key from  certificate.");
-                    return false;
-                }
-                final PublicKey publicKey = certificate.getPublicKey();
-                newOauthKeyPublicKey = publicKey.getEncoded();
-                oAuthKeyInfo.addPublicKey(kid, newOauthKeyPublicKey);
-            } catch (CertificateParsingException | DecoderException exception) {
-                log.info("Could not parse public key from certificate string ");
-                return false;
-            }
-        }
+        oAuthKeyInfo.addPublicKey(kid, parsedPublicKey);
         return true;
     }
 
