@@ -64,7 +64,13 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
                 }
             }
             log.info("URL: " + info.getUrl());
-            log.info("Realm: " + info.getRealm());
+            if (info.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
+                log.info("Realm: " + info.getRealm());
+            }
+            if (info.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
+                log.info("Tenant: " + info.getRealm());
+                log.info("Scope: " + info.getScope());
+            }
             log.info("Client: " + info.getClient());
         } else {
             log.info("An OAuth Provider with the label " + label + " was not found.");
