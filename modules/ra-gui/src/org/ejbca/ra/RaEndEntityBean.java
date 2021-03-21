@@ -241,6 +241,7 @@ public class RaEndEntityBean implements Serializable {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
         EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
         ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
 
@@ -326,18 +327,23 @@ public class RaEndEntityBean implements Serializable {
             endEntityInformation.getExtendedInformation().setRemainingLoginAttempts(maxFailedLogins);
             changed = true;
         }
-        final String newEmail = email[0]+"@"+email[1];
-        if (!newEmail.equals(endEntityInformation.getEmail())) {
-            if (newEmail.equals("@")) {
-                if (StringUtils.isNotBlank(endEntityInformation.getEmail())) {
-                    endEntityInformation.setEmail(null);
+        if (eep.isEmailUsed()) {
+            final String newEmail = email[0]+"@"+email[1];
+            if (!newEmail.equals(endEntityInformation.getEmail())) {
+                if (newEmail.equals("@")) {
+                    if (StringUtils.isNotBlank(endEntityInformation.getEmail())) {
+                        endEntityInformation.setEmail(null);
+                        changed = true;
+                    }
+                } else {
+                    endEntityInformation.setEmail(newEmail);
                     changed = true;
                 }
-            } else {
-                endEntityInformation.setEmail(newEmail);
-                changed = true;
             }
+        } else {
+            endEntityInformation.setEmail(null);
         }
+
         if (eepId != endEntityInformation.getEndEntityProfileId()) {
             endEntityInformation.setEndEntityProfileId(eepId);
             changed = true;
@@ -774,10 +780,10 @@ public class RaEndEntityBean implements Serializable {
                 if (email == null || email.length == 1)
                     email = new String[] {"", ""};
             } else {
-                EndEntityProfile.FieldInstance eepEmail = eep.getEmail().getInstances().get(0);
-                String defaultEmail = eepEmail.getDefaultValue();
-                if (StringUtils.isNotBlank(defaultEmail)) {
-                    email = defaultEmail.split("@");
+                // EndEntityProfile.FieldInstance eepEmail = eep.getEmail().getInstances().get(0);
+                String defaultEmail = eep.getEmailDomain(); // eepEmail.getDefaultValue();
+                if (eep.isEmailUsed()) {
+                    email = new String[] {"", defaultEmail};
                 } else
                     email = new String[] {"", ""};
             }
