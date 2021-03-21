@@ -780,8 +780,7 @@ public class RaEndEntityBean implements Serializable {
                 if (email == null || email.length == 1)
                     email = new String[] {"", ""};
             } else {
-                // EndEntityProfile.FieldInstance eepEmail = eep.getEmail().getInstances().get(0);
-                String defaultEmail = eep.getEmailDomain(); // eepEmail.getDefaultValue();
+                String defaultEmail = eep.getEmailDomain();
                 if (eep.isEmailUsed()) {
                     email = new String[] {"", defaultEmail};
                 } else
