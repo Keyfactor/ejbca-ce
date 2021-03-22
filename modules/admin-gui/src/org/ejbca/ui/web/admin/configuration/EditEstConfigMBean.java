@@ -74,7 +74,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         private String vendorCas;
         private String selectedVendorCa;
         private boolean vendorMode;
-        private boolean changeSubjectName;
+        private boolean allowChangeSubjectName;
         private String extDnPartPwdComponent;
         
         
@@ -158,12 +158,12 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             return this.vendorMode;
         }
         
-        public void setChangeSubjectName(boolean changeSubjectName) {
-            this.changeSubjectName = changeSubjectName;
+        public void setAllowChangeSubjectName(boolean allowChangeSubjectName) {
+            this.allowChangeSubjectName = allowChangeSubjectName;
         }
         
-        public  boolean getChangeSubjectName() {
-            return this.changeSubjectName;
+        public  boolean getAllowChangeSubjectName() {
+            return this.allowChangeSubjectName;
         }
         
         public void setSelectedVendorCa(String selectedVendorCa) {
@@ -268,7 +268,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setChallengePwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD));
             estAliasGui.setDnPartPwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD));
             estAliasGui.setExtDnPartPwdComponent(estConfiguration.getExtractDnPwdComponent(aliasName));
-            estAliasGui.setChangeSubjectName(estConfiguration.getChangeSubjectName(aliasName));
+            estAliasGui.setAllowChangeSubjectName(estConfiguration.getAllowChangeSubjectName(aliasName));
             estAliasGui.setVendorCas(estConfiguration.getVendorCAs(aliasName));
             this.estAliasGui = estAliasGui;
         }
@@ -358,7 +358,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estConfiguration.setVendorMode(alias, estAliasGui.getVendorMode());
         estConfiguration.setVendorCAs(alias, estAliasGui.getSelectedVendorCa());
         estConfiguration.setAuthenticationModule(alias, estAliasGui.getAuthenticationModule());
-        estConfiguration.setChangeSubjectName(alias, estAliasGui.getChangeSubjectName());
+        estConfiguration.setAllowChangeSubjectName(alias, estAliasGui.getAllowChangeSubjectName());
         estConfiguration.setVendorCAs(alias, getCurrentVendorCas());
         getEjbcaWebBean().updateEstConfigFromClone(alias);
         reset();

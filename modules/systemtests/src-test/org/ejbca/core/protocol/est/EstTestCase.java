@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -80,9 +81,11 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -366,7 +369,7 @@ public abstract class EstTestCase extends CaTestCase {
         return StringUtils.defaultIfEmpty(result, defaultValue);
     }
 
-    protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, Extensions exts,
+    protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, String changeToSubjectDN, Extensions exts,
             final KeyPair keys) throws OperatorCreationException {
         // Generate keys
 
@@ -377,24 +380,53 @@ public abstract class EstTestCase extends CaTestCase {
         //    type    ATTRIBUTE.&id({IOSet}),
         //    values  SET SIZE(1..MAX) OF ATTRIBUTE.&Type({IOSet}{\@type})
         // }
-        ASN1EncodableVector v = new ASN1EncodableVector();
+        final ASN1EncodableVector attributesVec = new ASN1EncodableVector();
         if (challengePassword != null) {
-            ASN1EncodableVector challpwdattr = new ASN1EncodableVector();
-            // Challenge password attribute
-            challpwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
-            ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
-            pwdvalues.add(new DERUTF8String(challengePassword));
-            challpwdattr.add(new DERSet(pwdvalues));            
-            v.add(new DERSequence(challpwdattr));
+            final ASN1EncodableVector challpwdattr = new ASN1EncodableVector(); // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
+            // Challenge password attribute, RFC2985
+            //challengePassword ATTRIBUTE ::= {
+            //        WITH SYNTAX DirectoryString {pkcs-9-ub-challengePassword}
+            //        EQUALITY MATCHING RULE caseExactMatch
+            //        SINGLE VALUE TRUE
+            //        ID pkcs-9-at-challengePassword
+            //}
+            challpwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); // Type
+            final ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
+            pwdvalues.add(new DERUTF8String(challengePassword)); // DirectoryString CHOICE of UTF8String
+            final DERSet values = new DERSet(pwdvalues); // values
+            challpwdattr.add(values);       
+            attributesVec.add(new DERSequence(challpwdattr));
+        }
+        // ChangeSubjectName, RFC7030 section 4.2.1, RFC6402, section 2.8
+        if (changeToSubjectDN != null) {
+            final ASN1EncodableVector changesubjectnameattr = new ASN1EncodableVector(); // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
+            // ChangeSubjectName attribute
+            changesubjectnameattr.add(EstConfiguration.id_cmc_changeSubjectName); // Type
+            ASN1EncodableVector changevalues = new ASN1EncodableVector();
+            // The actual ChangeSubjectName value
+            // ChangeSubjectName ::= SEQUENCE {
+            //    subject             Name OPTIONAL,
+            //    subjectAlt          SubjectAltName OPTIONAL
+            //}
+            //(WITH COMPONENTS {..., subject PRESENT} |
+            //      COMPONENTS {..., subjectAlt PRESENT} )
+            ASN1EncodableVector changeSubjectName = new ASN1EncodableVector();
+            final X500Name changenameValue = new X500Name(CeSecoreNameStyle.INSTANCE, changeToSubjectDN);
+            changeSubjectName.add(changenameValue);
+            // No altName
+            changevalues.add(new DERSequence(changeSubjectName));
+            final DERSet values = new DERSet(changevalues); // values
+            changesubjectnameattr.add(values);
+            attributesVec.add(new DERSequence(changesubjectnameattr));
         }
         if (exts != null) {
             ASN1EncodableVector extensionattr = new ASN1EncodableVector();
             extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
             extensionattr.add(new DERSet(exts));
-            v.add(new DERSequence(extensionattr));
+            attributesVec.add(new DERSequence(extensionattr));
         }
         // Complete the Attribute section of the request, the set (Attributes) contains two sequences (Attribute)
-        DERSet attributes = new DERSet(v);
+        DERSet attributes = new DERSet(attributesVec);
         // Create PKCS#10 certificate request
         final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA",
                 CertTools.stringToBcX500Name(dn), keys.getPublic(), attributes, keys.getPrivate(), null);
