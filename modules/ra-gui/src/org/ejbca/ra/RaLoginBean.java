@@ -25,6 +25,7 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriBuilder;
 
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
@@ -128,6 +129,7 @@ public class RaLoginBean implements Serializable {
     }
 
     private void initOauthKeys() {
+        StringBuilder providerUrls = new StringBuilder();
         oauthKeys = new ArrayList<>();
         initGlobalConfiguration();
         Collection<OAuthKeyInfo> oAuthKeyInfos = oAuthConfiguration.getOauthKeys().values();
@@ -135,8 +137,10 @@ public class RaLoginBean implements Serializable {
             for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
                 if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
                     oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getLabel()));
+                    providerUrls.append(oauthKeyInfo.getUrl()).append(" ");
                 }
             }
+            replaceHeader(providerUrls.toString());
         }
     }
     
@@ -199,5 +203,13 @@ public class RaLoginBean implements Serializable {
         } else {
             log.info("Trusted provider info not found for keyId =" + keyLabel);
         }
+    }
+
+    private void replaceHeader(String urls) {
+        HttpServletResponse httpResponse = (HttpServletResponse)FacesContext.getCurrentInstance().getExternalContext().getResponse();
+        String header = httpResponse.getHeader("Content-Security-Policy");
+        header = header.replace("form-action 'self'", "form-action " + urls + "'self'");
+        httpResponse.setHeader("Content-Security-Policy", header);
+        httpResponse.setHeader("X-Content-Security-Policy", header);
     }
 }

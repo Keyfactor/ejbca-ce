@@ -24,8 +24,14 @@ public class OAuthKeyHelper {
         if (StringUtils.isEmpty(provider.getUrl())) {
             throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Trusted OAuth Providers.");
         }
-        if (StringUtils.isEmpty(provider.getClient())) {
+        if (StringUtils.isEmpty(provider.getRealm())) {
             throw new MissingOAuthKeyAttributeException("The Tenant field (use --realm) is mandatory for Azure Trusted OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getScope())) {
+            throw new MissingOAuthKeyAttributeException("The Scope field is mandatory for Azure Trusted OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getClient())) {
+            throw new MissingOAuthKeyAttributeException("The Client Name field is mandatory for Azure Trusted OAuth Providers.");
         }
         if (StringUtils.isEmpty(provider.getClientSecretAndDecrypt())) {
             throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for Azure Trusted OAuth Providers.");
