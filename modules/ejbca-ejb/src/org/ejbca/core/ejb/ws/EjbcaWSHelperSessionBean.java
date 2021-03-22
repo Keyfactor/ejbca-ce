@@ -12,30 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ws;
 
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
@@ -90,6 +66,29 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.cert.OID;
 import org.ejbca.util.query.Query;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Contains methods that are used by both the EjbcaWS, the Ejbca WS tests and by RAMasterApiSessionBean.
@@ -460,7 +459,11 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), certificateprofilename);
             break;
         case UserMatch.MATCH_WITH_CA:
-            String caname = Integer.toString(caSession.getCAInfo(admin, usermatch.getMatchvalue()).getCAId());
+            CAInfo caInfo = caSession.getCAInfo(admin, usermatch.getMatchvalue());
+            if (caInfo==null) {
+                throw new CADoesntExistsException("COULD NOT FIND CA IN DATABASE");
+            }
+            String caname = Integer.toString(caInfo.getCAId());
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), caname);
             break;
         case UserMatch.MATCH_WITH_TOKEN:
