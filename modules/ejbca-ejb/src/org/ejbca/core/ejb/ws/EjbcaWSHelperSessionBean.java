@@ -459,13 +459,16 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), certificateprofilename);
             break;
         case UserMatch.MATCH_WITH_CA:
-            CAInfo caInfo = caSession.getCAInfo(admin, usermatch.getMatchvalue());
-            if (caInfo==null) {
-                throw new CADoesntExistsException("COULD NOT FIND CA IN DATABASE");
-            }
+        CAInfo caInfo = caSession.getCAInfo(admin, usermatch.getMatchvalue());
+        if (caInfo==null) {
+            final String message = "Error CA " + usermatch.getMatchvalue() + " does not exist";
+            log.error(message);
+            throw new CADoesntExistsException(message);
+        }else {
             String caname = Integer.toString(caInfo.getCAId());
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), caname);
-            break;
+        }
+        break;
         case UserMatch.MATCH_WITH_TOKEN:
             String tokenname = Integer.toString(getTokenId(admin, usermatch.getMatchvalue()));
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), tokenname);
