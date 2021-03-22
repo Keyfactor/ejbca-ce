@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.config.oauth;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.cert.CertificateParsingException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.keys.util.KeyTools;
 import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
@@ -57,15 +55,11 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
         }
     }
     
-    protected byte[] getOauthKeyPublicKey(final String publicKey) {
+    protected byte[] getFileBytes(final String filename) {
         try {
-            byte[] uploadedFileBytes = Files.readAllBytes(Paths.get(publicKey));
-            return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
-        } catch (final CertificateParsingException e) {
-            log.info("Could not parse the public key file.", e);
-            return ArrayUtils.EMPTY_BYTE_ARRAY;
+            return Files.readAllBytes(Paths.get(filename));
         } catch (final Exception e) {
-            log.info("Failed to add Public Key.", e);
+            log.info("Failed to read Public Key file.", e);
             return ArrayUtils.EMPTY_BYTE_ARRAY;
         }
     }
