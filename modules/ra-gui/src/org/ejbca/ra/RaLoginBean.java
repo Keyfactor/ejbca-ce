@@ -116,7 +116,8 @@ public class RaLoginBean implements Serializable {
             final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
                     getRedirectUri());
             if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
-                servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
+                servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                 raAuthenticationBean.resetAuthentication();
                 FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
             } else {
