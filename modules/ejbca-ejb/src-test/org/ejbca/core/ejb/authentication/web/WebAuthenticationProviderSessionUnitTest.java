@@ -324,13 +324,14 @@ public class WebAuthenticationProviderSessionUnitTest {
         expect(globalConfigurationSessionMock.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(oAuthConfiguration);
     }
 
-    @Ignore("Configuration of a 'default key' is not yet implemented.") // TODO enable and update test when ECA-9351 is done
     @Test
     public void successfulRsaDefaultKey() throws TokenExpiredException {
         log.trace(">successfulRsaDefaultKey");
         final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
-        expectConfigRead(oAuthKeyInfo);
+        final OAuthConfiguration oAuthConfiguration = new OAuthConfiguration();
+        oAuthConfiguration.setDefaultOauthKey(oAuthKeyInfo);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(oAuthConfiguration);
         replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
         final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token);
