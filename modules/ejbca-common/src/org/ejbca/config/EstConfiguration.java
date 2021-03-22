@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.ConfigurationBase;
@@ -45,7 +47,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     // Possible operation modes
     public static final String OPERATION_MODE_RA     = "ra";
     public static final String OPERATION_MODE_CLIENT = "client";
-    
+
+    // ChangeSubjectName defined in RFC7030 section 4.2.1 (and 4.2.2) and RFC6402, section 2.8
+    final static public ASN1ObjectIdentifier id_cmc_changeSubjectName =  CMCObjectIdentifiers.id_cmc.branch("36"); 
+
     // Constants: Configuration keys
     public static final String CONFIG_DEFAULTCA     = "defaultca";
     public static final String CONFIG_CERTPROFILE   = "certprofile";
@@ -63,7 +68,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_OPERATIONMODE = "operationmode";
     public static final String CONFIG_EXTRACTUSERNAMECOMPONENT= "extractusernamecomponent";
     public static final String CONFIG_EXTRACTDNPARTPWDCOMPONENT = "extractdnpartpwdcomponent";
-    public static final String CONFIG_CHANGESUBJECTNAME = "changesubjectname";
+    public static final String CONFIG_ALLOWCHANGESUBJECTNAME = "allowchangesubjectname";
     public static final String CONFIG_AUTHENTICATIONMODULE    = "authenticationmodule";
     // Possible values for CONFIG_AUTHENTICATIONMODULE
     public static final String CONFIG_AUTHMODULE_CHALLENGE_PWD         = "ChallengePwd";
@@ -147,7 +152,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
             data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
             data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
-            data.put(alias + CONFIG_CHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+            data.put(alias + CONFIG_ALLOWCHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
         }
     }
     
@@ -187,13 +192,13 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, Boolean.toString(vendormode), alias);
     }
     
-    public boolean getChangeSubjectName(String alias) {
-        String key = alias + "." + CONFIG_CHANGESUBJECTNAME;
+    public boolean getAllowChangeSubjectName(String alias) {
+        String key = alias + "." + CONFIG_ALLOWCHANGESUBJECTNAME;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
-    public void setChangeSubjectName(String alias, boolean changeSubjectName) {
-        String key = alias + "." + CONFIG_CHANGESUBJECTNAME;
+    public void setAllowChangeSubjectName(String alias, boolean changeSubjectName) {
+        String key = alias + "." + CONFIG_ALLOWCHANGESUBJECTNAME;
         setValue(key, Boolean.toString(changeSubjectName), alias);
     }
     
@@ -228,7 +233,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT);
         keys.add(alias + CONFIG_AUTHENTICATIONMODULE);
         keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
-        keys.add(alias + CONFIG_CHANGESUBJECTNAME);
+        keys.add(alias + CONFIG_ALLOWCHANGESUBJECTNAME);
         return keys;
     }
 
@@ -736,8 +741,8 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
                 if (data.get(alias + CONFIG_AUTHENTICATIONMODULE) == null) {
                     data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
                 }
-                if (data.get(alias + CONFIG_CHANGESUBJECTNAME) == null) {
-                    data.put(alias + CONFIG_CHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+                if (data.get(alias + CONFIG_ALLOWCHANGESUBJECTNAME) == null) {
+                    data.put(alias + CONFIG_ALLOWCHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
                 }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
