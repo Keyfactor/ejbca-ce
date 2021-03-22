@@ -189,7 +189,7 @@
                     </h:panelGroup>
                     <h:panelGroup>
                     <h:selectBooleanCheckbox id="allowchangesubjectnamecheckbox"
-                                value="#{editEstConfigMBean.estAlias.changeSubjectName}"
+                                value="#{editEstConfigMBean.estAlias.allowChangeSubjectName}"
                                 rendered="#{!editEstConfigMBean.raMode}"
                                 disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
                                 <f:ajax render="estconfiguration:vendorcas allowchangesubjectnamecheckbox" />
