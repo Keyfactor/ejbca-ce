@@ -32,6 +32,7 @@ public class KeyStoreHelper {
 
 	/**
 	 * Retrieves the keystore from the encoded data.
+	 * @param keystoreData byte array
 	 * @param type "PKCS12" or "JKS"
 	 * @param password to lock the keystore
 	 * @return the loaded and unlocked keystore.
