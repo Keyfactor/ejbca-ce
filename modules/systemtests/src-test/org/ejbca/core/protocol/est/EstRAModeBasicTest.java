@@ -258,8 +258,9 @@ public class EstRAModeBasicTest extends EstTestCase {
             //
             // 1. Issue a first certificate for outr Admin with a EST simpleenroll request, message is a simple PKCS#10 request, RFC7030 section 4.2.1
             //
+            final KeyPair ec256Admin = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
             final String adminRequestDN = "CN=" + adminUsername + ",O=EJBCA,C=SE";
-            final PKCS10CertificationRequest p10Admin = generateCertReq(adminRequestDN, null, null, null, ec256);
+            final PKCS10CertificationRequest p10Admin = generateCertReq(adminRequestDN, null, null, null, ec256Admin);
             byte[] reqmsgAdmin = Base64.encode(p10Admin.getEncoded());
             byte[] respAdmin = sendEstRequest(estAlias, "simpleenroll", reqmsgAdmin, 200, null, adminUsername, pwd); 
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3 (tests on this is made in enroll test method)
@@ -269,7 +270,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             // This is our client certificate for re-enrollment
             X509Certificate cert = CertTools.getCertfromByteArray(certs.iterator().next().getEncoded(), X509Certificate.class);
             // Make all requests with client cert auth
-            setupClientKeyStore(serverCertCaInfo, ec256, cert);
+            setupClientKeyStore(serverCertCaInfo, ec256Admin, cert);
 
             //
             // 2. Make EST simpleenroll request with client cert authentication, message is a simple PKCS#10 request, RFC7030 section 4.2.1
