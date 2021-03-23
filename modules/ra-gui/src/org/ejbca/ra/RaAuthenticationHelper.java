@@ -89,11 +89,12 @@ public class RaAuthenticationHelper implements Serializable {
                     log.debug("RA client presented client TLS certificate with subject DN '" + CertTools.getSubjectDN(x509Certificate) + "'.");
                 }
                 // No need to perform re-authentication if the client certificate was the same
-                if (authenticationToken==null) {
+                if (authenticationToken == null) {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingClientCertificate(x509Certificate);
                 }
                 x509AuthenticationTokenFingerprint = authenticationToken == null ? null : fingerprint;
-            } else if (oauthBearerToken != null) {
+            }
+            if (oauthBearerToken != null && authenticationToken == null) {
                 try {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
                 } catch (TokenExpiredException e) {

@@ -151,22 +151,33 @@ public class RaLoginBean implements Serializable {
     
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
         String url = oauthKeyInfo.getUrl();
-        if (StringUtils.isNotEmpty(oauthKeyInfo.getRealm())) {
-            url = new StringBuilder()
-                    .append(oauthKeyInfo.getUrl()).append("/realms/")
+        final StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(oauthKeyInfo.getUrl());
+        if (!oauthKeyInfo.getUrl().endsWith("/")) {
+            stringBuilder.append("/");
+        }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
+            url = stringBuilder
+                    .append("realms/")
                     .append(oauthKeyInfo.getRealm())
                     .append("/protocol/openid-connect/auth").toString();
+        }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
+            url = stringBuilder
+                    .append(oauthKeyInfo.getRealm())
+                    .append("/oauth2/v2.0/authorize").toString();
         }
         return addParametersToUrl(oauthKeyInfo, url);
     }
 
     private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url) {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
-        if (StringUtils.isNotEmpty(oauthKeyInfo.getClient())) {
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
             uriBuilder
-                    .queryParam("client_id", oauthKeyInfo.getClient());
+                    .queryParam("scope", "openid " + oauthKeyInfo.getScope());
         }
         uriBuilder
+                .queryParam("client_id", oauthKeyInfo.getClient())
                 .queryParam("response_type", "code")
                 .queryParam("redirect_uri", getRedirectUri())
                 .queryParam("state", stateInSession);
@@ -177,10 +188,12 @@ public class RaLoginBean implements Serializable {
         if (globalConfiguration == null) {
             initGlobalConfiguration();
         }
+        HttpServletRequest servletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        int requestServerPort = servletRequest.getServerPort();
         String baseUrl = globalConfiguration.getBaseUrl(
                 "https",
                 WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
+                requestServerPort
         ) + globalConfiguration.getRaWebPath();
         return baseUrl +"/login.xhtml";
     }
