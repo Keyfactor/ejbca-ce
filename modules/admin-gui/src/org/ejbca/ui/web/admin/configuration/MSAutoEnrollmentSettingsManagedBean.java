@@ -15,7 +15,9 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -372,9 +374,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         List<SelectItem> availableTemplates = new ArrayList<>();
         availableTemplates.add(new SelectItem(SELECT_MST));
 
-        for (MSAutoEnrollmentSettingsTemplate template: getAvailableTemplateSettingsFromAD()) {
-            availableTemplates.add(new SelectItem(template.getOid(), template.getDisplayName()));
-        }
+        getAvailableTemplateSettingsFromAD().stream()
+            .map(template -> new SelectItem(template.getOid(), template.getDisplayName()))
+            .sorted((item1, item2) -> item1.getValue().toString().compareTo(item2.getValue().toString()))
+            .forEach(item -> availableTemplates.add(item));
 
         return availableTemplates;
     }
