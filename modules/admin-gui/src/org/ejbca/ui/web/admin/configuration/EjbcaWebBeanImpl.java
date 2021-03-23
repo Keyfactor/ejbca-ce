@@ -270,7 +270,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     if (refreshToken != null) {
                         OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken);
                         if (token != null) {
-                            httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
+                            httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                            if (token.getRefreshToken() != null) {
+                                httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
+                            }
                             administrator = authenticationSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
                         }
                     }
@@ -348,8 +351,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private String getBearerToken(HttpServletRequest httpServletRequest) {
         String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
         if (oauthBearerToken == null) {
-            OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
-            oauthBearerToken = token != null ? token.getAccessToken() : null;
+            oauthBearerToken = (String) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
         }
         return oauthBearerToken;
     }
@@ -360,8 +362,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      * @return
      */
     private String getRefreshToken(HttpServletRequest httpServletRequest) {
-            OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
-            return token != null ? token.getRefreshToken() : null;
+            return  (String) httpServletRequest.getSession(true).getAttribute("ejbca.refresh.token");
     }
 
     /**
