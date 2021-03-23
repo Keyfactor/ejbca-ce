@@ -97,7 +97,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.ui.web.rest.api.resource.RestResourceSystemTestBase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -473,8 +472,6 @@ public abstract class EstTestCase extends CaTestCase {
                 trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
 
     }
-    /** @see RestResourceSystemTestBase
-     */
     private static KeyStore initJksKeyStore(final String keyStoreFilePath) 
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
         final File file = new File(keyStoreFilePath);
@@ -520,7 +517,7 @@ public abstract class EstTestCase extends CaTestCase {
         roleMemberSession.remove(ADMIN, roleMemberId);
     }
 
-    /** @see RestResourceSystemTestBase
+    /** 
      * Assumes that keyStore already exists in keyStoreFilePath and simply adds content to this already existing keystore
      */
     private static void importDataIntoJksKeystore(
