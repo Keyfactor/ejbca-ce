@@ -453,7 +453,7 @@ CREATE TABLE OcspResponseData (
     nextUpdate BIGINT,
     ocspResponse IMAGE,
     cAId INTEGER,
-    rowProtection TEXT VARCHAR,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
