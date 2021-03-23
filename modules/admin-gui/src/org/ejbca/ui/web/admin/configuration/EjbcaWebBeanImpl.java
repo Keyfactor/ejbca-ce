@@ -235,32 +235,44 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             if (certificate != null) {
                 administrator = authenticationSession.authenticateUsingClientCertificate(certificate);
                 if (administrator == null) {
-                    throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
+                    if (oauthBearerToken == null) {
+                        throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
+                    } else {
+                        log.info("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
+                    }
+                } else {
+                    // Check if certificate and user is an RA Admin
+                    final String userdn = CertTools.getSubjectDN(certificate);
+                    final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
+                    usercommonname = dn.getField(DNFieldExtractor.CN, 0);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Verifying authorization of '" + userdn + "'");
+                    }
+                    final String issuerDN = CertTools.getIssuerDN(certificate);
+                    final String sernostr = CertTools.getSerialNumberAsString(certificate);
+                    final BigInteger serno = CertTools.getSerialNumber(certificate);
+                    // Set current TLS certificate fingerprint
+                    certificateFingerprint = fingerprint;
+                    // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
+                    if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
+                        throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN + "' did not belong to any user in the database.");
+                    }
+                    final Map<String, Object> details = new LinkedHashMap<>();
+                    if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
+                        details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
+                    }
+                    if (!checkRoleMembershipAndLog(httpServletRequest, "Client certificate", issuerDN, sernostr, details)) {
+                        if (oauthBearerToken == null) {
+                            throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
+                        } else {
+                            administrator = null;
+                            certificateFingerprint = null;
+                            log.info("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
+                        }
+                    }
                 }
-                // Check if certificate and user is an RA Admin
-                final String userdn = CertTools.getSubjectDN(certificate);
-                final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
-                usercommonname = dn.getField(DNFieldExtractor.CN, 0);
-                if (log.isDebugEnabled()) {
-                    log.debug("Verifying authorization of '" + userdn + "'");
-                }
-                final String issuerDN = CertTools.getIssuerDN(certificate);
-                final String sernostr = CertTools.getSerialNumberAsString(certificate);
-                final BigInteger serno = CertTools.getSerialNumber(certificate);
-                // Set current TLS certificate fingerprint
-                certificateFingerprint = fingerprint;
-                // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
-                if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
-                    throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
-                }
-                final Map<String, Object> details = new LinkedHashMap<>();
-                if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
-                    details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
-                }
-                if (!checkRoleMembershipAndLog(httpServletRequest, "Client certificate", issuerDN, sernostr, details)) {
-                    throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
-                }
-            } else if (oauthBearerToken != null) {
+            }
+            if (oauthBearerToken != null && administrator == null) {
                 try {
                     administrator = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
                 } catch (TokenExpiredException e) {
@@ -298,7 +310,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
                 usercommonname = principal.getSubject();
-            } else {
+            }
+            if (administrator == null) {
                 administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 if (!checkRoleMembershipAndLog(httpServletRequest, "AuthenticationToken", null, null, details)) {
