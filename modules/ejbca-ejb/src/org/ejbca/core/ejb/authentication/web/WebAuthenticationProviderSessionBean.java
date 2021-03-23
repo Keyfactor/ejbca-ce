@@ -232,7 +232,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         final Map<String,OAuthKeyInfo> availableKeys = oAuthConfiguration.getOauthKeys();
         if (keyId != null) {
             for (final OAuthKeyInfo oAuthKeyInfo : availableKeys.values()) {
-                if (oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
+                if (oAuthKeyInfo.getAllKeyIdentifiers() != null && oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
                     return oAuthKeyInfo;
                 }
             }
