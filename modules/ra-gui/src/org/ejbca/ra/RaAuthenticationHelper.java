@@ -103,7 +103,10 @@ public class RaAuthenticationHelper implements Serializable {
                         try {
                             token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken);
                             if (token != null) {
-                                httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token);
+                                httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                                if (token.getRefreshToken() != null) {
+                                    httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
+                                }
                                 authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
                             }
                         } catch (TokenExpiredException tokenExpiredException) {
@@ -133,8 +136,7 @@ public class RaAuthenticationHelper implements Serializable {
     private String getBearerToken(HttpServletRequest httpServletRequest) {
         String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
         if (oauthBearerToken == null) {
-            OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
-            oauthBearerToken = token != null ? token.getAccessToken() : null;
+            oauthBearerToken = (String) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
         }
         return oauthBearerToken;
     }
@@ -145,8 +147,7 @@ public class RaAuthenticationHelper implements Serializable {
      * @return
      */
     private String getRefreshToken(HttpServletRequest httpServletRequest) {
-        OAuthGrantResponseInfo token = (OAuthGrantResponseInfo) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
-        return token != null ? token.getRefreshToken() : null;
+        return  (String) httpServletRequest.getSession(true).getAttribute("ejbca.refresh.token");
     }
     
     /** Invoke once the session is started to prevent security leak via HTTP headers related. */
