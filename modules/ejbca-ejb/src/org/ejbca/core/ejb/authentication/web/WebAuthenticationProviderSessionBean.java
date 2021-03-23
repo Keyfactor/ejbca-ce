@@ -175,7 +175,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             final OAuth2Principal principal = new OAuth2Principal(claims.getIssuer(), claims.getSubject(), claims.getAudience());
-            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, keyFingerprint);
+            return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, keyFingerprint, keyInfo.getLabel());
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;

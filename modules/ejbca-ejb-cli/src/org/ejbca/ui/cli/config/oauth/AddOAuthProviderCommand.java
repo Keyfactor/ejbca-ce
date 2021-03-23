@@ -13,7 +13,7 @@
 package org.ejbca.ui.cli.config.oauth;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyHelper;
+import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -128,7 +128,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         try {
-            OAuthKeyHelper.validateProvider(keyInfo);
+            OAuthProviderCliHelper.validateProvider(keyInfo);
         } catch(Exception e) {
             log.info(e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;

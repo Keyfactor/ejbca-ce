@@ -4,10 +4,10 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility class for OAuth Provider related operations
- * Currently only used for the CLI
+ * Only used for the CLI
  *
  */
-public class OAuthKeyHelper {
+public class OAuthProviderCliHelper {
         
     public static void validateProvider(final OAuthKeyInfo provider) {
         validateCommonType(provider);
