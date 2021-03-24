@@ -249,7 +249,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setEndEntityProfileId(String.valueOf(estConfiguration.getEndEntityProfileID(aliasName)));
             String certProfileID = estConfiguration.getCertProfileID(aliasName);
             // If we had the old type, EJBCA 6.11 of CP, which is the name, convert it to ID
-            if (!NumberUtils.isNumber(certProfileID)) {
+            if (certProfileID != null && !NumberUtils.isNumber(certProfileID)) {
                 Map<String, Integer> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
                 if (certificateProfiles.get(certProfileID) != null) {
                     certProfileID = String.valueOf(certificateProfiles.get(certProfileID));
