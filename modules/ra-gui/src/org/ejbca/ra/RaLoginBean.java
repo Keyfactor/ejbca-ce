@@ -195,7 +195,10 @@ public class RaLoginBean implements Serializable {
                 WebConfiguration.getHostName(),
                 requestServerPort
         ) + globalConfiguration.getRaWebPath();
-        return baseUrl +"/login.xhtml";
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
+        return baseUrl +"login.xhtml";
     }
     
     private void initGlobalConfiguration() {
