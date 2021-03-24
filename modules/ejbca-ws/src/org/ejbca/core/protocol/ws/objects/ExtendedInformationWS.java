@@ -46,7 +46,7 @@ public class ExtendedInformationWS implements Serializable{
     private String value;
    
     /**
-     * Emtpy constructor used by internally by web services
+     * Empty constructor used by internally by web services
      */
     public ExtendedInformationWS(){}
     

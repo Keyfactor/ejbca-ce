@@ -95,13 +95,21 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
             // v5. Added configurable order validity.
-            setOrderValidity(DEFAULT_ORDER_VALIDITY);
+            if (data.get(KEY_ORDER_VALIDITY) == null) {
+                setOrderValidity(DEFAULT_ORDER_VALIDITY);
+            }
             // v4. Added wildcard certificate issuance with http-01 challenge allowed.
-            setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
+            if (data.get(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED) == null) {
+                setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
+            }
             // v3. Change of ToS URL is set to ToS URL and MUST be changed by the user if feature is used (but 
             // it's a required field on GUI).
-            setTermsOfServiceChangeUrl(getTermsOfServiceUrl());
-            setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
+            if (data.get(KEY_TERMS_OF_SERVICE_CHANGE_URL) == null) {
+                setTermsOfServiceChangeUrl(getTermsOfServiceUrl());
+            }
+            if (data.get(KEY_AGREE_TO_NEW_TERMS_OF_SERVICE_ALLOWED) == null) {
+                setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
+            }
             // v2. ACME external account binding implementation.
             try {
                 if (getExternalAccountBinding() == null) {
