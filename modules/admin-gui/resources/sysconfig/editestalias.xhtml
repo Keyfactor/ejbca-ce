@@ -60,7 +60,7 @@
 				
 			</h:panelGrid>
 			
-			<!-- Client Mode   -->
+			<!-- Client Mode -->
 			<h:panelGroup id="clientmode">
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
@@ -119,12 +119,27 @@
 								<f:selectItems
 									value="#{editEstConfigMBean.extUsernameComponentSelectItems}" />
 						</h:selectOneMenu>
+                    </h:panelGroup>                    
+                    <!--  Default CA is available to select both in RA mode and in Client mode 
+                          In client mode it's used in order to answer 'cacerts' calls when there is no end entity
+                          -->
+                    <h:panelGroup>
+                        <h:outputLabel for="listestdefaultcaclient"
+                            value="#{web.text.ESTDEFAULTCA_CLIENT}" styleClass="titles" />
+                        <br />
+                        <h:outputText value="#{web.text.ESTDEFAULTCA_CLIENT_HELP}" escape="false"
+                            styleClass="help" />
                     </h:panelGroup>
+                    <h:selectOneMenu id="listestdefaultcaclient" name="listestdefaultca"
+                        value="#{editEstConfigMBean.estAlias.caId}"
+                        disabled="#{editEstConfigMBean.viewOnly}">
+                        <f:selectItems value="#{editEstConfigMBean.caItemList}" />
+                    </h:selectOneMenu>                    
                 </h:panelGrid>
             </h:panelGroup>
-					
-					<!-- Vendor Mode, part of client mode   -->
-            <!-- Client Mode   -->
+            <!-- End Client Mode -->
+
+            <!-- Vendor Mode, part of client mode -->
             <h:panelGroup id="vendormode">
                 <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
                     cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
@@ -199,8 +214,9 @@
                     </h:panelGroup>
                 </h:panelGrid>
 			</h:panelGroup>
-			
-			<!-- RA Mode   -->
+            <!-- End Vendor Mode, part of client mode -->
+								
+			<!-- RA Mode -->
 			<h:panelGroup id="ramode">
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
@@ -291,6 +307,10 @@
 					</h:panelGroup>
 					<h:inputText value="#{editEstConfigMBean.raNameGenPostfix}"
 						disabled="#{editEstConfigMBean.viewOnly}" />
+                    <!--  Default CA is available to select both in RA mode and in Client mode 
+                          In RA mode it's used in order to answer 'cacerts' calls, and to specify the CA
+                          to add/edit end entities with as they are created
+                          -->
 					<h:panelGroup>
 						<h:outputLabel for="listestdefaultca"
 							value="#{web.text.ESTDEFAULTCA}" styleClass="titles" />
@@ -383,7 +403,7 @@
 					<h:panelGroup>&nbsp;</h:panelGroup>
 				</h:panelGrid>
 			</h:panelGroup>
-			<!-- RA Mode   -->
+			<!-- RA Mode -->
 
 			<h:panelGroup id="general">
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
