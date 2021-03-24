@@ -47,8 +47,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * UI representation of a result set item from the back end.
  *
  * For printing user data fields.
- *
- * @version $Id$
  */
 public class RaEndEntityDetails {
 
@@ -155,6 +153,9 @@ public class RaEndEntityDetails {
             return eepName;
         }
         return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_missingeep", eepId);
+    }
+    public int getCaId() {
+        return endEntityInformation.getCAId();
     }
     public String getCreated() { return created; }
     public String getModified() { return modified; }
@@ -420,7 +421,6 @@ public class RaEndEntityDetails {
             this.subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile(), subjectDa);
         }
         return subjectDirectoryAttributes;
-
     }
 
     private EndEntityProfile getEndEntityProfile() {
