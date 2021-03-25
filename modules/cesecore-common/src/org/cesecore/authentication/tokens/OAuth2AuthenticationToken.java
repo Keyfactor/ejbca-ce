@@ -34,6 +34,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
     private final OAuth2Principal principal;
     private final String encodedToken;
     private final String base64Fingerprint;
+    private final String providerLabel;
 
     /**
      * Creates an OAuth2AuthenticationToken. No validation is performed that the token is valid, or that
@@ -43,13 +44,14 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
      * @param encodedToken Encoded JWT token. For an example see <a href="https://tools.ietf.org/html/rfc7519#section-3.1">RFC-7519 section 3.1</a>.
      * @param base64Fingerprint Base64 encoded SHA-256 fingerprint of public key that was used to verify the JWT.
      */
-    public OAuth2AuthenticationToken(final OAuth2Principal principal, final String encodedToken, final String base64Fingerprint) {
+    public OAuth2AuthenticationToken(final OAuth2Principal principal, final String encodedToken, final String base64Fingerprint, final String providerLabel) {
         super(Collections.singleton(principal), Collections.singleton(encodedToken));
         Objects.requireNonNull(principal, "principal may not be null");
         Objects.requireNonNull(encodedToken, "encodedToken may not be null");
         this.principal = principal;
         this.encodedToken = encodedToken;
         this.base64Fingerprint = base64Fingerprint;
+        this.providerLabel = providerLabel;
     }
 
     @Override
@@ -71,6 +73,8 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             return value.equals(principal.getSubject());
         case CLAIM_AUDIENCE:
             return principal.getAudience() != null && principal.getAudience().contains(value);
+        case CLAIM_OBJECTID:
+            return value.equals(principal.getOid());
 // Possible future extension, to allow arbitrary claims (pseudo-code)
 //      case JSON_CLAIMS:
 //          for (final Entry<String,String> claim : jsonToMap(value)) {
@@ -130,6 +134,10 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
 
     public String getPublicKeyBase64Fingerprint() {
         return base64Fingerprint;
+    }
+    
+    public String getProviderLabel() {
+        return providerLabel;
     }
     
     public String getEncodedToken() {
