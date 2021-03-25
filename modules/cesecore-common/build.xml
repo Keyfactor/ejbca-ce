@@ -28,7 +28,6 @@
 		<path refid="lib.json-simple.classpath"/>
 		<path refid="lib.guava.classpath"/>
 		<path refid="lib.jacknji.classpath"/>
-		<path refid="lib.jna.classpath"/>
         <path refid="lib.hc.classpath"/> <!-- Apache http client for Azure crypto token -->
         <path location="${mod.cesecore-x509ca.lib}"/>
 	</path>
