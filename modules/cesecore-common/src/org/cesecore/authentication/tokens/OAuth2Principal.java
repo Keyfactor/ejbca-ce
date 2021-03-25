@@ -28,6 +28,7 @@ public class OAuth2Principal implements Principal, Serializable {
 
     private final String issuer;
     private final String subject;
+    private final String oid;
     private final Collection<String> audience;
 
     /**
@@ -35,30 +36,34 @@ public class OAuth2Principal implements Principal, Serializable {
      *
      * @param issuer Issuer, the "iss" attribute in the token. May be null.
      * @param subject Subject, the "sub" attribute in the token. May be null.
+     * @param oid Object id, the "oid" attribute in the token. May be null.
      * @param audience Audience list, the "aud" attribute in the token. May be empty, but not null.
      */
-    public OAuth2Principal(final String issuer, final String subject, final Collection<String> audience) {
+    public OAuth2Principal(final String issuer, final String subject, final String oid, final Collection<String> audience) {
         Objects.requireNonNull(audience, "constructor does not allow null in the audience parameter");
         this.issuer = issuer;
         this.subject = subject;
+        this.oid = oid;
         this.audience = audience;
     }
 
     @Override
     public String getName() {
-        return subject != null ? subject : StringUtils.join(audience, ',');
+        return subject != null ? subject : oid != null ? oid : StringUtils.join(audience, ',');
     }
 
     /** Returns the issuer (corresponding to the "iss" attribute in the token), or null if absent */
     public String getIssuer() { return issuer; }
     /** Returns the subject (corresponding to the "sub" attribute in the token), or null if absent */
     public String getSubject() { return subject; }
+    /** Returns the object id (corresponding to the "oid" attribute in the token), or null if absent */
+    public String getOid() { return oid; }
     /** Returns the audience list (corresponding to the "aud" attribute in the token). Never null. */
     public Collection<String> getAudience() { return audience; }
 
     @Override
     public String toString() {
-        return "[OAuth2 Principal, iss:" + issuer + " sub:" + subject + " aud:" + audience + "]";
+        return "[OAuth2 Principal, iss:" + issuer + " sub:" + subject + " oid:" + oid + " aud:" + audience + "]";
     }
 
     @Override
@@ -72,6 +77,7 @@ public class OAuth2Principal implements Principal, Serializable {
         final OAuth2Principal other = (OAuth2Principal)obj;
         return StringUtils.equals(subject, other.subject) &&
                 StringUtils.equals(issuer, other.issuer) &&
+                StringUtils.equals(oid, other.oid) &&
                 audience.equals(other.audience);
     }
 
