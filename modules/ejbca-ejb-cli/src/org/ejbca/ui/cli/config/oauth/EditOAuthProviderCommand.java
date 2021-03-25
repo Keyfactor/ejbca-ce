@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.config.oauth;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyHelper;
+import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -83,7 +83,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                         getOAuthConfiguration().setDefaultOauthKey(entry.getValue());
                     }
                     try {
-                        OAuthKeyHelper.validateProvider(entry.getValue(), true);
+                        OAuthProviderCliHelper.validateProvider(entry.getValue());
                     } catch(Exception e) {
                         log.info(e.getMessage());
                         return CommandResult.FUNCTIONAL_FAILURE;
