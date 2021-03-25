@@ -28,7 +28,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
-import org.cesecore.authentication.oauth.OAuthKeyHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.authentication.oauth.OAuthKeyManager;
@@ -37,6 +36,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.ejbca.util.OAuthProviderUIHelper;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -566,7 +566,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         }
         try {
-            OAuthKeyHelper.validateProvider(newOauthKey, false);
+            OAuthProviderUIHelper.validateProvider(newOauthKey);
         } catch(Exception e) {
             systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
@@ -704,7 +704,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         /* Make sure the edited provider does not have any unfilled mandatory fields */
         try {
-            OAuthKeyHelper.validateProvider(oauthKeyToUpdate, false);
+            OAuthProviderUIHelper.validateProvider(oauthKeyToUpdate);
         } catch(Exception e) {
             systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
