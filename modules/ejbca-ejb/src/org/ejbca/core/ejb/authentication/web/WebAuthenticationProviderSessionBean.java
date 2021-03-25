@@ -165,7 +165,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             final JWTClaimsSet claims = jwt.getJWTClaimsSet();
             final Date expiry = claims.getExpirationTime();
             final Date now = new Date();
-            final String subject = claims.getSubject();
+            final String subject = keyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE) ?
+                    claims.getStringClaim("oid") : claims.getSubject();
             if (expiry != null && !now.before(new Date(expiry.getTime() + keyInfo.getSkewLimit()))) {
                 LOG.info(intres.getLocalizedMessage("authentication.jwt.expired", subject, keyFingerprint));
                 throw new TokenExpiredException("Token expired");
@@ -174,7 +175,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.not_yet_valid", subject, keyFingerprint));
                 return null;
             }
-            final OAuth2Principal principal = new OAuth2Principal(claims.getIssuer(), claims.getSubject(), claims.getAudience());
+            final OAuth2Principal principal = new OAuth2Principal(claims.getIssuer(), claims.getSubject(), claims.getStringClaim("oid"), claims.getAudience());
             return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, keyFingerprint);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
