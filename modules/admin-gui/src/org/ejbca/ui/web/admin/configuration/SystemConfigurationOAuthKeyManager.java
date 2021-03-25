@@ -566,7 +566,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         }
         try {
-            OAuthProviderUIHelper.validateProvider(newOauthKey);
+            OAuthProviderUIHelper.validateProvider(oauthKeyEditor);
         } catch(Exception e) {
             systemConfigurationHelper.addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
@@ -683,6 +683,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 systemConfigurationHelper.saveDefaultOauthKey(defaultKey);
             }
         }
+        
+        /* Make sure the edited provider does not have any unfilled mandatory fields */
+        try {
+            OAuthProviderUIHelper.validateProvider(oauthKeyEditor);
+        } catch(Exception e) {
+            systemConfigurationHelper.addErrorMessage(e.getMessage());
+            return StringUtils.EMPTY;
+        }
 
         /* Update the configuration */
         oauthKeyToUpdate.setSkewLimit(oauthKeyEditor.getSkewLimit());
@@ -695,20 +703,13 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             }
             oauthKeyToUpdate.setKeys(newOauthKeyMap);
         }
+        
         oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
-
-        /* Make sure the edited provider does not have any unfilled mandatory fields */
-        try {
-            OAuthProviderUIHelper.validateProvider(oauthKeyToUpdate);
-        } catch(Exception e) {
-            systemConfigurationHelper.addErrorMessage(e.getMessage());
-            return StringUtils.EMPTY;
-        }
 
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
