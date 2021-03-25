@@ -927,17 +927,37 @@
 				<h:outputText value="#{web.text.MSAE_KEYTAB_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
+				<h:panelGroup>
+					<br/>
+					<t:inputFileUpload id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
+					<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKeyTabFile}"/>
+					<br/>
+				</h:panelGroup>
 				<h:panelGroup rendered="#{msAutoEnrollmentSettings.keyTabUploaded}">
 					<h:outputLabel value="#{web.text.MSAE_KEYTAB_TITLE_UPLOADED}"/>
 					<h:commandLink value="#{msAutoEnrollmentSettings.keyTabFilename}" action="#{msAutoEnrollmentSettings.downloadKeyTabFile}"/>
 					<br/>
 				</h:panelGroup>
-
+			</h:panelGroup>
+			
+			<!-- MSAE KRB5 CONF -->
+			<h:panelGroup>
+				<h:outputLabel value="#{web.text.MSAE_KRB5_CONF}" styleClass="titles"/> <br/>
+				<h:outputText value="#{web.text.MSAE_KRB5_CONF_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
 				<h:panelGroup>
 					<br/>
-					<t:inputFileUpload id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
-					<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKeyTabFile}"/>
+					<t:inputFileUpload id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}"/>
+					<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKrb5ConfFile}"/>
+					<br/>
 				</h:panelGroup>
+				<h:panelGroup rendered="#{msAutoEnrollmentSettings.krb5ConfFileUploaded}">
+					<h:outputLabel value="#{web.text.MSAE_KRB5_CONF_TITLE_UPLOADED}"/>
+					<h:commandLink value="#{msAutoEnrollmentSettings.krb5ConfFilename}" action="#{msAutoEnrollmentSettings.downloadKrb5ConfFile}"/>
+					<br/>
+				</h:panelGroup>
+				
 			</h:panelGroup>
 
 			<!-- isUseSSL -->
