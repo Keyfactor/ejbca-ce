@@ -63,6 +63,9 @@
 # separate thread to gather seed material and a core DRBG to satisfy any requests for seed material while it waits.
 # There is no noticeable performance difference using this algorithm, so it could be used instead of the default to prove a FIPS compliant method in use. 
 #
+# You can set to PKCS11 to make the call to SecureRandom.getInstance("PKCS11") use the random number generator from a HSM
+# that has been configured to be available from Java.
+#
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
 # Using the value "defaultstrong" is only available in JDK 8 and later and will use the SecureRandom.getInstanceStrong(), to get
@@ -75,6 +78,7 @@
 #ca.rngalgorithm=default
 #ca.rngalgorithm=DRBG
 #ca.rngalgorithm=BCSP800Hybrid
+#ca.rngalgorithm=PKCS11
 
 # The default length in octets of certificate serial numbers configured when creating new CAs. 
 # Note: since EJBCA 7.0.1 this only affects the default value of this field, which is editable in the CA configuration 
