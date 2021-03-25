@@ -13,7 +13,7 @@
 package org.ejbca.ui.cli.config.oauth;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyHelper;
+import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -83,18 +83,22 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String realm = parameters.get(REALM);
         String scope = parameters.get(SCOPE);
         OAuthProviderType type = null;
-
-
-        switch (typeString) {
-            case NONE:
-                type = OAuthProviderType.TYPE_NONE;
-                break;
-            case KEYCLOAK:
-                type = OAuthProviderType.TYPE_KEYCLOAK;
-                break;
-            case AZURE:
-                type = OAuthProviderType.TYPE_AZURE;
-                break;
+        
+        if (typeString != null) {
+            typeString = typeString.toUpperCase();
+            switch (typeString) {
+                case NONE:
+                    type = OAuthProviderType.TYPE_NONE;
+                    break;
+                case KEYCLOAK:
+                    type = OAuthProviderType.TYPE_KEYCLOAK;
+                    break;
+                case AZURE:
+                    type = OAuthProviderType.TYPE_AZURE;
+                    break;
+                default:
+                    break;
+            }
         }
 
         if (type == null) {
@@ -124,7 +128,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         try {
-            OAuthKeyHelper.validateProvider(keyInfo, true);
+            OAuthProviderCliHelper.validateProvider(keyInfo);
         } catch(Exception e) {
             log.info(e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
