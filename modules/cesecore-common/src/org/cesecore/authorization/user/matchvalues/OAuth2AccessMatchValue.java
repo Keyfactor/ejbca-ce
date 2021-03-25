@@ -28,6 +28,8 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     CLAIM_ISSUER(2),
     /** Matches an "aud" (audience) claim */
     CLAIM_AUDIENCE(3),
+    /** Matches the "oid" (subject) claim */
+    CLAIM_OBJECTID(4),
 //  Possible future extension, to allow for arbitrary claims, and to require multiple different claims
 //    /** An JSON string with claims */
 //    JSON_CLAIMS(4)
