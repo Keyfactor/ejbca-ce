@@ -67,16 +67,6 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private RaStyleCacheBean raStyleCacheBean;
-    
-    private String makeAdminPreferenceId(final AuthenticationToken admin) {
-        if (admin instanceof X509CertificateAuthenticationToken) {
-            return CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
-        } else if (admin instanceof PublicAccessAuthenticationToken) {
-            return null;
-        } else {
-            return admin.getClass().getSimpleName() + ":" + admin.getPreferredMatchValue();
-        }
-    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
