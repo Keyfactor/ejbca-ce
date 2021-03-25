@@ -55,6 +55,8 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -293,6 +295,9 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
                 if (principal.getAudience() != null) {
                     details.put("audience", Arrays.toString(principal.getAudience().toArray()));
+                }
+                if (oauth2Admin.getProviderLabel() != null) {
+                    details.put("provider", oauth2Admin.getProviderLabel());
                 }
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
