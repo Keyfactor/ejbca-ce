@@ -76,7 +76,11 @@ public class GlobalAcmeConfiguration extends ConfigurationBase implements Serial
         data.put(KEY_DEFAULT_ACME_CONFIGURATION_ID, defaultAcmeConfigurationId);
     }
 
-    /** @return all the configured AcmeConfiguration IDs */
+    /**
+     * Returns all available AcmeConfiguration IDs.
+     * 
+     * @return the list of IDs or an empty list. 
+     */
     public List<String> getAcmeConfigurationIds() {
         final Set<String> acmeConfigurationIds = new HashSet<>();
         for (final Object key : data.keySet()) {
@@ -97,9 +101,21 @@ public class GlobalAcmeConfiguration extends ConfigurationBase implements Serial
         acmeConfiguration.setConfigurationId(configurationId);
         return acmeConfiguration;
     }
-    /** Overwrite and update the persisted AcmeConfiguration */
+    
+    /**
+     * Adds a new or overwrites a persisted AcmeConfiguration in the backing object.
+     * 
+     * Sets the objects ID as default ACME alias ID if the first object is added. 
+     * 
+     * @param acmeConfiguration the ACME alias.
+     */
     public void updateAcmeConfiguration(final AcmeConfiguration acmeConfiguration) {
         data.put(KEY_ACME_CONFIGURATION_PREFIX + acmeConfiguration.getConfigurationId(), acmeConfiguration.saveData());
+        final List<String> aliasIds = getAcmeConfigurationIds();
+        // Set default ACME alias if the first one is created.
+        if (aliasIds.size() == 1) {
+            setDefaultAcmeConfigurationId(aliasIds.get(0));
+        }
     }
 
     /** @return the validity period of newly generated nonces */
@@ -165,7 +181,21 @@ public class GlobalAcmeConfiguration extends ConfigurationBase implements Serial
         updateAcmeConfiguration(acmeConfiguration);
     }
 
-    public void removeConfigId(String configId){
+    /**
+     * Removes a persisted AcmeConfiguration from the backing object.
+     * 
+     * Sets the objects ID as default ACME alias ID if only one object is left or null if empty. 
+     * 
+     * @param configId the ACME alias.
+     */
+    public void removeConfigId(String configId) {
         data.remove(KEY_ACME_CONFIGURATION_PREFIX + configId);
+        final List<String> aliasIds = getAcmeConfigurationIds();
+        // Set default ACME alias if there is only one. Reset if no ACME alias.
+        if (aliasIds.size() == 0) {
+            setDefaultAcmeConfigurationId(null);
+        } else if (aliasIds.size() == 1) {
+            setDefaultAcmeConfigurationId(aliasIds.get(0));
+        }
     }
 }
