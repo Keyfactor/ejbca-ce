@@ -2104,7 +2104,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
@@ -2112,7 +2112,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // If called from the wrong instance, return to proxybean and try next implementation
             return false;
         } else {
-            endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
+            if (newUsername == null)
+                endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
+            else
+                endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd, newUsername);
             return true;
         }
     }
@@ -2121,7 +2124,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, EjbcaException {
-        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS), userDataVOWS.isClearPwd());
+        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS), userDataVOWS.isClearPwd(), null);
     }
 
     @Override
@@ -2292,6 +2295,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final int caId = CertTools.stringToBCDNString(issuerDn).hashCode();
         caSession.verifyExistenceOfCA(caId);
         endEntityManagementSession.revokeCert(authenticationToken, certSerNo, revocationDate, issuerDn, reason, checkDate);
+    }
+
+    @Override
+    public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
+        throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
+        endEntityManagementSession.revokeAndDeleteUser(authenticationToken, username, reason);
     }
 
     @Override
