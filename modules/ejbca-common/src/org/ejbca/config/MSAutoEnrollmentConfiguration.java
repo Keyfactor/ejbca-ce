@@ -33,6 +33,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final String POLICY_NAME = "policyName";
     private static final String POLICY_UID = "policyUid";
 
+    // MSAE Krb5Conf
+    private static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
+    private static final Object MSAE_KRB5_CONF_FILENAME = "msaeKrb5ConfFilename";
 
     // MSAE Settings
     private static final String IS_USE_SSL = "isUseSSL";
@@ -45,6 +48,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     // Template to Settings
     private static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
+
 
     private static int DEFAULT_AD_CONNECTION_PORT = 389;
 
@@ -127,6 +131,24 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     public void setMsaeKeyTabBytes(final byte[]  msaeKeyTabBytes) {
         data.put(MSAE_KEYTAB_BYTES, msaeKeyTabBytes);
     }
+    
+    // MSAE Krb5 Conf
+    public String getMsaeKrb5ConfFilename() {
+        return (String) data.get(MSAE_KRB5_CONF_FILENAME);
+    }
+
+    public void setMsaeKrb5ConfFilename(final String msaeKrb5ConfFilename) {
+        data.put(MSAE_KRB5_CONF_FILENAME, msaeKrb5ConfFilename);
+    }
+
+    public byte[] getMsaeKrb5ConfBytes() {
+        return (byte[]) data.get(MSAE_KRB5_CONF_BYTES);
+    }
+
+    public void setMsaeKrb5ConfBytes(final byte[] msaeKrb5ConfBytes) {
+        data.put(MSAE_KRB5_CONF_BYTES, msaeKrb5ConfBytes);
+    }
+    
 
     // MSAE Settings
     public boolean isUseSSL() {
