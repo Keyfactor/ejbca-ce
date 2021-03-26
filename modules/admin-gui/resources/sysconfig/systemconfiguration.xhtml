@@ -908,7 +908,7 @@
 				</h:inputText>
 			</h:panelGroup>
 
-			<!-- MSAE Domain -->
+			<!-- MSAE Policy Name -->
 			<h:panelGroup>
 				<h:outputLabel value="#{web.text.MSAE_POLICY_NAME}" styleClass="titles"/> <br/>
 				<h:outputText value="#{web.text.MSAE_POLICY_NAME_HELP}" styleClass="help"/>
@@ -920,6 +920,20 @@
 					<f:converter converterId="trimConverter"/>
 				</h:inputText>
 			</h:panelGroup>
+			
+			<!-- MSAE Service Principal -->
+			<h:panelGroup>
+				<h:outputLabel value="#{web.text.MSAE_SERVICE_PRINCIPAL}" styleClass="titles"/> <br/>
+				<h:outputText value="#{web.text.MSAE_SERVICE_PRINCIPAL_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:inputText id="spn" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+							 value="#{msAutoEnrollmentSettings.servicePrincipalName}" size="45"
+							 title="#{web.text.FORMAT_STRING}">
+					<f:converter converterId="trimConverter"/>
+				</h:inputText>
+			</h:panelGroup>
+			
 
 			<!-- MSAE KEYTAB -->
 			<h:panelGroup>

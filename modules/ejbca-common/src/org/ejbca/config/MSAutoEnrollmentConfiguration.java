@@ -32,7 +32,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
     private static final String POLICY_NAME = "policyName";
     private static final String POLICY_UID = "policyUid";
+    private static final String SPN = "servicePrincipalName";
 
+    
     // MSAE Krb5Conf
     private static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
     private static final Object MSAE_KRB5_CONF_FILENAME = "msaeKrb5ConfFilename";
@@ -102,6 +104,14 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     public void setPolicyName(final String policyName) {
         data.put(POLICY_NAME, policyName);
+    }
+    
+    public String getSpn() {
+        return (String) data.get(SPN);
+    }
+
+    public void setSpn(final String spn) {
+        data.put(SPN, spn);
     }
     
     public String getPolicyUid() {
