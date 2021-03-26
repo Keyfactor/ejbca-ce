@@ -3,7 +3,6 @@ package org.ejbca.util;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.oauth.MissingOAuthKeyAttributeException;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
