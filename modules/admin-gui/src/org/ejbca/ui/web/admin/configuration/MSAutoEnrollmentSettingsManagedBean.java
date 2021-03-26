@@ -71,6 +71,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private byte[] krb5ConfFileBytes;    
 
     private String policyName;
+    private String servicePrincipalName;
 
     // MSAE Settings
     private boolean isUseSSL;
@@ -116,6 +117,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         if (autoEnrollmentConfiguration != null) {
             msaeDomain = autoEnrollmentConfiguration.getMsaeDomain();
             policyName = autoEnrollmentConfiguration.getPolicyName();
+            servicePrincipalName = autoEnrollmentConfiguration.getSpn();
             keyTabFileBytes = autoEnrollmentConfiguration.getMsaeKeyTabBytes();
             keyTabFilename = autoEnrollmentConfiguration.getMsaeKeyTabFilename();
             
@@ -148,6 +150,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setPolicyName(String policyName) {
         this.policyName = policyName;
+    }
+    
+    public String getSpn() {
+        return servicePrincipalName;
+    }
+
+    public void setSpn(String spn) {
+        this.servicePrincipalName = spn;
     }
 
     public UploadedFile getKeyTabFile() {
@@ -654,6 +664,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setMsaeDomain(msaeDomain);
             autoEnrollmentConfiguration.setPolicyName(policyName);
             autoEnrollmentConfiguration.setPolicyUid();
+            autoEnrollmentConfiguration.setSpn(servicePrincipalName);
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(isUseSSL);
