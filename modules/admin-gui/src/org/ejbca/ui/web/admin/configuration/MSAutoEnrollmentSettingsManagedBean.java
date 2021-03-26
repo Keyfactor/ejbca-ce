@@ -152,12 +152,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.policyName = policyName;
     }
     
-    public String getSpn() {
+    public String getServicePrincipalName() {
         return servicePrincipalName;
     }
 
-    public void setSpn(String spn) {
-        this.servicePrincipalName = spn;
+    public void setServicePrincipalName(String servicePrincipalName) {
+        this.servicePrincipalName = servicePrincipalName;
     }
 
     public UploadedFile getKeyTabFile() {
