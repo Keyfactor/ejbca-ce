@@ -190,12 +190,10 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     }
 
     private String getRedirectUri() {
-        HttpServletRequest servletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        int requestServerPort = servletRequest.getServerPort();
         return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
                 "https",
                 WebConfiguration.getHostName(),
-                requestServerPort
+                WebConfiguration.getPublicHttpPort()
         ) + ejbcaWebBean.getGlobalConfiguration().getAdminWebPath();
     }
 
