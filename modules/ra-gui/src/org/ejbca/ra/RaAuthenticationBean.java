@@ -27,13 +27,13 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 
 /**
  * JSF Managed Bean for handling authentication of clients.
- * 
- * @version $Id$
+ *
  */
 @ManagedBean
 @SessionScoped
@@ -44,6 +44,8 @@ public class RaAuthenticationBean implements Serializable {
 
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
+    @EJB
+    private RoleSessionLocal roleSession;
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
     private AuthenticationToken authenticationToken = null;
@@ -51,7 +53,7 @@ public class RaAuthenticationBean implements Serializable {
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken() {
         if (raAuthenticationHelper==null) {
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, roleSession);
         }
         authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
