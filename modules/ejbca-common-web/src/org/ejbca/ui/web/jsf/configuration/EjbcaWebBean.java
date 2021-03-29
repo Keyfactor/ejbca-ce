@@ -21,8 +21,8 @@ import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
 import org.ejbca.ui.web.configuration.exception.AdminExistsException;
@@ -331,7 +331,7 @@ public interface EjbcaWebBean extends Serializable {
 
     void clearClusterCache(final boolean excludeActiveCryptoTokens) throws CacheClearException;
 
-    EjbLocalHelper getEjb();
+    EjbBridgeSessionLocal getEjb();
 
     Object getEnterpriseEjb();
 
