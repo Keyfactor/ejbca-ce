@@ -172,11 +172,12 @@ public class RaLoginBean implements Serializable {
 
     private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url) {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
+        String scope = "openid";
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            uriBuilder
-                    .queryParam("scope", "openid " + oauthKeyInfo.getScope());
+            scope += " " + oauthKeyInfo.getScope();
         }
         uriBuilder
+                .queryParam("scope", scope)
                 .queryParam("client_id", oauthKeyInfo.getClient())
                 .queryParam("response_type", "code")
                 .queryParam("redirect_uri", getRedirectUri())
