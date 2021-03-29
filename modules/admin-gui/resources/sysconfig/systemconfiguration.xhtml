@@ -616,18 +616,18 @@
         <f:facet name="header">
            <h:outputText value="#{web.text.ACTIONS}"/>
         </f:facet>
-		<h:commandButton action="#{systemConfigMBean.oauthKeyManager.viewOauthKey(oauthkey, systemConfigMBean.defaultOauthKeyLabel)}"
-		   value="#{web.text.VIEW}"
-		   rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
-		   id="viewOauthKeyButton"/>
+        <h:commandButton action="#{systemConfigMBean.oauthKeyManager.viewOauthKey(oauthkey, systemConfigMBean.defaultOauthKeyLabel)}"
+            value="#{web.text.VIEW}"
+            rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
+            id="viewOauthKeyButton"/>
         <h:commandButton action="#{systemConfigMBean.oauthKeyManager.editOauthKey(oauthkey, systemConfigMBean.defaultOauthKeyLabel)}"
             value="#{web.text.EDIT}"
             rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
             id="editOauthKeyButton"/>
         <h:commandButton action="#{systemConfigMBean.oauthKeyManager.removeOauthKey(oauthkey)}"
-             value="#{web.text.REMOVE}"
-             rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
-             id="removeOauthKeyButton"/>
+            value="#{web.text.REMOVE}"
+            rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
+            id="removeOauthKeyButton"/>
       </h:column>
 		</h:dataTable>
 		<h:commandButton id="addOauthKey" value="#{web.text.ADD}"
