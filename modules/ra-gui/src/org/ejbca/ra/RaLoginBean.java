@@ -151,22 +151,34 @@ public class RaLoginBean implements Serializable {
     
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
         String url = oauthKeyInfo.getUrl();
-        if (StringUtils.isNotEmpty(oauthKeyInfo.getRealm())) {
-            url = new StringBuilder()
-                    .append(oauthKeyInfo.getUrl()).append("/realms/")
+        final StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(oauthKeyInfo.getUrl());
+        if (!oauthKeyInfo.getUrl().endsWith("/")) {
+            stringBuilder.append("/");
+        }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
+            url = stringBuilder
+                    .append("realms/")
                     .append(oauthKeyInfo.getRealm())
                     .append("/protocol/openid-connect/auth").toString();
+        }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
+            url = stringBuilder
+                    .append(oauthKeyInfo.getRealm())
+                    .append("/oauth2/v2.0/authorize").toString();
         }
         return addParametersToUrl(oauthKeyInfo, url);
     }
 
     private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url) {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
-        if (StringUtils.isNotEmpty(oauthKeyInfo.getClient())) {
-            uriBuilder
-                    .queryParam("client_id", oauthKeyInfo.getClient());
+        String scope = "openid";
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
+            scope += " " + oauthKeyInfo.getScope();
         }
         uriBuilder
+                .queryParam("scope", scope)
+                .queryParam("client_id", oauthKeyInfo.getClient())
                 .queryParam("response_type", "code")
                 .queryParam("redirect_uri", getRedirectUri())
                 .queryParam("state", stateInSession);
@@ -182,7 +194,10 @@ public class RaLoginBean implements Serializable {
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
         ) + globalConfiguration.getRaWebPath();
-        return baseUrl +"/login.xhtml";
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
+        return baseUrl +"login.xhtml";
     }
     
     private void initGlobalConfiguration() {
