@@ -64,7 +64,9 @@
 # There is no noticeable performance difference using this algorithm, so it could be used instead of the default to prove a FIPS compliant method in use. 
 #
 # You can set to PKCS11 to make the call to SecureRandom.getInstance("PKCS11") use the random number generator from a HSM
-# that has been configured to be available from Java.
+# that has been configured to be available from Java. 
+# The PKCS11 provider must have been loaded (but it does not need to have a logged in session). That means that either there must have 
+# been an attempt to activate a PKCS11 Crypto Token (successful or not) or database protection with a PKCS11 token must be used (or both).
 #
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
