@@ -193,7 +193,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
                 "https",
                 WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpPort()
+                WebConfiguration.getPublicHttpsPort()
         ) + ejbcaWebBean.getGlobalConfiguration().getAdminWebPath();
     }
 
