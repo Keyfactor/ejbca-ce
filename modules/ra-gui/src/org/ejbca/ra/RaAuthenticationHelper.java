@@ -26,14 +26,14 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.util.HttpTools;
 
 /**
  * Web session authentication helper.
- * 
- * @version $Id$
+ *
  */
 public class RaAuthenticationHelper implements Serializable {
 
@@ -44,12 +44,14 @@ public class RaAuthenticationHelper implements Serializable {
     private static final String HTTP_HEADER_X_POWERED_BY = "X-Powered-By";
 
     private final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
+    private final RoleSessionLocal roleSession;
     private AuthenticationToken authenticationToken = null;
     private String authenticationTokenTlsSessionId = null;
     private String x509AuthenticationTokenFingerprint = null;
 
-    public RaAuthenticationHelper(final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession) {
+    public RaAuthenticationHelper(final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession, RoleSessionLocal roleSession) {
         this.webAuthenticationProviderSession = webAuthenticationProviderSession;
+        this.roleSession = roleSession;
     }
 
     public void resetAuthenticationToken(){
@@ -89,11 +91,16 @@ public class RaAuthenticationHelper implements Serializable {
                     log.debug("RA client presented client TLS certificate with subject DN '" + CertTools.getSubjectDN(x509Certificate) + "'.");
                 }
                 // No need to perform re-authentication if the client certificate was the same
-                if (authenticationToken==null) {
+                if (authenticationToken == null) {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingClientCertificate(x509Certificate);
                 }
+                if (authenticationToken != null && roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken).isEmpty()) {
+                    authenticationToken = null;
+                    log.info("Authentication failed using certificate with fingerprint " + fingerprint + " reason: user has no access");
+                }
                 x509AuthenticationTokenFingerprint = authenticationToken == null ? null : fingerprint;
-            } else if (oauthBearerToken != null) {
+            }
+            if (oauthBearerToken != null && authenticationToken == null) {
                 try {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
                 } catch (TokenExpiredException e) {
