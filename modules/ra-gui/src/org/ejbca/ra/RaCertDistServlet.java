@@ -18,6 +18,7 @@ import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -49,7 +50,6 @@ import java.util.zip.ZipOutputStream;
 /**
  * Servlet for download of CA certificates and chains.
  *
- * @version $Id$
  */
 @WebServlet("/cert")
 public class RaCertDistServlet extends HttpServlet {
@@ -72,6 +72,8 @@ public class RaCertDistServlet extends HttpServlet {
     private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
+    @EJB
+    private RoleSessionLocal roleSession;
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
 
@@ -79,7 +81,7 @@ public class RaCertDistServlet extends HttpServlet {
     protected void service(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) throws ServletException, IOException {
         if (raAuthenticationHelper==null) {
             // Initialize the authentication helper function
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, roleSession);
         }
         if (httpServletRequest.getParameter(PARAMETER_FINGERPRINTSHEET) != null) {
             downloadFingerprintSheet(httpServletRequest, httpServletResponse);
@@ -89,11 +91,11 @@ public class RaCertDistServlet extends HttpServlet {
             downloadCertificateBundle(httpServletRequest, httpServletResponse);
             return;
         }
-        final boolean fullChain = Boolean.valueOf(httpServletRequest.getParameter(PARAMETER_CHAIN));
+        final boolean fullChain = Boolean.parseBoolean(httpServletRequest.getParameter(PARAMETER_CHAIN));
         if (httpServletRequest.getParameter(PARAMETER_CAID) != null) {
             List<Certificate> chain = null;
             try {
-                final int caId = Integer.valueOf(httpServletRequest.getParameter(PARAMETER_CAID));
+                final int caId = Integer.parseInt(httpServletRequest.getParameter(PARAMETER_CAID));
                 final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
                 final List<CAInfo> caInfos = raMasterApi.getAuthorizedCas(authenticationToken);
                 if (log.isDebugEnabled()) {
@@ -165,7 +167,7 @@ public class RaCertDistServlet extends HttpServlet {
                         case PARAMETER_FORMAT_OPTION_PEM:
                         default: {
                             filename += ".pem";
-                            response = CertTools.getPemFromCertificateChain(Arrays.asList(new Certificate[]{ caCertificate }));
+                            response = CertTools.getPemFromCertificateChain(Collections.singletonList(caCertificate));
                             break;
                         }
                         }
@@ -261,7 +263,7 @@ public class RaCertDistServlet extends HttpServlet {
         final Map<String, Object> entries = new LinkedHashMap<>();
         final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
         for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
-            if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
+            if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().isEmpty()) {
                 if (log.isDebugEnabled()) {
                     log.debug("Not computing CA certificate fingerprint for CA " + caInfo.getName()
                             + " because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
@@ -311,7 +313,7 @@ public class RaCertDistServlet extends HttpServlet {
             try (final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent)) {
                 final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
                 for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
-                    if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
+                    if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().isEmpty()) {
                         if (log.isDebugEnabled()) {
                             log.debug("Not adding CA certificate for CA " + caInfo.getName()
                                     + " to certificate bundle because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
