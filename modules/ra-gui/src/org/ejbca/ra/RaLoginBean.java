@@ -192,7 +192,7 @@ public class RaLoginBean implements Serializable {
         String baseUrl = globalConfiguration.getBaseUrl(
                 "https",
                 WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpPort()
+                WebConfiguration.getPublicHttpsPort()
         ) + globalConfiguration.getRaWebPath();
         if (!baseUrl.endsWith("/")) {
             baseUrl += "/";
