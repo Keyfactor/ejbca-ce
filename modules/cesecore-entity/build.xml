@@ -33,7 +33,6 @@
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
         <path refid="lib.jacknji.classpath"/>
-        <path refid="lib.jna.classpath"/>
 	</path>
 
 	<target name="jar" depends="">

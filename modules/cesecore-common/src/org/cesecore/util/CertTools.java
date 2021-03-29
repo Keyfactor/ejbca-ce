@@ -2806,7 +2806,8 @@ public abstract class CertTools {
 
         for (final String guid : CertTools.getPartsFromDN(altName, CertTools.GUID)) {
             final ASN1EncodableVector v = new ASN1EncodableVector();
-            byte[] guidbytes = Hex.decode(guid);
+            final String dashRemovedGuid = guid.replace("-", "");
+            byte[] guidbytes = Hex.decode(dashRemovedGuid);
             if (guidbytes != null) {
                 v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
                 v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
