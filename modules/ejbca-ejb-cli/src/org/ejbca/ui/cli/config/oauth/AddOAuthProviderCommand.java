@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -117,7 +118,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         
         OAuthKeyInfo keyInfo = new OAuthKeyInfo(label,  skewLimitInt, type);
         // Since the UI already saves missing values as empty strings it's better to match that behaviour
-        keyInfo.setUrl(url != null ? url : "");
+        keyInfo.setUrl(StringUtils.stripEnd(StringUtils.trim(url != null ? url : ""), "/"));
         keyInfo.setClient(client != null ? client : "");
         keyInfo.setClientSecretAndEncrypt(clientSecret != null ? clientSecret : "");
         keyInfo.setRealm(realm != null ? realm : "");
