@@ -3,6 +3,7 @@ package org.ejbca.core.ejb.ra;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionDefault;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -14,7 +15,7 @@ import javax.persistence.Query;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AdminPreferenceProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class AdminPreferenceProxySessionBean implements AdminPreferenceProxySessionRemote {
+public class AdminPreferenceProxySessionBean extends AdminPreferenceSessionDefault implements AdminPreferenceProxySessionRemote {
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
 

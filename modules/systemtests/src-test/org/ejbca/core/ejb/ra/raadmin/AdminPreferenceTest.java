@@ -55,7 +55,7 @@ public class AdminPreferenceTest extends CaTestCase {
 
     private AdminPreferenceSessionRemote adminPreferenceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
 
-    private static  AdminPreferenceProxySessionRemote adminPreferenceProxySessionRemoteProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static  AdminPreferenceProxySessionRemote adminPreferenceProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private String adminFingerprint;
 
     @Override
@@ -70,8 +70,9 @@ public class AdminPreferenceTest extends CaTestCase {
         authenticatedTokenCert = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
                 .authenticate(new AuthenticationSubject(null, null));
         authenticatedTokenOAuth = new OAuth2AuthenticationToken(
-                new OAuth2Principal("Issuer", "Admin", "Oid", Collections.emptyList()), "", ""); // using empty token for testing
+                new OAuth2Principal("Issuer", "Admin", "Oid", Collections.emptyList()), "", "", "Provider"); // using empty token for testing
         adminFingerprint = CertTools.getFingerprintAsString(authenticatedTokenCert.getCertificate());
+        cleanup();
     }
 
     @Override
@@ -81,9 +82,13 @@ public class AdminPreferenceTest extends CaTestCase {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
-        adminPreferenceProxySessionRemoteProxySession.deleteAdminPreferences(authenticatedTokenCert);
-        adminPreferenceProxySessionRemoteProxySession.deleteAdminPreferences(authenticatedTokenOAuth);
+    public static void tearDownClass() {
+        cleanup();
+    }
+
+    private static void cleanup() {
+        adminPreferenceProxySession.deleteAdminPreferences(authenticatedTokenCert);
+        adminPreferenceProxySession.deleteAdminPreferences(authenticatedTokenOAuth);
     }
 
     /**
@@ -111,7 +116,7 @@ public class AdminPreferenceTest extends CaTestCase {
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        boolean ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
+        boolean ret = adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
         assertTrue("Adminpref for " + authenticatedTokenOAuth.getPreferredMatchValue() + " should not exist", ret);
         ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
         assertFalse("Adminpref for " + authenticatedTokenOAuth.getPreferredMatchValue() + " should exist", ret);
