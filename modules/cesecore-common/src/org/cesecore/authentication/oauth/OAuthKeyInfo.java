@@ -23,6 +23,7 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.StringTools;
 
 /**
@@ -225,18 +226,14 @@ public final class OAuthKeyInfo implements Serializable {
         }
 
         final OAuthKeyInfo oauthKeyInfo = (OAuthKeyInfo) o;
-        //support old data
-        if (oauthKeyInfo.getLabel() == null || label == null) {
-            return false;
-        }
-        return label.equals(oauthKeyInfo.getLabel())
-                &&
-                keys.equals(oauthKeyInfo.getKeys());
+        return StringUtils.equals(label, oauthKeyInfo.getLabel()) &&
+                (keys == oauthKeyInfo.getKeys() || // also true if both are null
+                    (keys != null && keys.equals(oauthKeyInfo.getKeys())));
     }
 
     @Override
     public int hashCode() {
-        return  (keys.hashCode() * 4711);
+        return  keys != null ? (keys.hashCode() * 4711) : 0;
     }
 
     @Override
