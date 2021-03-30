@@ -120,7 +120,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
 
         public void setUrl(String url) {
-            this.url = url;
+            this.url = StringUtils.stripEnd(StringUtils.trim(url), "/");
         }
 
         public UploadedFile getPublicKeyFile() {
