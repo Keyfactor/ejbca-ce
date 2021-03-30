@@ -34,8 +34,11 @@ import org.cesecore.authentication.oauth.OAuthKeyManager;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.OAuthProviderUIHelper;
 
 import com.nimbusds.jose.JOSEException;
@@ -54,6 +57,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final OAuthKeyEditor oauthKeyEditor;
     private AuthenticationToken adminToken;
+    private OAuthConfiguration oAuthConfiguration;
+    
+    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
+    private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
 
     private enum OAuthKeyEditorMode {
         VIEW,
@@ -498,12 +505,32 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
 
     private boolean validateSameKeyExists(String newKeyIdentifier) {
-        for (OAuthPublicKey key : oauthKeyEditor.getPublicKeys()) {
-            if (key.getKeyIdentifier().equals(newKeyIdentifier)) {
-                systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTSKEY", newKeyIdentifier);
-                return true;
+        // Currently edited public keys need to be checked separately since they are not yet part of oAuthConfiguration
+        if (oauthKeyEditor != null && oauthKeyEditor.getPublicKeys() != null) {
+            for (OAuthPublicKey key : oauthKeyEditor.getPublicKeys()) {
+                if (newKeyIdentifier.equals(key.getKeyIdentifier())) {
+                    systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTSKEYONTHISPROVIDER", newKeyIdentifier);
+                    return true;
+                }
             }
         }
+        if (oAuthConfiguration == null) {
+            oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        }
+        if (oAuthConfiguration != null && oAuthConfiguration.getOauthKeys() != null && !StringUtils.isEmpty(newKeyIdentifier)) {
+            for (OAuthKeyInfo info : oAuthConfiguration.getOauthKeys().values()) {
+                if (info.getKeyValues() == null) {
+                    continue;
+                }
+                for (OAuthPublicKey key : info.getKeyValues()) {
+                    if (newKeyIdentifier.equals(key.getKeyIdentifier())) {
+                        systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTSKEY", info.getLabel(), newKeyIdentifier);
+                        return true;
+                    }
+                }
+            }
+        }
+
         return false;
     }
 
@@ -715,6 +742,4 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;
     }
-
-
 }
