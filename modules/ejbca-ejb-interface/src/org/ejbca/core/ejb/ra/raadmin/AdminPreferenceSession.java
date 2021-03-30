@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * {@link org.cesecore.authentication.tokens#OAuth2AuthenticationToken OAuth2AuthenticationToken}
  * authentication tokens are supported.
  */
-public interface AdminPreferenceSession extends AdminPreferenceSessionDefault{
+public interface AdminPreferenceSession {
     
     /**
      * Finds the admin preference belonging to the given administrator.

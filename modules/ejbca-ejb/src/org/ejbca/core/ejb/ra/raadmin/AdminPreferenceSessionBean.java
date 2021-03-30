@@ -50,7 +50,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AdminPreferenceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
+public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
 
     private static final String DEFAULTUSERPREFERENCE = "default";
 
