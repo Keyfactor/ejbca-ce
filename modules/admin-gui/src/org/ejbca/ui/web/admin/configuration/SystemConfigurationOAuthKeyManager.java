@@ -120,7 +120,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
 
         public void setUrl(String url) {
-            this.url = StringUtils.stripEnd(StringUtils.trim(url), "/");
+            this.url = url;
         }
 
         public UploadedFile getPublicKeyFile() {
@@ -731,7 +731,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             oauthKeyToUpdate.setKeys(newOauthKeyMap);
         }
         
-        oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
+        oauthKeyToUpdate.setUrl(oauthKeyToUpdate.fixUrl(oauthKeyEditor.getUrl()));
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());

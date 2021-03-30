@@ -218,6 +218,18 @@ public final class OAuthKeyInfo implements Serializable {
         }
     }
 
+    /** Fixes mistakes in the given URL (like removing trailing slashes). Exact behavior depends on the provider type. */
+    public String fixUrl(final String urlToFix) {
+        if (urlToFix == null) {
+            return null;
+        }
+        switch (OAuthProviderType.getByIndex(typeInt)) {
+        case TYPE_KEYCLOAK:
+            return StringUtils.stripEnd(StringUtils.trim(urlToFix), "/");
+        default:
+            return urlToFix;
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -118,7 +118,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         
         OAuthKeyInfo keyInfo = new OAuthKeyInfo(label,  skewLimitInt, type);
         // Since the UI already saves missing values as empty strings it's better to match that behaviour
-        keyInfo.setUrl(StringUtils.stripEnd(StringUtils.trim(url != null ? url : ""), "/"));
+        keyInfo.setUrl(keyInfo.fixUrl(url != null ? url : ""));
         keyInfo.setClient(client != null ? client : "");
         keyInfo.setClientSecretAndEncrypt(clientSecret != null ? clientSecret : "");
         keyInfo.setRealm(realm != null ? realm : "");
