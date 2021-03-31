@@ -212,8 +212,17 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return a human readable version of the tokenType and tokenMatchKey values */
     public String getMatchWithItemString(final RoleMember roleMember) {
         final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
+        if (authenticationTokenMetaData == null) {
+            log.warn("Unsupported token type '" + roleMember.getTokenType() + "' in role '" + role.getName() + "'");
+            return roleMember.getTokenType() + "(UNKNOWN): #" + roleMember.getTokenMatchKey();
+        }
         final String tokenTypeString = getEjbcaWebBean().getText(authenticationTokenMetaData.getTokenType());
-        final String tokenMatchKeyString = getEjbcaWebBean().getText(authenticationTokenMetaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey()).name());
+        final AccessMatchValue matchValue = authenticationTokenMetaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+        if (matchValue == null) {
+            log.warn("Unknown token match key " + roleMember.getTokenMatchKey() + " for " + roleMember.getTokenType() + " in role '" + role.getName() + "'");
+            return tokenTypeString + ": " + '#'+String.valueOf(roleMember.getTokenMatchKey() + "(UNKNOWN)");
+        }
+        final String tokenMatchKeyString = getEjbcaWebBean().getText(matchValue.name());
         return tokenTypeString + ": " + tokenMatchKeyString;
     }
 
@@ -244,7 +253,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         if (tokenIssuerId==RoleMember.NO_ISSUER) {
             return "-";
         }
-        if (getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByCa()) {
+        if (isTokenIssuerIdUsed(roleMember)) {
             final String caName = getCaIdToNameMap().get(tokenIssuerId);
             if (caName==null) {
                 return super.getEjbcaWebBean().getText("UNKNOWNCAID") + " " + tokenIssuerId;
@@ -296,7 +305,12 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return the AccessMatchValue from the specified tokenType and tokenMatchKey combo */
     private AccessMatchValue getAccessMatchValue(final String tokenType, final int tokenMatchKey) {
         final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
-        return metaData.getAccessMatchValueIdMap().get(tokenMatchKey);
+        if (metaData != null) {
+            return metaData.getAccessMatchValueIdMap().get(tokenMatchKey);
+        } else {
+            log.warn("Unsupported token type " + tokenType);
+            return null;
+        }
     }
 
     /** @return the current human readable description */
@@ -386,12 +400,18 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies that it is issued by a CA */
     public boolean isTokenIssuerIdUsed(final RoleMember roleMember) {
-        return getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByCa();
+        final AccessMatchValue matchKey = getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey());
+        return matchKey != null ? matchKey.isIssuedByCa() : true;
     }
 
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies a tokenMatchValue is used */
     public boolean isTokenMatchValueUsed(final RoleMember roleMember) {
-        return !getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).getAvailableAccessMatchTypes().isEmpty();
+        final AccessMatchValue matchKey = getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey());
+        if (matchKey != null) {
+            return !matchKey.getAvailableAccessMatchTypes().isEmpty();
+        } else {
+            return true;
+        }
     }
 
     /** @return the RoleMember that has been selected for deletion */
