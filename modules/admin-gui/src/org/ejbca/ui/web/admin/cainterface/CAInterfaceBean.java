@@ -538,6 +538,7 @@ public class CAInterfaceBean implements Serializable {
                             .setCrlIssueInterval(caInfoDto.getCrlIssueInterval())
                             .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                             .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
+                            .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
                             .setCrlPublishers(crlPublishers)
                             .setValidators(keyValidators)
                             .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -918,6 +919,7 @@ public class CAInterfaceBean implements Serializable {
                        .setCrlIssueInterval(caInfoDto.getCrlIssueInterval())
                        .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                        .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
+                       .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
                        .setCrlPublishers(crlpublishers)
                        .setValidators(keyValidators)
                        .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -970,7 +972,8 @@ public class CAInterfaceBean implements Serializable {
                // Create the CAInfo to be used for either generating the whole CA or making a request
                cainfo = new CVCCAInfo(caid, caInfoDto.getCaEncodedValidity(),
                        catoken, caInfoDto.getDescription(),
-                       caInfoDto.getCrlPeriod(), caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(), crlpublishers, keyValidators,
+                       caInfoDto.getCrlPeriod(), caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(), 
+                       caInfoDto.isGenerateCrlUponRevocation(), crlpublishers, keyValidators,
                        caInfoDto.isFinishUser(), extendedcaservices,
                        approvals,
                        caInfoDto.isIncludeInHealthCheck(),
