@@ -299,22 +299,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) administrator;
                 final OAuth2Principal principal = oauth2Admin.getClaims();
                 details.put("keyhash", oauth2Admin.getPublicKeyBase64Fingerprint());
-                if (principal.getIssuer() != null) {
-                    details.put("issuer", principal.getIssuer());
-                }
-                if (principal.getSubject() != null) {
-                    details.put("subject", principal.getSubject());
-                }
-                if (principal.getAudience() != null) {
-                    details.put("audience", Arrays.toString(principal.getAudience().toArray()));
-                }
+                putOauthTokenDetails(details, principal);
                 if (oauth2Admin.getProviderLabel() != null) {
                     details.put("provider", oauth2Admin.getProviderLabel());
                 }
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
-                usercommonname = principal.getSubject();
+                usercommonname = principal.getDisplayName();
             }
             if (administrator == null) {
                 administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
@@ -354,6 +346,27 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
 
         return globalconfiguration;
+    }
+
+    private void putOauthTokenDetails(final Map<String, Object> details, final OAuth2Principal principal) {
+        if (principal.getIssuer() != null) {
+            details.put("issuer", principal.getIssuer());
+        }
+        if (principal.getSubject() != null) {
+            details.put("subject", principal.getSubject());
+        }
+        if (principal.getAudience() != null) {
+            details.put("audience", Arrays.toString(principal.getAudience().toArray()));
+        }
+        if (principal.getPreferredUsername() != null) {
+            details.put("preferred_username", principal.getPreferredUsername());
+        }
+        if (principal.getNameAttribute() != null) {
+            details.put("name", principal.getNameAttribute());
+        }
+        if (principal.getEmail() != null) {
+            details.put("email", principal.getEmail());
+        }
     }
 
     /**
