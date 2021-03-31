@@ -30,9 +30,9 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     CLAIM_AUDIENCE(3),
     /** Matches the "oid" (object identifier) claim */
     CLAIM_OBJECTID(4),
-    /** Matches the "preferred_username" (username) claim */
-    CLAIM_PREFERRED_USERNAME(5),
 // Possible future extension:
+//    /** Matches the "preferred_username" (username) claim. This can change over time. */
+//    CLAIM_PREFERRED_USERNAME(5),
 //    /** Matches the "email" claim, regardless of "email_verified" claim */
 //    CLAIM_UNVERIFIED_EMAIL(6),
 //    /** Matches the "email" claim, only if "email_verified" claim is set */
