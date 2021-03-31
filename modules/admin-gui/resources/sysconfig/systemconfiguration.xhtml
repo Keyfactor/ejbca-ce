@@ -984,6 +984,7 @@
 			<h:panelGroup>
 				<h:inputSecret id="msaeAdLoginPassword" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
 							 autocomplete="off"
+							 redisplay="true"
 							 value="#{msAutoEnrollmentSettings.adLoginPassword}" size="45"
 							 title="#{web.text.FORMAT_STRING}">
 					<f:converter converterId="trimConverter"/>
