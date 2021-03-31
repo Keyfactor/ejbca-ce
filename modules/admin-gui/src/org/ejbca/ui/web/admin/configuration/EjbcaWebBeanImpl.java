@@ -278,7 +278,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     final String sernostr = CertTools.getSerialNumberAsString(certificate);
                     final BigInteger serno = CertTools.getSerialNumber(certificate);
                     // Set current TLS certificate fingerprint
-                    isAuthenticatedWithToken = false;
                     certificateFingerprint = fingerprint;
                     // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
                     if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
