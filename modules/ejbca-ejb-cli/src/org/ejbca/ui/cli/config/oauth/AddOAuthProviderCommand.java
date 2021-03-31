@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
