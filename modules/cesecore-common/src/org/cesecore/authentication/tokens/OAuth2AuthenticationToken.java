@@ -75,6 +75,13 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             return principal.getAudience() != null && principal.getAudience().contains(value);
         case CLAIM_OBJECTID:
             return value.equals(principal.getOid());
+        case CLAIM_PREFERRED_USERNAME:
+            return value.equals(principal.getPreferredUsername());
+// Possible future extension:
+//        case CLAIM_UNVERIFIED_EMAIL:
+//            return value.equals(principal.getEmail());
+//        case CLAIM_VERIFIED_EMAIL:
+//            return principal.isEmailVerified() && value.equals(principal.getEmail());
 // Possible future extension, to allow arbitrary claims (pseudo-code)
 //      case JSON_CLAIMS:
 //          for (final Entry<String,String> claim : jsonToMap(value)) {
