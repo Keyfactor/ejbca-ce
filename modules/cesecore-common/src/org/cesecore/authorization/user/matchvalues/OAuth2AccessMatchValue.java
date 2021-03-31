@@ -30,17 +30,14 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     CLAIM_AUDIENCE(3),
     /** Matches the "oid" (object identifier) claim */
     CLAIM_OBJECTID(4),
-// Possible future extension:
-//    /** Matches the "preferred_username" (username) claim. This can change over time. */
-//    CLAIM_PREFERRED_USERNAME(5),
-//    /** Matches the "email" claim, regardless of "email_verified" claim */
-//    CLAIM_UNVERIFIED_EMAIL(6),
-//    /** Matches the "email" claim, only if "email_verified" claim is set */
-//    CLAIM_VERIFIED_EMAIL(7),
+    // NOTE: preferred_username, email, etc. should not be considered to be stable, according to the OpenID connect specification.
+    // And according to Azure documentation, they MUST NOT be used for authorization decisions. See:
+    // https://openid.net/specs/openid-connect-core-1_0.html
+    // https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/active-directory/develop/id-tokens.md
 
 //  Possible future extension, to allow for arbitrary claims, and to require multiple different claims
 //    /** An JSON string with claims */
-//    JSON_CLAIMS(4)
+//    JSON_CLAIMS()
     ;
 
     private final int numericValue;
