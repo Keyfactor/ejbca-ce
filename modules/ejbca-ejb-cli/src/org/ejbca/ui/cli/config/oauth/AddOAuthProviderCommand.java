@@ -124,7 +124,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         keyInfo.setScope(scope != null ? scope : "");
 
         if (!canAdd(keyInfo)) {
-            log.info("Trusted OAuth Provider with same label exists!");
+            log.info("Trusted OAuth Provider with the same label already exists!");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         try {
@@ -137,7 +137,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         getOAuthConfiguration().addOauthKey(keyInfo);
         
         if (saveGlobalConfig()) {
-            log.info("Trusted OAuth Provider with label: " + label + " added successfuly!");
+            log.info("Trusted OAuth Provider with label: " + label + " added successfully!");
             return CommandResult.SUCCESS;
         } else {
             log.info("Failed to update configuration due to authorization issue!");
