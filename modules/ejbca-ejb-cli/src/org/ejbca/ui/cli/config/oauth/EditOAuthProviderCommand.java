@@ -142,7 +142,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             }
         }
         if (newUrl != null) {
-            keyInfoToBeEdited.setUrl(newUrl);
+            keyInfoToBeEdited.setUrl(keyInfoToBeEdited.fixUrl(newUrl));
         }
         if (newClient != null) {
             keyInfoToBeEdited.setClient(newClient);
