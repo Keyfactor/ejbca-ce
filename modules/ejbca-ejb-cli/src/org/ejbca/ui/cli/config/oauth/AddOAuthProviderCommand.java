@@ -137,7 +137,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         getOAuthConfiguration().addOauthKey(keyInfo);
         
         if (saveGlobalConfig()) {
-            log.info("Trusted OAuth Provider with label: " + label + " added successfully!");
+            log.info("Trusted OAuth Provider with label " + label + " added successfully!");
             return CommandResult.SUCCESS;
         } else {
             log.info("Failed to update configuration due to authorization issue!");
