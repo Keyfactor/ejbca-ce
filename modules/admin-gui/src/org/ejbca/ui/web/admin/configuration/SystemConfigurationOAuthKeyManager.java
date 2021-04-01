@@ -572,7 +572,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         final OAuthKeyInfo newOauthKey = new OAuthKeyInfo(oauthKeyEditor.getLabel(), oauthKeyEditor.getSkewLimit(),
                 oauthKeyEditor.getType());
-        newOauthKey.setUrl(oauthKeyEditor.getUrl());
+        newOauthKey.setUrl(newOauthKey.fixUrl(oauthKeyEditor.getUrl()));
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setScope(oauthKeyEditor.getScope());
         newOauthKey.setClient(oauthKeyEditor.getClient());
@@ -731,7 +731,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             oauthKeyToUpdate.setKeys(newOauthKeyMap);
         }
         
-        oauthKeyToUpdate.setUrl(oauthKeyEditor.getUrl());
+        oauthKeyToUpdate.setUrl(oauthKeyToUpdate.fixUrl(oauthKeyEditor.getUrl()));
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
