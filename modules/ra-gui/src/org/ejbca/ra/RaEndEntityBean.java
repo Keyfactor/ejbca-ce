@@ -108,6 +108,7 @@ public class RaEndEntityBean implements Serializable {
     private int maxFailedLogins;
     private int remainingLogin;
     private boolean resetRemainingLoginAttempts;
+    private String[] email;
     private int eepId;
     private int cpId;
     private int caId;
@@ -173,6 +174,9 @@ public class RaEndEntityBean implements Serializable {
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
                 resetMaxFailedLogins();
+                email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
+                if (email == null || email.length == 1)
+                    email = new String[] {"", ""};
             }
         }
         issuedCerts = null;
@@ -237,6 +241,7 @@ public class RaEndEntityBean implements Serializable {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
         EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
         ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
 
@@ -322,6 +327,23 @@ public class RaEndEntityBean implements Serializable {
             endEntityInformation.getExtendedInformation().setRemainingLoginAttempts(maxFailedLogins);
             changed = true;
         }
+        if (eep.isEmailUsed()) {
+            final String newEmail = email[0]+"@"+email[1];
+            if (!newEmail.equals(endEntityInformation.getEmail())) {
+                if (newEmail.equals("@")) {
+                    if (StringUtils.isNotBlank(endEntityInformation.getEmail())) {
+                        endEntityInformation.setEmail(null);
+                        changed = true;
+                    }
+                } else {
+                    endEntityInformation.setEmail(newEmail);
+                    changed = true;
+                }
+            }
+        } else {
+            endEntityInformation.setEmail(null);
+        }
+
         if (eepId != endEntityInformation.getEndEntityProfileId()) {
             endEntityInformation.setEndEntityProfileId(eepId);
             changed = true;
@@ -655,7 +677,7 @@ public class RaEndEntityBean implements Serializable {
     }
 
     /**
-     * @return true if enrollment code or confirm enrollment code is blank
+     * @return true if reset is checked, otherwise false
      */
     public boolean isResetRemainingLoginAttempts() {
         return resetRemainingLoginAttempts;
@@ -668,6 +690,54 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setResetRemainingLoginAttempts(boolean resetRemainingLoginAttempts) {
         this.resetRemainingLoginAttempts = resetRemainingLoginAttempts;
+    }
+
+    /**
+     * @return the name part of the email
+     */
+    public String getEmailName() {
+        return email[0];
+    }
+
+    /**
+     * Sets the name part of the email
+     *
+     * @param emailName the name part of the email
+     */
+    public void setEmailName(String emailName) {
+        email[0] = emailName;
+    }
+
+    /**
+     * @return the domain part of the email
+     */
+    public String getEmailDomain() {
+        return email[1];
+    }
+
+    /**
+     * Sets the name part of the email
+     *
+     * @param emailDomain the name part of the email
+     */
+    public void setEmailDomain(String emailDomain) {
+        email[1] = emailDomain;
+    }
+
+    /**
+     * @return true if email is modifiable, otherwise false
+     */
+    public boolean isEmailModifiable() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+        return eep.isEmailModifiable();
+    }
+
+    /**
+     * @return true if use email is checked in end entity profile, otherwise false
+     */
+    public boolean isEmailUsed() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+        return eep.isEmailUsed();
     }
 
     /**
@@ -703,6 +773,19 @@ public class RaEndEntityBean implements Serializable {
             subjectDistinguishNames = null;
             subjectAlternativeNames = null;
             subjectDirectoryAttributes = null;
+
+
+            if (raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId() == eepId) {
+                email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
+                if (email == null || email.length == 1)
+                    email = new String[] {"", ""};
+            } else {
+                String defaultEmail = eep.getEmailDomain();
+                if (eep.isEmailUsed()) {
+                    email = new String[] {"", defaultEmail};
+                } else
+                    email = new String[] {"", ""};
+            }
         }
     }
 
