@@ -534,6 +534,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         List<MSAutoEnrollmentSettingsTemplate> newTemplates = getAvailableTemplateSettingsFromAD();
         for (MSAutoEnrollmentSettingsTemplate persistedTemplate : mappedMsTemplates) {
             MSAutoEnrollmentSettingsTemplate newTemplateSettings = findMsTemplateByOid(newTemplates, persistedTemplate.getOid());
+            if (newTemplateSettings == null) {
+                return;
+            }
             persistedTemplate.setDisplayName(newTemplateSettings.getDisplayName());
             persistedTemplate.setAdditionalSubjectDNAttributes(newTemplateSettings.getAdditionalSubjectDNAttributes());
             persistedTemplate.setSubjectNameFormat(newTemplateSettings.getSubjectNameFormat());
