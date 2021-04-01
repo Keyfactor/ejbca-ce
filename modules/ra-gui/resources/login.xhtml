@@ -22,19 +22,22 @@
  -->
 </ui:remove>
 <f:metadata>
+    <f:param name="skipLoginRedirect" value="true"/>
     <f:event type="preRenderView" listener="#{raLoginBean.onLoginPageLoad}"/>
 </f:metadata>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:define name="content">
         <h:panelGroup layout="block" styleClass="header" id="title">
             <h1>
-                <h:outputText value="#{msg.login_page_title}" rendered="#{raLoginBean.oauthKeys.size() > 0}"/>
+                <h:outputText value="#{msg.login_page_title_required}" rendered="#{raLoginBean.oauthKeys.size() > 0 and raAccessBean.unauthenticatedWithoutAccess}"/>
+                <h:outputText value="#{msg.login_page_title_optional}" rendered="#{raLoginBean.oauthKeys.size() > 0 and not raAccessBean.unauthenticatedWithoutAccess}"/>
             </h1>
         </h:panelGroup>
         <br/>
         <h:form id="login">
             <h:panelGroup>
-                <h:outputText value="#{msg.login_page_no_keys}" rendered="#{raLoginBean.oauthKeys.size() == 0}"/>
+                <h:outputText styleClass="bodyText" value="#{msg.login_page_text}" rendered="#{raLoginBean.oauthKeys.size() > 0}" />
+                <h:outputText styleClass="bodyText" value="#{msg.login_page_no_keys}" rendered="#{raLoginBean.oauthKeys.size() == 0}"/>
                 <h:dataTable value="#{raLoginBean.oauthKeys}"
                              var="oauthkey" rendered="#{raLoginBean.oauthKeys.size() > 0}"
                              style="margin: 5px;">
