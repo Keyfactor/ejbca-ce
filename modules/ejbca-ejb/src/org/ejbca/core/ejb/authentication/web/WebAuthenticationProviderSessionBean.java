@@ -28,6 +28,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -175,7 +176,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.not_yet_valid", subject, keyFingerprint));
                 return null;
             }
-            final OAuth2Principal principal = new OAuth2Principal(claims.getIssuer(), claims.getSubject(), claims.getStringClaim("oid"), claims.getAudience());
+            final OAuth2Principal principal = createOauthPrincipal(claims);
             return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, keyFingerprint, keyInfo.getLabel());
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
@@ -183,6 +184,35 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         } catch (JOSEException e) {
             LOG.info("Configured not verify OAuth2 JWT signature: " + e.getMessage(), e);
             return null;
+        }
+    }
+
+    private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims) {
+        return OAuth2Principal.builder()
+                .setIssuer(claims.getIssuer())
+                .setSubject(claims.getSubject())
+                .setOid(safeGetClaim(claims, "oid"))
+                .setAudience(claims.getAudience())
+                .setPreferredUsername(safeGetClaim(claims, "preferred_username"))
+                .setName(safeGetClaim(claims, "name"))
+                .setEmail(safeGetClaim(claims, "email"))
+                .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"))
+                .build();
+    }
+
+    private String safeGetClaim(final JWTClaimsSet claims, final String claimName) {
+        try {
+            return claims.getStringClaim(claimName);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    private boolean safeGetBooleanClaim(final JWTClaimsSet claims, final String claimName) {
+        try {
+            return BooleanUtils.isTrue(claims.getBooleanClaim(claimName));
+        } catch (ParseException e) {
+            return false;
         }
     }
 
