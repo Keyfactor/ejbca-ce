@@ -1085,6 +1085,25 @@ table#config tr td:first-child {
 }
 
 
+/* --- Login page */
+.loginPage {
+	max-width: 45em;
+	margin: 5ex auto 1ex auto;
+}
+.oauthProviderTable a {
+	padding: 0.75ex 0;
+	font-size: 120%;
+	display: block;
+}
+.oauthProviderTable, .oauthProviderTable tr, .oauthProviderTable td {
+	margin: 0;
+	padding: 0;
+}
+.oauthProviderTable {
+	border-spacing: 0;
+	margin-top: 3ex;
+}
+
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 
