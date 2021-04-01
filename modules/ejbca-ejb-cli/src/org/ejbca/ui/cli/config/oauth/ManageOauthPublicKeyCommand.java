@@ -140,7 +140,7 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             }
         }
         if (saveGlobalConfig()) {
-            log.info("Public key successfuly added to Trusted OAuth Provider with label: " + label + "!");
+            log.info("Public key successfuly added to Trusted OAuth Provider with label " + label + "!");
             return CommandResult.SUCCESS;
         } else {
             log.info("Error: Failed to update configuration due to authorization issue!");
