@@ -56,6 +56,7 @@
         <path refid="lib.junit.classpath"/>
     	<path refid="lib.easymock.classpath"/>
     	<path refid="lib.commons-logging.classpath"/>
+        <path refid="lib.ldap.classpath"/>
     </path>
 	
     <target name="clean" description="Clean up this module">
