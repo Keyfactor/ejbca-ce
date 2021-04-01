@@ -54,6 +54,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.AuthenticationNotProvidedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
@@ -232,7 +233,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 log.debug("requestServerName: "+requestServerName);
             }
             if (WebConfiguration.isAdminAuthenticationRequired() && certificate == null && oauthBearerToken == null) {
-                throw new AuthenticationFailedException("Client certificate or OAuth bearer token required.");
+                throw new AuthenticationNotProvidedException("Client certificate or OAuth bearer token required.");
             }
             if (certificate != null) {
                 administrator = authenticationSession.authenticateUsingClientCertificate(certificate);

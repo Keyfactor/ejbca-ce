@@ -31,20 +31,20 @@
 <f:metadata>
     <f:event type="preRenderView" listener="#{adminLoginMBean.onLoginPageLoad}"/>
 </f:metadata>
-<h:panelGroup>
+<h:panelGroup styleClass="loginPage" layout="block">
     <h1>
-        <h:outputText value="#{adminLoginMBean.error}"/>
+        <h:outputText value="#{adminLoginMBean.firstHeader}"/>
     </h1>
     <h2>
-        <h:outputText value="#{adminLoginMBean.errorMessage}"/>
+        <h:outputText value="#{adminLoginMBean.secondHeader}"/>
     </h2>
-    <h:panelGroup styleClass="preformatted" rendered="#{adminLoginMBean.allOauthKeys.size() > 0}">
-        <h:outputText value="#{web.text.PLEASE_LOGIN}"/>
+    <h:panelGroup styleClass="loginText" layout="block">
+        <h:outputText value="#{adminLoginMBean.text}"/>
     </h:panelGroup>
     <h:form id="login">
     <h:dataTable value="#{adminLoginMBean.allOauthKeys}"
                  var="oauthkey"
-                 styleClass="oauthkeyTable" style="margin: 5px;">
+                 styleClass="oauthProviderTable">
         <h:column>
             <h:commandLink action="#{adminLoginMBean.clickLoginLink(oauthkey.label)}">
                 <h:outputText value="#{oauthkey.label}" />
