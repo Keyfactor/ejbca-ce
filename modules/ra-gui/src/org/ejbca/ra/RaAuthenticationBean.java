@@ -13,7 +13,9 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.security.cert.Certificate;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -23,8 +25,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionEvent;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -89,6 +94,14 @@ public class RaAuthenticationBean implements Serializable {
                 }
             }
             return subjectDN;
+        } else if (authToken instanceof OAuth2AuthenticationToken) {
+            final Set<? extends Principal> principals = authToken.getPrincipals();
+            if (CollectionUtils.isNotEmpty(principals)) {
+                final Principal principal = principals.iterator().next();
+                if (principal instanceof OAuth2Principal) {
+                    return ((OAuth2Principal)principal).getDisplayName();
+                }
+            }
         }
         return authToken.toString();
     }
