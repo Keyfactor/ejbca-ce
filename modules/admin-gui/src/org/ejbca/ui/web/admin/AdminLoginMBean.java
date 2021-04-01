@@ -203,9 +203,15 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
                         getRedirectUri());
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
-                    servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
-                    servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
-                    FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
+                    if (token.getAccessToken() != null) {
+                        log.debug("Successfully obtained oauth token, redirecting to main page.");
+                        servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                        servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
+                        FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
+                    } else {
+                        log.info("Did not receive any access token from OAuth provider.");
+                        errorMessage = "Internal error.";
+                    }
                 } else {
                     internalError("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                 }

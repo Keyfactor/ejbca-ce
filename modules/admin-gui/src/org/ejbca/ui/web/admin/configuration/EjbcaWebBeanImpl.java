@@ -56,8 +56,6 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.AuthenticationNotProvidedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -88,6 +86,8 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -126,24 +126,24 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     private static Logger log = Logger.getLogger(EjbcaWebBeanImpl.class);
 
-    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
-    private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
-    private final AdminPreferenceSessionLocal adminPreferenceSession = ejbLocalHelper.getAdminPreferenceSession();
-    private final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
-    private final AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
-    private final CAAdminSessionLocal caAdminSession = ejbLocalHelper.getCaAdminSession();
-    private final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
-    private final CertificateProfileSessionLocal certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-    private final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
-    private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
-    private final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
-    private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
-    private final SecurityEventsLoggerSessionLocal auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
-    private final RoleSessionLocal roleSession = ejbLocalHelper.getRoleSession();
-    private final UpgradeSessionLocal upgradeSession = ejbLocalHelper.getUpgradeSession();
-    private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
-    private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
-    private final ClearCacheSessionLocal clearCacheSession = ejbLocalHelper.getClearCacheSession();
+    private final EjbBridgeSessionLocal ejbLocalHelper;
+    private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
+    private final AdminPreferenceSessionLocal adminPreferenceSession;
+    private final ApprovalProfileSessionLocal approvalProfileSession;
+    private final AuthorizationSessionLocal authorizationSession;
+    private final CAAdminSessionLocal caAdminSession;
+    private final CaSessionLocal caSession;
+    private final CertificateProfileSessionLocal certificateProfileSession;
+    private final CertificateStoreSessionLocal certificateStoreSession;
+    private final EndEntityManagementSessionLocal endEntityManagementSession;
+    private final EndEntityProfileSessionLocal endEntityProfileSession;
+    private final PublisherSessionLocal publisherSession;
+    private final SecurityEventsLoggerSessionLocal auditSession;
+    private final RoleSessionLocal roleSession;
+    private final UpgradeSessionLocal upgradeSession;
+    private final GlobalConfigurationSessionLocal globalConfigurationSession;
+    private final WebAuthenticationProviderSessionLocal authenticationSession;
+    private final ClearCacheSessionLocal clearCacheSession;
 
     private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
@@ -179,6 +179,29 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     /** Creates a new instance of EjbcaWebBeanImpl */
     public EjbcaWebBeanImpl() {
+        this(new EjbLocalHelper(), new EnterpriseEjbLocalHelper());
+    }
+
+    /** Constructor for unit testing with mock objects */
+    protected EjbcaWebBeanImpl(final EjbBridgeSessionLocal ejbBridge, final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbBridge) {
+        ejbLocalHelper = ejbBridge;
+        enterpriseEjbLocalHelper = enterpriseEjbBridge;
+        adminPreferenceSession = ejbLocalHelper.getAdminPreferenceSession();
+        approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
+        authorizationSession = ejbLocalHelper.getAuthorizationSession();
+        caAdminSession = ejbLocalHelper.getCaAdminSession();
+        caSession = ejbLocalHelper.getCaSession();
+        certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+        certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
+        endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
+        endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
+        publisherSession = ejbLocalHelper.getPublisherSession();
+        auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
+        roleSession = ejbLocalHelper.getRoleSession();
+        upgradeSession = ejbLocalHelper.getUpgradeSession();
+        globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
+        authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
+        clearCacheSession = ejbLocalHelper.getClearCacheSession();
     }
 
     private void commonInit() {
@@ -224,6 +247,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
                 log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificateFingerprint+", new cert fp: "+fingerprint);
             }
+            resetAuthSessionState();
             // Escape value taken from the request, just to be sure there can be no XSS
             requestScheme = HTMLTools.htmlescape(httpServletRequest.getScheme());
             requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
@@ -300,22 +324,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) administrator;
                 final OAuth2Principal principal = oauth2Admin.getClaims();
                 details.put("keyhash", oauth2Admin.getPublicKeyBase64Fingerprint());
-                if (principal.getIssuer() != null) {
-                    details.put("issuer", principal.getIssuer());
-                }
-                if (principal.getSubject() != null) {
-                    details.put("subject", principal.getSubject());
-                }
-                if (principal.getAudience() != null) {
-                    details.put("audience", Arrays.toString(principal.getAudience().toArray()));
-                }
+                putOauthTokenDetails(details, principal);
                 if (oauth2Admin.getProviderLabel() != null) {
                     details.put("provider", oauth2Admin.getProviderLabel());
                 }
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
-                usercommonname = principal.getSubject();
+                usercommonname = principal.getDisplayName();
             }
             if (administrator == null) {
                 administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
@@ -355,6 +371,40 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
 
         return globalconfiguration;
+    }
+
+    private void putOauthTokenDetails(final Map<String, Object> details, final OAuth2Principal principal) {
+        if (principal.getIssuer() != null) {
+            details.put("issuer", principal.getIssuer());
+        }
+        if (principal.getSubject() != null) {
+            details.put("subject", principal.getSubject());
+        }
+        if (principal.getAudience() != null) {
+            details.put("audience", Arrays.toString(principal.getAudience().toArray()));
+        }
+        if (principal.getPreferredUsername() != null) {
+            details.put("preferred_username", principal.getPreferredUsername());
+        }
+        if (principal.getNameAttribute() != null) {
+            details.put("name", principal.getNameAttribute());
+        }
+        if (principal.getEmail() != null) {
+            details.put("email", principal.getEmail());
+        }
+    }
+
+    private void resetAuthSessionState() {
+        authenticationTokenTlsSessionId = null;
+        isAuthenticatedWithToken = false;
+        certificateFingerprint = null;
+        oauthAuthenticationToken = null;
+        administrator = null;
+        usercommonname = null;
+        servletContext = null;
+        currentAdminPreference = null;
+        adminsweblanguage = null;
+        initialized = false;
     }
 
     /**
@@ -1264,12 +1314,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
-    public EjbLocalHelper getEjb() {
+    public EjbBridgeSessionLocal getEjb() {
         return ejbLocalHelper;
     }
 
     @Override
-    public EnterpriseEjbLocalHelper getEnterpriseEjb() {
+    public EnterpriseEditionEjbBridgeSessionLocal getEnterpriseEjb() {
         return enterpriseEjbLocalHelper;
     }
 
