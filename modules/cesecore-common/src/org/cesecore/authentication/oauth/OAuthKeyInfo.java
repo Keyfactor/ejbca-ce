@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
@@ -31,6 +32,7 @@ import org.cesecore.util.StringTools;
  */
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
+    private static final Random random = new Random();
 
     // dbIndexes of existing provider types should not be changed
     public enum OAuthProviderType {
@@ -64,6 +66,7 @@ public final class OAuthKeyInfo implements Serializable {
         }
     }
 
+    private final int internalId;
     private int typeInt;
     private Map<String, OAuthPublicKey> keys = new LinkedHashMap<>();
     private String label;
@@ -85,6 +88,7 @@ public final class OAuthKeyInfo implements Serializable {
         if (label == null) {
             throw new IllegalArgumentException("label is null");
         }
+        this.internalId = random.nextInt();
         this.label = label;
         this.skewLimit = skewLimit;
         this.typeInt = type.getIndex();
@@ -96,6 +100,11 @@ public final class OAuthKeyInfo implements Serializable {
 
     public OAuthProviderType getType() {
         return OAuthProviderType.getByIndex(typeInt);
+    }
+
+    /** @return Internal Id*/
+    public Integer getInternalId() {
+        return internalId;
     }
 
     public int getTypeInt() {
@@ -229,14 +238,14 @@ public final class OAuthKeyInfo implements Serializable {
         if (oauthKeyInfo.getLabel() == null || label == null) {
             return false;
         }
-        return label.equals(oauthKeyInfo.getLabel())
-                &&
+        return label.equals(oauthKeyInfo.getLabel()) &&
+                internalId == oauthKeyInfo.getInternalId() &&
                 keys.equals(oauthKeyInfo.getKeys());
     }
 
     @Override
     public int hashCode() {
-        return  (keys.hashCode() * 4711);
+        return internalId + (keys.hashCode() * 4711);
     }
 
     @Override
