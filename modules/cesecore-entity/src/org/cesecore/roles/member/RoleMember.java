@@ -22,18 +22,19 @@ import org.cesecore.util.StringTools;
 /**
  * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely.
  *
- * @version $Id$
  */
 public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public static int ROLE_MEMBER_ID_UNASSIGNED = 0;
     public static int NO_ROLE = Role.ROLE_ID_UNASSIGNED;
     public static int NO_ISSUER = 0;
+    public static int NO_PROVIDER = 0;
 
     private static final long serialVersionUID = 1L;
     private int id;
     private String tokenType;
     private int tokenIssuerId;
+    private int tokenProviderId;
     private int tokenMatchKey;
     private int tokenMatchOperator;
     private String tokenMatchValue;
@@ -81,6 +82,7 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
         this.id = roleMember.id;
         this.tokenType = roleMember.tokenType;
         this.tokenIssuerId = roleMember.tokenIssuerId;
+        this.tokenProviderId = roleMember.tokenProviderId;
         this.tokenMatchKey = roleMember.tokenMatchKey;
         this.tokenMatchOperator = roleMember.tokenMatchOperator;
         this.tokenMatchValue = roleMember.tokenMatchValue;
@@ -110,6 +112,14 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public void setTokenIssuerId(final int tokenIssuerId) {
         this.tokenIssuerId = tokenIssuerId;
+    }
+
+    public int getTokenProviderId() {
+        return tokenProviderId;
+    }
+
+    public void setTokenProviderId(int tokenProviderId) {
+        this.tokenProviderId = tokenProviderId;
     }
 
     public AccessMatchType getAccessMatchType() {
@@ -158,6 +168,7 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public boolean isSameAs(final RoleMember roleMember) {
         return this.getTokenIssuerId() == roleMember.getTokenIssuerId() 
+                && this.getTokenProviderId() == roleMember.getTokenProviderId()
                 && this.getTokenMatchKey() == roleMember.getTokenMatchKey()
                 && this.getTokenMatchOperator() == roleMember.getTokenMatchOperator()
                 && StringUtils.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
@@ -176,6 +187,9 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
         }
         if (tokenIssuerId != o.tokenIssuerId) {
             return tokenIssuerId - o.tokenIssuerId;
+        }
+        if (tokenProviderId!= o.tokenProviderId) {
+            return tokenProviderId - o.tokenProviderId;
         }
         diff = StringTools.compare(tokenMatchKey, o.tokenMatchKey);
         if (diff != 0) {
