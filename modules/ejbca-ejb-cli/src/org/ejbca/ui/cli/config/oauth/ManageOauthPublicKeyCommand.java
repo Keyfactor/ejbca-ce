@@ -23,6 +23,7 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.util.CertTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -175,8 +176,30 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             log.info("Error: Key with identifier " + kid + " already exists.");
             return false;
         }
+        if (isDuplicateKeyId(kid)) {
+            return false;
+        };
         oAuthKeyInfo.addPublicKey(kid, publicKeyByteArray);
         return true;
+    }
+
+    private boolean isDuplicateKeyId(final String kid) {
+        OAuthConfiguration oAuthConfiguration = getOAuthConfiguration();
+        if (oAuthConfiguration != null && oAuthConfiguration.getOauthKeys() != null && !StringUtils.isEmpty(kid)) {
+            for (OAuthKeyInfo info : oAuthConfiguration.getOauthKeys().values()) {
+                if (info.getKeyValues() == null) {
+                    continue;
+                }
+                for (OAuthPublicKey key : info.getKeyValues()) {
+                    if (kid.equals(key.getKeyIdentifier())) {
+                        log.info("The Provider " + info.getLabel() + " already has a Public Key with the Key Identifier " + kid + 
+                                ". The Key Identifier should be unique.");
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private boolean addOauthPublicKeyFromUrl(OAuthKeyInfo oAuthKeyInfo, String url) {
@@ -185,15 +208,23 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             return false;
         }
         try {
+            boolean atLeastOneKeyAdded = false;
             JWKSet jwkSet = JWKSet.load(new URL(url));
             for (JWK jwk : jwkSet.getKeys()) {
                 if (oAuthKeyInfo.getAllKeyIdentifiers() != null && oAuthKeyInfo.getAllKeyIdentifiers().contains(jwk.getKeyID())) {
                     log.info("Key with identifier " + jwk.getKeyID() + " already exists.");
                     continue;
                 }
+                if (jwk.getKeyID() != null && isDuplicateKeyId(jwk.getKeyID())) {
+                    continue;
+                };
                 final PublicKey publicKey = jwk.toRSAKey().toPublicKey();
                 final byte[] encoded = publicKey.getEncoded();
                 oAuthKeyInfo.addPublicKey(jwk.getKeyID(), encoded);
+                atLeastOneKeyAdded = true;
+            }
+            if (!atLeastOneKeyAdded) {
+                return false;
             }
         } catch (MalformedURLException e) {
             log.info("Could not parse public key config url " + url);
@@ -239,6 +270,9 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             log.info("Key with identifier " + kid + " already exists.");
             return false;
         }
+        if (isDuplicateKeyId(kid)) {
+            return false;
+        };
         oAuthKeyInfo.addPublicKey(kid, parsedPublicKey);
         return true;
     }
@@ -265,8 +299,8 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             log.info("Failed to update configuration due to authorization issue!");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
-
     }
+    
     @Override
     public String getFullHelpText() {
         return getCommandDescription();
