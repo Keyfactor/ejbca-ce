@@ -318,7 +318,15 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             }
 
             @Override
+            public void setOauthProviderId(Integer oauthProviderId) {}
+
+            @Override
             public void setCaId(Integer caId) { }
+
+            @Override
+            public Integer getOauthProviderId() {
+                return roleMember.getTokenProviderId();
+            }
 
             @Override
             public String getTokenType() {
