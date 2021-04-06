@@ -67,6 +67,9 @@ public class LDAPAttributeHelper {
         final String certificateNameFlag = getAttributeString(attributes, "msPKI-Certificate-Name-Flag");
         final String templateOid = getAttributeString(attributes, "msPKI-Cert-Template-OID");
         final String displayName = getAttributeString(attributes, "DisplayName");
+        final String name = getAttributeString(attributes, "Name");
+        final String templateMinorRevision = getAttributeString(attributes, "msPKI-Template-Minor-Revision");
+        final String templateMajorRevision = getAttributeString(attributes, "revision");
         final String enrollmentFlag = getAttributeString(attributes, "msPKI-Enrollment-Flag");
         if (certificateNameFlag == null || templateOid == null || enrollmentFlag == null) {
             return null;
@@ -74,8 +77,13 @@ public class LDAPAttributeHelper {
         
         // Set Template OID
         msaeTemplate.setOid(templateOid);
+        // Set Minor Revision
+        msaeTemplate.setMinorRevision(templateMinorRevision);
+        msaeTemplate.setMajorRevision(templateMajorRevision);
         // Set Display Name
         msaeTemplate.setDisplayName(displayName);
+        // Set Name
+        msaeTemplate.setName(name);
         // Set Publish To AD
         final Long adEnrollment = Long.valueOf(enrollmentFlag);
         msaeTemplate.setPublishToActiveDirectory((adEnrollment & CT_FLAG_PUBLISH_TO_DS) != 0);
