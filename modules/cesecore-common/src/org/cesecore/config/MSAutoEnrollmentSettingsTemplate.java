@@ -19,7 +19,10 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
 
     private boolean isUsed;
     private String oid;
+    private String minorRevision;
+    private String MajorRevision;
     private String displayName;
+    private String name;
     private String certificateProfile;
     private String endEntityProfile;
     private String subjectNameFormat; // TODO: Enum?
@@ -40,7 +43,10 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private void init() {
         setUsed(false);
         setOid("");
+        setMinorRevision("");
+        setMajorRevision("");
         setDisplayName("");
+        setName("");
         setCertificateProfile("");
         setEndEntityProfile("");
         setSubjectNameFormat("");
@@ -70,6 +76,30 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
 
     public void setOid(String oid) {
         this.oid = oid;
+    }
+    
+    public String getMinorRevision() {
+        return minorRevision;
+    }
+
+    public void setMinorRevision(String minorRevision) {
+        this.minorRevision = minorRevision;
+    }
+
+    public String getMajorRevision() {
+        return MajorRevision;
+    }
+
+    public void setMajorRevision(String majorRevision) {
+        MajorRevision = majorRevision;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDisplayName() {
