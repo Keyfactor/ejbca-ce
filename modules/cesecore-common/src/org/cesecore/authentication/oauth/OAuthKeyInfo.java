@@ -24,6 +24,7 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.StringTools;
 
 /**
@@ -226,6 +227,18 @@ public final class OAuthKeyInfo implements Serializable {
         }
     }
 
+    /** Fixes mistakes in the given URL (like removing trailing slashes). Exact behavior depends on the provider type. */
+    public String fixUrl(final String urlToFix) {
+        if (urlToFix == null) {
+            return null;
+        }
+        switch (OAuthProviderType.getByIndex(typeInt)) {
+        case TYPE_KEYCLOAK:
+            return StringUtils.stripEnd(StringUtils.trim(urlToFix), "/");
+        default:
+            return urlToFix;
+        }
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -234,18 +247,15 @@ public final class OAuthKeyInfo implements Serializable {
         }
 
         final OAuthKeyInfo oauthKeyInfo = (OAuthKeyInfo) o;
-        //support old data
-        if (oauthKeyInfo.getLabel() == null || label == null) {
-            return false;
-        }
-        return label.equals(oauthKeyInfo.getLabel()) &&
+        return StringUtils.equals(label, oauthKeyInfo.getLabel()) &&
                 internalId == oauthKeyInfo.getInternalId() &&
-                keys.equals(oauthKeyInfo.getKeys());
+                (keys == oauthKeyInfo.getKeys() || // also true if both are null
+                    (keys != null && keys.equals(oauthKeyInfo.getKeys())));
     }
 
     @Override
     public int hashCode() {
-        return internalId + (keys.hashCode() * 4711);
+        return  keys != null ? internalId + (keys.hashCode() * 4711) : internalId;
     }
 
     @Override
