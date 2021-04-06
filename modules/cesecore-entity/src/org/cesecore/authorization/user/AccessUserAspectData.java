@@ -33,8 +33,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 /**
  * Represents an aspect of an external user. It can be set to match one administrator's <i>DN</i> or an entire organization by matching against
  * <i>O</i>.
- * 
- * @version $Id$
+ *
  * 
  * @deprecated Kept only for upgrade reasons. Use org.cesecore.roles.RoleMemberData instead
  */
@@ -51,6 +50,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     private int legacyPrimaryKey;
     private String tokenType;
     private Integer caId;
+    private Integer oauthProviderId;
     private int rowVersion = 0;
     private String rowProtection;
     private Integer matchWith;
@@ -179,6 +179,19 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         this.caId = caId;
     }
 
+    @Override
+    public Integer getOauthProviderId() {
+        return oauthProviderId;
+    }
+
+    @Override
+    public void setOauthProviderId(Integer oauthProviderId) {
+        if (oauthProviderId == null) {
+            throw new InvalidParameterException("Invalid to set oauthProviderId == null");
+        }
+        this.oauthProviderId = oauthProviderId;
+    }
+
     public int getRowVersion() {
         return rowVersion;
     }
@@ -224,7 +237,6 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
      * @param matchWith The type to match with
      * @param matchType How to match
      * @param matchValue the value to match
-     * @param tokenType the token type.
      * @return a pseudo-unique primary key
      * 
      */
