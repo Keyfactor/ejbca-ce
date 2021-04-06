@@ -56,14 +56,22 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String SELECT_EEP = "Select an End Entity Profile";
     private static final String SELECT_MST = "Select a Template";
     private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
+    private static final String KRB5_CONF_CONTENT_TYPE = "application/octet-stream";
 
+    
     // MSAE Kerberos Settings
     private String msaeDomain;
     private UploadedFile keyTabFile;
     private String keyTabFilename;
     private byte[] keyTabFileBytes;
+    
+    // MSAE Krb5Conf Settings
+    private UploadedFile krb5ConfFile;
+    private String krb5ConfFilename;
+    private byte[] krb5ConfFileBytes;    
 
     private String policyName;
+    private String servicePrincipalName;
 
     // MSAE Settings
     private boolean isUseSSL;
@@ -95,6 +103,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+
     
     @PostConstruct
     public void loadConfiguration() {
@@ -108,8 +117,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         if (autoEnrollmentConfiguration != null) {
             msaeDomain = autoEnrollmentConfiguration.getMsaeDomain();
             policyName = autoEnrollmentConfiguration.getPolicyName();
+            servicePrincipalName = autoEnrollmentConfiguration.getSpn();
             keyTabFileBytes = autoEnrollmentConfiguration.getMsaeKeyTabBytes();
             keyTabFilename = autoEnrollmentConfiguration.getMsaeKeyTabFilename();
+            
+            krb5ConfFileBytes = autoEnrollmentConfiguration.getMsaeKrb5ConfBytes();
+            krb5ConfFilename = autoEnrollmentConfiguration.getMsaeKrb5ConfFilename();
 
             isUseSSL = autoEnrollmentConfiguration.isUseSSL();
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort();
@@ -137,6 +150,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setPolicyName(String policyName) {
         this.policyName = policyName;
+    }
+    
+    public String getServicePrincipalName() {
+        return servicePrincipalName;
+    }
+
+    public void setServicePrincipalName(String servicePrincipalName) {
+        this.servicePrincipalName = servicePrincipalName;
     }
 
     public UploadedFile getKeyTabFile() {
@@ -166,6 +187,35 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     public boolean isKeyTabUploaded() {
         return (keyTabFilename != null && keyTabFileBytes != null);
     }
+    
+    public UploadedFile getKrb5ConfFile() {
+        return krb5ConfFile;
+    }
+
+    public void setKrb5ConfFile(UploadedFile krb5ConfFile) {
+        this.krb5ConfFile = krb5ConfFile;
+    }
+
+    public String getKrb5ConfFilename() {
+        return krb5ConfFilename;
+    }
+
+    public void setKrb5ConfFilename(String krb5ConfFilename) {
+        this.krb5ConfFilename = StringTools.stripFilename(krb5ConfFilename);
+    }
+
+    public byte[] getKrb5ConfFileContent() {
+        return krb5ConfFileBytes;
+    }
+
+    public void setKrb5ConfFileContent(byte[] krb5ConfFileBytes) {
+        this.krb5ConfFileBytes = krb5ConfFileBytes;
+    }
+
+    public boolean isKrb5ConfFileUploaded() {
+        return (krb5ConfFilename != null && krb5ConfFileBytes != null);
+    }
+    
 
     // MSAE Settings
     public boolean isUseSSL() {
@@ -443,6 +493,30 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             addErrorMessage("MSAE_KEYTAB_ERROR_NOT_FOUND");
         }
     }
+    
+    /**
+     * Import and save krb5 conf file.
+     *
+     * @throws IOException
+     */
+    public void importKrb5ConfFile() throws IOException {
+        if (krb5ConfFile != null) {
+            String contentType = krb5ConfFile.getContentType();
+
+            if(!contentType.equals(KRB5_CONF_CONTENT_TYPE)) {
+                addErrorMessage("MSAE_KRB5_CONF_ERROR_WRONG_CONTENT");
+                return;
+            }
+            
+            setKrb5ConfFilename(krb5ConfFile.getName());
+            setKrb5ConfFileContent(krb5ConfFile.getBytes());
+
+            saveKrb5ConfFile();
+        } else {
+            addErrorMessage("MSAE_KRB5_CONF_ERROR_NOT_FOUND");
+        }
+        
+    }
 
     /**
      * Download save key tab file from UI.
@@ -477,6 +551,36 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                         throw new IllegalStateException("Failed to close outputstream", e);
                     }
                 }
+            }
+        } else {
+            addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
+        }
+    }
+    
+    /**
+     * Download save krb5 conf file from UI.
+     *
+     */
+    public void downloadKrb5ConfFile() {
+        if (krb5ConfFileBytes != null && krb5ConfFilename != null) {
+
+            FacesContext fc = FacesContext.getCurrentInstance();
+            ExternalContext ec = fc.getExternalContext();
+            ec.responseReset();
+            ec.setResponseContentType(KRB5_CONF_CONTENT_TYPE);
+            ec.setResponseContentLength(krb5ConfFileBytes.length);
+
+            final String filename = "krb5.conf";
+            ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+            try (OutputStream output = ec.getResponseOutputStream()) {
+                output.write(krb5ConfFileBytes);
+                output.flush();
+                fc.responseComplete();
+            } catch (IOException e) {
+                log.warn("Krb5 Conf " + filename + " could not be downloaded", e);
+                addErrorMessage("MSAE_KRB5_CONF_ERROR_COULD_NOT_BE_DOWNLOADED");
+                throw new IllegalStateException("Failed to close outputstream", e);
             }
         } else {
             addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
@@ -529,7 +633,54 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             addErrorMessage("MSAE_KEYTAB_SAVE_ERROR");
         }
     }
+    
+    
+    /**
+     * Save krb5 conf to the global configuration.
+     */
+    public void saveKrb5ConfFile() {
+        try {
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
 
+            autoEnrollmentConfiguration.setMsaeKrb5ConfFilename(getKrb5ConfFilename());
+            autoEnrollmentConfiguration.setMsaeKrb5ConfBytes(getKrb5ConfFileContent());
+
+            globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
+            addInfoMessage("MSAE_KRB5_CONF_SAVE_OK");
+
+        } catch (AuthorizationDeniedException e) {
+            log.error("Cannot save the configuration for the MS Auto Enrollment Krb5 conf file because the current "
+                              + "administrator is not authorized. Error description: " + e.getMessage());
+            addErrorMessage("MSAE_KRB5_CONF_SAVE_ERROR");
+        }
+    }
+
+    // Updates persisted template mappings with new values from AD
+    public void updateMappedTemplates() {
+        List<MSAutoEnrollmentSettingsTemplate> newTemplates = getAvailableTemplateSettingsFromAD();
+        for (MSAutoEnrollmentSettingsTemplate persistedTemplate : mappedMsTemplates) {
+            MSAutoEnrollmentSettingsTemplate newTemplateSettings = findMsTemplateByOid(newTemplates, persistedTemplate.getOid());
+            if (newTemplateSettings == null) {
+                return;
+            }
+            persistedTemplate.setDisplayName(newTemplateSettings.getDisplayName());
+            persistedTemplate.setName(newTemplateSettings.getName());
+            persistedTemplate.setMinorRevision(newTemplateSettings.getMinorRevision());
+            persistedTemplate.setMajorRevision(newTemplateSettings.getMajorRevision());
+            persistedTemplate.setAdditionalSubjectDNAttributes(newTemplateSettings.getAdditionalSubjectDNAttributes());
+            persistedTemplate.setSubjectNameFormat(newTemplateSettings.getSubjectNameFormat());
+            persistedTemplate.setIncludeDomainInSubjectSAN(newTemplateSettings.isIncludeDomainInSubjectSAN());
+            persistedTemplate.setIncludeEmailInSubjectDN(newTemplateSettings.isIncludeEmailInSubjectDN());
+            persistedTemplate.setIncludeEmailInSubjectSAN(newTemplateSettings.isIncludeEmailInSubjectSAN());
+            persistedTemplate.setIncludeNetBiosInSubjectSAN(newTemplateSettings.isIncludeNetBiosInSubjectSAN());
+            persistedTemplate.setIncludeObjectGuidInSubjectSAN(newTemplateSettings.isIncludeObjectGuidInSubjectSAN());
+            persistedTemplate.setIncludeSPNInSubjectSAN(newTemplateSettings.isIncludeSPNInSubjectSAN());
+            persistedTemplate.setIncludeUPNInSubjectSAN(newTemplateSettings.isIncludeUPNInSubjectSAN());
+            persistedTemplate.setPublishToActiveDirectory(newTemplateSettings.isPublishToActiveDirectory());
+        }
+    }
+    
     public void save() {
         try {
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
@@ -539,6 +690,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setMsaeDomain(msaeDomain);
             autoEnrollmentConfiguration.setPolicyName(policyName);
             autoEnrollmentConfiguration.setPolicyUid();
+            autoEnrollmentConfiguration.setSpn(servicePrincipalName);
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(isUseSSL);
@@ -550,6 +702,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setCaName(caName);
 
             // MS Template Settings
+            updateMappedTemplates();
             autoEnrollmentConfiguration.setMsTemplateSettings(mappedMsTemplates);
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
