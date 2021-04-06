@@ -43,6 +43,10 @@ public interface AccessUserAspect extends Serializable {
 
     void setCaId(Integer caId);
 
+    Integer getOauthProviderId();
+
+    void setOauthProviderId(Integer oauthProviderId);
+
     String getTokenType();
 
     void setTokenType(String tokenType);
