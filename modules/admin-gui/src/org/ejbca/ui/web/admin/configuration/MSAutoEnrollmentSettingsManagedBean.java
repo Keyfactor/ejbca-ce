@@ -665,6 +665,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 return;
             }
             persistedTemplate.setDisplayName(newTemplateSettings.getDisplayName());
+            persistedTemplate.setName(newTemplateSettings.getName());
+            persistedTemplate.setMinorRevision(newTemplateSettings.getMinorRevision());
+            persistedTemplate.setMajorRevision(newTemplateSettings.getMajorRevision());
             persistedTemplate.setAdditionalSubjectDNAttributes(newTemplateSettings.getAdditionalSubjectDNAttributes());
             persistedTemplate.setSubjectNameFormat(newTemplateSettings.getSubjectNameFormat());
             persistedTemplate.setIncludeDomainInSubjectSAN(newTemplateSettings.isIncludeDomainInSubjectSAN());
