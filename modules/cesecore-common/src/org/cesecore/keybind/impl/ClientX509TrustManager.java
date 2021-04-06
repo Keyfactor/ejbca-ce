@@ -73,7 +73,7 @@ public class ClientX509TrustManager implements X509TrustManager {
             String sn = CertTools.getSerialNumberAsString(leafCertificate);
             String errmsg = "Certificate with serial number '0x" + sn + "' and SAN '" + subjectAltName + " issued by '" + issuerdn +
                     "' is NOT trusted. Ensure the certificate is a TLS server certificate issued by a CA known to EJBCA, and permitted by" +
-                    "your authentication key binding.";
+                    " your authentication key binding.";
             throw new CertificateException(errmsg);
         }
     }
