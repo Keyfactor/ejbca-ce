@@ -61,7 +61,7 @@ jobs:
 
     - run: |
        ant clean
-       ant build -Dappserver.type=jboss7 -Dappserver.home=/tmp
+       ant ejbca.ear -Dappserver.type=jboss7 -Dappserver.home=/tmp
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
