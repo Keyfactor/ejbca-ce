@@ -75,8 +75,9 @@ public class OAuthKeyManager {
      */
     public boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existing : oauthKeys) {
+            final boolean hasSameInternalId = existing.getInternalId() == oauthKey.getInternalId();
             final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), oauthKey.getLabel());
-            if (hasSameLabel) {
+            if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
         }
@@ -96,7 +97,8 @@ public class OAuthKeyManager {
      public boolean canEdit(final OAuthKeyInfo oauthKey, final String newLabel) {
          for (OAuthKeyInfo existing : oauthKeys) {
              final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), newLabel);
-             if (hasSameLabel) {
+             final boolean hasSameInternalId = existing.getInternalId() == oauthKey.getInternalId();
+             if (hasSameLabel && !hasSameInternalId) {
                  return false;
              }
          }
