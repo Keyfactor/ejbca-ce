@@ -42,22 +42,22 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_SCOPE = "--new-scope";
 
     {
-        registerParameter(new Parameter(LABEL, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the Trusted OAuth Provider to update its parameters."));
+        registerParameter(new Parameter(LABEL, "Label", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Label of the Trusted OAuth Provider to update its parameters."));
         registerParameter(new Parameter(NEW_SKEW_LIMIT, "Skew limit", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Skew limit to be updated."));
-        registerParameter(new Parameter(NEW_URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Trusted OAuth Provider url to the login page to be updated."));
+                "New Skew Limit."));
+        registerParameter(new Parameter(NEW_URL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New URL to the login page."));
         registerParameter(new Parameter(NEW_LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Trusted OAuth Provider name to be updated"));
+                "New Provider Label."));
         registerParameter(new Parameter(NEW_REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Trusted OAuth Provider realm name to be updated."));
+                "New Realm/Tenant name."));
         registerParameter(new Parameter(NEW_SCOPE, "Scope", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Trusted OAuth Provider scope to be updated."));
-        registerParameter(new Parameter(NEW_CLIENT, "Client name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Client name for EJBCA in Trusted OAuth Provider to be updated."));
-        registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Client secret in Trusted OAuth Provider to be updated."));
+                "New Scope."));
+        registerParameter(new Parameter(NEW_CLIENT, "Client Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Client Name."));
+        registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client Secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Client Secret."));
     }
 
     @Override
@@ -67,7 +67,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Edit key identifier, public key and/or skew limit for an existing Trusted OAuth Provider.";
+        return "Edit a Trusted OAuth Provider.";
     }
 
     @Override
@@ -137,7 +137,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             if(canEditLabel(newLabel)) {
                 keyInfoToBeEdited.setLabel(newLabel);
             } else {
-                log.info("Trusted OAuth Provider with same label exists!");
+                log.info("Trusted OAuth Provider with the same label exists!");
                 return false;
             }
         }
