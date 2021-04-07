@@ -36,9 +36,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
-import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ra.RaAuthenticationHelper;
 
 /**
@@ -63,7 +63,7 @@ public class RaStyleRequestFilter implements Filter {
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     @EJB
-    private RoleSessionLocal roleSession;
+    private RaMasterApiProxyBeanLocal raMasterApi;
     
     private RaAuthenticationHelper raAuthenticationHelper = null;
     
@@ -147,7 +147,7 @@ public class RaStyleRequestFilter implements Filter {
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     private AuthenticationToken getAuthenticationToken(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, roleSession);
+        raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         return raAuthenticationHelper.getAuthenticationToken(httpRequest, httpResponse);
     }
     

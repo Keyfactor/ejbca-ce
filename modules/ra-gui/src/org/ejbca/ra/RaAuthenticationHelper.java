@@ -26,9 +26,11 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
 
 /**
@@ -44,14 +46,14 @@ public class RaAuthenticationHelper implements Serializable {
     private static final String HTTP_HEADER_X_POWERED_BY = "X-Powered-By";
 
     private final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
-    private final RoleSessionLocal roleSession;
+    private final RaMasterApiProxyBeanLocal raMasterApi;
     private AuthenticationToken authenticationToken = null;
     private String authenticationTokenTlsSessionId = null;
     private String x509AuthenticationTokenFingerprint = null;
 
-    public RaAuthenticationHelper(final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession, RoleSessionLocal roleSession) {
+    public RaAuthenticationHelper(final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession, final RaMasterApiProxyBeanLocal raMasterApi) {
         this.webAuthenticationProviderSession = webAuthenticationProviderSession;
-        this.roleSession = roleSession;
+        this.raMasterApi = raMasterApi;
     }
 
     public void resetAuthenticationToken(){
@@ -94,7 +96,7 @@ public class RaAuthenticationHelper implements Serializable {
                 if (authenticationToken == null) {
                     authenticationToken = webAuthenticationProviderSession.authenticateUsingClientCertificate(x509Certificate);
                 }
-                if (authenticationToken != null && roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken).isEmpty()) {
+                if (!isAuthenticationTokenAccepted()) {
                     authenticationToken = null;
                     log.info("Authentication failed using certificate with fingerprint " + fingerprint + " reason: user has no access");
                 }
@@ -133,6 +135,17 @@ public class RaAuthenticationHelper implements Serializable {
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
+    }
+
+    /** Checks if an authentication token is accepted by the CA. */
+    private boolean isAuthenticationTokenAccepted() {
+        if (authenticationToken == null) {
+            return false;
+        } else {
+            // If the CA does not return any CAs, then we are unauthorized
+            final IdNameHashMap<CAInfo> authorizedCas = raMasterApi.getAuthorizedCAInfos(authenticationToken);
+            return authorizedCas != null && !authorizedCas.isEmpty();
+        }
     }
 
     /**

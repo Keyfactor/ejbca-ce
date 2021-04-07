@@ -33,6 +33,7 @@ import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -57,6 +58,8 @@ public class RaLoginBean implements Serializable {
     private String stateInSession = null;
     private String oauthClicked = null;
 
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
@@ -133,15 +136,17 @@ public class RaLoginBean implements Serializable {
         StringBuilder providerUrls = new StringBuilder();
         oauthKeys = new ArrayList<>();
         initGlobalConfiguration();
-        Collection<OAuthKeyInfo> oAuthKeyInfos = oAuthConfiguration.getOauthKeys().values();
-        if (!oAuthKeyInfos.isEmpty()) {
-            for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
-                if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
-                    oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getLabel()));
-                    providerUrls.append(oauthKeyInfo.getUrl()).append(" ");
+        if (oAuthConfiguration != null) {
+            Collection<OAuthKeyInfo> oAuthKeyInfos = oAuthConfiguration.getOauthKeys().values();
+            if (!oAuthKeyInfos.isEmpty()) {
+                for (OAuthKeyInfo oauthKeyInfo : oAuthKeyInfos) {
+                    if (StringUtils.isNotEmpty(oauthKeyInfo.getUrl())) {
+                        oauthKeys.add(new OAuthKeyInfoGui(oauthKeyInfo.getLabel()));
+                        providerUrls.append(oauthKeyInfo.getUrl()).append(" ");
+                    }
                 }
+                replaceHeader(providerUrls.toString());
             }
-            replaceHeader(providerUrls.toString());
         }
     }
     
@@ -201,7 +206,8 @@ public class RaLoginBean implements Serializable {
     }
     
     private void initGlobalConfiguration() {
-        oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        oAuthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
+        // Get the local RA configuration, because we want to calculate the URL to the RA, not the CA
         globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalConfiguration.initializeRaWeb();
     }
