@@ -87,7 +87,7 @@ public final class EjbcaWebBeanImplUnitTest {
     private static final String ISSUER_DN = CERT_DN; // self-signed cert
     private static final String[] BEARER_TOKENS = { "tok111", "tok222" };
     private static final String[] BEARER_TOKEN_FINGERPRINTS = { "fp111", "fp222" };
-    private static final OAuth2Principal TEST_CLAIMS = new OAuth2Principal("Issuer", "Subject", "2.999.123", Collections.emptyList());
+    private static final OAuth2Principal TEST_CLAIMS = OAuth2Principal.builder().setIssuer("Issuer").setSubject("Subject").setOid("2.999.123").build();
     private static final String OAUTH_PROVIDER_NAME = "OAuth Provider 123";
     private static final List<Role> ADMIN_ROLES = new ArrayList<>(Arrays.asList(new Role(null, "Test Role")));
     
