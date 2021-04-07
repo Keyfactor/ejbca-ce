@@ -246,6 +246,7 @@ public class OAuthSystemTest {
             roleMemberSession.remove(authenticationToken, roleMember.getId());
             roleSession.deleteRoleIdempotent(authenticationToken, roleMember.getRoleId());
         }
+        roleSession.deleteRoleIdempotent(authenticationToken, null,  ROLENAME);
         HttpsURLConnection.setDefaultSSLSocketFactory(defaultSocketFactory);
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
