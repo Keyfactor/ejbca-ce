@@ -44,6 +44,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
     private static final String AD_CONNECTION_PORT = "adConnectionPort";
     private static final String AD_LOGIN_DN = "adLoginDN";
     private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
+    private static final String AUTH_KEY_BINDING = "authKeyBinding";
 
     // MS Enrollment Servlet Settings
     private static final String CA_NAME = "caName";
@@ -70,6 +71,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
         setAdConnectionPort(DEFAULT_AD_CONNECTION_PORT);
         setAdLoginDN("");
         setAdLoginPassword("");
+        setAuthKeyBinding(null);
 
         // MS Servlet Settings
         setCaName("");
@@ -191,6 +193,14 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase {
 
     public void setAdLoginPassword(final String adLoginPassword) {
         data.put(AD_LOGIN_PASSWORD, adLoginPassword);
+    }
+
+    public Integer getAuthKeyBinding() {
+        return (Integer) data.get(AUTH_KEY_BINDING);
+    }
+
+    public void setAuthKeyBinding(final Integer authKeyBinding) {
+        data.put(AUTH_KEY_BINDING, authKeyBinding);
     }
 
     // MS Enrollment Servlet Settings

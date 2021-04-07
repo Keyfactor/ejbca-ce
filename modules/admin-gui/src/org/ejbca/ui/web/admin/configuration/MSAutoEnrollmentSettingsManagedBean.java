@@ -78,6 +78,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private int adConnectionPort;
     private String adLoginDN;
     private String adLoginPassword;
+    private Integer authKeyBinding;
 
     // MS Servlet Settings
     private String caName;
@@ -128,6 +129,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort();
             adLoginDN = autoEnrollmentConfiguration.getAdLoginDN();
             adLoginPassword = autoEnrollmentConfiguration.getAdLoginPassword();
+            authKeyBinding = autoEnrollmentConfiguration.getAuthKeyBinding();
 
             caName = autoEnrollmentConfiguration.getCaName();
 
@@ -248,6 +250,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public void setAdLoginPassword(String adLoginPassword) {
         this.adLoginPassword = adLoginPassword;
+    }
+
+    public Integer getAuthKeyBinding() {
+        return authKeyBinding;
+    }
+
+    public void setAuthKeyBinding(Integer authKeyBinding) {
+        this.authKeyBinding = authKeyBinding;
     }
 
     // MS Servlet Settings
@@ -697,6 +707,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setAdConnectionPort(adConnectionPort);
             autoEnrollmentConfiguration.setAdLoginDN(adLoginDN);
             autoEnrollmentConfiguration.setAdLoginPassword(adLoginPassword);
+            autoEnrollmentConfiguration.setAuthKeyBinding(authKeyBinding);
 
             // MS Servlet Settings
             autoEnrollmentConfiguration.setCaName(caName);
