@@ -63,6 +63,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExi
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -1447,6 +1448,7 @@ public interface RaMasterApi {
      * @see GlobalAcmeConfiguration
      * @see GlobalOcspConfiguration
      * @see GlobalUpgradeConfiguration
+     * @see OAuthConfiguration
      *
      * @param type the concrete global configuration object class.
      * @return the global configuration or null.

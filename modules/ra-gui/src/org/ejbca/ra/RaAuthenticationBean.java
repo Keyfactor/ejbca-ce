@@ -32,9 +32,9 @@ import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
-import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
  * JSF Managed Bean for handling authentication of clients.
@@ -50,7 +50,7 @@ public class RaAuthenticationBean implements Serializable {
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     @EJB
-    private RoleSessionLocal roleSession;
+    private RaMasterApiProxyBeanLocal raMasterApi;
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
     private AuthenticationToken authenticationToken = null;
@@ -58,7 +58,7 @@ public class RaAuthenticationBean implements Serializable {
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken() {
         if (raAuthenticationHelper==null) {
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, roleSession);
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         }
         authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
