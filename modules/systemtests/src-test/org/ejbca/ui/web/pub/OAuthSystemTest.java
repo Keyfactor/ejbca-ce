@@ -221,9 +221,11 @@ public class OAuthSystemTest {
                 AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY
         ), null));
         // Add the second RA role
-        roleMember = roleMemberSession.persist(authenticationToken, new RoleMember(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMember = new RoleMember(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), OAuth2AccessMatchValue.CLAIM_SUBJECT.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                OAUTH_SUB, role1.getRoleId(), null));
+                OAUTH_SUB, role1.getRoleId(), null);
+        roleMember.setTokenProviderId(oAuthKeyInfo.getInternalId());
+        roleMember = roleMemberSession.persist(authenticationToken, roleMember);
 
         token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\"}", privKey);
         final String timestamp = String.valueOf((System.currentTimeMillis() + -60 * 60 * 1000) / 1000); // 1 hour old
@@ -312,7 +314,7 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Not logged in"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Log in"));
     }
 
     @Test
@@ -366,7 +368,7 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authentication failed using OAuth Bearer Token"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authorization Denied"));
 
     }
 
