@@ -23,6 +23,9 @@
      -->
     </ui:remove>
     <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+    <f:metadata>
+        <f:event type="preRenderView" listener="#{raAccessBean.preRenderView}"/>
+    </f:metadata>
     <h:head dir="#{raLocaleBean.direction}">
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
