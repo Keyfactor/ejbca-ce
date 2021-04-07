@@ -69,6 +69,10 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingStatus;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -365,6 +369,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
+    private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -1884,6 +1890,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             } else {
                 ret.add(new SelectItem(0, "<Unauthorized CA>", "A CA that the current admin lack access to.", true));
             }
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getAvailableAuthenticationKeyBindings() {
+        final List<SelectItem> ret = new ArrayList<>();
+        final List<InternalKeyBindingInfo> authorizedAkbs = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAdmin(), AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
+        for (final InternalKeyBindingInfo current : authorizedAkbs) {
+            ret.add(new SelectItem(current.getId(), current.getName(), current.getName(), !current.getStatus().equals(InternalKeyBindingStatus.ACTIVE)));
         }
         return ret;
     }
