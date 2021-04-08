@@ -46,7 +46,6 @@ import org.ejbca.core.model.era.RaRoleMemberTokenTypeInfo;
 /**
  * Backing bean for the (Add) Role Member page
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -267,15 +266,17 @@ public class RaRoleMemberBean implements Serializable {
         if (availableOauthProviders == null) {
             availableOauthProviders = new ArrayList<>();
             final OAuthConfiguration oAuthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
-            final List<OAuthKeyInfo> oAuthKeyInfos = new ArrayList<>(oAuthConfiguration.getOauthKeys().values());
-            Collections.sort(oAuthKeyInfos, new Comparator<OAuthKeyInfo>() {
-                @Override
-                public int compare(final OAuthKeyInfo oAuthKeyInfo1, final OAuthKeyInfo oAuthKeyInfo2) {
-                    return oAuthKeyInfo1.getLabel().compareToIgnoreCase(oAuthKeyInfo2.getLabel());
+            if (oAuthConfiguration != null && oAuthConfiguration.getOauthKeys() != null) {
+                final List<OAuthKeyInfo> oAuthKeyInfos = new ArrayList<>(oAuthConfiguration.getOauthKeys().values());
+                Collections.sort(oAuthKeyInfos, new Comparator<OAuthKeyInfo>() {
+                    @Override
+                    public int compare(final OAuthKeyInfo oAuthKeyInfo1, final OAuthKeyInfo oAuthKeyInfo2) {
+                        return oAuthKeyInfo1.getLabel().compareToIgnoreCase(oAuthKeyInfo2.getLabel());
+                    }
+                });
+                for (final OAuthKeyInfo oAuthKeyInfo : oAuthKeyInfos) {
+                    availableOauthProviders.add(new SelectItem(oAuthKeyInfo.getInternalId(), oAuthKeyInfo.getLabel()));
                 }
-            });
-            for (final OAuthKeyInfo oAuthKeyInfo : oAuthKeyInfos) {
-                availableOauthProviders.add(new SelectItem(oAuthKeyInfo.getInternalId(), oAuthKeyInfo.getLabel()));
             }
         }
         return availableOauthProviders;

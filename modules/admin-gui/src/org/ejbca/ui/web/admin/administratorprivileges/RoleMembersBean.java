@@ -249,9 +249,13 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableOauthProviders() {
         final List<SelectItem> availableProviders = new ArrayList<>();
-        Collection<OAuthKeyInfo> oAuthKeyInfos = getOAuthConfiguration().getOauthKeys().values();
-        for (final OAuthKeyInfo oAuthKeyInfo : oAuthKeyInfos) {
-            availableProviders.add(new SelectItem(oAuthKeyInfo.getInternalId(), oAuthKeyInfo.getLabel()));
+        final OAuthConfiguration oAuthConfiguration = getOAuthConfiguration();
+        if (oAuthConfiguration != null && oAuthConfiguration.getOauthKeys() != null) {
+            Collection<OAuthKeyInfo> oAuthKeyInfos = oAuthConfiguration.getOauthKeys().values();
+            for (final OAuthKeyInfo oAuthKeyInfo : oAuthKeyInfos) {
+                availableProviders.add(new SelectItem(oAuthKeyInfo.getInternalId(), oAuthKeyInfo.getLabel()));
+            }
+            super.sortSelectItemsByLabel(availableProviders);
         }
         return availableProviders;
     }
