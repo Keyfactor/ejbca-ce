@@ -186,9 +186,6 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public void setOauthProviderId(Integer oauthProviderId) {
-        if (oauthProviderId == null) {
-            throw new InvalidParameterException("Invalid to set oauthProviderId == null");
-        }
         this.oauthProviderId = oauthProviderId;
     }
 
