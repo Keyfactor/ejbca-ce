@@ -49,6 +49,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
@@ -113,8 +114,9 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             return admin;
         } else if (oauthBearerToken != null) {
             final AuthenticationToken admin;
+            final OAuthConfiguration oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
             try {
-                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
                 if (admin == null) {
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
                 }
