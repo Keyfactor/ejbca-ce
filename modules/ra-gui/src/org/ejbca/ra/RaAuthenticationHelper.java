@@ -27,6 +27,7 @@ import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.IdNameHashMap;
@@ -103,20 +104,21 @@ public class RaAuthenticationHelper implements Serializable {
                 x509AuthenticationTokenFingerprint = authenticationToken == null ? null : fingerprint;
             }
             if (oauthBearerToken != null && authenticationToken == null) {
+                final OAuthConfiguration oauthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
                 try {
-                    authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                    authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
                         OAuthGrantResponseInfo token = null;
                         try {
-                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken);
+                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthConfiguration, oauthBearerToken, refreshToken);
                             if (token != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                                 if (token.getRefreshToken() != null) {
                                     httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                                 }
-                                authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
+                                authenticationToken = webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token.getAccessToken());
                             }
                         } catch (TokenExpiredException tokenExpiredException) {
                             log.info("Authentication failed using OAuth Bearer Token. Token Expired");
