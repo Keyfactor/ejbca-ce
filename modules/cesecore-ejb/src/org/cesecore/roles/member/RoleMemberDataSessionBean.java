@@ -39,8 +39,6 @@ import org.cesecore.util.ProfileID;
 
 /**
  * @see RoleMemberSessionDataLocal
- * 
- * @version $Id$
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberDataSessionRemote")
@@ -316,9 +314,6 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             public Integer getCaId() {
                 return roleMember.getTokenIssuerId();
             }
-
-            @Override
-            public void setOauthProviderId(Integer oauthProviderId) {}
 
             @Override
             public void setCaId(Integer caId) { }

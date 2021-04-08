@@ -364,14 +364,17 @@ public class RaRoleMembersBean implements Serializable {
     public List<SelectItem> getAvailableOauthProviders() {
         if (availableOauthProviders == null) {
             availableOauthProviders = new ArrayList<>();
+            final List<OAuthKeyInfo> oAuthKeyInfos = new ArrayList<>();
             final OAuthConfiguration oAuthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
-            final List<OAuthKeyInfo> oAuthKeyInfos = new ArrayList<>(oAuthConfiguration.getOauthKeys().values());
-            Collections.sort(oAuthKeyInfos, new Comparator<OAuthKeyInfo>() {
-                @Override
-                public int compare(final OAuthKeyInfo oAuthKeyInfo1, final OAuthKeyInfo oAuthKeyInfo2) {
-                    return oAuthKeyInfo1.getLabel().compareToIgnoreCase(oAuthKeyInfo2.getLabel());
-                }
-            });
+            if (oAuthConfiguration != null && oAuthConfiguration.getOauthKeys() != null) {
+                oAuthKeyInfos.addAll(oAuthConfiguration.getOauthKeys().values());
+                Collections.sort(oAuthKeyInfos, new Comparator<OAuthKeyInfo>() {
+                    @Override
+                    public int compare(final OAuthKeyInfo oAuthKeyInfo1, final OAuthKeyInfo oAuthKeyInfo2) {
+                        return oAuthKeyInfo1.getLabel().compareToIgnoreCase(oAuthKeyInfo2.getLabel());
+                    }
+                });
+            }
             providerIdToLabelMap = new HashMap<>();
             for (final OAuthKeyInfo oAuthKeyInfo : oAuthKeyInfos) {
                 providerIdToLabelMap.put(oAuthKeyInfo.getInternalId(), oAuthKeyInfo.getLabel());

@@ -20,7 +20,6 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -143,7 +142,6 @@ import java.util.concurrent.Future;
  * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
  *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -1116,12 +1114,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe.
             for (final AccessUserAspectData accessUserAspect : accessUsers) {
                 final String tokenType = accessUserAspect.getTokenType();
-                final int tokenOauthProviderId;
-                if(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) && accessUserAspect.getOauthProviderId() != null) {
-                    tokenOauthProviderId = accessUserAspect.getOauthProviderId();
-                } else {
-                    tokenOauthProviderId = RoleMember.NO_PROVIDER;
-                }
                 // Only the X509CertificateAuthenticationToken actually uses the CA Id, so leave it unset for the rest
                 final int tokenIssuerId;
                 if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) && accessUserAspect.getCaId()!=null) {
@@ -1207,10 +1199,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     tokenMatchOperator = AccessMatchType.TYPE_UNUSED.getNumericValue();
                 }
                 // Assign upgraded role members the same ID as the old AdminEndEntity.primaryKey so members are merged in case this runs several times (like in tests)
-                final RoleMember roleMember = new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
-                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
-                roleMember.setTokenProviderId(tokenOauthProviderId);
-                roleMemberDataSession.persistRoleMember(roleMember);
+                roleMemberDataSession.persistRoleMember(new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
+                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
             }
         }
         // Note that this has to happen here and not in X509CA or CvcCA due to the fact that this step has to happen after approval profiles have

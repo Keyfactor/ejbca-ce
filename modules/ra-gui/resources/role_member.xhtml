@@ -83,7 +83,7 @@
                         </h:panelGroup>
 
                         <h:panelGroup id="parentProvider" layout="block" styleClass="pure-u-1" rendered="#{raRoleMemberBean.tokenTypeIssuedByOauthProvider}">
-                            <h:outputLabel for="providerId" value="#{msg.role_member_page_provider_label}Kot" styleClass="pure-u-lg-1-5"/>
+                            <h:outputLabel for="providerId" value="#{msg.role_member_page_provider_label}" styleClass="pure-u-lg-1-5"/>
                             <h:selectOneMenu id="providerId" value="#{raRoleMemberBean.providerId}" styleClass=" pure-input pure-u-lg-3-5">
                                 <f:selectItems value="#{raRoleMemberBean.availableOauthProviders}"/>
                             </h:selectOneMenu>
