@@ -50,7 +50,6 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     private int legacyPrimaryKey;
     private String tokenType;
     private Integer caId;
-    private Integer oauthProviderId;
     private int rowVersion = 0;
     private String rowProtection;
     private Integer matchWith;
@@ -180,13 +179,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     }
 
     @Override
+    @Transient
     public Integer getOauthProviderId() {
-        return oauthProviderId;
-    }
-
-    @Override
-    public void setOauthProviderId(Integer oauthProviderId) {
-        this.oauthProviderId = oauthProviderId;
+        return null;
     }
 
     public int getRowVersion() {
