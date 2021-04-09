@@ -84,7 +84,7 @@ public class CaRestResource extends BaseRestResource {
     @GET
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.WILDCARD)
-    @ApiOperation(value = "Get PEM file with CA certificates")
+    @ApiOperation(value = "Get PEM file with the active CA certificate chain")
     public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
                                         @ApiParam(value = "CAs subject DN", required = true) @PathParam("subject_dn") String subjectDn)
             throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
