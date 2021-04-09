@@ -74,9 +74,7 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.util.CertTools;
 
 /**
- * CMP certificate response message
- * 
- * @version $Id$
+ * CMP certificate response message.
  */
 public class CmpResponseMessage implements CertificateResponseMessage {
 
@@ -124,6 +122,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private transient Certificate cert = null;
     /** The CA certificate to be included in the response message to be used to verify the end entity certificate */
     private transient List<Certificate> cacert = new ArrayList<Certificate>();
+    /** Include the signing CA certificate at index 0 in the caPubs field. */
+    private transient boolean includeCaCert = true;
     /** Certificate for the signer of the response message (CA) */
     private transient Collection<Certificate> signCertChain = null;
     /** Additions CA certificate for the outer PKI response message extraCerts field. */
@@ -195,13 +195,16 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setIncludeCACert(boolean incCACert) {
+    public void setIncludeCACert(boolean includeCaCert) {
+        this.includeCaCert = includeCaCert;
     }
 
     @Override
     public void setCACert(Certificate cACert) {
         this.cacert.clear();
-        this.cacert.add(cACert);
+        if (includeCaCert) {
+            this.cacert.add(cACert);
+        }
     }
 
     @Override

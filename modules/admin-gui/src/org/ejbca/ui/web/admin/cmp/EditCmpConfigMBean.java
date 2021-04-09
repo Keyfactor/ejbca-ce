@@ -607,6 +607,14 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         }
     }
 
+    public boolean getCmpIssuerCaChainAtIndex0() {
+        return cmpConfiguration.getResponseCaPubsIssuingCA(getSelectedCmpAlias());
+    }
+    
+    public void setCmpIssuerCaChainAtIndex0(final boolean cmpIssuerCaChainAtIndex0) {
+        cmpConfiguration.setResponseCaPubsIssuingCA(getSelectedCmpAlias(), cmpIssuerCaChainAtIndex0);
+    }
+    
     public void setSelectedPkiResponseAdditionalCaCert(final String selectedPkiResponseAdditionalCaCert) {
         this.selectedPkiResponseAdditionalCaCert = selectedPkiResponseAdditionalCaCert;
     }

@@ -623,7 +623,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     
     @Override
     public boolean includeCACert() {
-        return false;
+        // Adapter from interface RequestMessage.includeCACert() 
+        // to BaseCmpMessage.isIncludeCaCert()
+        return super.isIncludeCaCert();
     }
 
     @Override
