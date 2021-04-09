@@ -916,7 +916,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean validateCurrentConfig() {
-        if (!currentConfig.getEnableKeyRecovery()) {
+        if (!getCurrentConfig().getEnableKeyRecovery()) {
             currentConfig.setLocalKeyRecovery(false);
         }
         if (currentConfig.getLocalKeyRecovery()) {
@@ -1084,9 +1084,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         validatorSettings = null;
     }
 
-    public void toggleUseAutoEnrollment() { currentConfig.setUseAutoEnrollment(!currentConfig.getUseAutoEnrollment()); }
-    public void toggleEnableKeyRecovery() { currentConfig.setEnableKeyRecovery(!currentConfig.getEnableKeyRecovery()); }
-    public void toggleLocalKeyRecovery() { currentConfig.setLocalKeyRecovery(!currentConfig.getLocalKeyRecovery()); }
+    public void toggleUseAutoEnrollment() { getCurrentConfig().setUseAutoEnrollment(!getCurrentConfig().getUseAutoEnrollment()); }
+    public void toggleEnableKeyRecovery() { getCurrentConfig().setEnableKeyRecovery(!getCurrentConfig().getEnableKeyRecovery()); }
+    public void toggleLocalKeyRecovery() { getCurrentConfig().setLocalKeyRecovery(!getCurrentConfig().getLocalKeyRecovery()); }
 
     public List<SelectItem> getAvailableCryptoTokens() {
         if (availableCryptoTokens == null) {
@@ -1107,18 +1107,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void selectLocalKeyRecoveryCryptoToken() {
         availableKeyAliases = null; // force reload
-        currentConfig.setLocalKeyRecoveryKeyAlias(null);
+        getCurrentConfig().setLocalKeyRecoveryKeyAlias(null);
         getAvailableKeyAliases();
     }
 
     public boolean getHasSelectedCryptoToken() {
-        return currentConfig.getLocalKeyRecoveryCryptoTokenId() != 0 &&
+        return getCurrentConfig().getLocalKeyRecoveryCryptoTokenId() != 0 &&
                 cryptoTokenManagementSession.getCryptoTokenInfo(currentConfig.getLocalKeyRecoveryCryptoTokenId()) != null;
     }
 
     public List<SelectItem> getAvailableKeyAliases() {
         availableKeyAliases = new ArrayList<>();
-        if (currentConfig.getLocalKeyRecoveryCryptoTokenId() != 0) {
+        if (getCurrentConfig().getLocalKeyRecoveryCryptoTokenId() != 0) {
             try {
                 final List<String> aliases = new ArrayList<>(cryptoTokenManagementSession.getKeyPairAliases(getEjbcaWebBean().getAdminObject(), currentConfig.getLocalKeyRecoveryCryptoTokenId()));
                 Collections.sort(aliases);
@@ -1140,7 +1140,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     /** @return a list of all currently connected nodes in a cluster */
     public ListDataModel<String> getNodesInCluster() {
         if (nodesInCluster == null) {
-            List<String> nodesList = getListFromSet(currentConfig.getNodesInCluster());
+            List<String> nodesList = getListFromSet(getCurrentConfig().getNodesInCluster());
             nodesInCluster = new ListDataModel<>(nodesList);
         }
         return nodesInCluster;
@@ -1149,7 +1149,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     /** Invoked when the user wants to a add a new node to the cluster */
     public void addNode() {
         final String nodeToAdd = getCurrentNode();
-        Set<String> nodes = currentConfig.getNodesInCluster();
+        Set<String> nodes = getCurrentConfig().getNodesInCluster();
         nodes.add(nodeToAdd);
         currentConfig.setNodesInCluster(nodes);
         nodesInCluster = new ListDataModel<>(getListFromSet(nodes));
@@ -1158,7 +1158,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     /** Invoked when the user wants to remove a node from the cluster */
     public void removeNode() {
         final String nodeToRemove = nodesInCluster.getRowData();
-        Set<String> nodes = currentConfig.getNodesInCluster();
+        Set<String> nodes = getCurrentConfig().getNodesInCluster();
         nodes.remove(nodeToRemove);
         currentConfig.setNodesInCluster(nodes);
         nodesInCluster = new ListDataModel<>(getListFromSet(nodes));
@@ -1179,7 +1179,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private boolean isValidOcspCleanupSettings() {
-        if (currentConfig.getOcspCleanupUse()) {
+        if (getCurrentConfig().getOcspCleanupUse()) {
             final String unit = currentConfig.getOcspCleanupScheduleUnit();
             final Integer interval;
 
