@@ -25,8 +25,9 @@ import org.apache.log4j.Logger;
  * 
  * The format is in the form 'y* mo* *d *h *m *s *ms' where * is a decimal number and
  * d=days, h=hours, m=minutes, s=seconds, ms=milliseconds. Spaces are optional.
- *  
- * @version $Id$
+ *
+ * Maximum time value is 292471208y 8mo 7d 7h 12m 55s 807ms
+ * -> SimpleTime.getInstance(Long.MAX_VALUE).toString()
  */
 public class SimpleTime {
 

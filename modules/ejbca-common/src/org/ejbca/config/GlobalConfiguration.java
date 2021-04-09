@@ -46,6 +46,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static final float LATEST_VERSION = 3f;
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
+    public static final String EJBCA_COMMUNITY_VERSION = InternalConfiguration.getCommunityVersion();
 
     public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
     public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();;
@@ -110,8 +111,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
 
     // Default values for session timeout
-    private static final boolean DEFAULTSESSIONTIMEOUT = false;
-    private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
+    public static final boolean DEFAULTSESSIONTIMEOUT = false;
+    public static final int DEFAULTSESSIONTIMEOUTTIME = 30;
 
     // Default values for healthcheck
     /**

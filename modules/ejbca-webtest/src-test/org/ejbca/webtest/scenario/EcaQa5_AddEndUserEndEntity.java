@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
@@ -27,6 +23,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * In this test case all possible fields of ENDUSER End Entity with End Entity Profile 'EMPTY' are filled in to verify
@@ -142,7 +142,7 @@ public class EcaQa5_AddEndUserEndEntity extends WebTestBase {
         fields.put("postalAddress", "#301d0c0f536f6d6520737472656574203132330c0a534f4d4520504c41434");
         fields.put("name", "Tester");
         fields.put("Jurisdiction State or Province [EV Certificate]", "aJurisdictionState");
-        fields.put("UID, Unique Identifier", "ECAQA5");
+        fields.put("userid", "ECAQA5");
         fields.put("NIF, Tax ID number, for individuals (Spain)", "1234");
         fields.put("CIF, Tax ID code, for companies (Spain)", "5678");
         fields.put("unstructuredAddress, IP address", "127.0.0.1");

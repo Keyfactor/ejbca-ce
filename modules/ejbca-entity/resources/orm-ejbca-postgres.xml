@@ -129,6 +129,7 @@
             <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="INT4" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="TEXT"/></basic>
+            <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="TEXT" nullable="true"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="TEXT" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/></basic>
@@ -162,6 +163,7 @@
             <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="INT4" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="TEXT"/></basic>
+            <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="TEXT" nullable="true"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="TEXT" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/></basic>
@@ -337,7 +339,7 @@
             <basic fetch="EAGER" name="requestdate"><column name="requestDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="expiredate"><column name="expireDate" column-definition="INT8" nullable="false"/></basic>
             <basic fetch="EAGER" name="remainingapprovals"><column name="remainingApprovals" column-definition="INT4" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectdn"><column name="subjectDn" column-definition="TEXT"/></basic>
+            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="email"><column name="email" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>

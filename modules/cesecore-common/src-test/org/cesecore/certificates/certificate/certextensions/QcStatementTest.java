@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -58,10 +59,13 @@ public class QcStatementTest {
         // QC ETSI type from eIDAS EN 319 412-5, eSign = 0.4.0.1862.1.6.1, eseal = 0.4.0.1862.1.6.2, web = 0.4.0.1862.1.6.3
         prof.setQCEtsiType(ETSIQCObjectIdentifiers.id_etsi_qct_esign.getId());
         prof.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("http://qcs.localhost/QcPDS", "en")));
-        // id-qcs-pkixQCSyntax-v2 (OID = 1.3.6.1.55.7.11.2) with SematicsID = 0.4.0.194121.1.2 
-        // SemanticsID = "Legal Person", according to eIDAS EN 319 412-1
+        // id-qcs-pkixQCSyntax-v2 
         prof.setUsePkixQCSyntaxV2(true);
-        prof.setQCSemanticsId("0.4.0.194121.1.2");
+        // (OID = 1.3.6.1.55.7.11.2) with SematicsID = 0.4.0.194121.1.1 AND 0.4.0.194121.1.2 
+        // SemanticsID = "Natural Person" or "Legal Person", according to eIDAS EN 319 412-1
+        prof.setQCSemanticsIds(QcStatement.id_etsi_qcs_semanticsId_Natural + "," + QcStatement.id_etsi_qcs_semanticsId_Legal);
+        prof.setUseQCCountries(true);
+        prof.setQCCountriesString("SE,DE,CH");
         
         QcStatement statement = new QcStatement();
         byte[] value = statement.getValueEncoded(null, null, prof, null, null, null);
@@ -86,16 +90,28 @@ public class QcStatementTest {
         }
         log.info(oids);
         // Check that all OIDs we set exist
-        assertEquals("Not all QC statement Ids were included", 5, oids.size());
+        assertEquals("Not all QC statement Ids were included", 7, oids.size());
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
-        assertTrue(oids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcType.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId()));
         // Check the values we set
-        assertEquals(ETSIQCObjectIdentifiers.id_etsi_qct_esign.getId(), QCStatementExtension.getStatementStringValue(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcType.getId(), 0));
-        assertEquals("[http://qcs.localhost/QcPDS, en]", QCStatementExtension.getStatementStringValue(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId(), 0));
-
+        assertEquals(ETSIQCObjectIdentifiers.id_etsi_qct_esign.getId(), QCStatementExtension.getStatementStringValues(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcType.getId(), 0).get(0));
+        assertEquals("[http://qcs.localhost/QcPDS, en]", QCStatementExtension.getStatementStringValues(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId(), 0).get(0));
+        // Check ETSI QC semantics OIDs
+        assertTrue(oids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
+        
+        final List<String> semanticOids = QCStatementExtension.getStatementStringValues(seq, RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId(), 0);
+        assertEquals("QC ETSI semantics OID count does not match.", 2, semanticOids.size());
+        
+        assertEquals("QC ETSI semantics OID does not match.", QcStatement.id_etsi_qcs_semanticsId_Natural, semanticOids.get(0));
+        assertEquals("QC ETSI semantics OID does not match.", QcStatement.id_etsi_qcs_semanticsId_Legal, semanticOids.get(1));
+        // Check QC ETSI legislation countries
+        assertTrue(oids.contains(QcStatement.id_esi4_qcStatement_7));
+        assertEquals("QC ETSI countries string does not match.", "SE", QCStatementExtension.getStatementStringValues(seq, QcStatement.id_esi4_qcStatement_7, 0).get(0));
+        assertEquals("QC ETSI countries string does not match.", "DE", QCStatementExtension.getStatementStringValues(seq, QcStatement.id_esi4_qcStatement_7, 1).get(0));
+        assertEquals("QC ETSI countries string does not match.", "CH", QCStatementExtension.getStatementStringValues(seq, QcStatement.id_esi4_qcStatement_7, 2).get(0));
+        
         // Add PSD2 attributes
         ArrayList<PSD2RoleOfPSPStatement> roles = new ArrayList<>();
         roles.add(new PSD2RoleOfPSPStatement(QcStatement.id_etsi_psd2_role_psp_as, "PSP_AS"));
@@ -122,12 +138,13 @@ public class QcStatementTest {
             }
         }
         log.info(oids);
-        assertEquals("Not all QC statement Ids were included, or PSD2 was included although it should not have been", 5, oids.size());
+        assertEquals("Not all QC statement Ids were included, or PSD2 was included although it should not have been", 7, oids.size());
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
         assertTrue(oids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcType.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId()));
+        assertTrue(oids.contains(QcStatement.id_esi4_qcStatement_7));
         assertFalse(oids.contains(QcStatement.id_etsi_psd2_qcStatement));
 
         // Include PSD2 in the cert profile
@@ -181,16 +198,17 @@ public class QcStatementTest {
             }
         }
         log.info(oids);
-        assertEquals("Not all QC statement Ids were included", 6, oids.size());
+        assertEquals("Not all QC statement Ids were included", 8, oids.size());
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
         assertTrue(oids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcType.getId()));
         assertTrue(oids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId()));
         assertTrue(oids.contains(QcStatement.id_etsi_psd2_qcStatement));
+        assertTrue(oids.contains(QcStatement.id_esi4_qcStatement_7));
         // Check the values we set (nothing was messed up due to PSD2...)
-        assertEquals(ETSIQCObjectIdentifiers.id_etsi_qct_eseal.getId(), QCStatementExtension.getStatementStringValue(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcType.getId(), 0));
-        assertEquals("[http://qcs.localhost/QcPDS, en]", QCStatementExtension.getStatementStringValue(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId(), 0));
+        assertEquals(ETSIQCObjectIdentifiers.id_etsi_qct_eseal.getId(), QCStatementExtension.getStatementStringValues(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcType.getId(), 0).get(0));
+        assertEquals("[http://qcs.localhost/QcPDS, en]", QCStatementExtension.getStatementStringValues(seq, ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds.getId(), 0).get(0));
         // Check the PSD2 statement
         assertNotNull(psd2);
         ASN1Sequence psd2seq = ASN1Sequence.getInstance(psd2.getStatementInfo());

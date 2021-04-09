@@ -21,12 +21,8 @@ import java.util.List;
 import org.cesecore.internal.IUpgradeableData;
 
 /**
- * Interface for AcmeAccount implementations
- * 
- * @version $Id$
- *
+ * Interface for AcmeAccount implementations.
  */
-
 public interface AcmeAccount extends Serializable, IUpgradeableData {
 
     String URL_PROTOCOL_MAILTO_START = "mailto:";
@@ -48,9 +44,9 @@ public interface AcmeAccount extends Serializable, IUpgradeableData {
 
     void setContact(List<String> contact);
 
-    String getExternalAccountBinding();
+    String getExternalAccountId();
 
-    void setExternalAccountBinding(String externalAccountBinding);
+    void setExternalAccountId(String externalAccountId);
 
     /** @return the version of Terms Of Service that the account holder has agreed to */
     String getTermsOfServiceAgreedVersion();

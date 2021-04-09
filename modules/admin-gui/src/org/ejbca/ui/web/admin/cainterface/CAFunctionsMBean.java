@@ -14,6 +14,9 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
@@ -116,12 +119,20 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return name;
         }
 
+        public String getEscapedName() throws UnsupportedEncodingException {
+            return URLEncoder.encode(name, StandardCharsets.UTF_8.toString());
+        }
+
         public int getCaId() {
             return caId;
         }
 
         public String getSubjectdn() {
             return subjectdn;
+        }
+
+        public String getEscapedSubjectDn() throws UnsupportedEncodingException {
+            return URLEncoder.encode(subjectdn, StandardCharsets.UTF_8.toString());
         }
 
         public List<Certificate> getCertificatechain() {
