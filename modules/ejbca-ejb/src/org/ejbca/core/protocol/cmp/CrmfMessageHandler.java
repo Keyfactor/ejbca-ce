@@ -40,7 +40,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
-import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -85,9 +84,7 @@ import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
- * Message handler for certificate request messages in the CRMF format
- * 
- * @version $Id$
+ * Message handler for certificate request messages in the CRMF format.
  */
 public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
 	
