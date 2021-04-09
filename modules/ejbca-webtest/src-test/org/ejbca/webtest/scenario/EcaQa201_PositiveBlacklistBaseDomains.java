@@ -142,7 +142,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
 
         //Test to verify it returns a positive test result
         validatorsHelper.testBlacklistSite();
-        validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator '" + TestData.VALIDATOR_NAME + "' permitted issuance of certificate.");
+        validatorsHelper.assertBlackListResultsIsCorrect("Domain Block List Validator '" + TestData.VALIDATOR_NAME + "' permitted issuance of certificate.");
     }
 
     @Test
@@ -241,6 +241,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     @Test
     public void stepR_SelectRequestTemplate() throws Exception {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificateSubType(RaWebHelper.Page.ENDUSER);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }

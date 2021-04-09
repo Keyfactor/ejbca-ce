@@ -23,6 +23,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -67,6 +68,7 @@ public class AdminRolesHelper extends BaseHelper {
         static final By TABLES_ACCESS_RULE_RADIO_BUTTONS = By.xpath("//table[@class='selectStateRadio']");
         static final By INPUT_ACCESS_RULE_RADIO_BUTTONS = By.xpath(".//input[@type='radio']");
         static final By INPUT_ACCESS_RULE_RADIO_BUTTON_CHECKED = By.xpath(".//input[@checked='checked']");
+
         /**
          * Basic view / 'Role Template'
          */
@@ -214,6 +216,15 @@ public class AdminRolesHelper extends BaseHelper {
             fail("Please check your test scenario action, this action cannot be applied.");
         }
     }
+    public void selectAvailableSingleCa(String caName){
+            deselectOptions(Page.SELECT_AUTHORIZED_CAS);
+            selectOptionByName(Page.SELECT_AUTHORIZED_CAS, caName);
+        }
+
+    public void selectAvailableMultipleCa(List<String>listOfCas){
+        deselectOptions(Page.SELECT_AUTHORIZED_CAS);
+        selectOptionsByName(Page.SELECT_AUTHORIZED_CAS, listOfCas );
+    }
 
     public void setMatchValue(final String matchValue) {
         if(viewContext == ViewMode.VIEW_MODE_MEMBERS) {
@@ -260,6 +271,7 @@ public class AdminRolesHelper extends BaseHelper {
         }
         assertRoleUpdated();
     }
+
 
     /**
      * Asserts the group of access rules' values are sorted in ascending order.
@@ -675,5 +687,6 @@ public class AdminRolesHelper extends BaseHelper {
         }
         return textsList;
     }
+
 
 }

@@ -10,17 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.cesecore.authorization;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * Main interface for checking authorization. This interface makes use of roles and entity authentication to verify authorization.
- * 
- * @version $Id$
  */
 public interface AuthorizationSession {
-
     /**
      * Checks if the current user is authorized for the given resource.
      * Will create audit log. 

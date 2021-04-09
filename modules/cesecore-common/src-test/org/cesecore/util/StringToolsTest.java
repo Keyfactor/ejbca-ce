@@ -34,9 +34,7 @@ import org.cesecore.config.ConfigurationHolder;
 import org.junit.Test;
 
 /**
- * Tests the StringTools class .
- *
- * @version $Id$
+ * Tests the StringTools class.
  */
 public class StringToolsTest {
     private static Logger log = Logger.getLogger(StringToolsTest.class);
@@ -649,4 +647,20 @@ public class StringToolsTest {
         assertEquals(2, StringTools.splitByNewlines("Test\r\nABC").length);
     }
 
+    @Test
+    public void capitalizeCountryCode() {
+        assertEquals("CN=foo", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo"));
+        assertEquals("CN=foo,O=bar,C=SE", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,C=SE"));
+        assertEquals("CN=foo,O=bar,C=SE", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,C=se"));
+        assertEquals("CN=foo, O=bar, C=SE", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo, O=bar, C=SE"));
+        assertEquals("CN=foo, O=bar, C=SE", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo, O=bar, C=se"));
+        assertEquals("CN=foo,O=bar,C=SE,OU=bar", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,C=SE,OU=bar"));
+        assertEquals("CN=foo,O=bar,C=SE,OU=bar", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,C=se,OU=bar"));
+        assertEquals("CN=foo,O=bar, C=SE,OU=bar", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar, C=se,OU=bar"));
+        assertEquals("CN=foo,O=bar,  C=SE,OU=bar", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,  C=se,OU=bar"));
+        assertEquals("CN=foo,O=bar,DC=test,DC=com", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar,DC=test,DC=com"));
+        assertEquals("CN=foo,O=bar, DC=test, DC=com", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar, DC=test, DC=com"));
+        // Not handled case, should also be very rare (==never seen) using both DC=com and C
+        assertEquals("CN=foo,O=bar, DC=test, DC=com,C=se", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar, DC=test, DC=com,C=se"));
+    }
 }

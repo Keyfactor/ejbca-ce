@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -77,17 +78,18 @@ public class PublicWebHelper extends BaseHelper {
     /**
      * Verify number of menu items
      * @param expectedItemsNumber expected number of menu items without optional menu item
-     * @param optionalMenuItem the header of optional menu item.
+     * @param optionalMenuItems the headers of optional menu items.
      */
-    public void verifyMenuItems(final int expectedItemsNumber, final String optionalMenuItem) {
+    public void verifyMenuItems(final int expectedItemsNumber, final String... optionalMenuItems) {
         List<WebElement> menuItems = findElements(Page.MENU_ITEMS);
         List<String> foundMenuItems = new ArrayList<>();
+        List<String> optionalMenuItemList = Arrays.asList(optionalMenuItems);
         for (WebElement header : menuItems) {
-            foundMenuItems.add(header.getText());
+            // We ignore the optional items when counting
+            if (!optionalMenuItemList.contains(header.getText())) {
+                foundMenuItems.add(header.getText());
+            }
         }
-
-        assertEquals("Unexpected number of menu items",
-                foundMenuItems.contains(optionalMenuItem) ? expectedItemsNumber + 1 : expectedItemsNumber,
-                foundMenuItems.size());
+        assertEquals("Unexpected number of menu items", expectedItemsNumber, foundMenuItems.size());
     }
 }

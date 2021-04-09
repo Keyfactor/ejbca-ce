@@ -60,7 +60,10 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
     /** Returns the EJBCA version */
     @Override
     public String getEjbcaVersion() {
-    	return GlobalConfiguration.EJBCA_VERSION;
+        if (getEjbcaWebBean().isRunningEnterprise()) {
+            return GlobalConfiguration.EJBCA_VERSION;
+        }
+        return GlobalConfiguration.EJBCA_COMMUNITY_VERSION;
     }
 
     /** Returns the EJBCA title */
