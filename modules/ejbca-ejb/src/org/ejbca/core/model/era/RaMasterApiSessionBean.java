@@ -2382,7 +2382,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new NoSuchAliasException("CA configuration does not allow RA to use legacy API for EST."); // No better exception. We can't change an existing API.
         }
         try {
-            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legacy RA API call"), operation, alias, cert, username, password, requestBody);
+            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legay RA API call"), operation, alias, cert, username, password, requestBody);
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("Should not get AuthorizationDeniedException with AlwaysAllowLocalAuthenticationToken");
         }

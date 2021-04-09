@@ -1844,7 +1844,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             final String defaultCAIDStr = estConfiguration.getDefaultCAID(alias);
             if (NumberUtils.isNumber(defaultCAIDStr)) {
                 caId = Integer.valueOf(defaultCAIDStr);
-            } else if (StringUtils.isNotEmpty(defaultCAIDStr)) {
+            } else {
                 // We have a caName, and want the Id
                 final CAInfo cainfo = caSession.getCAInfoInternal(-1, defaultCAIDStr, true);
                 if (cainfo != null) {
@@ -1853,10 +1853,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     if (log.isDebugEnabled()) {
                         log.debug("CA with name '"+defaultCAIDStr+"' does not exist, allowing everyone to view EST alias '"+alias+"'.");
                     }
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("No default CA configured, allowing everyone to view EST alias '"+alias+"'.");
                 }
             }
             if (caId != 0) {
