@@ -70,6 +70,10 @@ import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingStatus;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -356,6 +360,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
+    private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -1260,6 +1266,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().isRunningEnterprise();
     }
 
+    /** @return true if MSAE Settings is enabled. Should be false for EJBCA CE */
+    public boolean isMSAESettingsAvailable() {
+        return getEjbcaWebBean().isRunningEnterprise();
+    }
+
     public class ProtocolGuiInfo {
         private String protocol;
         private String url;
@@ -1291,6 +1302,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         /** @return true if service is available in the deployed instance */
         public boolean isAvailable() {
             if (protocol.equals(AvailableProtocols.EST.getName()) && !isEstAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.MSAE.getName()) && !isMSAESettingsAvailable()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRestAvailable()) {
@@ -1919,6 +1933,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    public List<SelectItem> getAvailableAuthenticationKeyBindings() {
+        final List<SelectItem> ret = new ArrayList<>();
+        final List<InternalKeyBindingInfo> authorizedAkbs = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAdmin(), AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
+        for (final InternalKeyBindingInfo current : authorizedAkbs) {
+            ret.add(new SelectItem(current.getId(), current.getName(), current.getName(), !current.getStatus().equals(InternalKeyBindingStatus.ACTIVE)));
+        }
+        return ret;
+    }
+
     public List<SelectItem> getAvailableOcspCleanupUnits() {
         final List<SelectItem> units = new ArrayList<>();
         final String days = TimeUnit.DAYS.toString();
@@ -1999,6 +2022,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Configuration Checker");
+        }
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
+            availableTabs.add("Auto Enrollment");
         }
         return availableTabs;
     }
