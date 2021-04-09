@@ -332,17 +332,23 @@ public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault im
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Locale getCurrentRaLocale(final AuthenticationToken admin) {
-        final AdminPreference adminPreference = getAdminPreference(admin);
-        if (adminPreference == null) {
+        try {
+            final AdminPreference adminPreference = getAdminPreference(admin);
+            if (adminPreference == null) {
+                return getDefaultAdminPreference().getPreferedRaLanguage();
+            }
+
+            final Locale currentLocale = adminPreference.getPreferedRaLanguage();
+            if (currentLocale != null) {
+                return currentLocale;
+            }
+
             return getDefaultAdminPreference().getPreferedRaLanguage();
+        } catch (RuntimeException e) {
+            // This method is called in the error handler, so we don't want to throw any exceptions.
+            log.warn("Failed to get locale: " + e.getMessage(), e);
+            return null;
         }
-
-        final Locale currentLocale = adminPreference.getPreferedRaLanguage();
-        if (currentLocale != null) {
-            return currentLocale;
-        }
-
-        return getDefaultAdminPreference().getPreferedRaLanguage();
     }
 
     @Override
