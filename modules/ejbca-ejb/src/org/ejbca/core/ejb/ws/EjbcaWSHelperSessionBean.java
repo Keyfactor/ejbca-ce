@@ -35,6 +35,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -151,8 +152,9 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             return admin;
         } else if (oauthBearerToken != null) {
             final AuthenticationToken admin;
+            final OAuthConfiguration oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
             try {
-                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
                 if (admin == null) {
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token.");
                 }
