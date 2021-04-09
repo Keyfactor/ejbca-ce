@@ -213,7 +213,7 @@ public final class CesecoreConfiguration {
      * Parameter to specify if retrieving PublicKeyBlacklist objects from PublicKeyBlacklistSession should be cached, and in that case for how long.
      */
     public static long getCachePublicKeyBlacklistTime() {
-        return getLongValue("blacklist.cachetime", 30000L, "milliseconds to cache public key blacklist entries");
+        return getLongValue("blacklist.cachetime", 30000L, "milliseconds to cache public key block list entries");
     }
 
     /**
@@ -392,6 +392,14 @@ public final class CesecoreConfiguration {
     /** @return the number of rows that should be fetched at the time when creating CRLs. */
     public static int getDatabaseRevokedCertInfoFetchSize() {
         return (int) getLongValue("database.crlgenfetchsize", 500000L, "rows");
+    }
+
+    /**
+     * Whether EJBCA should request ordered fetching of revoked certificates when generating CRLs.
+     * This is a workaround for MS-SQL.
+     */
+    public static boolean getDatabaseRevokedCertInfoFetchOrdered() {
+        return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
     }
 
     /**
