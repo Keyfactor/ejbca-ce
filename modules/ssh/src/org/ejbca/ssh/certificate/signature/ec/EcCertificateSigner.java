@@ -30,8 +30,6 @@ import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 
 /**
  * EC Certificate Signer.
- *
- * @version $Id$
  */
 public class EcCertificateSigner implements SshCertificateSigner {
 
@@ -42,7 +40,7 @@ public class EcCertificateSigner implements SshCertificateSigner {
     }
 
     @Override
-    public byte[] signPayload(final byte[] payload, final PublicKey signingPublicKey, final PrivateKey signingKey) throws InvalidKeyException, SignatureException {
+    public byte[] signPayload(final byte[] payload, final PublicKey signingPublicKey, final PrivateKey signingKey, final String provider) throws InvalidKeyException, SignatureException {
         try {
             if (!signingAlgorithm.assertCorrectKeyType((ECPublicKey) signingPublicKey)) {
                 throw new InvalidKeyException("Incorrect EC signing key ("
@@ -53,7 +51,7 @@ public class EcCertificateSigner implements SshCertificateSigner {
         }
 
         try {
-            Signature signer = signingAlgorithm.getSigner();
+            Signature signer = signingAlgorithm.getSigner(provider);
             signer.initSign(signingKey);
             signer.update(payload);
             byte[] signatureBytes = signer.sign();

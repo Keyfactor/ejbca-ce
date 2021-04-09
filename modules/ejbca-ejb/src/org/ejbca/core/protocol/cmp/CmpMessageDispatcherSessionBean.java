@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +146,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     log.trace(ASN1Dump.dumpAsString(pkiMessage));
                 }
             }
-            log.info("Dispatching message with transaction ID: " + pkiHeader.getTransactionID());
+            log.info("Dispatching message of type " + tagno + " with transaction ID: " + pkiHeader.getTransactionID());
             BaseCmpMessage cmpMessage = null;
             ICmpMessageHandler handler = null;
             int unknownMessageType = -1;

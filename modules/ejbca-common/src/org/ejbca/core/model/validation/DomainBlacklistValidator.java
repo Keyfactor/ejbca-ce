@@ -171,7 +171,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                     domainSet.add(line.toLowerCase(Locale.ROOT));
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug("Parsed domain blacklist with " + domainSet.size() + " entries (" + lineNumber + " lines)");
+                    log.debug("Parsed domain block list with " + domainSet.size() + " entries (" + lineNumber + " lines)");
                 }
                 setBlacklist(domainSet);
                 setBlacklistDate(new Date());
@@ -180,7 +180,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 // The Validator cache is reloaded after saving, so that will trigger a reload of the cache here in DomainBlacklistValidator 
             }
         } catch (IOException e) {
-            throw new DomainBlacklistFileException("Unable to parse domain black list. " + e.getMessage());
+            throw new DomainBlacklistFileException("Unable to parse domain block list. " + e.getMessage());
         }
     }
 
@@ -210,7 +210,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 normalizer.initialize(data);
                 newNormalizers.add(normalizer);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                log.error("Failed to load Domain Blacklist Normalizer '" + normalizerName + "'.");
+                log.error("Failed to load Domain Block List Normalizer '" + normalizerName + "'.");
                 newInitializationFailure = true;
             }
         }
@@ -221,7 +221,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 final DomainBlacklistChecker checker = (DomainBlacklistChecker) checkerClass.newInstance();
                 newCheckers.add(checker);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                log.error("Failed to load Domain Blacklist Checker '" + checkerName + "'.");
+                log.error("Failed to load Domain Block List Checker '" + checkerName + "'.");
                 newInitializationFailure = true;
             }
         }
@@ -255,7 +255,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
      */
     private void clearCache() {
         if (log.isDebugEnabled()) {
-            log.debug("Clearing domain blacklist cache for validator '" + getProfileName() + "'");
+            log.debug("Clearing domain block list cache for validator '" + getProfileName() + "'");
         }
         cache = null;
     }
@@ -275,7 +275,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                     }
                     changeBlacklist(uploadedFile);
                 } else {
-                    log.debug("No new blacklist file was uploaded.");
+                    log.debug("No new block list file was uploaded.");
                 }
                 return rawData;
             }
@@ -459,7 +459,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             for (final DomainBlacklistChecker checker : cache.checkers) {
                 final String matchingBlacklistedDomain = checker.check(normalizedDomain);
                 if (matchingBlacklistedDomain != null) {
-                    messages.add("Domain '" + domainName + "' is blacklisted. Matching domain on blacklist: '" + matchingBlacklistedDomain +"'");
+                    messages.add("Domain '" + domainName + "' is block listed. Matching domain on block list: '" + matchingBlacklistedDomain +"'");
                     result = false;
                 }
             }

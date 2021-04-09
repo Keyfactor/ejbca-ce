@@ -30,12 +30,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -98,6 +100,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.RFC4683Tools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -106,6 +109,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -140,9 +144,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Test class for tests based on an RSA
- * 
- * @version $Id$
- *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SignSessionWithRsaTest extends SignSessionCommon {
@@ -204,6 +205,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -451,7 +453,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
@@ -552,19 +554,25 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.REGISTEREDID);
         profile.addField(DnComponents.XMPPADDR);
         profile.addField(DnComponents.SRVNAME);
+        profile.addField(DnComponents.SUBJECTIDENTIFICATIONMETHOD);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
         try {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
             int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
             // Change a user that we know...
+            final String san = "uniformResourceId=http://www.a.se/,upn=foo@a.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,upn=foo@b.se,"
+                    + "rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,"
+                    + "srvName=_Service.Name,"
+                    + "subjectIdentificationMethod=2.16.840.1.101.3.4.2.1::MyStrongPassword::1.2.410.200004.10.1.1.10.1::SIIValue";
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
-                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name", 
+                    rsacaid, san, 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, userData, false);   
-            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            EndEntityInformation ei = endEntityAccessSession.findUser(internalAdmin, RSA_USERNAME);
+            log.debug("Changed user: " + ei.getUsername() + ", " + ei.getDN() + ", " + ei.getSubjectAltName());
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String altNames = CertTools.getSubjectAlternativeName(cert);
@@ -592,6 +600,18 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertEquals("tomas@xmpp.domain.com", name);
             name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
             assertEquals("_Service.Name", name);
+            name = CertTools.getPartFromDN(altNames, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD);
+            // Compare the SIM, we know the input that was used to generate the SIM above
+            // MyStrongPassword, 1.2.410.200004.10.1.1.10.1 and SIIValue
+            String[] simtokens = StringUtils.split(name, "::");
+            assertNotNull("SIM must be tokenized by ::", simtokens);
+            assertEquals("There should be 3 SIM tokens", 3, simtokens.length);
+            String hashalg = simtokens[0];
+            String r = simtokens[1];
+            String pepsifromsim = simtokens[2];
+            String pepsi = RFC4683Tools.createPepsi(hashalg, "MyStrongPassword", "1.2.410.200004.10.1.1.10.1", "SIIValue", r);
+            assertEquals("Calculated PEPSI and PEPSI from SIM must be equal", pepsifromsim, pepsi);
+
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas1@xmpp.domain.com,srvName=_Service1.Name", 
@@ -599,7 +619,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
             endEntity.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, endEntity, false);   
-            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            ei = endEntityAccessSession.findUser(internalAdmin, RSA_USERNAME);
+            log.debug("Changed user: " + ei.getUsername() + ", " + ei.getDN() + ", " + ei.getSubjectAltName());
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             altNames = CertTools.getSubjectAlternativeName(cert);
@@ -1253,7 +1274,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=testsigalg"), rsakeys.getPublic(), null, rsakeys
                 .getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         byte[] p10bytes = bOut.toByteArray();
@@ -1337,7 +1358,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
                     rsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            DEROutputStream dOut = new DEROutputStream(bOut);
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             dOut.writeObject(req.toASN1Structure());
             dOut.close();
             byte[] p10bytes = bOut.toByteArray();
@@ -1464,7 +1485,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
                     rsakeys.getPrivate(), null);
             bOut = new ByteArrayOutputStream();
-            dOut = new DEROutputStream(bOut);
+            dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             dOut.writeObject(req.toASN1Structure());
             dOut.close();
             p10bytes = bOut.toByteArray();
@@ -1618,7 +1639,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("CN=foo,C=SE,NAME=AnaTom,O=My org"),
                     rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            DEROutputStream dOut = new DEROutputStream(bOut);
+            ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             dOut.writeObject(req.toASN1Structure());
             dOut.close();
             PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
@@ -1689,7 +1710,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"), dsakeys
                 .getPublic(), new DERSet(), dsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
 

@@ -51,15 +51,16 @@ import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -187,7 +188,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				myProofOfPossession = new ProofOfPossession();
 			} else {
 				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				final DEROutputStream mout = new DEROutputStream(baos);
+		        final ASN1OutputStream mout = ASN1OutputStream.create(baos, ASN1Encoding.DER);
 				mout.writeObject(keyUpdateRequest);
 				mout.close();
 				final byte[] popoProtectionBytes = baos.toByteArray();
@@ -693,7 +694,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			final CertReqMessages kur = (CertReqMessages) signedMsg.getBody().getContent();
 			this.sessionData.setReqId(kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue());
 			final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-			final DEROutputStream out = new DEROutputStream(bao);
+			final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
 			out.writeObject(signedMsg);
 			out.close();
 			final byte[] ba = bao.toByteArray();
@@ -747,7 +748,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			}
 			final PKIMessage confirm = this.sessionData.protectPKIMessage(con, false);
 			final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-			final DEROutputStream out = new DEROutputStream(bao);
+			final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
 			out.writeObject(confirm);
 			out.close();
 			final byte[] ba = bao.toByteArray();

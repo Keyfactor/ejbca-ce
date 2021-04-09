@@ -132,6 +132,7 @@ import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.ssh.certificate.SshCertificateBase;
 import org.ejbca.ssh.certificate.SshEcCertificate;
 import org.ejbca.ssh.certificate.SshRsaCertificate;
+import org.ejbca.ssh.certificate.signature.SshCertificateSigner;
 import org.ejbca.ssh.certificate.signature.ec.EcCertificateSigner;
 import org.ejbca.ssh.certificate.signature.ec.EcSigningAlgorithm;
 import org.ejbca.ssh.certificate.signature.rsa.RsaCertificateSigner;
@@ -139,11 +140,15 @@ import org.ejbca.ssh.certificate.signature.rsa.RsaSigningAlgorithms;
 import org.ejbca.ssh.keys.ec.SshEcPublicKey;
 import org.ejbca.ssh.keys.rsa.SshRsaPublicKey;
 
-/**
+/** A CA for issuing SSH certificates.
+ * Certificate specification: https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys?annotate=HEAD
+ * KRL specification: https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.krl?annotate=HEAD
+ * 
+ * Other relevant standards:
+ * https://tools.ietf.org/html/rfc8332
+ * https://tools.ietf.org/html/rfc6668
  *
  * TODO SSH: Remove all references to CT in ECA-9182
- *
- * @version $Id$
  *
  */
 public class SshCaImpl extends CABase implements Serializable, SshCa {
@@ -246,14 +251,14 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         case CertificateConstants.CERTTYPE_SSH:
             try {
                 return generateSshCertificate(subject, (SshRequestMessage) request, publicKey, notBefore, notAfter, certProfile, caPublicKey,
-                        caPrivateKey);
+                        caPrivateKey, cryptoToken.getSignProviderName());
             } catch (InvalidKeyException | InvalidKeySpecException e) {
                 throw new InvalidAlgorithmException("Unable to process either signature or public key.", e);
             } catch (CertificateEncodingException e) {
                 throw new CertificateCreateException("Could not create certificate", e);
             }
         default:
-            throw new CertificateCreateException("SSH CA can not generate certificates for other CA types than ROOT, SUBCA or SSH");
+            throw new CertificateCreateException("SSH CA can not generate certificates for other certificate types than ROOT, SUBCA or SSH. Certificate profile is of type " + certProfile.getType());
         }
 
     }
@@ -281,7 +286,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
      */
     private SshCertificateBase generateSshCertificate(final EndEntityInformation endEntityInformation, final SshRequestMessage requestMessage,
             final PublicKey publicKey, final Date notBefore, final Date notAfter, final CertificateProfile certificateProfile,
-            final PublicKey caPublicKey, final PrivateKey caPrivateKey) throws InvalidKeySpecException,
+            final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider) throws InvalidKeySpecException,
             SignatureException, InvalidKeyException, CertificateEncodingException, CAOfflineException, IllegalValidityException {
 
         //Generate a nine octet serial number - since the serial number generator always produces positive numbers, we'll simply squeeze it into an unsigned long.
@@ -350,22 +355,25 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
         final CertificateValidity validity = new CertificateValidity(endEntityInformation, getCAInfo(), certificateProfile, notBefore, notAfter, cacert, false, false);
 
         SshCertificateBase sshCertificate;
+        SshCertificateSigner sshCertificateSigner = null;
         if (publicKey instanceof ECPublicKey) {
             sshCertificate = new SshEcCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, validity.getNotBefore(), validity.getNotAfter(),
                     criticalOptions, extensions, signatureKey, requestMessage.getComment(), getSubjectDN());
-            EcCertificateSigner ecCertificateSigner = new EcCertificateSigner(
-                    EcSigningAlgorithm.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
-            sshCertificate
-                    .setSignature(ecCertificateSigner.signPayload(sshCertificate.encodeCertificateBody(), caPublicKey, caPrivateKey));
         } else if (publicKey instanceof RSAPublicKey) {
-            sshCertificate = new SshRsaCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, notBefore, notAfter,
+            sshCertificate = new SshRsaCertificate(sshKey, nonceBytes, serialNumber, certificateType, keyId, principals, validity.getNotBefore(), validity.getNotAfter(),
                     criticalOptions, extensions, signatureKey, requestMessage.getComment(), getSubjectDN());
-            RsaCertificateSigner rsaCertificateSigner = new RsaCertificateSigner(RsaSigningAlgorithms.SHA1);
-            sshCertificate
-                    .setSignature(rsaCertificateSigner.signPayload(sshCertificate.getEncoded(), caPublicKey, caPrivateKey));
         } else {
             throw new InvalidKeySpecException("Public key was not of a type applicable for SSH certificates.");
         }
+        
+        if (caPublicKey instanceof ECPublicKey) {
+          sshCertificateSigner = new EcCertificateSigner(EcSigningAlgorithm.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
+        } else if (caPublicKey instanceof RSAPublicKey) {
+            sshCertificateSigner = new RsaCertificateSigner(RsaSigningAlgorithms.getFromIdentifier(getCAInfo().getCAToken().getSignatureAlgorithm()));
+        } else {
+            throw new InvalidKeySpecException("CA Public key was not of a type applicable for SSH certificates.");
+        }
+        sshCertificate.setSignature(sshCertificateSigner.signPayload(sshCertificate.encodeCertificateBody(), caPublicKey, caPrivateKey, provider));
         return sshCertificate;
     }
 
