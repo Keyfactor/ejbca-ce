@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -146,6 +152,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -170,18 +177,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.internal.ArrayComparisonFailure;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * Helper class for CMP Junit tests. 
  * You can run this test against a CMP Proxy instead of directoy to the CA by setting the system property httpCmpProxyURL, 
  * for example to "http://localhost:8080/cmpProxy-6.4.0"
- * 
- * @version $Id$
  */
 public abstract class CmpTestCase extends CaTestCase {
 
@@ -1015,11 +1014,11 @@ public abstract class CmpTestCase extends CaTestCase {
         assertArrayEquals("User DN '" + userDn + "' was given, but certificate DN is '" + certificateDn + "'.", userDn.getEncoded(), certificateDn.getEncoded());
     }
 
-    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId) throws Exception {
-        return checkCmpCertRepMessage(userDN, cacert, pkiMessageBytes, requestId, ResponseStatus.SUCCESS.getValue());
+    protected X509Certificate checkCmpCertRepMessage(CmpConfiguration configuration, String alias, X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId) throws Exception {
+        return checkCmpCertRepMessage(configuration, alias, userDN, cacert, pkiMessageBytes, requestId, ResponseStatus.SUCCESS.getValue());
     }
     
-    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId, int responseStatus) throws Exception {
+    protected X509Certificate checkCmpCertRepMessage(CmpConfiguration configuration, String alias, X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId, int responseStatus) throws Exception {
         // Parse response message
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
@@ -1050,12 +1049,16 @@ public abstract class CmpTestCase extends CaTestCase {
                 checkDnIncludingAttributeOrder(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
                 assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
                 // Verify the issuer of cert
-                final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
-                final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
-                assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
-                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
-                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
-                return leafCertificate;
+                if (configuration.getResponseCaPubsIssuingCA(alias)) {
+                    final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
+                    final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
+                    assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
+                    assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
+                    assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
+                    return leafCertificate;
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }

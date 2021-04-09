@@ -94,9 +94,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * System tests for when a CMP alias is set to use specific or 'ProfileDefault' CertificateProfile and CA 
- * 
- * @version $Id$
+ * System tests for when a CMP alias is set to use specific or 
+ * 'ProfileDefault' CertificateProfile and CA.
  */
 public class DefaultProfileTest extends CmpTestCase {
     
@@ -622,7 +621,7 @@ public class DefaultProfileTest extends CmpTestCase {
     
     private String getCertFpFromCMPResponse(final PKIMessage respMsg, final byte[] response, final X509Certificate cacert) throws Exception {
         CertReqMessages ir = (CertReqMessages) respMsg.getBody().getContent();
-        Certificate cert = checkCmpCertRepMessage(USERDN, cacert, response, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+        Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USERDN, cacert, response, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                 .getValue().intValue());
         return CertTools.getFingerprintAsString(cert);
     }
