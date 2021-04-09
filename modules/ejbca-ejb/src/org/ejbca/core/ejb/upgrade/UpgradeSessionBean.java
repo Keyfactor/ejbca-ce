@@ -142,7 +142,6 @@ import java.util.concurrent.Future;
  * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
  *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

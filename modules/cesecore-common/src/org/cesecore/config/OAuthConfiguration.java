@@ -75,6 +75,14 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
         return optionalEntry.orElse(null);
     }
 
+    public OAuthKeyInfo getOauthKeyById(Integer id){
+        Map<String, OAuthKeyInfo> oauthKeys = getOauthKeys();
+        final Optional<OAuthKeyInfo> optionalEntry = oauthKeys.values().stream().filter(
+                oauthInfo ->
+                        oauthInfo.getInternalId().equals(id)).findFirst();
+        return optionalEntry.orElse(null);
+    }
+
     @Override
     public void upgrade() {
 
