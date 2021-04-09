@@ -3321,6 +3321,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 8) {
                 try {
                     return raMasterApi.getGlobalConfiguration(type);
+                } catch (IllegalStateException e) {
+                    // 7.4.x can throw NPE, which results in an IllegalStateException because the NPE is an unexpected exception.
+                    // Just ignore and try next implementation.
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to get configuration of type " + type.getName() + ". This can happen if the peer runs 7.4.x or older and does not support the requested configuration type.");
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

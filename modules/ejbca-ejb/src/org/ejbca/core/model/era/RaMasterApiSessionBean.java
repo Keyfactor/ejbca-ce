@@ -2886,7 +2886,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Found Global configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            if (result != null) {
+                log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            } else  {
+                log.debug("Could not find configuration with class '" + type.getName() + "'. Probably the request was sent from an RA peer of a newer version");
+            }
         }
         return result;
     }
