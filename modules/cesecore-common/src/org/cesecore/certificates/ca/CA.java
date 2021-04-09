@@ -48,8 +48,6 @@ import org.cesecore.util.CertTools;
 
 /**
  * Common methods for unrestricted X509 and CVC CA implementations.
- * 
- * @version $Id$
  */
 public interface CA extends CACommon {
     
@@ -60,6 +58,10 @@ public interface CA extends CACommon {
     long getDeltaCRLPeriod();
 
     void setDeltaCRLPeriod(long deltacrlperiod);
+    
+    boolean getGenerateCrlUponRevocation();
+
+    void setGenerateCrlUponRevocation(boolean generate);
 
     long getCRLIssueInterval();
 

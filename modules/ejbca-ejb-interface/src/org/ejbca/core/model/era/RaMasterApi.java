@@ -358,7 +358,7 @@ public interface RaMasterApi {
      * Searches for a certificate. If present locally, then the data (revocation status etc.) from the local database will be returned.
      * Returns a certificate and its Ca chain
      * @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise
-     * @since Initial RA Master API version (EJBCA 7.4.2)
+     * @since RA Master API version 10 (EJBCA 7.4.2)
      */
     List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint);
 
@@ -428,6 +428,12 @@ public interface RaMasterApi {
 
     /**
      * @return map of authorized certificate profiles for the provided authentication token
+     * @since RA Master API version 11 (EJBCA 7.5.0)
+     */
+    public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken);
+
+    /**
+     * @return map of authorized certificate profiles of End Entity type for the provided authentication token
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken);
@@ -477,6 +483,20 @@ public interface RaMasterApi {
     boolean addUserFromWS(AuthenticationToken authenticationToken, UserDataVOWS userData, boolean isClearPwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EjbcaException;
+
+    /**
+     * Revoke certificate and then delete a user (end entity).
+     * @param authenticationToken the administrator performing the action
+     * @param username the username of the end entity user to be deleted
+     * @param reason One of RevokedCertInfo.REVOCATION_REASON_....
+     * @throws AuthorizationDeniedException if administrator is not authorized to delete user
+     * @throws ApprovalException if an approval already exists for this request.
+     * @throws NoSuchEndEntityException if the end entity was not found.
+     * @throws WaitingForApprovalException if approval is required to finalize the deletion of the end entity.
+     * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
+     */
+    void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
+        throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException;
 
     /**
      * Deletes (end entity) user. Does not propagate the exceptions but logs them, i.e. if end entity does not exist the method still succeeds.
@@ -574,7 +594,6 @@ public interface RaMasterApi {
      * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null.
      * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
-     * @throws ApprovalException if the request requires approval
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
      * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest
@@ -583,6 +602,24 @@ public interface RaMasterApi {
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userData, final String requestData, final int requestType,
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException,
             EndEntityProfileValidationException;
+    
+    /**
+     * Calls CertiifcateRequestSession.softTokenRequest
+     * Edits or adds a user and generates a keystore for that user in a single transaction, including key recovery if that is active. Used from EjbcaWS.
+     * 
+     * @param admin is the requesting administrator
+     * @param userdata contains information about the user that is about to get a keystore
+     * @param keyspec name of ECDSA key or length of RSA and DSA keys  
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
+     * @param createJKS true to create a JKS, false to create a PKCS12
+     * @return an encoded keystore of the type specified 
+     * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+     * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
+     * @throws CADoesntExistsException If the CA requested for certificate generation does not exist
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
+     */
+    byte[] softTokenRequest(AuthenticationToken authenticationToken, UserDataVOWS userdata, String keyspec, String keyalg, boolean createJKS)
+            throws AuthorizationDeniedException, CADoesntExistsException, EndEntityProfileValidationException, EjbcaException;
 
     /**
      * Enrolls a new end entity and creates an SSH certificate according to the profiles defined for that end entity
@@ -732,6 +769,7 @@ public interface RaMasterApi {
      * @param authenticationToken the administrator performing the action
      * @param endEntityInformation an EndEntityInformation object with the new information
      * @param isClearPwd true if the password will be stored in clear form in the  db, otherwise it is hashed.
+     * @param newUsername the new username to be changed to.
      * @throws AuthorizationDeniedException administrator not authorized to edit user
      * @throws EndEntityProfileValidationException data doesn't fulfill EEP requirements
      * @throws ApprovalException if an approval already is waiting for specified action
@@ -743,7 +781,7 @@ public interface RaMasterApi {
      * @throws CustomFieldException if the EE was not validated by a locally defined field validator
      * @since RA Master API version 2 (EJBCA 6.11.0)
      */
-    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;

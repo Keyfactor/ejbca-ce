@@ -193,7 +193,7 @@ public class ExternalScriptsWhitelist {
      */
     @Override
     public String toString() {
-        return "# Is this whitelist enabled? " + isEnabled + System.lineSeparator() +
+        return "# Is this allow list enabled? " + isEnabled + System.lineSeparator() +
                 StringUtils.join(getScriptsPaths(), System.lineSeparator());
     }
 }

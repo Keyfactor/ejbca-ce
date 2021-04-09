@@ -166,9 +166,9 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         final String keyAlgorithm = publicKey.getAlgorithm(); // AlgorithmTools.getKeyAlgorithm(publicKey);
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + keyAlgorithm + ", length " + keyLength + ", format " + publicKey.getFormat()
-                    + ", implementation " + publicKey.getClass().getName() + " against public key blacklist.");
+                    + ", implementation " + publicKey.getClass().getName() + " against public key block list.");
         }
-        log.info("Matching public key with blacklist fingerprint " + fingerprint + " with public key blacklist.");
+        log.info("Matching public key with block list fingerprint " + fingerprint + " with public key block list.");
         if (!useOnlyCache) {
             // A bit hackish, make a call to blacklist session to ensure that blacklist cache has this entry loaded
             // TODO: if the key is not in the cache (which it hopefully is not) this is a database lookup for each key. Huuge performance hit
@@ -194,7 +194,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         }
         if (keyAlgMatched) {
             final String message = "Public key with id " + entry.getID() + " and fingerprint " + fingerprint
-                    + " found in public key blacklist.";
+                    + " found in public key block list.";
             messages.add("Invalid: " + message);
         } else {
             log.trace("publicKeyBlacklist passed");
