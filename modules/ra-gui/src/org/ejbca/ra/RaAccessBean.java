@@ -96,9 +96,9 @@ public class RaAccessBean implements Serializable {
     }
 
     private boolean isAnyLoginProviderAvailable() {
-        // FIXME this is broken and will not work over peers (ECA-9938)
-        final OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
-        return MapUtils.isNotEmpty(oAuthConfiguration.getOauthKeys());
+        final OAuthConfiguration  oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
+        // Older versions than 7.5.0 will return null here
+        return oauthConfiguration != null && MapUtils.isNotEmpty(oauthConfiguration.getOauthKeys());
     }
 
     public boolean isAuthorizedToAnything() {

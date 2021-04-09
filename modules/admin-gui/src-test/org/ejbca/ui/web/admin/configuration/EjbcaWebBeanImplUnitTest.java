@@ -52,6 +52,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
 import org.cesecore.util.CertTools;
@@ -105,9 +106,11 @@ public final class EjbcaWebBeanImplUnitTest {
     private List<Object> allMockObjects;
     private ServletContext mockedServletContext;
     private AuthenticationToken mockedAuthToken;
+    private OAuthConfiguration dummyOAuthConfig;
     
     private byte[] tlsSession;
     private boolean alreadyInitialized;
+    private boolean alreadyFetchedOauthConfig;
     private String bearerToken;
     private String bearerTokenFingerprint;
     
@@ -137,8 +140,10 @@ public final class EjbcaWebBeanImplUnitTest {
         mockedAuthToken = null;
         tlsSession = TLS_SESSION_1;
         alreadyInitialized = false;
+        alreadyFetchedOauthConfig = false;
         setClientCertNumber(1);
         setBearerTokenNumber(1);
+        dummyOAuthConfig = new OAuthConfiguration();
     }
     
     private static void setClientCertNumber(int number) {
@@ -224,7 +229,11 @@ public final class EjbcaWebBeanImplUnitTest {
         allMockObjects.add(oauthToken);
         expect(oauthToken.getClaims()).andReturn(TEST_CLAIMS);
         expect(oauthToken.getPublicKeyBase64Fingerprint()).andReturn(bearerTokenFingerprint);
-        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(bearerToken)).andReturn(oauthToken);
+        if (!alreadyFetchedOauthConfig) {
+            expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
+            alreadyFetchedOauthConfig = true;
+        }
+        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken))).andReturn(oauthToken);
         expect(oauthToken.getProviderLabel()).andReturn(OAUTH_PROVIDER_NAME).anyTimes();
         expect(ejbs.getRoleSession().getRolesAuthenticationTokenIsMemberOf(oauthToken)).andReturn(ADMIN_ROLES);
         ejbs.getSecurityEventsLoggerSession().log(same(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN), same(EventStatus.SUCCESS), same(EjbcaModuleTypes.ADMINWEB), 
@@ -290,7 +299,8 @@ public final class EjbcaWebBeanImplUnitTest {
     public void unknownBearerToken() throws Exception {
         expectExtractBearerToken();
         expectRequestGetters();
-        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(bearerToken)).andReturn(null);
+        expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
+        expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken))).andReturn(null);
         replayAll();
         try {
             ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);

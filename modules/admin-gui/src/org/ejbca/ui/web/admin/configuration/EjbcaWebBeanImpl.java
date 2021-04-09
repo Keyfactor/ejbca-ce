@@ -301,17 +301,17 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             if (oauthBearerToken != null && administrator == null) {
                 try {
-                    administrator = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
+                    administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken);
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
-                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oauthBearerToken, refreshToken);
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, refreshToken);
                         if (token != null) {
                             httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                             if (token.getRefreshToken() != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                             }
-                            administrator = authenticationSession.authenticateUsingOAuthBearerToken(token.getAccessToken());
+                            administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), token.getAccessToken());
                         }
                     }
                 }

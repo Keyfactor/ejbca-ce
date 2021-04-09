@@ -12,28 +12,6 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.log4j.Logger;
-import org.bouncycastle.cms.CMSException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.pub.ServletUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-
-import javax.ejb.EJB;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -43,9 +21,36 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.codec.binary.Hex;
+import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.pub.ServletUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Servlet for download of CA certificates and chains.
@@ -72,8 +77,6 @@ public class RaCertDistServlet extends HttpServlet {
     private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
-    @EJB
-    private RoleSessionLocal roleSession;
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
 
@@ -81,7 +84,7 @@ public class RaCertDistServlet extends HttpServlet {
     protected void service(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) throws ServletException, IOException {
         if (raAuthenticationHelper==null) {
             // Initialize the authentication helper function
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, roleSession);
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         }
         if (httpServletRequest.getParameter(PARAMETER_FINGERPRINTSHEET) != null) {
             downloadFingerprintSheet(httpServletRequest, httpServletResponse);
