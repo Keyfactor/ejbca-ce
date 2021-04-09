@@ -26,8 +26,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
  * verified.
  * 
  * Example usage: AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal function abc");
- * 
- * @version $Id$
+ *
  */
 public class AlwaysAllowLocalAuthenticationToken extends NestableAuthenticationToken {
 
@@ -134,6 +133,11 @@ public class AlwaysAllowLocalAuthenticationToken extends NestableAuthenticationT
 
         @Override
         public boolean isIssuedByCa() {
+            return false;
+        }
+
+        @Override
+        public boolean isIssuedByOauthProvider() {
             return false;
         }
 

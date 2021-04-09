@@ -64,6 +64,10 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             log.debug("Role token type does not match.");
             return false;
         }
+        if (!principal.getOauthProviderId().equals(accessUser.getOauthProviderId())) {
+            log.debug("Role token oauth provider id does not match.");
+            return false;
+        }
         final OAuth2AccessMatchValue matchWith = (OAuth2AccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
         final String value = accessUser.getMatchValue();
         switch (matchWith) {
