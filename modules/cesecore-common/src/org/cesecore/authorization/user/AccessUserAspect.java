@@ -16,9 +16,7 @@ package org.cesecore.authorization.user;
 import java.io.Serializable;
 
 /**
- * Interface for AccessUserAspectData.  
- * 
- * @version $Id$
+ * Interface for AccessUserAspectData.
  *
  */
 public interface AccessUserAspect extends Serializable {
@@ -42,6 +40,8 @@ public interface AccessUserAspect extends Serializable {
     Integer getCaId();
 
     void setCaId(Integer caId);
+
+    Integer getOauthProviderId();
 
     String getTokenType();
 
