@@ -946,7 +946,7 @@ public interface RaMasterApi {
      * @since RA Master API version 2 (EJBCA 6.11.0)
      */
     @Deprecated
-    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
+    byte[] estDispatch(String operation, String alias, X509Certificate tlscert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
 
     /**
@@ -957,7 +957,7 @@ public interface RaMasterApi {
      * @param authenticationToken the origin of the request
      * @param operation the EST operation to perform
      * @param alias the requested CA configuration that should handle the request.
-     * @param cert The client certificate used to request this operation if any
+     * @param tlscert The client TLS certificate used to request this operation if any
      * @param username The authentication username if any
      * @param password The authentication password if any
      * @param requestBody The HTTP request body. Usually a PKCS#10
@@ -974,7 +974,7 @@ public interface RaMasterApi {
      * @see org.ejbca.core.protocol.est.EstOperationsSessionRemote
      * @since Added in EJBCA 7.5.0, 7.4.3, 7.4.1.1. Those have different API versions, so this method is not tied to any specific version.
      */
-    byte[] estDispatchAuthenticated(AuthenticationToken authenticationToken, String operation, String alias, X509Certificate cert, String username,
+    byte[] estDispatchAuthenticated(AuthenticationToken authenticationToken, String operation, String alias, X509Certificate tlscert, String username,
             String password, byte[] requestBody) throws AuthorizationDeniedException, NoSuchAliasException, CADoesntExistsException, CertificateCreateException,
             CertificateRenewalException, AuthenticationFailedException;
 
