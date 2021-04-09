@@ -28,6 +28,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -112,10 +113,15 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public AuthenticationToken authenticateUsingOAuthBearerToken(final String encodedOauthBearerToken) throws TokenExpiredException {
+    public AuthenticationToken authenticateUsingOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken) throws TokenExpiredException {
         try {
             String keyFingerprint = null;
             OAuthKeyInfo keyInfo = null;
+            if (oauthConfiguration == null || MapUtils.isEmpty(oauthConfiguration.getOauthKeys())) {
+                LOG.info(oauthConfiguration == null ? "Failed to get OAuth configuration. If using peers, the CA version may be too old." :
+                        "Cannot authenticate with OAuth because no providers are available");
+                return null;
+            }
             final JWT jwt = JWTParser.parse(encodedOauthBearerToken);
             if (jwt instanceof PlainJWT) {
                 LOG.info("Not accepting unsigned OAuth2 JWT, which is insecure.");
@@ -128,7 +134,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Signed JWT has key ID: " + signedJwt.getHeader().getKeyID());
                 }
-                keyInfo = getJwtKey(signedJwt.getHeader().getKeyID());
+                keyInfo = getJwtKey(oauthConfiguration, signedJwt.getHeader().getKeyID());
                 if (keyInfo == null) {
                     logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                     return null;
@@ -225,7 +231,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public OAuthGrantResponseInfo refreshOAuthBearerToken(String encodedOauthBearerToken, String refreshToken) {
+    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String refreshToken) {
         OAuthGrantResponseInfo oAuthGrantResponseInfo = null;
         try {
             OAuthKeyInfo keyInfo;
@@ -241,7 +247,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Signed JWT has key ID: " + signedJwt.getHeader().getKeyID());
                 }
-                keyInfo = getJwtKey(signedJwt.getHeader().getKeyID());
+                keyInfo = getJwtKey(oauthConfiguration, signedJwt.getHeader().getKeyID());
                 if (keyInfo == null) {
                     logAuthenticationFailure(intres.getLocalizedMessage(signedJwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                     return null;
@@ -259,17 +265,18 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         return oAuthGrantResponseInfo;
     }
 
-    private OAuthKeyInfo getJwtKey(final String keyId) {
-        final OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
-        final Map<String,OAuthKeyInfo> availableKeys = oAuthConfiguration.getOauthKeys();
-        if (keyId != null) {
-            for (final OAuthKeyInfo oAuthKeyInfo : availableKeys.values()) {
-                if (oAuthKeyInfo.getAllKeyIdentifiers() != null && oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
-                    return oAuthKeyInfo;
+    private OAuthKeyInfo getJwtKey(final OAuthConfiguration oauthConfiguration, final String keyId) {
+        if (oauthConfiguration != null) {
+            final Map<String,OAuthKeyInfo> availableKeys = oauthConfiguration.getOauthKeys();
+            if (keyId != null) {
+                for (final OAuthKeyInfo oAuthKeyInfo : availableKeys.values()) {
+                    if (oAuthKeyInfo.getAllKeyIdentifiers() != null && oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
+                        return oAuthKeyInfo;
+                    }
                 }
+            } else {
+                 return oauthConfiguration.getDefaultOauthKey();
             }
-        } else {
-             return oAuthConfiguration.getDefaultOauthKey();
         }
         return null;
     }
