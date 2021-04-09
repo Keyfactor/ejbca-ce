@@ -35,6 +35,7 @@ import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -47,6 +48,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyGenParams;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
@@ -55,9 +57,7 @@ import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 
-/**
- * 
- * @version $Id$
+/** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
 public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser {
 
@@ -69,13 +69,6 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /** Keys, specific to PKCS#11, that can be defined in CA token properties */
-    public static final String SLOT_LABEL_VALUE = "slotLabelValue";
-    public static final String SLOT_LABEL_TYPE = "slotLabelType";
-    public static final String SHLIB_LABEL_KEY = "sharedLibrary";
-    public static final String ATTRIB_LABEL_KEY = "attributesFile";
-    public static final String PASSWORD_LABEL_KEY = "pin";
-
     protected CryptokiDevice.Slot slot;
 
     private String sSlotLabel = null;
@@ -97,9 +90,9 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         // Don't auto activate this right away, we must dynamically create the auth-provider with a slot
         setProperties(properties);
         init(properties, false, id);
-        sSlotLabel = getSlotLabel(SLOT_LABEL_VALUE, properties);
-        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
-        String sharedLibrary = properties.getProperty(SHLIB_LABEL_KEY);
+        sSlotLabel = getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_VALUE, properties);
+        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_TYPE, properties));
+        String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
 
         String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
         String libraryFileName = sharedLibrary.substring(sharedLibrary.lastIndexOf("/") + 1, sharedLibrary.length());
@@ -170,7 +163,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         final PrivateKey privateKey = slot.getReleasableSessionPrivateKey(alias);
         if (privateKey == null) {
             final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
-            log.error(msg);
+            log.warn(msg);
             throw new CryptoTokenOfflineException(msg);
         }
         return privateKey;
@@ -259,13 +252,18 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
                 keyAlg = AlgorithmConstants.KEYALGORITHM_DSTU4145;
             } else if (!Character.isDigit(keySpec.charAt(0))) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+                // ECDSA also handled generation of EdDSA keys, because this is done in PKCS#11 v3 with CKA.EC_PARAMS, but with CKM.EC_EDWARDS_KEY_PAIR_GEN
             }
             if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_RSA)) {
                 slot.generateRsaKeyPair(keySpec, alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
             } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
                 if (!StringUtils.equals(oidString, keySpec)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias);
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed448.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
                 } else {
                     throw new InvalidAlgorithmParameterException("The elliptic curve " + keySpec + " is not supported.");
                 }

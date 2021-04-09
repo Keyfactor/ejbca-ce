@@ -334,6 +334,30 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public boolean updateAccountBindingOnly(final AuthenticationToken authenticationToken, final String certificateFingerprint, final String accountBindingId) {
+        final CertificateData data = certificateDataSession.findByFingerprint(certificateFingerprint);
+        Certificate certificate = null;
+        if (accountBindingId == null || data==null || (certificate = data.getCertificate(entityManager)) == null || data.getAccountBindingId() != null) {
+            return false;
+        }
+        data.setAccountBindingId(accountBindingId);
+        entityManager.persist(data);
+        
+        final String username = data.getUsername();
+        final String serialNo = CertTools.getSerialNumberAsString(certificate);
+        final int issuerHash = CertTools.getIssuerDN(certificate).hashCode();
+        final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateFingerprint, 
+                data.getSubjectDnNeverNull(), issuerHash, serialNo);
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", msg);
+        final String caId = String.valueOf(issuerHash);
+        logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, 
+                authenticationToken.toString(), caId, serialNo, username, details);
+        return true;
+    }
+
+    @Override
     public Collection<String> listAllCertificates(String issuerdn) {
         if (log.isTraceEnabled()) {
             log.trace(">listAllCertificates()");

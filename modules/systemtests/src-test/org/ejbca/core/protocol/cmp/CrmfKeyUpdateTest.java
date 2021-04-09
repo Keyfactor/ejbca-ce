@@ -39,9 +39,10 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
@@ -135,9 +136,6 @@ import static org.junit.Assert.fail;
 
 /**
  * This will test will check performing key updates over CMP. 
- * 
- * @version $Id$
- *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrmfKeyUpdateTest extends CmpTestCase {
@@ -280,7 +278,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
                 AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(req);     
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -358,7 +356,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -446,7 +444,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -531,7 +529,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -579,7 +577,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
+        out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         ba = bao.toByteArray();
         // Send request and receive response
@@ -662,7 +660,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -752,7 +750,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //***************************************************
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -820,7 +818,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), 
                 AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
@@ -877,7 +875,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), 
                     AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             //send request and recieve response
@@ -895,7 +893,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field is not valid - Trust anchor for certification path not found.";
+            final String expectedErrMsg = "The certificate chain attached to the PKIMessage in the extraCert field is not valid - No issuer certificate for certificate in certification path found.";
             assertEquals(expectedErrMsg, errMsg);
         } finally {
             removeTestCA(differentX509ca.getCAId());
@@ -953,7 +951,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), 
                 AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
@@ -1038,7 +1036,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
 
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
@@ -1112,7 +1110,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
 
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
@@ -1203,7 +1201,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
 
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
@@ -1279,7 +1277,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
 
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
@@ -1371,7 +1369,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
@@ -1463,7 +1461,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -1542,7 +1540,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(req);
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response

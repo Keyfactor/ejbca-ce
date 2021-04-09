@@ -63,6 +63,11 @@
 # separate thread to gather seed material and a core DRBG to satisfy any requests for seed material while it waits.
 # There is no noticeable performance difference using this algorithm, so it could be used instead of the default to prove a FIPS compliant method in use. 
 #
+# You can set to PKCS11 to make the call to SecureRandom.getInstance("PKCS11") use the random number generator from a HSM
+# that has been configured to be available from Java. 
+# The PKCS11 provider must have been loaded (but it does not need to have a logged in session). That means that either there must have 
+# been an attempt to activate a PKCS11 Crypto Token (successful or not) or database protection with a PKCS11 token must be used (or both).
+#
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
 # Using the value "defaultstrong" is only available in JDK 8 and later and will use the SecureRandom.getInstanceStrong(), to get
@@ -75,6 +80,7 @@
 #ca.rngalgorithm=default
 #ca.rngalgorithm=DRBG
 #ca.rngalgorithm=BCSP800Hybrid
+#ca.rngalgorithm=PKCS11
 
 # The default length in octets of certificate serial numbers configured when creating new CAs. 
 # Note: since EJBCA 7.0.1 this only affects the default value of this field, which is editable in the CA configuration 
@@ -148,6 +154,16 @@ certificate.validityoffset=-10m
 # If you have plenty of RAM assigned to the application server you should increase this value.
 # Default: 500000
 #database.crlgenfetchsize=500000
+
+# Whether EJBCA should request ordered fetching of revoked certificates when generating CRLs.
+# EJBCA relies on Hibernate to return data in batches (see the database.crlgenfetchsize setting
+# above, to control the read batch size). However, Microsoft SQL Server 2016 is known to return
+# duplicates and/or missing entries when multiple batches are read. The setting below is a
+# workaround for this problem.
+#
+# Default: off (false)
+#database.crlgenfetchordered=true
+
 
 # ------------- Core language configuration -------------
 # The language that should be used internally for logging, exceptions and approval notifications.
@@ -322,13 +338,13 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #db.keepjbossserialization=true
 
 # Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
-# Default to true. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
+# Default to false in defaultvalues.properties, true if no value is present there. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
 # then internal keystore in CAData will be replaced with a foreign key in to the migrated entry in CryptotokenData.
 #
 # When upgrading a 100% up-time cluster, all nodes should initially be deployed with db.keepinternalcakeystores=true.
 # Once all nodes are running > EJBCA 5.0, set to false again to increase efficiency and portability.
 # For upgrades from EJBCA version 5.0 to later versions.
-# Default: true
+# Default: false (from defaultvalues.properties)
 #db.keepinternalcakeystores=true
 
 # When upgrading a 100% up-time cluster, all nodes should be deployed with ca.keepocspextendedservice=true.

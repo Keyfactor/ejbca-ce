@@ -93,6 +93,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
@@ -918,6 +919,32 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
+        final IdNameHashMap<CertificateProfile> ret = new IdNameHashMap<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.getApiVersion() >= 11) {
+
+                        final IdNameHashMap<CertificateProfile> result = raMasterApi.getAllAuthorizedCertificateProfiles(authenticationToken);
+                        if (result != null) {
+                            ret.putAll(result);
+                        }
+                    } else {
+                        final IdNameHashMap<CertificateProfile> result = raMasterApi.getAuthorizedCertificateProfiles(authenticationToken);
+                        if (result != null) {
+                            ret.putAll(result);
+                        }
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
     public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
         final IdNameHashMap<CertificateProfile> ret = new IdNameHashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -1058,6 +1085,29 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
+        throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            try {
+                if (raMasterApi.isBackendAvailable()) {
+                    raMasterApi.revokeAndDeleteUser(authenticationToken, username, reason);
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (authorizationDeniedException == null) {
+                    authorizationDeniedException = e;
+                }
+                // Just try next implementation
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+    }
+
+    @Override
     public EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username) {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
@@ -1138,6 +1188,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
             final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
             final byte[] csr = pkcs10req.getEncoded();
+            if (endEntity.getExtendedInformation() == null) {
+                endEntity.setExtendedInformation(new ExtendedInformation());
+            } 
             endEntity.getExtendedInformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
             endEntity.setPassword(password); // not persisted
             // Request certificate
@@ -1348,6 +1401,47 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         authorizationDeniedException = e;
                     }
                     // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] softTokenRequest(AuthenticationToken authenticationToken, UserDataVOWS userdata, String keyspec, String keyalg, boolean createJKS) 
+            throws AuthorizationDeniedException, CADoesntExistsException, EndEntityProfileValidationException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        CADoesntExistsException caDoesntExistException = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (log.isDebugEnabled()) {
+                log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+            }
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
+                try {
+                    return raMasterApi.softTokenRequest(authenticationToken, userdata, keyspec, keyalg, createJKS);
+                } catch (CADoesntExistsException e) {
+                    if (caDoesntExistException == null) {
+                        caDoesntExistException = e;
+                    }
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (EjbcaException e) {
+                    // Only catch "CA doesn't exist" case here
+                    if (e.getErrorCode() != null && !ErrorCode.CA_NOT_EXISTS.getInternalErrorCode().equals(e.getErrorCode().getInternalErrorCode())) {
+                        throw e;
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -1748,14 +1842,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 2) {
                 try {
-                    if (raMasterApi.editUser(authenticationToken, endEntityInformation, isClearPwd)) {
+                    if (raMasterApi.editUser(authenticationToken, endEntityInformation, isClearPwd, newUsername)) {
                         // Successfully edited the user
                         return true;
                     }
