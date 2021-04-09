@@ -668,6 +668,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     // Updates persisted template mappings with new values from AD
     public void updateMappedTemplates() {
+        // Force reload from AD
+        availableTemplates = null;
         List<MSAutoEnrollmentSettingsTemplate> newTemplates = getAvailableTemplateSettingsFromAD();
         for (MSAutoEnrollmentSettingsTemplate persistedTemplate : mappedMsTemplates) {
             MSAutoEnrollmentSettingsTemplate newTemplateSettings = findMsTemplateByOid(newTemplates, persistedTemplate.getOid());
