@@ -22,11 +22,10 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
+import java.util.Arrays;
+
 /**
  * WebTest class for testing RA/Make New Request.
- *
- * @version $Id$
- *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
@@ -102,6 +101,14 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     public void stepC_CreateEndEntityProfile() {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.editEndEntityProfile(
+            TestData.CERTIFICATE_PROFILE_NAME,
+            Arrays.asList(TestData.CERTIFICATE_PROFILE_NAME),
+            TestData.CA_NAME,
+            Arrays.asList(TestData.CA_NAME)
+        );
+        endEntityProfileHelper.saveEndEntityProfile();
     }
 
     @Test
@@ -130,7 +137,6 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
-        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationOnServer();
         //Wait for screen update
         Thread.sleep(5000);

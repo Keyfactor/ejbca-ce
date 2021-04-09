@@ -109,7 +109,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
-                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT))) {
+                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()))) {
             setProtocolStatus(protocol, false);
             return false;
         }

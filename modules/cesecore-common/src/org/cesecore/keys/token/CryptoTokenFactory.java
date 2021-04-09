@@ -62,7 +62,7 @@ public class CryptoTokenFactory {
             // Enterprise only. May not be available don't reference class.
             instance.addAvailableCryptoToken(AWSKMS_NAME, "AWS KMS", false, true);
             // Enterprise only. May not be available don't reference class.
-            instance.addAvailableCryptoToken(JACKNJI_NAME, "PKCS#11 CP5", false, true); 
+            instance.addAvailableCryptoToken(JACKNJI_NAME, "PKCS#11 NG", false, true); 
         }
         return instance;
     }
@@ -202,7 +202,7 @@ public class CryptoTokenFactory {
                 throw e;
             }
         } catch (Exception e) {
-            log.error("Error initializing Crypto Token. Classpath=" + classname, e);
+            log.error("Error initializing Crypto Token '"+tokenName+"' (" + cryptoTokenId + "). Classpath=" + classname, e);
         }
         token.setTokenName(tokenName);
         return token;

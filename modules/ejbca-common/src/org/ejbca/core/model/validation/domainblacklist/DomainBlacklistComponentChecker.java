@@ -38,7 +38,7 @@ public class DomainBlacklistComponentChecker implements DomainBlacklistChecker {
     @Override
     public String check(final String domain) {
         if (blacklist == null) {
-            throw new IllegalStateException("Blacklist not configured!");
+            throw new IllegalStateException("Block list not configured!");
         }
         final String[] domainParts = domain.split("\\.");
         for (final String domainPart : domainParts) {

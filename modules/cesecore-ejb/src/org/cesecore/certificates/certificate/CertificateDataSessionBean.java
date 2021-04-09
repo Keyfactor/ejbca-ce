@@ -111,7 +111,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         final Query query = entityManager
                 .createNativeQuery(
                         "SELECT a.fingerprint, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.notBefore, a.expireDate, a.revocationDate, a.revocationReason, "
-                                + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber",
+                                + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName, a.accountBindingId FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber",
                         "CertificateInfoSubset2");
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("serialNumber", serialNumber);
@@ -152,8 +152,9 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
             }
             final String subjectKeyId = (String)fields[14];
             final String subjectAltName = (String)fields[15];
+            final String accountBindingId = (String)fields[16];
             ret = new CertificateInfo(fingerprint, cafp, serialNumber, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate,
-                    revocationReason, username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
+                    revocationReason, username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName, accountBindingId);
         }
         return ret;
     }
@@ -371,8 +372,8 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
                 "SELECT a.issuerDN as issuerDN, a.subjectDN as subjectDN, a.cAFingerprint as cAFingerprint, a.status as status, a.type as type, a.serialNumber as serialNumber, "
                         + "a.notBefore as notBefore, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, "
                         + "a.username as username, a.tag as tag, a.certificateProfileId as certificateProfileId, a.endEntityProfileId as endEntityProfileId, a.updateTime as updateTime, "
-                        + "a.subjectKeyId as subjectKeyId, a.subjectAltName as subjectAltName FROM CertificateData a WHERE a.fingerprint=:fingerprint",
-                "CertificateInfoSubset");
+                        + "a.subjectKeyId as subjectKeyId, a.subjectAltName as subjectAltName, a.accountBindingId as accountBindingId FROM CertificateData a WHERE a.fingerprint=:fingerprint",
+                "CertificateInfoSubset");        
         query.setParameter("fingerprint", fingerprint);
         @SuppressWarnings("unchecked")
         final List<Object[]> resultList = query.getResultList();
@@ -411,8 +412,9 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
             }
             final String subjectKeyId = (String)fields[15];
             final String subjectAltName = (String)fields[16];
+            final String accountBindingId = (String)fields[17];
             ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate, revocationReason,
-                    username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
+                    username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName, accountBindingId);
         }
         return ret;
     }

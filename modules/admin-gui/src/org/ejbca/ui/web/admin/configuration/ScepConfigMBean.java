@@ -604,7 +604,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem("DC", "DC"));
         ret.add(new SelectItem("C", "C"));
         ret.add(new SelectItem("emailAddress", "emailAddress"));
-        ret.add(new SelectItem("serialNumber", "serialNumber"));
+        ret.add(new SelectItem("SN", "serialNumber"));
         ret.add(new SelectItem("givenName", "givenName"));
         ret.add(new SelectItem("initials", "initials"));
         ret.add(new SelectItem("surname", "surname"));
@@ -619,6 +619,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem("pseudonym", "pseudonym"));
         ret.add(new SelectItem("streetAddress", "streetAddress"));
         ret.add(new SelectItem("name", "name"));
+        ret.add(new SelectItem("role", "role"));
         ret.add(new SelectItem("CIF", "CIF"));
         ret.add(new SelectItem("NIF", "NIF"));
         return ret;

@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -81,11 +82,13 @@ public class CertificateProfileHelper extends BaseHelper {
         static final By BUTTON_CLONE_CONFIRM = By.id("editcertificateprofilesForm:cloneConfirmButton");
         static final By BUTTON_DELETE_CONFIRM = By.id("editcertificateprofilesForm:deleteConfirmButton");
         static final By BUTTON_DELETE_CANCEL = By.id("editcertificateprofilesForm:deleteCancelButton");
+
         // Certificate Profile Form
         static final By TEXT_TITLE_EDIT_CERTIFICATE_PROFILE = By.id("titleCertificateProfile");
         static final By TEXT_TITLE_RENAME_CERTIFICATE_PROFILE = By.id("editcertificateprofilesForm:renameProfileOld");
         static final By TEXT_TITLE_CLONE_CERTIFICATE_PROFILE = By.id("editcertificateprofilesForm:addFromTemplateProfileOld");
         static final By TEXT_TITLE_DELETE_CERTIFICATE_PROFILE = By.id("editcertificateprofilesForm:deleteProfileName");
+        static final By SELECT_AVAILABLE_CA = By.id("content:selectavailablecas");
         static final By FORM_ALGORITHMS = By.id("algorithms");
         /**
          * 'Available Key Algorithms'
@@ -1448,6 +1451,27 @@ public class CertificateProfileHelper extends BaseHelper {
     }
 
     /**
+     * Sets a value for available CA
+     *
+     * @param caName а name of CA to be selected
+     */
+
+    public void selectAvailableCa(String caName) {
+        deselectOptions(Page.SELECT_AVAILABLE_CA);
+        selectOptionsByName(Page.SELECT_AVAILABLE_CA, Collections.singletonList(caName));
+    }
+
+    /**
+     * Sets value for available CA when more than one chosen
+     * @param listOfSelectedCAs
+     */
+    public void selectMoreThanOneAvailableCa (List<String>listOfSelectedCAs){
+        deselectOptions(Page.SELECT_AVAILABLE_CA);
+        selectOptionsByName(Page.SELECT_AVAILABLE_CA,listOfSelectedCAs);
+    }
+
+
+    /**
      * Asserts the name is selected in the select f Approval Setting by ApprovalSetting type.
      *
      * @param approvalSetting approval setting type.
@@ -1506,5 +1530,6 @@ public class CertificateProfileHelper extends BaseHelper {
     private void assertApprovalSettingExistsInListOfElements(final List<WebElement> elements, final ApprovalSetting approvalSetting) {
         assertFalse("Approval Setting [" + approvalSetting.name() + "] was not found", approvalSetting.getIndex() >= elements.size());
     }
+
 
 }

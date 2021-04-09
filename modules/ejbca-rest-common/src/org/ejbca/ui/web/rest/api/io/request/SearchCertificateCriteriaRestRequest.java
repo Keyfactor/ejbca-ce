@@ -62,7 +62,7 @@ public class SearchCertificateCriteriaRestRequest {
     private String value;
 
     @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
-            allowableValues = "EQUAL,LIKE,BEFORE, AFTER",
+            allowableValues = "EQUAL, LIKE, BEFORE, AFTER",
             dataType = "java.lang.String")
     private String operation;
 

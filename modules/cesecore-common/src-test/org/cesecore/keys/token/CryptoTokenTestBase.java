@@ -45,9 +45,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- *
- * @version $Id$
- *
  */
 public abstract class CryptoTokenTestBase {
 
@@ -251,8 +248,14 @@ public abstract class CryptoTokenTestBase {
         }
     }
 
-    /**
-     * @param cryptoToken
+    /** Tests generation and deletion of ECC or EdDSA keys on a soft crypto token or HSM.
+     * SInce EdDSA is a "variation" or ECDSA this method works for both.
+     * 
+     * @param cryptoToken the crypto token to generate keys in
+     * @param curve1 curve of the first key to generate, e.g. secp256r, Ed25519, etc
+     * @param keyLen1 the key length the key has, for comparison that the right key length was generated, e.g. 256, 255, etc
+     * @param curve2 curve of a second key to generate, will be compared with the first so it's not the same
+     * @param keyLen2 the key length the key has, for comparison that the right key length was generated
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      * @throws CertificateException

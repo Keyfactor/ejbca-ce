@@ -80,6 +80,7 @@ import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -776,6 +777,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( AuthorizationDeniedException | NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+        } catch (AuthLoginException e) {
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.INFO);
         } catch (RuntimeException e) {	// EJBException, ...
             throw getInternalException(e, logger);
         } finally {
@@ -836,7 +839,7 @@ public class EjbcaWS implements IEjbcaWS {
 			// Don't log a bad error for this (user wrong status)
             throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
-            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.INFO);
         } catch(EjbcaException e) {
             throw getEjbcaException(e.getMessage(), logger, e.getErrorCode(), null);
         } // EJBException, ...
@@ -1618,10 +1621,10 @@ public class EjbcaWS implements IEjbcaWS {
 	        userData.setClearPwd(true);
 	    	final AuthenticationToken admin = getAdmin(false);
 	    	logAdminName(admin,logger);
-	        final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userData);
-	        final boolean createJKS = userData.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
-	        final byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, endEntityInformation, keySpec, keyAlg, createJKS);
-	        // Convert encoded KeyStore to the proper return type
+
+            final boolean createJKS = userData.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
+            final byte[] encodedKeyStore = raMasterApiProxyBean.softTokenRequest(admin, userData, keySpec, keyAlg, createJKS);
+            // Convert encoded KeyStore to the proper return type
 	        final java.security.KeyStore ks;
 	        if (createJKS) {
 	        	ks = java.security.KeyStore.getInstance("JKS");
@@ -1631,22 +1634,17 @@ public class EjbcaWS implements IEjbcaWS {
 	        }
 	        ks.load(new ByteArrayInputStream(encodedKeyStore), userData.getPassword().toCharArray());
             return new KeyStore(ks, userData.getPassword());
-        } catch( CADoesntExistsException | AuthorizationDeniedException t ) {
+        } catch(CADoesntExistsException | AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
         } catch (AuthStatusException e) {
 			// Don't log a bad error for this (user wrong status)
             throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
 		} catch (AuthLoginException e) {
-            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-		} catch (NoSuchEndEntityException e) {
-            throw getEjbcaException(e, logger, ErrorCode.USER_NOT_FOUND, Level.INFO);
-        }catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException | CertificateException | IOException | CertificateSerialNumberException | IllegalNameException | InvalidKeySpecException | InvalidAlgorithmParameterException | RuntimeException e) {
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.INFO);
+		} catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException | CertificateException | IOException /*| CertificateSerialNumberException | IllegalNameException | InvalidKeySpecException | InvalidAlgorithmParameterException*/ | RuntimeException e) {
             throw getInternalException(e, logger);
-		} catch (EndEntityExistsException e) {
-            throw getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
-        }
-        catch (EndEntityProfileValidationException e) {
+        } catch (EndEntityProfileValidationException e) {
             throw new UserDoesntFullfillEndEntityProfile(e);
         } finally {
             logger.writeln();

@@ -31,7 +31,7 @@ public class CK_CP5_CHANGEAUTHDATA_PARAMS extends Structure {
     }
     
     @Override
-    protected List<?> getFieldOrder() {
+    protected List<String> getFieldOrder() {
         return Arrays.asList("authData");
     }
     

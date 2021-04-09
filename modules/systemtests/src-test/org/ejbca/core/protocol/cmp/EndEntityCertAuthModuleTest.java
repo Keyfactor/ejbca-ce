@@ -32,10 +32,11 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -446,7 +447,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             //***************************************************
 
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(msg);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -490,7 +491,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             //***************************************************
 
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(msg);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -535,7 +536,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             //***************************************************
 
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(msg);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -580,7 +581,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             //***************************************************
 
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(msg);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -625,7 +626,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             //***************************************************
 
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(msg);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -672,7 +673,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             //***************************************************
 
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(msg);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -727,7 +728,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         //***************************************************
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(msg);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -774,7 +775,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         //***************************************************
         
         bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
+        out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(msg);
         ba = bao.toByteArray();
         // Send request and receive response
@@ -832,7 +833,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             // Send the CMP request to RA1. Expected: Fail
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(protectedMsg);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, RA1_ALIAS);
@@ -863,7 +864,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             // Send the CMP request to RA1. Expected: Success
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(protectedMsg);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, RA1_ALIAS);
@@ -913,7 +914,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             // Send the CMP request to RA2. Expected: Fail
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(protectedMsg);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, RA2_ALIAS);

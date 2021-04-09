@@ -45,14 +45,15 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -203,7 +204,7 @@ class CMPTest extends ClientToolBox {
                 myProofOfPossession = new ProofOfPossession();
             } else {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                final DEROutputStream mout = new DEROutputStream( baos );
+                final ASN1OutputStream mout = ASN1OutputStream.create(baos, ASN1Encoding.DER);
                 mout.writeObject( certRequest );
                 mout.close();
                 final byte[] popoProtectionBytes = baos.toByteArray();
@@ -693,7 +694,7 @@ class CMPTest extends ClientToolBox {
                 CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
                 this.sessionData.setReqId(ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue());
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                final DEROutputStream out = new DEROutputStream(bao);
+                final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(req);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
@@ -741,7 +742,7 @@ class CMPTest extends ClientToolBox {
                 //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
                 final PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD);
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                final DEROutputStream out = new DEROutputStream(bao);
+                final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(confirm);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
@@ -767,7 +768,7 @@ class CMPTest extends ClientToolBox {
                 PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, StressTest.this.nonce, StressTest.this.transid);
                 assertNotNull(rev);
                 bao = new ByteArrayOutputStream();
-                out = new DEROutputStream(bao);
+                out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(rev);
                 ba = bao.toByteArray();
                 // Send request and receive response

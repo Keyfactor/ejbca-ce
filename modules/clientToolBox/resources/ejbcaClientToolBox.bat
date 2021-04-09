@@ -17,4 +17,5 @@ if exist "%TOOLBOX_HOME%clientToolBox.jar" goto exists
 :exists
 
 rem @echo on
-${javaCmd} ${JAVA_OPT} -cp "%TOOLBOX_HOME%clientToolBox.jar;%TOOLBOX_HOME%endorsed/*" org.ejbca.ui.cli.ClientToolBox "${@}"
+rem expects java to be on the path of the machine, which is the standard on a windows installation
+java %JAVA_OPT% -cp "%TOOLBOX_HOME%clientToolBox.jar;%TOOLBOX_HOME%endorsed/*" org.ejbca.ui.cli.ClientToolBox %args%

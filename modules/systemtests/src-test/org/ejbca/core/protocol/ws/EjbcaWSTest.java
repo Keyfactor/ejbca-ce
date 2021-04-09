@@ -12,52 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyManagementException;
-import java.security.KeyPair;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimeZone;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -85,31 +39,19 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.SignRequestException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
-import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -127,16 +69,13 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
@@ -180,26 +119,19 @@ import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
-import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -226,6 +158,51 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimeZone;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
  * <p>
@@ -237,8 +214,6 @@ import org.junit.runners.MethodSorters;
  *     </ul>
  * <li>If you use different names, you can configure alternate CA names systemtests.properties.
  * <li>If EJBCA is not running on localhost, then target.hostname must be configured in systemtests.properties
- *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EjbcaWSTest extends CommonEjbcaWs {
@@ -249,7 +224,22 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE";
     private static final String KEY_RECOVERY_EEP = "KEYRECOVERY";
     private static final String BADCANAME = "BadCaName";
-    
+
+    private static final String PKCS10 = "MIIChTCCAW0CAQAwQDELMAkGA1UEBhMCU0UxDjAMBgNVBAgMBVNvbG5hMREwDwYD" + 
+            "VQQKDAhQcmltZUtleTEOMAwGA1UEAwwFVG9tYXMwggEiMA0GCSqGSIb3DQEBAQUA" + 
+            "A4IBDwAwggEKAoIBAQDfOpmUDnUsilYoaYpHUGN9AvAkK2AdHoYz4cTkKD4kPPvq" + 
+            "ErRdayyGWiuKrmhH6v+jPvh5ZYQoqL2viSTIkcvr7BIo9pgqSVswxvC5v4GGy3R4" + 
+            "nme0El27oB5X0AJl3X5STT5GwIWw66XHcTeg1ux62bfY/N1RhiHanFOZ00DokPyW" + 
+            "/s+dGcnZ9kBC5s5jcEEEwcGXCyKuyCoy60Z87asOraCsYeRlq3qqdms0BZEM7lLK" + 
+            "7oP4HjIpk9VSLYihGlFsbophw96gNGtYjorX//CYvuyckUpA9TLdfx8IoQSiKlsJ" + 
+            "CDdMeDXnkqOZAmXj3xos3qm1VJV2J9AVggzQ1SUnAgMBAAGgADANBgkqhkiG9w0B" + 
+            "AQsFAAOCAQEAGcK8aMvmdhsTeCv+D1R21Bjc5fb+dmrXcYdR4RI8roW4GZDqGdBU" + 
+            "8bYDZfO0SnV0q6m23G6upVhtYpzOrVcDaiQ4iFvGQkz8pfErZ+qqwZhE6yvbc+2p" + 
+            "0BVuIIePbgdAW17acxkOF4p0Z5TkNazdNwePyjW8dfUvarVX//AA48l66bUXu6IM" + 
+            "X2LU/OY1hcLETlAqV2o1iDPRsOTnF2OpV8FdmpBhD7VUa78h8n3w3l+WdmaAhcy4" + 
+            "jItzjKHi5CEoJ3s15Yo4zuwZt2g+bmGGfBqGcSKkPAlsQ+A79DMwzJXLN/Cs/joY" + 
+            "gwObGYEkQqkX1DGjDNzYyw+RtvdzJV8shQ==";
+
     private static final String CRMF = "MIIBdjCCAXIwgdkCBQCghr4dMIHPgAECpRYwFDESMBAGA1UEAxMJdW5kZWZpbmVk"
             + "poGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCi6+Bmo+0I/ye8k6B6BkhXgv03" + "1jEeD3mEuvjIEZUmmdt2RBvW2qfJzqXV8dsI1HZT4fZqo8SBsrYls4AC7HooWI6g"
             + "DjSyd3kFcb5HP+qnNlz6De/Ab+qAF1rLJhfb2cXib4C7+bap2lwA56jTjY0qWRYb" + "v3IIfxEEKozVlbg0LQIDAQABqRAwDgYDVR0PAQH/BAQDAgXgoYGTMA0GCSqGSIb3"
@@ -684,7 +674,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
         userDataVOWS.setCertificateProfileName(WS_CERTPROF_EI);
         try {
-            ejbcaraws.certificateRequest(userDataVOWS, "junk", CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            ejbcaraws.certificateRequest(userDataVOWS, PKCS10, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Expected empty username to be rejected according to profile settings.");
         } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
             // NOPMD expected
@@ -696,6 +686,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             fail("Should have failed because of invalid RESPONSETYPE value.");
         } catch (EjbcaException_Exception e) {
             assertEquals(ErrorCode.INTERNAL_ERROR.getInternalErrorCode(), e.getFaultInfo().getErrorCode().getInternalErrorCode());
+            assertEquals("Wrong response message", "Bad responseType:xx", e.getMessage());
         }
     }
 
@@ -2320,15 +2311,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
      * 
      */
     @Test
-    public void testCreateExternallySignedCa() throws CryptoTokenOfflineException, OperatorCreationException, AuthorizationDeniedException_Exception,
-            EjbcaException_Exception, CAExistsException, AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException,
-            IllegalNameException, CustomFieldException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException,
-            WaitingForApprovalException, NoSuchEndEntityException, CustomCertificateSerialNumberException, IllegalKeyException, SignRequestException,
-            SignRequestSignatureException, AuthStatusException, AuthLoginException, CertificateCreateException, CertificateRevokeException,
-            IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException, ApprovalException_Exception,
-            CesecoreException_Exception, WaitingForApprovalException_Exception, CouldNotRemoveEndEntityException, InvalidKeyException,
-            CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, CertificateException,
-            IllegalStateException, NoSuchSlotException, EndEntityProfileExistsException {
+    public void testCreateExternallySignedCa() throws Exception {
         Assume.assumeTrue("Skipped on community edition", enterpriseEjbBridgeSession.isRunningEnterprise());
         //Create an external CA
         final String caName = "testCreateExternallySignedCa";
@@ -2872,8 +2855,8 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         try {
             ejbcaraws.caRenewCertRequest(subCaName, cachain, false, false, true, String.valueOf(CryptoTokenTestUtils.SOFT_TOKEN_PIN));
             fail("CSR should not have been returned for a non-existant CA");
-        } catch(EjbcaException_Exception e) {
-            assertTrue("Other exception than CADoesntExistsException_Exception was thrown", !CADoesntExistsException_Exception.class.isInstance(e.getClass()));            
+        } catch(CADoesntExistsException_Exception e) {
+            // NOPMD
         } finally {
             CaTestUtils.removeCa(intAdmin, root.getCAInfo());
         }

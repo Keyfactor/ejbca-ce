@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.rest;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
@@ -26,9 +27,11 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -44,6 +47,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
@@ -150,6 +154,8 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             throw new EjbcaException("Invalid certificate request");
         }
 
+        extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttribute(pkcs10CertificateRequest));
+
         String subjectDn = getSubjectDn(pkcs10CertificateRequest);
         endEntityInformation.setDN(subjectDn);
 
@@ -197,6 +203,20 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             altName = CertTools.getAltNameStringFromExtension(subjectAlternativeNameExtension);
         }
         return altName;
+    }
+
+    protected String getSubjectDirectoryAttribute(PKCS10CertificationRequest pkcs10CertificateRequest) throws EjbcaException {
+        String subjectDirectoryAttributeString = null;
+        final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
+        if (subjectDirectoryAttributes != null) {
+            ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
+            try {
+                subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
+            } catch (ParseException | IllegalArgumentException e) {
+                throw new EjbcaException(ErrorCode.BAD_REQUEST, e.getMessage());
+            }
+        }
+        return subjectDirectoryAttributeString;
     }
 
 

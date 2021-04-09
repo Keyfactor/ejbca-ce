@@ -37,7 +37,7 @@ public class DomainBlacklistBaseDomainChecker implements DomainBlacklistChecker 
     @Override
     public String check(final String domain) {
         if (blacklist == null) {
-            throw new IllegalStateException("Blacklist not configured!");
+            throw new IllegalStateException("Block list not configured!");
         }
         String checkingString = domain;
         while (StringUtils.isNotEmpty(checkingString)) {

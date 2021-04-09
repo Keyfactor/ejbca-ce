@@ -60,8 +60,6 @@ import org.cesecore.util.ValidityDate;
  * <p>For NoConflictCertificateData the methods perform additional logic to check that it gets the most recent
  * entry if there's more than one (taking permanent revocations into account), and for updates it
  * appends new entries instead of updating existing ones. 
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "NoConflictCertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -260,6 +258,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         return mostRecentData;
     }
 
+    // Only invoked for testing.
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)

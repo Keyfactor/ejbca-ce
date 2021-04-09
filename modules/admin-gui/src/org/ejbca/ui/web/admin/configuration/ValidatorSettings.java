@@ -78,11 +78,11 @@ public class ValidatorSettings {
         try {
             final ExternalScriptsWhitelist whitelist = ExternalScriptsWhitelist.fromText(externalScriptsWhitelist, isExternalScriptsWhitelistEnabled);
             if (log.isDebugEnabled()) {
-                log.debug("Saving whitelist of permitted scripts: " + whitelist.getScriptsPaths());
+                log.debug("Saving allow list of permitted scripts: " + whitelist.getScriptsPaths());
             }
             if (isExternalScriptsWhitelistEnabled && whitelist.hasInvalidPaths()) {
                 log.info(
-                        "Unable to save (enabled) whitelist containing external scripts permitted to be used in External Command Validators. One or file paths are invalid.");
+                        "Unable to save (enabled) allow list containing external scripts permitted to be used in External Command Validators. One or file paths are invalid.");
                 validatorSettingsHelper.addErrorMessage("EXTERNAL_SCRIPTS_SAVE_FAILED");
                 return;
             }

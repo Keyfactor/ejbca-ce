@@ -131,8 +131,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
     public static final String KEY_VAULT_CLIENTID = "keyVaultClientID";    
     
     /** Cache for key aliases, to speed things up so we don't have to make multiple REST calls all the time to list aliases and public keys
-     * We cache for a short time, 30 seconds to speed up GUI operations, but still allow for key generation on different nodes in a cluster, just leaving the 
-     * other node not knowing of the new key for 30 seconds 
+     * We cache for a short time, 60 seconds to speed up GUI operations, but still allow for key generation on different nodes in a cluster, just leaving the 
+     * other node not knowing of the new key for 60 seconds 
      */
     private KeyAliasesCache aliasCache = new KeyAliasesCache();
     
@@ -253,6 +253,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         if (log.isDebugEnabled()) {
             log.debug("getAliases called for crypto token: "+getId()+", "+getTokenName()+", "+getKeyVaultName()+", "+getKeyVaultType()+", "+authorizationHeader);
         }
+        // We have a way to check if the alias cache itself has expired, independent of the individual entries, using id==0
         if (aliasCache.shouldCheckForUpdates(0) || aliasCache.getAllNames().isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("Cache is expired or empty, re-reading aliases: " + aliasCache.getAllNames().size());
@@ -275,7 +276,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
                     final JSONArray value = (JSONArray) parse.get("value");
                     if (value != null) {
                         // We have some keys, lets re-fill the array
-                        aliasCache.flush();
+                        KeyAliasesCache newCache = new KeyAliasesCache();
                         for (Object o : value) {
                             final JSONObject o1 = (JSONObject) o;
                             final String kid = (String) o1.get("kid");
@@ -284,10 +285,31 @@ public class AzureCryptoToken extends BaseCryptoToken {
                             if (log.isDebugEnabled()) {
                                 log.debug("Adding alias to cache: '"+alias);
                             }
-                            // Add a dummy public key
-                            aliasCache.updateWith(alias.hashCode(), alias.hashCode(), alias, AzureCryptoToken.getDummyCacheKey());
+                            // Add a dummy public key, if there is not already a key in the existing cache for this alias, 
+                            // if there is an existing then update with the real one to not break caching behavior
+                            final PublicKey oldKey = aliasCache.getEntry(alias.hashCode());
+                            if (oldKey != null) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Adding alias to cache with existing public key: '"+alias);
+                                }
+                                newCache.updateWith(alias.hashCode(), alias.hashCode(), alias, oldKey);
+                            } else {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Adding alias to cache wit dummy public key: '"+alias);
+                                }
+                                newCache.updateWith(alias.hashCode(), alias.hashCode(), alias, AzureCryptoToken.getDummyCacheKey());
+                            }
                         }
-                    }                    
+                        // Put an expiry time on the cache itself (for the topmost if statement here)
+                        newCache.updateCacheTimeStamp();
+                        // Swap caches after filling the new one
+                        aliasCache = newCache;
+                    } else {
+                        aliasCache.flush();
+                        if (log.isDebugEnabled()) {
+                            log.debug("No key aliases in key vault");
+                        }
+                    }
                 } else {
                     // Error response (not HTTP 200)
                     aliasCache.flush();

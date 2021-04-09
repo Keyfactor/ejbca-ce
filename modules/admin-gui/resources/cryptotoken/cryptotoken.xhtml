@@ -526,7 +526,7 @@
 				</h:selectOneMenu>
 				<h:selectOneMenu value="#{cryptoTokenMBean.keyUsage}" 
 					disabled="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"
-					rendered="#{cryptoTokenMBean.allowedToKeyGeneration and cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}">
+					rendered="#{cryptoTokenMBean.allowedToKeyGeneration and cryptoTokenMBean.currentCryptoToken.showP11NGCryptoToken}">
 					<f:selectItems value="#{cryptoTokenMBean.availableKeyUsages}"/>
 				</h:selectOneMenu>
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}"

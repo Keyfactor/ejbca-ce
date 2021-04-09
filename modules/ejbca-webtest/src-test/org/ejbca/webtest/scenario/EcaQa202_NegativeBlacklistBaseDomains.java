@@ -64,6 +64,7 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
         static final String CERTIFICATE_PROFILE_NAME = "EcaQA202A_CertificateProfile";
         static final String ROLE_NAME = "Super Administrator Role";
         static final String ENTITY_NAME = "EcaQa202A_EntityProfile";
+        static final String USERNAME = "EcaQa202A";
         static final String[] CERTIFICATE_REQUEST_PEM = new String[] {
                 "-----BEGIN CERTIFICATE REQUEST-----",
                 "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w",
@@ -142,7 +143,7 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
 
         //Test to verify it returns a positive test result
         validatorsHelper.testBlacklistSite();
-        validatorsHelper.assertBlackListResultsIsCorrect("Domain 'example.com' is blacklisted. Matching domain on blacklist: '" + TestData.VALIDATOR_BLACKLIST_SITE + "'");
+        validatorsHelper.assertBlackListResultsIsCorrect("Domain 'example.com' is block listed. Matching domain on block list: '" + TestData.VALIDATOR_BLACKLIST_SITE + "'");
     }
 
     @Test
@@ -239,6 +240,7 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
     @Test
     public void stepQ_SelectRequestTemplate() throws InterruptedException {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificateSubType(RaWebHelper.Page.ENDUSER);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
     }
@@ -257,6 +259,7 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
     public void stepT_ProvideRequestInfo() throws InterruptedException {
         raWebHelper.fillMakeRequestEditCommonName("cn" + Calendar.getInstance().toString());
         raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+        raWebHelper.fillUsername(TestData.USERNAME);
         TimeUnit.SECONDS.sleep(2);
     }
 

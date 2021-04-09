@@ -13,13 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.ByteArrayOutputStream;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -38,6 +37,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * This test runs in 'normal' CMP mode
@@ -124,8 +125,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0, null);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(confirm);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bao, ASN1Encoding.DER);
+        dOut.writeObject(confirm);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
@@ -157,8 +158,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         PKIMessage confirm = genCertConfirm(userDN, null, nonce, transid, hash, 0, PKCSObjectIdentifiers.sha1WithRSAEncryption);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(confirm);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bao, ASN1Encoding.DER);
+        dOut.writeObject(confirm);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
@@ -195,8 +196,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         confirm = protectPKIMessage(confirm, false, "password", 567);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(confirm);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bao, ASN1Encoding.DER);
+        dOut.writeObject(confirm);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
@@ -232,8 +233,8 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         confirm = protectPKIMessage(confirm, false, "foo123", 567);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(confirm);
+        ASN1OutputStream dOut = ASN1OutputStream.create(bao, ASN1Encoding.DER);
+        dOut.writeObject(confirm);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);

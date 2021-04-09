@@ -14,8 +14,6 @@
     <title>Certificate/CSR Inspection - <%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Public Web</title>
 	<link rel="shortcut icon" href="../images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="../styles.css" type="text/css" />
-    <script type="text/javascript" src="../scripts/functions.js"></script>
-    <script type="text/vbscript" src="../scripts/functions.vbs"></script>
   </head>
 
   <body>
@@ -30,9 +28,6 @@
         <ul>
           <li><div class="menuheader">Enroll</div>
             <ul>
-              <li>
-                <a href="../enrol/browser.jsp">Create Browser Certificate</a>
-              </li>
               <li>
                 <a href="../enrol/server.jsp">Create Certificate from CSR</a>
               </li>

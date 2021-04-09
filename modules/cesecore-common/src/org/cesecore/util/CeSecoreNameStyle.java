@@ -29,9 +29,6 @@ import org.bouncycastle.asn1.x500.style.IETFUtils;
 /** Class that determines string representations of DNs. Overrides the default BCStyle in order to:
  * - Be consistent for all future for backwards compatibility (serialnumber is SN in EJBCA, not SERIALNUMBER)
  * - Be able to add fields that does not (yet) exist in BC (like CABForum Jurisdiction* in BC 1.54)
- *
- * @version $Id$
- *
  */
 public class CeSecoreNameStyle extends BCStyle {
 
@@ -57,7 +54,13 @@ public class CeSecoreNameStyle extends BCStyle {
      * 
      */
     public static final ASN1ObjectIdentifier DESCRIPTION = new ASN1ObjectIdentifier("2.5.4.13");
-    
+
+    /**
+     * Role attribute, added because OpenVPN suggests it's use in https://openvpn.net/vpn-server-resources/external-public-key-infrastructure-pki/
+     * See also ECA-9527
+     */
+    public static final ASN1ObjectIdentifier ROLE = new ASN1ObjectIdentifier("2.5.4.72");
+
     /**
      * default look up table translating OID values into their common symbols following
      * the convention in RFC 2253 with a few extras
@@ -107,6 +110,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultSymbols.put(BUSINESS_CATEGORY, "BusinessCategory");
         DefaultSymbols.put(TELEPHONE_NUMBER, "TelephoneNumber");
         DefaultSymbols.put(NAME, "Name");
+        DefaultSymbols.put(ROLE, "Role");
         DefaultSymbols.put(JURISDICTION_LOCALITY, "JurisdictionLocality");
         DefaultSymbols.put(JURISDICTION_STATE, "JurisdictionState");
         DefaultSymbols.put(JURISDICTION_COUNTRY, "JurisdictionCountry");
@@ -147,6 +151,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultLookUp.put("businesscategory", BUSINESS_CATEGORY);
         DefaultLookUp.put("telephonenumber", TELEPHONE_NUMBER);
         DefaultLookUp.put("name", NAME);
+        DefaultLookUp.put("role", ROLE);
         DefaultLookUp.put("jurisdictionlocality", JURISDICTION_LOCALITY);
         DefaultLookUp.put("jurisdictionstate", JURISDICTION_STATE);
         DefaultLookUp.put("jurisdictioncountry", JURISDICTION_COUNTRY);
@@ -187,6 +192,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("BUSINESSCATEGORY", BUSINESS_CATEGORY.getId());
         DefaultStringStringLookUp.put("TELEPHONENUMBER", TELEPHONE_NUMBER.getId());
         DefaultStringStringLookUp.put("NAME", NAME.getId());
+        DefaultStringStringLookUp.put("ROLE", ROLE.getId());
         DefaultStringStringLookUp.put("JURISDICTIONLOCALITY", JURISDICTION_LOCALITY.getId());
         DefaultStringStringLookUp.put("JURISDICTIONSTATE", JURISDICTION_STATE.getId());
         DefaultStringStringLookUp.put("JURISDICTIONCOUNTRY", JURISDICTION_COUNTRY.getId());

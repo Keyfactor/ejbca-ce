@@ -117,6 +117,7 @@
             <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="INTEGER" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(255)"/></basic>
+            <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR(255)" nullable="true"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/><lob/></basic>
@@ -150,6 +151,7 @@
             <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="INTEGER" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(255)"/></basic>
+            <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR(255)" nullable="true"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/><lob/></basic>
@@ -325,7 +327,7 @@
             <basic fetch="EAGER" name="requestdate"><column name="requestDate" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="expiredate"><column name="expireDate" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="remainingapprovals"><column name="remainingApprovals" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectdn"><column name="subjectDn" column-definition="VARCHAR(255)"/></basic>
+            <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(255)"/></basic>
             <basic fetch="EAGER" name="email"><column name="email" column-definition="VARCHAR(255)"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>

@@ -160,7 +160,7 @@
 					<h:outputLabel value="Failed to access these CryptoTokens:"
 								   style="font-weight: bold;" />
 					<ui:repeat var="failedCrypto"
-							   value="editCAsMBean.failedCryptoTokenLinkMap()">
+							   value="editCAsMBean.failedCryptoTokenLinkMap().entrySet().toArray()">
 						<h:outputLink value="#{failedCrypto.key}" />
 						<h:outputText value="#{failedCrypto.value}" />
 					</ui:repeat>
@@ -318,7 +318,7 @@
 
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+                    rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="selectsize"
 						value="#{web.text.EXTSERVICESKEYSPEC}" />
 					<h:outputText
@@ -327,9 +327,10 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+                    rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu id="selectsize"
-						value="#{editCAsMBean.caInfoDto.signKeySpec}">
+						value="#{editCAsMBean.caInfoDto.signKeySpec}"
+                        disabled="#{not editCAsMBean.hasEditRight}">
 						<f:selectItems value="#{editCAsMBean.exTServicesKeySpecList}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
@@ -1194,6 +1195,20 @@
 					<br />
 					<h:outputLabel value="#{web.text.CRL_CA_DELTACRLPERIOD_HELP}" styleClass="smallHelp" />
 				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:outputText value="#{web.text.CRL_CA_GENERATEUPONREVOCATION}" 
+						rendered="#{not editCAsMBean.caExternal}" />
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:selectBooleanCheckbox id="checkboxgeneratecrluponrevocation"
+											 value="#{editCAsMBean.caInfoDto.generateCrlUponRevocation}"
+											 disabled="#{not editCAsMBean.hasEditRight}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxgeneratecrluponrevocation"
+								   value="#{web.text.USE}" />
+				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.PUBLISHERS}"
@@ -1421,6 +1436,9 @@
 				<h:panelGroup rendered="#{editCAsMBean.renderCmsInfo}">
 					<h:outputLabel for="checkboxactivatecmsservice"
 						value="#{web.text.CMSSERVICE}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Extended_Services_Key_Specification')}"
+						escape="false" styleClass="helpReference" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.renderCmsInfo}">

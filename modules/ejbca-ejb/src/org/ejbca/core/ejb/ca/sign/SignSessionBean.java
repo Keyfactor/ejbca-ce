@@ -13,39 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -87,7 +54,6 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
-import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -160,6 +126,38 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Creates and signs certificates.
@@ -1229,7 +1227,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 data.getExtendedInformation().setCertificateRequest(null);
             }
             
-            endEntityAuthenticationSession.finishUser(data);
+            endEntityManagementSession.finishUser(data);
         } catch (NoSuchEndEntityException e) {
             final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);
@@ -1341,17 +1339,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 log.debug("SingleActiveCertificateConstraint, found " + cdws.size() + " old (non expired, active) certificates and "
                         + publishers.size() + " publishers.");
             }
-            for (final CertificateDataWrapper cdw : cdws) {
-                final CertificateData certificateData = cdw.getCertificateData();
-                if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED
-                        && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
-                    continue;
-                }
-                //Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
-                //the certificate must be revoked nonetheless. 
-                revocationSession.revokeCertificate(admin, cdw, publishers, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED,
-                        endEntityInformation.getDN());
-            }
+            // Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
+            // the certificate must be revoked nonetheless. 
+            revocationSession.revokeCertificates(admin, cdws, publishers, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
         }
         if (log.isTraceEnabled()) {
             log.trace("<singleActiveCertificateConstraint()");

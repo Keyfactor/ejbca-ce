@@ -130,6 +130,21 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
     private static String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
 
+    // ECA-9491 Tmp. transient attribute to bypass BasePublisher.storeCertificate(AuthenticationToken admin, Certificate incert, String username, 
+    // String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, 
+    // long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException; until refactored.
+    private String accountBindingId;
+    
+    @Deprecated
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
+    @Deprecated
+    public void setAccountBindingId(final String accountBindingId) {
+        this.accountBindingId = accountBindingId;
+    }
+
     /** Creates a new instance of ExtendedInformation */
     public ExtendedInformation() {
         setType(TYPE_BASIC);

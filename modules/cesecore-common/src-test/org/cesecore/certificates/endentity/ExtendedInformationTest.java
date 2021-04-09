@@ -12,28 +12,34 @@
  *************************************************************************/
 package org.cesecore.certificates.endentity;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 
 /**
  * Unit tests for the EndEntity and ExtendedInformation classes.
- *
- * @version $Id$
- *
  */
 public class ExtendedInformationTest {
+
+    private final static Logger log = Logger.getLogger(ExtendedInformationTest.class);
 
     /** A test P10 encoded as a single line of Base64 */
     public static final String pkcs10 =
@@ -187,4 +193,122 @@ public class ExtendedInformationTest {
         assertEquals("Wrong state or province value was extracted", "CA", extendedInformation.getCabfRegistrationStateOrProvince());
         assertEquals("Wrong registration reference was extracted.", "12345678", extendedInformation.getCabfRegistrationReference());
     }
+
+    /** Tests encoding with XMLEncoder, decoding with SecureXMLDecoder that is used by CertReqHistoryData, 
+     * using empty data
+     */
+    @Test
+    public void testEmptyExtendedInformationXMLEncoder() throws Exception {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            ExtendedInformation ei = new ExtendedInformation();
+            encoder.writeObject(ei);
+        }
+        log.debug(new String(baos.toByteArray()));
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            final ExtendedInformation ei = (ExtendedInformation) decoder.readObject();
+            log.debug(ei.getData());
+        }
+    }
+
+
+    /** Tests encoding with XMLEncoder, decoding with SecureXMLDecoder that is used by CertReqHistoryData,
+     * using complex data, that does not follow Java Beans pattern in ExtendedInformation
+     */
+    @Test
+    public void testComplexExtendedInformationXMLEncoder() throws Exception {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final XMLEncoder encoder = new XMLEncoder(baos)) {
+            final ExtendedInformation ei = new ExtendedInformation();
+            ei.setQCEtsiPSD2NcaId("NcaId-123");
+            ei.setAddEndEntityApprovalRequestId(123);
+            ei.addEditEndEntityApprovalRequestId(123);
+            final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+            pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_AS"), "PSP_AS"));
+            pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_PI"), "PSP_PI"));
+            ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
+            ei.setQCEtsiPSD2NcaName("QCEtsiPSD2NcaName");
+            ei.setCabfOrganizationIdentifier("cabf");
+            ei.cacheScepRequest("1234567890"); // should be base64 encoded message actually
+            ei.setCertificateRequest("foo123".getBytes());
+            ei.cacheApprovalType(TestApprovalRequest.class);
+            ei.setExtensionData("extensiondata", "value");
+            encoder.writeObject(ei);
+        }
+        log.debug(new String(baos.toByteArray()));
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            final ExtendedInformation ei = (ExtendedInformation) decoder.readObject();
+            assertEquals(Integer.valueOf(123), ei.getAddEndEntityApprovalRequestId());
+            final List<Integer> list = ei.getEditEndEntityApprovalRequestIds();
+            assertEquals(1, list.size());
+            assertEquals(Integer.valueOf(123), list.get(0));
+            assertEquals("foo123", new String(ei.getCertificateRequest()));
+            final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = ei.getQCEtsiPSD2RolesOfPSP();
+            assertEquals(2, psd2RoleOfPSPStatements.size());
+            assertEquals("PSP_AS", psd2RoleOfPSPStatements.get(0).getName());
+            assertEquals(QcStatement.getPsd2Oid("PSP_AS"), psd2RoleOfPSPStatements.get(0).getOid());
+            assertEquals("PSP_PI", psd2RoleOfPSPStatements.get(1).getName());
+            assertEquals(QcStatement.getPsd2Oid("PSP_PI"), psd2RoleOfPSPStatements.get(1).getOid());
+            assertEquals("NcaId-123", ei.getQCEtsiPSD2NCAId());
+            assertEquals("QCEtsiPSD2NcaName", ei.getQCEtsiPSD2NCAName());
+            assertEquals("cabf",ei.getCabfOrganizationIdentifier());
+            assertEquals("1234567890", ei.getCachedScepRequest());
+            assertEquals("value", ei.getExtensionData("extensiondata"));
+            assertEquals(TestApprovalRequest.class.getName(), ei.getCachedApprovalType().getName());
+        }
+    }
+
+    /** Tests encoding with XMLSerializer, decoding with SecureXMLDecoder that is used by UserData to fast encode/decode ExtendedInformation
+     * when saved as a simple map
+     */
+    @Test
+    public void testComplexExtendedInformationXMLSerializer() throws Exception {
+        final String xml;
+        {
+            final ExtendedInformation ei = new ExtendedInformation();
+            ei.setQCEtsiPSD2NcaId("NcaId-123");
+            ei.setAddEndEntityApprovalRequestId(123);
+            ei.addEditEndEntityApprovalRequestId(123);
+            final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+            pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_AS"), "PSP_AS"));
+            pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid("PSP_PI"), "PSP_PI"));
+            ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
+            ei.setQCEtsiPSD2NcaName("QCEtsiPSD2NcaName");
+            ei.setCabfOrganizationIdentifier("cabf");
+            ei.cacheScepRequest("1234567890"); // should be base64 encoded message actually
+            ei.setCertificateRequest("foo123".getBytes());
+            ei.cacheApprovalType(TestApprovalRequest.class);
+            ei.setExtensionData("extensiondata", "value");
+            xml = EndEntityInformation.extendedInformationToStringData(ei);
+        }
+        {
+            final ExtendedInformation ei = EndEntityInformation.getExtendedInformationFromStringData(xml); // SecureXMLDecoder
+            assertEquals(Integer.valueOf(123), ei.getAddEndEntityApprovalRequestId());
+            final List<Integer> list = ei.getEditEndEntityApprovalRequestIds();
+            assertEquals(1, list.size());
+            assertEquals(Integer.valueOf(123), list.get(0));
+            assertEquals("foo123", new String(ei.getCertificateRequest()));
+            final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = ei.getQCEtsiPSD2RolesOfPSP();
+            assertEquals(2, psd2RoleOfPSPStatements.size());
+            assertEquals("PSP_AS", psd2RoleOfPSPStatements.get(0).getName());
+            assertEquals(QcStatement.getPsd2Oid("PSP_AS"), psd2RoleOfPSPStatements.get(0).getOid());
+            assertEquals("PSP_PI", psd2RoleOfPSPStatements.get(1).getName());
+            assertEquals(QcStatement.getPsd2Oid("PSP_PI"), psd2RoleOfPSPStatements.get(1).getOid());
+            assertEquals("NcaId-123", ei.getQCEtsiPSD2NCAId());
+            assertEquals("QCEtsiPSD2NcaName", ei.getQCEtsiPSD2NCAName());
+            assertEquals("cabf", ei.getCabfOrganizationIdentifier());
+            assertEquals("1234567890", ei.getCachedScepRequest());
+            assertEquals("value", ei.getExtensionData("extensiondata"));
+            assertEquals(TestApprovalRequest.class.getName(), ei.getCachedApprovalType().getName());
+        }
+    }
+
+    // We need our own approvalClass since we don't have an impl in CESeCore
+    private static class TestApprovalRequest implements EndEntityApprovalRequest {
+        @Override
+        public EndEntityInformation getEndEntityInformation() {
+            return null;
+        }
+    }
+
 }

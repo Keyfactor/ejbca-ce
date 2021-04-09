@@ -36,7 +36,7 @@ public class DomainBlacklistExactMatchChecker implements DomainBlacklistChecker 
     @Override
     public String check(final String domain) {
         if (blacklist == null) {
-            throw new IllegalStateException("Blacklist not configured!");
+            throw new IllegalStateException("Block list not configured!");
         }
         return blacklist.get(domain); // Returns null if not blacklisted
     }

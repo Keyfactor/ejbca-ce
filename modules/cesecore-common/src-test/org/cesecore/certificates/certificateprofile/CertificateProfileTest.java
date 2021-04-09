@@ -35,6 +35,7 @@ import com.google.common.primitives.Booleans;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -133,7 +134,7 @@ public class CertificateProfileTest {
         assertEquals(false, prof.getUsePkixQCSyntaxV2());
         assertEquals(false, prof.getQCStatementCritical());
         assertEquals("", prof.getQCStatementRAName());
-        assertEquals("", prof.getQCSemanticsId());
+        assertEquals("", prof.getQCSemanticsIds());
         assertEquals(false, prof.getUseQCEtsiQCCompliance());
         assertEquals(false, prof.getUseQCEtsiSignatureDevice());
         assertEquals(false, prof.getUseQCEtsiValueLimit());
@@ -142,6 +143,8 @@ public class CertificateProfileTest {
         assertEquals("", prof.getQCEtsiValueLimitCurrency());
         assertEquals(false, prof.getUseQCEtsiRetentionPeriod());
         assertEquals(0, prof.getQCEtsiRetentionPeriod());
+        assertEquals(false, prof.getUseQCCountries());
+        assertEquals("", prof.getQCCountriesString());
         assertEquals(false, prof.getUseQCCustomString());
         assertEquals("", prof.getQCCustomStringOid());
         assertEquals("", prof.getQCCustomStringText());
@@ -220,7 +223,103 @@ public class CertificateProfileTest {
         	assertNotNull(entry.getKey()+" is empty", entry.getValue());
         }
 
-    }    
+    }   
+    
+    @Test
+    public void test02ChangeValuesForQcExtension() {
+        final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+        
+        // Assert defaults.
+        assertFalse(profile.getUseQCStatement());
+        assertFalse(profile.getQCStatementCritical());
+        assertFalse(profile.getUsePkixQCSyntaxV2());
+        assertEquals("", profile.getQCSemanticsIds());
+        assertFalse(profile.getUseQCEtsiQCCompliance());
+        assertFalse(profile.getUseQCEtsiSignatureDevice());
+        assertFalse(profile.getUseQCEtsiValueLimit());
+        assertEquals("", profile.getQCEtsiValueLimitCurrency());
+        assertEquals(0, profile.getQCEtsiValueLimit());
+        assertEquals(0, profile.getQCEtsiValueLimitExp());
+        assertFalse(profile.getUseQCEtsiRetentionPeriod());
+        assertEquals(0, profile.getQCEtsiRetentionPeriod());
+        assertNull(profile.getQCEtsiType());
+        assertNull(profile.getQCEtsiPds());
+        assertFalse(profile.getUseQCPSD2());
+        assertFalse(profile.getUseQCCountries());
+        assertEquals("", profile.getQCCountriesString());
+        assertFalse(profile.getUseQCCustomString());
+        assertEquals("", profile.getQCCustomStringOid());
+        assertEquals("", profile.getQCCustomStringText());
+        
+        profile.setUseQCStatement(true);
+        profile.setQCStatementCritical(true);
+        assertEquals("Use QC statement does not match.", profile.getUseQCStatement(), true);
+        assertEquals("QC statement critical does not match.", profile.getQCStatementCritical(), true);
+        
+        profile.setUsePkixQCSyntaxV2(true);
+        assertEquals("Use PKIX QC syntax V2 does not match.", profile.getUsePkixQCSyntaxV2(), true);
+        
+        profile.setQCSemanticsIds("0.4.0.194121.1.2");
+        assertEquals("QC semantics OID does not match.", profile.getQCSemanticsIds(), "0.4.0.194121.1.2");
+        
+        profile.setUseQCEtsiQCCompliance(true);
+        assertEquals("Use QC ETSI QC compliance does not match.", profile.getUseQCEtsiQCCompliance(), true);
+        
+        profile.setUseQCEtsiSignatureDevice(true);
+        assertEquals("Use QC ETSI qualified signature/e-seal signature creation device does not match.", profile.getUseQCEtsiSignatureDevice(), true);
+        
+        profile.setUseQCEtsiValueLimit(true);
+        profile.setQCEtsiValueLimitCurrency("EUR");
+        profile.setQCEtsiValueLimit(100);
+        profile.setQCEtsiValueLimitExp(2);
+        assertEquals("Use QC ETSI transaction value limit does not match.", profile.getUseQCEtsiValueLimit(), true);
+        assertEquals("QC ETSI transaction currency does not match.", profile.getQCEtsiValueLimitCurrency(), "EUR");
+        assertEquals("QC ETSI transaction value limit does not match.", profile.getQCEtsiValueLimit(), 100);
+        assertEquals("QC ETSI transaction value limit exponent does not match.", profile.getQCEtsiValueLimitExp(), 2);
+        
+        profile.setUseQCEtsiRetentionPeriod(true);
+        profile.setQCEtsiRetentionPeriod(3600);
+        assertEquals("Use QC ETSI retention period does not match.", profile.getUseQCEtsiRetentionPeriod(), true);
+        assertEquals("QC ETSI retention period does not match.", profile.getQCEtsiRetentionPeriod(), 3600);
+        
+        profile.setQCEtsiType(ETSIQCObjectIdentifiers.id_etsi_qct_esign.getId());
+        assertEquals("QC ETSI type does not match.", profile.getQCEtsiType(), ETSIQCObjectIdentifiers.id_etsi_qct_esign.getId());
+        
+        // Setting an empty list causes it to be changed into null
+        profile.setQCEtsiPds(new ArrayList<PKIDisclosureStatement>());
+        assertNull(profile.getQCEtsiPds());
+        // Test with one PDS
+        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://pds.foo.bar/pds", "en")));
+        List<PKIDisclosureStatement> pdsResult = profile.getQCEtsiPds();
+        assertNotNull(pdsResult);
+        assertEquals(1, pdsResult.size());
+        assertEquals("en", pdsResult.get(0).getLanguage());
+        assertEquals("https://pds.foo.bar/pds", pdsResult.get(0).getUrl());
+        // Test with two PDSes
+        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://pds.foo.bar/pds", "en"), new PKIDisclosureStatement("https://pds.example.com/pds.pdf", "sv")));
+        pdsResult = profile.getQCEtsiPds();
+        assertNotNull(pdsResult);
+        assertEquals(2, pdsResult.size());
+        assertEquals("en", pdsResult.get(0).getLanguage());
+        assertEquals("https://pds.foo.bar/pds", pdsResult.get(0).getUrl());
+        assertEquals("sv", pdsResult.get(1).getLanguage());
+        assertEquals("https://pds.example.com/pds.pdf", pdsResult.get(1).getUrl());
+        
+        profile.setUseQCPSD2(true);
+        assertEquals("Use QC ETSI PSD2 statement does not match.", profile.getUseQCPSD2(), true);
+        
+        profile.setUseQCCountries(true);
+        profile.setQCCountriesString("SE,DE,IT");
+        assertEquals("Use ETSI QC legislation countries does not match.", profile.getUseQCCountries(), true);
+        assertEquals("QC ETSI countries string does not match.", profile.getQCCountriesString(), "SE,DE,IT");
+        
+        profile.setUseQCCustomString(true);
+        profile.setQCCustomStringOid("1.2.3.4.5.6");
+        profile.setQCCustomStringText("test-1.2.3.4.5.6");
+        assertEquals("Use QC custom string does not match.", profile.getUseQCCustomString(), true);
+        assertEquals("QC custom string OID does not match.", profile.getQCCustomStringOid(), "1.2.3.4.5.6");
+        assertEquals("QC custom string text does not match.", profile.getQCCustomStringText(), "test-1.2.3.4.5.6");
+    }
     
     @Test
     public void test03FixedProfiles() {
@@ -487,32 +586,7 @@ public class CertificateProfileTest {
         profile.removeCertificatePolicy(p2);
         assertEquals(1, l.size());
         policy = l.get(0);
-        assertEquals("1.1.1.1", policy.getPolicyID());
-        
-        assertNull(profile.getQCEtsiType());
-        assertNull(profile.getQCEtsiPds());
-        // Setting an empty list causes it to be changed into null
-        profile.setQCEtsiPds(new ArrayList<PKIDisclosureStatement>());
-        assertNull(profile.getQCEtsiPds());
-        // Test with one PDS
-        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://pds.foo.bar/pds", "en")));
-        List<PKIDisclosureStatement> pdsResult = profile.getQCEtsiPds();
-        assertNotNull(pdsResult);
-        assertEquals(1, pdsResult.size());
-        assertEquals("en", pdsResult.get(0).getLanguage());
-        assertEquals("https://pds.foo.bar/pds", pdsResult.get(0).getUrl());
-        // Test with two PDSes
-        profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://pds.foo.bar/pds", "en"), new PKIDisclosureStatement("https://pds.example.com/pds.pdf", "sv")));
-        pdsResult = profile.getQCEtsiPds();
-        assertNotNull(pdsResult);
-        assertEquals(2, pdsResult.size());
-        assertEquals("en", pdsResult.get(0).getLanguage());
-        assertEquals("https://pds.foo.bar/pds", pdsResult.get(0).getUrl());
-        assertEquals("sv", pdsResult.get(1).getLanguage());
-        assertEquals("https://pds.example.com/pds.pdf", pdsResult.get(1).getUrl());
-        // Test QC ETSI Type
-        profile.setQCEtsiType("1.2.3.4");
-        assertEquals("1.2.3.4", profile.getQCEtsiType());
+        assertEquals("1.1.1.1", policy.getPolicyID());        
     }
 
     @Test
@@ -526,7 +600,7 @@ public class CertificateProfileTest {
         CertificatePolicy pol = l.get(0);
         assertEquals("2.5.29.32.0", pol.getPolicyID() );
         assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
-        String qcId = ep.getQCSemanticsId();
+        String qcId = ep.getQCSemanticsIds();
         assertEquals("", qcId);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         l = cp.getCertificatePolicies();
@@ -544,10 +618,11 @@ public class CertificateProfileTest {
         pol = l.get(1);
         assertEquals("1.1.1.1.1", pol.getPolicyID());
         assertEquals(CertificateProfile.LATEST_VERSION, cp.getLatestVersion(),0);
-        assertEquals("", cp.getQCSemanticsId());
-        cp.setQCSemanticsId("1.1.1.2");
-        assertEquals("1.1.1.2", cp.getQCSemanticsId());
-        
+        assertEquals("", cp.getQCSemanticsIds());
+        cp.setQCSemanticsIds("1.1.1.2");
+        assertEquals("1.1.1.2", cp.getQCSemanticsIds());
+        cp.setQCSemanticsIds("1.1.1.2,1.1.1.3");
+        assertEquals("1.1.1.2,1.1.1.3", cp.getQCSemanticsIds());
         assertNull(cp.getSignatureAlgorithm()); // default value null = inherit from CA
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());

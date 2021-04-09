@@ -52,7 +52,7 @@
             <h:outputText styleClass="alert" rendered="#{empty roleMembersBean.role}" value="#{web.text.ROLEMEMBERS_ERROR_NOROLE}"/>
             
             <h:form id="rolemembers" rendered="#{not empty roleMembersBean.role}">
-                <h:dataTable id="list" value="#{roleMembersBean.roleMembers}" var="roleMember" styleClass="fullwidth, grid" headerClass="listHeader" rowClasses="Row0,Row1"
+                <h:dataTable id="list" value="#{roleMembersBean.roleMembers}" var="roleMember" styleClass="fullwidth grid fixBlankRow" headerClass="listHeader" rowClasses="Row0,Row1"
                     columnClasses="caColumn alignmiddle,typeColumn alignmiddle,typeColumn alignmiddle,valueColumn alignmiddle,valueColumn alignmiddle,commandColumn alignmiddle">
                     <h:column>
                         <f:facet name="header">

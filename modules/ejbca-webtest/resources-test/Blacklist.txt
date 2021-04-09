@@ -1,4 +1,4 @@
-# Sample blacklist file. Created 2019-03-01
+# Sample block list file. Created 2019-03-01
 bank        # If domain component blocking is enabled, then this will block "bank.com", "bank.example.com" but NOT "memorybank.com"
 
 example.com # With base domain blocking one can block a domain including subdomains.

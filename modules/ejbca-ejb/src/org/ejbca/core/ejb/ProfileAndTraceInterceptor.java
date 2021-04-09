@@ -41,7 +41,7 @@ public class ProfileAndTraceInterceptor {
         final String targetMethodName = invocationContext.getMethod().getName();
         final Class<?> targetMethodClass = invocationContext.getTarget().getClass();
         final Logger targetLogger = Logger.getLogger(targetMethodClass);
-        invocationStartTime = System.nanoTime();
+        invocationStartTime = System.currentTimeMillis();
         if (targetLogger.isTraceEnabled()) {
             StringBuilder sb = new StringBuilder("(");
             for (Object obj : invocationContext.getParameters()) {
@@ -69,8 +69,7 @@ public class ProfileAndTraceInterceptor {
             returnException = e;
             throw e;
         } finally {
-            long invocationDuration = -1;
-            invocationDuration = (System.nanoTime() - invocationStartTime) / 1000;
+            long invocationDuration = System.currentTimeMillis() - invocationStartTime;
             final String fullTargetIdentifier = targetMethodClass.getName() + "." + targetMethodName;
             ProfilingStats.INSTANCE.add(fullTargetIdentifier, invocationDuration);
             if (targetLogger.isTraceEnabled()) {

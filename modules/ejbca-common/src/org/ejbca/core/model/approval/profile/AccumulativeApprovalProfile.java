@@ -147,6 +147,9 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     @Override
     protected ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition) {
         DynamicUiProperty<Integer> numberOfRequiredApprovals = new DynamicUiProperty<>(PROPERTY_NUMBER_OF_REQUIRED_APPROVALS, 1);
+        // Replace with this after DynamicUiProperty serialized into ProfileData is fixed with a separate ticket.
+        // Then PositiveIntegerValidator will be removed.
+        // numberOfRequiredApprovals.setValidator(IntegerValidator.minInstance(0));
         numberOfRequiredApprovals.setValidator(new PositiveIntegerValidator());
         approvalPartition.addProperty(numberOfRequiredApprovals);
         return approvalPartition;

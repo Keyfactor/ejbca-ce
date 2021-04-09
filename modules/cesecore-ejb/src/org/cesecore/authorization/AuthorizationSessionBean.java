@@ -12,26 +12,6 @@
  *************************************************************************/
 package org.cesecore.authorization;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -39,6 +19,7 @@ import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
@@ -57,15 +38,31 @@ import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 /**
  * Business logic for the EJBCA 6.8.0+ authorization system.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AuthorizationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AuthorizationSessionBean implements AuthorizationSessionLocal, AuthorizationSessionRemote {
-
     private static final Logger log = Logger.getLogger(AuthorizationSessionBean.class);
 
     @EJB
@@ -78,6 +75,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
     @EJB
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     @Resource
     private SessionContext sessionContext;
@@ -175,7 +174,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         RemoteAccessSetCacheHolder.forceEmptyCache();
         authorizationSession.scheduleBackgroundRefresh();
     }
-    
+
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void refreshAuthorizationCache() {
@@ -190,7 +189,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     public HashMap<String, Boolean> getAccessAvailableToAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         return AuthorizationCache.INSTANCE.get(authenticationToken, authorizationCacheCallback);
     }
-    
+
     /** Callback for loading cache misses */
     private AuthorizationCacheCallback authorizationCacheCallback = new AuthorizationCacheCallback() {
         @Override

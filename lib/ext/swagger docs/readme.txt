@@ -1,3 +1,2 @@
 "Project";                      "Library Name";                                         "License type(s)";      "License text";             "Source";                                                                   "Comment";
 "Swagger Codegen (executable)"; "swagger-codegen-cli-2.4.16";                            "ALv2";                 "LICENSE-APACHE-2.0";       "https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.4.16/";    "Needed for Rest Api documentation generation";
-"Swaggerdocgen Maven Plug-in";  "swaggerdocgen-maven-plugin-1.2-jar-with-dependencies"; "ALv2";                 "LICENSE-APACHE-2.0";       "https://github.com/WASdev/tool.swagger.docgen";                            "Needed for Rest Api documentation generation";

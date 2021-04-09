@@ -18,7 +18,8 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -156,7 +157,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
@@ -171,7 +172,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
+        out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req1);
         ba = bao.toByteArray();
         // Send request and receive response
@@ -184,7 +185,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
+        out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(revReq);
         ba = bao.toByteArray();
         // Send request and receive response

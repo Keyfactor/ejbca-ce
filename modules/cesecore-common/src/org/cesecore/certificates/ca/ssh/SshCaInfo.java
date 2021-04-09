@@ -154,7 +154,7 @@ public class SshCaInfo extends CAInfo {
         private Date revocationDate = null;
         private boolean finishUser = true;
         private Collection<ExtendedCAServiceInfo> extendedCaServiceInfos = new ArrayList<>();
-        private boolean useUtf8PolicyText = false;
+        private boolean useUtf8PolicyText = true;
         private boolean usePrintableStringSubjectDN = false;
         private boolean includeInHealthCheck = true;
         private boolean doEnforceUniquePublicKeys = true;

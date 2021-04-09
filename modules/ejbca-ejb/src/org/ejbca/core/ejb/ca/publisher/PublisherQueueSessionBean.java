@@ -477,6 +477,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             final String tag  = certificateData.getTag();
             final Integer certificateProfileId = certificateData.getCertificateProfileId();
             final Long updateTime = certificateData.getUpdateTime();
+            // ECA-9491 Tmp. until refactored.
+            if (extendedinformation != null) {
+                extendedinformation.setAccountBindingId(certificateData.getAccountBindingId());
+            }
             return publisher.storeCertificate(admin, certWrapper.getCertificate(), username, password, userDN, cAFingerprint, status, type, revocationDate,
                     revocationReason, tag, certificateProfileId, updateTime, extendedinformation);
         }
