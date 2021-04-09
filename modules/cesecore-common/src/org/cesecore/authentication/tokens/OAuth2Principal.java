@@ -29,6 +29,7 @@ public class OAuth2Principal implements Principal, Serializable {
 
     // These are documented in https://openid.net/specs/openid-connect-core-1_0.html
     // Only attributes that might be meaningful to EJBCA have been added here
+    private final int oauthProviderId;
     private final String issuer;
     private final String subject;
     private final String oid;
@@ -38,9 +39,10 @@ public class OAuth2Principal implements Principal, Serializable {
     private final String email;
     private final boolean emailVerified;
 
-    private OAuth2Principal(String issuer, String subject, String oid, Collection<String> audience, String preferredUsername, String name,
+    private OAuth2Principal(int oauthProviderId, String issuer, String subject, String oid, Collection<String> audience, String preferredUsername, String name,
             String email, final boolean emailVerified) {
         super();
+        this.oauthProviderId = oauthProviderId;
         this.issuer = issuer;
         this.subject = subject;
         this.oid = oid;
@@ -73,6 +75,8 @@ public class OAuth2Principal implements Principal, Serializable {
         return StringUtils.join(audience, ',');
     }
 
+    /** returns id of trusted oauth provider where token came from */
+    public Integer getOauthProviderId() {return oauthProviderId;}
     /** Returns the issuer (corresponding to the "iss" attribute in the token), or null if absent */
     public String getIssuer() { return issuer; }
     /** Returns the subject (corresponding to the "sub" attribute in the token), or null if absent */
@@ -117,6 +121,7 @@ public class OAuth2Principal implements Principal, Serializable {
     }
 
     public static class Builder {
+        private int oauthProviderId;
         private String issuer;
         private String subject;
         private String oid;
@@ -125,6 +130,12 @@ public class OAuth2Principal implements Principal, Serializable {
         private String name;
         private String email;
         private boolean emailVerified;
+
+        public Builder setOauthProviderId(int oauthProviderId) {
+            this.oauthProviderId = oauthProviderId;
+            return this;
+        }
+
         public Builder setIssuer(final String issuer) {
             this.issuer = issuer;
             return this;
@@ -159,7 +170,7 @@ public class OAuth2Principal implements Principal, Serializable {
         }
 
         public OAuth2Principal build() {
-            return new OAuth2Principal(issuer, subject, oid, audience, preferredUsername, name, email, emailVerified);
+            return new OAuth2Principal(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified);
         }
     }
 }
