@@ -189,6 +189,8 @@
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
 	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
+	<property name="mod.msae.path" location="${mod.path}/msae" />
+	<property name="mod.msae.war" location="${mod.dist.path}/msae.war" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
@@ -339,6 +341,7 @@
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.owaspcsrfguard.classpath"><fileset dir="${ejbca.home}/lib/" includes="csrfguard-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
+	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
 	<path id="lib.xmlpull.classpath">
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
@@ -605,6 +608,10 @@
 
 	<condition property="mod.ssh.exists">
 		<available file="${mod.ssh.path}/build.xml" />
+	</condition>
+	
+	<condition property="mod.msae.exists">
+		<available file="${mod.msae.path}/build.xml" />
 	</condition>
 	
     <condition property="mod.acme.exists">
