@@ -69,7 +69,7 @@ public abstract class RequestMessageUtils {
 	            log.debug("Can not parse PKCS10 request, trying CVC instead: P10 is parsed to null");
 	            ret = genCVCRequestMessage(request);			    
 			}
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException | IOException e) {
 		    if (log.isDebugEnabled()) {
 		        log.debug("Can not parse PKCS10 request, trying CVC instead: "+ e.getMessage());
 		    }
@@ -85,7 +85,7 @@ public abstract class RequestMessageUtils {
 		return ret;
 	}
 
-	public static PKCS10RequestMessage genPKCS10RequestMessage(byte[] bytes) {
+	public static PKCS10RequestMessage genPKCS10RequestMessage(byte[] bytes) throws IOException {
 		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;
@@ -159,20 +159,6 @@ public abstract class RequestMessageUtils {
 		}
 		return buffer;
 	}
-
-	public static RequestMessage updateUsername(final String username, final RequestMessage rm) {
-	    if (rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_PKCS10) {
-            ((PKCS10RequestMessage) rm).setUsername(username);
-        } else if (rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_SPKAC ||
-                   rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CRMF ||
-                   rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_PUBLICKEY) {
-            ((SimpleRequestMessage) rm).setUsername(username);
-        } else if (rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CVC) {
-            ((CVCRequestMessage) rm).setUsername(username);
-        }
-
-	    return rm;
-    }
 
     public static RequestMessage getRequestMessageFromType(final String username, final String password, final String req, final int reqType)
             throws SignRequestSignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException,

@@ -482,6 +482,21 @@ public class CaHelper extends BaseHelper {
         }
     }
 
+    /**
+     * Calls CA dialog without expected title message
+     *
+     * @param caName                CA name
+     * @param isDeleteConfirmed     true to confirm deletion, false to cancel deletion
+     * @param expectedAlertMessage  Alertmessage to confirm with parameter isDeleteConfirmed
+     */
+    public void deleteCa (final String caName, final boolean isDeleteConfirmed, final String expectedAlertMessage){
+        selectOptionByName(Page.SELECT_CA, caName + ", (Active)");
+        clickLink(Page.BUTTON_DELETE_CA);
+        assertAndConfirmAlertPopUp(expectedAlertMessage, isDeleteConfirmed);
+        findElements(Page.SELECT_CA);
+
+    }
+
     private void assertTitleExists(final String titleText) {
         final WebElement titleWebElement = findElement(Page.getCaListElementContainingText(titleText));
         if (titleWebElement == null) {

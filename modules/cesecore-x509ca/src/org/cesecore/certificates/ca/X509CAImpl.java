@@ -293,6 +293,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCrlIssueInterval(getCRLIssueInterval())
                 .setCrlOverlapTime(getCRLOverlapTime())
                 .setDeltaCrlPeriod(getDeltaCRLPeriod())
+                .setGenerateCrlUponRevocation(getGenerateCrlUponRevocation())
                 .setCrlPublishers(getCRLPublishers())
                 .setValidators(getValidators())
                 .setUseAuthorityKeyIdentifier(getUseAuthorityKeyIdentifier())
@@ -2203,9 +2204,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
             boolean useprintablestring = true;
             if (data.get("alwaysuseutf8subjectdn") == null) {
-                // Default value false
+                // Default value true, if we had no configuration like this before
                 if (data.get(USEUTF8POLICYTEXT) == null) {
-                    setUseUTF8PolicyText(false);
+                    setUseUTF8PolicyText(true);
                 }
             } else {
                 // Use the same value as we had before when we had alwaysuseutf8subjectdn

@@ -26,9 +26,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -205,7 +206,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             Assert.assertNotNull(req);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -230,7 +231,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             Assert.assertNotNull(con);
             PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD, 567);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(confirm);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -391,7 +392,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
 
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -406,7 +407,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             Assert.assertNotNull(con);
             PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, null, 567);
             final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-            final DEROutputStream outrev = new DEROutputStream(baorev);
+            final ASN1OutputStream outrev = ASN1OutputStream.create(baorev, ASN1Encoding.DER);
             outrev.writeObject(revmsg);
             final byte[] barev = baorev.toByteArray();
             // Send request and receive response
@@ -498,7 +499,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
                 Assert.assertNotNull(req);
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                final DEROutputStream out = new DEROutputStream(bao);
+                final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(req);
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
@@ -524,7 +525,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 reqId2 = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
                 Assert.assertNotNull(req2);
                 final ByteArrayOutputStream bao2 = new ByteArrayOutputStream();
-                final DEROutputStream out2 = new DEROutputStream(bao2);
+                final ASN1OutputStream out2 = ASN1OutputStream.create(bao2, ASN1Encoding.DER);
                 out2.writeObject(req2);
                 final byte[] ba2 = bao2.toByteArray();
                 // Send request and receive response
@@ -542,7 +543,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 Assert.assertNotNull(con);
                 PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
                 final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-                final DEROutputStream outrev = new DEROutputStream(baorev);
+                final ASN1OutputStream outrev = ASN1OutputStream.create(baorev, ASN1Encoding.DER);
                 outrev.writeObject(revmsg);
                 final byte[] barev = baorev.toByteArray();
                 // Send request and receive response
@@ -559,7 +560,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 final int reqId3 = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
                 Assert.assertNotNull(reqId3);
                 final ByteArrayOutputStream bao3 = new ByteArrayOutputStream();
-                final DEROutputStream out3 = new DEROutputStream(bao3);
+                final ASN1OutputStream out3 = ASN1OutputStream.create(bao3, ASN1Encoding.DER);
                 out3.writeObject(req3);
                 final byte[] ba3 = bao3.toByteArray();
                 // Send request and receive response
@@ -632,7 +633,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             Assert.assertNotNull(req);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -681,7 +682,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
 
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -702,7 +703,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
 
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             ba = bao.toByteArray();
             // Send request and receive response
@@ -717,7 +718,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             Assert.assertNotNull(con);
             PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, null, 567);
             final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-            final DEROutputStream outrev = new DEROutputStream(baorev);
+            final ASN1OutputStream outrev = ASN1OutputStream.create(baorev, ASN1Encoding.DER);
             outrev.writeObject(revmsg);
             final byte[] barev = baorev.toByteArray();
             // Send request and receive response
@@ -789,7 +790,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             Assert.assertNotNull(req);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            final DEROutputStream out = new DEROutputStream(bao);
+            final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             {// this strange DN contains forbidden characters and may not be stored a a string in the DB, so it must be transformed by ejbca.
@@ -877,7 +878,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             assertNotNull(req);
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
+            ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Send request and receive response
@@ -923,7 +924,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             assertNotNull(req);
             bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
             ba = bao.toByteArray();
             // Send request and receive response
@@ -968,7 +969,7 @@ public class CrmfRARequestTest extends CmpTestCase {
            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
            assertNotNull(req);
            bao = new ByteArrayOutputStream();
-           out = new DEROutputStream(bao);
+           out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
            out.writeObject(req);
            ba = bao.toByteArray();
            // Send request and receive response
@@ -1011,7 +1012,7 @@ public class CrmfRARequestTest extends CmpTestCase {
           reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
           assertNotNull(req);
           bao = new ByteArrayOutputStream();
-          out = new DEROutputStream(bao);
+          out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
           out.writeObject(req);
           ba = bao.toByteArray();
           // Send request and receive response
@@ -1120,7 +1121,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
+        ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
@@ -1199,7 +1200,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
+        out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
         out.writeObject(req);
         ba = bao.toByteArray();
         resp = sendCmpHttp(ba, 200, cmpAlias);

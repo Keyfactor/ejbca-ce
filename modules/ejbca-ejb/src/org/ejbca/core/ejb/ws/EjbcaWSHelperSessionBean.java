@@ -12,30 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ws;
 
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
@@ -90,6 +66,29 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.cert.OID;
 import org.ejbca.util.query.Query;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Contains methods that are used by both the EjbcaWS, the Ejbca WS tests and by RAMasterApiSessionBean.
@@ -460,9 +459,16 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), certificateprofilename);
             break;
         case UserMatch.MATCH_WITH_CA:
-            String caname = Integer.toString(caSession.getCAInfo(admin, usermatch.getMatchvalue()).getCAId());
+        CAInfo caInfo = caSession.getCAInfo(admin, usermatch.getMatchvalue());
+        if (caInfo==null) {
+            final String message = "Error CA " + usermatch.getMatchvalue() + " does not exist";
+            log.error(message);
+            throw new CADoesntExistsException(message);
+        }else {
+            String caname = Integer.toString(caInfo.getCAId());
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), caname);
-            break;
+        }
+        break;
         case UserMatch.MATCH_WITH_TOKEN:
             String tokenname = Integer.toString(getTokenId(admin, usermatch.getMatchvalue()));
             retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), tokenname);
@@ -597,12 +603,13 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             boolean futureRollover) throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException,
             CertPathValidatorException, CesecoreException, CertificateParsingException {
         CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String errmsg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(errmsg);
+        }
         // create response messages, for CVC certificates we use a regular X509ResponseMessage
         X509ResponseMessage msg = new X509ResponseMessage();
         msg.setCertificate(CertTools.getCertfromByteArray(cert, java.security.cert.Certificate.class));
-        if (cainfo == null) {
-            throw new CADoesntExistsException("CA by name '" + caname + "' not found.");
-        }
         // Activate the CA's token using the provided keystorepwd if any
         if (keystorepwd != null) {
             cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
@@ -615,6 +622,10 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             boolean activatekey, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String msg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(msg);
+        }
         String nextSignKeyAlias = null; // null means generate new keypair
         if (!regenerateKeys) {
             nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
@@ -640,15 +651,23 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     public void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes)
             throws AuthorizationDeniedException, CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException, CmsCertificatePathMissingException {
         final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
-        final int caid = caSession.getCA(admin, caname).getCAId();
-        caAdminSession.updateCACertificate(admin, caid, cachain);
+        CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String msg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(msg);
+        }
+        caAdminSession.updateCACertificate(admin, cainfo.getCAId(), cachain);
     }
 
     @Override
     public void rolloverCACert(AuthenticationToken admin, String caname)
             throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
-        int caid = caSession.getCAInfo(admin, caname).getCAId();
-        caAdminSession.rolloverCA(admin, caid);
+        CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        if (cainfo == null) {
+            final String msg = intres.getLocalizedMessage("caadmin.canotexistsname", caname);
+            throw new CADoesntExistsException(msg);
+        }
+        caAdminSession.rolloverCA(admin, cainfo.getCAId());
     }
 
     @Override

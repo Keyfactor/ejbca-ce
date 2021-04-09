@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
@@ -247,6 +248,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                         prof.getUseQCPSD2(),
                         !StringUtils.isEmpty(prof.getQCEtsiType()),
                         prof.getQCEtsiPds() != null && prof.getQCEtsiPds().size() > 0 && !(prof.getQCEtsiPds().size() == 1 && prof.getQCEtsiPds().get(0).getUrl() == null),
+                        prof.getUseQCCountries() && prof.getQCCountriesString() != null && prof.getQCCountriesString().length() > 0,
                         prof.getUseQCCustomString() && !prof.getQCCustomStringOid().isEmpty() && !prof.getQCCustomStringText().isEmpty()
                 };
                 // Check that at least one QC statement is used
@@ -984,6 +986,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseQCEtsiRetentionPeriod(!getCertificateProfile().getUseQCEtsiRetentionPeriod());
     }
 
+    public void toggleUseQCCountriesString() throws IOException {
+        getCertificateProfile().setUseQCCountries(!getCertificateProfile().getUseQCCountries());
+    }
+    
     public void toggleUseQCCustomString() throws IOException {
         getCertificateProfile().setUseQCCustomString(!getCertificateProfile().getUseQCCustomString());
     }
@@ -1399,6 +1405,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public String getQcEtsiTypeWebauth() {
         return CertificateProfileConstants.QC_ETSI_TYPE_WEBAUTH;
+    }
+  
+    public String getQCSemanticsOids() {
+        return certificateProfile.getQCSemanticsIds();
+    }
+    
+    public void setQCSemanticsOids(final String oids) {
+        final SortedSet<String> filteredOids = new TreeSet<>(Arrays.asList(oids.split(",")));
+        certificateProfile.setQCSemanticsIds(String.join(",", filteredOids));
     }
 
 }
