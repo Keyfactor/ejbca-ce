@@ -113,8 +113,6 @@ import org.cesecore.util.EJBTools;
 
 /**
  * Session bean for creating certificates.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -462,6 +460,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (log.isDebugEnabled()) {
                     log.debug("SingleActiveCertificateConstraint, found "+cdws.size()+" old (non expired, active) certificates.");
                 }
+                boolean revoked = false;
                 for (final CertificateDataWrapper cdw : cdws) {
                     final CertificateData certificateData = cdw.getCertificateData();
                     if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -472,6 +471,15 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     }                  
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
                     certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                    revoked = true;
+                }
+                if (revoked && ca.getGenerateCrlUponRevocation()) {
+                    // ECA-9716 Single active certificate constraint (SACC) functionality was processed before
+                    // in SignSessionBean.createCertificate. All other invocations of this method are caused by 
+                    // InternalKeyBindingMgmtSessionBean.renewInternallyIssuedCertificate or test classes.
+                    // The processing of SACC at this point should be verified with a separate ticket.
+                    log.warn("No CRL was generated upon revocation for CA '" + ca.getName() 
+                        + "' even though certificates had been revoked because of single active certificate constraint.");
                 }
             }
             
