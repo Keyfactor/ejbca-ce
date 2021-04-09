@@ -38,6 +38,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
@@ -93,6 +94,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CAInfo;
@@ -4719,5 +4721,73 @@ public abstract class CertTools {
             }
         }
         return commonName;
+    }
+
+    public static Collection<X509CertificateHolder> parseP7B(InputStream is) throws CMSException, IOException {
+
+        final InputStreamReader isr = new InputStreamReader(is);
+        final PEMParser parser = new PEMParser(isr);
+
+        final ContentInfo info = (ContentInfo) parser.readObject();
+        final CMSSignedData csd = new CMSSignedData(info);
+        @SuppressWarnings("unchecked")
+        final Store<X509CertificateHolder> certstore = csd.getCertificates();
+        final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
+
+        parser.close();
+        return collection;
+    }
+
+    private static byte[] getFirstCertificate(Collection<X509CertificateHolder> collection) throws CertificateException {
+
+        if (null != collection) {
+            final X509CertificateHolder certholder = collection.iterator().next();
+            final X509Certificate x509cert = new JcaX509CertificateConverter().getCertificate(certholder);
+            return Base64.encode(x509cert.getEncoded());
+        }
+
+        return null;
+    }
+
+    public static byte[] getPKCS7Certificate(InputStream is) throws CertificateException, IOException, CMSException {
+
+        final InputStreamReader isr = new InputStreamReader(is);
+        final PEMParser parser = new PEMParser(isr);
+
+        final ContentInfo info = (ContentInfo) parser.readObject();
+        final CMSSignedData csd = new CMSSignedData(info);
+
+        return csd.getEncoded();
+    }
+
+    public static String getPEMCertificate(Collection<X509CertificateHolder> collection) throws CertificateException {
+        final byte[] b64 = CertTools.getFirstCertificate(collection);
+        return BEGIN_CERTIFICATE + "\n" + new String(b64) + "\n" + END_CERTIFICATE;
+    }
+
+    public static String getPEMCertificate(byte[] bytes) {
+        final byte[] b64 = Base64.encode(bytes);
+        return BEGIN_CERTIFICATE + "\n" + new String(b64) + "\n" + END_CERTIFICATE;
+    }
+
+    public static String getPKCS7PEMCertificate(byte[] bytes) {
+        final byte[] b64 = Base64.encode(bytes);
+        return BEGIN_PKCS7 + "\n" + new String(b64) + "\n" + END_PKCS7;
+    }
+
+    public static byte[] getFirstCertificateFromPKCS7(byte[] pkcs7) throws CMSException, IOException {
+        byte[] firstCertificate = null;
+
+        final CMSSignedData csd = new CMSSignedData(pkcs7);
+        @SuppressWarnings("unchecked")
+        final Store<X509CertificateHolder> certstore = csd.getCertificates();
+        final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
+
+        final Iterator<X509CertificateHolder> ci = collection.iterator();
+        if (ci.hasNext()) {
+            firstCertificate = ci.next().getEncoded();
+        }
+
+        return firstCertificate;
     }
 }
