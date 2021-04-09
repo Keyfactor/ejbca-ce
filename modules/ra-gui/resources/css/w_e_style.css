@@ -428,7 +428,7 @@ textarea#enrollWithRequestIdForm\:certificateRequest {
     font-weight: bold; }
 
 #detailsForm > span.pure-u-1:nth-of-type(2), #detailsForm  .subjects {
-  width: 97%;
+  width: 100%;
   margin-bottom: 2%;
   word-break: break-word; }
   #detailsForm > span.pure-u-1:nth-of-type(2) > label {

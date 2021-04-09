@@ -62,6 +62,28 @@
                 <h:outputText id="usernameWarning" value="#{cc.attrs.raEndEntityBean.usernameWarning} " styleClass="warning"/>
             </h:panelGroup>
 
+            <h:outputLabel for="email" value="#{msg.component_eedetails_field_email}"
+                           rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityBean.emailUsed}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="email"
+                          value="#{cc.attrs.raEndEntityDetails.email}"
+                          rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityBean.emailUsed and not empty cc.attrs.raEndEntityDetails.email}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup id="newEmail"
+                          rendered="#{cc.attrs.editMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}  ra-editEndEntity subjects">
+                <h:outputLabel value="#{msg.component_eedetails_field_email}"
+                               rendered="#{cc.attrs.raEndEntityBean.emailUsed}"
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:inputText value="#{cc.attrs.raEndEntityBean.emailName}"
+                             rendered="#{cc.attrs.raEndEntityBean.emailUsed}"
+                             disabled="#{not cc.attrs.raEndEntityBean.emailModifiable}"/>
+                <h:outputText value=" @ " rendered="#{cc.attrs.raEndEntityBean.emailUsed}"/>
+                <h:inputText value="#{cc.attrs.raEndEntityBean.emailDomain}"
+                               rendered="#{cc.attrs.raEndEntityBean.emailUsed}"
+                               disabled="#{not cc.attrs.raEndEntityBean.emailModifiable}"/>
+            </h:panelGroup>
+
             <h:panelGroup layout="block" rendered="#{not cc.attrs.approvalRequestMode}">
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
     
@@ -168,7 +190,7 @@
                 rendered="#{cc.attrs.editMode}">
                 <h:selectOneMenu id="eepId" value="#{cc.attrs.raEndEntityBean.eepId}" styleClass="pure-input-1-4">
                     <f:selectItems value="#{cc.attrs.raEndEntityBean.endEntityProfiles.entrySet()}" var="eep" itemLabel="#{eep.value}" itemValue="#{eep.key}" />
-                    <f:ajax event="change" render="maxfailedlogineditor cpId caId subjectDistinguishNames subjectAlternativeNames subjectDirectoryAttributes"/>
+                    <f:ajax event="change" render="newEmail maxfailedlogineditor cpId caId subjectDistinguishNames subjectAlternativeNames subjectDirectoryAttributes"/>
                 </h:selectOneMenu>
             </h:panelGroup>
 
@@ -237,10 +259,10 @@
 			
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:outputLabel for="email" value="#{msg.component_eedetails_field_email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
+            <!--<h:outputLabel for="email" value="#{msg.component_eedetails_field_email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="email" value="#{cc.attrs.raEndEntityDetails.email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>-->
             <h:outputLabel for="notification" value="#{msg.component_eedetails_field_notification}" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
