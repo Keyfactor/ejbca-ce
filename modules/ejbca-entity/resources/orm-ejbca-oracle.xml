@@ -13,7 +13,6 @@
  *                                                                       *
  *************************************************************************/
 
- version: $Id$
  -->
 <entity-mappings version="2.1"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -248,6 +247,7 @@
             <id name="primaryKey"><column name="primaryKey" column-definition="NUMBER(10)"/></id>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenIssuerId"><column name="tokenIssuerId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenProviderId"><column name="tokenProviderId" column-definition="NUMBER(10) DEFAULT 0" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchKey"><column name="tokenMatchKey" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchOperator"><column name="tokenMatchOperator" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchValueColumn"><column name="tokenMatchValue" column-definition="VARCHAR2(2000 byte)" nullable="true"/></basic>

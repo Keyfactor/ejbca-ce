@@ -182,7 +182,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.not_yet_valid", subject, keyFingerprint));
                 return null;
             }
-            final OAuth2Principal principal = createOauthPrincipal(claims);
+            final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo);
             return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, keyFingerprint, keyInfo.getLabel());
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
@@ -193,8 +193,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         }
     }
 
-    private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims) {
+    private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, OAuthKeyInfo keyInfo) {
         return OAuth2Principal.builder()
+                .setOauthProviderId(keyInfo.getInternalId())
                 .setIssuer(claims.getIssuer())
                 .setSubject(claims.getSubject())
                 .setOid(safeGetClaim(claims, "oid"))

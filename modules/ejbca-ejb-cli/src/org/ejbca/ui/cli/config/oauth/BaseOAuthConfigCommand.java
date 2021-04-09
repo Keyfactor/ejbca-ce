@@ -66,8 +66,9 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     protected boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
+            final boolean hasSameInternalId = existingKeyInfo.getInternalId() == oauthKey.getInternalId();
             final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
-            if (hasSameLabel) {
+            if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
         }

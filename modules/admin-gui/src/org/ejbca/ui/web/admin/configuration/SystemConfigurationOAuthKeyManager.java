@@ -611,7 +611,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             OAuth2AuthenticationToken oauth2token = (OAuth2AuthenticationToken) getAdminToken();
             oauthKeyEditor.loadIntoEditor(oauthKey, oauthKey.getLabel());
             oauthKeyEditor.stopEditing();
-            final Collection<OAuthPublicKey> publicKeys = oauthKeyEditor.oauthKeyBeingEdited.getKeys().values();
+            final Collection<OAuthPublicKey> publicKeys = oauthKey.getKeys().values();
             for (OAuthPublicKey key : publicKeys) {
                 String oauthKeyToBeRemovedString = Base64.toBase64String(CertTools.generateSHA256Fingerprint(key.getPublicKeyBytes()));
                 if (oauth2token.getPublicKeyBase64Fingerprint().equals(oauthKeyToBeRemovedString)) {

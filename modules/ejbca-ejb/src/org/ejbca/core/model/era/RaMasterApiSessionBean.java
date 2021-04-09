@@ -490,7 +490,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean hasMatchTypes = !defaultValue.getAvailableAccessMatchTypes().isEmpty();
 
             result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap, defaultValue.name(), defaultValue.isIssuedByCa(),
-                    hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
+                    defaultValue.isIssuedByOauthProvider(), hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
 
         }
         return result;
@@ -1513,6 +1513,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!StringUtils.isEmpty(request.getGenericSearchString())) {
             sb.append(" AND (a.tokenMatchValueColumn LIKE :searchStringInexact OR a.descriptionColumn LIKE :searchStringInexact)");
         }
+        if (!request.getProviderIds().isEmpty()) {
+            sb.append(" AND  a.tokenProviderId IN (:providerId) ");
+        }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);
         query.setParameter("roleId", authorizedLocalRoleIds);
@@ -1521,6 +1524,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             //query.setParameter("searchString", request.getGenericSearchString());
             query.setParameter("searchStringInexact", request.getGenericSearchString() + '%');
         }
+        if (!request.getProviderIds().isEmpty()) {
+            query.setParameter("providerId", request.getProviderIds());
+        }
+
 
         final int maxResults = getGlobalCesecoreConfiguration().getMaximumQueryCount();
         query.setMaxResults(maxResults);

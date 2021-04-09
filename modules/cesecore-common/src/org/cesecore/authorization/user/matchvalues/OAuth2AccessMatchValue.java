@@ -67,6 +67,12 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     }
 
     @Override
+    public boolean isIssuedByOauthProvider() {
+        return true;
+    }
+
+
+    @Override
     public List<AccessMatchType> getAvailableAccessMatchTypes() {
         return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
     }
