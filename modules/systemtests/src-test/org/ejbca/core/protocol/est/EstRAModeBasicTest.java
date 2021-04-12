@@ -379,7 +379,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             setupClientKeyStore(serverCertCaInfo, ec256, cert);
             // Not allowing same keys should give an error, this gives today 400 (SC_BAD_REQUEST) but should probably be a 401 instead
             // Log will show: 2021-02-22 11:03:07,822 INFO  [org.ejbca.core.protocol.est.EstOperationsSessionBean] (default task-4) Invalid key. The public key in the KeyUpdateRequest is the same as the public key in the existing end entity certificate: CN=ESTRARAReenroll036018,O=EJBCA,C=SE
-            sendEstRequest(true, estAlias, "simplereenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias + 'EstRAModeBasicTest'.</body></html>", 
+            sendEstRequest(true, estAlias, "simplereenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias 'EstRAModeBasicTest'.</body></html>", 
                     null, null);
             // A new request with new keys, but with the same subject DN should succeed
             final KeyPair ec256New = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
@@ -409,7 +409,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             
             // Try again, but now using the new key for TLS authentication as well, not allowing same keys should give an error as above with the new request as well
             setupClientKeyStore(serverCertCaInfo, ec256New, cert);
-            sendEstRequest(true, estAlias, "simplereenroll", reqmsgNew, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias + 'EstRAModeBasicTest'.</body></html>", 
+            sendEstRequest(true, estAlias, "simplereenroll", reqmsgNew, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias 'EstRAModeBasicTest'.</body></html>", 
                     null, null);
             // Modify alias to allow same keys
             config.setKurAllowSameKey(estAlias, true);
@@ -425,7 +425,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             // Log will show: 11:11:45,539 INFO  [org.ejbca.core.protocol.est.EstOperationsSessionBean] (default task-4) Can't reenroll using different subject than requesting certificate. Request DN='CN=ESTRARAReenroll204554,OU=Test,O=EJBCA,C=SE'
             final PKCS10CertificationRequest p10NewDN = generateCertReq(requestDN + ",OU=Test", null, null, null, ec256New);
             final byte[] reqmsgNewDN = Base64.encode(p10NewDN.getEncoded());
-            sendEstRequest(true, estAlias, "simplereenroll", reqmsgNewDN, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias + 'EstRAModeBasicTest'.</body></html>", 
+            sendEstRequest(true, estAlias, "simplereenroll", reqmsgNewDN, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias 'EstRAModeBasicTest'.</body></html>", 
                     null, null);
         } finally {
             // Remove the generated end entity and all the certificates
