@@ -283,7 +283,6 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
-            this.clientSecret = oauthKey.getClientSecretAndDecrypt();
             this.realm = oauthKey.getRealm();
             this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
@@ -734,7 +733,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setUrl(oauthKeyToUpdate.fixUrl(oauthKeyEditor.getUrl()));
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
-        oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
+        if (!StringUtils.isEmpty(oauthKeyEditor.getClientSecret())) {
+            oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
+        }
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
 
