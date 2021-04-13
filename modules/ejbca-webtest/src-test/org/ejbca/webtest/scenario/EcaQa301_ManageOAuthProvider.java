@@ -14,6 +14,7 @@ package org.ejbca.webtest.scenario;
 
 import java.io.IOException;
 
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.OauthProvidersHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
@@ -24,7 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -35,10 +35,16 @@ import org.openqa.selenium.WebDriver;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa301_ManageOAuthProvider extends WebTestBase {
 
+    private static final OAuthProviderType TYPE = OAuthProviderType.TYPE_AZURE;
+    private static final String LABEL = "ECAQA-301";
     private static final String KEYID = "ecaqa-301";
     private static final String KEYID_EDITED = "edited_keyid";
     private static final String SKEWLIMIT = "40000";
     private static final String SKEWLIMIT_EDITED = "60000";
+    private static final String TENANT = "tenant";
+    private static final String SCOPE = "scope";
+    private static final String CLIENT = "client";
+    private static final String SECRET = "secret";
 
     private static OauthProvidersHelper oauthProvidersHelper;
     private static SystemConfigurationHelper sysConfigHelper;
@@ -65,9 +71,14 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
         goToProvidersConfigurationPage();
         oauthProvidersHelper.startAddingProvider();
         
-        oauthProvidersHelper.fillKeyIdField(KEYID);
+        oauthProvidersHelper.selectProviderType(TYPE);
+        oauthProvidersHelper.fillProviderNameField(LABEL);
         oauthProvidersHelper.fillPublicKeyField(oauthProvidersHelper.createPublicKeyFile(folder, OauthProvidersHelper.PUBLIC_KEY));
         oauthProvidersHelper.fillSkewLimitField(SKEWLIMIT);
+        oauthProvidersHelper.fillTenantField(TENANT);
+        oauthProvidersHelper.fillScopeField(SCOPE);
+        oauthProvidersHelper.fillClientField(CLIENT);
+        oauthProvidersHelper.fillClientSecretField(SECRET);
         oauthProvidersHelper.pressAddOauthProviderButton();
 
         oauthProvidersHelper.assertElementExistsInTable(KEYID);

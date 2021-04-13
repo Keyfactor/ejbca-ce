@@ -18,6 +18,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.junit.rules.TemporaryFolder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -41,11 +43,19 @@ public class OauthProvidersHelper extends BaseHelper {
 
     public static class Page {
         static final By SYSCONFIG_BUTTON_ADD = By.id("oauthkeysform:addOauthKey");
+        static final By PROVIDER_TYPE_SELECT_OPTION = By.id("editOAuthKeyForm:selectOneMenuProviderType");
+        static final By PROVIDER_NAME_INPUT_FIELD = By.id("editOAuthKeyForm:label");
+        static final By PUBLIC_KEY_METHOD_FIELD = By.id("editOAuthKeyForm:selectOneMenuUploadWay");
         static final By PUBLIC_KEY_INPUT_FIELD = By.id("editOAuthKeyForm:editedOAuthKeyFile");
         static final By PUBLIC_KEY_FINGERPRINT_FIELD = By.id("editOAuthKeyForm:publicKeyFingerprint");
         static final By TABLE_ROW_DATA = By.xpath("//table[@class='grid oauthkeyTable']/tbody/tr/td[1]/span");
         static final By URL_INPUT_FIELD = By.id("editOAuthKeyForm:keyUrl");
         static final By SKEWLIMIT_INPUT_FIELD = By.id("editOAuthKeyForm:editedProviderSkewLimit");
+        static final By REALM_INPUT_FIELD = By.id("editOAuthKeyForm:realm");
+        static final By TENANT_INPUT_FIELD = By.id("editOAuthKeyForm:realm");
+        static final By SCOPE_INPUT_FIELD = By.id("editOAuthKeyForm:scope");
+        static final By CLIENT_INPUT_FIELD = By.id("editOAuthKeyForm:client");
+        static final By CLIENT_SECRET_INPUT_FIELD = By.id("editOAuthKeyForm:clientSecret");
         static final By KEYID_INPUT_FIELD = By.id("editOAuthKeyForm:keyId");
         static final By BUTTON_SAVE = By.id("editOAuthKeyForm:saveOAuthKeyEdit");
         static final By BUTTON_ADD = By.id("editOAuthKeyForm:addOauthKey");
@@ -74,6 +84,10 @@ public class OauthProvidersHelper extends BaseHelper {
     public void startAddingProvider() {
         clickLink(Page.SYSCONFIG_BUTTON_ADD);
     }
+    
+    public void fillProviderNameField(final String inputText) {
+        fillInput(Page.PROVIDER_NAME_INPUT_FIELD, inputText);
+    }
 
     public void fillKeyIdField(final String inputText) {
         fillInput(Page.KEYID_INPUT_FIELD, inputText);
@@ -89,6 +103,36 @@ public class OauthProvidersHelper extends BaseHelper {
 
     public void fillSkewLimitField(final String inputNumber) {
         fillInput(Page.SKEWLIMIT_INPUT_FIELD, inputNumber);
+    }
+    
+    public void fillTenantField(final String inputText) {
+        fillInput(Page.TENANT_INPUT_FIELD, inputText);
+    }
+    
+    public void fillRealmField(final String inputText) {
+        fillInput(Page.REALM_INPUT_FIELD, inputText);
+    }
+    
+    public void fillScopeField(final String inputText) {
+        fillInput(Page.SCOPE_INPUT_FIELD, inputText);
+    }
+    
+    public void fillClientField(final String inputText) {
+        fillInput(Page.CLIENT_INPUT_FIELD, inputText);
+    }
+    
+    public void fillSecretField(final String inputText) {
+        fillInput(Page.TENANT_INPUT_FIELD, inputText);
+    }
+    
+    public void fillClientSecretField(final String inputText) {
+        fillInput(Page.CLIENT_SECRET_INPUT_FIELD, inputText);
+    }
+    
+    public void selectProviderType(final OAuthProviderType type) {
+        if (type != null) {
+            selectOptionByName(Page.PROVIDER_TYPE_SELECT_OPTION, type.getLabel());
+        }
     }
 
     public void assertElementExistsInTable(final String matchTextWith) {
