@@ -60,7 +60,7 @@ public class OauthRequestHelper {
                 request.setUri(uri);
                 break;
             }
-            case TYPE_NONE: {
+            case TYPE_GENERIC: {
                 request.setUri(oAuthKeyInfo.getUrl());
                 break;
             }
