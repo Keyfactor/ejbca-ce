@@ -20,7 +20,7 @@ public class OAuthProviderUIHelper {
             validateAzureType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK.getIndex() == provider.getType().getIndex()) {
             validateKeycloakType(provider);
-        } else if (OAuthKeyInfo.OAuthProviderType.TYPE_NONE.getIndex() != provider.getType().getIndex()) {
+        } else if (OAuthKeyInfo.OAuthProviderType.TYPE_GENERIC.getIndex() != provider.getType().getIndex()) {
             throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Provider Type"));
         }
     }

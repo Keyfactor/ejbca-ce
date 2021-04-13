@@ -39,13 +39,13 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String CLIENT_SECRET = "--clientsecret";
     private static final String REALM = "--realm";
     private static final String SCOPE = "--scope";
-    private static final String NONE = "NONE";
+    private static final String GENERIC = "GENERIC";
     private static final String KEYCLOAK = "KEYCLOAK";
     private static final String AZURE = "AZURE";
 
     {
         registerParameter(new Parameter(TYPE, "Provider type.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Type of the Trusted OAuth Provider. Supported types are NONE, KEYCLOAK and AZURE."));
+                "Type of the Trusted OAuth Provider. Supported types are GENERIC, KEYCLOAK and AZURE."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be used."));
         registerParameter(new Parameter(URL, "Provider url", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -87,8 +87,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         if (typeString != null) {
             typeString = typeString.toUpperCase();
             switch (typeString) {
-                case NONE:
-                    type = OAuthProviderType.TYPE_NONE;
+                case GENERIC:
+                    type = OAuthProviderType.TYPE_GENERIC;
                     break;
                 case KEYCLOAK:
                     type = OAuthProviderType.TYPE_KEYCLOAK;
@@ -102,7 +102,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
 
         if (type == null) {
-            log.info("Unsupported provider type was specified. Currently supported provider types are " + NONE + ", " + AZURE + " and " + KEYCLOAK);
+            log.info("Unsupported provider type was specified. Currently supported provider types are " + GENERIC + ", " + AZURE + " and " + KEYCLOAK);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
