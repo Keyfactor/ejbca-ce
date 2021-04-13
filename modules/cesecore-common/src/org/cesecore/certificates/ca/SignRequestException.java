@@ -21,9 +21,7 @@ import org.cesecore.CesecoreException;
  * Error due to malformed certificate request. The cause of failure can be related to ASN.1,
  * algorithm or other
  * 
- * Probably based on EJCBA's org.ejbca.core.model.ca.SignRequestException r11201
- *
- * @version $Id$
+ * Probably based on EJBCA's org.ejbca.core.model.ca.SignRequestException r11201
  */
 @WebFault
 public class SignRequestException extends CesecoreException {

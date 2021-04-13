@@ -13,7 +13,7 @@
      *                                                                       *
      *  This software is free software; you can redistribute it and/or       *
      *  modify it under the terms of the GNU Lesser General Public           *
-     *  License as published by the Free Software Foundation; either         *
+     *  License as published by the Free Softwarse Foundation; either         *
      *  version 2.1 of the License, or any later version.                    *
      *                                                                       *
      *  See terms of license at gnu.org.                                     *
@@ -34,152 +34,413 @@
         <h3><h:outputText value="#{web.text.ESTALIAS}"/> : <h:outputText
                 value="#{editEstConfigMBean.estAlias.name}"/></h3>
 
-        <h:form id="estconfiguration">
-            <h:panelGrid columns="2" styleClass="edit-top edit-bottom" cellspacing="3" cellpadding="3" border="0"
-                         width="100%" columnClasses="editColumnSystem1,editColumn2"
-                         rowClasses="Row0,Row1" >
-                <h:panelGroup>&nbsp;</h:panelGroup>
-                <h:outputLink value="estconfigurations.xhtml" style="float: right;">
-                    <h:outputText value="#{web.text.ESTBACKTOALIASES}"/>
-                </h:outputLink>
+		<h:form id="estconfiguration">
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%"
+				columnClasses="editColumnSystem1,editColumn2" rowClasses="Row0,Row1">
+				<h:panelGroup>&nbsp;</h:panelGroup>
+				<h:outputLink value="estconfigurations.xhtml" style="float: left;">
+					<h:outputText value="#{web.text.ESTBACKTOALIASES}" />
+				</h:outputLink>
+				<h:panelGroup>
+					<h:outputText value="#{web.text.ESTOPERATIONALMODE}" styleClass="titles" />
+					<br />
+                    <h:outputText value="#{web.text.ESTOPERATIONALMODE_HELP}" styleClass="help"/>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectOneRadio id="selectestmode"
+						value="#{editEstConfigMBean.estAlias.operationMode}"
+						disabled="#{editEstConfigMBean.viewOnly}">
+						<f:selectItem itemLabel="#{web.text.CMPCLIENTMODE}" itemValue="client" />
+						<f:selectItem itemLabel="#{web.text.CMPRAMODE}" itemValue="ra" />
+						<f:ajax execute=":estconfiguration:selectestmode"
+							render=":estconfiguration:clientmode vendormode ramode" />
+					</h:selectOneRadio>
+				</h:panelGroup>
+				
+			</h:panelGrid>
+			
+			<!-- Client Mode -->
+			<h:panelGroup id="clientmode">
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+					columnClasses="editColumnSystem1,editColumn2"
+					rendered="#{!editEstConfigMBean.raMode}">
+					<h:panelGroup>
+						<h:outputLabel value="#{web.text.CMPCLIENTMODE}" style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
+					<h:panelGroup>
+						<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT}" styleClass="titles" />
+						<br />
+                        <h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP}" styleClass="help"/>
+                        <br/>
+                        <h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP1}" styleClass="help"/>
+                        <br/>
+                        <h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP2}" styleClass="help"/>
+						<br />
+					</h:panelGroup>
+					<h:selectOneMenu id="usernamecomponentselectmenu"
+						value="#{editEstConfigMBean.estAlias.extUsernameComponent}"
+						disabled="#{editEstConfigMBean.viewOnly}">
+						<f:selectItems
+							value="#{editEstConfigMBean.extUsernameComponentSelectItems}" />
+					</h:selectOneMenu>
 
-	            <h:panelGroup>
-	              <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME}" styleClass="titles"/>
-	              <br/>
-	              <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP}" styleClass="help"/>
-	              <br/>
-	              <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP1}" styleClass="help"/>
-	              <br/>
-	              <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP2}" styleClass="help"/>
-	              <br/>
-	              <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP3}" styleClass="help"/>
-	              <br/>
-	              <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP4}" styleClass="help"/>
-	                    <br/>
-	                    <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP5}" styleClass="help"/>
-	            </h:panelGroup>
+                    <h:panelGroup>
+                        <h:outputText value="#{web.text.ESTAUTHENTICATIONMODULE}" styleClass="titles"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTAUTHENTICATIONMODULE_HELP}" styleClass="help"/>
+                    </h:panelGroup>
+					<h:panelGroup id="authmodule">
+						<h:selectBooleanCheckbox id="challengepwdcheckbox"
+							value="#{editEstConfigMBean.estAlias.challengePwdSelected}"
+							rendered="#{!editEstConfigMBean.raMode}"
+							disabled="#{editEstConfigMBean.viewOnly}">
+						<f:ajax render="estconfiguration:authmodule dnpartpwdcheckbox dnpartselectmenu challengepwdcheckbox usevendorcertcheckbox" />
+						</h:selectBooleanCheckbox>
+						<h:outputText value="ChallengePwd"
+							rendered="#{!editEstConfigMBean.raMode}" />
+                        <br/>
+    					<h:selectBooleanCheckbox id="dnpartpwdcheckbox"
+							value="#{editEstConfigMBean.estAlias.dnPartPwdSelected}"
+							rendered="#{!editEstConfigMBean.raMode}"
+							disabled="#{editEstConfigMBean.viewOnly}">
+							<f:ajax render="estconfiguration:dnpartpwdcheckbox dnpartselectmenu challengepwdcheckbox usevendorcertcheckbox" />
+						</h:selectBooleanCheckbox>
+                        <h:outputText value="DnPartPwd" rendered="#{!editEstConfigMBean.raMode}" />
+                        &nbsp;
+                        <h:outputText value="#{web.text.CMPAUTHSUBJECTDNPART}" rendered="#{!editEstConfigMBean.raMode}"/>
+                        &nbsp;
+		            	<h:selectOneMenu id="dnpartselectmenu"
+								value="#{editEstConfigMBean.estAlias.extDnPartPwdComponent}"
+								rendered="#{!editEstConfigMBean.raMode}"
+								disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.challengePwdSelected or !editEstConfigMBean.estAlias.dnPartPwdSelected}">
+								<f:selectItems
+									value="#{editEstConfigMBean.extUsernameComponentSelectItems}" />
+						</h:selectOneMenu>
+                    </h:panelGroup>                    
+                    <!--  Default CA is available to select both in RA mode and in Client mode 
+                          In client mode it's used in order to answer 'cacerts' calls when there is no end entity
+                          -->
+                    <h:panelGroup>
+                        <h:outputLabel for="listestdefaultcaclient"
+                            value="#{web.text.ESTDEFAULTCA_CLIENT}" styleClass="titles" />
+                        <br />
+                        <h:outputText value="#{web.text.ESTDEFAULTCA_CLIENT_HELP}" escape="false"
+                            styleClass="help" />
+                    </h:panelGroup>
+                    <h:selectOneMenu id="listestdefaultcaclient" name="listestdefaultca"
+                        value="#{editEstConfigMBean.estAlias.caId}"
+                        disabled="#{editEstConfigMBean.viewOnly}">
+                        <f:selectItems value="#{editEstConfigMBean.caItemList}" />
+                    </h:selectOneMenu>                    
+                </h:panelGrid>
+            </h:panelGroup>
+            <!-- End Client Mode -->
 
-	            <h:panelGroup id="namegenerationscheme">
-	              <h:selectOneRadio id="ranamegenschemeselectradio" value="#{editEstConfigMBean.raNameGenScheme}" disabled="#{editEstConfigMBean.viewOnly}">
-	                <f:selectItems value="#{editEstConfigMBean.availableRaNameGenSchemes}"/>
-	                <f:ajax render="estconfiguration:namegenerationscheme"/>
-	              </h:selectOneRadio>
-	              <h:inputText id="ranamegeninputfield" value="#{editEstConfigMBean.raNameGenParams}" rendered="#{editEstConfigMBean.raNameGenScheme eq 'FIXED'}" disabled="#{editEstconfigMBean.viewOnly}"/>
-	              <h:panelGroup id="ranameschemednpart" rendered="#{editEstConfigMBean.raNameGenScheme eq 'DN'}">
-	                  <h:selectOneMenu id="ranameschemednpartselectmenu" value="#{editEstConfigMBean.selectedRaNameSchemeDnPart}" disabled="#{editEstConfigMBean.viewOnly}">
-	                        <f:selectItems value="#{editEstConfigMBean.dnFieldSelectItems}"/>
-	                        <f:ajax event="change" update="@this"/>
-	                  </h:selectOneMenu>
+            <!-- Vendor Mode, part of client mode -->
+            <h:panelGroup id="vendormode">
+                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+                    cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                    columnClasses="editColumnSystem1,editColumn2"
+                    rendered="#{!editEstConfigMBean.raMode}">
+                    <h:panelGroup>
+                        <h:outputLabel value="#{web.text.CMPVENDORCERT}" style="font-weight: bold;" />
+                    </h:panelGroup>
+                    <h:panelGroup>&nbsp;</h:panelGroup>
+
+					<h:panelGroup>
+                        <h:outputText value="#{web.text.CMPVENDORCERT}" styleClass="titles"/>
+						<br />
+                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP}" styleClass="help"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP1}" styleClass="help"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP2}" styleClass="help"/>
+					</h:panelGroup>
+					<h:panelGroup>
+					<h:selectBooleanCheckbox id="usevendorcertcheckbox"
+								value="#{editEstConfigMBean.estAlias.vendorMode}"
+								rendered="#{!editEstConfigMBean.raMode}"
+								disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected}">
+								<f:ajax render="estconfiguration:vendorcas usevendorcertcheckbox allowchangesubjectnamecheckbox" />
+					</h:selectBooleanCheckbox>
+							<h:outputText value="#{web.text.USE}"
+								rendered="#{!editEstConfigMBean.raMode}" />
+					</h:panelGroup>
+					
+					<h:panelGroup>
+    	        		<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
+    	        		<br/>
+                        <h:outputText value="#{web.text.ESTVENDORCERT_VENDORCAS_HELP}" styleClass="help"/>
+    	        	</h:panelGroup>
+					
+					<h:panelGroup id="vendorcas">
+    	        		<h:selectOneMenu id="selectvendorca" value="#{editEstConfigMBean.estAlias.selectedVendorCa}"  disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
+                          	<f:selectItems value="#{editEstConfigMBean.vendorCaSelectItems}"/>
+               		      	<f:ajax event="change" update="estconfiguration:vendorcas"/>
+                		</h:selectOneMenu>
+                		&nbsp;
+                		<h:commandButton id="addvendorcabutton" value="#{web.text.ADD}" action="#{editEstConfigMBean.actionAddVendorCa}" 
+                				disabled="#{!editEstConfigMBean.estAlias.vendorMode or editEstConfigMBean.viewOnly}">
+    	           			<f:ajax render="estconfiguration:vendorcas"/>
+    	            	</h:commandButton>
+    	            	&nbsp;
+    	            	<h:commandButton id="removevendorcabutton" value="#{web.text.REMOVE}" action="#{editEstConfigMBean.actionRemoveVendorCa}" 
+    	            			disabled="#{!editEstConfigMBean.estAlias.vendorMode or editEstConfigMBean.viewOnly}">
+    	            		<f:ajax render="estconfiguration:vendorcas"/>
+                		</h:commandButton>
+                		<br/>
+                		<h:outputText value="#{editEstConfigMBean.currentVendorCas}"/>
+    	        	</h:panelGroup>
+					
+                    <h:panelGroup>
+                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME}" styleClass="titles" />
+                        <br />
+                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP}" styleClass="help"/>
+                        <br />
+                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP1}" styleClass="help"/>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                    <h:selectBooleanCheckbox id="allowchangesubjectnamecheckbox"
+                                value="#{editEstConfigMBean.estAlias.allowChangeSubjectName}"
+                                rendered="#{!editEstConfigMBean.raMode}"
+                                disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
+                                <f:ajax render="estconfiguration:vendorcas allowchangesubjectnamecheckbox" />
+                    </h:selectBooleanCheckbox>
+                            <h:outputText value="#{web.text.ALLOW}"
+                                rendered="#{!editEstConfigMBean.raMode}" />
+                    </h:panelGroup>
+                </h:panelGrid>
+			</h:panelGroup>
+            <!-- End Vendor Mode, part of client mode -->
+								
+			<!-- RA Mode -->
+			<h:panelGroup id="ramode">
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+					columnClasses="editColumnSystem1,editColumn2"
+					rendered="#{editEstConfigMBean.raMode}">
+					<h:panelGroup>
+						<h:outputLabel value="#{web.text.CMPRAMODE}" style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
+					<h:panelGroup>
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME}"
+							styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP}"
+							styleClass="help" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP1}"
+							styleClass="help" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP2}"
+							styleClass="help" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP3}"
+							styleClass="help" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP4}"
+							styleClass="help" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP5}"
+							styleClass="help" />
+					</h:panelGroup>
+
+					<h:panelGroup id="namegenerationscheme">
+						<h:selectOneRadio id="ranamegenschemeselectradio"
+							value="#{editEstConfigMBean.raNameGenScheme}"
+							disabled="#{editEstConfigMBean.viewOnly}">
+							<f:selectItems
+								value="#{editEstConfigMBean.availableRaNameGenSchemes}" />
+							<f:ajax render="estconfiguration:namegenerationscheme" />
+						</h:selectOneRadio>
+						<h:inputText id="ranamegeninputfield"
+							value="#{editEstConfigMBean.raNameGenParams}"
+							rendered="#{editEstConfigMBean.raNameGenScheme eq 'FIXED'}"
+							disabled="#{editEstconfigMBean.viewOnly}" />
+						<h:panelGroup id="ranameschemednpart"
+							rendered="#{editEstConfigMBean.raNameGenScheme eq 'DN'}">
+							<h:selectOneMenu id="ranameschemednpartselectmenu"
+								value="#{editEstConfigMBean.selectedRaNameSchemeDnPart}"
+								disabled="#{editEstConfigMBean.viewOnly}">
+								<f:selectItems value="#{editEstConfigMBean.dnFieldSelectItems}" />
+								<f:ajax event="change" update="@this" />
+							</h:selectOneMenu>
 	                  &nbsp;
-	                  <h:commandButton id="addranameschemednpartbutton" value="#{web.text.ADD}" action="#{editEstConfigMBean.actionAddRaNameSchemeDnPart}">
-	                    <f:ajax render="estconfiguration:namegenerationscheme" disabled="#{editEstConfigMBean.viewOnly}"/>
-	                  </h:commandButton>
+	                  <h:commandButton id="addranameschemednpartbutton"
+								value="#{web.text.ADD}"
+								action="#{editEstConfigMBean.actionAddRaNameSchemeDnPart}">
+								<f:ajax render="estconfiguration:namegenerationscheme"
+									disabled="#{editEstConfigMBean.viewOnly}" />
+							</h:commandButton>
 	                  &nbsp;
-	                  <h:commandButton id="removeranameschemednpartbutton" value="#{web.text.REMOVE}" action="#{editEstConfigMBean.actionRemoveRaNameSchemeDnPart}">
-	                    <f:ajax render="estconfiguration:namegenerationscheme" disabled="#{editEstConfigMBean.viewOnly}"/>
-	                  </h:commandButton>
-	                </h:panelGroup>
-	                <br/>
-	                <h:outputText id="selectedranameschemednparts" value="#{editEstConfigMBean.raNameGenParams}" rendered="#{editEstConfigMBean.raNameGenScheme eq 'DN'}"/>
-	            </h:panelGroup>
+	                  <h:commandButton id="removeranameschemednpartbutton"
+								value="#{web.text.REMOVE}"
+								action="#{editEstConfigMBean.actionRemoveRaNameSchemeDnPart}">
+								<f:ajax render="estconfiguration:namegenerationscheme"
+									disabled="#{editEstConfigMBean.viewOnly}" />
+							</h:commandButton>
+						</h:panelGroup>
+						<br />
+						<h:outputText id="selectedranameschemednparts"
+							value="#{editEstConfigMBean.raNameGenParams}"
+							rendered="#{editEstConfigMBean.raNameGenScheme eq 'DN'}" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX}"
+							styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX_HELP}"
+							styleClass="help" />
+					</h:panelGroup>
+					<h:inputText value="#{editEstConfigMBean.raNameGenPrefix}"
+						disabled="#{editEstConfigMBean.viewOnly}" />
+					<h:panelGroup>
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX}"
+							styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX_HELP}"
+							styleClass="help" />
+					</h:panelGroup>
+					<h:inputText value="#{editEstConfigMBean.raNameGenPostfix}"
+						disabled="#{editEstConfigMBean.viewOnly}" />
+                    <!--  Default CA is available to select both in RA mode and in Client mode 
+                          In RA mode it's used in order to answer 'cacerts' calls, and to specify the CA
+                          to add/edit end entities with as they are created
+                          -->
+					<h:panelGroup>
+						<h:outputLabel for="listestdefaultca"
+							value="#{web.text.ESTDEFAULTCA}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTDEFAULTCA_HELP}" escape="false"
+							styleClass="help" />
+					</h:panelGroup>
+					<h:selectOneMenu id="listestdefaultca" name="listestdefaultca"
+						value="#{editEstConfigMBean.estAlias.caId}"
+						disabled="#{editEstConfigMBean.viewOnly}">
+						<f:selectItems value="#{editEstConfigMBean.caItemList}" />
+					</h:selectOneMenu>
 
-              <h:panelGroup>
-                <h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX}" styleClass="titles"/>
-                <br/>
-                <h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX_HELP}" styleClass="help"/>
-              </h:panelGroup>
-              <h:inputText value="#{editEstConfigMBean.raNameGenPrefix}" disabled="#{editEstConfigMBean.viewOnly}"/>
-                <h:panelGroup>
-                <h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX}" styleClass="titles"/>
-                <br/>
-                <h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX_HELP}" styleClass="help"/>
-              </h:panelGroup>
-              <h:inputText value="#{editEstConfigMBean.raNameGenPostfix}" disabled="#{editEstConfigMBean.viewOnly}"/>
+					<h:panelGroup>
+						<h:outputLabel for="listesteeprofile"
+							value="#{web.text.ESTEEPROFILE}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTEEPROFILE_HELP}" escape="false"
+							styleClass="help" />
+					</h:panelGroup>
+					<h:selectOneMenu id="listesteeprofile" name="listesteeprofile"
+						value="#{editEstConfigMBean.estAlias.endEntityProfileId}"
+						disabled="#{editEstConfigMBean.viewOnly}">
+						<f:selectItems
+							value="#{editEstConfigMBean.endEntityProfileItemList}" />
+						<f:ajax execute=":estconfiguration:listestcertprofiles"
+							render="estconfiguration:listestcertprofiles" />
+					</h:selectOneMenu>
 
-              <h:panelGroup>
-                  <h:outputLabel for="listestdefaultca" value="#{web.text.ESTDEFAULTCA}" styleClass="titles"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTDEFAULTCA_HELP}" escape="false" styleClass="help"/>
-              </h:panelGroup>
-              <h:selectOneMenu id="listestdefaultca" name="listestdefaultca" value="#{editEstConfigMBean.estAlias.caId}" disabled="#{editEstConfigMBean.viewOnly}">
-                  <f:selectItems value="#{editEstConfigMBean.caItemList}"/>
-              </h:selectOneMenu>
+					<h:panelGroup>
+						<h:outputLabel for="listestcertprofiles"
+							value="#{web.text.ESTCERTPROFILE}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTCERTPROFILE_HELP}"
+							escape="false" styleClass="help" />
+						<br />
+						<h:outputText value="#{web.text.ESTCERTPROFILE_HELP1}"
+							escape="false" styleClass="help" />
+					</h:panelGroup>
+					<h:selectOneMenu id="listestcertprofiles" name="listesteeprofile"
+						value="#{editEstConfigMBean.estAlias.certificateProfileId}"
+						disabled="#{editEstConfigMBean.viewOnly}">
+						<f:selectItems
+							value="#{editEstConfigMBean.certificateProfileItemList}" />
+					</h:selectOneMenu>
+									
+					<h:panelGroup>
+						<h:outputLabel for="checkboxrequirecert"
+							value="#{web.text.ESTREQUIRECERT}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTREQUIRECERT_HELP}"
+							escape="false" styleClass="help" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:selectBooleanCheckbox id="checkboxrequirecert"
+							value="#{editEstConfigMBean.estAlias.certificateRequired}"
+							disabled="#{editEstConfigMBean.viewOnly}">
+						</h:selectBooleanCheckbox>
+						<h:outputText value="#{web.text.YES}" />
+					</h:panelGroup>
 
-              <h:panelGroup>
-                  <h:outputLabel for="listesteeprofile" value="#{web.text.ESTEEPROFILE}" styleClass="titles"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTEEPROFILE_HELP}" escape="false" styleClass="help"/>
-              </h:panelGroup>
-              <h:selectOneMenu id="listesteeprofile" name="listesteeprofile" value="#{editEstConfigMBean.estAlias.endEntityProfileId}" disabled="#{editEstConfigMBean.viewOnly}">
-                  <f:selectItems value="#{editEstConfigMBean.endEntityProfileItemList}"/>
-                  <f:ajax execute=":estconfiguration:listestcertprofiles" render="estconfiguration:listestcertprofiles"/>
-              </h:selectOneMenu>
+					<h:panelGroup>
+						<h:outputLabel for="textfieldrequireusername"
+							value="#{web.text.ESTREQUIREUSERNAME}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTREQUIREUSERNAME_HELP}"
+							escape="false" styleClass="help" />
+					</h:panelGroup>
+					<h:inputText id="textfieldrequireusername" size="25"
+						maxlength="150" name="textfieldcustomclasspath"
+						value="#{editEstConfigMBean.estAlias.userName}"
+						disabled="#{editEstConfigMBean.viewOnly}"
+						title="#{web.text.FORMAT_STRING}" />
 
-              <h:panelGroup>
-                  <h:outputLabel for="listestcertprofiles" value="#{web.text.ESTCERTPROFILE}" styleClass="titles"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTCERTPROFILE_HELP}" escape="false" styleClass="help"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTCERTPROFILE_HELP1}" escape="false" styleClass="help"/>
-              </h:panelGroup>
-              <h:selectOneMenu id="listestcertprofiles" name="listesteeprofile" value="#{editEstConfigMBean.estAlias.certificateProfileId}" disabled="#{editEstConfigMBean.viewOnly}">
-                  <f:selectItems value="#{editEstConfigMBean.certificateProfileItemList}"/>
-              </h:selectOneMenu>
+					<h:panelGroup>
+						<h:outputLabel for="textfieldrequirepassword"
+							value="#{web.text.ESTREQUIREPASSWORD}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTREQUIREPASSWORD_HELP}"
+							escape="false" styleClass="help" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:inputSecret id="textfieldrequirepassword" size="25"
+							maxlength="150" redisplay="true"
+							value="#{editEstConfigMBean.estAlias.password}"
+							autocomplete="off" rendered="#{!editEstConfigMBean.viewOnly}" />
+						<h:outputText value="*****"
+							rendered="#{editEstConfigMBean.viewOnly}" />
+					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
+				</h:panelGrid>
+			</h:panelGroup>
+			<!-- RA Mode -->
 
-              <h:panelGroup>
-                  <h:outputLabel for="checkboxrequirecert" value="#{web.text.ESTREQUIRECERT}" styleClass="titles"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTREQUIRECERT_HELP}" escape="false" styleClass="help"/>
-              </h:panelGroup>
-              <h:panelGroup>
-                  <h:selectBooleanCheckbox id="checkboxrequirecert" value="#{editEstConfigMBean.estAlias.certificateRequired}" disabled="#{editEstConfigMBean.viewOnly}">
-                  </h:selectBooleanCheckbox>
-                  <h:outputText value="#{web.text.YES}"/>
-              </h:panelGroup>
-
-              <h:panelGroup>
-                  <h:outputLabel for="textfieldrequireusername" value="#{web.text.ESTREQUIREUSERNAME}" styleClass="titles"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTREQUIREUSERNAME_HELP}" escape="false" styleClass="help"/>
-              </h:panelGroup>
-              <h:inputText id="textfieldrequireusername" size="25" maxlength="150" name="textfieldcustomclasspath"
-                           value="#{editEstConfigMBean.estAlias.userName}" disabled="#{editEstConfigMBean.viewOnly}"
-                           title="#{web.text.FORMAT_STRING}"/>
-
-              <h:panelGroup>
-                  <h:outputLabel for="textfieldrequirepassword" value="#{web.text.ESTREQUIREPASSWORD}" styleClass="titles"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTREQUIREPASSWORD_HELP}" escape="false" styleClass="help"/>
-              </h:panelGroup>
-              <h:panelGroup>
-                  <h:inputSecret id="textfieldrequirepassword" size="25" maxlength="150"
-                                 redisplay="true"
-                                 value="#{editEstConfigMBean.estAlias.password}"
-                                 autocomplete="off"
-                                 rendered="#{!editEstConfigMBean.viewOnly}"/>
-                  <h:outputText value="*****" rendered="#{editEstConfigMBean.viewOnly}"/>
-              </h:panelGroup>
-
-              <h:panelGroup>
-                  <h:outputLabel for="checkboxkurusesamekeys" value="#{web.text.ESTALLOWKURWITHSAMEKEY}" styleClass="titles"/>
-                  <br/>
-                  <h:outputText value="#{web.text.ESTALLOWKURWITHSAMEKEY_HELP}" escape="false" styleClass="help"/>
-              </h:panelGroup>
-              <h:panelGroup>
-                  <h:selectBooleanCheckbox id="checkboxkurusesamekeys" value="#{editEstConfigMBean.estAlias.allowSameKey}" disabled="#{editEstConfigMBean.viewOnly}">
-                  </h:selectBooleanCheckbox>
-                  <h:outputText value="#{web.text.ALLOW}"/>
-              </h:panelGroup>
-
-              <h:panelGroup>&nbsp;</h:panelGroup>
-              <h:panelGroup>
-                  <h:commandButton value="#{web.text.SAVE}" action="#{editEstConfigMBean.save}"
-                                   name="buttonsave"  disabled="#{editEstConfigMBean.viewOnly}" />&nbsp;
-                  <h:commandButton value="#{web.text.CANCEL}" action="#{editEstConfigMBean.cancel}"
-                                   immediate="true" name="buttoncancel"/>
-              </h:panelGroup>
-            </h:panelGrid>
-        </h:form>
-    </ui:define>
+			<h:panelGroup id="general">
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+					cellpadding="3" border="0" width="100%"
+					columnClasses="editColumnSystem1,editColumn2"
+					rowClasses="Row0,Row1">
+					<h:panelGroup>
+						<h:outputLabel value="#{web.text.CMPKEYUPDATEREQUEST}"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
+					<h:panelGroup>
+						<h:outputLabel for="checkboxkurusesamekeys"
+							value="#{web.text.ESTALLOWKURWITHSAMEKEY}" styleClass="titles" />
+						<br />
+						<h:outputText value="#{web.text.ESTALLOWKURWITHSAMEKEY_HELP}"
+							escape="false" styleClass="help" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:selectBooleanCheckbox id="checkboxkurusesamekeys"
+							value="#{editEstConfigMBean.estAlias.allowSameKey}"
+							disabled="#{editEstConfigMBean.viewOnly}">
+						</h:selectBooleanCheckbox>
+						<h:outputText value="#{web.text.ALLOW}" />
+					</h:panelGroup>
+					<h:panelGroup>&nbsp;</h:panelGroup>
+					<h:panelGroup>
+						<h:commandButton value="#{web.text.SAVE}"
+							action="#{editEstConfigMBean.save}" name="buttonsave"
+							disabled="#{editEstConfigMBean.viewOnly}" />&nbsp;
+                  <h:commandButton value="#{web.text.CANCEL}"
+							action="#{editEstConfigMBean.cancel}" immediate="true"
+							name="buttoncancel" />
+					</h:panelGroup>
+				</h:panelGrid>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
 </ui:composition>
 </html>
