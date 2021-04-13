@@ -71,6 +71,7 @@
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.xmlpull.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/>
 	</path>
 
 	<target name="build-common" description="Build the ejbca-common JAR" depends="compile-common">

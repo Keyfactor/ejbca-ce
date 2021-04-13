@@ -59,6 +59,7 @@
 		<path location="${ejbca-common-web.build-test.dir}" />
 		<path location="${mod.ejbca-ejb.lib}" />
 		<path refid="compile-test.classpath"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/>
 	</path>
 
 	<target name="build-common-web" description="Build the ejbca-common-web JAR" depends="compile-common-web">
