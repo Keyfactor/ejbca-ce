@@ -230,9 +230,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return sslSessionIdJBoss7==null ? sslSessionIdServletsStandard : sslSessionIdJBoss7;
     }
 
-    /* Sets the current user and returns the global configuration */
     @Override
     public GlobalConfiguration initialize(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
+        try {
+            return initializeInternal(httpServletRequest, resources);
+        } finally {
+            if (!initialized) {
+                // Make sure we at least have the needed information (default language strings etc.) to show an error page
+                initialize_errorpage(httpServletRequest);
+            }
+        }
+    }
+
+    /** Sets the current user and returns the global configuration */
+    private GlobalConfiguration initializeInternal(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
         // Get some variables so we can detect if the TLS session and/or TLS client certificate changes within this session
         final X509Certificate certificate = getClientX509Certificate(httpServletRequest);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
@@ -405,6 +416,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         currentAdminPreference = null;
         adminsweblanguage = null;
         initialized = false;
+        errorpage_initialized = false;
     }
 
     /**
