@@ -37,8 +37,9 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
 
     private static final OAuthProviderType TYPE = OAuthProviderType.TYPE_AZURE;
     private static final String LABEL = "ECAQA-301";
+    private static final String URL = "https://ecaqa301test.ejbcatest.com";
     private static final String KEYID = "ecaqa-301";
-    private static final String KEYID_EDITED = "edited_keyid";
+    private static final String LABEL_EDITED = "edited_label";
     private static final String SKEWLIMIT = "40000";
     private static final String SKEWLIMIT_EDITED = "60000";
     private static final String TENANT = "tenant";
@@ -62,7 +63,7 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
 
     @AfterClass
     public static void exit() {
-        removeOauthProviders(KEYID, KEYID_EDITED);
+        removeOauthProviders(LABEL, LABEL_EDITED);
         afterClass();
     }
 
@@ -73,44 +74,48 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
         
         oauthProvidersHelper.selectProviderType(TYPE);
         oauthProvidersHelper.fillProviderNameField(LABEL);
-        oauthProvidersHelper.fillPublicKeyField(oauthProvidersHelper.createPublicKeyFile(folder, OauthProvidersHelper.PUBLIC_KEY));
+        oauthProvidersHelper.fillUrlField(URL);
         oauthProvidersHelper.fillSkewLimitField(SKEWLIMIT);
         oauthProvidersHelper.fillTenantField(TENANT);
         oauthProvidersHelper.fillScopeField(SCOPE);
         oauthProvidersHelper.fillClientField(CLIENT);
+        oauthProvidersHelper.fillPublicKeyFileField(oauthProvidersHelper.createPublicKeyFile(folder, OauthProvidersHelper.PUBLIC_KEY));
+        oauthProvidersHelper.fillKeyIdField(KEYID);
+        oauthProvidersHelper.pressUploadButton();
         oauthProvidersHelper.fillClientSecretField(SECRET);
         oauthProvidersHelper.pressAddOauthProviderButton();
 
-        oauthProvidersHelper.assertElementExistsInTable(KEYID);
+        oauthProvidersHelper.assertElementExistsInTable(LABEL);
     }
     
     @Test
     public void stepB_editOauthProvider() {
-        oauthProvidersHelper.pressEditOauthProviderButton(KEYID);
+        oauthProvidersHelper.pressEditOauthProviderButton(LABEL);
         
-        oauthProvidersHelper.fillKeyIdField(KEYID_EDITED);
+        oauthProvidersHelper.fillProviderNameField(LABEL_EDITED);
         oauthProvidersHelper.fillSkewLimitField(SKEWLIMIT_EDITED);
+        oauthProvidersHelper.fillClientSecretField(SECRET);
         oauthProvidersHelper.pressSaveOauthProviderButton();
         
-        oauthProvidersHelper.assertElementExistsInTable(KEYID_EDITED);
+        oauthProvidersHelper.assertElementExistsInTable(LABEL_EDITED);
     }
     
     @Test
     public void stepC_viewOauthProvider() {
-        oauthProvidersHelper.pressViewOauthProviderButton(KEYID_EDITED);
+        oauthProvidersHelper.pressViewOauthProviderButton(LABEL_EDITED);
         
-        oauthProvidersHelper.assertKeyIdentifierText("edited_keyid");
-        oauthProvidersHelper.assertCurrentPublicKeyFingerprintText("NdKo3LkMXyL7hAVfdHveLaJrPAFHvhTIJGrvPx+jhps=");
+        oauthProvidersHelper.assertProviderNameText("edited_label");
+        oauthProvidersHelper.assertElementExistsInTable("NdKo3LkMXyL7hAVfdHveLaJrPAFHvhTIJGrvPx+jhps=");
         oauthProvidersHelper.assertSkewLimitText("60000");
         oauthProvidersHelper.pressBackButton();
         
-        oauthProvidersHelper.assertElementExistsInTable(KEYID_EDITED);
+        oauthProvidersHelper.assertElementExistsInTable(LABEL_EDITED);
     }
     
     public void stepD_deleteOauthProvider() {
-        oauthProvidersHelper.pressRemoveOauthProviderButton(KEYID_EDITED);
+        oauthProvidersHelper.pressRemoveOauthProviderButton(LABEL_EDITED);
         
-        oauthProvidersHelper.assertElementDoesNotExistInTable(KEYID_EDITED);
+        oauthProvidersHelper.assertElementDoesNotExistInTable(LABEL_EDITED);
     }
 
     private void goToProvidersConfigurationPage() {
