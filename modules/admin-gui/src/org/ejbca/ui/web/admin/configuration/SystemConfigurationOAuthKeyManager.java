@@ -284,6 +284,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
             this.realm = oauthKey.getRealm();
+            this.clientSecret = "***";
             this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -709,7 +710,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 systemConfigurationHelper.saveDefaultOauthKey(defaultKey);
             }
         }
-        if (StringUtils.isEmpty(oauthKeyEditor.getClientSecret())) {
+        if (oauthKeyEditor.getClientSecret().equals("***")) {
             oauthKeyEditor.setClientSecret(oauthKeyToUpdate.getClientSecretAndDecrypt());
         }
         
