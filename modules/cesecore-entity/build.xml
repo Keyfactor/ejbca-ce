@@ -33,6 +33,7 @@
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
         <path refid="lib.jacknji.classpath"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/>
 	</path>
 
 	<target name="jar" depends="">
