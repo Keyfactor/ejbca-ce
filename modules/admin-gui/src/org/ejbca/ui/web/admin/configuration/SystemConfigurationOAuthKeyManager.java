@@ -709,6 +709,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 systemConfigurationHelper.saveDefaultOauthKey(defaultKey);
             }
         }
+        if (StringUtils.isEmpty(oauthKeyEditor.getClientSecret())) {
+            oauthKeyEditor.setClientSecret(oauthKeyToUpdate.getClientSecretAndDecrypt());
+        }
         
         /* Make sure the edited provider does not have any unfilled mandatory fields */
         try {
@@ -733,9 +736,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setUrl(oauthKeyToUpdate.fixUrl(oauthKeyEditor.getUrl()));
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
-        if (!StringUtils.isEmpty(oauthKeyEditor.getClientSecret())) {
-            oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
-        }
+        oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
 
