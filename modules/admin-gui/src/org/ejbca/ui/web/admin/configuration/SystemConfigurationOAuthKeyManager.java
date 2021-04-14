@@ -283,8 +283,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
-            this.clientSecret = oauthKey.getClientSecretAndDecrypt();
             this.realm = oauthKey.getRealm();
+            this.clientSecret = "***";
             this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -709,6 +709,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             if (defaultKey != null) {
                 systemConfigurationHelper.saveDefaultOauthKey(defaultKey);
             }
+        }
+        if (oauthKeyEditor.getClientSecret().equals("***")) {
+            oauthKeyEditor.setClientSecret(oauthKeyToUpdate.getClientSecretAndDecrypt());
         }
         
         /* Make sure the edited provider does not have any unfilled mandatory fields */
