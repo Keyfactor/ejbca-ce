@@ -86,7 +86,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     public class OAuthKeyEditor {
         private String label;
         private String keyIdentifier;
-        private OAuthProviderType type = OAuthProviderType.TYPE_NONE;
+        private OAuthProviderType type = OAuthProviderType.TYPE_GENERIC;
         private String url;
         private String client;
         private String clientSecret;
@@ -244,8 +244,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return this.editorMode.equals(OAuthKeyEditorMode.ADD);
         }
 
-        public boolean isTypeNone() {
-            return OAuthProviderType.TYPE_NONE.getIndex() == type.getIndex();
+        public boolean isTypeGeneric() {
+            return OAuthProviderType.TYPE_GENERIC.getIndex() == type.getIndex();
         }
 
         public boolean isTypeKeycloak() {
@@ -283,8 +283,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = oauthKey.getUrl();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
-            this.clientSecret = oauthKey.getClientSecretAndDecrypt();
             this.realm = oauthKey.getRealm();
+            this.clientSecret = "***";
             this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -297,7 +297,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
          */
         public void clear() {
             keyIdentifier = null;
-            type = OAuthProviderType.TYPE_NONE;
+            type = OAuthProviderType.TYPE_GENERIC;
             publicKeyFile = null;
             publicKeys = null;
             url = null;
@@ -709,6 +709,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             if (defaultKey != null) {
                 systemConfigurationHelper.saveDefaultOauthKey(defaultKey);
             }
+        }
+        if (oauthKeyEditor.getClientSecret().equals("***")) {
+            oauthKeyEditor.setClientSecret(oauthKeyToUpdate.getClientSecretAndDecrypt());
         }
         
         /* Make sure the edited provider does not have any unfilled mandatory fields */
