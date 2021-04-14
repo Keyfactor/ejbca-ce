@@ -18,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.junit.rules.TemporaryFolder;
 import org.openqa.selenium.By;
@@ -47,6 +46,7 @@ public class OauthProvidersHelper extends BaseHelper {
         static final By PROVIDER_NAME_INPUT_FIELD = By.id("editOAuthKeyForm:label");
         static final By PUBLIC_KEY_METHOD_FIELD = By.id("editOAuthKeyForm:selectOneMenuUploadWay");
         static final By PUBLIC_KEY_INPUT_FIELD = By.id("editOAuthKeyForm:editedOAuthKeyFile");
+        static final By KEYID_INPUT_FIELD = By.id("editOAuthKeyForm:keyId");
         static final By PUBLIC_KEY_FINGERPRINT_FIELD = By.id("editOAuthKeyForm:publicKeyFingerprint");
         static final By TABLE_ROW_DATA = By.xpath("//table[@class='grid oauthkeyTable']/tbody/tr/td[1]/span");
         static final By URL_INPUT_FIELD = By.id("editOAuthKeyForm:keyUrl");
@@ -56,9 +56,9 @@ public class OauthProvidersHelper extends BaseHelper {
         static final By SCOPE_INPUT_FIELD = By.id("editOAuthKeyForm:scope");
         static final By CLIENT_INPUT_FIELD = By.id("editOAuthKeyForm:client");
         static final By CLIENT_SECRET_INPUT_FIELD = By.id("editOAuthKeyForm:clientSecret");
-        static final By KEYID_INPUT_FIELD = By.id("editOAuthKeyForm:keyId");
         static final By BUTTON_SAVE = By.id("editOAuthKeyForm:saveOAuthKeyEdit");
         static final By BUTTON_ADD = By.id("editOAuthKeyForm:addOauthKey");
+        static final By BUTTON_UPLOAD = By.id("editOAuthKeyForm:addPublicKey");
         static final By BUTTON_BACK = By.id("editOAuthKeyForm:goBack");
 
         static By getTextFromTable(final String text) {
@@ -97,7 +97,7 @@ public class OauthProvidersHelper extends BaseHelper {
         fillInput(Page.URL_INPUT_FIELD, inputText);
     }
 
-    public void fillPublicKeyField(final File inputFile) {
+    public void fillPublicKeyFileField(final File inputFile) {
         fillInput(Page.PUBLIC_KEY_INPUT_FIELD, inputFile.toString());
     }
 
@@ -148,6 +148,14 @@ public class OauthProvidersHelper extends BaseHelper {
         assertEquals(rowData, tableRows.get(rowNum).getText());
     }
     
+    public void assertProviderNameText(String text) {
+        assertEquals(
+                "'OAuth Provider Name' field text [" + text + "]",
+                text,
+                getElementValue(Page.PROVIDER_NAME_INPUT_FIELD)
+        );
+    }
+    
     public void assertKeyIdentifierText(String text) {
         assertEquals(
                 "'OAuth Key Identifier' field text [" + text + "]",
@@ -172,16 +180,16 @@ public class OauthProvidersHelper extends BaseHelper {
         );
     }
     
-    public void pressViewOauthProviderButton(final String keyid) {
-        clickLink(Page.getViewOauthProviderButton(keyid));
+    public void pressViewOauthProviderButton(final String label) {
+        clickLink(Page.getViewOauthProviderButton(label));
     }
     
-    public void pressEditOauthProviderButton(final String keyid) {
-        clickLink(Page.getEditOauthProviderButton(keyid));
+    public void pressEditOauthProviderButton(final String label) {
+        clickLink(Page.getEditOauthProviderButton(label));
     }
     
-    public void pressRemoveOauthProviderButton(final String keyid) {
-        clickLink(Page.getRemoveOauthProviderButton(keyid));
+    public void pressRemoveOauthProviderButton(final String label) {
+        clickLink(Page.getRemoveOauthProviderButton(label));
     }
     
     public void pressSaveOauthProviderButton() {
@@ -190,6 +198,10 @@ public class OauthProvidersHelper extends BaseHelper {
     
     public void pressAddOauthProviderButton() {
         clickLink(Page.BUTTON_ADD);
+    }
+    
+    public void pressUploadButton() {
+        clickLink(Page.BUTTON_UPLOAD);
     }
     
     public void pressBackButton() {
