@@ -39,7 +39,7 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
     private static final String LABEL = "ECAQA-301";
     private static final String URL = "https://ecaqa301test.ejbcatest.com";
     private static final String KEYID = "ecaqa-301";
-    private static final String LABEL_EDITED = "edited_label";
+    private static final String LABEL_EDITED = "ECAQA-301_edited";
     private static final String SKEWLIMIT = "40000";
     private static final String SKEWLIMIT_EDITED = "60000";
     private static final String TENANT = "tenant";
@@ -104,14 +104,15 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
     public void stepC_viewOauthProvider() {
         oauthProvidersHelper.pressViewOauthProviderButton(LABEL_EDITED);
         
-        oauthProvidersHelper.assertProviderNameText("edited_label");
+        oauthProvidersHelper.assertProviderNameText(LABEL_EDITED);
         oauthProvidersHelper.assertElementExistsInTable("NdKo3LkMXyL7hAVfdHveLaJrPAFHvhTIJGrvPx+jhps=");
-        oauthProvidersHelper.assertSkewLimitText("60000");
+        oauthProvidersHelper.assertSkewLimitText(SKEWLIMIT_EDITED);
         oauthProvidersHelper.pressBackButton();
         
         oauthProvidersHelper.assertElementExistsInTable(LABEL_EDITED);
     }
     
+    @Test
     public void stepD_deleteOauthProvider() {
         oauthProvidersHelper.pressRemoveOauthProviderButton(LABEL_EDITED);
         
