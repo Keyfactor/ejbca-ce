@@ -37,7 +37,7 @@ public final class OAuthKeyInfo implements Serializable {
 
     // dbIndexes of existing provider types should not be changed
     public enum OAuthProviderType {
-        TYPE_NONE(0, "None"),
+        TYPE_GENERIC(0, "Generic"),
         TYPE_AZURE(1, "Azure"),
         TYPE_KEYCLOAK(2, "Keycloak");
 
