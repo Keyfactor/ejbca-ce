@@ -1,3 +1,0 @@
- "Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
- "Spnego";						 "spnego-r7.jar";								 "GNU LGPL";			 "GNU LGPL";					 "https://sourceforge.net/projects/spnego/";						 "Used for Kerberos authenticaton in MSAE module"
- "ADSSDDL";						 "adsddl-1.9.jar";								 "ALv2";				 "LICENSE-APACHE-2.0";			 "https://github.com/Tirasa/ADSDDL";								 "Used for parsing SID/ACE entries in AD"
