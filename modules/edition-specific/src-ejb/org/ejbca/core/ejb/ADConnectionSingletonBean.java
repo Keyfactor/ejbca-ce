@@ -30,24 +30,24 @@ import org.ejbca.core.protocol.msae.LDAPException;
 public class ADConnectionSingletonBean implements ADConnectionSingletonLocal {
 
     @Override
-    public void updateConnectionProperties() throws LDAPException {
+    public void updateConnectionProperties(String alias) throws LDAPException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
         
     }
 
     @Override
-    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL) throws LDAPException {
+    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, String alias) throws LDAPException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
         
     }
 
     @Override
-    public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings() {
+    public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings(String alias) {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
 
     @Override
-    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls) {
+    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String alias) {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
 
