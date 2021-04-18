@@ -131,7 +131,7 @@
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="msaeIsUseSSL" disabled="#{autoenrollmentConfigMBean.viewOnly}"
 											 value="#{msAutoEnrollmentSettings.useSSL}">
-						<f:ajax render="autoenrollment:msaeAuthKeyBinding"/>
+						<f:ajax render="msaeconfiguration:msaeAuthKeyBinding"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="msaeIsUseSSL" value="#{web.text.USE}" />
 				</h:panelGroup>
@@ -264,7 +264,7 @@
 						<h:selectOneMenu disabled="#{autoenrollmentConfigMBean.viewOnly}" style="width:250px; margin-right: 10px"
 										 value="#{msAutoEnrollmentSettings.selectedEndEntityProfileId}">
 							<f:selectItems value="#{msAutoEnrollmentSettings.availableEndEntityProfiles}"/>
-							<f:ajax render="autoenrollment:msaeTemplateCertProfile"/>
+							<f:ajax render="msaeconfiguration:msaeTemplateCertProfile"/>
 						</h:selectOneMenu>
 	
 						<h:selectOneMenu id="msaeTemplateCertProfile" disabled="#{autoenrollmentConfigMBean.viewOnly}" style="width:250px; margin-right: 10px"
