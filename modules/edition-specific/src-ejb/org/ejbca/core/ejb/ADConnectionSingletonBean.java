@@ -30,7 +30,7 @@ import org.ejbca.core.protocol.msae.LDAPException;
 public class ADConnectionSingletonBean implements ADConnectionSingletonLocal {
 
     @Override
-    public void updateConnectionProperties(String alias) throws LDAPException {
+    public void updateConnectionProperties(String alias){
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
         
     }
