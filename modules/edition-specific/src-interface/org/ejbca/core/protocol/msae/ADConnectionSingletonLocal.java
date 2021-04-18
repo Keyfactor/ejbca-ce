@@ -27,27 +27,27 @@ import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 @Local
 public interface ADConnectionSingletonLocal {
 
-    void updateConnectionProperties() throws LDAPException;
+    void updateConnectionProperties(String alias) throws LDAPException;
     
-    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL) throws LDAPException;
+    public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, String alias) throws LDAPException;
 
-    public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings();
+    public List<MSAutoEnrollmentSettingsTemplate> getCertificateTemplateSettings(String alias);
 
-    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls) throws LDAPException;
+    public NamingEnumeration<SearchResult> getEntryNamedContext(String searchBase, String searchFilter, SearchControls searchCtls, String alias) throws LDAPException;
     
-    default void setLoginDN(final String loginDN) {
+    default void setLoginDN(final String loginDN, final String alias) {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
     
-    default boolean publishCertificateToLDAP(String distinguishedName, X509Certificate cert, String domain) throws NamingException {
+    default boolean publishCertificateToLDAP(String distinguishedName, X509Certificate cert, String domain, String alias) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
     
-    default SearchResult getADDetails(String searchBase, String searchFilter, SearchControls searchCtls) throws NamingException {
+    default SearchResult getADDetails(String searchBase, String searchFilter, SearchControls searchCtls, String alias) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
 
-    default SearchResult getDomainAndNETBIOS(String distinguishedName, String domain) throws NamingException {
+    default SearchResult getDomainAndNETBIOS(String distinguishedName, String domain, String alias) throws NamingException {
         throw new UnsupportedOperationException("ADConnection calls are only supported in EJBCA Enterprise");
     }
     
