@@ -50,7 +50,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     private String selectedRaNameSchemeDnPart;
 
     @ManagedProperty(value = "#{estConfigMBean}")
-    private EstConfigMBean estConfigMBean;
+    private AutoenrollmentConfigMBean estConfigMBean;
     EstAliasGui estAliasGui = null;
 
     @PostConstruct
@@ -403,11 +403,11 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estConfigMBean.actionCancel();
     }
 
-    public EstConfigMBean getEstConfigMBean() {
+    public AutoenrollmentConfigMBean getEstConfigMBean() {
         return estConfigMBean;
     }
 
-    public void setEstConfigMBean(EstConfigMBean estConfigMBean) {
+    public void setEstConfigMBean(AutoenrollmentConfigMBean estConfigMBean) {
         this.estConfigMBean = estConfigMBean;
     }
 }
