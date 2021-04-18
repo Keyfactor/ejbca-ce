@@ -27,7 +27,7 @@ import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 @Local
 public interface ADConnectionSingletonLocal {
 
-    void updateConnectionProperties(String alias) throws LDAPException;
+    void updateConnectionProperties(String alias);
     
     public void testConnection(String domain, int port, String loginDN, String loginPassword, boolean useSSL, String alias) throws LDAPException;
 

@@ -149,6 +149,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(autoenrollmentConfigMBean.getSelectedAlias());
         }
+        adConnection.updateConnectionProperties(autoenrollmentConfigMBean.getSelectedAlias());
     }
 
     // MSAE Kerberos Settings
@@ -755,7 +756,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setCaName(autoenrollmentConfigMBean.getSelectedAlias(), caName);
 
             // MS Template Settings
-//            updateMappedTemplates(); TODO FIX
+            updateMappedTemplates();
             autoEnrollmentConfiguration.setMsTemplateSettings(autoenrollmentConfigMBean.getSelectedAlias(), mappedMsTemplates);
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
