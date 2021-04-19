@@ -47,6 +47,7 @@ import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -207,6 +208,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expect(ejbs.getRoleSession().getRolesAuthenticationTokenIsMemberOf(mockedAuthToken)).andReturn(Collections.emptyList());
         ejbs.getSecurityEventsLoggerSession().log(same(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN), same(EventStatus.FAILURE), same(EjbcaModuleTypes.ADMINWEB), 
                 same(EjbcaServiceTypes.EJBCA), anyString(), anyString(), eq(adminSerialAsHex), isNull(), (Map<String,Object>)anyObject());
+        expectLastCall();
     }
     
     @SuppressWarnings("unchecked")
@@ -242,22 +244,39 @@ public final class EjbcaWebBeanImplUnitTest {
         mockedAuthToken = oauthToken;
     }
     
-    private void expectSuccessfulInitialization(boolean authorized) {
-        // Configurations are loaded upon successfull initialization
+    /** Common initialization. Done for both successful and failed authentication */
+    private void expectCommonInitialization() {
         expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).andReturn(new GlobalConfiguration());
         expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID)).andReturn(new CmpConfiguration());
         expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID)).andReturn(new AvailableExtendedKeyUsagesConfiguration());
         expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID)).andReturn(new AvailableCustomCertificateExtensionsConfiguration());
         expect(mockedRequest.getSession(true)).andReturn(mockedSession);
         expect(mockedSession.getServletContext()).andReturn(mockedServletContext); // currently not required
+    }
+
+    /** Initialization on successful authentication */
+    private void expectSuccessfulAuthInitialization(boolean authorized) {
+        expectCommonInitialization();
         expect(ejbs.getAuthorizationSession().isAuthorized(same(mockedAuthToken), eq(TEST_ACCESS_RESOURCE))).andReturn(authorized);
         if (authorized && !alreadyInitialized) {
             expect(ejbs.getAdminPreferenceSession().getAdminPreference(same(mockedAuthToken))).andReturn(new AdminPreference());
             // Return empty language files. We don't need them in this test
             expect(mockedServletContext.getResourceAsStream(anyString())).andReturn(new ByteArrayInputStream(new byte[0])).anyTimes();
+        } else if (!authorized) {
+            expectErrorPageInitiaization(false);
         }
     }
     
+    /** Initialization on failed authentication */
+    private void expectErrorPageInitiaization(final boolean expectGetIp) {
+        if (expectGetIp) {
+            expect(mockedRequest.getRemoteAddr()).andReturn(MOCKED_REMOTE_ADDR); // for PublicAuthenticationToken
+        }
+        expectCommonInitialization();
+        expect(ejbs.getAdminPreferenceSession().getDefaultAdminPreference()).andReturn(new AdminPreference());
+        expect(mockedServletContext.getResourceAsStream(anyString())).andReturn(new ByteArrayInputStream(new byte[0])).anyTimes();
+    }
+
     
     @Test
     public void noToken() throws Exception {
@@ -268,6 +287,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expect(mockedRequest.getSession(true)).andReturn(mockedSession);
         expect(mockedSession.getAttribute("ejbca.bearer.token")).andReturn(null);
         expectRequestGetters();
+        expectErrorPageInitiaization(true);
         replayAll();
         try {
             ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
@@ -276,7 +296,7 @@ public final class EjbcaWebBeanImplUnitTest {
             assertEquals("Client certificate or OAuth bearer token required.", e.getMessage());
         }
         verifyAll();
-        assertNull("Authentication token should be null", ejbcaWebBean.getAdminObject());
+        assertTrue("Authentication token should be PublicAccessAuthenticationToken", ejbcaWebBean.getAdminObject() instanceof PublicAccessAuthenticationToken);
     }
 
     @Test
@@ -284,6 +304,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectExtractCertificate();
         expectRequestGetters();
         expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingClientCertificate(same(adminCert))).andReturn(null);
+        expectErrorPageInitiaization(true);
         replayAll();
         try {
             ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
@@ -292,7 +313,7 @@ public final class EjbcaWebBeanImplUnitTest {
             assertEquals("Authentication failed for certificate: CN=admin", e.getMessage());
         }
         verifyAll();
-        assertNull("Authentication token should be null", ejbcaWebBean.getAdminObject());
+        assertTrue("Authentication token should be PublicAccessAuthenticationToken", ejbcaWebBean.getAdminObject() instanceof PublicAccessAuthenticationToken);
     }
     
     @Test
@@ -301,6 +322,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectRequestGetters();
         expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
         expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken))).andReturn(null);
+        expectErrorPageInitiaization(true);
         replayAll();
         try {
             ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
@@ -309,7 +331,7 @@ public final class EjbcaWebBeanImplUnitTest {
             assertEquals("Authentication failed using OAuth Bearer Token", e.getMessage());
         }
         verifyAll();
-        assertNull("Authentication token should be null", ejbcaWebBean.getAdminObject());
+        assertTrue("Authentication token should be PublicAccessAuthenticationToken", ejbcaWebBean.getAdminObject() instanceof PublicAccessAuthenticationToken);
     }
     
     @Test
@@ -320,6 +342,7 @@ public final class EjbcaWebBeanImplUnitTest {
         allMockObjects.add(mockedAuthToken);
         expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingClientCertificate(same(adminCert))).andReturn(mockedAuthToken);
         expect(ejbs.getEndEntityManagementSession().checkIfCertificateBelongToUser(adminSerial, ISSUER_DN)).andReturn(false);
+        expectErrorPageInitiaization(false);
         replayAll();
         try {
             ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
@@ -335,7 +358,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectExtractCertificate();
         expectRequestGetters();
         expectCertAuthWithoutRole();
-        expectLastCall();
+        expectErrorPageInitiaization(false);
         replayAll();
         try {
             ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
@@ -352,7 +375,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectExtractCertificate();
         expectRequestGetters();
         expectSuccessfulClientCertAuth();
-        expectSuccessfulInitialization(false);
+        expectSuccessfulAuthInitialization(false);
         replayAll();
         try {
             ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
@@ -370,7 +393,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectExtractCertificate();
         expectRequestGetters();
         expectSuccessfulClientCertAuth();
-        expectSuccessfulInitialization(true);
+        expectSuccessfulAuthInitialization(true);
         replayAll();
         ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
         verifyAll();
@@ -384,7 +407,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectExtractBearerToken();
         expectRequestGetters();
         expectSuccessfulBearerTokenAuth();
-        expectSuccessfulInitialization(true);
+        expectSuccessfulAuthInitialization(true);
         replayAll();
         ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
         verifyAll();
@@ -405,7 +428,7 @@ public final class EjbcaWebBeanImplUnitTest {
         expectCertAuthWithoutRole();
         // Then with OAuth2
         expectSuccessfulBearerTokenAuth();
-        expectSuccessfulInitialization(true);
+        expectSuccessfulAuthInitialization(true);
         replayAll();
         ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
         verifyAll();
