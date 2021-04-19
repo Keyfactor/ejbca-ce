@@ -515,7 +515,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
     protected static void removeOauthProviders(String... oauthKeyIdentifiers) {
         final GlobalConfigurationSessionRemote globalConfigurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
         final OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSessionRemote
-                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         final Map<String, OAuthKeyInfo> oauthKeys = oAuthConfiguration.getOauthKeys();
         oauthKeys.forEach((key, oauthKeyInfo) -> {
             if (Arrays.asList(oauthKeyIdentifiers).contains(oauthKeyInfo.getLabel())) {
