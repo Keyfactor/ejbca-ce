@@ -69,9 +69,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE = "application/octet-stream";
 
-    private String aliasName;
     
     // MSAE Kerberos Settings
+    private String msaeForestRoot;
     private String msaeDomain;
     private UploadedFile keyTabFile;
     private String keyTabFilename;
@@ -130,6 +130,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.authorizedCertificateProfiles = raMasterApiProxyBean.getAuthorizedCertificateProfiles(getAdmin());
         
         if (autoEnrollmentConfiguration != null) {
+            msaeForestRoot = autoEnrollmentConfiguration.getMsaeForestRoot(autoenrollmentConfigMBean.getSelectedAlias());
             msaeDomain = autoEnrollmentConfiguration.getMsaeDomain(autoenrollmentConfigMBean.getSelectedAlias());
             policyName = autoEnrollmentConfiguration.getPolicyName(autoenrollmentConfigMBean.getSelectedAlias());
             servicePrincipalName = autoEnrollmentConfiguration.getSpn(autoenrollmentConfigMBean.getSelectedAlias());
@@ -153,6 +154,15 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     // MSAE Kerberos Settings
+    
+    public String getMsaeForestRoot() {
+        return msaeForestRoot;
+    }
+    
+    public void setMsaeForestRoot(String msaeForestRoot) {
+        this.msaeForestRoot = msaeForestRoot;
+    }
+    
     public String getMsaeDomain() {
         return msaeDomain;
     }
@@ -740,6 +750,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                     globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
 
             // MSAE Kerberos Settings
+            autoEnrollmentConfiguration.setMsaeForestRoot(autoenrollmentConfigMBean.getSelectedAlias(), msaeForestRoot);
             autoEnrollmentConfiguration.setMsaeDomain(autoenrollmentConfigMBean.getSelectedAlias(), msaeDomain);
             autoEnrollmentConfiguration.setPolicyName(autoenrollmentConfigMBean.getSelectedAlias(), policyName);
             autoEnrollmentConfiguration.setPolicyUid(autoenrollmentConfigMBean.getSelectedAlias());

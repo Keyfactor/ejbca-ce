@@ -43,6 +43,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
     
     // MSAE Kerberos
+    private static final String MSAE_FOREST_ROOT = "msaeForestRoot";
     private static final String MSAE_DOMAIN = "msaeDomain";
     private static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
     private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
@@ -99,6 +100,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private void initWithDefaults(String alias) {
         if(StringUtils.isNotEmpty(alias)) {
             alias = alias + ".";
+            data.put(alias + MSAE_FOREST_ROOT, "");
             data.put(alias + MSAE_DOMAIN, "");
             data.put(alias + MSAE_KEYTAB_FILENAME, "");
             data.put(alias + MSAE_KEYTAB_BYTES, null);
@@ -121,6 +123,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public static Set<String> getAllAliasKeys(String alias) {
         alias = alias + ".";
         Set<String> keys = new LinkedHashSet<>();
+        keys.add(alias + MSAE_FOREST_ROOT);
         keys.add(alias + MSAE_DOMAIN);
         keys.add(alias + MSAE_KEYTAB_FILENAME);
         keys.add(alias + MSAE_KEYTAB_BYTES);
@@ -152,6 +155,17 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     }
 
     // MSAE Kerberos Settings
+    
+    public String getMsaeForestRoot(String alias) {
+        String key = alias + "." + MSAE_FOREST_ROOT;
+        return getValue(key, alias);
+    }
+    
+    public void setMsaeForestRoot(String alias, final String msaeForestRoot) {
+        String key = alias + "." + MSAE_FOREST_ROOT;
+        setValue(key, msaeForestRoot, alias);
+    }
+    
     public String getMsaeDomain(String alias) {
         String key = alias + "." + MSAE_DOMAIN;
         return getValue(key, alias);
