@@ -207,7 +207,7 @@ public interface EjbcaWebBean extends Serializable {
      * @param msAutoenrollmentConfig A MSAutoEnrollmentConfiguration
      * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
      */
-    void saveMSAutoenrollmentConfiguration(MSAutoEnrollmentConfiguration estconfiguration) throws AuthorizationDeniedException;
+    void saveMSAutoenrollmentConfiguration(MSAutoEnrollmentConfiguration autoenrollmentConfig) throws AuthorizationDeniedException;
     
     /**
      * Save the given EST configuration.
@@ -474,15 +474,6 @@ public interface EjbcaWebBean extends Serializable {
      * RA functionality can be disabled by composing a VA-only ziprelease (with variant=va)
      * */
     boolean isRunningBuildWithRAWeb();
-    
-    /**
-     * Returns a clone of the current MSAutoEnrollmentConfiguration containing only the given alias. Also caches the clone locally.
-     *
-     * @param alias a EST config alias
-     * @return a clone of the current MSAutoEnrollmentConfiguration containing only the given alias. Will return an alias with only default values if the MSAutoEnrollmentConfiguration doesn't
-     *          contain that alias.
-     */
-    MSAutoEnrollmentConfiguration getAutoenrollConfigForEdit(String alias);
     
     /**
      * Renames a MSAutoEnrollmentConfiguration alias
