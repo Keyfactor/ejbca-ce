@@ -1630,29 +1630,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
     
     /**
-     * Returns a clone of the current Autoenrollment config containing only the given alias. Also caches the clone locally.
-     *
-     * @param alias a Autoenrollment config alias
-     * @return a clone of the current EstConfiguration containing only the given alias. Will return an alias with only default values if the AutoenrollConfiguration doesn't
-     *          contain that alias.
-     */
-    @Override
-    public MSAutoEnrollmentConfiguration getAutoenrollConfigForEdit(final String alias) {
-        if (msAutoenrollmentConfigForEdit != null) {
-            return msAutoenrollmentConfigForEdit;
-        }
-        reloadAutoenrollmentConfiguration();
-        msAutoenrollmentConfigForEdit = new MSAutoEnrollmentConfiguration();
-        msAutoenrollmentConfigForEdit.setAliasList(new LinkedHashSet<String>());
-        msAutoenrollmentConfigForEdit.addAlias(alias);
-        for(final String key : MSAutoEnrollmentConfiguration.getAllAliasKeys(alias)) {
-            final String value = msAutoenrollmentConfig.getValue(key, alias);
-            estConfigForEdit.setValue(key, value, alias);
-        }
-        return msAutoenrollmentConfigForEdit;
-    }
-
-    /**
      * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
      *
      * @param alias a Autoenrollment config alias.
