@@ -259,8 +259,10 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.112.file=/etc/utimaco/libcs_pkcs11_R2.so
 #cryptotoken.p11.lib.113.name=Cavium Nitrox III
 #cryptotoken.p11.lib.113.file=/home/liquidsec_bin/lib/libliquidsec_pkcs11.so
-#cryptotoken.p11.lib.114.name=AWS CloudHSM
+#cryptotoken.p11.lib.114.name=AWS CloudHSM PrimeKey
 #cryptotoken.p11.lib.114.file=/opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so
+#cryptotoken.p11.lib.115.name=AWS CloudHSM
+#cryptotoken.p11.lib.115.file=/opt/cloudhsm/lib/libcloudhsm_pkcs11.so
 #cryptotoken.p11.lib.120.name=YubiHSM2
 #cryptotoken.p11.lib.120.file=/usr/lib/x86_64-linux-gnu/pkcs11/yubihsm_pkcs11.so
 #cryptotoken.p11.lib.130.name=Trident HSM
@@ -286,7 +288,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # (for a capability that is disabled you have the chance to specify a message that may be displayed in the GUI)
 # canGenerateKey can be used to disable key generation in the Web UI, if this does not work properly (typically due to limited p11 support)
 #cryptotoken.p11.lib.114.canGenerateKey=false
-#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM
+#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM PrimeKey
 
 # Available PKCS#11 CryptoToken attribute files and their display names
 # Use if the default PKCS#11 attributes are not good for the PKCS#11 module and if needs specific attributes 
