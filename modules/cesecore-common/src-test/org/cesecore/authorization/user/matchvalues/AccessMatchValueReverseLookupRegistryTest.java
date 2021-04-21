@@ -25,8 +25,6 @@ import org.junit.Test;
 
 /**
  * Unit tests for the AccessMatchValueReverseLookupRegistry class.
- * 
- * @version $Id$
  *
  */
 public class AccessMatchValueReverseLookupRegistryTest {
@@ -87,6 +85,12 @@ public class AccessMatchValueReverseLookupRegistryTest {
         public boolean isIssuedByCa() {
             return false;
         }
+
+        @Override
+        public boolean isIssuedByOauthProvider() {
+            return false;
+        }
+
         @Override
         public boolean isDefaultValue() {
             return true;

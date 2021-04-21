@@ -123,6 +123,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -489,7 +490,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean hasMatchTypes = !defaultValue.getAvailableAccessMatchTypes().isEmpty();
 
             result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap, defaultValue.name(), defaultValue.isIssuedByCa(),
-                    hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
+                    defaultValue.isIssuedByOauthProvider(), hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
 
         }
         return result;
@@ -1512,6 +1513,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!StringUtils.isEmpty(request.getGenericSearchString())) {
             sb.append(" AND (a.tokenMatchValueColumn LIKE :searchStringInexact OR a.descriptionColumn LIKE :searchStringInexact)");
         }
+        if (!request.getProviderIds().isEmpty()) {
+            sb.append(" AND  a.tokenProviderId IN (:providerId) ");
+        }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);
         query.setParameter("roleId", authorizedLocalRoleIds);
@@ -1520,6 +1524,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             //query.setParameter("searchString", request.getGenericSearchString());
             query.setParameter("searchStringInexact", request.getGenericSearchString() + '%');
         }
+        if (!request.getProviderIds().isEmpty()) {
+            query.setParameter("providerId", request.getProviderIds());
+        }
+
 
         final int maxResults = getGlobalCesecoreConfiguration().getMaximumQueryCount();
         query.setMaxResults(maxResults);
@@ -2104,7 +2112,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
@@ -2112,7 +2120,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // If called from the wrong instance, return to proxybean and try next implementation
             return false;
         } else {
-            endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
+            if (newUsername == null)
+                endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
+            else
+                endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd, newUsername);
             return true;
         }
     }
@@ -2121,7 +2132,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, EjbcaException {
-        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS), userDataVOWS.isClearPwd());
+        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS), userDataVOWS.isClearPwd(), null);
     }
 
     @Override
@@ -2295,6 +2306,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
+        throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
+        endEntityManagementSession.revokeAndDeleteUser(authenticationToken, username, reason);
+    }
+
+    @Override
     public void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
@@ -2365,7 +2382,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new NoSuchAliasException("CA configuration does not allow RA to use legacy API for EST."); // No better exception. We can't change an existing API.
         }
         try {
-            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legay RA API call"), operation, alias, cert, username, password, requestBody);
+            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legacy RA API call"), operation, alias, cert, username, password, requestBody);
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("Should not get AuthorizationDeniedException with AlwaysAllowLocalAuthenticationToken");
         }
@@ -2872,9 +2889,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         } else if (GlobalUpgradeConfiguration.class.getName().equals(type.getName())) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        } else if (OAuthConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Found Global configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            if (result != null) {
+                log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            } else  {
+                log.debug("Could not find configuration with class '" + type.getName() + "'. Probably the request was sent from an RA peer of a newer version");
+            }
         }
         return result;
     }

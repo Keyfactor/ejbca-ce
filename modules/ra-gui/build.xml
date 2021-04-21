@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ra-gui" default="build">
     <description>
-            Build file for the Resgistration Authority GUI
+            Build file for the Registration Authority GUI
     </description>
 
 	<dirname property="ra-gui.dir" file="${ant.file.ra-gui}"/>

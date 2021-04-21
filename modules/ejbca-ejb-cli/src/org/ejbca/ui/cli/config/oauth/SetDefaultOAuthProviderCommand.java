@@ -31,12 +31,12 @@ public class SetDefaultOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     private static final Logger log = Logger.getLogger(SetDefaultOAuthProviderCommand.class);
     
-    private static final String KEY_IDENTIFIER = "--keyidentifier";
+    private static final String LABEL = "--label";
     
     {
-        registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the Trusted OAuth Provider which is going to be set as default. "
-                + "Setting it as 'null' will clear the default Trusted OAuth Provider."));
+        registerParameter(new Parameter(LABEL, "Label", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Label of the Trusted OAuth Provider which is going to be set as default. "
+                + "Setting it as 'none' will clear the default Trusted OAuth Provider."));
     }   
     
     @Override
@@ -51,34 +51,38 @@ public class SetDefaultOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
-        final String kid = parameters.get(KEY_IDENTIFIER);
+        final String label = parameters.get(LABEL);
         
-        if (kid.isEmpty()) {
+        if (label.isEmpty()) {
             log.info("The key identifier of the default Trusted OAuth Provider has to be specified.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
-        final Collection<OAuthKeyInfo> oauthKeys = getGlobalConfiguration().getOauthKeys().values();
+        final Collection<OAuthKeyInfo> oauthKeys = getOAuthConfiguration().getOauthKeys().values();
         OAuthKeyInfo defaultKey = null;
         
         for (final OAuthKeyInfo keyInfo : oauthKeys) {
-            if (kid.equals(keyInfo.getKeyIdentifier())) {
+            if (label.equals(keyInfo.getLabel())) {
                 defaultKey = keyInfo;
             }
         }
         
-        if (kid.equalsIgnoreCase("null")) {
-            // The user wants to clear the defaultKey entry by explicitly setting it as 'null'
+        if (label.equalsIgnoreCase("none") || label.equalsIgnoreCase("null")) {
+            // The user wants to clear the defaultKey entry
             defaultKey = null;
         } else if (defaultKey == null) {
-            log.info("Trusted OAuth Provider with the kid " + kid + " doesn't exist. Can't set a nonexistent Trusted OAuth Provider as default.");
+            log.info("Trusted OAuth Provider with the label " + label + " doesn't exist. Can't set a nonexistent Trusted OAuth Provider as default.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
-        getGlobalConfiguration().setDefaultOauthKey(defaultKey);
+        getOAuthConfiguration().setDefaultOauthKey(defaultKey);
         
         if (saveGlobalConfig()) {
-            log.info("Default Trusted OAuth Provider with kid: " + kid + " set successfuly!");
+            if (defaultKey == null) {
+                log.info("Default Trusted OAuth Provider cleared successfully.");
+            } else {
+                log.info("Default Trusted OAuth Provider with label " + label + " set successfully.");
+            }
             return CommandResult.SUCCESS;
         } else {
             log.info("Failed to update configuration due to authorization issue!");

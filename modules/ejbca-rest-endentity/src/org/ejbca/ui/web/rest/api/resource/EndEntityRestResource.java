@@ -228,7 +228,7 @@ public class EndEntityRestResource extends BaseRestResource {
         	if (request.getPassword() != null) {
         		endEntityInformation.setPassword(request.getPassword());
         	}
-        	boolean result = raMasterApiProxy.editUser(admin, endEntityInformation, false);
+        	boolean result = raMasterApiProxy.editUser(admin, endEntityInformation, false, null);
         	if (result) {
         		log.info("End entity '" + endEntityName + "' successfuly edited by administrator " + admin.toString());
             } else {

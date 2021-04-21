@@ -12,6 +12,31 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
@@ -27,29 +52,9 @@ import org.ejbca.ui.web.pub.ServletUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import javax.ejb.EJB;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
 /**
  * Servlet for download of CA certificates and chains.
  *
- * @version $Id$
  */
 @WebServlet("/cert")
 public class RaCertDistServlet extends HttpServlet {
@@ -79,7 +84,7 @@ public class RaCertDistServlet extends HttpServlet {
     protected void service(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) throws ServletException, IOException {
         if (raAuthenticationHelper==null) {
             // Initialize the authentication helper function
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         }
         if (httpServletRequest.getParameter(PARAMETER_FINGERPRINTSHEET) != null) {
             downloadFingerprintSheet(httpServletRequest, httpServletResponse);
@@ -89,11 +94,11 @@ public class RaCertDistServlet extends HttpServlet {
             downloadCertificateBundle(httpServletRequest, httpServletResponse);
             return;
         }
-        final boolean fullChain = Boolean.valueOf(httpServletRequest.getParameter(PARAMETER_CHAIN));
+        final boolean fullChain = Boolean.parseBoolean(httpServletRequest.getParameter(PARAMETER_CHAIN));
         if (httpServletRequest.getParameter(PARAMETER_CAID) != null) {
             List<Certificate> chain = null;
             try {
-                final int caId = Integer.valueOf(httpServletRequest.getParameter(PARAMETER_CAID));
+                final int caId = Integer.parseInt(httpServletRequest.getParameter(PARAMETER_CAID));
                 final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
                 final List<CAInfo> caInfos = raMasterApi.getAuthorizedCas(authenticationToken);
                 if (log.isDebugEnabled()) {
@@ -165,7 +170,7 @@ public class RaCertDistServlet extends HttpServlet {
                         case PARAMETER_FORMAT_OPTION_PEM:
                         default: {
                             filename += ".pem";
-                            response = CertTools.getPemFromCertificateChain(Arrays.asList(new Certificate[]{ caCertificate }));
+                            response = CertTools.getPemFromCertificateChain(Collections.singletonList(caCertificate));
                             break;
                         }
                         }
@@ -261,7 +266,7 @@ public class RaCertDistServlet extends HttpServlet {
         final Map<String, Object> entries = new LinkedHashMap<>();
         final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
         for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
-            if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
+            if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().isEmpty()) {
                 if (log.isDebugEnabled()) {
                     log.debug("Not computing CA certificate fingerprint for CA " + caInfo.getName()
                             + " because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
@@ -311,7 +316,7 @@ public class RaCertDistServlet extends HttpServlet {
             try (final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent)) {
                 final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
                 for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
-                    if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
+                    if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().isEmpty()) {
                         if (log.isDebugEnabled()) {
                             log.debug("Not adding CA certificate for CA " + caInfo.getName()
                                     + " to certificate bundle because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
