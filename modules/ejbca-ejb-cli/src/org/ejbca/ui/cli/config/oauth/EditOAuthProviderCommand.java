@@ -47,7 +47,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         registerParameter(new Parameter(NEW_SKEW_LIMIT, "Skew limit", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Skew Limit."));
         registerParameter(new Parameter(NEW_URL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "New URL to the login page."));
+                "New authorization endpoint URL."));
         registerParameter(new Parameter(NEW_LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Provider Label."));
         registerParameter(new Parameter(NEW_REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
