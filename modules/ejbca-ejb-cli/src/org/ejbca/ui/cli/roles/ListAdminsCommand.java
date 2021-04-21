@@ -17,13 +17,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -38,7 +42,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Lists admins in a role
- * @version $Id$
  */
 public class ListAdminsCommand extends BaseRolesCommand {
 
@@ -98,28 +101,41 @@ public class ListAdminsCommand extends BaseRolesCommand {
             }}
         );
         for (final RoleMember roleMember : roleMembers) {
-            String caName;
-            if (roleMember.getTokenIssuerId() == RoleMember.NO_ISSUER) {
-                caName = "[Admin unbound to CA]";
-            } else {
+            String caOrProviderName = "";
+            if (roleMember.getTokenIssuerId() != RoleMember.NO_ISSUER) {
                 try {
                     final CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                             roleMember.getTokenIssuerId());
                     if (info == null) {
-                        caName = "[Unknown CA with ID " + roleMember.getTokenIssuerId() + "]";
+                        caOrProviderName = "[Unknown CA with ID " + roleMember.getTokenIssuerId() + "]";
                     } else {
-                        caName = "'" + info.getName() + "'";
+                        caOrProviderName = "'" + info.getName() + "'";
                     }
                 } catch (AuthorizationDeniedException e) {
-                    caName = "[(Name redacted) CA with ID " + roleMember.getTokenIssuerId() + "]";
+                    caOrProviderName = "[(Name redacted) CA with ID " + roleMember.getTokenIssuerId() + "]";
                 }
+            } else if (roleMember.getTokenProviderId() != RoleMember.NO_PROVIDER) {
+                final OAuthConfiguration oauthConfig = (OAuthConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class).
+                        getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+                if (oauthConfig == null || MapUtils.isEmpty((oauthConfig.getOauthKeys()))) {
+                    caOrProviderName = "[No providers available]";
+                } else {
+                    final OAuthKeyInfo info = oauthConfig.getOauthKeyById(roleMember.getTokenProviderId());
+                    if (info == null) {
+                        caOrProviderName = "[Unknown provider with ID " + roleMember.getTokenProviderId() + "]";
+                    } else {
+                        caOrProviderName = "'" + info.getLabel() + "'";
+                    }
+                }
+            } else {
+                caOrProviderName = "[Admin not bound to CA or provider]";
             }
             final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(roleMember.getTokenType(),
                     roleMember.getTokenMatchKey());
             final AccessMatchType accessMatchType = roleMember.getAccessMatchType();
             final String tokenMatchValue = roleMember.getTokenMatchValue();
             final String description = roleMember.getDescription();
-            getLogger().info( caName + " " + accessMatchValue + " " + accessMatchType + " \"" + tokenMatchValue + "\"" + " \"" + description + "\"");
+            getLogger().info(caOrProviderName + " " + accessMatchValue + " " + accessMatchType + " \"" + tokenMatchValue + "\"" + " \"" + description + "\"");
         }
         return CommandResult.SUCCESS;
 
