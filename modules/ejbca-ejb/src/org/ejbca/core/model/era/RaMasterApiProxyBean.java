@@ -1085,6 +1085,29 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
+        throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            try {
+                if (raMasterApi.isBackendAvailable()) {
+                    raMasterApi.revokeAndDeleteUser(authenticationToken, username, reason);
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (authorizationDeniedException == null) {
+                    authorizationDeniedException = e;
+                }
+                // Just try next implementation
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+    }
+
+    @Override
     public EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username) {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
@@ -1819,14 +1842,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 2) {
                 try {
-                    if (raMasterApi.editUser(authenticationToken, endEntityInformation, isClearPwd)) {
+                    if (raMasterApi.editUser(authenticationToken, endEntityInformation, isClearPwd, newUsername)) {
                         // Successfully edited the user
                         return true;
                     }
@@ -1983,7 +2006,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Deprecated
     @Override
-    public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password,
+    public byte[] estDispatch(final String operation, final String alias, final X509Certificate tlscert, final String username, final String password,
             final byte[] requestBody) throws NoSuchAliasException,
             CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
         NoSuchAliasException caughtNoAliasException = null;
@@ -1992,7 +2015,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 2) { // EST in version 2 and later
                 try {
                     try {
-                        return raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
+                        return raMasterApi.estDispatch(operation, alias, tlscert, username, password, requestBody);
                     } catch (NoSuchAliasException e) {
                         //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
                         //later though.
@@ -2027,7 +2050,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @SuppressWarnings("deprecation")
     @Override
-    public byte[] estDispatchAuthenticated(final AuthenticationToken authenticationToken, final String operation, final String alias, final X509Certificate cert, final String username, final String password,
+    public byte[] estDispatchAuthenticated(final AuthenticationToken authenticationToken, final String operation, final String alias, final X509Certificate tlscert, final String username, final String password,
             final byte[] requestBody) throws AuthorizationDeniedException, NoSuchAliasException,
             CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
         NoSuchAliasException caughtNoAliasException = null;
@@ -2038,22 +2061,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 try {
                     if (raMasterApi.getApiVersion() >= 11) {
                         // We know the new EST call is definitely available
-                        return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, cert, username, password, requestBody);
+                        return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, tlscert, username, password, requestBody);
                     } else if (raMasterApi.getApiVersion() >= 9) {
                         // Possibly the new EST call is available, try new version first.
                         // This call is added in 7.5.0, but is backported to 7.4.1.1 (and possibly 7.4.3 if that will be released),
                         // so a regular version check is not possible.
                         try {
-                            return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, cert, username, password, requestBody);
+                            return raMasterApi.estDispatchAuthenticated(authenticationToken, operation, alias, tlscert, username, password, requestBody);
                         } catch (UnsupportedOperationException | RaMasterBackendUnavailableException dummy) {
                             // Try once more using the legacy API.
                             log.debug("New EST call failed, attempting legacy EST call");
-                            return raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
+                            return raMasterApi.estDispatch(operation, alias, tlscert, username, password, requestBody);
                         }
                     } else if (raMasterApi.getApiVersion() >= 2) {
                         // Legacy EST call in version 2 and later
                         log.debug("Old peer version, using legacy EST call");
-                        return raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
+                        return raMasterApi.estDispatch(operation, alias, tlscert, username, password, requestBody);
                     }
                 } catch (NoSuchAliasException e) {
                     //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
@@ -3298,6 +3321,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 8) {
                 try {
                     return raMasterApi.getGlobalConfiguration(type);
+                } catch (IllegalStateException e) {
+                    // 7.4.x can throw NPE, which results in an IllegalStateException because the NPE is an unexpected exception.
+                    // Just ignore and try next implementation.
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to get configuration of type " + type.getName() + ". This can happen if the peer runs 7.4.x or older and does not support the requested configuration type.");
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

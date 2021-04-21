@@ -12,26 +12,28 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.File;
 import java.util.Arrays;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.keys.token.PKCS11SlotListWrapper;
+import org.cesecore.keys.token.PKCS11SlotListWrapperHelper;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 /**
- * Tests instantiating the Pkcs11Wrapper
+ * Tests instantiating the PKCS11SlotListWrapper
  */
 public class Pkcs11WrapperTest {
 
@@ -52,17 +54,16 @@ public class Pkcs11WrapperTest {
     public void testInstantiatePkcs11Wrapper() {
         String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
         try {
-            Pkcs11Wrapper.getInstance(new File(pkcs11Library));
+            PKCS11SlotListWrapperHelper.getSlotListWrapper(new File(pkcs11Library));
         } catch (Exception e) {
             log.error("Unknown exception encountered", e);
             fail("Exception was thrown, instantiation failed.");
         }
-
     }
     
-    private Pkcs11Wrapper getPkcs11Wrapper() {
+    private PKCS11SlotListWrapper getPkcs11Wrapper() {
         final String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
-        return Pkcs11Wrapper.getInstance(new File(pkcs11Library));
+        return PKCS11SlotListWrapperHelper.getSlotListWrapper(new File(pkcs11Library));
     }
 
     /**
@@ -75,7 +76,7 @@ public class Pkcs11WrapperTest {
     public void testGetTokenLabel() {
         assumeTrue("pkcs11.token_number and pkcs11.token_label must be set for this test to work",
                 PKCS11TestUtils.getPkcs11TokenNumber() != null && PKCS11TestUtils.getPkcs11TokenLabel() != null);
-        final Pkcs11Wrapper pkcs11Wrapper = getPkcs11Wrapper();
+        final PKCS11SlotListWrapper pkcs11Wrapper = getPkcs11Wrapper();
         final long tokenId = Long.valueOf(PKCS11TestUtils.getPkcs11TokenNumber());
         final char[] foundLabel = pkcs11Wrapper.getTokenLabel(tokenId);
         assertNotNull("Label was not found", foundLabel);
@@ -91,7 +92,7 @@ public class Pkcs11WrapperTest {
      */
     @Test
     public void testGetSlotList() {
-        final Pkcs11Wrapper pkcs11Wrapper = getPkcs11Wrapper();
+        final PKCS11SlotListWrapper pkcs11Wrapper = getPkcs11Wrapper();
         final long[] tokenIds = pkcs11Wrapper.getSlotList();
         assertTrue("Should have at least one slot/token.", tokenIds.length > 0);
         final Pkcs11SlotLabelType tokenReferenceType = PKCS11TestUtils.getPkcs11SlotType();
@@ -120,7 +121,7 @@ public class Pkcs11WrapperTest {
      */
     @Test
     public void testGetSlotListLabels() {
-        Pkcs11Wrapper pkcs11Wrapper = getPkcs11Wrapper();
+        PKCS11SlotListWrapper pkcs11Wrapper = getPkcs11Wrapper();
         long[] tokenIds = pkcs11Wrapper.getSlotList();
         assertTrue("Should have at least one slot/token.", tokenIds.length > 0);
         for (final long tokenId : tokenIds) {

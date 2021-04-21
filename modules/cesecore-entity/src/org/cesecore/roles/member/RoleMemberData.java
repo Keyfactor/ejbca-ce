@@ -34,8 +34,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  * to several credentials (such as a user using several different certificates for identification depending on location). 
  * 
  *  Each member is linked to a Role, though not intrinsically so via foreign keys 
- * 
- * @version $Id$
+ *
  */
 @Entity
 @Table(name = "RoleMemberData")
@@ -47,6 +46,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     private String tokenType;
     private int tokenIssuerId;
+    private int tokenProviderId;
     private int tokenMatchKey;
     private int tokenMatchOperator;
     private String tokenMatchValueColumn;
@@ -115,6 +115,14 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     public void setTokenIssuerId(int tokenIssuerId) {
         this.tokenIssuerId = tokenIssuerId;
+    }
+
+    public int getTokenProviderId() {
+        return tokenProviderId;
+    }
+
+    public void setTokenProviderId(int tokenProviderId) {
+        this.tokenProviderId = tokenProviderId;
     }
 
     /** @return the match value type with to match, i.e. CN, serial number, or username */
@@ -229,7 +237,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getPrimaryKey()).append(getTokenType()).append(getTokenIssuerId()).append(getTokenMatchKey()).append(getTokenMatchOperator()).
+        build.append(getPrimaryKey()).append(getTokenType()).append(getTokenIssuerId()).append(getTokenProviderId()).append(getTokenMatchKey()).append(getTokenMatchOperator()).
             append(getTokenMatchValue()).append(getRoleId()).append(getDescription());
         return build.toString();
     }
@@ -265,13 +273,15 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     @Override
     public int compareTo(RoleMemberData o) {
-        return new CompareToBuilder().append(this.tokenType, o.tokenType).append(this.tokenIssuerId, o.tokenIssuerId).append(this.tokenMatchKey, o.tokenMatchKey)
+        return new CompareToBuilder().append(this.tokenType, o.tokenType).append(this.tokenIssuerId, o.tokenIssuerId)
+                .append(this.tokenProviderId, o.tokenProviderId).append(this.tokenMatchKey, o.tokenMatchKey)
                 .append(this.tokenMatchOperator, o.tokenMatchOperator).append(this.tokenMatchValueColumn, o.tokenMatchValueColumn).toComparison();
     }
     
     @Transient
     public RoleMember asValueObject() {
-        return new RoleMember(primaryKey, tokenType, tokenIssuerId, tokenMatchKey, tokenMatchOperator, getTokenMatchValue(), roleId, getDescription());
+        final RoleMember roleMember = new RoleMember(primaryKey, tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey, tokenMatchOperator, getTokenMatchValue(), roleId, getDescription());
+        return roleMember;
     }
     
     /** Sets all fields except the ID */
@@ -279,6 +289,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     public void updateValuesFromValueObject(final RoleMember roleMember) {
         setTokenType(roleMember.getTokenType());
         setTokenIssuerId(roleMember.getTokenIssuerId());
+        setTokenProviderId(roleMember.getTokenProviderId());
         setTokenMatchKey(roleMember.getTokenMatchKey());
         setTokenMatchOperator(roleMember.getTokenMatchOperator());
         setTokenMatchValue(roleMember.getTokenMatchValue());

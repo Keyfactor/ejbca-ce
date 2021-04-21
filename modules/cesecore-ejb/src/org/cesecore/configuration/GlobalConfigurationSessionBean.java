@@ -46,8 +46,6 @@ import org.cesecore.jndi.JndiConstants;
 
 /**
  * This bean handled global configurations.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "GlobalConfigurationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

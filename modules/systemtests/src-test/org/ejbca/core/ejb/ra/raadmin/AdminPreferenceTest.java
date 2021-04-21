@@ -32,8 +32,10 @@ import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthentication
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.AdminPreferenceProxySessionRemote;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,11 +50,12 @@ public class AdminPreferenceTest extends CaTestCase {
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
             .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
-    private TestX509CertificateAuthenticationToken authenticatedTokenCert;
-    private OAuth2AuthenticationToken authenticatedTokenOAuth;
+    private static TestX509CertificateAuthenticationToken authenticatedTokenCert;
+    private static OAuth2AuthenticationToken authenticatedTokenOAuth;
 
     private AdminPreferenceSessionRemote adminPreferenceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
 
+    private static  AdminPreferenceProxySessionRemote adminPreferenceProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private String adminFingerprint;
 
     @Override
@@ -66,15 +69,31 @@ public class AdminPreferenceTest extends CaTestCase {
         super.setUp();
         authenticatedTokenCert = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
                 .authenticate(new AuthenticationSubject(null, null));
-        authenticatedTokenOAuth = new OAuth2AuthenticationToken(
-                new OAuth2Principal("Issuer", "Admin", Collections.emptyList()), "", ""); // using empty token for testing
+        final OAuth2Principal principal = OAuth2Principal.builder()
+                .setIssuer("Isser")
+                .setSubject("Admin")
+                .setOid("2.999.123")
+                .setAudience(Collections.emptyList())
+                .build();
+        authenticatedTokenOAuth = new OAuth2AuthenticationToken(principal, "", "", "Provider"); // using empty token for testing
         adminFingerprint = CertTools.getFingerprintAsString(authenticatedTokenCert.getCertificate());
+        cleanup();
     }
 
     @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        cleanup();
+    }
+
+    private static void cleanup() {
+        adminPreferenceProxySession.deleteAdminPreferences(authenticatedTokenCert);
+        adminPreferenceProxySession.deleteAdminPreferences(authenticatedTokenOAuth);
     }
 
     /**
@@ -102,10 +121,10 @@ public class AdminPreferenceTest extends CaTestCase {
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        boolean ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
-        assertTrue("Adminpref for " + adminFingerprint + " should not exist", ret);
+        boolean ret = adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
+        assertTrue("Adminpref for " + authenticatedTokenOAuth.getPreferredMatchValue() + " should not exist", ret);
         ret = this.adminPreferenceSession.addAdminPreference(authenticatedTokenOAuth, pref);
-        assertFalse("Adminpref for " + adminFingerprint + " should exist", ret);
+        assertFalse("Adminpref for " + authenticatedTokenOAuth.getPreferredMatchValue() + " should exist", ret);
         log.trace("<addAdminPreferenceOAuth()");
     }
 

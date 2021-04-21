@@ -814,15 +814,22 @@ public class SecureXMLDecoder implements AutoCloseable {
 
             if (parser.getEventType() != XmlPullParser.END_TAG) {
                 try {
-                    final Object value = readValue(true);
-                    try {
-                        // invokeMethod handles mapping to primitive types and superclasses also, if the parameters don't match exactly
-                        MethodUtils.invokeMethod(obj, setterName, value);
-                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-                        throw new IOException(errorMessage("Method \"" + setterName + "\" could not be called."), e);
-                    } catch (NoSuchMethodException e) {
-                        throwOrLog(errorMessage("No setter method \"" + setterName + "\" was found with parameter type " + ClassUtils.getShortClassName(value, "null")), e);
+                    final Object value;
+                    if ("void".equals(parser.getName())) {
+                        // Call the getter to see if it is a map that should be filled with entries
+                        value = fillInExistingMap(obj, methodBase);
+                    } else {
+                        value = readValue(true);
+                        try {
+                            // invokeMethod handles mapping to primitive types and superclasses also, if the parameters don't match exactly
+                            MethodUtils.invokeMethod(obj, setterName, value);
+                        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+                            throw new IOException(errorMessage("Method \"" + setterName + "\" could not be called."), e);
+                        } catch (NoSuchMethodException e) {
+                            throwOrLog(errorMessage("No setter method \"" + setterName + "\" was found with parameter type " + ClassUtils.getShortClassName(value, "null")), e);
+                        }
                     }
+                    storeObjectById(id, value);
                 } catch (NoValueException e) {
                     // Ignore
                 }
@@ -852,6 +859,25 @@ public class SecureXMLDecoder implements AutoCloseable {
             parser.nextTag();
         }
         return obj;
+    }
+
+    /** Fills in an existing map in a property with more entries from the XML. */
+    @SuppressWarnings("unchecked")
+    private Object fillInExistingMap(final Object obj, final String methodBase) throws IOException, XmlPullParserException {
+        final String getterName = "get" + methodBase;
+        try {
+            final Object propertyValue = MethodUtils.invokeMethod(obj, getterName);
+            if (!(propertyValue instanceof Map<?,?>)) {
+                throw new IOException(errorMessage("Unhandled type returned from getter \"" + getterName + "\": " + (propertyValue != null ? propertyValue.getClass().getSimpleName() : null)));
+            }
+            parseMap((Map<Object,Object>) propertyValue);
+            return propertyValue;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+            throw new IOException(errorMessage("Method \"" + getterName + "\" could not be called."), e);
+        } catch (NoSuchMethodException e) {
+            throwOrLog(errorMessage("No getter method \"" + getterName + "\" was found"), e);
+            return null;
+        }
     }
 
     private boolean methodExists(final Class<?> klass, final String methodName) {

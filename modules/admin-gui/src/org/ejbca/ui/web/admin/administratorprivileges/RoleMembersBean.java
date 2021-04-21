@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.administratorprivileges;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -45,6 +47,8 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -78,6 +82,10 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
+    @EJB
+    GlobalConfigurationSessionLocal globalConfigurationSession;
+
+    private OAuthConfiguration oAuthConfiguration;
 
     private String roleIdParam;
     private Role role;
@@ -85,6 +93,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private List<SelectItem> matchWithItems = null;
     private String matchWithSelected = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE + ":" + X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue();
     private Integer tokenIssuerId;
+    private Integer tokenProviderId;
     private String tokenMatchValue = "";
     private String description = "";
 
@@ -189,11 +198,6 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             final List<String> tokenTypes = new ArrayList<>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
             Collections.sort(tokenTypes);
             for (final String tokenType : tokenTypes) {
-                // ECA-9514: Temporarily skip match types until full support for OAuth2
-                if (tokenType.equals("OAuth2AuthenticationToken")) {
-                    continue;
-                }
-
                 final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
                 if (authenticationTokenMetaData.isUserConfigurable()) {
                     for (final AccessMatchValue accessMatchValue : authenticationTokenMetaData.getAccessMatchValues()) {
@@ -227,6 +231,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         return getAccessMatchValue(getSelectedTokenType(), getSelectedTokenMatchKey()).isIssuedByCa();
     }
 
+    /** @return true if the currently selected tokenType and tokenMatchKey combo implies that is has been provided by Oauth */
+    public boolean isRenderProviderInput() {
+        return getAccessMatchValue(getSelectedTokenType(), getSelectedTokenMatchKey()).isIssuedByOauthProvider();
+    }
+
     /** @return a List of (SelectItem<Integer, String>) authorized CAs */
     public List<SelectItem> getAvailableCas() {
         final List<SelectItem> availableCas = new ArrayList<>();
@@ -236,6 +245,27 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         }
         super.sortSelectItemsByLabel(availableCas);
         return availableCas;
+    }
+
+    public List<SelectItem> getAvailableOauthProviders() {
+        final List<SelectItem> availableProviders = new ArrayList<>();
+        final OAuthConfiguration oAuthConfiguration = getOAuthConfiguration();
+        if (oAuthConfiguration != null && oAuthConfiguration.getOauthKeys() != null) {
+            Collection<OAuthKeyInfo> oAuthKeyInfos = oAuthConfiguration.getOauthKeys().values();
+            for (final OAuthKeyInfo oAuthKeyInfo : oAuthKeyInfos) {
+                availableProviders.add(new SelectItem(oAuthKeyInfo.getInternalId(), oAuthKeyInfo.getLabel()));
+            }
+            super.sortSelectItemsByLabel(availableProviders);
+        }
+        return availableProviders;
+    }
+
+    public OAuthConfiguration getOAuthConfiguration() {
+        if (oAuthConfiguration == null) {
+            oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        }
+        return oAuthConfiguration;
     }
 
     /** @return the currently selected CA if any */
@@ -260,7 +290,35 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             return String.valueOf(tokenIssuerId);
         }
     }
-    
+
+    public Integer getTokenProviderId() {
+        return tokenProviderId;
+    }
+
+    public void setTokenProviderId(Integer tokenProviderId) {
+        this.tokenProviderId = tokenProviderId;
+    }
+
+    /**
+     * @return a human readable version of the RoleMember's tokenProviderId (CA name)
+     */
+    public String getTokenProviderIdString(final RoleMember roleMember) {
+        final int tokenProviderId = roleMember.getTokenProviderId();
+        if (tokenProviderId == RoleMember.NO_PROVIDER) {
+            return "-";
+        }
+        if (getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByOauthProvider()) {
+            final OAuthKeyInfo oauthKeyInfo = getOAuthConfiguration().getOauthKeyById(tokenProviderId);
+            if (oauthKeyInfo == null) {
+                return super.getEjbcaWebBean().getText("UNKNOWNPROVIDERID") + " " + tokenProviderId;
+            } else {
+                return oauthKeyInfo.getLabel();
+            }
+        } else {
+            return String.valueOf(tokenProviderId);
+        }
+    }
+
     /** @return the ViewScoped cache of the CA to name map or a fresh copy from the backend if none is present yet. */
     private Map<Integer, String> getCaIdToNameMap() {
         if (this.caIdToNameMap==null) {
@@ -374,9 +432,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             } else {
                 tokenIssuerId = RoleMember.NO_ISSUER;
             }
+            final int tokenProviderId = accessMatchValue.isIssuedByOauthProvider() ? this.tokenProviderId : RoleMember.NO_PROVIDER;
             try {
-                roleMemberSession.persist(getAdmin(), new RoleMember(tokenType, tokenIssuerId, tokenMatchKey,
-                        accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description));
+                final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
+                        accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
+                roleMemberSession.persist(getAdmin(), roleMember);
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
             }
@@ -392,6 +452,10 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies that it is issued by a CA */
     public boolean isTokenIssuerIdUsed(final RoleMember roleMember) {
         return getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByCa();
+    }
+    /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies that it is issued by an Oauth provider */
+    public boolean isTokenProviderIssuerIdUsed(final RoleMember roleMember) {
+        return getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByOauthProvider();
     }
 
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies a tokenMatchValue is used */

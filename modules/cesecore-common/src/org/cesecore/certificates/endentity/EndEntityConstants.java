@@ -34,6 +34,11 @@ public final class EndEntityConstants {
     public static final int EMPTY_END_ENTITY_PROFILE = 1;
     public static final String EMPTY_ENDENTITYPROFILENAME = "EMPTY";
 
+    /**
+     * The id that indicates any certificate authority works with the end entity profile. In contrast CertificateProfile.ANYCA is -1.
+     */
+    public static final int EEP_ANY_CA = 1;
+
     //
     // User status codes
     //

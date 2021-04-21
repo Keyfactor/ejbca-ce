@@ -499,6 +499,13 @@
 				replacement-context-root="/ejbca/acme"
 		/>
 		<war-replacement-in-module
+               	replacement-tag="!--@msae.war@-->"
+              	replacement-file="${eardd.src}/META-INF/application.xml"
+                replacement-enabled="${mod.msae.exists}"
+       	        replacement-web-uri="msae.war"
+				replacement-context-root="/ejbca/msae"
+		/>
+		<war-replacement-in-module
                 	replacement-tag="!--@est.war@-->"
                 	replacement-file="${eardd.src}/META-INF/application.xml"
 	                replacement-enabled="${mod.est.exists}"
@@ -566,6 +573,7 @@
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-*.jar" unless="jbosseap6-specials"/>
                 <include name="ldap.jar" />
+            	<include name="adsddl-*.jar"/>
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
 				<include name="json-smart-*.jar"/>
@@ -595,7 +603,10 @@
 				<include name="jackson-dataformat-yaml-2.*.jar"/>
 			</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/intune" erroronmissingdir="false">    
-        		<include name="*.jar"/>
+        		<include name="adal4j-*.jar"/>
+				<include name="csr-validation-*.jar"/>
+				<include name="json-*.jar"/>
+  				<include name="oauth2-oidc-sdk-*.jar"/>
         	</zipfileset>
         	
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
@@ -630,6 +641,7 @@
             	<include name="acme.war" />
         		<include name="${in-test-mode-include}systemtests-common.jar"/>
             	<include name="ssh.war" />
+            	<include name="msae.war" />
             </fileset>
         	
         	<fileset dir="${ejbca.home}/lib/swagger">
@@ -1100,6 +1112,7 @@
 		    	<exclude unless="edition.is.ee" name="modules/p11ng-cli/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/keys/token/p11ng/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/msae/**"/>
                 <!-- List of modules to exclude from non-eIDAS editions -->
 		    	<!-- Exclude standard values if eIDAS edition for which we will include the updated version below -->
                 <exclude if="build.contains.eidas" name="src/java/defaultvalues.properties"/> 
@@ -1519,6 +1532,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="cmp-war" />
     </target>
 
+    <target name="msae.war">
+        <ant dir="modules" target="msae" />
+    </target>
+
     <target name="healthcheck.war">
     	<ant dir="modules" target="healthcheck-ejbca-war" />
     </target>
@@ -1670,6 +1687,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
                 <exclude name="cesecore-*/build/*"/>
                 
                 <!-- Exclude build system for now. When possible in the future, also include this. -->
+                <exclude name="cesecore-*/nbproject/**/*"/>
                 <exclude name="cesecore-*/build.xml"/>
             </fileset>
         </copy>

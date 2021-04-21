@@ -16,8 +16,6 @@
  	 *  commercial license terms.                                            *
  	 *                                                                       *
  	 *************************************************************************/
-
-     $Id$
      -->
 </ui:remove>
 
@@ -26,37 +24,161 @@
 	<ui:define name="content">
 
 	<h1>
-        <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_EDITKEY}: #{systemConfigMBean.oauthKeyManager.oauthKeyEditor.oauthKeyBeingEdited.keyIdentifier}"/>
+        <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_EDITKEY}: " rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.editMode}"/>
+        <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_VIEWKEY}: " rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
+        <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ADDKEY}: " rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.addMode}"/>
+        <h:outputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.oauthKeyBeingEdited.label}"/>
     </h1>
     <h:form id="editOAuthKeyForm" enctype="multipart/form-data">
         <h:panelGrid columns="2">
-            <h:outputLink value="systemconfiguration.xhtml">
+            <h:outputLink id="goBack" value="systemconfiguration.xhtml">
                 <h:outputText value="#{web.text.BACK}"/>
             </h:outputLink>
-            <h:panelGroup id="placeholder1"/>
+            <h:panelGroup id="placeholder1" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
+            <h:commandButton action="#{systemConfigMBean.oauthKeyManager.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}"
+                             rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode and systemConfigMBean.allowedToEditOauthKeys}"/>
+                             
+            <h:outputLabel for="providerType" value="#{web.text.OAUTHKEYCONFIGURATION_PROVIDERTYPE}" />
+            <h:panelGroup id="providerType" >
+                <h:selectOneMenu id="selectOneMenuProviderType" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.type}"
+                                 disabled="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.addMode}">
+                    <f:selectItems value="#{systemConfigMBean.oauthKeyManager.availableProviderTypes}" var="providerType" itemValue="#{providerType}" 
+                                   itemLabel="#{providerType.label}"/>
+                    <f:ajax render="@form" />
+                </h:selectOneMenu>
+            </h:panelGroup>
 
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
-            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyIdentifier}" size="46" id="keyId">
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_LABEL}"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.label}" size="46" id="label"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
 
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CURRENT_PUBLICKEY}"/>
-            <h:outputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.oauthKeyBeingEdited.keyFingerprint}" styleClass="monospace"/>
-
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REPLACE_PUBLICKEY} "/>
-            <t:inputFileUpload id="editedOAuthKeyFile"
-                value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyFile}"
-                title="#{web.text.OAUTHKEYCONFIGURATION_NEW_PUBLICKEYFILE}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_URL}"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.url}" size="46" id="keyUrl"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
 
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SKEWLIMIT}"/>
-            <h:inputText id="editedCTLogSkewLimit"
+            <h:inputText id="editedProviderSkewLimit"
                 required="true"
+                disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
                 value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.skewLimit}"
                 title="#{web.text.FORMAT_MILLISECONDS}"
                 size="10"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REALM}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeKeycloak}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_TENANT}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.realm}" size="46" id="realm"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
+                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeGeneric}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SCOPE}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.scope}" size="46" id="scope"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
+                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENT}" />
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.client}" size="46" id="client"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENTSECRET}" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
+            <h:inputSecret value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.clientSecret}" size="46" id="clientSecret"
+                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}" autocomplete="off"
+                           redisplay="true">
+                <f:converter converterId="trimConverter"/>
+            </h:inputSecret>
+
+        </h:panelGrid>
+        <h:dataTable value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeys}"
+            var="key"
+            styleClass="grid oauthkeyTable" style="margin: 5px;">
+            <h:column>
+                <f:facet name="header">
+                    <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
+                </f:facet>
+                <h:outputText value="#{key.keyIdentifier}"
+                              title="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}"/>
+            </h:column>
+            <h:column>
+                <f:facet name="header">
+                    <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEY}"/>
+                </f:facet>
+                <h:outputText value="#{key.keyFingerprint}"
+                              title="#{web.text.OAUTHKEYCONFIGURATION_PUBLICKEY}"
+                              styleClass="monospace"/>
+            </h:column>
+            <h:column rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode and systemConfigMBean.allowedToEditOauthKeys}">
+                <f:facet name="header" >
+                    <h:outputText value="#{web.text.ACTIONS}"/>
+                </f:facet>
+                <h:commandButton action="#{systemConfigMBean.oauthKeyManager.removePublicKey(key)}"
+                                 value="#{web.text.REMOVE}"
+                                 id="removePublicKeyButton"/>
+            </h:column>
+        </h:dataTable>
+        <h:panelGrid columns="2" styleClass="Row1" id="keyForm"
+                     rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode and systemConfigMBean.allowedToEditOauthKeys}">
+            <f:facet name="header">
+                <h:column colspan="2"><h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ADD_KEY}" styleClass="titles"/></h:column>
+            </f:facet>
+
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_UPLOAD_KEY_WAY}"
+                          rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
+            <h:panelGroup id="keyAs" >
+                <h:selectOneMenu id="selectOneMenuUploadWay" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyInTheFormOf}">
+                    <f:selectItems value="#{systemConfigMBean.oauthKeyManager.availableKeyUploadForms}" var="keyForm" itemValue="#{keyForm}"
+                                   itemLabel="#{keyForm.label}"/>
+                    <f:ajax render="editOAuthKeyForm:keyForm" />
+                </h:selectOneMenu>
+            </h:panelGroup>
+
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REPLACE_PUBLICKEY} "
+                          rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fileForm }"/>
+            <t:inputFileUpload id="editedOAuthKeyFile"
+                               rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fileForm }"
+                               value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyFile}"
+                               title="#{web.text.OAUTHKEYCONFIGURATION_NEW_PUBLICKEYFILE}"/>
+
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_PUBLIC_KEY_VALUE}"
+                          rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.textForm }"/>
+            <h:inputTextarea id="publicKeyValue" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.textForm }"
+                             value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyValue}" cols="75" rows="8" />
+
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_PUBLIC_KEY_URL}"
+                          rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.urlForm }"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeyUrl}" size="46" id="keyConfigUrl"
+                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.urlForm }">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+
+            <h:outputText value="" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.urlForm }" />
+            <h:panelGroup layout="block" styleClass="helpNormal helpNotWide">
+                <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ADD_KEY_HELP}" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.urlForm }" />
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.urlForm }">
+                <h:panelGroup layout="block"><h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER}" /></h:panelGroup>
+                <h:panelGroup layout="block" styleClass="helpNormal helpNotWide"><h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_KEYIDENTIFIER_HELP}" /></h:panelGroup>
+            </h:panelGroup>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyIdentifier}" size="46" id="keyId"
+                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.urlForm }">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+
+            <h:commandButton id="addPublicKey" value="#{web.text.OAUTHKEYCONFIGURATION_UPLOAD_KEY}"
+                             action="#{systemConfigMBean.oauthKeyManager.addPublicKey}"/>
+
         </h:panelGrid>
 
-        <h:commandButton id="saveOAuthKeyEdit" action="#{systemConfigMBean.oauthKeyManager.saveOauthKeyBeingEdited}" value="#{web.text.SAVE}" />
+        <h:commandButton id="saveOAuthKeyEdit" action="#{systemConfigMBean.oauthKeyManager.saveOauthKeyBeingEdited}" value="#{web.text.SAVE}"
+                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.editMode and systemConfigMBean.allowedToEditOauthKeys}"/>
+        <h:commandButton id="addOauthKey" value="#{web.text.ADD}"
+                         action="#{systemConfigMBean.oauthKeyManager.addOauthKey}"
+                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.addMode and systemConfigMBean.allowedToEditOauthKeys}"/>
     </h:form>
 	</ui:define>
 	</ui:composition>

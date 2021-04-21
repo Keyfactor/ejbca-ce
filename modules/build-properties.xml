@@ -189,6 +189,8 @@
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
 	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
+	<property name="mod.msae.path" location="${mod.path}/msae" />
+	<property name="mod.msae.war" location="${mod.dist.path}/msae.war" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
@@ -339,6 +341,7 @@
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.owaspcsrfguard.classpath"><fileset dir="${ejbca.home}/lib/" includes="csrfguard-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
+	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
 	<path id="lib.xmlpull.classpath">
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
@@ -352,8 +355,12 @@
 	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
 	<path id="lib.dnssecjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnssecjava-*.jar"/></path>
 	<path id="lib.guava.classpath"><fileset dir="${ejbca.home}/lib" includes="guava-*.jar"/></path>
-	<path id="lib.jacknji.classpath"><fileset dir="${ejbca.home}/lib/" includes="jacknji11-*.jar"/></path>
-	<path id="lib.jna.classpath"><fileset dir="${ejbca.home}/lib/" includes="jna-*.jar"/></path>
+	<path id="lib.jacknji.classpath">
+		<fileset dir="${ejbca.home}/lib/"> 
+			<include name="jacknji11-*.jar"/>
+            <include name="jna-*.jar"/>
+		</fileset>
+	</path>
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
 			<include name="commons-*.jar"/>
@@ -601,6 +608,10 @@
 
 	<condition property="mod.ssh.exists">
 		<available file="${mod.ssh.path}/build.xml" />
+	</condition>
+	
+	<condition property="mod.msae.exists">
+		<available file="${mod.msae.path}/build.xml" />
 	</condition>
 	
     <condition property="mod.acme.exists">

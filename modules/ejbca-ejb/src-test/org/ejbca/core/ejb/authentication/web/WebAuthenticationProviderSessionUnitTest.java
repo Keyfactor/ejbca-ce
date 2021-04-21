@@ -43,23 +43,24 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.easymock.EasyMock;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.nimbusds.jose.util.Base64URL;
@@ -114,6 +115,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     private static String pubKeyFingerprint;
     private static byte[] pubKeyBytes;
     private static PrivateKey privKey;
+    private static OAuthConfiguration oauthConfiguration;
     
     private WebAuthenticationProviderSessionBean webAuthenticationProviderSession;
     private CertificateStoreSessionLocal certStoreSessionMock = EasyMock.createStrictMock(CertificateStoreSessionLocal.class);
@@ -131,41 +133,47 @@ public class WebAuthenticationProviderSessionUnitTest {
         final PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(privKeyBytes);
         final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         privKey = keyFactory.generatePrivate(pkKeySpec);
+        // OAuth provider configuration
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
+        oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
+        oauthConfiguration = new OAuthConfiguration();
+        oauthConfiguration.setDefaultOauthKey(oAuthKeyInfo);
+        oauthConfiguration.addOauthKey(oAuthKeyInfo);
     }
 
     @Before
     public void before() {
-        EasyMock.reset(certStoreSessionMock, globalConfigurationSessionMock, securityEventsSessionMock);
+        EasyMock.reset(certStoreSessionMock, securityEventsSessionMock);
         webAuthenticationProviderSession = new WebAuthenticationProviderSessionBean(certStoreSessionMock, globalConfigurationSessionMock, securityEventsSessionMock);
     }
 
     @Test
-    public void blankToken() {
+    public void blankToken() throws TokenExpiredException {
         log.trace(">blankToken");
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(""));
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, ""));
         log.trace("<blankToken");
     }
 
     @Test
-    public void missingDots() {
+    public void missingDots() throws TokenExpiredException {
         log.trace(">missingDots");
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken("AAAA"));
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, "AAAA"));
         log.trace("<missingDots");
     }
 
     @Test
-    public void malformedBase64() {
+    public void malformedBase64() throws TokenExpiredException {
         log.trace(">malformedBase64");
         // The token format is: JOSE-Header.Payload.Signature, and each part should be base64url encoded
         // See RFC-7519 section 3.1, https://tools.ietf.org/html/rfc7519#section-3.1
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken("åäö.åäö.åäö"));
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, "åäö.åäö.åäö"));
         log.trace("<malformedBase64");
     }
 
     @Test
-    public void nonJsonToken() {
+    public void nonJsonToken() throws TokenExpiredException {
         log.trace(">nonJsonToken");
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken("AAAA.AAAA.AAAA"));
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, "AAAA.AAAA.AAAA"));
         log.trace("<nonJsonToken");
     }
     
@@ -201,93 +209,92 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
     
     @Test
-    public void nonJwtToken() {
+    public void nonJwtToken() throws TokenExpiredException {
         log.trace(">nonJwtToken");
         final String token = encodeToken("{\"data\":123}", "{\"data\":123}");
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<nonJwtToken");
     }
 
     @Test
-    public void unsignedToken() {
+    public void unsignedToken() throws TokenExpiredException {
         log.trace(">unsignedToken");
         final String token = encodeToken("{\"alg\":\"none\"}", "{\"sub\":\"johndoe\"}");
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<unsignedToken");
     }
 
     @Test
-    public void missingSignature() {
+    public void missingSignature() throws TokenExpiredException {
         log.trace(">missingSignature");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}");
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
-        verify(globalConfigurationSessionMock);
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<missingSignature");
     }
 
     @Test
-    public void malformedSignature() {
+    public void malformedSignature() throws TokenExpiredException {
         log.trace(">malformedSignature");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}") + "AAAA"; // last part is signature
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
-        verify(globalConfigurationSessionMock);
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<malformedSignature");
     }
 
     @Test
-    public void unknownSignatureAlgorithm() {
+    public void unknownSignatureAlgorithm() throws TokenExpiredException {
         log.trace(">unknownSignatureAlgorithm");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        replay(globalConfigurationSessionMock);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
+        oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         final String token = encodeToken("{\"alg\":\"XX\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}") + "AAAA"; // last part is signature
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
-        verify(globalConfigurationSessionMock);
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<unknownSignatureAlgorithm");
     }
 
     @Test
-    public void expiredToken() {
+    public void expiredToken()  {
         log.trace(">expiredToken");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        expectAuditLog("authentication.jwt.expired", "johndoe", pubKeyFingerprint);
-        replay(globalConfigurationSessionMock, securityEventsSessionMock);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
+        oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
+        replay(securityEventsSessionMock);
         final String timestamp = timestampFromNow(-60*60*1000); // 1 hour old
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
-        verify(globalConfigurationSessionMock, securityEventsSessionMock);
+        try {
+            assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
+        } catch (TokenExpiredException e) {
+           //ignore
+        }
+        verify(securityEventsSessionMock);
         log.trace("<expiredToken");
     }
 
     @Test
-    public void notYetValidToken() {
+    public void notYetValidToken() throws TokenExpiredException {
         log.trace(">notYetValidToken");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
+        oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectAuditLog("authentication.jwt.not_yet_valid", "johndoe", pubKeyFingerprint);
-        replay(globalConfigurationSessionMock, securityEventsSessionMock);
+        replay(securityEventsSessionMock);
         final String timestamp = timestampFromNow(60*60*1000); // 1 hour ahead
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"nbf\":" + timestamp + "}", privKey);
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
-        verify(globalConfigurationSessionMock, securityEventsSessionMock);
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
+        verify(securityEventsSessionMock);
         log.trace("<notYetValidToken");
     }
 
     @Test
-    public void tamperedWithContents() {
+    public void tamperedWithContents() throws TokenExpiredException {
         log.trace(">tamperedWithContents");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
+        oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectAuditLog("authentication.jwt.invalid_signature", pubKeyFingerprint);
-        replay(globalConfigurationSessionMock, securityEventsSessionMock);
+        replay(securityEventsSessionMock);
         final String originalToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
         // Change the payload
         final String newPayload = Base64URL.encode("{\"sub\":\"janedoe\"}").toString(); // johndoe -> janedoe
         final String[] pieces = originalToken.split("\\.");
         final String token = pieces[0] + "." + newPayload + "." + pieces[2];
-        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token));
-        verify(globalConfigurationSessionMock, securityEventsSessionMock);
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
+        verify(securityEventsSessionMock);
         log.trace("<tamperedWithContents");
     }
 
@@ -299,23 +306,11 @@ public class WebAuthenticationProviderSessionUnitTest {
         expectLastCall();
     }
 
-    private void expectConfigRead(final OAuthKeyInfo... keyInfos) {
-        final GlobalConfiguration globalConfig = new GlobalConfiguration();
-        for (final OAuthKeyInfo keyInfo : keyInfos) {
-            globalConfig.addOauthKey(keyInfo);
-        }
-        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).andReturn(globalConfig);
-    }
-
-    @Ignore("Configuration of a 'default key' is not yet implemented.") // TODO enable and update test when ECA-9351 is done
     @Test
-    public void successfulRsaDefaultKey() {
+    public void successfulRsaDefaultKey() throws TokenExpiredException {
         log.trace(">successfulRsaDefaultKey");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
-        final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token);
-        verify(globalConfigurationSessionMock);
+        final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token);
         assertNotNull("Authentication should succeed", admin);
         final OAuth2Principal principal = admin.getClaims();
         assertNotNull("Should have a Principal object", principal);
@@ -327,13 +322,10 @@ public class WebAuthenticationProviderSessionUnitTest {
     }
 
     @Test
-    public void successfulRsaWithKeyId() {
+    public void successfulRsaWithKeyId() throws TokenExpiredException {
         log.trace(">successfulRsaWithKeyId");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        replay(globalConfigurationSessionMock);
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
-        final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token);
-        verify(globalConfigurationSessionMock);
+        final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token);
         assertNotNull("Authentication should succeed", admin);
         final OAuth2Principal principal = admin.getClaims();
         assertNotNull("Should have a Principal object", principal);
@@ -346,16 +338,13 @@ public class WebAuthenticationProviderSessionUnitTest {
 
     /** Tests with a token with all supported attributes. */
     @Test
-    public void successfulComplexToken() {
+    public void successfulComplexToken() throws TokenExpiredException {
         log.trace(">successfulComplexToken");
-        expectConfigRead(new OAuthKeyInfo("key1", pubKeyBytes, 1000));
-        replay(globalConfigurationSessionMock);
         final String expiry = timestampFromNow(60*60*1000); // 1 hour ahead
         final String notBefore = timestampFromNow(-60*60*1000); // 1 hour old
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}",
                 "{\"aud\":[\"admins\"],\"exp\":" + expiry + ",\"iss\":\"issuer1\",\"nbf\":" + notBefore + ",\"sub\":\"johndoe\"}", privKey);
-        final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(token);
-        verify(globalConfigurationSessionMock);
+        final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token);
         assertNotNull("Authentication should succeed", admin);
         final OAuth2Principal principal = admin.getClaims();
         assertNotNull("Should have a Principal object", principal);
