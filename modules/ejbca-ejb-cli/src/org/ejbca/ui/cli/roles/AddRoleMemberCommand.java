@@ -47,8 +47,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Adds a role member.
- *
- * @version $Id$
  */
 public class AddRoleMemberCommand extends BaseRolesCommand {
 
@@ -143,6 +141,10 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             tokenProviderId = RoleMember.NO_PROVIDER;
         } else if (OAuth2AuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
             final String providerLabel = parameters.get(PROVIDER_NAME_KEY);
+            if (StringUtils.isEmpty(providerLabel)) {
+                getLogger().error("--provider is required for this match value.");
+                return CommandResult.CLI_FAILURE;
+            }
             final OAuthConfiguration oauthConfig = (OAuthConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class).
                     getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
             if (oauthConfig == null || MapUtils.isEmpty((oauthConfig.getOauthKeys()))) {
@@ -196,6 +198,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             roleMemberSession.persist(getAuthenticationToken(), roleMember);
+            getLogger().info("Role member was successfully added.");
         } catch (AuthorizationDeniedException e) {
             getLogger().error("CLI user not authorized to edit role");
             return CommandResult.AUTHORIZATION_FAILURE;

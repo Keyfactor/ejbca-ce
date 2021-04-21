@@ -45,7 +45,6 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
      * Constructor for a new RoleMember. Will by default be constructed with the primary key 0, which means that this object hasn't been
      * persisted yet. In that case, the primary key will be set by the CRUD bean.
      *
-     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
      * @param tokenIssuerId the issuer identifier of this token or {@link #NO_ISSUER} if not relevant
      * @param tokenProviderId the OAuth provider identifier, or {@link #NO_PROVIDER} if not relevant
      * @param tokenMatchValue the actual value with which to match
@@ -69,7 +68,6 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
     /**
      * Constructor for a RoleMember object that has already been assigned an ID (the RoleMember already exists).
      *
-     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
      * @param tokenIssuerId the issuer identifier of this token or {@link #NO_ISSUER} if not relevant
      * @param tokenProviderId the OAuth provider identifier, or {@link #NO_PROVIDER} if not relevant
      * @param tokenMatchValue the actual value with which to match
