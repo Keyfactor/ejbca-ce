@@ -13,7 +13,9 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.security.cert.Certificate;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -23,17 +25,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionEvent;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
  * JSF Managed Bean for handling authentication of clients.
- * 
- * @version $Id$
+ *
  */
 @ManagedBean
 @SessionScoped
@@ -44,6 +49,8 @@ public class RaAuthenticationBean implements Serializable {
 
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApi;
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
     private AuthenticationToken authenticationToken = null;
@@ -51,10 +58,14 @@ public class RaAuthenticationBean implements Serializable {
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken() {
         if (raAuthenticationHelper==null) {
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         }
         authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
+    }
+
+    public void resetAuthentication(){
+        raAuthenticationHelper.resetAuthenticationToken();
     }
     
     private HttpServletRequest getHttpServletRequest() {
@@ -83,6 +94,14 @@ public class RaAuthenticationBean implements Serializable {
                 }
             }
             return subjectDN;
+        } else if (authToken instanceof OAuth2AuthenticationToken) {
+            final Set<? extends Principal> principals = authToken.getPrincipals();
+            if (CollectionUtils.isNotEmpty(principals)) {
+                final Principal principal = principals.iterator().next();
+                if (principal instanceof OAuth2Principal) {
+                    return ((OAuth2Principal)principal).getDisplayName();
+                }
+            }
         }
         return authToken.toString();
     }

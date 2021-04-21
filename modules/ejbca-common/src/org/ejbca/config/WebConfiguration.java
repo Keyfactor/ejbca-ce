@@ -86,6 +86,19 @@ public class WebConfiguration {
 		return value;
 	}
 
+    /**
+     * Port used by EJBCA for oauth logins.
+     */
+    public static int getPublicHttpsPort() {
+        int value = 8442;
+        try {
+            value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSERVERPUBHTTPS));
+        } catch( NumberFormatException e ) {
+            log.warn("\"" + CONFIG_HTTPSERVERPUBHTTPS + "\" is not a decimal number. Using default value: " + value);
+        }
+        return value;
+    }
+
 	/**
 	 * Port used by EJBCA public web to construct a correct url.
 	 */
