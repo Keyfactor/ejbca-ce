@@ -434,9 +434,8 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             }
             final int tokenProviderId = accessMatchValue.isIssuedByOauthProvider() ? this.tokenProviderId : RoleMember.NO_PROVIDER;
             try {
-                final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenMatchKey,
+                final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
-                roleMember.setTokenProviderId(tokenProviderId);
                 roleMemberSession.persist(getAdmin(), roleMember);
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
