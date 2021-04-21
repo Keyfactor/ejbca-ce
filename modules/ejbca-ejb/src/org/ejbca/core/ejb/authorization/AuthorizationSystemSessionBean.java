@@ -288,7 +288,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             // Add CLI user role member
             final String username = EjbcaConfiguration.getCliDefaultUser();
             roleMemberDataSession.persistRoleMember(new RoleMember(CliAuthenticationTokenMetaData.TOKEN_TYPE,
-                    RoleMember.NO_ISSUER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                    RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     username, role.getRoleId(), null));
             // Add CLI user end entity
             final UserData userData = new UserData(username, EjbcaConfiguration.getCliDefaultPassword(), false, "UID=" + username, 0, null, null, null, 0,
