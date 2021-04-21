@@ -46,30 +46,42 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
      * persisted yet. In that case, the primary key will be set by the CRUD bean.
      *
      * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
-     * @param tokenIssuerId the issuer identifier of this token or 0 if not relevant
+     * @param tokenIssuerId the issuer identifier of this token or {@link #NO_ISSUER} if not relevant
+     * @param tokenProviderId the OAuth provider identifier, or {@link #NO_PROVIDER} if not relevant
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param description a human readable description of this role member.
      */
+    public RoleMember(final String tokenType, final int tokenIssuerId, final int tokenProviderId, final int tokenMatchKey, final int tokenMatchOperator,
+            final String tokenMatchValue, final int roleId, final String description) {
+        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
+    }
+
+    /**
+     * @deprecated Since EJBCA 7.5.0. Please use the constructor with tokenProviderId instead, and set the parameter to {@link #NO_PROVIDER}.
+     */
+    @Deprecated
     public RoleMember(final String tokenType, final int tokenIssuerId, final int tokenMatchKey, final int tokenMatchOperator,
             final String tokenMatchValue, final int roleId, final String description) {
-        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
+        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, NO_PROVIDER, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
     }
 
     /**
      * Constructor for a RoleMember object that has already been assigned an ID (the RoleMember already exists).
      *
      * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
-     * @param tokenIssuerId the issuer identifier of this token or 0 if not relevant
+     * @param tokenIssuerId the issuer identifier of this token or {@link #NO_ISSUER} if not relevant
+     * @param tokenProviderId the OAuth provider identifier, or {@link #NO_PROVIDER} if not relevant
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param description a human readable description of this role member.
      */
-    public RoleMember(final int id, final String tokenType, final int tokenIssuerId, final int tokenMatchKey, final int tokenMatchOperator,
+    public RoleMember(final int id, final String tokenType, final int tokenIssuerId, final int tokenProviderId, final int tokenMatchKey, final int tokenMatchOperator,
             final String tokenMatchValue, final int roleId, final String description) {
         this.id = id;
         this.tokenType = tokenType;
         this.tokenIssuerId = tokenIssuerId;
+        this.tokenProviderId = tokenProviderId;
         this.tokenMatchKey = tokenMatchKey;
         this.tokenMatchOperator = tokenMatchOperator;
         this.tokenMatchValue = tokenMatchValue;
