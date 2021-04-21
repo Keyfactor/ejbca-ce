@@ -142,7 +142,6 @@ import java.util.concurrent.Future;
  * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
  *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -1200,8 +1199,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     tokenMatchOperator = AccessMatchType.TYPE_UNUSED.getNumericValue();
                 }
                 // Assign upgraded role members the same ID as the old AdminEndEntity.primaryKey so members are merged in case this runs several times (like in tests)
+                // In 6.7.x we did not support OAuth provider authentication, so we set that to NO_PROVIDER
                 roleMemberDataSession.persistRoleMember(new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
-                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
+                        tokenIssuerId, RoleMember.NO_PROVIDER, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
             }
         }
         // Note that this has to happen here and not in X509CA or CvcCA due to the fact that this step has to happen after approval profiles have
