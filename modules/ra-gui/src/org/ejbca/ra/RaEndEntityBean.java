@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -34,8 +36,13 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -50,8 +57,6 @@ import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
  * Backing bean for end entity details view.
- *  
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -75,6 +80,16 @@ public class RaEndEntityBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
+    @ManagedProperty(value="#{msg}")
+    private ResourceBundle msg;
+    public void setMsg(ResourceBundle msg) {
+        this.msg = msg;
+    }
+
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
+    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
+    private IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
+
     private String username = null;
     private RaEndEntityDetails raEndEntityDetails = null;
     private Map<Integer, String> eepIdToNameMap = null;
@@ -90,8 +105,19 @@ public class RaEndEntityBean implements Serializable {
     private String enrollmentCodeConfirm = "";
     private boolean clearCsrChecked = false;
     private boolean authorized = false;
-    
-    
+    private int maxFailedLogins;
+    private int remainingLogin;
+    private boolean resetRemainingLoginAttempts;
+    private String[] email;
+    private int eepId;
+    private int cpId;
+    private int caId;
+    private SubjectDn subjectDistinguishNames = null;
+    private SubjectAlternativeName subjectAlternativeNames = null;
+    private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
+    private Map<Integer, String> endEntityProfiles;
+    private boolean deleted = false;
+
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -135,6 +161,22 @@ public class RaEndEntityBean implements Serializable {
                 }
                 raEndEntityDetails = new RaEndEntityDetails(endEntityInformation, raEndEntityDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caIdToNameMap);
                 selectedTokenType = endEntityInformation.getTokenType();
+
+                authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
+                authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
+                authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+                endEntityProfiles = authorizedEndEntityProfiles.getIdMap()
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().getName()));
+
+                eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
+                cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
+                caId = raEndEntityDetails.getEndEntityInformation().getCAId();
+                resetMaxFailedLogins();
+                email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
+                if (email == null || email.length == 1)
+                    email = new String[] {"", ""};
             }
         }
         issuedCerts = null;
@@ -142,13 +184,27 @@ public class RaEndEntityBean implements Serializable {
         selectableTokenTypes = null;
         selectedStatus = -1;
         clearCsrChecked = false;
+        resetRemainingLoginAttempts = false;
     }
     
     public boolean isAuthorized() {
         return authorized;
     }
 
+    /**
+     * @return the new username (can be same to old one)
+     */
     public String getUsername() { return username; }
+
+    /**
+     * Sets the username to a new username
+     *
+     * @param username the new username
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public RaEndEntityDetails getEndEntity() { return raEndEntityDetails; }
 
     /**
@@ -170,6 +226,10 @@ public class RaEndEntityBean implements Serializable {
      * Cancels edit mode and reloads
      */
     public void editEditEndEntityCancel() {
+        subjectDistinguishNames = null;
+        subjectAlternativeNames = null;
+        subjectDirectoryAttributes = null;
+
         editEditEndEntityMode = false;
         reload();
     }
@@ -181,8 +241,10 @@ public class RaEndEntityBean implements Serializable {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
         int selectedTokenType = getSelectedTokenType();
-        EndEntityInformation endEntityInformation = new EndEntityInformation(
-                raEndEntityDetails.getEndEntityInformation());
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+        EndEntityInformation endEntityInformation = new EndEntityInformation(raEndEntityDetails.getEndEntityInformation());
+        ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
             // A new status was selected, verify the enrollment codes
             if (verifyEnrollmentCodes()) {
@@ -214,10 +276,91 @@ public class RaEndEntityBean implements Serializable {
             }            
             changed = true;
         }
+        String newUsername = null;
+        if (!username.equals(endEntityInformation.getUsername())) {
+            newUsername = username;
+            changed = true;
+        }
+        String subjectDn = subjectDistinguishNames.getValue();
+        if(!subjectDn.equals(endEntityInformation.getDN())) {
+            endEntityInformation.setDN(subjectDn);
+            changed = true;
+        }
+        if (subjectAlternativeNames == null) {
+            if (StringUtils.isNotBlank(endEntityInformation.getSubjectAltName())) {
+                endEntityInformation.setSubjectAltName(null);
+                changed = true;
+            }
+        } else {
+            String subjectAn = subjectAlternativeNames.getValue();
+            if (!subjectAn.equals(endEntityInformation.getSubjectAltName())) {
+                endEntityInformation.setSubjectAltName(subjectAn);
+                changed = true;
+            }
+        }
+        if (subjectDirectoryAttributes == null) {
+            if (extendedInformation != null) {
+                if (StringUtils.isNotBlank(extendedInformation.getSubjectDirectoryAttributes())) {
+                    endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(null);
+                    changed = true;
+                }
+            }
+        } else {
+            String subjectDa = subjectDirectoryAttributes.getValue();
+            if (extendedInformation == null) {
+                if (StringUtils.isNotBlank(subjectDa)) {
+                    endEntityInformation.setExtendedInformation(new ExtendedInformation());
+                    endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
+                    changed = true;
+                }
+            } else if (!subjectDa.equals(endEntityInformation.getExtendedInformation().getSubjectDirectoryAttributes())) {
+                endEntityInformation.getExtendedInformation().setSubjectDirectoryAttributes(subjectDa);
+                changed = true;
+            }
+        }
+
+        if (extendedInformation != null && maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
+            endEntityInformation.getExtendedInformation().setMaxLoginAttempts(maxFailedLogins);
+            changed = true;
+        }
+        if (extendedInformation != null && resetRemainingLoginAttempts) {
+            endEntityInformation.getExtendedInformation().setRemainingLoginAttempts(maxFailedLogins);
+            changed = true;
+        }
+        if (eep.isEmailUsed()) {
+            final String newEmail = email[0]+"@"+email[1];
+            if (!newEmail.equals(endEntityInformation.getEmail())) {
+                if (newEmail.equals("@")) {
+                    if (StringUtils.isNotBlank(endEntityInformation.getEmail())) {
+                        endEntityInformation.setEmail(null);
+                        changed = true;
+                    }
+                } else {
+                    endEntityInformation.setEmail(newEmail);
+                    changed = true;
+                }
+            }
+        } else {
+            endEntityInformation.setEmail(null);
+        }
+
+        if (eepId != endEntityInformation.getEndEntityProfileId()) {
+            endEntityInformation.setEndEntityProfileId(eepId);
+            changed = true;
+        }
+        if (cpId != endEntityInformation.getCertificateProfileId()) {
+            endEntityInformation.setCertificateProfileId(cpId);
+            changed = true;
+        }
+        if (caId != endEntityInformation.getCAId()) {
+            endEntityInformation.setCAId(caId);
+            changed = true;
+        }
+
         if (changed) {
             // Edit the End Entity if changes were made
             try {
-                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
+                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false, newUsername);
                 if (result) {
                     raLocaleBean.addMessageError("editendentity_success");
                 } else {
@@ -239,6 +382,32 @@ public class RaEndEntityBean implements Serializable {
                 raLocaleBean.addMessageError("editendentity_failure");
             }
         }
+        editEditEndEntityCancel();
+    }
+
+    /**
+     * Cancels edit mode and reloads
+     */
+    public void revokeCertificatesAndDeleteEndEntity() {
+        try {
+            raMasterApiProxyBean.revokeAndDeleteUser(
+                raAuthenticationBean.getAuthenticationToken(),
+                raEndEntityDetails.getEndEntityInformation().getUsername(),
+                RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED
+            );
+            raLocaleBean.addMessageInfo("editendentity_deleted");
+        } catch (AuthorizationDeniedException e) {
+            raLocaleBean.addMessageError("editendentity_unauthorized");
+        } catch (NoSuchEndEntityException e) {
+            raLocaleBean.addMessageError("editendentity_no_such_ee");
+        } catch (WaitingForApprovalException e) {
+            raLocaleBean.addMessageError("editendentity_approval_sent");
+        } catch (CouldNotRemoveEndEntityException e) {
+            raLocaleBean.addMessageError("editendentity_reference_issue");
+        } catch (ApprovalException e) {
+            raLocaleBean.addMessageError("editendentity_approval_issue");
+        }
+        deleted = true;
         editEditEndEntityCancel();
     }
 
@@ -331,7 +500,7 @@ public class RaEndEntityBean implements Serializable {
     /**
      * Sets the enrollment code (confirm) field
      * 
-     * @param enrollmentCode the new enrollment code (confirm)
+     * @param enrollmentCodeConfirm the new enrollment code (confirm)
      */
     public void setEnrollmentCodeConfirm(String enrollmentCodeConfirm) {
         this.enrollmentCodeConfirm = enrollmentCodeConfirm;
@@ -420,5 +589,398 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setClearCsrChecked(boolean checked) {
         this.clearCsrChecked = checked;
+    }
+
+    /**
+     * @return blank String ("") if username is unchanged or unique, otherwise return a message saying already exists
+     */
+    public String getUsernameWarning() {
+        if (!username.equals(raEndEntityDetails.getUsername())
+            && StringUtils.isNotBlank(username)
+            && raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username) != null) {
+            return msg.getString("enroll_already_exists");
+        } else
+            return "";
+    }
+
+    /**
+     * @return maximum number of failed login attempts allowed
+     */
+    public int getMaxFailedLogins() {
+        return maxFailedLogins;
+    }
+
+    /**
+     * @return true if modifiable, otherwise false
+     */
+    public boolean isMaxFailedLoginsModifiable() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+        return eep.isMaxFailedLoginsModifiable();
+    }
+
+    private void resetMaxFailedLogins() {
+        if (eepId == raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId()) {
+            if (raEndEntityDetails.getEndEntityInformation().getExtendedInformation() == null) {
+                maxFailedLogins = -1;
+                remainingLogin = -1;
+            } else {
+                maxFailedLogins = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getMaxLoginAttempts();
+                remainingLogin = raEndEntityDetails.getEndEntityInformation().getExtendedInformation().getRemainingLoginAttempts();
+            }
+        } else {
+            EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+            maxFailedLogins = eep.getMaxFailedLogins();
+            remainingLogin = -1;
+        }
+
+    }
+
+    public void setMaxFailedLogins(int maxFailedLogins) {
+        this.maxFailedLogins = maxFailedLogins;
+    }
+
+    /**
+     * @return true if unlimited number of failed login attempts allowed, otherwise false
+     */
+    public boolean isUnlimited() {
+        return maxFailedLogins < 0;
+    }
+
+    /**
+     * Sets the maximum number of failed login attempts to -1 if unlimited is true
+     * Sets the maximum number of failed login attempts to 10 if unlimited is false
+     *
+     * @param unlimited the new value of unlimited
+     */
+    public void setUnlimited(boolean unlimited) {
+        if (unlimited) {
+            maxFailedLogins = -1;
+        } else {
+            maxFailedLogins = 10; // hard coded default
+        }
+    }
+
+    /**
+     * @return remaining number of failed login attempts
+     */
+    public int getRemainingLogin() {
+        return remainingLogin;
+    }
+
+    /**
+     * Sets the remaining number of failed login attempts
+     *
+     * @param remainingLogin the new remaining number of login attempts
+     */
+    public void setRemainingLogin(int remainingLogin) {
+        this.remainingLogin = remainingLogin;
+    }
+
+    /**
+     * @return true if reset is checked, otherwise false
+     */
+    public boolean isResetRemainingLoginAttempts() {
+        return resetRemainingLoginAttempts;
+    }
+
+    /**
+     * Sets the flag to reset remaining number of login attempts
+     *
+     * @param resetRemainingLoginAttempts the new value of the
+     */
+    public void setResetRemainingLoginAttempts(boolean resetRemainingLoginAttempts) {
+        this.resetRemainingLoginAttempts = resetRemainingLoginAttempts;
+    }
+
+    /**
+     * @return the name part of the email
+     */
+    public String getEmailName() {
+        return email[0];
+    }
+
+    /**
+     * Sets the name part of the email
+     *
+     * @param emailName the name part of the email
+     */
+    public void setEmailName(String emailName) {
+        email[0] = emailName;
+    }
+
+    /**
+     * @return the domain part of the email
+     */
+    public String getEmailDomain() {
+        return email[1];
+    }
+
+    /**
+     * Sets the name part of the email
+     *
+     * @param emailDomain the name part of the email
+     */
+    public void setEmailDomain(String emailDomain) {
+        email[1] = emailDomain;
+    }
+
+    /**
+     * @return true if email is modifiable, otherwise false
+     */
+    public boolean isEmailModifiable() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+        return eep.isEmailModifiable();
+    }
+
+    /**
+     * @return true if use email is checked in end entity profile, otherwise false
+     */
+    public boolean isEmailUsed() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+        return eep.isEmailUsed();
+    }
+
+    /**
+     * @return a map with end entity profile id as key and end entity profile name as value (for end entity profile select options)
+     */
+    public Map<Integer, String> getEndEntityProfiles() {
+        return endEntityProfiles;
+    }
+
+    /**
+     * @return selected end entity profile id
+     */
+    public int getEepId() {
+        return eepId;
+    }
+
+    /**
+     * Sets the selected end entity profile id
+     *
+     * @param eepId the new end entity profile id
+     */
+    public void setEepId(int eepId) {
+        if (this.eepId != eepId) {
+            this.eepId = eepId;
+            EndEntityProfile eep = authorizedEndEntityProfiles.get(eepId).getValue();
+            if (eep.getAvailableCertificateProfileIds().contains(cpId)) {
+                setCpId(cpId);
+            } else {
+                setCpId(eep.getDefaultCertificateProfile());
+            }
+
+            resetMaxFailedLogins();
+            subjectDistinguishNames = null;
+            subjectAlternativeNames = null;
+            subjectDirectoryAttributes = null;
+
+
+            if (raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId() == eepId) {
+                email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
+                if (email == null || email.length == 1)
+                    email = new String[] {"", ""};
+            } else {
+                String defaultEmail = eep.getEmailDomain();
+                if (eep.isEmailUsed()) {
+                    email = new String[] {"", defaultEmail};
+                } else
+                    email = new String[] {"", ""};
+            }
+        }
+    }
+
+    /**
+     * @return selected certificate profile id
+     */
+    public int getCpId() {
+        return cpId;
+    }
+
+    /**
+     * Sets the selected certificate profile id
+     *
+     * @param cpId the new certificate profile id
+     */
+    public void setCpId(int cpId) {
+        this.cpId = cpId;
+        int defaultCA = authorizedEndEntityProfiles.get(eepId).getValue().getDefaultCA();
+        Map<Integer, String> cAs = getCertificateAuthorities();
+        if (cAs.size() == 0) {
+            caId = 0;
+        } else {
+            caId = cAs.keySet().contains(defaultCA) ? defaultCA : cAs.keySet().iterator().next();
+        }
+    }
+
+    /**
+     * @return a map with certificate profile id as key and certificate profile name as value (for certificate profile select options)
+     */
+    public Map<Integer, String> getCertificateProfiles() {
+        List<Integer> availableCpIds = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCertificateProfileIds();
+        return availableCpIds.stream()
+                .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
+    }
+
+    /**
+     * @return selected certificate authority id
+     */
+    public int getCaId() {
+        return caId;
+    }
+
+    /**
+     * Sets the selected certificate authority id
+     *
+     * @param caId the new certificate authority id
+     */
+    public void setCaId(int caId) {
+        this.caId = caId;
+    }
+
+    /**
+     * @return a map with certificate authority id as key and certificate authority name as value (for certificate authority select options)
+     */
+    public Map<Integer, String> getCertificateAuthorities() {
+        List<Integer> eepCAs = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs();
+        CertificateProfile cp = authorizedCertificateProfiles.get(cpId).getValue();
+        List<Integer> cpCAs = authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs();
+        List<Integer> allCAs = new ArrayList<>(authorizedCAInfos.idKeySet());
+        List<Integer> usableCAs;
+        if (eepCAs.contains(EndEntityConstants.EEP_ANY_CA)) {
+            if (cp.isApplicableToAnyCA()) {
+                usableCAs = allCAs;
+            } else {
+                usableCAs = cpCAs;
+            }
+        } else {
+            if (cp.isApplicableToAnyCA()) {
+                usableCAs = eepCAs;
+            } else {
+                usableCAs = eepCAs.stream()
+                    .filter(cpCAs::contains)
+                    .collect(Collectors.toList());
+            }
+        }
+
+        return usableCAs.stream()
+            .collect(Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
+    }
+
+    private void handleNullSubjectDistinguishNames() {
+        if (subjectDistinguishNames == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+            subjectDistinguishNames = new SubjectDn(eep, raEndEntityDetails.getSubjectDn());
+        }
+    }
+
+    /**
+     * @return subject distinguish names currently typed in edit mode
+     */
+    public SubjectDn getSubjectDistinguishNames() {
+        handleNullSubjectDistinguishNames();
+        return subjectDistinguishNames;
+    }
+
+    /**
+     * Sets the subject distinguish names
+     *
+     * @param subjectDistinguishNames the new subject distinguish names
+     */
+    public void setSubjectDistinguishNames(SubjectDn subjectDistinguishNames) {
+        this.subjectDistinguishNames = subjectDistinguishNames;
+    }
+
+    private void handleNullSubjectAlternativeNames() {
+        if (subjectAlternativeNames == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+            String subjectAn = raEndEntityDetails.getSubjectAn();
+            if (eep.getSubjectAltNameFieldOrderLength() > 0) {
+                if (StringUtils.isBlank(subjectAn)) {
+                    subjectAlternativeNames = new SubjectAlternativeName(eep);
+                } else {
+                    subjectAlternativeNames = new SubjectAlternativeName(eep, subjectAn);
+                }
+            }
+        }
+    }
+
+    /**
+     * @return subject alternative names currently typed in edit mode
+     */
+    public SubjectAlternativeName getSubjectAlternativeNames() {
+        handleNullSubjectAlternativeNames();
+        return subjectAlternativeNames;
+    }
+
+    /**
+     * Sets the subject alternative names
+     *
+     * @param subjectAlternativeNames the new subject alternative names
+     */
+    public void setSubjectAlternativeNames(SubjectAlternativeName subjectAlternativeNames) {
+        this.subjectAlternativeNames = subjectAlternativeNames;
+    }
+
+    /**
+     * @return true if subjectAlternativeNames has at least 1 fieldInstance, otherwise false
+     */
+    public boolean getAnySubjectAlternativeName() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+        return eep.getSubjectAltNameFieldOrderLength() > 0;
+    }
+
+    private void handleNullSubjectDirectoryAttributes() {
+        if (subjectDirectoryAttributes == null) {
+            EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+            String subjectDa = raEndEntityDetails.getSubjectDa();
+            if (eep.getSubjectDirAttrFieldOrderLength() > 0) {
+                if (StringUtils.isBlank(subjectDa)) {
+                    subjectDirectoryAttributes = new SubjectDirectoryAttributes(eep);
+                } else {
+                    subjectDirectoryAttributes = new SubjectDirectoryAttributes(eep, subjectDa);
+                }
+            }
+        }
+    }
+
+    /**
+     * @return subject directory attributes currently typed in edit mode
+     */
+    public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
+        handleNullSubjectDirectoryAttributes();
+        return subjectDirectoryAttributes;
+    }
+
+    /**
+     * Sets the subject directory attributes
+     *
+     * @param subjectDirectoryAttributes the new subject directory attributes
+     */
+    public void setSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes) {
+        this.subjectDirectoryAttributes = subjectDirectoryAttributes;
+    }
+
+    /**
+     * @return true if subjectDirectoryAttributes has at least 1 fieldInstance, otherwise false
+     */
+    public boolean getAnySubjectDirectoryAttribute() {
+        EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+        return eep.getSubjectDirAttrFieldOrderLength() > 0;
+    }
+
+    /**
+     * @return true if attempted to delete end entity in edit mode, otherwise false
+     */
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    /**
+     *
+     * @return true if password in EndEntityProfile is marked as autogenerated
+     */
+    public boolean isPasswordAutogenerated(){
+        EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
+        return endEntityProfile.useAutoGeneratedPasswd();
     }
 }

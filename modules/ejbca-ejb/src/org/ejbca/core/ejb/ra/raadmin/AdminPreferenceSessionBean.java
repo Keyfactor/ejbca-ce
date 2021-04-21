@@ -50,7 +50,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AdminPreferenceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
+public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
 
     private static final String DEFAULTUSERPREFERENCE = "default";
 
@@ -67,16 +67,6 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private RaStyleCacheBean raStyleCacheBean;
-    
-    private String makeAdminPreferenceId(final AuthenticationToken admin) {
-        if (admin instanceof X509CertificateAuthenticationToken) {
-            return CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
-        } else if (admin instanceof PublicAccessAuthenticationToken) {
-            return null;
-        } else {
-            return admin.getClass().getSimpleName() + ":" + admin.getPreferredMatchValue();
-        }
-    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -342,17 +332,23 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Locale getCurrentRaLocale(final AuthenticationToken admin) {
-        final AdminPreference adminPreference = getAdminPreference(admin);
-        if (adminPreference == null) {
+        try {
+            final AdminPreference adminPreference = getAdminPreference(admin);
+            if (adminPreference == null) {
+                return getDefaultAdminPreference().getPreferedRaLanguage();
+            }
+
+            final Locale currentLocale = adminPreference.getPreferedRaLanguage();
+            if (currentLocale != null) {
+                return currentLocale;
+            }
+
             return getDefaultAdminPreference().getPreferedRaLanguage();
+        } catch (RuntimeException e) {
+            // This method is called in the error handler, so we don't want to throw any exceptions.
+            log.warn("Failed to get locale: " + e.getMessage(), e);
+            return null;
         }
-
-        final Locale currentLocale = adminPreference.getPreferedRaLanguage();
-        if (currentLocale != null) {
-            return currentLocale;
-        }
-
-        return getDefaultAdminPreference().getPreferedRaLanguage();
     }
 
     @Override
