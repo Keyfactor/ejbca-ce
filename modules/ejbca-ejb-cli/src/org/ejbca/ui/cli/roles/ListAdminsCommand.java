@@ -42,7 +42,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Lists admins in a role
- * @version $Id$
  */
 public class ListAdminsCommand extends BaseRolesCommand {
 
