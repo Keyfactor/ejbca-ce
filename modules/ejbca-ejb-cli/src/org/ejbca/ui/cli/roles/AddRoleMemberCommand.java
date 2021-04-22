@@ -66,8 +66,6 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 "Role to add admin to."));
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Name of issuing CA. Set to empty string if not applicable"));
-        registerParameter(new Parameter(PROVIDER_NAME_KEY, "OAuth Provider Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Name of OAuth Provider. Required for OAuth"));
         registerParameter(new Parameter(MATCH_WITH_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The MatchWith Value"));
         registerParameter(new Parameter(MATCH_TYPE_KEY, "Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -78,6 +76,8 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 "A human readable description of the role member."));
         registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The namespace the role belongs to."));
+        registerParameter(new Parameter(PROVIDER_NAME_KEY, "OAuth Provider Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of OAuth Provider. Required for OAuth"));
     }
 
     @Override
