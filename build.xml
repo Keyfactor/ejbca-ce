@@ -602,8 +602,12 @@
 				<include name="jackson-databind-2.*.jar"/>
 				<include name="jackson-dataformat-yaml-2.*.jar"/>
 			</zipfileset>
+        	<zipfileset prefix="lib" dir="${lib}/msae" erroronmissingdir="false">    
+        		<include name="gson-*.jar"/>
+        	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/intune" erroronmissingdir="false">    
         		<include name="adal4j-*.jar"/>
+  				<include name="content-type-*.jar"/>
 				<include name="csr-validation-*.jar"/>
 				<include name="json-*.jar"/>
   				<include name="oauth2-oidc-sdk-*.jar"/>
