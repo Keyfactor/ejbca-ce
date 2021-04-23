@@ -12,39 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.keybind;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -96,6 +63,38 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
+
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * JavaServer Faces Managed Bean for managing InternalKeyBindings.
@@ -791,6 +790,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private Map<String, String> ocspExtensionOidNameMap = new HashMap<>();
     private Boolean useIssuerNotBeforeAsArchiveCutoff;
     private SimpleTime retentionPeriod;
+    private boolean isOcspTransactionLoggingEnabled;
+    private String ocspTransactionLogPattern;
+    private String ocspTransactionLogValues;
+    private boolean isOcspAuditLoggingEnabled;
+    private String ocspAuditLogPattern;
+    private String ocspAuditLogValues;
+    private boolean isSafeOcspLoggingEnabled;
+    private String ocspLoggingDateFormat;
 
     public boolean getUseIssuerNotBeforeAsArchiveCutoff() {
         try {
@@ -826,6 +833,70 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     public void setRetentionPeriod(final String retentionPeriod) {
         this.retentionPeriod = SimpleTime.getInstance(retentionPeriod);
+    }
+
+    public void setIsOcspTransactionLoggingEnabled(final boolean isOcspTransactionLoggingEnabled) {
+        this.isOcspTransactionLoggingEnabled = isOcspTransactionLoggingEnabled;
+    }
+
+    public boolean getIsOcspTransactionLoggingEnabled() {
+        return isOcspTransactionLoggingEnabled;
+    }
+
+    public void setOcspTransactionLogPattern(final String ocspTransactionLogPattern) {
+        this.ocspTransactionLogPattern = StringUtils.strip(ocspTransactionLogPattern);
+    }
+
+    public String getOcspTransactionLogPattern() {
+        return ocspTransactionLogPattern;
+    }
+
+    public void setOcspTransactionLogValues(final String ocspTransactionLogValues) {
+        this.ocspTransactionLogValues = StringUtils.strip(ocspTransactionLogValues);
+    }
+
+    public String getOcspTransactionLogValues() {
+        return ocspTransactionLogValues;
+    }
+
+    public void setIsOcspAuditLoggingEnabled(final boolean isOcspAuditLoggingEnabled) {
+        this.isOcspAuditLoggingEnabled = isOcspAuditLoggingEnabled;
+    }
+
+    public boolean getIsOcspAuditLoggingEnabled() {
+        return isOcspAuditLoggingEnabled;
+    }
+
+    public void setOcspAuditLogPattern(final String ocspAuditLogPattern) {
+        this.ocspAuditLogPattern = StringUtils.strip(ocspAuditLogPattern);
+    }
+
+    public String getOcspAuditLogPattern() {
+        return ocspAuditLogPattern;
+    }
+
+    public void setOcspAuditLogValues(final String ocspAuditLogValues) {
+        this.ocspAuditLogValues = StringUtils.strip(ocspAuditLogValues);
+    }
+
+    public String getOcspAuditLogValues() {
+        return ocspAuditLogValues;
+    }
+
+    public void setOcspLoggingDateFormat(final String ocspLoggingDateFormat) {
+        this.ocspLoggingDateFormat = StringUtils.strip(ocspLoggingDateFormat);
+    }
+
+    public String getOcspLoggingDateFormat() {
+        return ocspLoggingDateFormat;
+    }
+
+    public void setIsSafeOcspLoggingEnabled(final boolean isSafeOcspLoggingEnabled) {
+        this.isSafeOcspLoggingEnabled = isSafeOcspLoggingEnabled;
+    }
+
+    public boolean getIsSafeOcspLoggingEnabled() {
+        return isSafeOcspLoggingEnabled;
     }
 
     public Integer getCurrentCertificateAuthority() {
