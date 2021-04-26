@@ -182,8 +182,7 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.30.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-log4j12-1.7.30.jar"/>
-	<classpathentry kind="lib" path="lib/jee/myfaces-api-2.2.12.jar"/>
-	<classpathentry kind="lib" path="lib/jee/myfaces-impl-2.2.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/myfaces-api-2.3.9.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
