@@ -12,22 +12,18 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.util.List;
-
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.ApprovalActionsHelper;
 import org.ejbca.webtest.helper.ApprovalProfilesHelper;
 import org.ejbca.webtest.helper.CaActivationHelper;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
-import org.ejbca.webtest.helper.RaWebHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Web Test to verify that Accumulative Approval Profiles work as expected.
@@ -39,8 +35,6 @@ import org.openqa.selenium.WebElement;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
 
-    private static int approvalId = -1;
-    
     // Helpers
     private static ApprovalProfilesHelper approvalProfilesHelper;
     private static ApprovalActionsHelper approvalActionsHelper;
