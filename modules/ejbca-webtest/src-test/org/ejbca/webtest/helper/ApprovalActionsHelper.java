@@ -16,7 +16,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 
-// TODO JavaDoc
 /**
  * Helper class for handling 'Approve Actions' page in automated web tests.
  *
