@@ -15,6 +15,7 @@ package org.ejbca.webtest.scenario;
 import java.util.List;
 
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.ApprovalActionsHelper;
 import org.ejbca.webtest.helper.ApprovalProfilesHelper;
 import org.ejbca.webtest.helper.CaActivationHelper;
 import org.ejbca.webtest.helper.CaHelper;
@@ -42,10 +43,10 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     // Helpers
     private static ApprovalProfilesHelper approvalProfilesHelper;
+    private static ApprovalActionsHelper approvalActionsHelper;
     private static CaActivationHelper caActivationHelper;
     private static CaHelper caHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
-    private static RaWebHelper raWebHelper;
     
     // Test Data
     public static class TestData {
@@ -55,8 +56,8 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
         static final String CA_VALIDITY = "1y";
         static final String END_ENTITY_PROFILE_NAME = "ECAQA_51_TestApprovalEndEntity";
         static final String END_ENTITY_PROFILE_NAME_EMPTY = "";
-        static final String RA_PENDING_APPROVAL_TYPE_ACTIVATE_CA_TOKEN = "Activate CA Token";
-        static final String RA_PENDING_APPROVAL_STATUS = "Waiting for Approval";
+        static final String APPROVAL_ACTION_NAME = "CA Service Activation";
+        static final String APPROVAL_STATUS = "Waiting";
     }
     
     @BeforeClass
@@ -66,10 +67,10 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     final WebDriver webDriver = getWebDriver();
     // Helpers
     approvalProfilesHelper = new ApprovalProfilesHelper(webDriver);
+    approvalActionsHelper = new ApprovalActionsHelper(webDriver);
     caActivationHelper = new CaActivationHelper(webDriver);
     caHelper = new CaHelper(webDriver);
     endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
-    raWebHelper = new RaWebHelper(webDriver);
     }
     
     @AfterClass
@@ -80,8 +81,6 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
         removeCryptoTokenByCaName(TestData.CA_NAME);
         // Remove Approval Profile
         removeApprovalProfileByName(TestData.APPROVAL_PROFILE_NAME);
-        // Remove Approval Request
-        removeApprovalRequestByRequestId(approvalId);
         // Remove End Entity Profile
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         afterClass();
@@ -141,8 +140,9 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     // CA Service Activate
     @Test
-    public void stepG_activateCaService() {
+    public void stepG_activateCaService() throws InterruptedException {
         caActivationHelper.openPage(getAdminWebUrl());
+        Thread.sleep(10000);
         caActivationHelper.setCaServiceStateActive(TestData.CA_NAME);
     }
     
@@ -163,13 +163,9 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     // Find and assert approval request
     @Test
     public void stepJ_findAssertPendingApprovals() {
-        raWebHelper.openPage(getRaWebUrl());
-        raWebHelper.clickMenuManageRequests();
-        raWebHelper.clickTabPendingRequests();
+        approvalActionsHelper.openPage(getAdminWebUrl());
         //Assert approval request exist
-        final List<WebElement> pendingApprovalRequestRow = raWebHelper.getRequestsTableRow(TestData.CA_NAME, TestData.RA_PENDING_APPROVAL_TYPE_ACTIVATE_CA_TOKEN, TestData.END_ENTITY_PROFILE_NAME_EMPTY, TestData.RA_PENDING_APPROVAL_STATUS);
-        raWebHelper.assertHasRequestRow(pendingApprovalRequestRow);
-        approvalId = raWebHelper.getRequestIdFromRequestRow(pendingApprovalRequestRow);
+        approvalActionsHelper.assertApprovalActionTableLinkExists(TestData.APPROVAL_ACTION_NAME, TestData.APPROVAL_STATUS);
     }
     
 }
