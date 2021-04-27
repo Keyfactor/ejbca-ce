@@ -92,8 +92,9 @@ public class EkuPKIXCertPathChecker extends PKIXCertPathChecker {
                     if (log.isDebugEnabled()) {
                         log.debug("EKUs in certificate: " +Arrays.toString(ekus.toArray()) + " EKUs required: " +Arrays.toString(requiredKeyPurposeOids.toArray()));
                     }
-                    log.info("Validation of certificate with subject " + CertTools.getSubjectDN(cert) + " failed critical EKU validation. The missing EKUs were: " + Arrays.toString(ekusMissing.toArray()));
-                    return;
+                    final String msg = "Validation of certificate with subject " + CertTools.getSubjectDN(cert) + " failed critical EKU validation. The missing EKUs were: " + Arrays.toString(ekusMissing.toArray());
+                    log.info(msg);
+                    throw new CertPathValidatorException(msg);
                 }
             } catch (CertificateParsingException e) {
                 throw new CertPathValidatorException(e);
