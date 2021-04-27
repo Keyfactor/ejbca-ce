@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 
 /**
@@ -56,13 +58,36 @@ public class ApprovalActionsHelper extends BaseHelper {
     /**
      * Asserts the Approve Action exists in the table.
      *
-     * @param actionName Approval Action Name.
-     * @param 
+     * @param actionName approval action name.
+     * @param status status of the approval action.
      */
     public void assertApprovalActionTableLinkExists(final String actionName, final String status) {
         assertElementExists(
                 Page.getTableRowContainingActionNameAndStatus(actionName, status),
                 actionName + " with the status " + status + " was not found on 'Approve Actions' page."
         );
+    }
+    
+    /**
+     * Extracts the approval id from HTML.
+     *
+     * @param actionName approval action name.
+     * @param status status of the approval action.
+     * @return the id of the approval.
+     */
+    public int extractApprovalId(final String actionName, final String status) {
+        WebElement approvalLink = findElement(Page.getTableRowContainingActionNameAndStatus(actionName, status));
+        if (approvalLink == null) {
+            return -1;
+        }
+        String onMouseDownString = approvalLink.getAttribute("onmousedown");
+        if (onMouseDownString == null) {
+            return -1;
+        }
+        String idString = StringUtils.substringBetween(onMouseDownString, "uniqueId=", "'");
+        if (idString == null) {
+            return -1;
+        }
+        return Integer.valueOf(idString);
     }
 }

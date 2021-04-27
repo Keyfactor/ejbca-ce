@@ -34,6 +34,8 @@ import org.openqa.selenium.WebDriver;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
+    
+    private static int approvalId = -1;
 
     // Helpers
     private static ApprovalProfilesHelper approvalProfilesHelper;
@@ -75,6 +77,8 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
         removeCryptoTokenByCaName(TestData.CA_NAME);
         // Remove Approval Profile
         removeApprovalProfileByName(TestData.APPROVAL_PROFILE_NAME);
+        // Remove Approval Request
+        removeApprovalRequestByRequestId(approvalId);
         // Remove End Entity Profile
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         afterClass();
@@ -134,9 +138,8 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     // CA Service Activate
     @Test
-    public void stepG_activateCaService() throws InterruptedException {
+    public void stepG_activateCaService() {
         caActivationHelper.openPage(getAdminWebUrl());
-        Thread.sleep(10000);
         caActivationHelper.setCaServiceStateActive(TestData.CA_NAME);
     }
     
@@ -156,10 +159,10 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     // Find and assert approval request
     @Test
-    public void stepJ_findAssertPendingApprovals() {
+    public void stepJ_findAssertPendingApprovals() throws InterruptedException {
         approvalActionsHelper.openPage(getAdminWebUrl());
         //Assert approval request exist
         approvalActionsHelper.assertApprovalActionTableLinkExists(TestData.APPROVAL_ACTION_NAME, TestData.APPROVAL_STATUS);
+        approvalId = approvalActionsHelper.extractApprovalId(TestData.APPROVAL_ACTION_NAME, TestData.APPROVAL_STATUS);
     }
-    
 }
