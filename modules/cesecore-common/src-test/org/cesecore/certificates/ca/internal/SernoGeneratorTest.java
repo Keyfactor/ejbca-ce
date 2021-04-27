@@ -21,6 +21,8 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,14 +31,20 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-
 /**
  * Tests generation of serial numbers.
- *
- * @version $Id$
  */
 public class SernoGeneratorTest {
     private static final Logger log = Logger.getLogger(SernoGeneratorTest.class);
+
+    @Before
+    public void before() { cleanup(); }
+    @After
+    public void after() { cleanup(); }
+
+    private void cleanup() {
+        SernoGeneratorRandom.clearCache();
+    }
 
     /** Test min and max values for different serial number sizes. */
     @Test(timeout = 60_000)
