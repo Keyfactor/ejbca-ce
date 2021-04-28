@@ -31,6 +31,10 @@ public class ApprovalActionsHelper extends BaseHelper {
         // General
         static final String PAGE_URI = "/ejbca/adminweb/approval/approvalactions.xhtml";
         static final By PAGE_LINK = By.id("supervisionApproveactionlist");
+        
+        static final By SELECT_STATUS = By.id("approvalsearchform:status");
+        static final By SELECT_TIME_SPAN = By.id("approvalsearchform:timespan");
+        static final By BUTTON_SEARCH = By.id("approvalsearchform:list");
 
         // Dynamic references
         static By getTableRowContainingText(final String text) {
@@ -53,6 +57,31 @@ public class ApprovalActionsHelper extends BaseHelper {
      */
     public void openPage(final String webUrl) {
         openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
+    }
+    
+    /**
+     * Sets Approval Action status in the search form.
+     *
+     * @param status Approval Action status to be selected.
+     */
+    public void setApprovalActionSearchStatus(final String status) {
+        selectOptionByName(Page.SELECT_STATUS, status);
+    }
+    
+    /**
+     * Sets Approval Action search time span.
+     *
+     * @param timeSpan Approval Action time span to be selected.
+     */
+    public void setApprovalActionSearchTimeSpan(final String timeSpan) {
+        selectOptionByName(Page.SELECT_TIME_SPAN, timeSpan);
+    }
+    
+    /**
+     * Searches for approval actions.
+     */
+    public void searchForApprovals() {
+        clickLink(Page.BUTTON_SEARCH);
     }
     
     /**
