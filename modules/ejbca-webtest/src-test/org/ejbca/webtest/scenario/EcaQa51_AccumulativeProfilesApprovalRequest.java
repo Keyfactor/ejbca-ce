@@ -54,6 +54,7 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
         static final String END_ENTITY_PROFILE_NAME_EMPTY = "";
         static final String APPROVAL_ACTION_NAME = "CA Service Activation";
         static final String APPROVAL_STATUS = "Waiting";
+        static final String SEARCH_TIME_SPAN = "30 minutes";
     }
     
     @BeforeClass
@@ -159,8 +160,11 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     // Find and assert approval request
     @Test
-    public void stepJ_findAssertPendingApprovals() throws InterruptedException {
+    public void stepJ_findAssertPendingApprovals() {
         approvalActionsHelper.openPage(getAdminWebUrl());
+        approvalActionsHelper.setApprovalActionSearchStatus(TestData.APPROVAL_STATUS);
+        approvalActionsHelper.setApprovalActionSearchTimeSpan(TestData.SEARCH_TIME_SPAN);
+        approvalActionsHelper.searchForApprovals();
         //Assert approval request exist
         approvalActionsHelper.assertApprovalActionTableLinkExists(TestData.APPROVAL_ACTION_NAME, TestData.APPROVAL_STATUS);
         approvalId = approvalActionsHelper.extractApprovalId(TestData.APPROVAL_ACTION_NAME, TestData.APPROVAL_STATUS);
