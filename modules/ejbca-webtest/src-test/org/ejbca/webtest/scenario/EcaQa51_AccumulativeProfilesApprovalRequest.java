@@ -30,7 +30,6 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-51>ECAQA-51</a>
  * 
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
