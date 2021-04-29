@@ -41,7 +41,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -548,6 +547,8 @@ public class RaEndEntityBean implements Serializable {
                             raLocaleBean.getMessage("component_eedetails_tokentype_jks")),
                     new SelectItem(EndEntityConstants.TOKEN_SOFT_P12,
                             raLocaleBean.getMessage("component_eedetails_tokentype_pkcs12")),
+                    new SelectItem(EndEntityConstants.TOKEN_SOFT_BCFKS,
+                            raLocaleBean.getMessage("component_eedetails_tokentype_bcfks")),
                     new SelectItem(EndEntityConstants.TOKEN_SOFT_PEM,
                             raLocaleBean.getMessage("component_eedetails_tokentype_pem"))
             };

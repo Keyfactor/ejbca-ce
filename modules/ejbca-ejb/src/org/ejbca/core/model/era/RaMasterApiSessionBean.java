@@ -174,7 +174,6 @@ import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -1770,7 +1769,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     ei.getKeyStoreAlgorithmType(), // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
-                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
+                    endEntity.getTokenType(), // Type of token
                     loadKeysFlag, // Perform key recovery?
                     saveKeysFlag, // Save private keys?
                     reuseCertificateFlag, // Reuse recovered cert?
@@ -2801,7 +2800,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getExtendedInformation().getKeyStoreAlgorithmType(), // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
-                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
+                    endEntity.getTokenType(), // Type of token
                     loadKeysFlag, // Perform key recovery?
                     saveKeysFlag, // Save private keys?
                     reuseCertificateFlag, // Reuse recovered cert?
