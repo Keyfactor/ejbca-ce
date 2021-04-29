@@ -258,7 +258,7 @@
                     }, {
                         "in": "body",
                         "name": "body",
-                        "description": "responseFormat must be one of 'P12', 'JKS', 'DER'",
+                        "description": "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'",
                         "required": false,
                         "schema": {
                             "$ref": "#/definitions/FinalizeRestRequest"
