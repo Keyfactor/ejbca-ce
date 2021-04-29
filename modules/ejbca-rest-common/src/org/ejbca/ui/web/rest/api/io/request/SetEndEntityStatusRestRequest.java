@@ -9,17 +9,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
 
 /**
  * JSON input for editing of end entity.
  */
 @ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
-        "Available TOKEN - USERGENERATED, P12, JKS, PEM; \n" +
+        "Available TOKEN - USERGENERATED, P12, BCFKS, JKS, PEM; \n" +
         "Available STATUS - NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n"
 )
 @ValidEndEntityStatusRestRequest
@@ -27,7 +26,7 @@ public class SetEndEntityStatusRestRequest {
 
     private String password;
     @ApiModelProperty(value = "Token type property",
-            allowableValues = "USERGENERATED, P12, JKS, PEM"
+            allowableValues = "USERGENERATED, P12, BCFKS, JKS, PEM"
     )
     private String token;
     @ApiModelProperty(value = "End entity status property",
@@ -110,6 +109,7 @@ public class SetEndEntityStatusRestRequest {
 	public enum TokenType {
     	USERGENERATED(EndEntityConstants.TOKEN_USERGEN),
     	P12(EndEntityConstants.TOKEN_SOFT_P12),
+        BCFKS(EndEntityConstants.TOKEN_SOFT_BCFKS),
     	JKS(EndEntityConstants.TOKEN_SOFT_JKS),
     	PEM(EndEntityConstants.TOKEN_SOFT);
 
