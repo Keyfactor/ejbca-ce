@@ -94,6 +94,17 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
     boolean doMsIntuneCsrVerification(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException;
     
     /**
+     * Updates MS Intune with the results of a SCEP issuance
+     * 
+     * @param administrator the origin of the request
+     * @param alias name of alias containing SCEP configuration
+     * @param message the original message
+     * @param response the SCEP response.  Null if an error occurred
+     * @throws CertificateCreateException An error occurred when updating Intune
+     */
+    void doMsIntuneCompleteRequest(AuthenticationToken administrator, String alias, byte[] message, byte[] response) throws CertificateCreateException;
+    
+    /**
      * Verifies and decrypts the SCEP PKCS10 message CSR with the crypto token of the 
      * CA defined in the SCEP alias.
      * 
@@ -104,4 +115,5 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws CertificateCreateException if the message could not be parsed or verified. 
      */
     public byte[] verifyRequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException;
+
 }
