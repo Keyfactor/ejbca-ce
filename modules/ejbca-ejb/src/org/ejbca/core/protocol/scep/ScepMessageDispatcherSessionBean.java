@@ -901,6 +901,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.debug("Try MS Intune status update for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
             }
             if (response == null) {
+                log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
                 // We only send one, since the actual error condition isn't returned from the CA
                 final long errorCode = 0x20000001L;
@@ -910,13 +911,24 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         // maximum length, per MS documentation
                         errorMessage.substring(0, 255));
             } else {
+                log.debug("Logging SCEP success for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 final byte[] issuedCertificateBytes = CertTools.getFirstCertificateFromPKCS7(response);
                 final X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509")
                         .generateCertificate(new ByteArrayInputStream(issuedCertificateBytes));
-                intuneScepServiceClient.SendSuccessNotification(reqmsg.getTransactionId(),
-                        new String(CertTools.getPEMFromCertificateRequest(message)), getThumbprint(certificate),
-                        certificate.getSerialNumber().toString(16), certificate.getNotAfter().toInstant().toString(),
-                        certificate.getIssuerX500Principal().getName(), "", "");
+                final String id = reqmsg.getTransactionId();
+                log.debug("scep id = " + id);
+                final String pemCertRequest = new String(CertTools.getPEMFromCertificateRequest(message));
+                log.debug("scep pemCertRequest = " + pemCertRequest);
+                final String thumbprint = getThumbprint(certificate);
+                log.debug("scep thumbprint = " + thumbprint);
+                final String hexSerialNumber = certificate.getSerialNumber().toString(16);
+                log.debug("scep hexSerialNumber = " + hexSerialNumber);
+                final String issuer = certificate.getIssuerX500Principal().getName();
+                log.debug("scep issuer = " + issuer);
+                intuneScepServiceClient.SendSuccessNotification(id,
+                        pemCertRequest, thumbprint,
+                        hexSerialNumber, certificate.getNotAfter().toInstant().toString(),
+                        issuer, issuer, issuer);
             }
             log.info("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
         } catch (IntuneScepServiceException e) {
