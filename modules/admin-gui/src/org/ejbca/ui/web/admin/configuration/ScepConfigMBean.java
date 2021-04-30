@@ -57,6 +57,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String alias;
         private String mode;
         private boolean includeCA;
+        private boolean allowLegacyDigestAlgorithm;
         private String raCertProfile;
         private String raEEProfile;
         private String raAuthPassword;
@@ -85,6 +86,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 if (scepConfig.aliasExists(alias)) {
                     this.mode = (scepConfig.getRAMode(alias) ? ScepConfiguration.Mode.RA.getResource() : ScepConfiguration.Mode.CA.getResource());
                     this.includeCA = scepConfig.getIncludeCA(alias);
+                    this.allowLegacyDigestAlgorithm = scepConfig.getAllowLegacyDigestAlgorithm(alias) ;
                     this.raCertProfile = scepConfig.getRACertProfile(alias);
                     this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
                     this.raAuthPassword = scepConfig.getRAAuthPassword(alias);
@@ -106,6 +108,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 } else {
                     this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE.toUpperCase();
                     this.includeCA = Boolean.valueOf(ScepConfiguration.DEFAULT_INCLUDE_CA);
+                    this.allowLegacyDigestAlgorithm = Boolean.valueOf(ScepConfiguration.DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
                     this.raCertProfile = ScepConfiguration.DEFAULT_RA_CERTPROFILE;
                     this.raEEProfile = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
                     this.raAuthPassword = ScepConfiguration.DEFAULT_RA_AUTHPWD;
@@ -159,7 +162,15 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIncludeCA(boolean includeca) {
             this.includeCA = includeca;
         }
-
+        
+        public boolean isAllowLegacyDigestAlgorithm() {
+            return allowLegacyDigestAlgorithm;
+        }
+        
+        public void setAllowLegacyDigestAlgorithm(boolean allowLegacyDigestAlgorithm) {
+            this.allowLegacyDigestAlgorithm = allowLegacyDigestAlgorithm;
+        }
+        
         public String getRaCertProfile() {
             return raCertProfile;
         }
@@ -422,6 +433,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             String alias = currentAlias.getAlias();
             scepConfig.setRAMode(alias, "ra".equalsIgnoreCase(currentAlias.getMode()));
             scepConfig.setIncludeCA(alias, currentAlias.isIncludeCA());
+            scepConfig.setAllowLegacyDigestAlgorithm(alias, currentAlias.allowLegacyDigestAlgorithm);
             scepConfig.setRACertProfile(alias, currentAlias.getRaCertProfile());
             scepConfig.setRAEndEntityProfile(alias, currentAlias.getRaEEProfile());
             scepConfig.setRADefaultCA(alias, currentAlias.getRaDefaultCA());
