@@ -881,7 +881,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         String transactionId = null;
         try {
             final boolean includeCACert = scepConfig.getIncludeCA(alias);
-            reqmsg = new ScepRequestMessage(Base64.decode(message), includeCACert);
+            reqmsg = new ScepRequestMessage(message, includeCACert);
             transactionId = reqmsg.getTransactionId();
         } catch (Exception e) {
             log.info("Error receiving ScepMessage: ", e);
