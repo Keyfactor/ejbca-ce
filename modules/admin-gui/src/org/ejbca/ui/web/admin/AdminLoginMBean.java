@@ -269,23 +269,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     }
 
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
-        String url = oauthKeyInfo.getUrl();
-        final StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(oauthKeyInfo.getUrl());
-        if (!oauthKeyInfo.getUrl().endsWith("/")) {
-            stringBuilder.append("/");
-        }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
-            url = stringBuilder
-                    .append("realms/")
-                    .append(oauthKeyInfo.getRealm())
-                    .append("/protocol/openid-connect/auth").toString();
-        }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            url = stringBuilder
-                    .append(oauthKeyInfo.getRealm())
-                    .append("/oauth2/v2.0/authorize").toString();
-        }
+        String url = oauthKeyInfo.getOauthLoginUrl();
         return addParametersToUrl(oauthKeyInfo, url);
     }
 
@@ -293,7 +277,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
         String scope = "openid";
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            scope += " " + oauthKeyInfo.getScope();
+            scope += " offline_access " + oauthKeyInfo.getScope();
         }
         uriBuilder
                 .queryParam("scope", scope)
