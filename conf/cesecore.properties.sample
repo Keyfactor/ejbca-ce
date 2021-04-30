@@ -358,3 +358,8 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # declared here, separated by commas
 #custom.class.whitelist=org.widget.Bar,org.widget.Foo 
 
+# Use Legacy PKCS#12 Keystore
+#
+# Set to true to keep the implementation used by EJBCA <7.5 and encrypt certificates in PKCS#12 keystores using
+# pbeWithSHA1And40BitRC2-CBC instead of pbeWithSHA1And3-KeyTripleDES-CBC. Default is false.
+#keystore.use_legacy_pkcs12 = true
