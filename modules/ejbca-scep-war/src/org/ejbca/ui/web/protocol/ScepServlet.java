@@ -232,9 +232,13 @@ public class ScepServlet extends HttpServlet {
             }
     		String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
 			log.info(iMsg);	
+
+			// these are set if using intune
+			ScepConfiguration scepConfig = null;
+			byte[] scepmsg = null;
 			
 			if (operation.equals("PKIOperation")) {
-    			final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
+                scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
     	        if(!scepConfig.aliasExists(alias)) {
     	            throw new NoSuchAliasException();
     	        }
@@ -244,10 +248,9 @@ public class ScepServlet extends HttpServlet {
                         log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
                     }
                     if (scepConfig.getUseIntune(alias)) {
-            	        ScepRequestMessage reqmsg;
             	        try {
-            	            final byte[] scepmsg = Base64.decode(message.getBytes());
-            	            reqmsg = new ScepRequestMessage(scepmsg, false);
+                            scepmsg = Base64.decode(message.getBytes());
+            	            ScepRequestMessage reqmsg = new ScepRequestMessage(scepmsg, false);
             	            final int messageType = reqmsg.getMessageType();
             	            if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             	                final boolean verified = scepMessageDispatcherSession.doMsIntuneCsrVerification(administrator, alias, message.getBytes()); 
@@ -266,6 +269,9 @@ public class ScepServlet extends HttpServlet {
 			byte[] dispatchResponse = raMasterApiProxyBean.scepDispatch(administrator, operation, message, alias);
 			
             if (operation.equals("PKIOperation")) {
+                if (scepConfig != null && scepConfig.getUseIntune(alias)) {
+                    scepMessageDispatcherSession.doMsIntuneCompleteRequest(administrator, alias, scepmsg, dispatchResponse);
+                }
                 if (dispatchResponse == null) {
                     // This is likely due to a faulty configuration of the SCEP alias, or that the request doesn't 
                     // match the profiles (i.e. end entity can not be added/edited, etc. 
