@@ -85,6 +85,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
@@ -151,6 +152,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private CmpConfiguration cmpConfigForEdit = null;
     private EstConfiguration estconfiguration = null;
     private EstConfiguration estConfigForEdit = null;
+    private MSAutoEnrollmentConfiguration msAutoenrollmentConfig = null;
+    private MSAutoEnrollmentConfiguration msAutoenrollmentConfigForEdit = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private OAuthConfiguration oAuthConfiguration = null;
@@ -230,9 +233,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return sslSessionIdJBoss7==null ? sslSessionIdServletsStandard : sslSessionIdJBoss7;
     }
 
-    /* Sets the current user and returns the global configuration */
     @Override
     public GlobalConfiguration initialize(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
+        try {
+            return initializeInternal(httpServletRequest, resources);
+        } finally {
+            if (!initialized) {
+                // Make sure we at least have the needed information (default language strings etc.) to show an error page
+                initialize_errorpage(httpServletRequest);
+            }
+        }
+    }
+
+    /** Sets the current user and returns the global configuration */
+    private GlobalConfiguration initializeInternal(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
         // Get some variables so we can detect if the TLS session and/or TLS client certificate changes within this session
         final X509Certificate certificate = getClientX509Certificate(httpServletRequest);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
@@ -405,6 +419,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         currentAdminPreference = null;
         adminsweblanguage = null;
         initialized = false;
+        errorpage_initialized = false;
     }
 
     /**
@@ -901,6 +916,18 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /**
+     * Save the given MSAutoEnrollmentConfiguration configuration.
+     *
+     * @param msAutoenrollmentConfig A MSAutoEnrollmentConfiguration
+     * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
+     */
+    @Override
+    public void saveMSAutoenrollmentConfiguration(final MSAutoEnrollmentConfiguration msAutoEnrollmentConfiguration) throws AuthorizationDeniedException {
+        this.msAutoenrollmentConfig = msAutoEnrollmentConfiguration;
+        globalConfigurationSession.saveConfiguration(administrator, msAutoEnrollmentConfiguration);
+    }
+    
+    /**
      * Save the given EST configuration.
      *
      * @param estconfiguration A EstConfiguration
@@ -920,6 +947,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
+    @Override
+    public void reloadAutoenrollmentConfiguration() {
+        msAutoenrollmentConfig = (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+    }
+    
     @Override
     public void reloadEstConfiguration() {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
@@ -1717,6 +1749,92 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
+    public MSAutoEnrollmentConfiguration getAutoenrollConfiguration() {
+        if (msAutoenrollmentConfig == null) {
+            reloadAutoenrollmentConfiguration();
+        }
+        return msAutoenrollmentConfig;
+    }
+    
+    /**
+     * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
+     *
+     * @param alias a Autoenrollment config alias.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void updateAutoenrollConfigFromClone(final String alias) throws AuthorizationDeniedException {
+        if (msAutoenrollmentConfig.aliasExists(alias) && msAutoenrollmentConfigForEdit.aliasExists(alias)) {
+            for(final String key : MSAutoEnrollmentConfiguration.getAllAliasKeys(alias)) {
+                final String value = msAutoenrollmentConfigForEdit.getValue(key, alias);
+                msAutoenrollmentConfig.setValue(key, value, alias);
+            }
+        }
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Adds an alias to the database.
+     *
+     * @param alias the name of a Autoenrollment alias.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void addAutoenrollAlias(final String alias) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.addAlias(alias);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Makes a copy of a given alias
+     *
+     * @param oldName the name of the alias to copy
+     * @param newName the name of the new alias
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void cloneAutoenrollAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.cloneAlias(oldName, newName);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Deletes a Autoenrollment alias from the database.
+     *
+     * @param alias the name of the alias to delete.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void removeAutoenrollAlias(final String alias) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.removeAlias(alias);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Renames a Autoenrollment alias
+     *
+     * @param oldName the old alias name
+     * @param newName the new alias name
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void renameAutoenrollAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.renameAlias(oldName, newName);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    @Override
+    public void clearAutoenrollConfigClone() {
+        msAutoenrollmentConfig = null;
+    }
+
+    @Override
+    public void clearAutoenrollCache() {
+        globalConfigurationSession.flushConfigurationCache(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        reloadAutoenrollmentConfiguration();
+    }
+    
+    @Override
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
             reloadEstConfiguration();
@@ -1725,7 +1843,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         //Clear EST config of unauthorized aliases (aliases referring to CA, EEP or CPs that the current admin doesn't have access to)
         return clearEstConfigurationFromUnauthorizedAliases(estconfiguration);
     }
-
+    
     /**
      * Returns a clone of the current EstConfiguration containing only the given alias. Also caches the clone locally.
      *
