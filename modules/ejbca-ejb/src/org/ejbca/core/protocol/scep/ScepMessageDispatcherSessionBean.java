@@ -371,11 +371,16 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.info("Error receiving ScepMessage: ", e);
             return null;
         }
+        
         boolean isRAModeOK = scepConfig.getRAMode(alias);
 
         if (reqmsg.getErrorNo() != 0) {
             log.info("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
             return null;
+        }
+        if (scepConfig.getAllowLegacyDigestAlgorithm(alias)) {
+            reqmsg.setPreferredDigestAlg(reqmsg.getOriginalDigestAlgorithm());
+            log.debug("Allow Legacy Digest Algorithm is configured for this SCEP alias, setting response digest algorithm to " + reqmsg.getOriginalDigestAlgorithm() );
         }
         if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             if (isRAModeOK && scepRaModeExtension == null) {
