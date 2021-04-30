@@ -103,9 +103,9 @@ public class SCEPCommandTest {
 
         scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         scepConfiguration.addAlias(SCEP_ALIAS);
-
         scepConfiguration.setRAMode(SCEP_ALIAS, true);
         scepConfiguration.setIncludeCA(SCEP_ALIAS, false);
+        scepConfiguration.setAllowLegacyDigestAlgorithm(SCEP_ALIAS, true);
         scepConfiguration.setRACertProfile(SCEP_ALIAS, CERTIFICATE_PROFILE_NAME);
         scepConfiguration.setRAEndEntityProfile(SCEP_ALIAS, END_ENTITY_PROFILE_NAME);
         scepConfiguration.setRADefaultCA(SCEP_ALIAS, x509ca.getName());

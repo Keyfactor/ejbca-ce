@@ -383,6 +383,7 @@ public class ProtocolScepHttpTest {
         // send SCEP req to server and get good response with cert
 
         scepConfiguration.setIncludeCA(scepAlias, true);
+        scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
         // Make user that we know...
@@ -393,7 +394,25 @@ public class ProtocolScepHttpTest {
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC);
+    }
+    
+    @Test
+    public void test04ScepRequestSHA1NoLegacyDigestAlgAllowed() throws Exception {
+        // find a CA create a user and
+        // send SCEP req to server and get good response with cert
+
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
+        // Make user that we know...
+        createScepUser(userName1, userDN1);
+
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        //With legacy digest algorithm not allowed, response should default to SHA256
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
     }
 
     @Test
@@ -442,6 +461,7 @@ public class ProtocolScepHttpTest {
         // send SCEP req to server and get good response with cert
 
         scepConfiguration.setIncludeCA(scepAlias, true);
+        scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
         // Make user that we know...
@@ -643,6 +663,7 @@ public class ProtocolScepHttpTest {
     @Test
     public void test09ScepGetCrlSHA1() throws Exception {
         scepConfiguration.setIncludeCA(scepAlias, false);
+        scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         publishingCrlSession.forceCRL(admin, x509ca.getCAId());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
@@ -650,6 +671,19 @@ public class ProtocolScepHttpTest {
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC);
+    }
+    
+    @Test
+    public void test09ScepGetCrlSHA1NoLegacyDigestAlgorithmAllowed() throws Exception {
+        scepConfiguration.setIncludeCA(scepAlias, false);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        //With legacy digest algorithm not allowed, response should default to SHA256
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
     }
 
     @Test
@@ -838,6 +872,7 @@ public class ProtocolScepHttpTest {
             assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a rollover CA certificate", subcaRolloverCert != null);
             
             scepConfiguration.setIncludeCA(scepAlias, true);
+            scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
             globalConfigSession.saveConfiguration(admin, scepConfiguration);
             
             // Clean up certificates first
