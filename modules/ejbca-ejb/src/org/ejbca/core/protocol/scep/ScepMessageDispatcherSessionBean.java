@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -42,6 +43,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.io.HexDump;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -889,7 +891,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
 
         final Properties properties = scepConfig.getIntuneProperties(alias);
-        IntuneScepServiceClient intuneScepServiceClient;
+        final IntuneScepServiceClient intuneScepServiceClient;
         try {
             intuneScepServiceClient = new IntuneScepServiceClient(properties);
         } catch (IllegalArgumentException e) {
@@ -905,13 +907,16 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
                 // We only send one, since the actual error condition isn't returned from the CA
                 final long errorCode = 0x20000001L;
-                String errorMessage = "Failed to issue certificate for alias '" + alias + "' and transaction ID '" + transactionId + "'. ";
+                final String errorMessage = "Failed to issue certificate for alias '" + alias + "' and transaction ID '" + transactionId + "'. ";
                 intuneScepServiceClient.SendFailureNotification(reqmsg.getTransactionId(),
                         new String(CertTools.getPEMFromCertificateRequest(message)), errorCode,
                         // maximum length, per MS documentation
                         errorMessage.substring(0, 255));
             } else {
                 log.debug("Logging SCEP success for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                HexDump.dump(response, 0, outputStream, 0);
+                log.debug("SCEP Response:" + new String(outputStream.toByteArray()));
                 final byte[] issuedCertificateBytes = CertTools.getFirstCertificateFromPKCS7(response);
                 final X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509")
                         .generateCertificate(new ByteArrayInputStream(issuedCertificateBytes));
