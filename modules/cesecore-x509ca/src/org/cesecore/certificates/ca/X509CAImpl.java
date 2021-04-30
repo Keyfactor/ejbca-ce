@@ -1194,7 +1194,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             nameStyle = CeSecoreNameStyle.INSTANCE;
         }
 
-        String dn = subject.getCertificateDN();
+        // Make sure no forbidden characters exist in the DN, see ECA-9984 for more info.
+        String dn = StringTools.strip(subject.getCertificateDN());
         if (certProfile.getUseSubjectDNSubSet()) {
             dn = certProfile.createSubjectDNSubSet(dn);
         }
