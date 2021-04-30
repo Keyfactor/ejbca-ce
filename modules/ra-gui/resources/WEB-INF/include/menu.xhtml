@@ -201,7 +201,7 @@
                                     -->
                                 </ui:remove>
                                 <h:outputLink value="#" styleClass="pure-menu-link" rendered="#{!raAuthenticationBean.oauthUser}">
-                                    <h:outputText value="#{msg.menu_pagetitle_logout} #{raAuthenticationBean.userDisplayName}"/>
+                                    <h:outputText value="#{msg.menu_pagetitle_loggedin} #{raAuthenticationBean.userDisplayName}"/>
                                 </h:outputLink>
                                 <h:form rendered="#{raAuthenticationBean.oauthUser}">
                                     <h:commandLink styleClass="pure-menu-link"
