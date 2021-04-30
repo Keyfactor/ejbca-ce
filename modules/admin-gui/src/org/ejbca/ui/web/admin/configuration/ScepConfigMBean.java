@@ -69,16 +69,18 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private boolean allowClientCertificateRenewaWithOldKey;
         
         private boolean useIntune;
+        private String intuneAuthority;
         private String intuneAadAppId;
         private String intuneAadAppKey;
         private String intuneTenant;
+        private String intuneResourceUrl;
+        private String intuneGraphApiVersion;
+        private String intuneGraphResourceUrl;
         private String intuneProxyHost;
         private String intuneProxyPort;
         private String intuneProxyUser;
         private String intuneProxyPass;
 
-
-        
         private ScepAliasGuiInfo(ScepConfiguration scepConfig, String alias) {
             if (alias != null) {
                 this.alias = alias;
@@ -96,9 +98,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
                     this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
                     this.setUseIntune(scepConfig.getUseIntune(alias));
+                    this.intuneAuthority = scepConfig.getIntuneAuthority(alias);
                     this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
                     this.intuneAadAppKey = scepConfig.getIntuneAadAppKey(alias);
                     this.intuneTenant = scepConfig.getIntuneTenant(alias);
+                    this.intuneResourceUrl = scepConfig.getIntuneResourceUrl(alias);
+                    this.intuneGraphApiVersion = scepConfig.getIntuneGraphApiVersion(alias);
+                    this.intuneGraphResourceUrl = scepConfig.getIntuneGraphResourceUrl(alias);
                     this.intuneProxyHost = scepConfig.getIntuneProxyHost(alias);
                     this.intuneProxyPort = scepConfig.getIntuneProxyPort(alias);
                     this.intuneProxyUser = scepConfig.getIntuneProxyUser(alias);
@@ -118,9 +124,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.allowClientCertificateRenewaWithOldKey = Boolean
                             .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
                     this.setUseIntune(false);
+                    this.intuneAuthority = "";
                     this.intuneAadAppId = "";
                     this.intuneAadAppKey = "";
                     this.intuneTenant = "";
+                    this.intuneResourceUrl = "";
+                    this.intuneGraphApiVersion = "";
+                    this.intuneGraphResourceUrl = "";
                     this.intuneProxyHost = "";
                     this.intuneProxyPort = "";
                     this.intuneProxyUser = "";
@@ -248,6 +258,22 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.allowClientCertificateRenewaWithOldKey = allowClientCertificateRenewaWithOldKey;
         }
 
+        public boolean isUseIntune() {
+            return useIntune;
+        }
+
+        public void setUseIntune(boolean useIntune) {
+            this.useIntune = useIntune;
+        }
+        
+        public String getIntuneAuthority() {
+            return intuneAuthority;
+        }
+
+        public void setIntuneAuthority(String intuneAuthority) {
+            this.intuneAuthority = intuneAuthority;
+        }
+        
         public String getIntuneAadAppId() {
             return intuneAadAppId;
         }
@@ -271,8 +297,31 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneTenant(String intuneTenant) {
             this.intuneTenant = intuneTenant;
         }
-
        
+        public String getIntuneResourceUrl() {
+            return intuneResourceUrl;
+        }
+
+        public void setIntuneResourceUrl(String intuneResourceUrl) {
+            this.intuneResourceUrl = intuneResourceUrl;
+        }
+
+        public String getIntuneGraphApiVersion() {
+            return intuneGraphApiVersion;
+        }
+
+        public void setIntuneGraphApiVersion(String intuneGraphApiVersion) {
+            this.intuneGraphApiVersion = intuneGraphApiVersion;
+        }
+
+        public String getIntuneGraphResourceUrl() {
+            return intuneGraphResourceUrl;
+        }
+
+        public void setIntuneGraphResourceUrl(String intuneGraphResourceUrl) {
+            this.intuneGraphResourceUrl = intuneGraphResourceUrl;
+        }
+            
         public String getIntuneProxyHost() {
             return intuneProxyHost;
         }
@@ -303,14 +352,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
         public void setIntuneProxyPass(String intuneProxyPass) {
             this.intuneProxyPass = intuneProxyPass;
-        }
-
-        public boolean isUseIntune() {
-            return useIntune;
-        }
-
-        public void setUseIntune(boolean useIntune) {
-            this.useIntune = useIntune;
         }
     }
 
@@ -433,9 +474,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
             scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
             scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
+            scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
             scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
             scepConfig.setIntuneTenant(alias, currentAlias.getIntuneTenant());
+            scepConfig.setIntuneResourceUrl(alias, currentAlias.getIntuneResourceUrl());
+            scepConfig.setIntuneGraphApiVersion(alias, currentAlias.getIntuneGraphApiVersion());
+            scepConfig.setIntuneGraphResourceUrl(alias, currentAlias.getIntuneGraphResourceUrl());
             scepConfig.setIntuneProxyHost(alias, currentAlias.getIntuneProxyHost());
             scepConfig.setIntuneProxyPort(alias, currentAlias.getIntuneProxyPort());
             scepConfig.setIntuneProxyUser(alias, currentAlias.getIntuneProxyUser());
