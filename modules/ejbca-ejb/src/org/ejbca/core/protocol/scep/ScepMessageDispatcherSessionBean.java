@@ -13,8 +13,10 @@
 
 package org.ejbca.core.protocol.scep;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -24,6 +26,7 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,6 +84,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -858,5 +862,95 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             throw new IllegalStateException("Response message could not be created.", e);
         } 
         return ret;
+    }
+
+    @Override
+    public void doMsIntuneCompleteRequest(AuthenticationToken authenticationToken, String alias, byte[] message, byte[] response)
+            throws CertificateCreateException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting intune status update for alias " + alias);
+        }
+        if (scepRaModeExtension == null) {
+            // Fail nicely
+            log.warn("SCEP RA mode is enabled, but not included in the community version of EJBCA. Unable to continue.");
+            throw new CertificateCreateException("Intune update failed because no license.");
+        }
+
+        final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
+        ScepRequestMessage reqmsg = null;
+        String transactionId = null;
+        try {
+            final boolean includeCACert = scepConfig.getIncludeCA(alias);
+            reqmsg = new ScepRequestMessage(Base64.decode(message), includeCACert);
+            transactionId = reqmsg.getTransactionId();
+        } catch (Exception e) {
+            log.info("Error receiving ScepMessage: ", e);
+            throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
+        }
+
+        final Properties properties = scepConfig.getIntuneProperties(alias);
+        IntuneScepServiceClient intuneScepServiceClient;
+        try {
+            intuneScepServiceClient = new IntuneScepServiceClient(properties);
+        } catch (IllegalArgumentException e) {
+            throw new CertificateCreateException("Failed to initialize MS Intune SCEP service client for alias '" + alias + "'.", e);
+        }
+
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("Try MS Intune status update for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+            }
+            if (response == null) {
+                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
+                // We only send one, since the actual error condition isn't returned from the CA
+                final long errorCode = 0x20000001L;
+                String errorMessage = "Failed to issue certificate for alias '" + alias + "' and transaction ID '" + transactionId + "'. ";
+                intuneScepServiceClient.SendFailureNotification(reqmsg.getTransactionId(),
+                        new String(CertTools.getPEMFromCertificateRequest(message)), errorCode,
+                        // maximum length, per MS documentation
+                        errorMessage.substring(0, 255));
+            } else {
+                final byte[] issuedCertificateBytes = CertTools.getFirstCertificateFromPKCS7(response);
+                final X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509")
+                        .generateCertificate(new ByteArrayInputStream(issuedCertificateBytes));
+                intuneScepServiceClient.SendSuccessNotification(reqmsg.getTransactionId(),
+                        new String(CertTools.getPEMFromCertificateRequest(message)), getThumbprint(certificate),
+                        certificate.getSerialNumber().toString(16), certificate.getNotAfter().toInstant().toString(),
+                        certificate.getIssuerX500Principal().getName(), "", "");
+            }
+            log.info("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+        } catch (IntuneScepServiceException e) {
+            final String msg = "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
+            log.info(msg, e);
+            throw new CertificateCreateException(msg, e);
+        } catch (Exception e) {
+            throw new CertificateCreateException(
+                    "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ", e);
+        }
+
+    }
+
+    /**
+     * Given a certificate, return the Microsoft "thumbprint" string.  Assumes certificate is valid.
+     * 
+     * @param certificate certificate to thumbprint
+     * @return the thumbprint string.
+     */
+    private static String getThumbprint(X509Certificate certificate) {
+        StringBuilder out = new StringBuilder();
+        boolean firstByte = true;
+        try {
+            for (byte b : MessageDigest.getInstance("SHA-1").digest(certificate.getEncoded())) {
+                if (!firstByte)
+                    out.append(" ");
+                else
+                    firstByte = false;
+                out.append(String.format("%02x", b));
+            }
+            return out.toString();
+        } catch (CertificateEncodingException | NoSuchAlgorithmException e) {
+            log.error("Unexpected error in getThumbprint", e);
+            return "";
+        }
     }
 }
