@@ -38,6 +38,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.era.ScepDispatchResponse;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
@@ -76,7 +77,7 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws CustomCertificateSerialNumberException 
      * @throws NoSuchEndEntityException 
      */
-    byte[] dispatchRequest(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
+    ScepDispatchResponse dispatchRequest(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
         CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
         CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
         CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
@@ -99,10 +100,10 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @param administrator the origin of the request
      * @param alias name of alias containing SCEP configuration
      * @param message the original message
-     * @param response the SCEP response.  Null if an error occurred
+     * @param dispatchResponse the SCEP response.  Null if an error occurred
      * @throws CertificateCreateException An error occurred when updating Intune
      */
-    void doMsIntuneCompleteRequest(AuthenticationToken administrator, String alias, byte[] message, byte[] response) throws CertificateCreateException;
+    void doMsIntuneCompleteRequest(AuthenticationToken administrator, String alias, byte[] message, ScepDispatchResponse dispatchResponse) throws CertificateCreateException;
     
     /**
      * Verifies and decrypts the SCEP PKCS10 message CSR with the crypto token of the 
