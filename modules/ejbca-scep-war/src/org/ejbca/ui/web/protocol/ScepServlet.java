@@ -47,6 +47,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.ScepDispatchResponse;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
@@ -266,7 +267,7 @@ public class ScepServlet extends HttpServlet {
                 }
 			}
     		
-			byte[] dispatchResponse = raMasterApiProxyBean.scepDispatch(administrator, operation, message, alias);
+			ScepDispatchResponse dispatchResponse = raMasterApiProxyBean.scepDispatch(administrator, operation, message, alias);
 			
             if (operation.equals("PKIOperation")) {
                 if (scepConfig != null && scepConfig.getUseIntune(alias)) {
@@ -281,7 +282,7 @@ public class ScepServlet extends HttpServlet {
                     return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
-                RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-pki-message", null);
+                RequestHelper.sendBinaryBytes(dispatchResponse.getResponseBytes(), response, "application/x-pki-message", null);
         		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "PKIOperation", remoteAddr);
     			log.info(iMsg);
             } else if (operation.equals("GetCACert")) {
@@ -290,7 +291,7 @@ public class ScepServlet extends HttpServlet {
                 // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
                 if (dispatchResponse != null) {
                     log.debug("Sent CA certificate to SCEP client.");
-                    RequestHelper.sendNewX509CaCert(dispatchResponse, response);
+                    RequestHelper.sendNewX509CaCert(dispatchResponse.getResponseBytes(), response);
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
         			log.info(iMsg);
                 } else {
@@ -307,7 +308,7 @@ public class ScepServlet extends HttpServlet {
                 // Content-Type of application/x-x509-ca-ra-cert-chain.
                 if (dispatchResponse != null) {
                     log.debug("Sent PKCS7 for CA to SCEP client.");
-                    RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-x509-ca-ra-cert-chain", null);
+                    RequestHelper.sendBinaryBytes(dispatchResponse.getResponseBytes(), response, "application/x-x509-ca-ra-cert-chain", null);
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACertChain", remoteAddr);
         			log.info(iMsg);
                 } else {
@@ -318,7 +319,7 @@ public class ScepServlet extends HttpServlet {
             } else if (operation.equals("GetNextCACert")) {
                 // Like GetCACert, but returns the next certificate during certificate rollover
                 if (dispatchResponse != null) {
-                    RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-x509-next-ca-cert", null);
+                    RequestHelper.sendBinaryBytes(dispatchResponse.getResponseBytes(), response, "application/x-x509-next-ca-cert", null);
                     iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetNextCACert", remoteAddr);
                     log.info(iMsg);
                 } else {
@@ -342,7 +343,7 @@ public class ScepServlet extends HttpServlet {
                  */
                 log.debug("Got SCEP GetCACaps request");
                 response.setContentType("text/plain");
-                response.getOutputStream().print(new String(dispatchResponse));
+                response.getOutputStream().print(new String(dispatchResponse.getResponseBytes()));
             } else {
                 log.error("Invalid parameter '" + operation);
                 // Send back proper Failure Response

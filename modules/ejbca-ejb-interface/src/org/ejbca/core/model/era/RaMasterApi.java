@@ -921,7 +921,7 @@ public interface RaMasterApi {
      * @throws CertificateRenewalException if an error occurs during Certificate Renewal.
      * @since RA Master API version 3 (EJBCA 6.12.0)
      */
-    byte[] scepDispatch(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws CertificateEncodingException,
+    ScepDispatchResponse scepDispatch(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws CertificateEncodingException,
     NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, SignRequestException,
     SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
     IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
