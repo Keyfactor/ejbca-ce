@@ -7,8 +7,7 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.scep;
-
+package org.ejbca.core.ejb.ca.sign;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.time.Instant;
