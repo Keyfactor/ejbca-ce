@@ -69,8 +69,8 @@ public class ScepResponseInfo implements Serializable {
         failed = false;
     }
 
-    public ScepResponseInfo(byte[] pkcs7Response, FailInfo failInfo, String failText, byte[] pkcs7Request) {
-        this.pkcs10Request = pkcs7Request;
+    public ScepResponseInfo(byte[] pkcs7Response, FailInfo failInfo, String failText, byte[] pkcs10Request) {
+        this.pkcs10Request = pkcs10Request;
         this.pkcs7Response = pkcs7Response;
         this.failInfo = failInfo;
         if (failText != null)
