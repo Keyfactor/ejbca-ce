@@ -823,10 +823,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     	return preferredDigestAlg;
     }
     
+    /**
+     * Method to control digest algorithm in response based on SCEP alias configuration check in ScepMessageDispatcherSessionBean    
+     */
     public void setPreferredDigestAlg(String preferredDigestAlg) {
         this.preferredDigestAlg = preferredDigestAlg;
     }
     
+    /**
+     * Method to get the original digest algorithm from the request in case SCEP alias allow legacy algorithms, such as SHA1, md5
+     * @return the original digest algorithm from the request
+     */
     public String getOriginalDigestAlgorithm() {
         return originalDigestAlgorithm;
     }
