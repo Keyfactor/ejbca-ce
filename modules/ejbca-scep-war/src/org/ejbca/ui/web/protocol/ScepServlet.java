@@ -47,7 +47,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.era.IntuneScepDispatchResponse;
+import org.ejbca.core.model.era.ScepResponseInfo;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
@@ -236,7 +236,7 @@ public class ScepServlet extends HttpServlet {
 
             // these are set if using intune
             ScepConfiguration scepConfig = null;
-            byte[] scepmsg = null;
+            String transactionId = null;
 
             if (operation.equals("PKIOperation")) {
                 scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
@@ -250,8 +250,10 @@ public class ScepServlet extends HttpServlet {
                     }
                     if (scepConfig.getUseIntune(alias)) {
                         try {
+                            byte[] 
                             scepmsg = Base64.decode(message.getBytes());
                             ScepRequestMessage reqmsg = new ScepRequestMessage(scepmsg, false);
+                            transactionId = reqmsg.getTransactionId();
                             final int messageType = reqmsg.getMessageType();
                             if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
                                 final boolean verified = scepMessageDispatcherSession.doMsIntuneCsrVerification(administrator, alias,
@@ -269,7 +271,7 @@ public class ScepServlet extends HttpServlet {
             }
 
             // Intune response returns additional information
-            IntuneScepDispatchResponse intuneResponse = null;
+            ScepResponseInfo intuneResponse = null;
             byte[] scepResponse = null;
             if (scepConfig != null && scepConfig.getUseIntune(alias)) {
                 intuneResponse = raMasterApiProxyBean.scepDispatchIntune(administrator, operation, message, alias);
@@ -282,7 +284,7 @@ public class ScepServlet extends HttpServlet {
 
             if (operation.equals("PKIOperation")) {
                 if (intuneResponse != null) {
-                    scepMessageDispatcherSession.doMsIntuneCompleteRequest(administrator, alias, scepmsg, intuneResponse);
+                    scepMessageDispatcherSession.doMsIntuneCompleteRequest(administrator, transactionId, alias, intuneResponse);
                 }
                 if (scepResponse == null) {
                     // This is likely due to a faulty configuration of the SCEP alias, or that the request doesn't 
