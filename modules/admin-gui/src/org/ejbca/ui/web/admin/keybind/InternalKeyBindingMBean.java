@@ -976,6 +976,20 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             getAvailableSignatureAlgorithms();
             internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<>(internalKeyBindingSession.getAvailableTypesAndProperties()
                     .get(getSelectedInternalKeyBindingType()).values()));
+            this.isOcspTransactionLoggingEnabled = false;
+            this.ocspTransactionLogPattern = "\\\\$\\\\{(.+?)\\\\}";
+            this.ocspTransactionLogValues = "${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}\"${CLIENT_IP}\";" +
+                    "\"${SIGN_ISSUER_NAME_DN}\";\"${SIGN_SUBJECT_NAME}\";${SIGN_SERIAL_NO};" +
+                    "\"${LOG_TIME}\";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;" +
+                    "\"${ISSUER_NAME_DN}\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};" +
+                    "${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID};${FORWARDED_FOR}";
+            this.isOcspAuditLoggingEnabled = false;
+            this.ocspAuditLogPattern = "\\\\$\\\\{(.+?)\\\\}";
+            this.ocspAuditLogValues = "SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};\"${LOG_TIME}" +
+                    "\";TIME TO PROCESS:${REPLY_TIME};\\nOCSP REQUEST:\\n\"${OCSPREQUEST}" +
+                    "\";\\nOCSP RESPONSE:\\n\"${OCSPRESPONSE}\";\\nSTATUS:${STATUS}";
+            this.isSafeOcspLoggingEnabled = false;
+            this.ocspLoggingDateFormat = "yyyy-MM-dd HH:mm:ss.SSSZ";
         } else {
             // Load existing
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
@@ -986,6 +1000,17 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 // No longer authorized to this token, or the user tried to pull a fast one
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 return;
+            }
+            if (internalKeyBinding instanceof OcspKeyBinding) {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
+                this.isOcspTransactionLoggingEnabled = ocspKeyBinding.getIsOcspTransactionLoggingEnabled();
+                this.ocspTransactionLogPattern = ocspKeyBinding.getOcspTransactionLogPattern();
+                this.ocspTransactionLogValues = ocspKeyBinding.getOcspTransactionLogValues();
+                this.isOcspAuditLoggingEnabled = ocspKeyBinding.getIsOcspAuditLoggingEnabled();
+                this.ocspAuditLogPattern = ocspKeyBinding.getOcspAuditLogPattern();
+                this.ocspAuditLogValues = ocspKeyBinding.getOcspAuditLogValues();
+                this.isSafeOcspLoggingEnabled = ocspKeyBinding.getIsSafeOcspLoggingEnabled();
+                this.ocspLoggingDateFormat = ocspKeyBinding.getOcspLoggingDateFormat();
             }
             currentName = internalKeyBinding.getName();
             currentCryptoToken = internalKeyBinding.getCryptoTokenId();
@@ -1555,6 +1580,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 if (useIssuerNotBeforeAsArchiveCutoff != null) {
                     ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(useIssuerNotBeforeAsArchiveCutoff);
                 }
+                ocspKeyBinding.setIsOcspTransactionLoggingEnabled(isOcspTransactionLoggingEnabled);
+                ocspKeyBinding.setOcspTransactionLogPattern(ocspTransactionLogPattern);
+                ocspKeyBinding.setOcspTransactionLogValues(ocspTransactionLogValues);
+                ocspKeyBinding.setIsOcspAuditLoggingEnabled(isOcspAuditLoggingEnabled);
+                ocspKeyBinding.setOcspAuditLogPattern(ocspAuditLogPattern);
+                ocspKeyBinding.setOcspAuditLogValues(ocspAuditLogValues);
+                ocspKeyBinding.setIsSafeOcspLoggingEnabled(isSafeOcspLoggingEnabled);
+                ocspKeyBinding.setOcspLoggingDateFormat(ocspLoggingDateFormat);
             }
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                     .getWrappedData();
