@@ -953,7 +953,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         // maximum length, per MS documentation
                         errorMessage.substring(0, 255));
             } else if (response.isFailed()) {
-                final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs7Response());
+                final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
                 log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
                 // We only send one, since the actual error condition isn't returned from the CA
@@ -965,7 +965,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         errorMessage.substring(0, 255));
             }
             else {
-                final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs7Response());
+                final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
                 log.debug("scep id = " + transactionId);
                 log.debug("scep base64Message = " + base64Message);
                 final String thumbprint = toMicrosoftHex(response.getThumbprint());
