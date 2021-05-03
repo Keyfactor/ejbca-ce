@@ -952,6 +952,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (log.isDebugEnabled()) {
                 log.debug("Try MS Intune status update for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
             }
+            
+            String base64Message = new String(Base64.encode(message));
             if (response == null) {
                 log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
@@ -959,7 +961,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final long errorCode = 0x20000001L;
                 final String errorMessage = "Failed to issue certificate for alias '" + alias + "' and transaction ID '" + transactionId + "'. ";
                 intuneScepServiceClient.SendFailureNotification(reqmsg.getTransactionId(),
-                        new String(CertTools.getPEMFromCertificateRequest(message)), errorCode,
+                        base64Message, errorCode,
                         // maximum length, per MS documentation
                         errorMessage.substring(0, 255));
             } else if (response.isFailed()) {
@@ -969,22 +971,21 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final long errorCode = 0x20000100L + response.getFailInfo().intValue();
                 final String errorMessage = response.getFailText();
                 intuneScepServiceClient.SendFailureNotification(reqmsg.getTransactionId(),
-                        new String(CertTools.getPEMFromCertificateRequest(message)), errorCode,
+                        base64Message, errorCode,
                         // maximum length, per MS documentation
                         errorMessage.substring(0, 255));
             }
             else {
                 final String id = reqmsg.getTransactionId();
                 log.debug("scep id = " + id);
-                final String pemCertRequest = new String(CertTools.getPEMFromCertificateRequest(message));
-                log.debug("scep pemCertRequest = " + pemCertRequest);
+                log.debug("scep base64Message = " + base64Message);
                 final String thumbprint = toMicrosoftHex(response.getThumbprint());
                 log.debug("scep thumbprint = " + thumbprint);
                 final String hexSerialNumber = response.getSerialNumber().toString(16);
                 log.debug("scep hexSerialNumber = " + hexSerialNumber);
                 final String issuer = response.getIssuer().getName();
                 log.debug("scep issuer = " + issuer);
-                intuneScepServiceClient.SendSuccessNotification(id, pemCertRequest, thumbprint, hexSerialNumber, response.getNotAfter().toString(),
+                intuneScepServiceClient.SendSuccessNotification(id, base64Message, thumbprint, hexSerialNumber, response.getNotAfter().toString(),
                         issuer, issuer, issuer);
             }
             log.info("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
