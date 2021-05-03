@@ -121,6 +121,7 @@ public class EcaQa125_RaCpRestrictions extends WebTestBase {
     public void stepC_KeyPairOnServer() throws InterruptedException {
         // Go to RA Web -> Make New Request
         raWebHelper.openPage(getRaWebUrl());
+        Thread.sleep(2000);
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationOnServer();
@@ -145,6 +146,7 @@ public class EcaQa125_RaCpRestrictions extends WebTestBase {
     public void stepD_KeyPairViaCSR() throws InterruptedException {
         // Go to RA Web -> Make New Request
         raWebHelper.openPage(getRaWebUrl());
+        Thread.sleep(2000);
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
