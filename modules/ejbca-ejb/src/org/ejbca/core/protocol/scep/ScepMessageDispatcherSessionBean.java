@@ -449,11 +449,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     if (resp != null) {
                         ret = resp.getResponseMessage();
                         ScepResponseMessage scepResponseMessage = (ScepResponseMessage) resp;
-                        if (scepResponseMessage.getFailInfo() != null) {
-                            intuneData = new IntuneScepResponseData(scepResponseMessage.getFailInfo(), scepResponseMessage.getFailText());
-                        } else {
+                        if (scepResponseMessage.getStatus() == ResponseStatus.SUCCESS) {
                             intuneData = new IntuneScepResponseData(scepResponseMessage.getIssuer(), scepResponseMessage.getSerialNumber(),
                                     scepResponseMessage.getNotAfter(), scepResponseMessage.getThumbprint());
+                        } else {
+                            intuneData = new IntuneScepResponseData(scepResponseMessage.getFailInfo(), scepResponseMessage.getFailText());
                         }
                         log.debug("Adding Intune fields to SCEP response: " + intuneData);
                     }
