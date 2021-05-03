@@ -953,7 +953,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.debug("Try MS Intune status update for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
             }
             
-            String base64Message = new String(Base64.encode(message));
+            String base64Message = java.util.Base64.getEncoder().encodeToString(message);
             if (response == null) {
                 log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
