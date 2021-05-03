@@ -23,16 +23,20 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.request.FailInfo;
 
 /**
- * Return additional fields needed for the Intune SCEP integration.
+ * Return additional fields needed for some SCEP integrations.
  */
-public class IntuneScepDispatchResponse implements Serializable {
+public class ScepResponseInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger log = Logger.getLogger(IntuneScepDispatchResponse.class);
+    private static final Logger log = Logger.getLogger(ScepResponseInfo.class);
 
-    private boolean failed = false;
+    // this will always be set
     private byte[] pkcs7Response;
+
+    // additional fields set with SCEP issues a certificate
+    private boolean failed = false;
+    private byte[] pkcs10Request = null;
     private X500Principal issuer = null;
     private BigInteger serialNumber = null;
     private Instant notAfter = null;
@@ -40,12 +44,9 @@ public class IntuneScepDispatchResponse implements Serializable {
     private FailInfo failInfo = null;
     private String failText = null;
 
-    public IntuneScepDispatchResponse(byte[] pkcs7Response) {
-        this.pkcs7Response = pkcs7Response;
-        failed = false;
-    }
-
-    public IntuneScepDispatchResponse(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter, byte[] thumbprint) {
+    public ScepResponseInfo(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter, byte[] thumbprint,
+            byte[] pkcs10Request) {
+        this.pkcs10Request = pkcs10Request;
         this.pkcs7Response = pkcs7Response;
         this.issuer = issuer;
         this.serialNumber = serialNumber;
@@ -54,7 +55,8 @@ public class IntuneScepDispatchResponse implements Serializable {
         failed = false;
     }
 
-    public IntuneScepDispatchResponse(byte[] pkcs7Response, X509Certificate issuedCert) {
+    public ScepResponseInfo(byte[] pkcs7Response, X509Certificate issuedCert, byte[] pkcs10Request) {
+        this.pkcs10Request = pkcs10Request;
         this.pkcs7Response = pkcs7Response;
         this.issuer = issuedCert.getIssuerX500Principal();
         this.serialNumber = issuedCert.getSerialNumber();
@@ -67,8 +69,9 @@ public class IntuneScepDispatchResponse implements Serializable {
         failed = false;
     }
 
-    public IntuneScepDispatchResponse(byte[] ret, FailInfo failInfo, String failText) {
-        this.pkcs7Response = ret;
+    public ScepResponseInfo(byte[] pkcs7Response, FailInfo failInfo, String failText, byte[] pkcs7Request) {
+        this.pkcs10Request = pkcs7Request;
+        this.pkcs7Response = pkcs7Response;
         this.failInfo = failInfo;
         if (failText != null)
             this.failText = failText;
@@ -108,4 +111,23 @@ public class IntuneScepDispatchResponse implements Serializable {
     public final String getFailText() {
         return failText;
     }
+
+    public byte[] getPkcs10Request() {
+        return pkcs10Request;
+    }
+
+    private ScepResponseInfo(byte[] response) {
+        this.pkcs7Response = response;
+    }
+
+    /**
+     * No additional fields are set - this will only hold the response for the client.
+     * 
+     * @param response response to be send to client
+     * @return a ScepResponseInfo that only holds the byte to be sent to the client
+     */
+    public static ScepResponseInfo onlyResponseBytes(byte[] response) {
+        return new ScepResponseInfo(response);
+    }
+
 }
