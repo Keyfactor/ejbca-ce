@@ -91,6 +91,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.ca.sign.IntuneScepResponseData;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -655,7 +656,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         if (ret == null)
             return null;
         else if (intuneData != null)
-            return new ScepDispatchResponse(ret, intuneData);
+            return new ScepDispatchResponse(ret, intuneData.getIssuer(), intuneData.getSerialNumber(), intuneData.getNotAfter(),
+                    intuneData.getThumbprint());
         else
             return new ScepDispatchResponse(ret);
             
