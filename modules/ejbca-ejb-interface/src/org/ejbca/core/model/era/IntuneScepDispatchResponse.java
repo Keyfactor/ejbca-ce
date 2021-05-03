@@ -26,7 +26,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
  * Return additional fields needed for the Intune SCEP integration.
  */
 public class IntuneScepDispatchResponse implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(IntuneScepDispatchResponse.class);
@@ -34,7 +34,7 @@ public class IntuneScepDispatchResponse implements Serializable {
     private boolean failed = false;
     private byte[] pkcs7Response;
     private X500Principal issuer = null;
-    private BigInteger serialNumber= null;
+    private BigInteger serialNumber = null;
     private Instant notAfter = null;
     private byte[] thumbprint = null;
     private FailInfo failInfo = null;
@@ -45,8 +45,7 @@ public class IntuneScepDispatchResponse implements Serializable {
         failed = false;
     }
 
-    public IntuneScepDispatchResponse(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter,
-            byte[] thumbprint) {
+    public IntuneScepDispatchResponse(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter, byte[] thumbprint) {
         this.pkcs7Response = pkcs7Response;
         this.issuer = issuer;
         this.serialNumber = serialNumber;
@@ -71,7 +70,10 @@ public class IntuneScepDispatchResponse implements Serializable {
     public IntuneScepDispatchResponse(byte[] ret, FailInfo failInfo, String failText) {
         this.pkcs7Response = ret;
         this.failInfo = failInfo;
-        this.failText = failText;
+        if (failText != null)
+            this.failText = failText;
+        else
+            this.failText = failInfo.toString();
         failed = true;
     }
 
