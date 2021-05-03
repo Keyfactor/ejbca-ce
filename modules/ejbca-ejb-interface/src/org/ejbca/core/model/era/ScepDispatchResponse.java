@@ -20,7 +20,6 @@ import java.time.Instant;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.protocol.scep.IntuneScepResponseData;
 
 public class ScepDispatchResponse implements Serializable {
 
@@ -55,14 +54,6 @@ public class ScepDispatchResponse implements Serializable {
         } catch (CertificateEncodingException | NoSuchAlgorithmException e) {
             log.error("Unexpected error when creating SHA-1 thumbprint of certificate: " + issuedCert.getSubjectDN(), e);
         }
-    }
-
-    public ScepDispatchResponse(byte[] ret, IntuneScepResponseData intuneScepResponseData) {
-        this.pkcs7Response = ret;
-        this.issuer = intuneScepResponseData.getIssuer();
-        this.notAfter = intuneScepResponseData.getNotAfter();
-        this.serialNumber = intuneScepResponseData.getSerialNumber();
-        this.thumbprint = intuneScepResponseData.getThumbprint();
     }
 
     public byte[] getResponseBytes() {
