@@ -21,9 +21,14 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 
-public class ScepDispatchResponse implements Serializable {
+/**
+ * Return additional fields needed for the Intune SCEP integration.
+ */
+public class IntuneScepDispatchResponse implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
-    private static final Logger log = Logger.getLogger(ScepDispatchResponse.class);
+    private static final Logger log = Logger.getLogger(IntuneScepDispatchResponse.class);
 
     private byte[] pkcs7Response;
     private X500Principal issuer = null;
@@ -31,11 +36,11 @@ public class ScepDispatchResponse implements Serializable {
     private Instant notAfter = null;
     private byte[] thumbprint = null;
 
-    public ScepDispatchResponse(byte[] pkcs7Response) {
+    public IntuneScepDispatchResponse(byte[] pkcs7Response) {
         this.pkcs7Response = pkcs7Response;
     }
 
-    public ScepDispatchResponse(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter,
+    public IntuneScepDispatchResponse(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter,
             byte[] thumbprint) {
         this.pkcs7Response = pkcs7Response;
         this.issuer = issuer;
@@ -44,7 +49,7 @@ public class ScepDispatchResponse implements Serializable {
         this.thumbprint = thumbprint;
     }
 
-    public ScepDispatchResponse(byte[] pkcs7Response, X509Certificate issuedCert) {
+    public IntuneScepDispatchResponse(byte[] pkcs7Response, X509Certificate issuedCert) {
         this.pkcs7Response = pkcs7Response;
         this.issuer = issuedCert.getIssuerX500Principal();
         this.serialNumber = issuedCert.getSerialNumber();
@@ -54,10 +59,6 @@ public class ScepDispatchResponse implements Serializable {
         } catch (CertificateEncodingException | NoSuchAlgorithmException e) {
             log.error("Unexpected error when creating SHA-1 thumbprint of certificate: " + issuedCert.getSubjectDN(), e);
         }
-    }
-
-    public byte[] getResponseBytes() {
-        return pkcs7Response;
     }
 
     public byte[] getThumbprint() {

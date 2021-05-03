@@ -38,7 +38,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.era.ScepDispatchResponse;
+import org.ejbca.core.model.era.IntuneScepDispatchResponse;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
@@ -77,11 +77,12 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws CustomCertificateSerialNumberException 
      * @throws NoSuchEndEntityException 
      */
-    ScepDispatchResponse dispatchRequest(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
+    byte[] dispatchRequest(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
         CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
         CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
         CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
         SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException;
+    
     
     /**
      * Verifies the MS Intune challenge token in the CSR.
@@ -103,7 +104,7 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @param dispatchResponse the SCEP response.  Null if an error occurred
      * @throws CertificateCreateException An error occurred when updating Intune
      */
-    void doMsIntuneCompleteRequest(AuthenticationToken administrator, String alias, byte[] message, ScepDispatchResponse dispatchResponse) throws CertificateCreateException;
+    void doMsIntuneCompleteRequest(AuthenticationToken administrator, String alias, byte[] message, IntuneScepDispatchResponse dispatchResponse) throws CertificateCreateException;
     
     /**
      * Verifies and decrypts the SCEP PKCS10 message CSR with the crypto token of the 
@@ -117,4 +118,41 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      */
     public byte[] verifyRequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException;
 
+    /**
+     * Handles received SCEP message initiated by an Intune client.
+     * 
+     * @param authenticationToken the origin of the request
+     * @param operation desired SCEP operation to perform
+     * @param message to dispatch
+     * @param scepConfigurationAlias name of alias containing SCEP configuration
+     * @return byte array containing dispatch response. Content depends on operation
+     * @throws NoSuchAliasException 
+     * @throws CertificateEncodingException 
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     * @throws CertificateRenewalException 
+     * @throws CertificateExtensionException 
+     * @throws CertificateException 
+     * @throws SignatureException 
+     * @throws InvalidAlgorithmException 
+     * @throws CAOfflineException 
+     * @throws IllegalValidityException 
+     * @throws CertificateSerialNumberException 
+     * @throws CertificateRevokeException 
+     * @throws CertificateCreateException 
+     * @throws IllegalNameException 
+     * @throws AuthLoginException 
+     * @throws AuthStatusException 
+     * @throws SignRequestSignatureException 
+     * @throws SignRequestException 
+     * @throws IllegalKeyException 
+     * @throws CryptoTokenOfflineException 
+     * @throws CustomCertificateSerialNumberException 
+     * @throws NoSuchEndEntityException 
+     */
+    IntuneScepDispatchResponse dispatchRequestIntune(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
+        CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
+        CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
+        CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
+        SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException;
 }
