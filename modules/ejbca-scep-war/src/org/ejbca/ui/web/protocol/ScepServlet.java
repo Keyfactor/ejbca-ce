@@ -300,7 +300,7 @@ public class ScepServlet extends HttpServlet {
                 // The response has the content type tagged as application/x-x509-ca-cert. 
                 // The body of the response is a DER encoded binary X.509 certificate. 
                 // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
-                if (intuneResponse != null) {
+                if (scepResponse != null) {
                     log.debug("Sent CA certificate to SCEP client.");
                     RequestHelper.sendNewX509CaCert(scepResponse, response);
                     iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
@@ -317,7 +317,7 @@ public class ScepServlet extends HttpServlet {
                 // The response for GetCACertChain is a certificates-only PKCS#7 
                 // SignedData to carry the certificates to the end entity, with a 
                 // Content-Type of application/x-x509-ca-ra-cert-chain.
-                if (intuneResponse != null) {
+                if (scepResponse != null) {
                     log.debug("Sent PKCS7 for CA to SCEP client.");
                     RequestHelper.sendBinaryBytes(scepResponse, response, "application/x-x509-ca-ra-cert-chain", null);
                     iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACertChain", remoteAddr);
@@ -329,7 +329,7 @@ public class ScepServlet extends HttpServlet {
                 }
             } else if (operation.equals("GetNextCACert")) {
                 // Like GetCACert, but returns the next certificate during certificate rollover
-                if (intuneResponse != null) {
+                if (scepResponse != null) {
                     RequestHelper.sendBinaryBytes(scepResponse, response, "application/x-x509-next-ca-cert", null);
                     iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetNextCACert", remoteAddr);
                     log.info(iMsg);
