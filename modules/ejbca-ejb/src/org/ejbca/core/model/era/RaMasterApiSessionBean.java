@@ -2912,7 +2912,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public IntuneScepDispatchResponse scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)
             throws NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException,
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,

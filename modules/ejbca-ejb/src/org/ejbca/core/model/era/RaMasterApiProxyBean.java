@@ -3385,7 +3385,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
      * Try dispatching a SCEP request to an Intune capable backend.
      */
     @Override
-    public IntuneScepDispatchResponse scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) throws
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) throws
             CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
             SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException,

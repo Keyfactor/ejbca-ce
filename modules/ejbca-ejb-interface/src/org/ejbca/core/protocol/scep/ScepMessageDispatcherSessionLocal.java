@@ -38,7 +38,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.era.IntuneScepDispatchResponse;
+import org.ejbca.core.model.era.ScepResponseInfo;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
@@ -99,12 +99,11 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * Updates MS Intune with the results of a SCEP issuance
      * 
      * @param administrator the origin of the request
-     * @param alias name of alias containing SCEP configuration
-     * @param message the original message
+     * @param transactionId ID of the original request
      * @param dispatchResponse the SCEP response.  Null if an error occurred
      * @throws CertificateCreateException An error occurred when updating Intune
      */
-    void doMsIntuneCompleteRequest(AuthenticationToken administrator, String alias, byte[] message, IntuneScepDispatchResponse dispatchResponse) throws CertificateCreateException;
+    void doMsIntuneCompleteRequest(AuthenticationToken administrator, String transactionId, String alias, ScepResponseInfo dispatchResponse) throws CertificateCreateException;
     
     /**
      * Verifies and decrypts the SCEP PKCS10 message CSR with the crypto token of the 
@@ -150,7 +149,7 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws CustomCertificateSerialNumberException 
      * @throws NoSuchEndEntityException 
      */
-    IntuneScepDispatchResponse dispatchRequestIntune(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
+    ScepResponseInfo dispatchRequestIntune(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
         CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
         CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
         CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
