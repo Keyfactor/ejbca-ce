@@ -194,9 +194,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException {
-        
+
         // call the Intune version, which contains additional fields, but only return the SCEP response
-        return dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias).getPkcs7Response();
+        final IntuneScepDispatchResponse response = dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+        if (response == null) {
+            return null;
+        } else {
+            return response.getPkcs7Response();
+        }
     }
     
     @Override
@@ -443,9 +448,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
                     if (resp != null) {
                         ret = resp.getResponseMessage();
-                        intuneData = 
-                                new IntuneScepResponseData(((ScepResponseMessage) resp).getIssuer(), ((ScepResponseMessage) resp).getSerialNumber(),
-                                        ((ScepResponseMessage) resp).getNotAfter(), ((ScepResponseMessage) resp).getThumbprint());
+                        ScepResponseMessage scepResponseMessage = (ScepResponseMessage) resp;
+                        if (scepResponseMessage.getFailInfo() != null) {
+                            intuneData = new IntuneScepResponseData(scepResponseMessage.getFailInfo(), scepResponseMessage.getFailText());
+                        } else {
+                            intuneData = new IntuneScepResponseData(scepResponseMessage.getIssuer(), scepResponseMessage.getSerialNumber(),
+                                    scepResponseMessage.getNotAfter(), scepResponseMessage.getThumbprint());
+                        }
                         log.debug("Adding Intune fields to SCEP response: " + intuneData);
                     }
                 }
@@ -666,14 +675,17 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.trace("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));
         }
 
-        if (ret == null)
+        if (ret == null) {
             return null;
-        else if (intuneData != null)
+        } else if (intuneData != null && intuneData.isFailed()) {
+            return new IntuneScepDispatchResponse(ret, intuneData.getFailInfo(), intuneData.getFailText());
+        } else if (intuneData != null) { 
             return new IntuneScepDispatchResponse(ret, intuneData.getIssuer(), intuneData.getSerialNumber(), intuneData.getNotAfter(),
                     intuneData.getThumbprint());
-        else
+        }
+        else {
             return new IntuneScepDispatchResponse(ret);
-            
+        }
     }
 
     @Override
@@ -950,7 +962,18 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         new String(CertTools.getPEMFromCertificateRequest(message)), errorCode,
                         // maximum length, per MS documentation
                         errorMessage.substring(0, 255));
-            } else {
+            } else if (response.isFailed()) {
+                log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
+                // We only send one, since the actual error condition isn't returned from the CA
+                final long errorCode = 0x20000100L + response.getFailInfo().intValue();
+                final String errorMessage = response.getFailText();
+                intuneScepServiceClient.SendFailureNotification(reqmsg.getTransactionId(),
+                        new String(CertTools.getPEMFromCertificateRequest(message)), errorCode,
+                        // maximum length, per MS documentation
+                        errorMessage.substring(0, 255));
+            }
+            else {
                 final String id = reqmsg.getTransactionId();
                 log.debug("scep id = " + id);
                 final String pemCertRequest = new String(CertTools.getPEMFromCertificateRequest(message));
