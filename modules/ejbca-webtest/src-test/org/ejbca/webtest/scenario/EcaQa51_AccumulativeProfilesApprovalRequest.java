@@ -58,15 +58,15 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     
     @BeforeClass
     public static void init() {
-    // Super
-    beforeClass(true, null);
-    final WebDriver webDriver = getWebDriver();
-    // Helpers
-    approvalProfilesHelper = new ApprovalProfilesHelper(webDriver);
-    approvalActionsHelper = new ApprovalActionsHelper(webDriver);
-    caActivationHelper = new CaActivationHelper(webDriver);
-    caHelper = new CaHelper(webDriver);
-    endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
+        // Super
+        beforeClass(true, null);
+        final WebDriver webDriver = getWebDriver();
+        // Helpers
+        approvalProfilesHelper = new ApprovalProfilesHelper(webDriver);
+        approvalActionsHelper = new ApprovalActionsHelper(webDriver);
+        caActivationHelper = new CaActivationHelper(webDriver);
+        caHelper = new CaHelper(webDriver);
+        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
     }
     
     @AfterClass
