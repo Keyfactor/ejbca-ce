@@ -23,7 +23,6 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
@@ -61,10 +60,9 @@ public class CRLUpdateWorker extends BaseWorker {
     public void canWorkerRun(final Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         final CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
         final CryptoTokenManagementSessionLocal cryptoTokenSession = (CryptoTokenManagementSessionLocal) ejbs.get(CryptoTokenManagementSessionLocal.class);
-        Collection<Integer> caIds = getCAIdsToCheck(true);
-        if (caIds.contains(SecConst.ALLCAS)) {
-            caIds = caSession.getAllCaIds();
-        }
+
+        Collection<Integer> caIds = getAllCAIdsToCheck(caSession, true);
+
         for (Integer caId : caIds) {
             try {
                 final CAInfo caInfo = caSession.getCAInfo(getAdmin(), caId);
@@ -93,7 +91,9 @@ public class CRLUpdateWorker extends BaseWorker {
     @Override
 	public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         final PublishingCrlSessionLocal publishingCrlSession = ((PublishingCrlSessionLocal)ejbs.get(PublishingCrlSessionLocal.class));
-		// A semaphore used to not run parallel CRL generation jobs if it is slow in generating CRLs, and this job runs very often
+        CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
+
+        // A semaphore used to not run parallel CRL generation jobs if it is slow in generating CRLs, and this job runs very often
         Set<Integer> updatedCas = new HashSet<>();
         Set<Integer> updatedCasDelta = new HashSet<>();
 		if (!running) {
@@ -102,7 +102,7 @@ public class CRLUpdateWorker extends BaseWorker {
 			    long polltime = getNextInterval();
 			    // Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
 			    // selecting CAs did not exist, no CA = Any CA.
-			    Collection<Integer> caids = getCAIdsToCheck(true); 
+			    Collection<Integer> caids = getAllCAIdsToCheck(caSession, true);
 			    updatedCas.addAll(publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000));
 			    updatedCasDelta.addAll(publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000));
 			} catch (AuthorizationDeniedException e) {
@@ -114,7 +114,6 @@ public class CRLUpdateWorker extends BaseWorker {
                 return new ServiceExecutionResult(Result.NO_ACTION, "CRL Update Worker " + serviceName + " ran, but no CAs needed updating.");
             } else {
                 StringBuilder stringBuilder = new StringBuilder("CRL Update Worker " + serviceName + " ran.");
-                CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
                 Map<Integer, String> caNameMap = caSession.getCAIdToNameMap();
                 if (!updatedCas.isEmpty()) {
                     List<String> caNames = new ArrayList<>();
