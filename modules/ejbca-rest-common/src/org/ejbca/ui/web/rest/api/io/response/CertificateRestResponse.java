@@ -11,22 +11,15 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.SecConst;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * A class representing general information about certificate. Is used for REST services' responses.
- *
- * @version $Id: CertificateRestResponse.java 29010 2018-05-23 13:09:53Z andrey_s_helmes $
  */
 public class CertificateRestResponse {
     private byte[] certificate;
@@ -100,6 +93,16 @@ public class CertificateRestResponse {
             return this;
         }
 
+        public CertificateRestResponseBuilder setResponseFormat(int keystoreType) {
+            this.responseFormat =
+                    keystoreType == SecConst.TOKEN_SOFT_JKS ? "JKS" :
+                    keystoreType == SecConst.TOKEN_SOFT_PEM ? "PEM" :
+                    keystoreType == SecConst.TOKEN_SOFT_P12 ? "PKCS12" :
+                    keystoreType == SecConst.TOKEN_SOFT_BCFKS ? "BCFKS" :
+                            "UNKNOWN";
+            return this;
+        }
+
         public CertificateRestResponseBuilder setCertificateChain(final List<byte[]> certificateChain) {
             this.certificateChain = certificateChain;
             return this;
@@ -131,10 +134,10 @@ public class CertificateRestResponse {
                     .build();
         }
         
-        public CertificateRestResponse toRestResponse(final KeyStore keyStore, final String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType)  {
             return CertificateRestResponse.builder()
-                    .setCertificate(lockKeyStore(keyStore, password))
-                    .setResponseFormat(keyStore.getType())
+                    .setCertificate(keyStoreBytes)
+                    .setResponseFormat(keystoreType)
                     .build();
         }
 
@@ -145,11 +148,5 @@ public class CertificateRestResponse {
                 throw new RuntimeException(e);
             }
         }
-    }
-    
-    private static byte[] lockKeyStore(KeyStore keyStore, String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        keyStore.store(baos, password.toCharArray());
-        return baos.toByteArray();
     }
 }
