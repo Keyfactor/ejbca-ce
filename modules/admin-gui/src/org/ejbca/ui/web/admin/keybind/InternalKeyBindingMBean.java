@@ -34,6 +34,9 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
+import org.cesecore.certificates.ocsp.logging.AuditLogger;
+import org.cesecore.certificates.ocsp.logging.GuidHolder;
+import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -67,6 +70,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -105,6 +109,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     private static final String OCSP_KEY_BINDING = "OcspKeyBinding";
     protected static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
+    private String auditLogMessage = "";
+    private String transactionLogMessage = "";
 
     @EJB(description = "Used to reload ocsp signing cache when user disables the internal ocsp key binding.")
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
@@ -769,6 +775,29 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         flushListCaches();
     }
 
+    public void commandTestTransactionLogging(final ActionEvent event) {
+        try {
+            final TransactionLogger transactionLogger = new TransactionLogger(1,
+                    GuidHolder.INSTANCE.getGlobalUid(), "");
+            // TODO
+            transactionLogMessage = transactionLogger.interpolate();
+        } catch (Exception e) {
+            transactionLogMessage = e.getMessage();
+        }
+    }
+
+    public void commandTestAuditLogging(final ActionEvent event) {
+        try {
+            final AuditLogger auditLogger = new AuditLogger("", 1,
+                    GuidHolder.INSTANCE.getGlobalUid(), "");
+            // TODO
+            auditLogMessage = auditLogger.interpolate();
+        } catch (Exception e) {
+            auditLogMessage = e.getMessage();
+        }
+
+    }
+
     //
     // Below is code related to editing/viewing a specific InternalKeyBinding
     //
@@ -968,6 +997,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     private void flushCurrentCache() {
+        auditLogMessage = "";
+        transactionLogMessage = "";
         if (!NumberUtils.isNumber(currentInternalKeyBindingId) || "0".equals(currentInternalKeyBindingId)) {
             // Show defaults for a new object
             currentName = "";
@@ -1505,6 +1536,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             }
         }
         return propertyPossibleValues;
+    }
+
+    public String getTransactionLogMessage() {
+        return transactionLogMessage;
+    }
+
+    public String getAuditLogMessage() {
+        return auditLogMessage;
     }
 
     /** Invoked when the user is done configuring a new InternalKeyBinding and wants to persist it */
