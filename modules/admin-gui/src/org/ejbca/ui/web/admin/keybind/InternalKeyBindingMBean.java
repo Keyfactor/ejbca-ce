@@ -17,6 +17,8 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -33,10 +35,12 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -56,6 +60,7 @@ import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -70,7 +75,6 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -81,6 +85,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -775,27 +780,52 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         flushListCaches();
     }
 
-    public void commandTestTransactionLogging(final ActionEvent event) {
+    public String commandTestOcspLogging() {
         try {
-            final TransactionLogger transactionLogger = new TransactionLogger(1,
-                    GuidHolder.INSTANCE.getGlobalUid(), "");
-            // TODO
+            final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            final X509Certificate caCertificate = CertTools.genSelfCert(
+                    "CN=Dummy OCSP Signer",
+                    10L,
+                    "1.1.1.1",
+                    keys.getPrivate(),
+                    keys.getPublic(),
+                    AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                    true,
+                    BouncyCastleProvider.PROVIDER_NAME);
+            final byte[] requestBytes = new OCSPReqBuilder()
+                    .addRequest(
+                        new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),
+                                caCertificate,
+                                caCertificate.getSerialNumber()))
+                    .build()
+                    .getEncoded();
+            final TransactionLogger transactionLogger = new TransactionLogger(
+                    1,
+                    GuidHolder.INSTANCE.getGlobalUid(),
+                    "127.0.0.1");
+            final AuditLogger auditLogger = new AuditLogger(
+                    new String(requestBytes),
+                    2,
+                    GuidHolder.INSTANCE.getGlobalUid(),
+                    "127.0.0.1");
+            ocspResponseGeneratorSession.getOcspResponse(
+                    requestBytes,
+                    null,
+                    "",
+                    null,
+                    null,
+                    auditLogger,
+                    transactionLogger,
+                    false,
+                    false);
             transactionLogMessage = transactionLogger.interpolate();
+            auditLogMessage = auditLogger.interpolate();
+            return "";
         } catch (Exception e) {
             transactionLogMessage = e.getMessage();
-        }
-    }
-
-    public void commandTestAuditLogging(final ActionEvent event) {
-        try {
-            final AuditLogger auditLogger = new AuditLogger("", 1,
-                    GuidHolder.INSTANCE.getGlobalUid(), "");
-            // TODO
-            auditLogMessage = auditLogger.interpolate();
-        } catch (Exception e) {
             auditLogMessage = e.getMessage();
+            return "";
         }
-
     }
 
     //
@@ -1484,6 +1514,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             }
         }
         return trustedCertificates;
+    }
+
+    public String getOcspTransactionLogMessage() {
+        return transactionLogMessage;
+    }
+
+    public String getOcspAuditLogMessage() {
+        return auditLogMessage;
     }
 
     /** Invoked when the user wants to a new entry to the list of trusted certificate references */
