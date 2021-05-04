@@ -34,8 +34,7 @@ import org.cesecore.util.CertTools;
  * If a EKU extension exists and is marked as critical, this PKIXCertPathChecker will ensure that
  * at least the specified extended key usages are present. Additional EKUs will be ignored as long
  * as the required ones are there. 
- * 
- * @version $Id$
+ * This check method only processes X.509 leaf certificates, and does not process CA certificates. 
  */
 public class EkuPKIXCertPathChecker extends PKIXCertPathChecker {
     
@@ -92,8 +91,15 @@ public class EkuPKIXCertPathChecker extends PKIXCertPathChecker {
                     if (log.isDebugEnabled()) {
                         log.debug("EKUs in certificate: " +Arrays.toString(ekus.toArray()) + " EKUs required: " +Arrays.toString(requiredKeyPurposeOids.toArray()));
                     }
-                    log.info("Validation of certificate with subject " + CertTools.getSubjectDN(cert) + " failed critical EKU validation. The missing EKUs were: " + Arrays.toString(ekusMissing.toArray()));
-                    return;
+                    if (!ekus.isEmpty() || x509Certificate.getCriticalExtensionOIDs().contains(Extension.extendedKeyUsage.getId())) {
+                        final String msg = "Validation of certificate with subject " + CertTools.getSubjectDN(cert) + " failed critical EKU validation. The missing EKUs were: " + Arrays.toString(ekusMissing.toArray());
+                        log.info(msg);
+                        throw new CertPathValidatorException(msg);                        
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("...but EKU is either empty or non-critical, so passing check anyhow.");
+                        }                        
+                    }
                 }
             } catch (CertificateParsingException e) {
                 throw new CertPathValidatorException(e);

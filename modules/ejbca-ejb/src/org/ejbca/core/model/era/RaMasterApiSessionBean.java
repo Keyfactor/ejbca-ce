@@ -146,6 +146,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -2383,6 +2384,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
         return scepMessageDispatcherSession.dispatchRequest(authenticationToken, operation, message, scepConfigurationAlias);
     }
+    
+    @Override
+    public byte[] verifyScepPkcs10RequestMessage(AuthenticationToken authenticationToken, String alias, byte[] message) throws CertificateCreateException {
+        return scepMessageDispatcherSession.verifyRequestMessage(authenticationToken, alias, message);
+    }
 
     @Override
     public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
@@ -2907,6 +2913,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         } else if (OAuthConfiguration.class.getName().equals(type.getName())) {
             result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        } else if (ScepConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
             if (result != null) {
