@@ -14,6 +14,8 @@
 package org.cesecore.authentication.oauth;
 
 import java.util.List;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 
 
@@ -75,7 +77,7 @@ public class OAuthKeyManager {
      */
     public boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existing : oauthKeys) {
-            final boolean hasSameInternalId = existing.getInternalId() == oauthKey.getInternalId();
+            final boolean hasSameInternalId = ObjectUtils.equals(existing.getInternalId(), oauthKey.getInternalId());
             final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), oauthKey.getLabel());
             if (hasSameInternalId || hasSameLabel) {
                 return false;
@@ -97,7 +99,7 @@ public class OAuthKeyManager {
      public boolean canEdit(final OAuthKeyInfo oauthKey, final String newLabel) {
          for (OAuthKeyInfo existing : oauthKeys) {
              final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), newLabel);
-             final boolean hasSameInternalId = existing.getInternalId() == oauthKey.getInternalId();
+             final boolean hasSameInternalId = ObjectUtils.equals(existing.getInternalId(), oauthKey.getInternalId());
              if (hasSameLabel && !hasSameInternalId) {
                  return false;
              }
