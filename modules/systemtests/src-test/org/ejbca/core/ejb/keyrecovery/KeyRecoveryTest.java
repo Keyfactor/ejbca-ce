@@ -13,17 +13,6 @@
 
 package org.ejbca.core.ejb.keyrecovery;
 
-import java.io.ByteArrayInputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Random;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -91,6 +80,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Random;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -377,9 +377,8 @@ public class KeyRecoveryTest extends CaTestCase {
             eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
             assertNotNull("Could not find test user", testuser);
             eeinfo.setPassword("foo123");
-            boolean createJKS = false;
-            final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, createJKS, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
-            KeyStore keystore1 = KeyStore.getInstance(createJKS?"JKS":"PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            KeyStore keystore1 = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore1.load(new ByteArrayInputStream(ks1), "foo123".toCharArray());
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(testuser)).get(0);
             fp1 = CertTools.getFingerprintAsString(usercert);
@@ -394,8 +393,8 @@ public class KeyRecoveryTest extends CaTestCase {
             
             // Now try to perform key recovery
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, testuser, eeProfileId, usercert));
-            final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, createJKS, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
-            KeyStore keystore2 = KeyStore.getInstance(createJKS?"JKS":"PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            KeyStore keystore2 = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore2.load(new ByteArrayInputStream(ks2), "foo123".toCharArray());
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(testuser));
             

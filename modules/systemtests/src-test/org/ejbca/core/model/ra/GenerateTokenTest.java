@@ -12,16 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import java.io.ByteArrayInputStream;
-import java.security.KeyStore;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Random;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -48,6 +38,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.security.KeyStore;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -135,10 +135,9 @@ public class GenerateTokenTest extends CaTestCase {
             eeinfo.setPassword("foo123");
 
             //Providing separately algorithm RSA_1024 that is going to be overridden with ECDSA_secp256r1
-            boolean createJKS = false;
             final byte[] keyStore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA, createJKS, false, true, false, eeProfileId);
-            KeyStore ks = KeyStore.getInstance(createJKS?"JKS":"PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+                    AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, false, true, false, eeProfileId);
+            KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
             Certificate cert = null;
             Enumeration<String> enumer = ks.aliases();
