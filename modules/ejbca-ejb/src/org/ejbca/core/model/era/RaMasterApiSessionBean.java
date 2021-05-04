@@ -1072,11 +1072,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final String subjectDnSearchString = request.getSubjectDnSearchString();
         final String subjectAnSearchString = request.getSubjectAnSearchString();
         final String usernameSearchString = request.getUsernameSearchString();
+        final String externalAccountIdSearchString = request.getExternalAccountIdSearchString();
         final String serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
         final String serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
-                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()) {
+                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()
+                || !externalAccountIdSearchString.isEmpty()) {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
@@ -1110,8 +1112,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (!serialNumberSearchStringFromHex.isEmpty()) {
                 if (firstAppended) {
                     sb.append(" OR ");
+                } else {
+                    firstAppended = true;
                 }
                 sb.append("a.serialNumber LIKE :serialNumberHex");
+            }
+            if (!externalAccountIdSearchString.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                }
+                sb.append("UPPER(a.accountBindingId) LIKE :accountBindingId");
             }
             sb.append(")");
         }
@@ -1202,6 +1212,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.setParameter("serialNumberHex", serialNumberSearchStringFromHex);
             if (log.isDebugEnabled()) {
                 log.debug(" serialNumberHex: " + serialNumberSearchStringFromHex);
+            }
+        }
+        if (!externalAccountIdSearchString.isEmpty()) {
+            if (request.isExternalAccountIdSearchExact()) {
+                query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
+            } else {
+                query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
             }
         }
         if (request.isIssuedAfterUsed()) {
