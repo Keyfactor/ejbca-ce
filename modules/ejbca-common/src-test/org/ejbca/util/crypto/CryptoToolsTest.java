@@ -29,6 +29,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -95,7 +96,7 @@ public class CryptoToolsTest {
     
     /** Test that we can encrypt and decrypt a KeyPair */
     @Test
-    public void testEncryptDecrypt() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, IOException, InvalidKeyException {
+    public void testEncryptDecryptKeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, IOException, InvalidKeyException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111, "Soft CryptoToken");
         final String alias = "alias";
         // key pair to encrypt decrypt keys
