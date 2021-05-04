@@ -12,13 +12,13 @@
  *************************************************************************/
 package org.cesecore.config;
 
+import org.apache.log4j.Logger;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
 
 /**
  * This file handles configuration from cesecore.properties
@@ -521,5 +521,11 @@ public final class CesecoreConfiguration {
     public static String getCustomClassWhitelist() {
         final String customClassWhitelist = ConfigurationHolder.getExpandedString(CUSTOM_CLASS_WHITELIST_KEY);
         return (customClassWhitelist != null ? customClassWhitelist : "");
+    }
+
+    public static boolean useLegacyPkcs12Keystore() {
+        return ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null
+                ? false
+                : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12"));
     }
 }
