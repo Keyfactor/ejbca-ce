@@ -227,6 +227,46 @@ public final class OAuthKeyInfo implements Serializable {
         }
     }
 
+    public String getOauthLoginUrl() {
+        if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
+            return getTypeSpecificUrl("auth");
+        }
+        if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
+            return getTypeSpecificUrl("authorize");
+        }
+        return url;
+    }
+
+    public String getTokenUrl() {
+        return getTypeSpecificUrl("token");
+    }
+
+    public String getLogoutUrl() {
+        return getTypeSpecificUrl("logout");
+    }
+
+    private String getTypeSpecificUrl(String endpoint){
+        switch (getType()) {
+            case TYPE_KEYCLOAK: {
+                String uri = getUrl();
+                uri += getUrl().endsWith("/") ? "" : "/";
+                uri += "realms/" + getRealm() + "/protocol/openid-connect/" + endpoint;
+                return uri;
+            }
+            case TYPE_AZURE: {
+                String uri = getUrl();
+                uri += getUrl().endsWith("/") ? "" : "/";
+                uri += getRealm() + "/oauth2/v2.0/" + endpoint;
+                return uri;
+            }
+            case TYPE_GENERIC: {
+                return getUrl();
+            }
+        }
+        return null;
+    }
+
+
     /** Fixes mistakes in the given URL (like removing trailing slashes). Exact behavior depends on the provider type. */
     public String fixUrl(final String urlToFix) {
         if (urlToFix == null) {
