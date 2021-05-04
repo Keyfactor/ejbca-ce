@@ -35,10 +35,12 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -46,6 +48,8 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
@@ -81,6 +85,9 @@ public class ScepServlet extends HttpServlet {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    
+    @EJB
+    private ScepMessageDispatcherSessionLocal scepMessageDispatcherSession;
     
     private static final String DEFAULT_SCEP_ALIAS = "scep";
 
@@ -225,6 +232,37 @@ public class ScepServlet extends HttpServlet {
             }
     		String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
 			log.info(iMsg);	
+			
+			if (operation.equals("PKIOperation")) {
+    			final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
+    	        if(!scepConfig.aliasExists(alias)) {
+    	            throw new NoSuchAliasException();
+    	        }
+    			boolean isRAModeOK = scepConfig.getRAMode(alias);
+    			if (isRAModeOK) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
+                    }
+                    if (scepConfig.getUseIntune(alias)) {
+            	        ScepRequestMessage reqmsg;
+            	        try {
+            	            final byte[] scepmsg = Base64.decode(message.getBytes());
+            	            reqmsg = new ScepRequestMessage(scepmsg, false);
+            	            final int messageType = reqmsg.getMessageType();
+            	            if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
+            	                final boolean verified = scepMessageDispatcherSession.doMsIntuneCsrVerification(administrator, alias, message.getBytes()); 
+            	                if (!verified) {
+            	                    throw new CertificateCreateException("MS Intune validation failed for alias " + alias + "'.");
+            	                }
+            	            }
+            	        } catch (IOException e) {
+            	            log.info("Error receiving ScepMessage: ", e);
+            	            throw new CertificateCreateException("MS Intune CSR verification failed: " + e.getMessage(), e);
+            	        }
+                    }
+                }
+			}
+    		
 			byte[] dispatchResponse = raMasterApiProxyBean.scepDispatch(administrator, operation, message, alias);
 			
             if (operation.equals("PKIOperation")) {
