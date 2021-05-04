@@ -47,10 +47,6 @@ import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * This utility class contains static utility methods related to cryptographic functions.
-<<<<<<< HEAD
- * 
-=======
->>>>>>> EJBCAINTER-272: use LookaheadObjectInputStream to read encrypted key
  */
 public class CryptoTools {
     
