@@ -113,7 +113,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
 
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String keyAlgorithm)
-            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException {
+            throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
         // Check if user exists.
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
         if(endEntity == null) {
@@ -129,7 +129,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throw new AuthorizationDeniedException(msg);
         }
         // Check token type.
-        if(endEntity.getTokenType() != SecConst.TOKEN_SOFT_P12) { // logger
+        if (endEntity.getTokenType() != SecConst.TOKEN_SOFT_P12) { // logger
             throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE, "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests");
         }
         final boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
@@ -154,10 +154,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         try {
             final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId,
-                    keySpecification, keyAlgorithm, null, null, false, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
+                    keySpecification, keyAlgorithm, null, null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
             final String alias = keyStore.aliases().nextElement();
-            // FIXME Can we remove the line below, or does keyStore.getCertificate() have any side-effects?
-            final X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException e) { // Is handled as EjbcaException at caller (EjbcaWS).
             throw e;
@@ -173,13 +171,13 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
 
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
-            String keyalg, boolean createJKS, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
+            String keyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, null, createJKS, loadkeys,
+        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, null, keystoreType, loadkeys,
                 savekeys,
                 reusecertificate, endEntityProfileId);
         return KeyStoreTools.getAsByteArray(keyStore, password);
@@ -187,7 +185,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
 
     @Override
     public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid,
-            String keyspec, String keyalg, Date notBefore, Date notAfter, boolean createJKS, boolean loadkeys, boolean savekeys,
+            String keyspec, String keyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
             boolean reusecertificate,
             int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
@@ -313,12 +311,17 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     	}
         // Store keys and certificates in keystore.
     	KeyStore ks = null;
-    	if (createJKS) {
+    	if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
             if (log.isDebugEnabled()) {
                 log.debug("Generating JKS for user: "+ username);
             }
     		ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
-    	} else {
+    	} else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
+            if (log.isDebugEnabled()) {
+                log.debug("Generating FIPS compliant PKCS12 for user: " + username);
+            }
+            ks = KeyTools.createBcfks(alias, rsaKeys.getPrivate(), cert, cachain);
+        } else {
             if (log.isDebugEnabled()) {
                 log.debug("Generating PKCS12 for user: "+ username);
             }
