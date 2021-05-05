@@ -14,6 +14,9 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -25,6 +28,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,10 +42,15 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.security.auth.x500.X500Principal;
+
+import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
+import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -98,13 +107,11 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.ScepResponseInfo;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
-
-import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
-import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
 
 /**
  * 
@@ -117,15 +124,15 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     private static final Logger log = Logger.getLogger(ScepMessageDispatcherSessionBean.class);
-    
+
     private static final String SCEP_RA_MODE_EXTENSION_CLASSNAME = "org.ejbca.core.protocol.scep.ScepRaModeExtension";
     private static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME = "org.ejbca.core.protocol.scep.ClientCertificateRenewalExtension";
-    
+
     private transient ScepOperationPlugin scepRaModeExtension = null;
     private transient ScepResponsePlugin scepClientCertificateRenewal = null;
-    
+
     private static final Random secureRandom = new SecureRandom();
-    
+
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -148,12 +155,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private SignSessionLocal signSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    
+
     @PostConstruct
     public void postConstruct() {
         try {
             @SuppressWarnings("unchecked")
-            Class<? extends ScepOperationPlugin> extensionClass = (Class<? extends ScepOperationPlugin>) Class.forName(SCEP_RA_MODE_EXTENSION_CLASSNAME);
+            Class<? extends ScepOperationPlugin> extensionClass = (Class<? extends ScepOperationPlugin>) Class
+                    .forName(SCEP_RA_MODE_EXTENSION_CLASSNAME);
             scepRaModeExtension = extensionClass.newInstance();
         } catch (ClassNotFoundException e) {
             scepRaModeExtension = null;
@@ -164,7 +172,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             scepRaModeExtension = null;
             log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
         }
-        
+
         try {
             @SuppressWarnings("unchecked")
             Class<ScepResponsePlugin> extensionClass = (Class<ScepResponsePlugin>) Class.forName(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME);
@@ -179,20 +187,39 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
         }
     }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final String operation, final String message,
+            final String scepConfigurationAlias) throws NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException,
+            NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, SignRequestException,
+            SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException,
+            CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException {
+
+        // call the Intune version, which contains additional fields, but only return the SCEP response
+        final ScepResponseInfo response = dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+        if (response == null) {
+            return null;
+        } else {
+            return response.getPkcs7Response();
+        }
+    }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) 
-            throws NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
-            CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
-            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
+    public ScepResponseInfo dispatchRequestIntune(final AuthenticationToken authenticationToken, final String operation, final String message,
+            final String scepConfigurationAlias) throws NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException,
+            NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, SignRequestException,
+            SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException,
+            CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException {
-        
+
         ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
-        if(!scepConfig.aliasExists(scepConfigurationAlias)) {
+        if (!scepConfig.aliasExists(scepConfigurationAlias)) {
             throw new NoSuchAliasException();
         }
-        
+
         if (operation.equals("PKIOperation")) {
             byte[] scepmsg = Base64.decode(message.getBytes());
             // Read the message and get the certificate, this also checks authorization
@@ -214,7 +241,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 if (log.isDebugEnabled()) {
                     log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
                 }
-                return cert.getEncoded();
+                return ScepResponseInfo.onlyResponseBytes(cert.getEncoded());
             } else {
                 return null;
             }
@@ -226,7 +253,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             CAInfo cainfo = caSession.getCAInfo(authenticationToken, caname);
             byte[] pkcs7 = signSession.createPKCS7(authenticationToken, cainfo.getCAId(), true);
             if ((pkcs7 != null) && (pkcs7.length > 0)) {
-                return pkcs7;
+                return ScepResponseInfo.onlyResponseBytes(pkcs7);
             } else {
                 return null;
             }
@@ -246,7 +273,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     if (log.isDebugEnabled()) {
                         log.debug("Sending next certificate chain for CA '" + caname + "' to SCEP client.");
                     }
-                    return signSession.createPKCS7Rollover(authenticationToken, cainfo.getCAId());
+                    return ScepResponseInfo.onlyResponseBytes(signSession.createPKCS7Rollover(authenticationToken, cainfo.getCAId()));
                 } else {
                     return null;
                 }
@@ -258,11 +285,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final boolean hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
                 // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
                 // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.            
-                return  hasRolloverCert ?
-                        "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3".getBytes() :
-                        "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3".getBytes();
+                return hasRolloverCert
+                        ? ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3".getBytes())
+                        : ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3".getBytes());
             } else {
-                final String msg = "CA was not found: "+caname;
+                final String msg = "CA was not found: " + caname;
                 log.debug(msg);
                 throw new CADoesntExistsException(msg);
             }
@@ -271,7 +298,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
         return null;
     }
-    
+
     /**
      * Fetches the name of the CA to use for the SCEP response, as defined by the alias, the message provided in the
      * SCEP request and default CA defined by the property <code>scep.defaultca</code> in <code>ejbca.properties</code>.
@@ -298,11 +325,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @throws CADoesntExistsException if CA mode if being used for the alias, no message is provided and the default SCEP CA is undefined.
      */
     private String getCaName(final String caName, final ScepConfiguration scepConfiguration, final String alias) throws CADoesntExistsException {
-        if(scepConfiguration.getUseIntune(alias)) {
+        if (scepConfiguration.getUseIntune(alias)) {
             //Always return the scep
             return scepConfiguration.getRADefaultCA(alias);
         }
-        
+
         if (!StringUtils.isEmpty(caName)) {
             // Use the CA defined by the message if present
             return caName;
@@ -314,14 +341,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         // Use the CA defined by the property scep.defaultca in CA mode. If not defined, throw an error.
         final String defaultCa = EjbcaConfiguration.getScepDefaultCA();
         if (StringUtils.isEmpty(defaultCa)) {
-            throw new CADoesntExistsException("The SCEP alias " + alias
-                    + " is in CA mode, the message parameter in the GET request is empty, and no default "
-                    + "CA has been defined for SCEP. Either switch to RA mode, provide the name of the CA "
-                    + "in the message, or specify the default CA using the scep.defaultca property.");
+            throw new CADoesntExistsException(
+                    "The SCEP alias " + alias + " is in CA mode, the message parameter in the GET request is empty, and no default "
+                            + "CA has been defined for SCEP. Either switch to RA mode, provide the name of the CA "
+                            + "in the message, or specify the default CA using the scep.defaultca property.");
         }
         return defaultCa;
     }
-    
+
     /**
      * Handles SCEP certificate request
      *
@@ -352,18 +379,19 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @throws CertificateException 
      * @throws {@link NoSuchEndEntityException} if end entity wasn't found, and RA mode isn't available. 
      */
-    private byte[] scepCertRequest(AuthenticationToken administrator, byte[] msg, final String alias, final ScepConfiguration scepConfig)
-            throws AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
-            CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
-            AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
-            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CertificateRenewalException, SignatureException, CertificateException {
+    private ScepResponseInfo scepCertRequest(AuthenticationToken administrator, byte[] msg, final String alias,
+            final ScepConfiguration scepConfig) throws AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException,
+            CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException,
+            SignRequestSignatureException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateRenewalException,
+            SignatureException, CertificateException {
         byte[] ret = null;
+        IntuneScepData intuneData = null;
+
         if (log.isTraceEnabled()) {
             log.trace(">getRequestMessage(" + msg.length + " bytes)");
         }
-        
-    
+
         boolean includeCACert = scepConfig.getIncludeCA(alias);
         ScepRequestMessage reqmsg;
         try {
@@ -396,12 +424,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 } catch (WaitingForApprovalException e) {
                     //Return a pending response message, because this request is now waiting to be approved
                     if (log.isDebugEnabled()) {
-                        log.debug("Returning a PENDING message to PKCSREQ request for end entity '" + reqmsg.generateUsername(scepConfig, alias) + "' to SCEP alias '" + alias + "'");
+                        log.debug("Returning a PENDING message to PKCSREQ request for end entity '" + reqmsg.generateUsername(scepConfig, alias)
+                                + "' to SCEP alias '" + alias + "'");
                     }
                     X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
                     ResponseMessage resp = createPendingResponseMessage(reqmsg, cainfo);
-                    return resp.getResponseMessage();
-                } 
+                    return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
+                }
             }
             try {
                 if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
@@ -413,7 +442,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         ret = resp.getResponseMessage();
                     }
                 } else {
-                    
+
                     // Get the certificate 
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP certificate enrollment with alias '" + alias + "'");
@@ -421,6 +450,15 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
                     if (resp != null) {
                         ret = resp.getResponseMessage();
+                        ScepResponseMessage scepResponseMessage = (ScepResponseMessage) resp;
+                        if (scepResponseMessage.getStatus() == ResponseStatus.SUCCESS) {
+                            intuneData = new IntuneScepData(scepResponseMessage.getIssuer(), scepResponseMessage.getSerialNumber(),
+                                    scepResponseMessage.getNotAfter(), scepResponseMessage.getThumbprint());
+                        } else {
+                            intuneData = new IntuneScepData(scepResponseMessage.getFailInfo(), scepResponseMessage.getFailText());
+                        }
+                        intuneData.addOriginalRequestIfPresent(reqmsg.getCertificationRequest());
+                        log.debug("Adding Intune fields to SCEP response: " + intuneData);
                     }
                 }
             } catch (AuthStatusException e) {
@@ -429,13 +467,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.info(failMessage, e);
                 CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
                 ResponseMessage resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failMessage);
-                return resp.getResponseMessage();
+                return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
             }
-        } else if(reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
+        } else if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
             //Only works in RA mode
             if (!isRAModeOK || scepRaModeExtension == null) {
                 // Fail nicely
-                log.warn("GETCERTINITIAL was called but only works in SCEP RA mode, which is not included in the community version of EJBCA. Unable to continue.");
+                log.warn(
+                        "GETCERTINITIAL was called but only works in SCEP RA mode, which is not included in the community version of EJBCA. Unable to continue.");
                 return null;
             } else {
                 if (log.isDebugEnabled()) {
@@ -443,7 +482,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 }
                 final CA ca = signSession.getCAFromRequest(administrator, reqmsg, false);
                 final String keyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                final X509Certificate cacert =  (X509Certificate) ca.getCACertificate();        
+                final X509Certificate cacert = (X509Certificate) ca.getCACertificate();
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
                 reqmsg.setKeyInfo(cacert, cryptoToken.getPrivateKey(keyAlias), cryptoToken.getSignProviderName());
                 //Retrieve the original request and transaction ID based on the username 
@@ -461,8 +500,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         log.debug("Generated an AddEndEntityApprovalId: " + approvalId);
                     }
                 } else {
-                    Class<? extends EndEntityApprovalRequest> cachedApprovalType = endEntityInformation.getExtendedInformation().getCachedApprovalType();
-                    if(cachedApprovalType == null) {
+                    Class<? extends EndEntityApprovalRequest> cachedApprovalType = endEntityInformation.getExtendedInformation()
+                            .getCachedApprovalType();
+                    if (cachedApprovalType == null) {
                         // Likely Renewal prior to approval
                         approvalId = EditEndEntityApprovalRequest.generateEditEndEntityApprovalId(username, approvalProfileName);
                         if (log.isDebugEnabled()) {
@@ -496,7 +536,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         }
                     });
                     // The last one should be our latest registered approval from the sorting above
-                    approval = approvals.get(approvals.size()-1);
+                    approval = approvals.get(approvals.size() - 1);
                 }
                 ResponseMessage resp;
                 if (approval != null) {
@@ -504,26 +544,29 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     //Verify that the transaction ID in the request is correct
                     endEntityInformation = ((EndEntityApprovalRequest) approval.getApprovalRequest()).getEndEntityInformation();
                     if (log.isDebugEnabled()) {
-                        log.debug("Found an existing approval of type " + approval.getApprovalType() + " with requestDate " + approval.getRequestDate() + " for end entity '" + endEntityInformation.getUsername() + "', with approval status " + approval.getStatus());
+                        log.debug("Found an existing approval of type " + approval.getApprovalType() + " with requestDate "
+                                + approval.getRequestDate() + " for end entity '" + endEntityInformation.getUsername() + "', with approval status "
+                                + approval.getStatus());
                     }
                     final ScepRequestMessage originalRequest = ScepRequestMessage
-                            .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());           
+                            .instance(endEntityInformation.getExtendedInformation().getCachedScepRequest());
                     //Verify that the correct transaction ID has been used, as per section 3.2.3 of the draft. Authentication will be handled later
                     if (originalRequest == null) {
-                        final String failText = "SCEP request was not stored in for end entity '" + reqmsg.getUsername() + "', cannot continue with issuance.";
+                        final String failText = "SCEP request was not stored in for end entity '" + reqmsg.getUsername()
+                                + "', cannot continue with issuance.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
-                        return resp.getResponseMessage();
+                        return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                     }
                     if (!originalRequest.getTransactionId().equalsIgnoreCase(reqmsg.getTransactionId())) {
-                        final String failText = "Failure to process GETCERTINITIAL message. Transaction ID " + reqmsg.getTransactionId() 
-                        + " did not match up with the one (" + originalRequest.getTransactionId() + ") used during initial PKCSREQ for end entity '" 
-                                + endEntityInformation.getUsername() + "'.";
+                        final String failText = "Failure to process GETCERTINITIAL message. Transaction ID " + reqmsg.getTransactionId()
+                                + " did not match up with the one (" + originalRequest.getTransactionId()
+                                + ") used during initial PKCSREQ for end entity '" + endEntityInformation.getUsername() + "'.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
-                        return resp.getResponseMessage();
+                        return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                     }
-                    
+
                     String failText;
                     switch (approval.getStatus()) {
                     case ApprovalDataVO.STATUS_EXECUTED:
@@ -538,10 +581,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                 } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
                                         | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
                                         | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                                    failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                                    failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  "
+                                            + e.getLocalizedMessage();
                                     log.info(failText);
                                     resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
-                                    return resp.getResponseMessage();
+                                    return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                                 }
                             }
                         } catch (AuthStatusException e) {
@@ -549,7 +593,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                                     + ") with incorrect status: " + e.getLocalizedMessage();
                             log.info(failText, e);
                             resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
-                            return resp.getResponseMessage();
+                            return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                         }
                         if (resp != null) {
                             //Since the client will be expecting the nonce to be that of the poll request instead of the original request, set it here. 
@@ -562,7 +606,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                             }
                             ret = resp.getResponseMessage();
                         }
-                        
+
                         break;
                     case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
                         //Still waiting for approval
@@ -577,15 +621,16 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         try {
                             eraseCachedEnrollmentValue(administrator, username);
                         } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
-                                | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
-                                | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                            failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                                | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException | EndEntityProfileValidationException
+                                | WaitingForApprovalException e) {
+                            failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  "
+                                    + e.getLocalizedMessage();
                             log.info(failText);
                             resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
-                            return resp.getResponseMessage();
+                            return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                         }
-                        failText = "Could not process GETCERTINITIAL request with transaction ID " + reqmsg.getTransactionId() + " for username '" + username
-                                + "'. Enrollment was not approved by administrator.";
+                        failText = "Could not process GETCERTINITIAL request with transaction ID " + reqmsg.getTransactionId() + " for username '"
+                                + username + "'. Enrollment was not approved by administrator.";
                         log.info(failText);
                         resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
                         ret = resp.getResponseMessage();
@@ -594,12 +639,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         try {
                             eraseCachedEnrollmentValue(administrator, username);
                         } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
-                                | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException
-                                | EndEntityProfileValidationException | WaitingForApprovalException e) {
-                            failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  " + e.getLocalizedMessage();
+                                | NoSuchEndEntityException | CustomFieldException | AuthorizationDeniedException | EndEntityProfileValidationException
+                                | WaitingForApprovalException e) {
+                            failText = "Failed to erase cached SCEP enrollment value for end entity with username: '" + username + "',  "
+                                    + e.getLocalizedMessage();
                             log.info(failText);
                             resp = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText);
-                            return resp.getResponseMessage();
+                            return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                         }
                         failText = "Could not process GETCERTINITIAL request for username '" + username + "'. Enrollment execution failed.";
                         log.info(failText);
@@ -613,11 +659,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         break;
                     }
                 } else {
-                    String failText = "GETCERTINITIAL was called on user with name '" + username + "' using transaction ID " + reqmsg.getTransactionId()
-                            + ", but no waiting approval request for an end entity with that name exists";
+                    String failText = "GETCERTINITIAL was called on user with name '" + username + "' using transaction ID "
+                            + reqmsg.getTransactionId() + ", but no waiting approval request for an end entity with that name exists";
                     log.info(failText);
                     ret = createFailingResponseMessage(reqmsg, (X509CAInfo) ca.getCAInfo(), FailInfo.BAD_REQUEST, failText).getResponseMessage();
-                }       
+                }
             }
         } else if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
             // create the stupid encrypted CRL message, the below can actually only be made 
@@ -631,12 +677,20 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         if (log.isTraceEnabled()) {
             log.trace("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));
         }
-        return ret;
+
+        if (ret == null) {
+            return null;
+        } else if (intuneData != null) {
+            return intuneData.toScepResponseInfo(ret);
+        } else {
+            return ScepResponseInfo.onlyResponseBytes(ret);
+        }
     }
 
     @Override
-    public boolean doMsIntuneCsrVerification(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException {
-        if(log.isDebugEnabled()) {
+    public boolean doMsIntuneCsrVerification(final AuthenticationToken authenticationToken, final String alias, final byte[] message)
+            throws CertificateCreateException {
+        if (log.isDebugEnabled()) {
             log.debug("Attempting intune validation for alias " + alias);
         }
         if (scepRaModeExtension == null) {
@@ -644,8 +698,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.warn("SCEP RA mode is enabled, but not included in the community version of EJBCA. Unable to continue.");
             throw new CertificateCreateException("Intune enrollment failed because no license.");
         }
-        
-        final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class); 
+
+        final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
         ScepRequestMessage reqmsg = null;
         String transactionId = null;
         try {
@@ -656,7 +710,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.info("Error receiving ScepMessage: ", e);
             throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
         }
-        
+
         final Properties properties = scepConfig.getIntuneProperties(alias);
         IntuneScepServiceClient intuneScepServiceClient;
         try {
@@ -664,7 +718,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } catch (IllegalArgumentException e) {
             throw new CertificateCreateException("Failed to initialize MS Intune SCEP service client for alias '" + alias + "'.", e);
         }
-        
+
         try {
             final byte[] derEncodedCsr = raMasterApiProxyBean.verifyScepPkcs10RequestMessage(authenticationToken, alias, message);
             if (log.isDebugEnabled()) {
@@ -680,12 +734,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } catch (Exception e) {
             // See https://github.com/microsoft/Intune-Resource-Access/blob/master/src/CsrValidation/java/lib/src/main/java/com/microsoft/intune/scepvalidation/IntuneScepServiceClient.java
             // ValidateRequest(String transactionId, String certificateRequest) throws IntuneScepServiceException, Exception
-            throw new CertificateCreateException("MS Intune enrollment failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ", e);
+            throw new CertificateCreateException("MS Intune enrollment failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ",
+                    e);
         }
     }
-    
+
     @Override
-    public byte[] verifyRequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException {
+    public byte[] verifyRequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message)
+            throws CertificateCreateException {
         log.info("Verify SCEP PKCS10 request message for SCEP alias '" + alias + "'.");
         final ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         ScepRequestMessage reqmsg = null;
@@ -696,8 +752,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             log.info("Error receiving ScepMessage: ", e);
             throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
         }
-        
-        String caName = null; 
+
+        String caName = null;
         CAInfo caInfo = null;
         CACommon ca = null;
         try {
@@ -713,8 +769,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         final CAToken caToken = caInfo.getCAToken();
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
         try {
-            reqmsg.setKeyInfo(ca.getCACertificate(),
-                    cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+            reqmsg.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
                     cryptoToken.getSignProviderName());
             reqmsg.verify();
             return reqmsg.getCertificationRequest().getEncoded();
@@ -722,7 +777,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             throw new CertificateCreateException("SCEP PKCS10 message verification failed for alias " + alias + "'.", e);
         }
     }
-    
+
     /**
      * Erases the cached SCEP request and the approval type from the end entity
      * 
@@ -751,7 +806,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
         }
     }
-        
+
     /**
      * Create a response message with status FAILURE
      * 
@@ -782,12 +837,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         if (req.getTransactionId() != null) {
             ret.setTransactionId(req.getTransactionId());
         }
-        
+
         // SenderNonce is a random number
         byte[] senderNonce = new byte[16];
         secureRandom.nextBytes(senderNonce);
         ret.setSenderNonce(new String(Base64.encode(senderNonce)));
-             
+
         // If we have a specified request key info, use it in the reply
         if (req.getRequestKeyInfo() != null) {
             ret.setRecipientKeyInfo(req.getRequestKeyInfo());
@@ -801,10 +856,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             ret.create();
         } catch (CertificateEncodingException | CRLException e) {
             throw new IllegalStateException("Response message could not be created.", e);
-        } 
+        }
         return ret;
     }
-    
+
     /**
      * Create a response message with status FAILURE
      * 
@@ -813,8 +868,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @return a response message with the given status 
      * @throws CryptoTokenOfflineException
      */
-    private ScepResponseMessage createFailingResponseMessage(final RequestMessage req, final X509CAInfo signingCa, final FailInfo failInfo, final String failText)
-            throws CryptoTokenOfflineException {
+    private ScepResponseMessage createFailingResponseMessage(final RequestMessage req, final X509CAInfo signingCa, final FailInfo failInfo,
+            final String failText) throws CryptoTokenOfflineException {
         ScepResponseMessage ret = new ScepResponseMessage();
         // Create the response message and set all required fields
         CAToken caToken = signingCa.getCAToken();
@@ -835,12 +890,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         if (req.getTransactionId() != null) {
             ret.setTransactionId(req.getTransactionId());
         }
-        
+
         // SenderNonce is a random number
         byte[] senderNonce = new byte[16];
         secureRandom.nextBytes(senderNonce);
         ret.setSenderNonce(new String(Base64.encode(senderNonce)));
-             
+
         // If we have a specified request key info, use it in the reply
         if (req.getRequestKeyInfo() != null) {
             ret.setRecipientKeyInfo(req.getRequestKeyInfo());
@@ -856,7 +911,223 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             ret.create();
         } catch (CertificateEncodingException | CRLException e) {
             throw new IllegalStateException("Response message could not be created.", e);
-        } 
+        }
         return ret;
+    }
+
+    @Override
+    public void doMsIntuneCompleteRequest(AuthenticationToken authenticationToken, String transactionId, String alias, ScepResponseInfo response)
+            throws CertificateCreateException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting intune status update for alias " + alias);
+        }
+        if (scepRaModeExtension == null) {
+            // Fail nicely
+            log.warn("SCEP RA mode is enabled, but not included in the community version of EJBCA. Unable to continue.");
+            throw new CertificateCreateException("Intune update failed because no license.");
+        }
+
+        final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
+        final Properties properties = scepConfig.getIntuneProperties(alias);
+        final IntuneScepServiceClient intuneScepServiceClient;
+        try {
+            intuneScepServiceClient = new IntuneScepServiceClient(properties);
+        } catch (IllegalArgumentException e) {
+            throw new CertificateCreateException("Failed to initialize MS Intune SCEP service client for alias '" + alias + "'.", e);
+        }
+
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("Try MS Intune status update for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+            }
+            
+            // use java.util to ensure there are no crlfs
+            if (response == null) {
+                log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
+                // We only send one, since the actual error condition isn't returned from the CA
+                final long errorCode = 0x20000001L;
+                final String errorMessage = "Failed to issue certificate for alias '" + alias + "' and transaction ID '" + transactionId + "'. ";
+                intuneScepServiceClient.SendFailureNotification(transactionId,
+                        "", errorCode,
+                        // maximum length, per MS documentation
+                        errorMessage.substring(0, 255));
+            } else if (response.isFailed()) {
+                final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
+                log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
+                // We only send one, since the actual error condition isn't returned from the CA
+                final long errorCode = 0x20000100L + response.getFailInfo().intValue();
+                final String errorMessage = response.getFailText();
+                intuneScepServiceClient.SendFailureNotification(transactionId,
+                        base64Message, errorCode,
+                        // maximum length, per MS documentation
+                        errorMessage.substring(0, 255));
+            }
+            else {
+                final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
+                log.debug("scep id = " + transactionId);
+                log.debug("scep base64Message = " + base64Message);
+                final String thumbprint = toMicrosoftHex(response.getThumbprint());
+                log.debug("scep thumbprint = " + thumbprint);
+                final String hexSerialNumber = response.getSerialNumber().toString(16);
+                log.debug("scep hexSerialNumber = " + hexSerialNumber);
+                final String issuer = response.getIssuer().getName();
+                log.debug("scep issuer = " + issuer);
+                intuneScepServiceClient.SendSuccessNotification(transactionId, base64Message, thumbprint, hexSerialNumber, response.getNotAfter().toString(),
+                        issuer, issuer, issuer);
+            }
+            log.info("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+        } catch (IntuneScepServiceException e) {
+            final String msg = "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
+            log.info(msg, e);
+            throw new CertificateCreateException(msg, e);
+        } catch (Exception e) {
+            throw new CertificateCreateException(
+                    "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ", e);
+        }
+
+    }
+
+    private String toMicrosoftHex(byte[] thumbprint) {
+        StringBuilder out = new StringBuilder(thumbprint.length * 3 - 1);
+        boolean firstByte = true;
+        for (byte b : thumbprint) {
+            if (!firstByte)
+                out.append(" ");
+            else
+                firstByte = false;
+            out.append(String.format("%02x", b));
+        }
+        return out.toString();
+    }
+
+    public static void dump(final byte[] data, final long offset, final OutputStream stream, final int index)
+            throws IOException, ArrayIndexOutOfBoundsException, IllegalArgumentException {
+
+        if (index < 0 || index >= data.length) {
+            throw new ArrayIndexOutOfBoundsException("illegal index: " + index + " into array of length " + data.length);
+        }
+        if (stream == null) {
+            throw new IllegalArgumentException("cannot write to nullstream");
+        }
+        long display_offset = offset + index;
+        final StringBuilder buffer = new StringBuilder(74);
+
+        for (int j = index; j < data.length; j += 16) {
+            int chars_read = data.length - j;
+
+            if (chars_read > 16) {
+                chars_read = 16;
+            }
+            dump(buffer, display_offset).append(' ');
+            for (int k = 0; k < 16; k++) {
+                if (k < chars_read) {
+                    dump(buffer, data[k + j]);
+                } else {
+                    buffer.append("  ");
+                }
+                buffer.append(' ');
+            }
+            for (int k = 0; k < chars_read; k++) {
+                if (data[k + j] >= ' ' && data[k + j] < 127) {
+                    buffer.append((char) data[k + j]);
+                } else {
+                    buffer.append('.');
+                }
+            }
+            buffer.append(EOL);
+            // make explicit the dependency on the default encoding
+            stream.write(buffer.toString().getBytes(Charset.defaultCharset()));
+            stream.flush();
+            buffer.setLength(0);
+            display_offset += chars_read;
+        }
+    }
+
+    /**
+     * The line-separator (initializes to "line.separator" system property.
+     */
+    public static final String EOL = System.getProperty("line.separator");
+    private static final char[] _hexcodes = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    private static final int[] _shifts = { 28, 24, 20, 16, 12, 8, 4, 0 };
+
+    /**
+     * Dump a long value into a StringBuilder.
+     *
+     * @param _lbuffer the StringBuilder to dump the value in
+     * @param value  the long value to be dumped
+     * @return StringBuilder containing the dumped value.
+     */
+    private static StringBuilder dump(final StringBuilder _lbuffer, final long value) {
+        for (int j = 0; j < 8; j++) {
+            _lbuffer.append(_hexcodes[(int) (value >> _shifts[j]) & 15]);
+        }
+        return _lbuffer;
+    }
+
+    /**
+     * Dump a byte value into a StringBuilder.
+     *
+     * @param _cbuffer the StringBuilder to dump the value in
+     * @param value  the byte value to be dumped
+     * @return StringBuilder containing the dumped value.
+     */
+    private static StringBuilder dump(final StringBuilder _cbuffer, final byte value) {
+        for (int j = 0; j < 2; j++) {
+            _cbuffer.append(_hexcodes[value >> _shifts[j + 6] & 15]);
+        }
+        return _cbuffer;
+    }
+    
+    /**
+     * Just a convenient holder for additional data during SCEP issuance.  
+     */
+    public class IntuneScepData {
+
+        private boolean failed = false;
+        private X500Principal issuer = null;
+        private BigInteger serialNumber = null;
+        private Instant notAfter = null;
+        private byte[] thumbprint = null;
+        private FailInfo failInfo = null;
+        private String failText = null;
+        private byte[] pkcs10Request;
+
+        public IntuneScepData(X500Principal issuer, BigInteger serialNumber, Instant notAfter, byte[] thumbprint) {
+            this.issuer = issuer;
+            this.serialNumber = serialNumber;
+            this.notAfter = notAfter;
+            this.thumbprint = thumbprint;
+            failed = false;
+        }
+
+        public ScepResponseInfo toScepResponseInfo(byte[] ret) {
+            if (failed) {
+                return new ScepResponseInfo(ret, failInfo, failText == null ? failInfo.toString() : failText, pkcs10Request);
+            } else {
+                return new ScepResponseInfo(ret, issuer, serialNumber, notAfter, thumbprint, pkcs10Request);
+            }
+        }
+
+        public IntuneScepData(FailInfo failInfo, String failText) {
+            this.failInfo = failInfo;
+            this.failText = failText;
+            failed = true;
+        }
+
+        public void addOriginalRequestIfPresent(PKCS10CertificationRequest certificationRequest) {
+            if (certificationRequest == null) {
+                log.debug("No pkcs10 request in original request.");
+                pkcs10Request = null;
+            } else {
+                try {
+                    pkcs10Request = certificationRequest.getEncoded();
+                } catch (IOException e) {
+                    log.debug("No readable original pkcs10 request in original request.", e);
+                    pkcs10Request = null;
+                }
+            }
+        }
     }
 }

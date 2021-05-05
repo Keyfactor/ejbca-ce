@@ -1974,10 +1974,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
                 try {
-                    byte[] response;
                     try {
-                        response = raMasterApi.scepDispatch(authenticationToken, operation, message, scepConfigurationAlias);
-                        return response;
+                        return raMasterApi.scepDispatch(authenticationToken, operation, message, scepConfigurationAlias);
                         // Try all implementations before failing on this exception
                     } catch (NoSuchAliasException e) {
                         caughtException = e;
@@ -3383,4 +3381,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
 
+    /**
+     * Try dispatching a SCEP request to an Intune capable backend.
+     */
+    @Override
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) throws
+            CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException,
+            CertificateExtensionException, CertificateRenewalException, NoSuchAliasException, AuthorizationDeniedException {
+        NoSuchAliasException caughtException = null;
+
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 12) {
+                try {
+                    try {
+                        return raMasterApi.scepDispatchIntune(authenticationToken, operation, message, scepConfigurationAlias);
+                        // Try all implementations before failing on this exception
+                    } catch (NoSuchAliasException e) {
+                        caughtException = e;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+
+        if (caughtException != null) {
+            throw caughtException;
+        } else {
+            return null;
+        }
+    }
 }
