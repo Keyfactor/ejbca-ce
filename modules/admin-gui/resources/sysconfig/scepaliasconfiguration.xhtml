@@ -191,6 +191,13 @@
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				
+		<h:outputLabel for="intuneAadAppKeyBinding" value="#{web.text.SCEP_AAD_APP_KEY_BINDING}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneAadAppKeyBinding" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+			<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppKeyBinding}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppKeyBinding}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
+				
 		<h:outputLabel for="intuneTenant" value="#{web.text.SCEP_TENANT}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneTenant" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneTenant}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">

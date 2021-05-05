@@ -76,6 +76,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String AUTH_AUTHORITY = "intuneAuthority";
     public static final String AAD_APP_ID = "intuneAadAppId";
     public static final String AAD_APP_KEY = "intuneAadAppKey";
+    public static final String AAD_APP_KEY_BINDING = "intuneAadKeyBinding";
     public static final String TENANT = "intuneTenant";
     public static final String INTUNE_RESOURCE_URL = "intuneResourceUrl";
     public static final String GRAPH_API_VERSION = "intuneGraphApiVersion";
@@ -145,6 +146,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + AUTH_AUTHORITY, "");
         data.put(alias + AAD_APP_ID, "");
         data.put(alias + AAD_APP_KEY, "");
+        data.put(alias + AAD_APP_KEY_BINDING, "");
         data.put(alias + TENANT, "");
         data.put(alias + INTUNE_RESOURCE_URL, "");
         data.put(alias + GRAPH_API_VERSION, "");
@@ -176,6 +178,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + AUTH_AUTHORITY);
         keys.add(alias + AAD_APP_ID);
         keys.add(alias + AAD_APP_KEY);
+        keys.add(alias + AAD_APP_KEY_BINDING);
         keys.add(alias + TENANT);
         keys.add(alias + INTUNE_RESOURCE_URL);
         keys.add(alias + GRAPH_API_VERSION);
@@ -384,7 +387,17 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         String key = alias + "." + AAD_APP_KEY;
         return getValue(key, alias);
     }
-    
+
+    public String getIntuneAadAppKeyBinding(final String alias) {
+        String key = alias + "." + AAD_APP_KEY_BINDING;
+        return getValue(key, alias);
+    }
+
+    public void setIntuneAadAppKeyBinding(final String alias, final String value) {
+        String key = alias + "." + AAD_APP_KEY_BINDING;
+        setValue(key, value, alias);
+    }
+
     public void setIntuneTenant(final String alias, final String value) {
         String key = alias + "." + TENANT;
         setValue(key, value, alias);
@@ -476,6 +489,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         }
         if (StringUtils.isNotBlank(getIntuneAadAppKey(alias))) {
             intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneAadAppKeyBinding(alias))) {
+            intuneProperties.put("AAD_APP_KEY_BINDING", getIntuneAadAppKeyBinding(alias));
         }
         if (StringUtils.isNotBlank(getIntuneTenant(alias))) {
             intuneProperties.put("TENANT", getIntuneTenant(alias));
@@ -731,6 +747,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 }
                 if (data.get(alias + AAD_APP_KEY) == null) {
                     data.put(alias + AAD_APP_KEY, "");
+                }
+                if (data.get(alias + AAD_APP_KEY_BINDING) == null) {
+                    data.put(alias + AAD_APP_KEY_BINDING, "");
                 }
                 if (data.get(alias + TENANT) == null) {
                     data.put(alias + TENANT, "");

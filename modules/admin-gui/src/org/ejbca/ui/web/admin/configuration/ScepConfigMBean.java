@@ -72,6 +72,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String intuneAuthority;
         private String intuneAadAppId;
         private String intuneAadAppKey;
+        private String intuneAadAppKeyBinding;
         private String intuneTenant;
         private String intuneResourceUrl;
         private String intuneGraphApiVersion;
@@ -101,6 +102,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.intuneAuthority = scepConfig.getIntuneAuthority(alias);
                     this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
                     this.intuneAadAppKey = scepConfig.getIntuneAadAppKey(alias);
+                    this.intuneAadAppKeyBinding = scepConfig.getIntuneAadAppKeyBinding(alias);
                     this.intuneTenant = scepConfig.getIntuneTenant(alias);
                     this.intuneResourceUrl = scepConfig.getIntuneResourceUrl(alias);
                     this.intuneGraphApiVersion = scepConfig.getIntuneGraphApiVersion(alias);
@@ -127,6 +129,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.intuneAuthority = "";
                     this.intuneAadAppId = "";
                     this.intuneAadAppKey = "";
+                    this.intuneAadAppKeyBinding = "";
                     this.intuneTenant = "";
                     this.intuneResourceUrl = "";
                     this.intuneGraphApiVersion = "";
@@ -353,6 +356,14 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneProxyPass(String intuneProxyPass) {
             this.intuneProxyPass = intuneProxyPass;
         }
+
+        public String getIntuneAadAppKeyBinding() {
+            return intuneAadAppKeyBinding;
+        }
+
+        public void setIntuneAadAppKeyBinding(String intuneAadKeyBinding) {
+            this.intuneAadAppKeyBinding = intuneAadKeyBinding;
+        }
     }
 
     private static final long serialVersionUID = 2L;
@@ -477,6 +488,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
             scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
+            scepConfig.setIntuneAadAppKeyBinding(alias, currentAlias.getIntuneAadAppKeyBinding());
             scepConfig.setIntuneTenant(alias, currentAlias.getIntuneTenant());
             scepConfig.setIntuneResourceUrl(alias, currentAlias.getIntuneResourceUrl());
             scepConfig.setIntuneGraphApiVersion(alias, currentAlias.getIntuneGraphApiVersion());
