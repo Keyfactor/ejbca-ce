@@ -783,8 +783,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public String commandTestOcspLogging() {
         try {
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            final X509Certificate caCertificate = CertTools.genSelfCert(
-                    "CN=Dummy OCSP Signer",
+            final X509Certificate dummyCertificate = CertTools.genSelfCert(
+                    "CN=Dummy Certificate",
                     10L,
                     "1.1.1.1",
                     keys.getPrivate(),
@@ -795,8 +795,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final byte[] requestBytes = new OCSPReqBuilder()
                     .addRequest(
                         new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),
-                                caCertificate,
-                                caCertificate.getSerialNumber()))
+                                dummyCertificate,
+                                dummyCertificate.getSerialNumber()))
                     .build()
                     .getEncoded();
             final TransactionLogger transactionLogger = new TransactionLogger(
