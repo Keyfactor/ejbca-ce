@@ -121,6 +121,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
@@ -2898,6 +2899,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         } else if (ScepConfiguration.class.getName().equals(type.getName())) {
             result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        } else if (EABConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
             if (result != null) {
