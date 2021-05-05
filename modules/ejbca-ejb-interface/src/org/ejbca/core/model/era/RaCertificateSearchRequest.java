@@ -324,9 +324,9 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
 
     /** @return true if the external account id is matched by this search. */
     public boolean matchExternalAccountId(final String externalAccountId) {
-        return externalAccountId != null && ((!externalAccountIdSearchExact
-                && externalAccountId.toUpperCase().contains(usernameSearchString.toUpperCase())) ||
-                (externalAccountIdSearchExact && externalAccountId.equalsIgnoreCase(usernameSearchString)));
+        return externalAccountId != null && (externalAccountIdSearchExact ?
+                externalAccountId.equalsIgnoreCase(usernameSearchString) :
+                externalAccountId.toUpperCase().contains(usernameSearchString.toUpperCase()));
     }
 
     /** @return true if the subjectDn is matched by this search. */
