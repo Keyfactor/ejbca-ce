@@ -1118,7 +1118,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
                 sb.append("a.serialNumber LIKE :serialNumberHex");
             }
-            if (!externalAccountIdSearchString.isEmpty()) {
+            if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
                 if (firstAppended) {
                     sb.append(" OR ");
                 }
@@ -1215,7 +1215,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" serialNumberHex: " + serialNumberSearchStringFromHex);
             }
         }
-        if (!externalAccountIdSearchString.isEmpty()) {
+        if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
             if (request.isExternalAccountIdSearchExact()) {
                 query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
             } else {
