@@ -22,6 +22,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 
+import javax.crypto.spec.SecretKeySpec;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.cms.CMSEnvelopedData;
@@ -42,8 +44,6 @@ import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * This utility class contains static utility methods related to cryptographic functions.
- * 
- * @version $Id$
  * 
  */
 public class CryptoTools {
@@ -133,6 +133,44 @@ public class CryptoTools {
     }
 
     /**
+     * Encryption method used to encrypt a shared key pair using a CA.
+     * 
+     * @param cryptoToken the crypto token where the encryption key is.
+     * @param alias the alias of the key on the crypto token to use for encryption.
+     * @param key the data to encrypt.
+     * @return encrypted data.
+     * 
+     * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
+     */
+    public static byte[] encryptKey(final CryptoToken cryptoToken, final String alias, final SecretKeySpec key) throws CryptoTokenOfflineException {
+        log.info("Encrypt key using key alias '" + alias + "' from Crypto Token " + cryptoToken.getId());
+        return encryptKey(cryptoToken.getPublicKey(alias), key);
+    }
+    
+    /**
+     * Encryption method used to encrypt a shared key pair using a public key.
+     * 
+     * @param pk the public key to encrypt the data.
+     * @param key the data to encrypt.
+     * @return encrypted data.
+     */
+    public static byte[] encryptKey(final PublicKey pk, final SecretKeySpec key) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ObjectOutputStream os = new ObjectOutputStream(baos)) {
+            os.writeObject(key);
+            final CMSEnvelopedDataGenerator generator = new CMSEnvelopedDataGenerator();
+            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
+            final byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
+            generator.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
+            final JceCMSContentEncryptorBuilder builder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            final CMSEnvelopedData data = generator.generate(new CMSProcessableByteArray(baos.toByteArray()), builder.build());
+            return data.getEncoded();
+        } catch (IOException | CMSException e) {
+            throw new IllegalStateException("Failed to encrypt key: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Decryption method used to decrypt a key pair using a CA
      *
      * @param cryptoToken the crypto token where the decryption key is
@@ -142,7 +180,7 @@ public class CryptoTools {
      * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
      * @throws IOException In case reading/writing data streams failed during decryption, or parsing decrypted data into KeyPair.
      */
-    public static KeyPair decryptKeys(final CryptoToken cryptoToken, final String alias, final byte[] data) throws IOException, CryptoTokenOfflineException {
+    public static final KeyPair decryptKeys(final CryptoToken cryptoToken, final String alias, final byte[] data) throws IOException, CryptoTokenOfflineException {
         try {
             CMSEnvelopedData ed = new CMSEnvelopedData(data);
             RecipientInformationStore recipients = ed.getRecipientInfos();
@@ -162,6 +200,45 @@ public class CryptoTools {
         } catch (ClassNotFoundException e) {
             throw new IOException("Could not deserialize key pair after decrypting it due to missing class: " + e.getMessage(), e);
         } catch (CMSException e) {
+            throw new IOException("Could not parse encrypted data: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Decryption method used to decrypt a symmetric key using a CA.
+     * 
+     * @param cryptoToken the crypto token where the decryption key is.
+     * @param alias the alias of the key on the crypto token to use for decryption.
+     * @param data the data to decrypt.
+     * @return a symmetric key as SecretKeySpec.
+     * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
+     * @throws IOException In case reading/writing data streams failed during decryption, or parsing decrypted data into SecretKeySpec.
+     */
+    public static final SecretKeySpec decryptKey(final CryptoToken cryptoToken, final String alias, final byte[] data) throws IOException, CryptoTokenOfflineException {
+        try {
+            final CMSEnvelopedData ed = new CMSEnvelopedData(data);
+            final RecipientInformationStore recipients = ed.getRecipientInfos();
+            final RecipientInformation recipient = recipients.getRecipients().iterator().next();
+            final JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
+            rec.setProvider(cryptoToken.getEncProviderName());
+            rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
+            // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
+            // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known
+            // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+            rec.setMustProduceEncodableUnwrappedKey(true);
+            SecretKeySpec spec; 
+            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(recipient.getContent(rec)))) {
+                spec = (SecretKeySpec) ois.readObject();
+                log.info("Decrypted key using key alias '" + alias + "' from Crypto Token " + cryptoToken.getId());
+            } catch(IOException e) {
+                throw e;
+            }
+            return spec;
+        } 
+        catch (ClassNotFoundException e) {
+            throw new IOException("Could not deserialize key after decrypting it due to missing class: " + e.getMessage(), e);
+        }
+        catch (CMSException e) {
             throw new IOException("Could not parse encrypted data: " + e.getMessage(), e);
         }
     }
