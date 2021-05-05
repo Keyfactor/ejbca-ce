@@ -15,7 +15,6 @@ package org.ejbca.util.crypto;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.KeyPair;
@@ -257,7 +256,12 @@ public class CryptoTools {
             // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
             rec.setMustProduceEncodableUnwrappedKey(true);
             SecretKeySpec spec; 
-            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(recipient.getContent(rec)))) {
+            try (LookAheadObjectInputStream ois = new LookAheadObjectInputStream(new ByteArrayInputStream(recipient.getContent(rec)))) {
+                Set<Class<? extends Serializable>> keypairclasses = new HashSet<Class<? extends Serializable>>();
+                keypairclasses.add(javax.crypto.spec.SecretKeySpec.class);
+                ois.setAcceptedClasses(keypairclasses);
+                // secret key sects contain other object, this works for all keys I tried (AES)
+                ois.setMaxObjects(10);
                 spec = (SecretKeySpec) ois.readObject();
                 log.info("Decrypted key using key alias '" + alias + "' from Crypto Token " + cryptoToken.getId());
             } catch(IOException e) {
