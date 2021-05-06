@@ -12,39 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -84,6 +56,37 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -1155,5 +1158,43 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public int determineCrlPartitionIndex(final int caid, final CertificateWrapper cert) {
         final CACommon ca = getCa(caid, null);
         return ca.getCAInfo().determineCrlPartitionIndex(EJBTools.unwrap(cert));
+    }
+
+    @Override
+    public Optional<CAInfo> getIssuerFor(final AuthenticationToken authenticationToken, final X509Certificate certificate) {
+        if (CertTools.getAuthorityKeyId(certificate) == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot identify issuer '" + CertTools.getIssuerDN(certificate) +
+                        "' for certificate with serial number " + certificate.getSerialNumber() +
+                        ". The certificate does not contain an authorityKeyIdentifier.");
+            }
+            return Optional.empty();
+        }
+        for (final int id : getCAIdToNameMap().keySet()) {
+            try {
+                final CAInfo ca = getCAInfo(authenticationToken, id);
+                if (ca.getCertificateChain() == null || ca.getCertificateChain().isEmpty()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("The CA with id '" + id + "' does not have a certificate chain.");
+                    }
+                    continue;
+                }
+                if (Arrays.equals(CertTools.getSubjectKeyId(ca.getCertificateChain().get(0)),
+                        CertTools.getAuthorityKeyId(certificate))) {
+                    return Optional.of(ca);
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("The authorityKeyIdentifier 0x'" + Hex.encode(CertTools.getAuthorityKeyId(certificate))
+                                + " does not match subjectKeyIdentifier for issuer '"
+                                + CertTools.getSubjectDN(ca.getCertificateChain().get(0)) + "'.");
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug(e.getMessage());
+                }
+            }
+        }
+        return Optional.empty();
     }
 }
