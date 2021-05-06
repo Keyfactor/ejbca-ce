@@ -137,8 +137,10 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             } catch (ReferencesToItemExistException e) {
                 log.info("Error while deleting the publisher " + selectedPublisherName + e);
                 addErrorMessage("COULDNTDELETEPUBLISHERDUETOEXISTINGREF");
-                addErrorMessage("PUBLISHER_USEDBY_CA");
-                addNonTranslatedErrorMessage(StringUtils.join(caUsingPublisher(selectedPublisherName), ", "));
+                if (!caUsingPublisher(selectedPublisherName).isEmpty()) {
+                    addErrorMessage("PUBLISHER_USEDBY_CA");
+                    addNonTranslatedErrorMessage(StringUtils.join(caUsingPublisher(selectedPublisherName), ", "));
+                }
             }
         } else {
             addErrorMessage("YOUHAVETOSELECTAPUBLISHER");
