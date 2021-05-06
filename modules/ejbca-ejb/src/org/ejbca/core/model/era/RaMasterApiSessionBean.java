@@ -1079,7 +1079,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
                 !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()
-                || !externalAccountIdSearchString.isEmpty()) {
+                || !StringUtils.isEmpty(externalAccountIdSearchString)) {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
