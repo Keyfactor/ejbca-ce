@@ -236,6 +236,6 @@
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/intune/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/intune/content-type-2.1.jar"/>
-	<classpathentry kind="lib" path="lib/intune/csr-validation-20210505-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/intune/csr-validation-20210506.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
