@@ -140,6 +140,9 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         if (addedRoleMember || oldRoleMember.getTokenIssuerId()!=persistedRoleMember.getTokenIssuerId()) {
             details.put("tokenIssuerId", roleMember.getTokenIssuerId());
         }
+        if (addedRoleMember || oldRoleMember.getTokenProviderId()!=persistedRoleMember.getTokenProviderId()) {
+            details.put("tokenProviderId", roleMember.getTokenProviderId());
+        }
         if (addedRoleMember || oldRoleMember.getTokenMatchKey()!=persistedRoleMember.getTokenMatchKey()) {
             details.put("tokenMatchKey", tokenMatchKeyName + " (" + persistedRoleMember.getTokenMatchKey()+ ")");
         }

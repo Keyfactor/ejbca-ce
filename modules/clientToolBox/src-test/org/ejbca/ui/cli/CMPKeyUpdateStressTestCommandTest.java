@@ -195,7 +195,7 @@ public class CMPKeyUpdateStressTestCommandTest {
             eeinfo.setPassword(PASSWORD);
 
             final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(authToken,
-                    name, PASSWORD, x509ca.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, false,
+                    name, PASSWORD, x509ca.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12,
                     false, true,
                     true, endEntityProfileId);
 

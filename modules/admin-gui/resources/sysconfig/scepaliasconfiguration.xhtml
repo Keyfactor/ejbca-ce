@@ -168,6 +168,13 @@
 		<h:outputLabel for="intuneHeader" value="#{web.text.SCEP_RA_INTUNE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneHeader" rendered="#{scepConfigMBean.currentAlias.modeRa}">	    	
 		</h:panelGroup>
+		
+		<h:outputLabel for="intuneAuthority" value="#{web.text.SCEP_AUTH_AUTHORITY}" rendered="#{scepConfigMBean.currentAlias.modeRa}" />
+		 <h:panelGroup id="intuneAuthority" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+		     <h:inputText  value="#{scepConfigMBean.currentAlias.intuneAuthority}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+		     </h:inputText>
+		     <h:outputText value="#{scepConfigMBean.currentAlias.intuneAuthority}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>
 			
 		<h:outputLabel for="intuneAadAppId" value="#{web.text.SCEP_AAD_APP_ID}" rendered="#{scepConfigMBean.currentAlias.modeRa}" />
 		<h:panelGroup id="intuneAadAppId" rendered="#{scepConfigMBean.currentAlias.modeRa}">
@@ -178,9 +185,10 @@
 			
 		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
-	    	</h:inputText>
-	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+	    	<h:inputSecret  redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    		<f:validator validatorId="legalCharsValidator"/>
+	    	</h:inputSecret>
+	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				
 		<h:outputLabel for="intuneTenant" value="#{web.text.SCEP_TENANT}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
@@ -190,6 +198,27 @@
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneTenant}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>				
 		
+		<h:outputLabel for="intuneResourceUrl" value="#{web.text.SCEP_INTUNE_RESOURCE_URL}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneResourceUrl" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneResourceUrl}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>	
+
+		<h:outputLabel for="intuneGraphApiVersion" value="#{web.text.SCEP_GRAPH_API_VERSION}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneGraphApiVersion" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphApiVersion}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneGraphApiVersion}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>	
+
+		<h:outputLabel for="intuneGraphResourceUrl" value="#{web.text.SCEP_GRAPH_RESOURCE_URL}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneGraphResourceUrl" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	</h:inputText>
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneGraphResourceUrl}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+		</h:panelGroup>	
+
 		<h:outputLabel for="intuneProxyHost" value="#{web.text.SCEP_PROXY_HOST}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneProxyHost" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyHost}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
