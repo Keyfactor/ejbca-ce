@@ -38,6 +38,7 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -47,6 +48,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.AvailableCryptoToken;
@@ -71,8 +73,11 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.AcmeConfiguration;
+import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.protocol.acme.eab.AcmeEabWithHMac;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
@@ -624,6 +629,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private final AuthenticationToken authenticationToken = getAdmin();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
 
     /**
      * Workaround to cache the items used to render the page long enough for actions to be able to use them, but reload on every page view.
@@ -825,9 +831,46 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void deleteCryptoToken() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList != null) {
             final CryptoTokenGuiInfo rowData = cryptoTokenGuiList.getRowData();
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, rowData.getCryptoTokenId());
+            // Check references in ACME EAB with symmetric key.
+            final List<String> references = referencedAcmeConfigurationIDs(rowData.getCryptoTokenId()); 
+            if (references.size() == 0) {
+                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, rowData.getCryptoTokenId());
+            } else {
+                addErrorMessage("CRYPTOTOKEN_COULD_NOT_BE_DELETED_BECAUSE_REFERENCE_IN_ACME_ALIAS", String.join(", ", references));
+            }
             flushCaches();
         }
+    }
+    
+    /**
+     * Returns a list of all crypto token references in ACME configurations external account bindings 
+     * of type AcmeEabWithHMac, if key encryption is enabled. 
+     * 
+     * @param cryptoTokenId the ID of the crypto tokens entity.
+     * @return a list containing all ACME configuration IDs or an empty list.
+     */
+    private List<String> referencedAcmeConfigurationIDs(final int cryptoTokenId) {
+        final List<String> result = new ArrayList<>();
+        final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
+                globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
+        AcmeConfiguration acmeAlias;
+        AcmeEabWithHMac eab; 
+        for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
+            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId); 
+            try {
+                if (acmeAlias != null && acmeAlias.isRequireExternalAccountBinding() 
+                        && acmeAlias.getExternalAccountBinding() instanceof AcmeEabWithHMac) {
+                   eab = (AcmeEabWithHMac) acmeAlias.getExternalAccountBinding();
+                   if (eab.getEncryptKey() && Integer.toString(cryptoTokenId).equals(eab.getEncryptionKeyId())) {
+                       result.add(acmeAlias.getConfigurationId());
+                   }
+                }
+            } catch (AccountBindingException e) {
+                log.warn("Could not load ACME EAB '" + acmeAliasId 
+                        + "' to verify if it contains a reference to the crypto token to be deleted.");
+            }
+        }
+        return result;
     }
 
     /**
