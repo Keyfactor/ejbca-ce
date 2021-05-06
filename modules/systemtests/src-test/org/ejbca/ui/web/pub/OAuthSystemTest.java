@@ -305,7 +305,9 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("EJBCA Administration should be accessible. Actual response was: " + response, response.contains("Logged in as " + OAUTH_SUB));
+        //Log out OauthSystemTestSub
+        final String expectedString = "Log out " + OAUTH_SUB;
+        assertTrue("EJBCA Administration should be accessible and contain '" + expectedString + "'. Actual response was: " + response, response.contains(expectedString));
     }
 
     @Test
