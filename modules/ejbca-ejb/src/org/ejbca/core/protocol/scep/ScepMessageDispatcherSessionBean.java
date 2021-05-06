@@ -761,6 +761,17 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 return new IntuneScepServiceClient(properties);
             } else {
                 // use public key for authentication to Intune
+                
+                internalKeyBindingMgmtSession.getAvailableTypesAndProperties().keySet().forEach(t -> {
+                    log.debug("Key Binding Type:" + t );
+                    internalKeyBindingMgmtSession.getAllInternalKeyBindingInfos(t).forEach(i -> {
+                        log.info("  Name = " + i.getName());
+                        log.info("  Certificate = " + i.getCertificateId());
+                        log.info("  Crypto Token = " + i.getCryptoTokenId());
+                        log.info("  Alias = " + i.getKeyPairAlias());
+                        log.info("  ID = " + i.getId());
+                    });
+                });
                 final String keyBindingName = scepConfig.getIntuneAadAppKeyBinding(alias);
                 log.debug("Authenticating to Intune using internal key binding " + keyBindingName);
                 final InternalKeyBindingInfo keyBindingInfo = internalKeyBindingMgmtSession
