@@ -35,7 +35,7 @@ import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
-import org.ejbca.core.protocol.acme.util.AcmeJwsHelper;
+import org.cesecore.util.Base64;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -124,7 +124,7 @@ public class CryptoToolsTest {
         final String alias = "alias";
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
         final String base64Key = "7tUe3OLf3xO4BGV0q0NPYlu2du4zJuUPzKeJDg5NRJo";
-        final SecretKeySpec key = new SecretKeySpec(AcmeJwsHelper.base64UrlDecode(base64Key), "AES");
+        final SecretKeySpec key = new SecretKeySpec(Base64.decodeURLSafe(base64Key), "AES");
         final byte[] encryptedBytes = CryptoTools.encryptKey(cryptoToken, alias, key);
         assertNotNull("Encrypted shared key should not be null", encryptedBytes);
         final SecretKeySpec decryptedKey = CryptoTools.decryptKey(cryptoToken, alias, encryptedBytes);
