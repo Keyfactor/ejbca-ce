@@ -56,7 +56,6 @@ import org.ejbca.ra.RaCertificateDetails.Callbacks;
 /**
  * Backing bean for Search Certificates page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -99,7 +98,7 @@ public class RaSearchCertsBean implements Serializable {
 
     private UIComponent confirmPasswordComponent;
 
-    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS };
+    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS, EXTERNAL_ACCOUNT };
 
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
@@ -218,7 +217,8 @@ public class RaSearchCertsBean implements Serializable {
                         !stagedRequest.matchSerialNumber(cdw.getCertificateData().getSerialNumber()) &&
                         !stagedRequest.matchUsername(cdw.getCertificateData().getUsername()) &&
                         !stagedRequest.matchSubjectDn(cdw.getCertificateData().getSubjectDnNeverNull()) &&
-                        !stagedRequest.matchSubjectAn(cdw.getCertificateData().getSubjectAltNameNeverNull())
+                        !stagedRequest.matchSubjectAn(cdw.getCertificateData().getSubjectAltNameNeverNull()) &&
+                        !stagedRequest.matchExternalAccountId(cdw.getCertificateData().getAccountBindingId())
                         )) {
                     continue;
                 }
@@ -259,6 +259,17 @@ public class RaSearchCertsBean implements Serializable {
                     return o1.getExpires().compareTo(o2.getExpires()) * (sortAscending ? 1 : -1);
                 case STATUS:
                     return o1.getStatus().compareTo(o2.getStatus()) * (sortAscending ? 1 : -1);
+                case EXTERNAL_ACCOUNT: {
+                    if (o1.getAccountBindingId() == null && o2.getAccountBindingId() == null) {
+                        return 0;
+                    } else if (o1.getAccountBindingId() == null) {
+                        return sortAscending ? 1 : -1;
+                    } else if (o2.getAccountBindingId() == null) {
+                        return sortAscending ? -1 : 1;
+                    } else {
+                        return o1.getAccountBindingId().compareTo(o2.getAccountBindingId()) * (sortAscending ? 1 : -1);
+                    }
+                }
                 case USERNAME:
                 default:
                     return o1.getUsername().compareToIgnoreCase(o2.getUsername()) * (sortAscending ? 1 : -1);
@@ -294,6 +305,8 @@ public class RaSearchCertsBean implements Serializable {
     public void sortByExpiration() { sortBy(SortOrder.EXPIRATION, false); }
     public String getSortedByStatus() { return getSortedBy(SortOrder.STATUS); }
     public void sortByStatus() { sortBy(SortOrder.STATUS, true); }
+    public String getSortedByExternalAccount() { return getSortedBy(SortOrder.EXTERNAL_ACCOUNT); }
+    public void sortByExternalAccount() { sortBy(SortOrder.EXTERNAL_ACCOUNT, true); }
     public String getSortedByUsername() { return getSortedBy(SortOrder.USERNAME); }
     public void sortByUsername() { sortBy(SortOrder.USERNAME, true); }
 
@@ -355,6 +368,7 @@ public class RaSearchCertsBean implements Serializable {
         stagedRequest.setUsernameSearchString(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
+        stagedRequest.setExternalAccountIdSearchString(genericSearchString);
     }
 
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
