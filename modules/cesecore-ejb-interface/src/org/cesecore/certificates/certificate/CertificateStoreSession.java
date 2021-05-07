@@ -170,7 +170,7 @@ public interface CertificateStoreSession {
     */
     List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType, int maxNumberOfResults);
 
-    /**
+      /**
      * Finds usernames of users having certificate(s) expiring within a specified time, but that have expireTime>=now, and have 
      * status "active" or "notifiedaboutexpiration".
      * 
@@ -378,5 +378,4 @@ public interface CertificateStoreSession {
      * @return true if the status was updated, false if not, for example if the certificate did not exist
      */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
-    
 }
