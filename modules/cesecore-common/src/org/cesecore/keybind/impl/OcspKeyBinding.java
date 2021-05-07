@@ -108,14 +108,6 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_ENABLE_NONCE = "enableNonce";
     public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
-    private static final String PROPERTY_IS_OCSP_TRANSACTION_LOGGING_ENABLED = "isOcspTransactionLoggingEnabled";
-    private static final String PROPERTY_OCSP_TRANSACTION_LOG_PATTERN = "ocspTransactionLogPattern";
-    private static final String PROPERTY_OCSP_TRANSACTION_LOG_VALUES = "ocspTransactionLogValues";
-    private static final String PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED = "ocspAuditLoggingEnabled";
-    private static final String PROPERTY_OCSP_AUDIT_LOG_PATTERN = "ocspAuditLogPattern";
-    private static final String PROPERTY_OCSP_AUDIT_LOG_VALUES = "ocspAuditLogValues";
-    private static final String PROPERTY_IS_SAFE_OCSP_LOGGING_ENABLED = "isSafeOcspLoggingEnabled";
-    private static final String PROPERTY_OCSP_LOGGING_DATE_FORMAT = "ocspLoggingDateFormat";
     
     {
         addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
@@ -281,78 +273,6 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
      */
     public void setUseIssuerNotBeforeAsArchiveCutoff(final boolean useIssuerNotBeforeAsArchiveCutoff) {
         putData(PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF, useIssuerNotBeforeAsArchiveCutoff);
-    }
-
-    public void setIsOcspTransactionLoggingEnabled(final boolean isOcspTransactionLoggingEnabled) {
-        putData(PROPERTY_IS_OCSP_TRANSACTION_LOGGING_ENABLED, isOcspTransactionLoggingEnabled);
-    }
-
-    public boolean getIsOcspTransactionLoggingEnabled() {
-        return getData(PROPERTY_IS_OCSP_TRANSACTION_LOGGING_ENABLED, false);
-    }
-
-    public void setOcspTransactionLogPattern(final String ocspTransactionLogPattern) {
-        putData(PROPERTY_OCSP_TRANSACTION_LOG_PATTERN, ocspTransactionLogPattern);
-    }
-
-    public String getOcspTransactionLogPattern() {
-        return getData(PROPERTY_OCSP_TRANSACTION_LOG_PATTERN, "\\\\$\\\\{(.+?)\\\\}");
-    }
-
-    public void setOcspTransactionLogValues(final String ocspTransactionLogValues) {
-        putData(PROPERTY_OCSP_TRANSACTION_LOG_VALUES, ocspTransactionLogValues);
-    }
-
-    public String getOcspTransactionLogValues() {
-        return getData(PROPERTY_OCSP_TRANSACTION_LOG_VALUES,
-                "${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}\"${CLIENT_IP}\";" +
-                        "\"${SIGN_ISSUER_NAME_DN}\";\"${SIGN_SUBJECT_NAME}\";${SIGN_SERIAL_NO};" +
-                        "\"${LOG_TIME}\";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;" +
-                        "\"${ISSUER_NAME_DN}\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};" +
-                        "${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID};${FORWARDED_FOR}");
-    }
-
-    public void setIsOcspAuditLoggingEnabled(final boolean isOcspAuditLoggingEnabled) {
-        putData(PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED, isOcspAuditLoggingEnabled);
-    }
-
-    public boolean getIsOcspAuditLoggingEnabled() {
-        return getData(PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED, false);
-    }
-
-    public void setOcspAuditLogPattern(final String ocspAuditLogPattern) {
-        putData(PROPERTY_OCSP_AUDIT_LOG_PATTERN, ocspAuditLogPattern);
-    }
-
-    public String getOcspAuditLogPattern() {
-        return getData(PROPERTY_OCSP_AUDIT_LOG_PATTERN, "\\\\$\\\\{(.+?)\\\\}");
-    }
-
-    public void setOcspAuditLogValues(final String ocspAuditLogValues) {
-        putData(PROPERTY_OCSP_AUDIT_LOG_VALUES, ocspAuditLogValues);
-    }
-
-    public String getOcspAuditLogValues() {
-        return getData(PROPERTY_OCSP_AUDIT_LOG_VALUES,
-                "SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};\"${LOG_TIME}" +
-                        "\";TIME TO PROCESS:${REPLY_TIME};\\nOCSP REQUEST:\\n\"${OCSPREQUEST}" +
-                        "\";\\nOCSP RESPONSE:\\n\"${OCSPRESPONSE}\";\\nSTATUS:${STATUS}");
-    }
-
-    public void setIsSafeOcspLoggingEnabled(final boolean isSafeOcspLoggingEnabled) {
-        putData(PROPERTY_IS_SAFE_OCSP_LOGGING_ENABLED, isSafeOcspLoggingEnabled);
-    }
-
-    public boolean getIsSafeOcspLoggingEnabled() {
-        return getData(PROPERTY_IS_SAFE_OCSP_LOGGING_ENABLED, false);
-    }
-
-    public void setOcspLoggingDateFormat(final String ocspLoggingDateFormat) {
-        putData(PROPERTY_OCSP_LOGGING_DATE_FORMAT, ocspLoggingDateFormat);
-    }
-
-    public String getOcspLoggingDateFormat() {
-        return getData(PROPERTY_OCSP_LOGGING_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss.SSSZ");
     }
 
     public static boolean isOcspSigningCertificate(final Certificate certificate, AvailableExtendedKeyUsagesConfiguration ekuConfig) {
