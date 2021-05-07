@@ -17,7 +17,6 @@ import java.io.Serializable;
 /**
  * A DTO class representing the input for certificate enrollment.
  *
- * @version $Id: EnrollPkcs10CertificateRequest.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
 public class EnrollPkcs10CertificateRequest implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -28,6 +27,7 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
     private String certificateAuthorityName;
     private String username;
     private String password;
+    private String accountBindingId;
     private boolean includeChain;
 
     public String getCertificateRequest() {
@@ -53,6 +53,10 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
     public String getPassword() {
         return password;
     }
+    
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
 
     public boolean getIncludeChain() { return includeChain; }
 
@@ -63,6 +67,7 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         private String certificateAuthorityName;
         private String username;
         private String password;
+        private String accountBindingId;
         private boolean includeChain;
 
         public Builder certificateRequest(final String certificateRequest) {
@@ -94,6 +99,12 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             this.password = password;
             return this;
         }
+        
+        public Builder accountBindingId(final String accountBindingId) {
+            this.accountBindingId = accountBindingId;
+            return this;
+        }
+
 
         public Builder includeChain(final boolean includeChain) {
             this.includeChain = includeChain;
@@ -112,6 +123,7 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         this.certificateAuthorityName = builder.certificateAuthorityName;
         this.username = builder.username;
         this.password = builder.password;
+        this.accountBindingId = builder.accountBindingId;
         this.includeChain = builder.includeChain;
     }
 }
