@@ -755,7 +755,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             throws CertificateCreateException {
         try {
             final Properties properties = scepConfig.getIntuneProperties(alias);
-            if (scepConfig.getIntuneAadAppKeyBinding(alias).trim().isEmpty()) {
+            if (!scepConfig.getIntuneAadUseKeyBinding(alias)) {
                 // use the app id secret value for authentication to intune
                 log.debug("Authenticating to Intune using app secret");
                 return new IntuneScepServiceClient(properties);
