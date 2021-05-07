@@ -95,6 +95,7 @@ import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
+import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -3052,6 +3053,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 try {
                     return raMasterApi.getAcmeAccountByPublicKeyStorageId(publicKeyStorageId);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                // ECA-10044 Handle AuthorizationDeniedException.
+                try {
+                    return raMasterApi.parseAcmeEabMessage(authenticationToken, alias, requestUrl, requestJwk, eabRequestJsonString);                            
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
