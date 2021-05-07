@@ -59,6 +59,9 @@ public interface AcmeRaMasterApiSessionLocal {
 
     /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAcmeAccountByPublicKeyStorageId(String)  */
     AcmeAccount getAcmeAccountByPublicKeyStorageId(String publicKeyStorageId);
+    
+    /** @see org.ejbca.core.protocol.acme.AcmeConfigurationSessionBean#parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk, String eabRequestJsonString) */
+    String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk, String eabRequestJsonString) throws AcmeProblemException;
 
     /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#createOrUpdate(AcmeAccount) */
     String persistAcmeAccountData(AcmeAccount acmeAccount);
