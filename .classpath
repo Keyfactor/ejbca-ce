@@ -232,12 +232,12 @@
 	<classpathentry kind="lib" path="lib/intune/csr-validation-20210506.jar"/>
 	<classpathentry kind="lib" path="lib/intune/adal4j-1.6.7.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.14.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.5.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/intune/accessors-smart-2.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/intune/asm-8.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/intune/lang-tag-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
