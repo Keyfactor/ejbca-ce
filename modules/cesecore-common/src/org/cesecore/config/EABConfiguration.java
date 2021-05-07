@@ -42,7 +42,7 @@ public class EABConfiguration extends ConfigurationBase implements Serializable 
 
     public Map<String, List<String>> getEABMap() {
         final Map<String, List<String>>  ret = (Map<String, List<String>> )data.get(EAB_MAP);
-        return (ret == null ? EAB_MAP_DEFAULT : new LinkedHashMap<>(ret));
+        return (ret == null ? (Map<String, List<String>>) EAB_MAP_DEFAULT.clone() : new LinkedHashMap<>(ret));
     }
 
     /** Sets the available OAuth keys */
