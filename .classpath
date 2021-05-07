@@ -158,6 +158,7 @@
 	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.16.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
+	<classpathentry kind="lib" path="lib/intune/csr-validation-20210507.jar"/>
 	<classpathentry kind="lib" path="lib/intune/json-20201115.jar"/>
 	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-7.5.jar"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
@@ -229,7 +230,8 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.8.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/intune/csr-validation-20210506.jar"/>
+	<classpathentry kind="lib" path="lib/intune/gson-2.8.6.jar"/>
+	<classpathentry kind="lib" path="lib/intune/content-type-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/intune/adal4j-1.6.7.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.14.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.4.2.jar"/>
