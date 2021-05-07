@@ -182,17 +182,24 @@
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppId}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
+
+		<h:outputLabel for="intuneAadUseKeyBinding" value="#{web.text.SCEP_USE_INTUNE_KEY_BINDING}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+		<h:panelGroup id="intuneAadUseKeyBinding" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	    	<h:selectBooleanCheckbox id="intuneAadUseKeyBindingCheckbox" value="#{scepConfigMBean.currentAlias.intuneAadUseKeyBinding}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+	    		<f:ajax event="change" execute="@this" render="@form currentAliasForm:intuneValues"/>
+	    	</h:selectBooleanCheckbox>
+		</h:panelGroup>
 			
-		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
-		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}"/>
+		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}">
 	    	<h:inputSecret  redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				
-		<h:outputLabel for="intuneAadAppKeyBinding" value="#{web.text.SCEP_AAD_APP_KEY_BINDING}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
-		<h:panelGroup id="intuneAadAppKeyBinding" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+		<h:outputLabel for="intuneAadAppKeyBinding" value="#{web.text.SCEP_AAD_APP_KEY_BINDING}" rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.currentAlias.intuneAadUseKeyBinding}"/>
+		<h:panelGroup id="intuneAadAppKeyBinding" rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.currentAlias.intuneAadUseKeyBinding}">
 			<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppKeyBinding}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppKeyBinding}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
