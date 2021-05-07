@@ -118,7 +118,6 @@
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/adsddl-1.9.jar"/>
-	<classpathentry kind="lib" path="lib/msae/spnego-r9.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.14.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-3.1.0.jar"/>
@@ -161,7 +160,6 @@
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="lib/intune/csr-validation-20210507.jar"/>
 	<classpathentry kind="lib" path="lib/intune/json-20201115.jar"/>
-	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-7.5.jar"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
@@ -242,5 +240,6 @@
 	<classpathentry kind="lib" path="lib/intune/lang-tag-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
+	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-9.4.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
