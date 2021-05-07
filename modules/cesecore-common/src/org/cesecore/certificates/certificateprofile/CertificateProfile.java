@@ -1964,7 +1964,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public String getEabNamespace() {
-        return (String) data.get(EABNAMESPACE);
+        return StringUtils.defaultString((String) data.get(EABNAMESPACE));
     }
 
     public void setEabNamespace(String eabNamespace) {
