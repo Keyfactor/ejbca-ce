@@ -261,7 +261,7 @@
 				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
 				<h:panelGroup id="testTransactionLogging" rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
 					<h:commandButton value="#{web.text.OCSP_LOGGING_TEST_TRANSACTION_LOGGING}"
-									 action="#{internalKeyBindingMBean.commandTestOcspLogging}">
+									 action="#{internalKeyBindingMBean.commandTestOcspTransactionLogging}">
 						<f:ajax render="testTransactionLogging"/>
 					</h:commandButton>
 					<br/>
@@ -295,7 +295,7 @@
 				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
 				<h:panelGroup id="testAuditLogging" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}">
 					<h:commandButton value="#{web.text.OCSP_LOGGING_TEST_AUDIT_LOGGING}"
-									 action="#{internalKeyBindingMBean.commandTestOcspLogging}">
+									 action="#{internalKeyBindingMBean.commandTestOcspAuditLogging}">
 						<f:ajax render="testAuditLogging"/>
 					</h:commandButton>
 					<br/>
