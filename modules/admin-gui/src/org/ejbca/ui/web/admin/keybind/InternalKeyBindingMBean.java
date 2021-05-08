@@ -39,6 +39,7 @@ import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
+import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -817,8 +818,48 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         flushListCaches();
     }
 
-    public String commandTestOcspLogging() {
+    public String testOcspAuditLogging() {
         try {
+            final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            final X509Certificate dummyCertificate = CertTools.genSelfCert(
+                    "CN=Dummy Certificate",
+                    10L,
+                    "1.1.1.1",
+                    keys.getPrivate(),
+                    keys.getPublic(),
+                    AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                    true,
+                    BouncyCastleProvider.PROVIDER_NAME);
+            final byte[] requestBytes = new OCSPReqBuilder()
+                    .addRequest(
+                            new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),
+                                    dummyCertificate,
+                                    dummyCertificate.getSerialNumber()))
+                    .build()
+                    .getEncoded();
+            final AuditLogger auditLogger = new AuditLogger(
+                    new String(requestBytes),
+                    2,
+                    GuidHolder.INSTANCE.getGlobalUid(),
+                    "127.0.0.1",
+                    ocspConfiguration);
+            auditLogger.paramPut(AuditLogger.OCSPRESPONSE, "(OCSP-Response -> Bytes)");
+            auditLogger.paramPut(PatternLogger.STATUS, "(Ocsp-Request-Status -> Int)");
+            auditLogger.paramPut(PatternLogger.PROCESS_TIME, "(Process-Time -> Int)");
+            auditLogMessage = auditLogger.interpolate();
+            return "";
+        } catch (Exception e) {
+            auditLogMessage = e.getMessage();
+            return "";
+        }
+    }
+
+    public String commandTestOcspTransactionLogging() {
+        try {
+            final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             final X509Certificate dummyCertificate = CertTools.genSelfCert(
                     "CN=Dummy Certificate",
@@ -839,28 +880,30 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final TransactionLogger transactionLogger = new TransactionLogger(
                     1,
                     GuidHolder.INSTANCE.getGlobalUid(),
-                    "127.0.0.1");
-            final AuditLogger auditLogger = new AuditLogger(
-                    new String(requestBytes),
-                    2,
-                    GuidHolder.INSTANCE.getGlobalUid(),
-                    "127.0.0.1");
-            ocspResponseGeneratorSession.getOcspResponse(
-                    requestBytes,
-                    null,
-                    "",
-                    null,
-                    null,
-                    auditLogger,
-                    transactionLogger,
-                    false,
-                    false);
+                    "127.0.0.1",
+                    ocspConfiguration);
+            transactionLogger.paramPut(PatternLogger.STATUS, "(Ocsp-Request-Status -> Int)");
+            transactionLogger.paramPut(TransactionLogger.REQ_NAME, "(Requestor-Name -> String)");
+            transactionLogger.paramPut(TransactionLogger.REQ_NAME_RAW, "(Requestor-Name-Raw -> String)");
+            transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, "(Ocsp-Signer-Issuer-Dn -> String)");
+            transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, "(Ocsp-Signer-Subject-Name -> String)");
+            transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, "(Ocsp-Signer-Serial-No -> Int)");
+            transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, "(Cert-ID -> Int");
+            transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, "(Issuer-Name-Dn -> String");
+            transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, "(Issuer-Name-Dn-Raw) -> String");
+            transactionLogger.paramPut(PatternLogger.ISSUER_NAME_HASH, "(Issuer-Name-Hash -> String)");
+            transactionLogger.paramPut(PatternLogger.ISSUER_KEY, "(Issuer-Key -> String)");
+            transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, "(Digest-Algorithm -> String)");
+            transactionLogger.paramPut(PatternLogger.SERIAL_NOHEX, "(Certificate-Serial-No -> String)");
+            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "(Cert-Status -> Int)");
+            transactionLogger.paramPut(PatternLogger.PROCESS_TIME, "(Process-Time -> Int)");
+            transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, "(Cert-Profile-Id -> Int)");
+            transactionLogger.paramPut(TransactionLogger.FORWARDED_FOR, "(X-Forwarded-For -> String)");
+            transactionLogger.paramPut(TransactionLogger.REV_REASON, "(Revocation-Reason -> String)");
             transactionLogMessage = transactionLogger.interpolate();
-            auditLogMessage = auditLogger.interpolate();
             return "";
         } catch (Exception e) {
             transactionLogMessage = e.getMessage();
-            auditLogMessage = e.getMessage();
             return "";
         }
     }

@@ -243,7 +243,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @PostConstruct
     public void init() {
-        if (OcspConfiguration.getLogSafer()) {
+        final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (globalOcspConfiguration.getIsSafeOcspLoggingEnabled()) {
             SaferDailyRollingFileAppender.addSubscriber(this);
             log.info("Added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
         }
@@ -1160,6 +1162,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         byte[] respBytes = null;
         final Date startTime = new Date();
         OCSPResp ocspResponse = null;
+        final GlobalOcspConfiguration globalOcspConfiguration = ((GlobalOcspConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID));
         // Start logging process time after we have received the request
         if (!isPreSigning && transactionLogger.isEnabled()) {
             transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
@@ -1749,7 +1753,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 transactionLogger.writeln();
                 transactionLogger.flush();
             }
-            if (OcspConfiguration.getLogSafer()) {
+            if (globalOcspConfiguration.getIsSafeOcspLoggingEnabled()) {
                 // See if the Errorhandler has found any problems
                 if (hasErrorHandlerFailedSince(startTime)) {
                     log.info("ProbableErrorhandler reported error, cannot answer request");
@@ -1945,8 +1949,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final OCSPReqBuilder gen = new OCSPReqBuilder();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         final String remoteAddress = "127.0.0.1";
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
+        final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress, ocspConfiguration);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress, ocspConfiguration);
         CertificateID certId;
         try {
             if (isSHA1(certIDHashAlgorithm)) {
