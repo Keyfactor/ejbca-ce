@@ -1075,9 +1075,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final String usernameSearchString = request.getUsernameSearchString();
         final String serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
         final String serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
+        final String externalAccountBindingIdSearchString = request.getExternalAccountBindingIdSearchString();
+        
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
+        
         if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
-                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()) {
+                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty() ||
+                !externalAccountBindingIdSearchString.isEmpty()) {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
@@ -1113,6 +1117,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     sb.append(" OR ");
                 }
                 sb.append("a.serialNumber LIKE :serialNumberHex");
+            }
+            if (!externalAccountBindingIdSearchString.isEmpty()) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                } else {
+                    firstAppended = true;
+                }
+                sb.append("a.accountBindingId LIKE :externalAccountBindingId");
             }
             sb.append(")");
         }
@@ -1205,6 +1217,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" serialNumberHex: " + serialNumberSearchStringFromHex);
             }
         }
+        if (!externalAccountBindingIdSearchString.isEmpty()) {
+            query.setParameter("externalAccountBindingId", externalAccountBindingIdSearchString);
+            if (log.isDebugEnabled()) {
+                log.debug(" externalAccountBindingId: " + externalAccountBindingIdSearchString);
+            }
+        }
+        
+        
         if (request.isIssuedAfterUsed()) {
             query.setParameter("issuedAfter", request.getIssuedAfter());
         }
