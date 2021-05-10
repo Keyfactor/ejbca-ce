@@ -1076,9 +1076,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final String serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
         final String serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
         final String externalAccountBindingIdSearchString = request.getExternalAccountBindingIdSearchString();
-        
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
-        
         if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
                 !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty() ||
                 !externalAccountBindingIdSearchString.isEmpty()) {
@@ -1223,8 +1221,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" externalAccountBindingId: " + externalAccountBindingIdSearchString);
             }
         }
-        
-        
         if (request.isIssuedAfterUsed()) {
             query.setParameter("issuedAfter", request.getIssuedAfter());
         }

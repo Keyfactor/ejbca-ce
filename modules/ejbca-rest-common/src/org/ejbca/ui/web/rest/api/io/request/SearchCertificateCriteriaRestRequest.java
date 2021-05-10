@@ -15,10 +15,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest;
-import org.ejbca.ui.web.rest.api.validator.ValidationHelper;
-
-import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CriteriaOperation.STRING_OPERATIONS;
-
 import java.util.EnumSet;
 
 /**
