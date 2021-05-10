@@ -469,6 +469,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     // If we haven't done so yet, authenticate user. (Only if we store UserData for this CA.)
                     if (ca.isUseUserStorage() || (suppliedUserData == null && req.getUsername() != null && req.getPassword() != null)) {
                         endEntityInformation = authUser(admin, req.getUsername(), req.getPassword());
+                        if (endEntityInformation.getExtendedInformation() != null && suppliedUserData.getExtendedInformation() != null) {
+                            endEntityInformation.getExtendedInformation().setAccountBindingId(suppliedUserData.getExtendedInformation().getAccountBindingId());                            
+                        }
                     } else {
                         endEntityInformation = suppliedUserData;
                     }
