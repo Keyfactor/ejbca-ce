@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+  <!--
+  /*************************************************************************
+  *                                                                       *
+  *  EJBCA: The OpenSource Certificate Authority                          *
+  *                                                                       *
+  *  This software is free software; you can redistribute it and/or       *
+  *  modify it under the terms of the GNU Lesser General Public           *
+  *  License as published by the Free Software Foundation; either         *
+  *  version 2.1 of the License, or any later version.                    *
+  *                                                                       *
+  *  See terms of license at gnu.org.                                     *
+  *                                                                       *
+  *************************************************************************/
+
+  version: $Id$
+   -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+  <ui:param name="resourceBean" value="#{autoenrollmentConfigMBean}" />
+  <ui:define name="content">
+    <h1>
+      <h:outputText value="#{autoenrollmentConfigMBean.authorizedToEdit ? web.text.MSAE_ALIAS_MANAGE : web.text.MSAE_ALIAS_VIEW}"/>
+      <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Microsoft_Auto-enrollment_Operations.html')}" escape="false"/>
+    </h1>
+
+
+    <h:panelGroup rendered="#{!web.ejbcaWebBean.runningEnterprise}">
+      <h:outputText value="#{web.text.MSAE_NOT_AVAILABLE}" />
+    </h:panelGroup>
+    <h:form rendered="#{web.ejbcaWebBean.runningEnterprise}">
+      <h:panelGrid rendered="#{!autoenrollmentConfigMBean.deleteInProgress}">
+        <h:panelGrid styleClass="list" columns="1" columnClasses="listColumn1">
+          <h:panelGroup>
+            <h3><h:outputText value="#{web.text.MSAE_LIST_OF_ALIASES}"/></h3>
+          </h:panelGroup>
+          <h:panelGroup>
+          </h:panelGroup>
+
+          <h:panelGroup>
+            <h:selectOneListbox styleClass="select-list" name="selectaliases"
+                                value="#{autoenrollmentConfigMBean.selectedAlias}" style="width: 55em" size="15">
+              <f:selectItems value="#{autoenrollmentConfigMBean.autoenrollConfigAliasesSelectItemList}"/>
+            </h:selectOneListbox>
+          </h:panelGroup>
+
+          <h:panelGroup>
+          </h:panelGroup>
+
+          <h:panelGrid columns="4">
+            <h:commandButton id="buttonviewalias"
+                             action="#{autoenrollmentConfigMBean.actionView}"
+                             value="#{web.text.MSAE_VIEW_ALIASES}"/>
+            <h:commandButton id="buttoneditalias"
+                             action="#{autoenrollmentConfigMBean.actionEdit}"
+                             value="#{web.text.MSAE_EDIT_ALIAS}"
+                             rendered="#{autoenrollmentConfigMBean.authorizedToEdit}"/>
+            <h:commandButton id="buttondeletealias" action="#{autoenrollmentConfigMBean.actionDelete}"
+                             value="#{web.text.MSAE_DELETE_ALIAS}"
+                             rendered="#{autoenrollmentConfigMBean.authorizedToEdit}"/>
+          </h:panelGrid>
+
+          <h:panelGroup>
+          </h:panelGroup>
+        </h:panelGrid>
+        <h:panelGrid styleClass="actions margin-top" width="100%" rendered="#{autoenrollmentConfigMBean.authorizedToEdit}">
+          <h:panelGroup>
+            <h3><h:outputText value="#{web.text.MSAE_ADD_ALIAS}"/></h3>
+          </h:panelGroup>
+          <h:panelGroup>
+            <h:inputText id="textfieldalias" name="textfieldalias"
+                         value="#{autoenrollmentConfigMBean.newAlias}" size="40"
+                         title="#{web.text.FORMAT_ID_STR}"/><h:outputText value=" "/>
+            <h:commandButton id="buttonaliasadd" name="buttonaliasadd"
+                             action="#{autoenrollmentConfigMBean.addAlias}" value="#{web.text.ADD}"/>&nbsp;&nbsp;
+            <h:commandButton id="buttonaliasrename" name="buttonaliasrename"
+                             action="#{autoenrollmentConfigMBean.renameAlias}"
+                             value="#{web.text.RENAME_SELECTED}"/>&nbsp;&nbsp;&nbsp;
+            <h:commandButton id="buttonaliasclone" name="buttonaliasclone"
+                             action="#{autoenrollmentConfigMBean.cloneAlias}"
+                             value="#{web.text.CLONE_SELECTED}"/>
+          </h:panelGroup>
+        </h:panelGrid>
+      </h:panelGrid>
+
+      <h:panelGroup rendered="#{autoenrollmentConfigMBean.deleteInProgress}">
+        <h3><h:outputText value="#{web.text.MSAE_DELETE_ALIAS}"/></h3>
+        <h:panelGrid columns="2">
+          <h:outputLabel for="deleteAutoenrollAliasName" value="#{web.text.MSAE_NAME}:"/>
+          <h:outputText id="deleteAutoenrollAliasName" value="#{autoenrollmentConfigMBean.selectedAlias}"/>
+          <h:panelGroup/>
+          <h:panelGroup>
+            <h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{autoenrollmentConfigMBean.deleteAutoenrollmentAlias}"/>
+            <h:commandButton value="#{web.text.CANCEL}" action="#{autoenrollmentConfigMBean.actionCancel}"/>
+          </h:panelGroup>
+        </h:panelGrid>
+      </h:panelGroup>
+    </h:form>
+  </ui:define>
+</ui:composition>
+</html>
