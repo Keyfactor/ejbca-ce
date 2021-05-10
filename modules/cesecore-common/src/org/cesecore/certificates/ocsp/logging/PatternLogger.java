@@ -249,12 +249,12 @@ public abstract class PatternLogger implements Serializable {
             if(output.endsWith(System.getProperty("line.separator"))) {
                 output = output.substring(0, output.length()-1);
             }
-            getLogger().debug(output); // Finally output the log row to the logging device
+            getLogger().info(output); // Finally output the log row to the logging device
         }
     }
 
     /** @return true if this logger is enabled */
     public boolean isEnabled() {
-        return doLogging && getLogger().isDebugEnabled();
+        return doLogging && getLogger().isInfoEnabled();
     }
 }
