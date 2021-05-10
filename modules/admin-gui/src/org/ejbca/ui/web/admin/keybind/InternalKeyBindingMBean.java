@@ -20,6 +20,7 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -822,6 +823,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         try {
             final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            ocspConfiguration.setIsOcspAuditLoggingEnabled(true);
+            ocspConfiguration.setOcspAuditLogValues(ocspAuditLogValues);
+            ocspConfiguration.setOcspAuditLogPattern(ocspAuditLogPattern);
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             final X509Certificate dummyCertificate = CertTools.genSelfCert(
                     "CN=Dummy Certificate",
@@ -840,7 +844,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     .build()
                     .getEncoded();
             final AuditLogger auditLogger = new AuditLogger(
-                    new String(requestBytes),
+                    Hex.toHexString(requestBytes),
                     2,
                     GuidHolder.INSTANCE.getGlobalUid(),
                     "127.0.0.1",
@@ -860,6 +864,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         try {
             final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            ocspConfiguration.setIsOcspTransactionLoggingEnabled(true);
+            ocspConfiguration.setOcspTransactionLogValues(ocspTransactionLogValues);
+            ocspConfiguration.setOcspTransactionLogPattern(ocspTransactionLogPattern);
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             final X509Certificate dummyCertificate = CertTools.genSelfCert(
                     "CN=Dummy Certificate",
