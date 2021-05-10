@@ -543,7 +543,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
                 // Extract the accountBindingId from extendedInformation to be stored in CertificateData
                 String accountBindingId = null;
-                if (endEntityInformation.getExtendedInformation() != null) {
+                if (endEntityInformation != null && endEntityInformation.getExtendedInformation() != null) {
                     accountBindingId = endEntityInformation.getExtendedInformation().getAccountBindingId();
                 }
                 
