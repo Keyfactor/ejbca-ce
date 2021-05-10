@@ -280,8 +280,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     
     @Transient
     public RoleMember asValueObject() {
-        final RoleMember roleMember = new RoleMember(primaryKey, tokenType, tokenIssuerId, tokenMatchKey, tokenMatchOperator, getTokenMatchValue(), roleId, getDescription());
-        roleMember.setTokenProviderId(tokenProviderId);
+        final RoleMember roleMember = new RoleMember(primaryKey, tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey, tokenMatchOperator, getTokenMatchValue(), roleId, getDescription());
         return roleMember;
     }
     
