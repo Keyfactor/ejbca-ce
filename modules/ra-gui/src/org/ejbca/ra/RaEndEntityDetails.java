@@ -12,20 +12,6 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -42,6 +28,19 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * UI representation of a result set item from the back end.
@@ -177,14 +176,16 @@ public class RaEndEntityDetails {
 
     public String getTokenType() {
         switch (endEntityInformation.getTokenType()) {
-        case EndEntityConstants.TOKEN_USERGEN:
-            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_usergen");
-        case EndEntityConstants.TOKEN_SOFT_JKS:
-            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_jks");
-        case EndEntityConstants.TOKEN_SOFT_P12:
-            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_pkcs12");
-        case EndEntityConstants.TOKEN_SOFT_PEM:
-            return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_pem");
+            case EndEntityConstants.TOKEN_USERGEN:
+                return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_usergen");
+            case EndEntityConstants.TOKEN_SOFT_JKS:
+                return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_jks");
+            case EndEntityConstants.TOKEN_SOFT_P12:
+                return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_pkcs12");
+            case EndEntityConstants.TOKEN_SOFT_BCFKS:
+                return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_bcfks");
+            case EndEntityConstants.TOKEN_SOFT_PEM:
+                return callbacks.getRaLocaleBean().getMessage("component_eedetails_tokentype_pem");
         }
         return "?";
     }

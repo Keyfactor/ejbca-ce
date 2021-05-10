@@ -24,8 +24,6 @@ package org.ejbca.core.model;
  * byte):  unused bits 24-30 (4:th byte):  unused Constants for certificates are simple integer
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
- *
- * @version $Id$
  */
 public final class SecConst {
 
@@ -43,12 +41,27 @@ public final class SecConst {
     /** Indicates that a pem token should be generated. */
     public static final int TOKEN_SOFT_PEM = 4;
 
+    /** Indicates that a FIPS compliant P12 should be generated */
+    public static final int TOKEN_SOFT_BCFKS = 5;
+
     /** All values equal or below this constant should be treated as a soft token. */
     public static final int TOKEN_SOFT = 100;
 
-    public static final String[] TOKENTEXTS = {"TOKENSOFTUSERGENERATED","TOKENSOFTP12","TOKENSOFTJKS","TOKENSOFTPEM"};
+    public static final String[] TOKENTEXTS = {
+            "TOKENSOFTUSERGENERATED",
+            "TOKENSOFTP12",
+            "TOKENSOFTFIPSP12",
+            "TOKENSOFTJKS",
+            "TOKENSOFTPEM"
+    };
 
-    public static final int[]    TOKENIDS   = {SecConst.TOKEN_SOFT_BROWSERGEN,SecConst.TOKEN_SOFT_P12,SecConst.TOKEN_SOFT_JKS,SecConst.TOKEN_SOFT_PEM};
+    public static final int[] TOKENIDS = {
+            SecConst.TOKEN_SOFT_BROWSERGEN,
+            SecConst.TOKEN_SOFT_P12,
+            SecConst.TOKEN_SOFT_BCFKS,
+            SecConst.TOKEN_SOFT_JKS,
+            SecConst.TOKEN_SOFT_PEM
+    };
     
     // ECA-419 Check This!
     public static final int EMPTY_VALIDATOR = 1;
