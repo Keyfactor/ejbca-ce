@@ -1190,14 +1190,14 @@ public class UpgradeSessionBeanTest {
     public void testSuccessfulMigrationOfOcspLogging760() throws AuthorizationDeniedException {
         try {
             assertTrue(ConfigurationHolder.backupConfiguration());
-            ConfigurationHolder.updateConfiguration("ocsp.audit-log", "true");
-            ConfigurationHolder.updateConfiguration("ocsp.log-date", "yyyy-MM-dd");
-            ConfigurationHolder.updateConfiguration("ocsp.log-safer", "true");
-            ConfigurationHolder.updateConfiguration("ocsp.audit-log-patter", "auditLogPattern");
-            ConfigurationHolder.updateConfiguration("ocsp.audit-log-order", "ocspAuditLogOrder");
-            ConfigurationHolder.updateConfiguration("ocsp.trx-log", "true");
-            ConfigurationHolder.updateConfiguration("ocsp.trx-log-pattern", "txLogPattern");
-            ConfigurationHolder.updateConfiguration("ocsp.trx-log-order", "txLogOrder");
+            ConfigurationHolder.instance().setProperty("ocsp.audit-log", "true");
+            ConfigurationHolder.instance().setProperty("ocsp.log-date", "yyyy-MM-dd");
+            ConfigurationHolder.instance().setProperty("ocsp.log-safer", "true");
+            ConfigurationHolder.instance().setProperty("ocsp.audit-log-patter", "auditLogPattern");
+            ConfigurationHolder.instance().setProperty("ocsp.audit-log-order", "ocspAuditLogOrder");
+            ConfigurationHolder.instance().setProperty("ocsp.trx-log", "true");
+            ConfigurationHolder.instance().setProperty("ocsp.trx-log-pattern", "txLogPattern");
+            ConfigurationHolder.instance().setProperty("ocsp.trx-log-order", "txLogOrder");
 
             final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
@@ -1224,7 +1224,7 @@ public class UpgradeSessionBeanTest {
     public void testUnsuccessfulMigrationNo1OfOcspLogging760() throws AuthorizationDeniedException {
         try {
             assertTrue(ConfigurationHolder.backupConfiguration());
-            ConfigurationHolder.updateConfiguration("ocsp.log-date", "yyy-MM-dd ZZZZ"); // <-- invalid date string!
+            ConfigurationHolder.instance().setProperty("ocsp.log-date", "yyy-MM-dd ZZZZ"); // <-- invalid date string!
 
             final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
@@ -1240,7 +1240,7 @@ public class UpgradeSessionBeanTest {
     public void testUnsuccessfulMigrationNo2OfOcspLogging760() throws AuthorizationDeniedException {
         try {
             assertTrue(ConfigurationHolder.backupConfiguration());
-            ConfigurationHolder.updateConfiguration("ocsp.trx-log-pattern", "${foo}"); // <-- invalid regex!
+            ConfigurationHolder.instance().setProperty("ocsp.trx-log-pattern", "${foo}"); // <-- invalid regex!
 
             final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
