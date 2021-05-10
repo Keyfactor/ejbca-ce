@@ -137,10 +137,15 @@ public class SearchCertificatesRestRequest {
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
                         raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
+                        raCertificateSearchRequest.setExternalAccountBindingIdSearchString(criteriaValue);
                         break;
                     }
                     case END_ENTITY_PROFILE: {
                         raCertificateSearchRequest.getEepIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
+                        break;
+                    }
+                    case EXTERNAL_ACCOUNT_BINDING_ID: {
+                        raCertificateSearchRequest.setExternalAccountBindingIdSearchString(criteriaValue);;
                         break;
                     }
                     case CERTIFICATE_PROFILE: {

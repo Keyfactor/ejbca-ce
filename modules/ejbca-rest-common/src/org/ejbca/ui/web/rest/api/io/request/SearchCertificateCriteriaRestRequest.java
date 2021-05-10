@@ -15,6 +15,9 @@ import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest;
+import org.ejbca.ui.web.rest.api.validator.ValidationHelper;
+
+import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CriteriaOperation.STRING_OPERATIONS;
 
 import java.util.EnumSet;
 
@@ -53,7 +56,7 @@ import java.util.EnumSet;
 public class SearchCertificateCriteriaRestRequest {
 
     @ApiModelProperty(value = "A search property",
-            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE"
+            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE"
     )
     private String property;
 
@@ -110,6 +113,7 @@ public class SearchCertificateCriteriaRestRequest {
      */
     public enum CriteriaProperty {
         QUERY,
+        EXTERNAL_ACCOUNT_BINDING_ID,
         END_ENTITY_PROFILE,
         CERTIFICATE_PROFILE,
         CA,
@@ -140,7 +144,7 @@ public class SearchCertificateCriteriaRestRequest {
          * @return subset of criteria properties.
          */
         public static EnumSet<CriteriaProperty> STRING_PROPERTIES() {
-            return EnumSet.of(QUERY, STATUS);
+            return EnumSet.of(QUERY, STATUS, EXTERNAL_ACCOUNT_BINDING_ID);
         }
 
         /**

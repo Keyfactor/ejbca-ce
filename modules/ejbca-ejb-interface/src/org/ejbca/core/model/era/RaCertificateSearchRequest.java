@@ -43,6 +43,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private boolean usernameSearchExact = false;
     private String serialNumberSearchStringFromDec = "";
     private String serialNumberSearchStringFromHex = "";
+    private String externalAccountBindingIdSearchString = "";
     private long issuedAfter = 0L;
     private long issuedBefore = Long.MAX_VALUE;
     private long expiresAfter = 0L;
@@ -70,6 +71,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         usernameSearchExact = request.usernameSearchExact;
         serialNumberSearchStringFromDec = request.serialNumberSearchStringFromDec;
         serialNumberSearchStringFromHex = request.serialNumberSearchStringFromHex;
+        externalAccountBindingIdSearchString = request.externalAccountBindingIdSearchString;
         issuedAfter = request.issuedAfter;
         issuedBefore = request.issuedBefore;
         expiresAfter = request.expiresAfter;
@@ -138,7 +140,10 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         }
         this.serialNumberSearchStringFromHex = value;
     }
-
+    public String getExternalAccountBindingIdSearchString() { return externalAccountBindingIdSearchString; }
+    public void setExternalAccountBindingIdSearchString(final String externalAccountBindingIdSearchString) {
+        this.externalAccountBindingIdSearchString = externalAccountBindingIdSearchString;
+    }
     public long getIssuedAfter() { return issuedAfter; }
     public void setIssuedAfter(final long issuedAfter) { this.issuedAfter = issuedAfter; }
     public boolean isIssuedAfterUsed() { return issuedAfter>0L; }
@@ -210,6 +215,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
                 isWider(usernameSearchExact, other.usernameSearchExact) ||
                 isWider(serialNumberSearchStringFromDec, other.serialNumberSearchStringFromDec) ||
                 isWider(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
+                isWider(externalAccountBindingIdSearchString, other.externalAccountBindingIdSearchString) ||
                 isWider(statuses, other.statuses) || isWider(revocationReasons, other.revocationReasons)) {
             // This does not contain whole other → wider
             return 1;
@@ -227,6 +233,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
                 isMoreNarrow(usernameSearchString, other.usernameSearchString) ||
                 isMoreNarrow(usernameSearchExact, other.usernameSearchExact) ||
                 isMoreNarrow(serialNumberSearchStringFromDec, other.serialNumberSearchStringFromDec) ||
+                isMoreNarrow(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
                 isMoreNarrow(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
                 isMoreNarrow(statuses, other.statuses) || isMoreNarrow(revocationReasons, other.revocationReasons)) {
             // This does contain whole other, but other does not contain whole this → more narrow
@@ -304,7 +311,10 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public boolean matchSerialNumber(final String serialNumber) {
         return serialNumber.equals(getSerialNumberSearchStringFromDec()) || serialNumber.equals(getSerialNumberSearchStringFromHex());
     }
-
+    /** @return true if the externalAccountBindingId is matched by this search. */
+    public boolean matchExternalAccountBindingId(final String externalAccountBindingId) {
+        return externalAccountBindingId.equals(getExternalAccountBindingIdSearchString());
+    }
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
         return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) ||

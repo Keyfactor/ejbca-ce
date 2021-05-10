@@ -146,6 +146,13 @@ public @interface ValidSearchCertificateCriteriaRestRequest {
                     }
                     break;
                 }
+                case EXTERNAL_ACCOUNT_BINDING_ID: {
+                    if (!STRING_OPERATIONS().contains(criteriaOperation)) {
+                        ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.operation.notString}");
+                        return false;
+                    }
+                    break;
+                }
                 // Value: Any String
                 // Operation: EQUAL
                 case END_ENTITY_PROFILE:
