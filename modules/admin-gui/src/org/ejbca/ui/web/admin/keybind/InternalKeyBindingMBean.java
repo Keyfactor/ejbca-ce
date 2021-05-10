@@ -818,7 +818,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         flushListCaches();
     }
 
-    public String testOcspAuditLogging() {
+    public String commandTestOcspAuditLogging() {
         try {
             final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
