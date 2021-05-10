@@ -145,7 +145,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             if (log.isDebugEnabled()) {
                 log.debug("Out A:1: " + out);
             }
@@ -164,7 +164,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, false, false, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             if (log.isDebugEnabled()) {
                 log.debug("Out A:2: " + out);
             }
@@ -182,7 +182,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, true, true, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             fail("The external command '" + cmd + "' should have failed (failOnStandardError=true).");
         } catch(Exception e) {
             if (log.isDebugEnabled()) {
@@ -201,7 +201,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, false, false, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             fail("The external command '" + cmd + "' should have failed (failOnStandardError=true).");
         } catch(Exception e) {
             if (log.isDebugEnabled()) {
@@ -244,7 +244,7 @@ public class ExternalProcessToolsTest {
                 arguments.add(Integer.toString(exitCode));
                 arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
                 out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
-                        this.getClass().getName());
+                        this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
                 assertTrue("The exit code must be " + exitCode + ".", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
                 cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
                 assertTrue("At least " + cnt + " line(s) must have been logged to STDOUT.", cnt > 3);
