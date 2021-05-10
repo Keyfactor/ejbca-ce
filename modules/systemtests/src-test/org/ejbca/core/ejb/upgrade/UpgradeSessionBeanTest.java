@@ -12,27 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -69,6 +48,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -122,6 +103,27 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System tests for the upgrade session bean. 
@@ -1181,6 +1183,72 @@ public class UpgradeSessionBeanTest {
             if (persistedRole != null) {
                 roleSession.deleteRoleIdempotent(alwaysAllowtoken, persistedRole.getRoleId());
             }
+        }
+    }
+
+    @Test
+    public void testSuccessfulMigrationOfOcspLogging760() throws AuthorizationDeniedException {
+        try {
+            assertTrue(ConfigurationHolder.backupConfiguration());
+            ConfigurationHolder.updateConfiguration("ocsp.audit-log", "true");
+            ConfigurationHolder.updateConfiguration("ocsp.log-date", "yyyy-MM-dd");
+            ConfigurationHolder.updateConfiguration("ocsp.log-safer", "true");
+            ConfigurationHolder.updateConfiguration("ocsp.audit-log-patter", "auditLogPattern");
+            ConfigurationHolder.updateConfiguration("ocsp.audit-log-order", "ocspAuditLogOrder");
+            ConfigurationHolder.updateConfiguration("ocsp.trx-log", "true");
+            ConfigurationHolder.updateConfiguration("ocsp.trx-log-pattern", "txLogPattern");
+            ConfigurationHolder.updateConfiguration("ocsp.trx-log-order", "txLogOrder");
+
+            final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            globalUpgradeConfiguration.setUpgradedFromVersion("7.5.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
+            upgradeSession.upgrade(null,"7.5.0",false);
+
+            final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
+                    globalConfigSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertTrue(ocspConfiguration.getIsOcspAuditLoggingEnabled());
+            assertEquals("yyyy-MM-dd", ocspConfiguration.getOcspLoggingDateFormat());
+            assertTrue(ocspConfiguration.getIsSafeOcspLoggingEnabled());
+            assertEquals("auditLogPattern", ocspConfiguration.getOcspAuditLogPattern());
+            assertEquals("ocspAuditLogOrder", ocspConfiguration.getOcspAuditLogValues());
+            assertTrue(ocspConfiguration.getIsOcspTransactionLoggingEnabled());
+            assertEquals("transactionLogPattern", ocspConfiguration.getOcspTransactionLogPattern());
+            assertEquals("ocspTransactionLogOrder", ocspConfiguration.getOcspTransactionLogValues());
+        } finally {
+            assertTrue(ConfigurationHolder.restoreConfiguration());
+        }
+    }
+
+    @Test(expected = UpgradeFailedException.class)
+    public void testUnsuccessfulMigrationNo1OfOcspLogging760() throws AuthorizationDeniedException {
+        try {
+            assertTrue(ConfigurationHolder.backupConfiguration());
+            ConfigurationHolder.updateConfiguration("ocsp.log-date", "yyy-MM-dd ZZZZ"); // <-- invalid date string!
+
+            final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            globalUpgradeConfiguration.setUpgradedFromVersion("7.5.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
+            upgradeSession.upgrade(null,"7.5.0",false);
+        } finally {
+            assertTrue(ConfigurationHolder.restoreConfiguration());
+        }
+    }
+
+    @Test(expected = UpgradeFailedException.class)
+    public void testUnsuccessfulMigrationNo2OfOcspLogging760() throws AuthorizationDeniedException {
+        try {
+            assertTrue(ConfigurationHolder.backupConfiguration());
+            ConfigurationHolder.updateConfiguration("ocsp.trx-log-pattern", "${foo}"); // <-- invalid regex!
+
+            final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            globalUpgradeConfiguration.setUpgradedFromVersion("7.5.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
+            upgradeSession.upgrade(null,"7.5.0",false);
+        } finally {
+            assertTrue(ConfigurationHolder.restoreConfiguration());
         }
     }
 
