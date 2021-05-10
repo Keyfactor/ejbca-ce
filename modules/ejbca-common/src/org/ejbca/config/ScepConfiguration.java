@@ -148,6 +148,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + AUTH_AUTHORITY, "");
         data.put(alias + AAD_APP_ID, "");
         data.put(alias + AAD_APP_KEY, "");
+        data.put(alias + AAD_USE_KEY_BINDING, Boolean.FALSE.toString());
         data.put(alias + AAD_APP_KEY_BINDING, "");
         data.put(alias + TENANT, "");
         data.put(alias + INTUNE_RESOURCE_URL, "");
@@ -179,6 +180,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SCEP_USE_INTUNE);
         keys.add(alias + AUTH_AUTHORITY);
         keys.add(alias + AAD_APP_ID);
+        keys.add(alias + AAD_USE_KEY_BINDING);
         keys.add(alias + AAD_APP_KEY);
         keys.add(alias + AAD_APP_KEY_BINDING);
         keys.add(alias + TENANT);
