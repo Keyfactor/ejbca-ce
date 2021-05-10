@@ -130,6 +130,7 @@ import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -581,14 +582,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("7.4.0");
         }
-        //if (isLesserThan(oldVersion, "7.6.0")) {
+        if (isLesserThan(oldVersion, "7.6.0")) {
             try {
                 upgradeSession.migrateOcspLogging760();
             } catch (UpgradeFailedException e) {
                 return false;
             }
             setLastUpgradedToVersion("7.6.0");
-        //}
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -1980,6 +1981,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 auditLogger.paramPut(PatternLogger.STATUS, "(Ocsp-Request-Status -> Int)");
                 auditLogger.paramPut(PatternLogger.PROCESS_TIME, "(Process-Time -> Int)");
                 auditLogger.interpolate();
+
+                new SimpleDateFormat(globalOcspConfiguration.getOcspLoggingDateFormat()).toString();
             } catch (Exception e) {
                 log.error("Failed to validate the current OCSP logging configuration. The error is: " + e.getMessage()
                         + ". Adjust the configuration in ocsp.properties and redeploy the application. If you don't " +
