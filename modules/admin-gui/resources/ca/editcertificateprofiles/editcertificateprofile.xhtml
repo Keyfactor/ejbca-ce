@@ -2586,7 +2586,18 @@
                     </h:panelGrid>
                 </h:panelGrid>
                 <h:panelGroup>
-					&nbsp;
+                    <h:outputLabel for="eabNamespaces"
+                                   value="#{web.text.ACCOUNT_BINDING_NAMESPACE}" />
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectOneMenu id="eabNamespaces"
+                                     value="#{certProfileBean.certificateProfile.eabNamespace}"
+                                     disabled="#{certProfileBean.viewOnly}">
+                        <f:selectItems
+                                value="#{certProfileBean.availableEABNamespaces}" />
+                    </h:selectOneMenu>
+                </h:panelGroup>
+                <h:panelGroup>
 				</h:panelGroup>
                 <h:panelGroup>
                     <h:commandButton id="saveProfileButton"

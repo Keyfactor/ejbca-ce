@@ -25,6 +25,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Properties;
 
+import javax.crypto.spec.SecretKeySpec;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
@@ -33,16 +35,15 @@ import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
  * This class contains unit tests for the CryptoTools class.
- * 
- * @version $Id$
- *
  */
 public class CryptoToolsTest {
 
@@ -114,6 +115,25 @@ public class CryptoToolsTest {
         assertEquals("org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey", keys.getPrivate().getClass().getName());
         assertEquals("PKCS#8", keys.getPrivate().getFormat());
         assertNotNull("Encoded private key should not be null", encodedPrivateKey);
+    }
+    
+    /** Test that we can encrypt and decrypt a SecretKeySpec with AES key. */
+    @Test
+    public void testEncryptDecryptSecret() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, IOException, InvalidKeyException {
+        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111, "Soft CryptoToken");
+        final String alias = "alias";
+        cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
+        final String base64Key = "7tUe3OLf3xO4BGV0q0NPYlu2du4zJuUPzKeJDg5NRJo";
+        final SecretKeySpec key = new SecretKeySpec(Base64.decodeURLSafe(base64Key), "AES");
+        final byte[] encryptedBytes = CryptoTools.encryptKey(cryptoToken, alias, key);
+        assertNotNull("Encrypted shared key should not be null", encryptedBytes);
+        final SecretKeySpec decryptedKey = CryptoTools.decryptKey(cryptoToken, alias, encryptedBytes);
+        assertNotNull("Decrypted shared key should not be null", decryptedKey);
+        assertNotEquals("Encrypted and decrypted shared key should not be equal", encryptedBytes, decryptedKey.getEncoded());
+        assertEquals("RAW", decryptedKey.getFormat());
+        assertEquals("AES", decryptedKey.getAlgorithm());
+        //assertEquals("org.bouncycastle.jcajce.provider.symmetric.AES", decryptedKey.getClass().getName());
+        assertEquals("javax.crypto.spec.SecretKeySpec", decryptedKey.getClass().getName());
     }
 
 }
