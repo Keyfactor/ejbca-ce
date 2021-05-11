@@ -72,6 +72,7 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRest
  * The property and operation attributes should be in accordance:
  * <ul>
  *     <li>SearchCertificateCriteriaRestRequest.CriteriaProperty.QUERY supports operations SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL and SearchCertificateCriteriaRestRequest.CriteriaOperation.LIKE;</li>
+ *     <li>SearchCertificateCriteriaRestRequest.CriteriaProperty.EXTERNAL_ACCOUNT_BINDING_ID supports operations SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL and SearchCertificateCriteriaRestRequest.CriteriaOperation.LIKE;</li>
  *     <li>SearchCertificateCriteriaRestRequest.CriteriaProperty.END_ENTITY_PROFILE supports operation SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL;</li>
  *     <li>SearchCertificateCriteriaRestRequest.CriteriaProperty.CERTIFICATE_PROFILE supports operation SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL;</li>
  *     <li>SearchCertificateCriteriaRestRequest.CriteriaProperty.CA supports operation SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL;</li>
@@ -146,6 +147,8 @@ public @interface ValidSearchCertificateCriteriaRestRequest {
                     }
                     break;
                 }
+                // Value: Any String
+                // Operation: EQUAL, LIKE
                 case EXTERNAL_ACCOUNT_BINDING_ID: {
                     if (!STRING_OPERATIONS().contains(criteriaOperation)) {
                         ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.operation.notString}");
