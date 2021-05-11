@@ -121,6 +121,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
@@ -1073,13 +1074,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final String subjectDnSearchString = request.getSubjectDnSearchString();
         final String subjectAnSearchString = request.getSubjectAnSearchString();
         final String usernameSearchString = request.getUsernameSearchString();
+        final String externalAccountIdSearchString = request.getExternalAccountIdSearchString();
         final String serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
         final String serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
         final String externalAccountBindingIdSearchString = request.getExternalAccountBindingIdSearchString();
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
-                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty() ||
-                !externalAccountBindingIdSearchString.isEmpty()) {
+//<<<<<<< HEAD
+//                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty() ||
+//                !externalAccountBindingIdSearchString.isEmpty()) {
+//=======
+                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()
+                || !StringUtils.isEmpty(externalAccountIdSearchString)) {
+//>>>>>>> ECA-10008-EAB
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
@@ -1113,16 +1120,26 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (!serialNumberSearchStringFromHex.isEmpty()) {
                 if (firstAppended) {
                     sb.append(" OR ");
-                }
-                sb.append("a.serialNumber LIKE :serialNumberHex");
-            }
-            if (!externalAccountBindingIdSearchString.isEmpty()) {
-                if (firstAppended) {
-                    sb.append(" OR ");
                 } else {
                     firstAppended = true;
                 }
-                sb.append("a.accountBindingId LIKE :externalAccountBindingId");
+                sb.append("a.serialNumber LIKE :serialNumberHex");
+            }
+//<<<<<<< HEAD
+//            if (!externalAccountBindingIdSearchString.isEmpty()) {
+//                if (firstAppended) {
+//                    sb.append(" OR ");
+//                } else {
+//                    firstAppended = true;
+//                }
+//                sb.append("a.accountBindingId LIKE :externalAccountBindingId");
+//=======
+            if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                }
+                sb.append("UPPER(a.accountBindingId) LIKE :accountBindingId");
+//>>>>>>> ECA-10008-EAB
             }
             sb.append(")");
         }
@@ -1215,10 +1232,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" serialNumberHex: " + serialNumberSearchStringFromHex);
             }
         }
-        if (!externalAccountBindingIdSearchString.isEmpty()) {
-            query.setParameter("externalAccountBindingId", externalAccountBindingIdSearchString);
-            if (log.isDebugEnabled()) {
-                log.debug(" externalAccountBindingId: " + externalAccountBindingIdSearchString);
+//<<<<<<< HEAD
+//        if (!externalAccountBindingIdSearchString.isEmpty()) {
+//            query.setParameter("externalAccountBindingId", externalAccountBindingIdSearchString);
+//            if (log.isDebugEnabled()) {
+//                log.debug(" externalAccountBindingId: " + externalAccountBindingIdSearchString);
+//=======
+        if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
+            if (request.isExternalAccountIdSearchExact()) {
+                query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
+            } else {
+                query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+//>>>>>>> ECA-10008-EAB
             }
         }
         if (request.isIssuedAfterUsed()) {
@@ -2914,6 +2939,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         } else if (ScepConfiguration.class.getName().equals(type.getName())) {
             result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        } else if (EABConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
             if (result != null) {
