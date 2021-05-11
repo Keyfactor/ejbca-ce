@@ -178,6 +178,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String SUBJECTALTNAMESUBSET = "subjectaltnamesubset";
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
     protected static final String DESCRIPTION = "description";
+    protected static final String EABNAMESPACE = "eabnamespace";
     /**
      * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
      */
@@ -558,6 +559,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setOverridableExtensionOIDs(new LinkedHashSet<>());
         setNonOverridableExtensionOIDs(new LinkedHashSet<>());
+        setEabNamespace(null);
     }
 
     /**
@@ -1958,6 +1960,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(DESCRIPTION, "");
         } else {
             data.put(DESCRIPTION, description);
+        }
+    }
+
+    public String getEabNamespace() {
+        return StringUtils.defaultString((String) data.get(EABNAMESPACE));
+    }
+
+    public void setEabNamespace(String eabNamespace) {
+        if (eabNamespace == null) {
+            data.put(EABNAMESPACE, "");
+        } else {
+            data.put(EABNAMESPACE, eabNamespace);
         }
     }
 
