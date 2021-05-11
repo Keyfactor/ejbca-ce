@@ -463,6 +463,20 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    public List<SelectItem> getAvailableEABNamespaces() {
+        List<SelectItem> ret = new ArrayList<>();
+        final Map<String, List<String>> eabMap = getEjbcaWebBean().getEABConfiguration().getEABMap();
+
+        final Set<String> namespaces = eabMap.keySet();
+        for(String namespace : namespaces) {
+            ret.add(new SelectItem(namespace, namespace));
+        }
+        // Sort list by name
+        ret.sort((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
+        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
+        return ret;
+    }
+
     // SelectItem<String, String>
     public List<SelectItem> getSignatureAlgorithmAvailable() {
         final List<SelectItem> ret = new ArrayList<>();
