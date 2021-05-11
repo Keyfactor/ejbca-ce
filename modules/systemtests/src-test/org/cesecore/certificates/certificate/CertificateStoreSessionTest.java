@@ -577,7 +577,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			final String fp = CertTools.getFingerprintAsString(xcert);
 			final String username = "foouser<tag>mytag</mytag>!";
 	        certificateStoreSession.storeCertificateRemote(roleMgmgToken, EJBTools.wrap(xcert), username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
 	        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
 	        // Username must not include <tag>s or !
 	        assertEquals("username must not contain < or ! signs: ", "foouser/tag/mytag//mytag//", info.getUsername());
@@ -813,7 +813,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             assertTrue("Certificate with fp=" + fp + " already exists in db, very strange since I just generated it.", false);
         }
         certificateStoreSession.storeCertificateRemote(admin, EJBTools.wrap(xcert), USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
-        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
         return xcert;
     }
 
