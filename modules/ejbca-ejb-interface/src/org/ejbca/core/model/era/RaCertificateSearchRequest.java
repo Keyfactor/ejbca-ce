@@ -234,7 +234,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
                 isMoreNarrow(usernameSearchExact, other.usernameSearchExact) ||
                 isMoreNarrow(serialNumberSearchStringFromDec, other.serialNumberSearchStringFromDec) ||
                 isMoreNarrow(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
-                isMoreNarrow(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
+                isMoreNarrow(externalAccountBindingIdSearchString, other.externalAccountBindingIdSearchString) ||
                 isMoreNarrow(statuses, other.statuses) || isMoreNarrow(revocationReasons, other.revocationReasons)) {
             // This does contain whole other, but other does not contain whole this → more narrow
             return -1;
