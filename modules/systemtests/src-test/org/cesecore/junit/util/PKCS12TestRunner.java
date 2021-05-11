@@ -73,7 +73,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         //Store the CA Certificate.
         certificateStoreSession.storeCertificateRemote(alwaysAllowToken, EJBTools.wrap(caCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
         casToRemove.put(x509ca.getCAId(), x509ca);
         return x509ca;
     }
