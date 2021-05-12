@@ -61,8 +61,11 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
+import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -130,6 +133,11 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */ 
     public static final String KEY_VAULT_CLIENTID = "keyVaultClientID";    
     
+    /**
+     * Property for storing whether we will use app secret or an internal key binding when authenticating to Azure.
+     */
+    public static final String KEY_VAULT_USE_KEY_BINDING = "keyVaultUseKeyBinding";    
+    
     /** Cache for key aliases, to speed things up so we don't have to make multiple REST calls all the time to list aliases and public keys
      * We cache for a short time, 60 seconds to speed up GUI operations, but still allow for key generation on different nodes in a cluster, just leaving the 
      * other node not knowing of the new key for 60 seconds 
@@ -159,6 +167,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
     /** get the keyVaultType, set during init of crypto token */
     private String getKeyVaultType() {
         return getProperties().getProperty(AzureCryptoToken.KEY_VAULT_TYPE);
+    }
+    /** get the keyVaultType, set during init of crypto token */
+    private boolean isKeyVaultUseKeyBinding() {
+        return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
     }
 
     /** Construct a provider name for this instance of the crypto token. Make the name "AzureKeyVaultProvider-cryptoTokenID",
@@ -234,7 +246,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
         String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
         try {
-            if (StringUtils.isNotEmpty(autoPwd)) {
+            if (!isKeyVaultUseKeyBinding() && StringUtils.isNotEmpty(autoPwd)) {
                 activate(autoPwd.toCharArray());
             }
         } catch (CryptoTokenAuthenticationFailedException e) {
