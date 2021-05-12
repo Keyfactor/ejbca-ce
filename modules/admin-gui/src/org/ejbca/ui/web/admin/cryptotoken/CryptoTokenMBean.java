@@ -248,6 +248,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultType = "premium";
         private String keyVaultName = "ejbca-keyvault";
         private String keyVaultClientID = "";
+        private boolean keyVaultUseKeyBinding = false;
         private String awsKMSRegion = "us-east-1"; // default value
         private String awsKMSAccessKeyID = ""; // default value
 
@@ -463,6 +464,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         // If P11NG crypto token and Utimaco CP5 functions enabled
         public boolean isShowAuthorizationInfo() {
             return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType()) && WebConfiguration.isP11NGUtimacoCP5Enabled();
+        }
+
+        public boolean isKeyVaultUseKeyBinding() {
+            return keyVaultUseKeyBinding;
+        }
+
+        public void setKeyVaultUseKeyBinding(boolean keyVaultUseKeyBinding) {
+            this.keyVaultUseKeyBinding = keyVaultUseKeyBinding;
         }
     }
 
@@ -997,9 +1006,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();
                 String vaultName = getCurrentCryptoToken().getKeyVaultName().trim();
                 String vaultClientID = getCurrentCryptoToken().getKeyVaultClientID().trim();
+                boolean vaultUseKeyBinding = getCurrentCryptoToken().isKeyVaultUseKeyBinding();
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, vaultType);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
+                properties.setProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, Boolean.toString(vaultUseKeyBinding));
             } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.AWSKMS_NAME;
                 String region = getCurrentCryptoToken().getAWSKMSRegion().trim();
@@ -1302,6 +1313,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setKeyVaultType(cryptoTokenInfo.getKeyVaultType());
                     currentCryptoToken.setKeyVaultName(cryptoTokenInfo.getKeyVaultName());
                     currentCryptoToken.setKeyVaultClientID(cryptoTokenInfo.getKeyVaultClientID());
+                    currentCryptoToken.setKeyVaultUseKeyBinding(cryptoTokenInfo.isKeyVaultUseKeyBinding());
                 }
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME)) {
                     currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
