@@ -12,6 +12,35 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -25,6 +54,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
@@ -35,17 +65,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.util.*;
 
 /**
  * @see CryptoTokenManagementSession
@@ -68,6 +87,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -353,13 +374,18 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
         // Note: if data is null, a new empty keystore will be created
         final List<String> isSlotUsed = isCryptoTokenSlotUsed(authenticationToken, tokenName, className, properties);
-        if (Boolean.parseBoolean(properties.getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"))) {
-            
-            final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
-            
-            
+        CryptoToken cryptoToken;
+
+        // special case - azure crypto token can do public key authentication
+        if (className.equals(AzureCryptoToken.class.getName())) {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false,
+                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
         }
-        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
+
+        // Standard crypto token initialization
+        else {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
+        }
         if (authenticationCode != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Activating new crypto token using supplied authentication code.");

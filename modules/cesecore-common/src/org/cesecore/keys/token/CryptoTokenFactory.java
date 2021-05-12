@@ -174,6 +174,22 @@ public class CryptoTokenFactory {
      */
     public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int cryptoTokenId,
             String tokenName, boolean allowNonExistingSlot) throws NoSuchSlotException {
+        return createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, allowNonExistingSlot, null);
+    }
+
+    /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken, potentially enabling public key authentication to the token.
+     * 
+     * @param inClassname the full classname of the crypto token implementation class
+     * @param properties properties passed to the init method of the CryptoToken
+     * @param data byte data passed to the init method of the CryptoToken
+     * @param cryptoTokenId id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
+     * @param tokenName user friendly identifier
+     * @param allowNonExistingSlot if the NoSuchSlotException should be used
+     * @param keyAndCertFinder If specified, an object that can take a name from properties and find a key/cert pair.  Currently, only relevant for Azure Key Vault.
+     * throws NoSuchSlotException if no slot as defined in properties could be found.
+     */
+    public static CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int cryptoTokenId,
+            String tokenName, boolean allowNonExistingSlot, KeyAndCertFinder keyAndCertFinder) throws NoSuchSlotException {
         final String classname;
         if (inClassname != null) {
             classname = inClassname;
@@ -186,6 +202,12 @@ public class CryptoTokenFactory {
             log.error("No token. Classpath=" + classname);
             return null;
         }
+        
+        // AzureCryptoToken can potentially take a key binding name as its authentication method.  Set its member that can find the key binding.
+        if (keyAndCertFinder != null && token instanceof AzureCryptoToken) {
+            ((AzureCryptoToken) token).setAuthKeyProvider(keyAndCertFinder);
+        }
+        
         try {
             token.init(properties, data, cryptoTokenId);
         } catch (NoSuchSlotException e) {
