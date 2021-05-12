@@ -250,6 +250,10 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="cp" value="#{cc.attrs.raCertificateDetails.cpName}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="eab" value="#{msg.component_certdetails_field_eab}" rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="eab" value="#{cc.attrs.raCertificateDetails.accountBindingId}" rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 			
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
