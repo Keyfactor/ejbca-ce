@@ -66,6 +66,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String AWSKMS_ACCESSKEYID= "--awskmsaccesskeyid";
     private static final String AWSKMS_REGION= "--awskmsregion";
     private static final String AZUREVAULT_TYPE= "--azurevaulttype";
+    private static final String AZUREVAULT_USE_KEY_BINDING = "--azurevaultkeybinding";
     private static final String AZUREVAULT_NAME= "--azurevaultname";
     private static final String AZUREVAULT_CLIENTID= "--azurevaultclientid";
 
@@ -172,6 +173,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             }
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, parameters.get(AZUREVAULT_USE_KEY_BINDING));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, parameters.get(AZUREVAULT_CLIENTID));
         } else if (PKCS11CryptoToken.class.getSimpleName().equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
             if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
