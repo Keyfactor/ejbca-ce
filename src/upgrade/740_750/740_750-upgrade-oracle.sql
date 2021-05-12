@@ -2,3 +2,5 @@
 -- if not added automatically the following SQL statements can be run to add the new columns 
 -- ALTER TABLE ApprovalData ADD subjectDn VARCHAR2(255 byte);
 -- ALTER TABLE ApprovalData ADD email VARCHAR2(255 byte);
+-- ALTER TABLE CertificateData ADD accountBindingId VARCHAR2(255 byte);
+-- ALTER TABLE NoConflictCertificateData ADD accountBindingId VARCHAR2(255 byte);
