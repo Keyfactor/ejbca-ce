@@ -29,6 +29,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -65,6 +66,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -350,6 +353,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
         // Note: if data is null, a new empty keystore will be created
         final List<String> isSlotUsed = isCryptoTokenSlotUsed(authenticationToken, tokenName, className, properties);
+        if (Boolean.parseBoolean(properties.getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"))) {
+            
+            final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
+            
+            
+        }
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
         if (authenticationCode != null) {
             if (log.isDebugEnabled()) {

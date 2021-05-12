@@ -364,6 +364,25 @@
                         value="#{cryptoTokenMBean.currentCryptoToken.keyVaultClientID}"
                         rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
                 </h:panelGroup>
+                
+                <h:panelGroup id="currentCryptoTokenKeyVaultUseKeyBindingPanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <h:outputLabel id="currentCryptoTokenKeyVaultUseKeyBindingLabel"
+                        for="currentCryptoTokenKeyVaultUseKeyBinding"
+                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_USE_BINDING} " />
+                    <h:outputText id="currentCryptoTokenKeyVaultUseKeyBinding" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    
+                    <h:selectBooleanCheckbox
+						id="currentCryptoTokenKeyVaultUseKeyBinding"
+						value="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}"
+						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+					<h:outputLabel for="currentCryptoTokenKeyVaultUseKeyBinding"
+						value="#{web.text.USE}"
+						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
 
 				<h:panelGroup />
 				<h:panelGroup styleClass="margin-top">
