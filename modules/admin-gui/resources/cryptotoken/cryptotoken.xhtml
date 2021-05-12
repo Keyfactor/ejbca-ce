@@ -376,10 +376,10 @@
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
                     
                     <h:selectBooleanCheckbox
-						id="currentCryptoTokenKeyVaultUseKeyBinding"
+						id="currentCryptoTokenKeyVaultUseKeyBindingCheckbox"
 						value="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}"
 						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-					<h:outputLabel for="currentCryptoTokenKeyVaultUseKeyBinding"
+					<h:outputLabel for="currentCryptoTokenKeyVaultUseKeyBindingCheckbox"
 						value="#{web.text.USE}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
                 </h:panelGroup>
