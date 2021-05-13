@@ -817,7 +817,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Build a list sorted by name of the internal key bindings that can be used for public key authentication to Azure crypto tokens.
      */
     public List<SelectItem> getInternalKeyBindings() {
-        log.error("In getInternalKeyBindings");
         if (internalKeyBindings == null) {
             internalKeyBindings = internalKeyBindingMgmtSession
                 .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS)

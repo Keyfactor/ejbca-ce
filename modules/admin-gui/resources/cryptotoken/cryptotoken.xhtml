@@ -379,9 +379,7 @@
 						id="currentCryptoTokenKeyVaultUseKeyBindingCheckbox"
 						value="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}"
 						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}">
-						<f:ajax execute="currentCryptoTokenKeyVaultUseKeyBindingCheckbox" 
-							event="change" 
-							render="currentCryptoTokenKeyVaultKeyBindingPanelGroup currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup"/>
+						<f:ajax render="currentCryptoTokenForm:currentCryptoTokenKeyVaultKeyBindingPanelGroup currentCryptoTokenForm:currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="currentCryptoTokenKeyVaultUseKeyBindingCheckbox"
 						value="#{web.text.USE}"
@@ -389,11 +387,15 @@
                 </h:panelGroup>
 
                 <h:panelGroup id="currentCryptoTokenKeyVaultKeyBindingPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken and cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}">
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
                     <h:outputLabel id="currentCryptoTokenKeyVaultKeyBindingLabel"
                         for="currentCryptoTokenKeyVaultKeyBinding"
-                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_BINDING} " />
-                    <h:outputText id="currentCryptoTokenKeyVaultKeyBinding" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_BINDING}"
+                        rendered="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}" />
+                    <h:outputText id="currentCryptoTokenKeyVaultKeyBinding"
+                    	value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}"
+                    	escape="false"
+                    	rendered="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}}" />
                 </h:panelGroup>
                 <h:panelGroup
                 	id="currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup"
@@ -409,7 +411,7 @@
                         value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBinding}"
                         rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}" />
                 </h:panelGroup>
-
+				
 				<h:panelGroup />
 				<h:panelGroup styleClass="margin-top">
 					<h:commandButton
