@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.common.base.Preconditions;
+
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
@@ -204,7 +206,8 @@ public class CryptoTokenFactory {
         }
         
         // AzureCryptoToken can potentially take a key binding name as its authentication method.  Set its member that can find the key binding.
-        if (keyAndCertFinder != null && token instanceof AzureCryptoToken) {
+        if (token instanceof AzureCryptoToken) {
+            Preconditions.checkNotNull(keyAndCertFinder, "keyAndCertFinder is null when constructing an AzureCryptoToken");
             ((AzureCryptoToken) token).setAuthKeyProvider(keyAndCertFinder);
         }
         

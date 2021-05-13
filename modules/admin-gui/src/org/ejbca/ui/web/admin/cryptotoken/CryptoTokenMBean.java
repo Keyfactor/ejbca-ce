@@ -481,9 +481,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getKeyVaultKeyBinding() {
-            log.error("in getKeyVaultKeyBinding, returning " + keyVaultKeyBinding);
-            log.error(String.format("isCurrentCryptoTokenEditMode = %s", isCurrentCryptoTokenEditMode()));
-            log.error(String.format("isKeyVaultUseKeyBinding = %s", isKeyVaultUseKeyBinding()));
             return keyVaultKeyBinding;
         }
 
