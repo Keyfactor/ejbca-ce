@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -199,6 +200,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
     private boolean isKeyVaultUseKeyBinding() {
         return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
     }
+    /** get the keyVaultType, set during init of crypto token */
+    private String getKeyVaultKeyBinding() {
+        return getProperties().getProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING);
+    }
 
     /** Construct a provider name for this instance of the crypto token. Make the name "AzureKeyVaultProvider-cryptoTokenID",
      * making it possible to have different providers for different instances of Key Vaults.
@@ -271,17 +276,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         Security.addProvider(sigProvider);
         setJCAProvider(sigProvider);
 
-        if (isKeyVaultUseKeyBinding()) {
-            // TODO MSW Remove This
-            final String keyBindingName = properties.getProperty(KEY_VAULT_KEY_BINDING, "IntuneKey");
-            final Pair<X509Certificate, PrivateKey> keyBinding = this.authKeyProvider
-                    .find(keyBindingName)
-                    .orElseThrow(() -> new CryptoTokenOfflineException(
-                            "Azure CryptoToken configured to use key binding, but binding " + keyBindingName + " not found"));
-
-            this.privateKey = keyBinding.getRight();
-            this.certificate = keyBinding.getLeft();
-        } else {
+        if (!isKeyVaultUseKeyBinding()) {
             String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
             try {
                 if (StringUtils.isNotEmpty(autoPwd)) {
@@ -749,7 +744,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     CloseableHttpResponse azureHttpRequest(HttpRequestBase request) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         // Don't even try to make a request if we don't have a client secret as it is required. Better fail fast
-        if (StringUtils.isEmpty(clientSecret) && privateKey == null) {
+        if (StringUtils.isEmpty(clientSecret) && !isKeyVaultUseKeyBinding()) {
             throw new CryptoTokenOfflineException("Crypto token with Key Vault '" + getKeyVaultName() + "' is not active, there is no client secret or keypair available: " + request.toString());
         }
         try {
@@ -838,7 +833,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         final ArrayList<NameValuePair> parameters = new ArrayList<>();
         parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));                
         parameters.add(new BasicNameValuePair("client_id", clientID));
-        if (privateKey == null) {
+        if (!isKeyVaultUseKeyBinding()) {
             // app id/secret authentication
             parameters.add(new BasicNameValuePair("client_secret", clientSecret));
             if (log.isDebugEnabled()) {
@@ -846,18 +841,27 @@ public class AzureCryptoToken extends BaseCryptoToken {
             }
         }
         else {
-            // key pair authentication
-            if (log.isDebugEnabled()) {
-                log.debug("Using client_id and key pair: '" + clientID + "', '" + certificate.getSubjectX500Principal().toString() + "'");
-            }
             try {
+                if (privateKey == null) {
+                    final String keyBindingName = getKeyVaultKeyBinding();
+                    final Pair<X509Certificate, PrivateKey> keyAndCert = this.authKeyProvider.find(keyBindingName)
+                            .orElseThrow(() -> new CryptoTokenAuthenticationFailedException(
+                                    "Azure Key Vault authentication key binding " + keyBindingName + " not found."));
+                    privateKey = keyAndCert.getRight();
+                    certificate = keyAndCert.getLeft();
+                }
+                
+                // key pair authentication
+                if (log.isDebugEnabled()) {
+                    log.debug("Using client_id and key pair: '" + clientID + "', '" + certificate.getSubjectX500Principal().toString() + "'");
+                }
                 final String jwtString = getJwtString(oauthServiceURL + "/oauth2/token", clientID, (int) this.aliasCache.getMaxCacheLifeTime()/1000, privateKey, certificate);
                 parameters.add(new BasicNameValuePair("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"));
                 parameters.add(new BasicNameValuePair("client_assertion", jwtString));
                 if (log.isDebugEnabled()) {
                     log.debug("Azure jwt: '" + jwtString + "'");
                 }
-            } catch (CertificateEncodingException | NoSuchAlgorithmException | JOSEException e) {
+            } catch (CertificateEncodingException | NoSuchAlgorithmException | JOSEException | CryptoTokenOfflineException e) {
                 throw new CryptoTokenAuthenticationFailedException("Unable to create signed assertion for Azure authentication", e);
             }
         }
