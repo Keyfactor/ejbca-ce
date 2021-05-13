@@ -28,15 +28,16 @@ public class KeyBindingFinder implements KeyAndCertFinder {
     }
 
     @Override
-    public Optional<Pair<X509Certificate, PrivateKey>> find(final String keyBindingName) throws CryptoTokenOfflineException {
-        log.debug("Searching for internal key binding " + keyBindingName);
+    public Optional<Pair<X509Certificate, PrivateKey>> find(final String keyBindingIdString) throws CryptoTokenOfflineException {
+        log.debug("Searching for internal key binding " + keyBindingIdString);
+        int keyBindingId = Integer.parseInt(keyBindingIdString);
         if (log.isDebugEnabled()) {
             internalKeyBindings.getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).forEach(b -> {
                 log.debug(String.format("Key binding -> name:$s cert:$s token:$d", b.getName(), b.getCertificateId(), b.getCryptoTokenId()));
             });
         }
         final Optional<InternalKeyBindingInfo> keyBindingInfo = internalKeyBindings
-                .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream().filter(i -> i.getName().equals(keyBindingName))
+                .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream().filter(i -> i.getId() == keyBindingId)
                 .findFirst();
         if (!keyBindingInfo.isPresent()) {
             return Optional.empty();
