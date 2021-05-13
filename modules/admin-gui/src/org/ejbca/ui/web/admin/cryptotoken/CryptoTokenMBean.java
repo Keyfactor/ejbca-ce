@@ -51,6 +51,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
@@ -90,6 +91,10 @@ import org.ejbca.util.SlotList;
 @ManagedBean
 @SessionScoped
 public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
+
+    public class KeyBindingGuiInfo {
+
+    }
 
     private static final String CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX = "CRYPTOTOKEN_LABEL_TYPE_";
 
@@ -249,6 +254,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultName = "ejbca-keyvault";
         private String keyVaultClientID = "";
         private boolean keyVaultUseKeyBinding = false;
+        private String keyVaultKeyBinding = "";
         private String awsKMSRegion = "us-east-1"; // default value
         private String awsKMSAccessKeyID = ""; // default value
 
@@ -473,6 +479,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setKeyVaultUseKeyBinding(boolean keyVaultUseKeyBinding) {
             this.keyVaultUseKeyBinding = keyVaultUseKeyBinding;
         }
+
+        public String getKeyVaultKeyBinding() {
+            return keyVaultKeyBinding;
+        }
+
+        public void setKeyVaultKeyBinding(String keyVaultKeyBinding) {
+            this.keyVaultKeyBinding = keyVaultKeyBinding;
+        }
     }
 
     /**
@@ -621,6 +635,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<>();
     private ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
     private List<SelectItem> availablePaddingSchemes;
+    private List<SelectItem> internalKeyBindings = null;
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
@@ -796,6 +811,22 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         flushCurrent();
         setCurrentCryptoTokenEditMode(false);
         return cryptoTokenGuiList;
+    }
+    
+    /**
+     * Build a list sorted by name of the internal key bindings that can be used for public key authentication to Azure crypto tokens.
+     */
+    public List<SelectItem> getInternalKeyBindings() {
+        log.error("In getInternalKeyBindings");
+        if (internalKeyBindings == null) {
+            internalKeyBindings = internalKeyBindingMgmtSession
+                .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS)
+                .stream()
+                .sorted((b1, b2) -> b1.getName().compareTo(b2.getName()))
+                .map(b -> new SelectItem(b.getId(), b.getName()))
+                .collect(Collectors.toList());
+        }
+        return internalKeyBindings;
     }
 
     /**
@@ -1007,10 +1038,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 String vaultName = getCurrentCryptoToken().getKeyVaultName().trim();
                 String vaultClientID = getCurrentCryptoToken().getKeyVaultClientID().trim();
                 boolean vaultUseKeyBinding = getCurrentCryptoToken().isKeyVaultUseKeyBinding();
+                String vaultKeyBinding = getCurrentCryptoToken().getKeyVaultKeyBinding();
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, vaultType);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, Boolean.toString(vaultUseKeyBinding));
+                properties.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
             } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.AWSKMS_NAME;
                 String region = getCurrentCryptoToken().getAWSKMSRegion().trim();
@@ -1328,6 +1361,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public void selectCryptoTokenType() {
+        // NOOP: Only for page reload
+    }
+    
+    public void selectKeyVaultUseBinding() {
         // NOOP: Only for page reload
     }
 

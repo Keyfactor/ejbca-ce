@@ -378,10 +378,36 @@
                     <h:selectBooleanCheckbox
 						id="currentCryptoTokenKeyVaultUseKeyBindingCheckbox"
 						value="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}"
-						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}">
+						<f:ajax execute="currentCryptoTokenKeyVaultUseKeyBindingCheckbox" 
+							event="change" 
+							render="currentCryptoTokenKeyVaultKeyBindingPanelGroup currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup"/>
+					</h:selectBooleanCheckbox>
 					<h:outputLabel for="currentCryptoTokenKeyVaultUseKeyBindingCheckbox"
 						value="#{web.text.USE}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                </h:panelGroup>
+
+                <h:panelGroup id="currentCryptoTokenKeyVaultKeyBindingPanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken and cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}">
+                    <h:outputLabel id="currentCryptoTokenKeyVaultKeyBindingLabel"
+                        for="currentCryptoTokenKeyVaultKeyBinding"
+                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_BINDING} " />
+                    <h:outputText id="currentCryptoTokenKeyVaultKeyBinding" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup
+                	id="currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+
+                    <h:selectOneMenu
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBinding}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}">
+                        <f:selectItems value="#{cryptoTokenMBean.internalKeyBindings}"/>
+                    </h:selectOneMenu>
+                    <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBinding}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}" />
                 </h:panelGroup>
 
 				<h:panelGroup />
