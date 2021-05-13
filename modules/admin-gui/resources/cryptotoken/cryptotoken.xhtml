@@ -395,7 +395,7 @@
                     <h:outputText id="currentCryptoTokenKeyVaultKeyBinding"
                     	value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}"
                     	escape="false"
-                    	rendered="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}}" />
+                    	rendered="#{cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}" />
                 </h:panelGroup>
                 <h:panelGroup
                 	id="currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup"
@@ -408,8 +408,8 @@
                         <f:selectItems value="#{cryptoTokenMBean.internalKeyBindings}"/>
                     </h:selectOneMenu>
                     <h:outputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBinding}"
-                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}" />
+                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBindingName}"
+                        rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.keyVaultUseKeyBinding}"/>
                 </h:panelGroup>
 				
 				<h:panelGroup />
