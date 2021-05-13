@@ -145,7 +145,6 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         }
         this.serialNumberSearchStringFromHex = value;
     }
-
     public long getIssuedAfter() { return issuedAfter; }
     public void setIssuedAfter(final long issuedAfter) { this.issuedAfter = issuedAfter; }
     public boolean isIssuedAfterUsed() { return issuedAfter>0L; }
@@ -315,7 +314,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public boolean matchSerialNumber(final String serialNumber) {
         return serialNumber.equals(getSerialNumberSearchStringFromDec()) || serialNumber.equals(getSerialNumberSearchStringFromHex());
     }
-
+    
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
         return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) ||

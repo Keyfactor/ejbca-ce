@@ -131,16 +131,25 @@ public class SearchCertificatesRestRequest {
                             raCertificateSearchRequest.setSubjectDnSearchExact(true);
                             raCertificateSearchRequest.setSubjectAnSearchExact(true);
                             raCertificateSearchRequest.setUsernameSearchExact(true);
+                            raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
                         raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
                         raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
+                        raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }
                     case END_ENTITY_PROFILE: {
                         raCertificateSearchRequest.getEepIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
+                        break;
+                    }
+                    case EXTERNAL_ACCOUNT_BINDING_ID: {
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                            raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
+                        }
+                        raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }
                     case CERTIFICATE_PROFILE: {
