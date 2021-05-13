@@ -481,7 +481,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getKeyVaultKeyBinding() {
+            log.error("in getKeyVaultKeyBinding, returning " + keyVaultKeyBinding);
+            log.error(String.format("isCurrentCryptoTokenEditMode = %s", isCurrentCryptoTokenEditMode()));
+            log.error(String.format("isKeyVaultUseKeyBinding = %s", isKeyVaultUseKeyBinding()));
             return keyVaultKeyBinding;
+        }
+
+        public String getKeyVaultKeyBindingName() {
+            for (SelectItem binding : getInternalKeyBindings()) {
+                if (binding.getValue().toString().equals(keyVaultKeyBinding))
+                    return binding.getLabel();
+            }
+            return "binding " + keyVaultKeyBinding + " not found";
         }
 
         public void setKeyVaultKeyBinding(String keyVaultKeyBinding) {
@@ -1346,6 +1357,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setKeyVaultName(cryptoTokenInfo.getKeyVaultName());
                     currentCryptoToken.setKeyVaultClientID(cryptoTokenInfo.getKeyVaultClientID());
                     currentCryptoToken.setKeyVaultUseKeyBinding(cryptoTokenInfo.isKeyVaultUseKeyBinding());
+                    currentCryptoToken.setKeyVaultKeyBinding(cryptoTokenInfo.getKeyVaultKeyBinding());
                 }
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME)) {
                     currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
