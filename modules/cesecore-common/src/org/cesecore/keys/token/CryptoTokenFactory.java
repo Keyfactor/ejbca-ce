@@ -58,9 +58,9 @@ public class CryptoTokenFactory {
             /** Can't use class.getName() here because this class is not always available */
             instance.addAvailableCryptoToken(PRIME_CA_TOKEN_NAME, PRIME_CA_TOKEN_SIMPLE_NAME, false, true);
             instance.addAvailableCryptoToken(PKCS11CryptoToken.class.getName(), "PKCS#11", false, true);
-            instance.addAvailableCryptoToken(AzureCryptoToken.class.getName(), "Azure Key Vault", false, true);
             instance.addAvailableCryptoToken(SoftCryptoToken.class.getName(), "SOFT", true, true);
             instance.addAvailableCryptoToken(NullCryptoToken.class.getName(), "Null", false, false);
+            instance.addAvailableCryptoToken(AzureCryptoToken.class.getName(), "Azure Key Vault", false, true);
             // Enterprise only. May not be available don't reference class.
             instance.addAvailableCryptoToken(AWSKMS_NAME, "AWS KMS", false, true);
             // Enterprise only. May not be available don't reference class.
@@ -162,6 +162,22 @@ public class CryptoTokenFactory {
             String tokenName) throws NoSuchSlotException {
         final boolean allowNonExistingSlot = Boolean.valueOf(properties.getProperty(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY, Boolean.FALSE.toString()));
         return createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, allowNonExistingSlot);
+    }
+    
+    /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken
+     * 
+     * @param inClassname the full classname of the crypto token implementation class
+     * @param properties properties passed to the init method of the CryptoToken
+     * @param data byte data passed to the init method of the CryptoToken
+     * @param cryptoTokenId id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
+     * @param tokenName user friendly identifier
+     * @param keyAndCertFinder an object that can find public key token authentication credentials from the config
+     * @throws NoSuchSlotException if no slot as defined in properties could be found.
+     */
+    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int cryptoTokenId,
+            String tokenName, KeyAndCertFinder keyAndCertFinder) throws NoSuchSlotException {
+        final boolean allowNonExistingSlot = Boolean.valueOf(properties.getProperty(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY, Boolean.FALSE.toString()));
+        return createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, allowNonExistingSlot, keyAndCertFinder);
     }
 
     /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken

@@ -12,7 +12,7 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 
 /**
- * I implement a way to find keys and certs given a binding name using EJBs.
+ * I implement a way to find keys and certs given a binding ID using EJBs.
  */
 public class KeyBindingFinder implements KeyAndCertFinder {
     private static final Logger log = Logger.getLogger(KeyAndCertFinder.class);
@@ -28,9 +28,8 @@ public class KeyBindingFinder implements KeyAndCertFinder {
     }
 
     @Override
-    public Optional<Pair<X509Certificate, PrivateKey>> find(final String keyBindingIdString) throws CryptoTokenOfflineException {
-        log.debug("Searching for internal key binding " + keyBindingIdString);
-        int keyBindingId = Integer.parseInt(keyBindingIdString);
+    public Optional<Pair<X509Certificate, PrivateKey>> find(final int keyBindingId) throws CryptoTokenOfflineException {
+        log.debug("Searching for internal key binding " + keyBindingId);
         if (log.isDebugEnabled()) {
             internalKeyBindings.getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).forEach(b -> {
                 log.debug(String.format("Key binding -> name:$s cert:$s token:$d", b.getName(), b.getCertificateId(), b.getCryptoTokenId()));

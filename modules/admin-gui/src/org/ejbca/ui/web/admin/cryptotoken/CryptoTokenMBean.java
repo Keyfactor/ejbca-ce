@@ -193,7 +193,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getAuthenticationCode() {
+            if (isNoAuthenticationCodeAzureType()) {
+                return AzureCryptoToken.DUMMY_ACTIVATION_CODE;
+            }
             return authenticationCode;
+        }
+
+        public boolean isNoAuthenticationCodeAzureType() {
+            try {
+                return isAzureType() && getCurrentCryptoToken().isKeyVaultUseKeyBinding();
+            } catch (AuthorizationDeniedException e) {
+                return false;
+            }
         }
 
         public void setAuthenticationCode(String authenticationCode) {
@@ -946,7 +957,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Invoked when admin requests a CryptoToken creation.
      */
     private void saveCurrentCryptoToken(boolean checkSlotInUse) throws AuthorizationDeniedException {
-        if (!getCurrentCryptoToken().getSecret1().equals(getCurrentCryptoToken().getSecret2())) {
+        if (!getCurrentCryptoToken().isKeyVaultUseKeyBinding() && !getCurrentCryptoToken().getSecret1().equals(getCurrentCryptoToken().getSecret2())) {
             addNonTranslatedErrorMessage("Authentication codes do not match!");
             return;
         }
@@ -1068,7 +1079,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 properties.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, String.valueOf(getCurrentCryptoToken().isAllowExplicitParameters()));
             }
 
-            final char[] secret = getCurrentCryptoToken().getSecret1().toCharArray();
+            final char[] secret = getCurrentCryptoToken().isKeyVaultUseKeyBinding() 
+                    ? AzureCryptoToken.DUMMY_ACTIVATION_CODE.toCharArray()
+                    : getCurrentCryptoToken().getSecret1().toCharArray();
             if (getCurrentCryptoTokenId() == 0) {
                 if (secret.length > 0) {
                     if (getCurrentCryptoToken().isAutoActivate()) {

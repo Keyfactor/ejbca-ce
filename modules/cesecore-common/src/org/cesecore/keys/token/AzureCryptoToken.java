@@ -92,6 +92,13 @@ import org.json.simple.parser.ParseException;
  * @version $Id$
  */
 public class AzureCryptoToken extends BaseCryptoToken {
+    
+    public AzureCryptoToken() {
+        // This can be used to find creations not followed by a setAuthKeyProvider()
+        if (log.isDebugEnabled()) {
+            log.debug("Created an AzureCryptoToken", new Exception("for stack trace"));
+        }
+    }
 
     private static final long serialVersionUID = 7719014139640717867L;
 
@@ -169,6 +176,12 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private KeyAliasesCache aliasCache = new KeyAliasesCache();
 
+    /**
+     * EJBCA uses a non-null activation code to indicate "should activate" is several places.  When using public key authentication, 
+     * there's no authentication code but we still want to be able to "activate" the token.  This value can be used as an 
+     * "activation code" in those situations to indicate to the reader that this is a special case.
+     */
+    public static final String DUMMY_ACTIVATION_CODE = "azure-dummy-pin";
     
     private static volatile PublicKey ecPublicDummyKey = null;
 
@@ -200,8 +213,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
         return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
     }
     /** get the keyVaultType, set during init of crypto token */
-    private String getKeyVaultKeyBinding() {
-        return getProperties().getProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING);
+    private int getKeyVaultKeyBinding() {
+        return Integer.parseInt(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, "-1"));
     }
 
     /** Construct a provider name for this instance of the crypto token. Make the name "AzureKeyVaultProvider-cryptoTokenID",
@@ -842,10 +855,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
         else {
             try {
                 if (privateKey == null) {
-                    final String keyBindingName = getKeyVaultKeyBinding();
-                    final Pair<X509Certificate, PrivateKey> keyAndCert = this.authKeyProvider.find(keyBindingName)
+                    final int keyBindingId = getKeyVaultKeyBinding();
+                    final Pair<X509Certificate, PrivateKey> keyAndCert = this.authKeyProvider.find(keyBindingId)
                             .orElseThrow(() -> new CryptoTokenAuthenticationFailedException(
-                                    "Azure Key Vault authentication key binding " + keyBindingName + " not found."));
+                                    "Azure Key Vault authentication key binding id = " + keyBindingId + " not found."));
                     privateKey = keyAndCert.getRight();
                     certificate = keyAndCert.getLeft();
                 }
@@ -930,6 +943,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
     }
 
     public void setAuthKeyProvider(KeyAndCertFinder keyAndCertFinder) {
+        log.error("In AzureCryptoToken setting keyAndCertFinder = " + keyAndCertFinder);
         this.authKeyProvider = keyAndCertFinder;
     }
 }
