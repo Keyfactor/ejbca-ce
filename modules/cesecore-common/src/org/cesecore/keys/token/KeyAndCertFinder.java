@@ -6,9 +6,9 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-/** I represent a generic way to find a certificate and key given a name. */
+/** I represent a generic way to find a certificate and key given an ID. */
 public interface KeyAndCertFinder {
 
-    Optional<Pair<X509Certificate, PrivateKey>> find(String name) throws CryptoTokenOfflineException;
+    Optional<Pair<X509Certificate, PrivateKey>> find(int id) throws CryptoTokenOfflineException;
 
 }
