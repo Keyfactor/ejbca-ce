@@ -89,6 +89,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -232,7 +234,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         Properties properties = new Properties();
         properties.putAll(tokenprops);
         properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");                       
-        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
+        CryptoToken cryptoToken;
+        if (className.equals(AzureCryptoToken.class.getName())) {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false,
+                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
+        } else {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
+        }
         final String providerName = cryptoToken.getSignProviderName();
         if (log.isDebugEnabled()) {
             log.debug("isCryptoTokenUsed: Created provider (without installing) to check for collisions: "+providerName);
@@ -495,7 +503,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // For SoftCryptoTokens, a new secret means that we should change it and it can only be done if the token is active
         CryptoToken newCryptoToken;
         try {
-            newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
+            if (className.equals(AzureCryptoToken.class.getName())) {
+                // special case - pass in an object that can find the authentication key binding
+                newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName, 
+                        new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
+            } else {
+                newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
+            }
             // If a new authenticationCode is provided we should verify it before we go ahead and merge
             if (authenticationCode != null && authenticationCode.length > 0) {
                 newCryptoToken.deactivate();
