@@ -1305,13 +1305,15 @@ public abstract class CmpTestCase extends CaTestCase {
             final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
             assertNotNull(certRepMessage);
             X509Certificate certificate = null;
-            for (CMPCertificate cmpCertificate : certRepMessage.getCaPubs()) {
-                certificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
-                assertNotNull(certificate);
-                result.add(certificate);
+            if (certRepMessage.getCaPubs() != null) {
+                for (CMPCertificate cmpCertificate : certRepMessage.getCaPubs()) {
+                    certificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
+                    assertNotNull(certificate);
+                    result.add(certificate);
+                }
             }
         }
-        return result;
+        return result.size() > 0 ? result : null;
     }
 
     protected static void updatePropertyOnServer(String property, String value) {
