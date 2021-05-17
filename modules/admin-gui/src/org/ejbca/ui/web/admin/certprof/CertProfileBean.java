@@ -465,7 +465,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableEABNamespaces() {
         List<SelectItem> ret = new ArrayList<>();
-        final Map<String, List<String>> eabMap = getEjbcaWebBean().getEABConfiguration().getEABMap();
+        final Map<String, Set<String>> eabMap = getEjbcaWebBean().getEABConfiguration().getEABMap();
 
         final Set<String> namespaces = eabMap.keySet();
         for(String namespace : namespaces) {
