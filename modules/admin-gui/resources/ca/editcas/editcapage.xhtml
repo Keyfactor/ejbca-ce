@@ -950,14 +950,22 @@
 					<h:outputText value="#{web.text.MS_CONFORMANT}" />
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-					<h:selectBooleanCheckbox id="msconformant"
-											 value="#{editCAsMBean.caInfoDto.msConformant}"
-											 onclick="return confirm('#{web.text.MS_CONFORMANT_CONFIRMATION}');"
-											 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
-					</h:selectBooleanCheckbox>
-					<h:outputLabel for="msconformant"
-								   value="#{web.text.USE}" />
+
+					<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.msConformant}">
+						<h:selectBooleanCheckbox id="msconformant"
+												 value="#{editCAsMBean.caInfoDto.msConformant}"
+												 onclick="return confirm('#{web.text.MS_CONFORMANT_CONFIRMATION}')"
+												 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.caInfoDto.msConformant}">
+						</h:selectBooleanCheckbox>
+						<h:outputLabel for="msconformant"
+									   value="#{web.text.USE}" />
+					</h:panelGroup>
+					<h:outputText rendered="#{editCAsMBean.caInfoDto.msConformant}"
+								  styleClass="mes" value="#{web.text.MS_CONFORMANT_IRREVERSIBLE}" />
+
 				</h:panelGroup>
+
+
 
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
