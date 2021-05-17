@@ -287,12 +287,12 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     public String getAdLoginPassword(String alias) {
         String key = alias + "." + AD_LOGIN_PASSWORD;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
 
     public void setAdLoginPassword(String alias, final String adLoginPassword) {
         String key = alias + "." + AD_LOGIN_PASSWORD;
-        setValue(key, adLoginPassword, alias);
+        setValue(key, getEncryptedValue(adLoginPassword), alias);
     }
 
     public Integer getAuthKeyBinding(String alias) {
