@@ -13,29 +13,19 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.BaseCertificateData;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
-import org.cesecore.certificates.crl.CRLData;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.config.ExternalScriptsConfiguration;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.validation.ValidatorNotApplicableException;
-import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.ExternalScriptsAllowlist;
-import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.PublisherConst;
-import org.ejbca.core.model.ca.publisher.PublisherException;
-import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -50,19 +40,29 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.BaseCertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.ExternalScriptsConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.jndi.JndiConstants;
+import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
+import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
