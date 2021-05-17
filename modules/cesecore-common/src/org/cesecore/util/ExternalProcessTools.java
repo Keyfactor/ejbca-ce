@@ -160,7 +160,7 @@ public final class ExternalProcessTools {
             final List<String> cmdTokens = Arrays.asList(cmd.split("\\s"));
             // The first token is the actual command we should execute, verify that we're allowed to execute this command from the allowList
             if (cmdTokens.size() < 1) {
-                throw new ExternalProcessException(intres.getLocalizedMessage("nocommand", cmd));
+                throw new ExternalProcessException(intres.getLocalizedMessage("process.nocommand", cmd));
             }
             if (!allowList.isPermitted(cmdTokens.get(0))) {
                 throw new ExternalProcessException(intres.getLocalizedMessage("process.whitelist.error.notlisted", cmdTokens.get(0)));
