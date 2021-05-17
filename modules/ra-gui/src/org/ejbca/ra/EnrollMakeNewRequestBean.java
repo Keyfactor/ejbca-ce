@@ -184,6 +184,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String signature;
     private String csrFileName;
     private String extensionData;
+    private String accountBindingId;
     private SubjectDn subjectDn;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
@@ -555,6 +556,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return true;
     }
 
+    public boolean isEABrendered(){
+        return (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (getCertificateProfile() != null && StringUtils.isNotEmpty(getCertificateProfile().getEabNamespace()));
+    }
+
     /**
      * @return the provideRequestMetadataRendered
      */
@@ -895,6 +900,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
         }
+        // Add account binding Id
+        if (accountBindingId != null) {
+            extendedInformation.setAccountBindingId(accountBindingId);
+        }
         // Add PSD2 QC Statement
         if (selectedPsd2PspRoles != null && !selectedPsd2PspRoles.isEmpty()) {
             final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = new ArrayList<>();
@@ -1065,7 +1074,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     /**
      * Reports an error message in the GUI and in the server log.
-     * @param endEntityInformation End Entity
      * @param errorCode Error code, may be null
      * @param exception Exception
      */
@@ -1094,7 +1102,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Reports an error message in the GUI and in the server log.
      * @param messageKey Language string key
      * @param logMessage Message to log at INFO level
-     * @param endEntityInformation End Entity
      * @param errorCode Error code, may be null
      * @param exception Exception
      */
@@ -1883,6 +1890,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void setExtensionData(String extensionData) {
         this.extensionData = extensionData;
+    }
+
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
+    public void setAccountBindingId(String accountBindingId) {
+        this.accountBindingId = accountBindingId;
     }
 
     public String getPsd2NcaName() {
