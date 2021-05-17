@@ -217,6 +217,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(SUBJECTALTNAME, cainfo.getSubjectAltName());
         data.put(CABase.CATYPE, CAInfo.CATYPE_X509);
         data.put(VERSION, LATEST_VERSION);
+        setMsConformant(cainfo.isMsConformant());
         setUseAuthorityKeyIdentifier(cainfo.getUseAuthorityKeyIdentifier());
         setAuthorityKeyIdentifierCritical(cainfo.getAuthorityKeyIdentifierCritical());
         setUseCRLNumber(cainfo.getUseCRLNumber());
@@ -331,6 +332,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCrlPartitions(getCrlPartitions())
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
                 .setRequestPreProcessor(getRequestPreProcessor())
+                .setMsConformant(isMsConformant())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -361,6 +363,22 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public void setPolicies(List<CertificatePolicy> policies) {
         data.put(POLICIES, policies);
+    }
+
+
+    @Override
+    public boolean isMsConformant() {
+        Object isConformant = data.get(MSCONFORMANT);
+        if (isConformant == null) {
+            return false;
+        }
+
+        return (Boolean) isConformant;
+    }
+
+    @Override
+    public void setMsConformant(boolean isMsConformant) {
+        data.put(MSCONFORMANT, isMsConformant);
     }
 
     /* (non-Javadoc)
@@ -804,6 +822,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setDoStoreOcspResponsesOnDemand(info.isDoStoreOcspResponsesOnDemand());
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
+        setMsConformant(info.isMsConformant());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
     }
