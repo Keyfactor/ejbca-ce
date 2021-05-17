@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
@@ -172,8 +173,7 @@ public class CmpResponseMessageTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(bao.toByteArray(), 200, cmpAlias);
         
         final List<X509Certificate> caPubs = caPubsCertificatesFromCmpResponse(resp);
-        assertNotNull("CMP response caPubs field is null.", caPubs);
-        assertEquals("CMP response caPubs field is not empty.", 0, caPubs.size());
+        assertNull("CMP response caPubs field must be null if no CA certificates are included in the CMP response.", caPubs);
     }
     
     @Test
