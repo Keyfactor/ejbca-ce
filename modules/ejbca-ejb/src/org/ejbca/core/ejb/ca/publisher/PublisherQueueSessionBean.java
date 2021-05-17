@@ -474,6 +474,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
             final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession.
                     getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (externalScriptsConfiguration.getEnableExternalScripts()) {
+                // if the publisher claims to call external scripts, and we have not enabled calling external scripts, the publisher default, 
+                // typically ExternalScriptsAllowlist.forbidAll() will be used.
+                // If we have enabled external scripts, the below will allow all (ExternalScriptsAllowlist.permitAll) if allow list is not set, 
+                // and only the commands on the allow list if an allows list is enabled and configured.
                 final ExternalScriptsAllowlist allowlist = ExternalScriptsAllowlist.fromText(
                         externalScriptsConfiguration.getExternalScriptsWhitelist(),
                         externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());                
