@@ -18,9 +18,12 @@ import org.cesecore.configuration.ConfigurationBase;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class EABConfiguration extends ConfigurationBase implements Serializable {
 
@@ -29,24 +32,24 @@ public class EABConfiguration extends ConfigurationBase implements Serializable 
     private static final long serialVersionUID = 1L;
     public static final String EAB_CONFIGURATION_ID = "EAB";
     // Default OAuth Keys
-    private static final LinkedHashMap<String, List<String>> EAB_MAP_DEFAULT = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, Set<String>> EAB_MAP_DEFAULT = new LinkedHashMap<>();
 
     private static final   String EAB_MAP          = "eabmap";
 
     {
-        EAB_MAP_DEFAULT.put("Cats", Arrays.asList("Abyssinian", "Bengal", "Birman", "British Shorthair", "Cheshire", "Cornish Rex", "Devon Rex", "Egyptian Mau", "Himalayan", "Korat", "Maine Coon","Munchkin", "Nebelung", "Norwegian Forest Cat", "Ocicat", "Persian", "Ragamuffin", "Russian Blue", "Scottish Fold", "Siamese", "Siberian", "Singapura", "Sphynx", "Tonkinese", "Turkish Angora"));
-        EAB_MAP_DEFAULT.put("Dogs", Arrays.asList("Afghan Hound", "Alaskan Malamute", "American Bulldog", "American Pit Bull Terrier", "Azawakh", "Bassador", "Basset Hound", "Beagle", "Belgian Sheepdog", "Black Russian Terrier", "Bloodhound", "Bolognese", "Border Collie", "Borzoi", "Boxer", "Bulldog", "Cane Corso", "Caucasian Shepherd Dog", "Chihuahua", "Collie", "Dachshund", "Dalmatian", "Doberman Pinscher", "English Setter"));
-        EAB_MAP_DEFAULT.put("Flowers", Arrays.asList("Rose", "Lily", "Tulip", "Orchid"));
-        EAB_MAP_DEFAULT.put("Trees", Arrays.asList("Ash", "Birch", "Cherry", "Chestnut", " Larch", "Maple", "Oak", "Pine"));
+        EAB_MAP_DEFAULT.put("Cats", new HashSet<>(Arrays.asList("Abyssinian", "Bengal", "Birman", "British Shorthair", "Cheshire", "Cornish Rex", "Devon Rex", "Egyptian Mau", "Himalayan", "Korat", "Maine Coon","Munchkin", "Nebelung", "Norwegian Forest Cat", "Ocicat", "Persian", "Ragamuffin", "Russian Blue", "Scottish Fold", "Siamese", "Siberian", "Singapura", "Sphynx", "Tonkinese", "Turkish Angora")));
+        EAB_MAP_DEFAULT.put("Dogs", new HashSet<>(Arrays.asList("Afghan Hound", "Alaskan Malamute", "American Bulldog", "American Pit Bull Terrier", "Azawakh", "Bassador", "Basset Hound", "Beagle", "Belgian Sheepdog", "Black Russian Terrier", "Bloodhound", "Bolognese", "Border Collie", "Borzoi", "Boxer", "Bulldog", "Cane Corso", "Caucasian Shepherd Dog", "Chihuahua", "Collie", "Dachshund", "Dalmatian", "Doberman Pinscher", "English Setter")));
+        EAB_MAP_DEFAULT.put("Flowers",new HashSet<>(Arrays.asList("Rose", "Lily", "Tulip", "Orchid")));
+        EAB_MAP_DEFAULT.put("Trees", new HashSet<>(Arrays.asList("Ash", "Birch", "Cherry", "Chestnut", " Larch", "Maple", "Oak", "Pine")));
     }
 
-    public Map<String, List<String>> getEABMap() {
-        final Map<String, List<String>>  ret = (Map<String, List<String>> )data.get(EAB_MAP);
-        return (ret == null ? (Map<String, List<String>>) EAB_MAP_DEFAULT.clone() : new LinkedHashMap<>(ret));
+    public Map<String, Set<String>> getEABMap() {
+        final Map<String, Set<String>>  ret = (Map<String, Set<String>> )data.get(EAB_MAP);
+        return (ret == null ? (Map<String, Set<String>>) EAB_MAP_DEFAULT.clone() : new LinkedHashMap<>(ret));
     }
 
     /** Sets the available OAuth keys */
-    public void setOauthKeys(Map<String, List<String>> eabMap) {
+    public void setOauthKeys(Map<String, Set<String>> eabMap) {
         data.put(EAB_MAP, eabMap);
     }
 
