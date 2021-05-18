@@ -57,7 +57,7 @@
 
 		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" />
 		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
-		<h:panelGroup>
+		<h:panelGroup id="legacydigestalgorithm">
 		    <h:outputLabel for="allowlegacydigestalgorithm" value="#{web.text.SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM}" />
 		    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/SCEP_Operations_Guide.html#Properties')}" escape="false"/>
 		</h:panelGroup>
