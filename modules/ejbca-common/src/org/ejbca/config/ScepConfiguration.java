@@ -457,12 +457,12 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     public void setIntuneProxyPass(final String alias, final String value) {
         String key = alias + "." + PROXY_PASS;
-        setValue(key, value, alias);
+        setValue(key, getEncryptedValue(value), alias);
     }
     
     public String getIntuneProxyPass(final String alias) {
         String key = alias + "." + PROXY_PASS;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
 
     public Properties getIntuneProperties(final String alias) {
