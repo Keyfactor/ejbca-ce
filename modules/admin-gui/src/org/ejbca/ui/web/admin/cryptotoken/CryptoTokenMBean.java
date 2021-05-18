@@ -699,6 +699,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         keyPairGuiList = null;
         currentCryptoToken = null;
         p11SlotUsed = false;
+        internalKeyBindings = null;
     }
 
     public void actionAuthorizeStart() {
