@@ -21,8 +21,8 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -94,7 +94,7 @@ public class EABConfigManager {
         if (bytes == null) {
             return null;
         }
-        Map<String, Set<String>> result = new HashMap<>();
+        Map<String, Set<String>> result = new LinkedHashMap<>();
         try {
             final ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
@@ -108,7 +108,7 @@ public class EABConfigManager {
                         throw new EjbcaException("Wrong file format error in line " + line);
                     }
                     final String namespace = data[0].trim();
-                    result.computeIfAbsent(namespace, k -> new HashSet<String>());
+                    result.computeIfAbsent(namespace, k -> new LinkedHashSet<>());
                     result.get(namespace).add(data[1].trim());
                 }
             }
