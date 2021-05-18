@@ -118,6 +118,7 @@
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/adsddl-1.9.jar"/>
+	<classpathentry kind="lib" path="lib/msae/spnego-r9.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.14.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-3.1.0.jar"/>
@@ -234,5 +235,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.10.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/intune/gson-2.8.6.jar"/>
+	<classpathentry kind="lib" path="lib/intune/content-type-2.1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
