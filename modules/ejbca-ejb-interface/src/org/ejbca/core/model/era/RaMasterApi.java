@@ -1469,4 +1469,42 @@ public interface RaMasterApi {
     <T extends ConfigurationBase> T getGlobalConfiguration(Class<T> type);
 
 
+    /**
+     * Dispatch SCEP message over RaMasterApi, returning enough information to update status in Intune
+     *
+     * @param authenticationToken the origin of the request
+     * @param operation desired SCEP operation to perform
+     * @param message to dispatch
+     * @param scepConfigurationAlias name of alias containing SCEP configuration
+     * @return byte array containing dispatch response from CA. Content depends on operation
+     * @throws CertificateEncodingException if an error occurs while attempting to encode a certificate.
+     * @throws NoSuchAliasException if the alias doesn't exist
+     * @throws CADoesntExistsException if the CA doesn't exist
+     * @throws NoSuchEndEntityException if an end entity is thought to exist but does not
+     * @throws CustomCertificateSerialNumberException if we use custom certificate serial numbers, but are not using a unique issuerDN/certSerialNo index in the database
+     * @throws CryptoTokenOfflineException if we use a CA Token that isn't available
+     * @throws IllegalKeyException if malformed key
+     * @throws SignRequestException if malformed certificate request.
+     * @throws SignRequestSignatureException if invalid signature on certificate request.
+     * @throws AuthStatusException if wrong status of user object.
+     * @throws AuthLoginException if wrong credentials of user object.
+     * @throws IllegalNameException if invalid request name for a certificate.
+     * @throws CertificateCreateException if a serious error happens creating a certificate.
+     * @throws CertificateRevokeException if an error revoking a certificate
+     * @throws CertificateSerialNumberException if we create a certificate that already exists.
+     * @throws IllegalValidityException if an invalid request validity period for a certificate.
+     * @throws CAOfflineException if we use a CA that is offline
+     * @throws InvalidAlgorithmException if an invalid request certificate signature algorithm for a certificate.
+     * @throws SignatureException if generic Signature exception.
+     * @throws CertificateException if a variety of certificate problems.
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws CertificateExtensionException if advanced certificate extensions when it is configured with bad properties.
+     * @throws CertificateRenewalException if an error occurs during Certificate Renewal.
+     * @since RA Master API version 12 (EJBCA 7.5.1)
+     */
+    ScepResponseInfo scepDispatchIntune(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws CertificateEncodingException,
+    NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, SignRequestException,
+    SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
+    IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
+    CertificateExtensionException, CertificateRenewalException;
 }
