@@ -121,13 +121,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private final boolean allowedDeactivation;
         private String authenticationCode;
         private final boolean referenced;
+        private boolean requiresSecretToActivate;
 
-        private CryptoTokenGuiInfo(CryptoTokenInfo cryptoTokenInfo, String p11LibraryAlias, boolean allowedActivation, boolean allowedDectivation, boolean referenced) {
+        private CryptoTokenGuiInfo(CryptoTokenInfo cryptoTokenInfo, String p11LibraryAlias, boolean allowedActivation, boolean allowedDectivation, boolean referenced, boolean requiresSecretToActivate) {
             this.cryptoTokenInfo = cryptoTokenInfo;
             this.p11LibraryAlias = p11LibraryAlias;
             this.allowedActivation = allowedActivation;
             this.allowedDeactivation = allowedDectivation;
             this.referenced = referenced;
+            this.requiresSecretToActivate = requiresSecretToActivate;
         }
 
         public String getStatusImg() {
@@ -193,18 +195,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getAuthenticationCode() {
-            if (isNoAuthenticationCodeAzureType()) {
+            if (!requiresSecretToActivate) {
                 return AzureCryptoToken.DUMMY_ACTIVATION_CODE;
             }
             return authenticationCode;
-        }
-
-        public boolean isNoAuthenticationCodeAzureType() {
-            try {
-                return isAzureType() && getCurrentCryptoToken().isKeyVaultUseKeyBinding();
-            } catch (AuthorizationDeniedException e) {
-                return false;
-            }
         }
 
         public void setAuthenticationCode(String authenticationCode) {
@@ -237,6 +231,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         public boolean isAWSKMSType() {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
+        }
+
+        public boolean isRequiresSecretToActivate() {
+            return requiresSecretToActivate;
+        }
+
+        public void setRequiresSecretToActivate(boolean requiresSecretToActivate) {
+            this.requiresSecretToActivate = requiresSecretToActivate;
         }
 
     }
@@ -821,7 +823,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 final boolean allowedActivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
                 final boolean allowedDeactivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
                 final boolean referenced = referencedCryptoTokenIds.contains(cryptoTokenInfo.getCryptoTokenId());
-                list.add(new CryptoTokenGuiInfo(cryptoTokenInfo, p11LibraryAlias, allowedActivation, allowedDeactivation, referenced));
+                final boolean requiresSecretToActivate = !cryptoTokenInfo.isKeyVaultUseKeyBinding();
+                list.add(new CryptoTokenGuiInfo(cryptoTokenInfo, p11LibraryAlias, allowedActivation, allowedDeactivation, referenced, requiresSecretToActivate));
                 Collections.sort(list, (cryptoTokenInfo1, cryptoTokenInfo2) -> cryptoTokenInfo1.getTokenName().compareToIgnoreCase(cryptoTokenInfo2.getTokenName()));
             }
             cryptoTokenGuiList = new ListDataModel<>(list);
