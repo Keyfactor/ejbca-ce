@@ -394,6 +394,18 @@ function inputIntoField(oldaliasfield, aliasfield, oldalias, infotext) {
 	return false;
 }
 
+function checkboxConfirmation(message, field) {
+    var checked = document.getElementById(field).checked;
+
+    if (checked) {
+        var confirmed = confirm(message);
+
+        if (!confirmed) {
+            document.getElementById(field).checked = false;
+        }
+    }
+}
+
 function inputIntoFieldConfirm(confirmmessage, field, input) {
 	var confirmed = confirm(confirmmessage);
 	if (confirmed && input != null && "" != input) {
