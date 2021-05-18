@@ -334,9 +334,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>8<td>=<td>7.3.0
      * <tr><th>9<td>=<td>7.4.1
      * <tr><th>10<td>=<td>7.4.2
-     * <tr><th>10<td>=<td>7.5.0
+     * <tr><th>11<td>=<td>7.5.0
+     * <tr><th>12<td>=<td>7.5.1
+     * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 11;
+    private static final int RA_MASTER_API_VERSION = 12;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -2909,4 +2911,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return result;
     }
 
+    @Override
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)
+            throws NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException,
+            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
+        return scepMessageDispatcherSession.dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+    }
 }
