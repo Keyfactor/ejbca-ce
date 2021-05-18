@@ -59,8 +59,6 @@ import org.json.simple.parser.ParseException;
 
 /**
  * Provider for signing and decrypting with Azure Key Vault REST API.
- *
- * @version $Id$
  */
 public class AzureProvider extends Provider {
 
@@ -122,7 +120,7 @@ public class AzureProvider extends Provider {
                     log.debug("engineSign: " + this.getClass().getName());
                 }
                 // Key Vault REST API for signing: https://docs.microsoft.com/en-us/rest/api/keyvault/sign/sign
-                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/sign?api-version=7.0");
+                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/sign?api-version=7.2");
                 request.setHeader("Content-Type", "application/json");
 
                 // Create hash value of the data to be signed
@@ -150,13 +148,15 @@ public class AzureProvider extends Provider {
                 // PS512 is SHA512WithRSAAndMGF1 (RSA-PSS)
                 // ES256K is SHA256WithECDSA with curve P-256K from NIST
                 map.put("alg", azureSignAlg);
-                map.put("value", java.util.Base64.getEncoder().encodeToString(signInput));
+                map.put("value", Base64.encodeBase64String(signInput));
                 final JSONObject jsonObject = new JSONObject(map);
                 final StringWriter out = new StringWriter();
                 jsonObject.writeJSONString(out);
-                request.setEntity(new StringEntity(out.toString()));
+                final String reqJson = out.toString();
+                request.setEntity(new StringEntity(reqJson));
                 if (log.isDebugEnabled()) {
                     log.debug("engineSign Request: " + request.toString()+", "+privateKey.toString());
+                    log.debug("engineSign Request JSON: " + reqJson+", "+privateKey.toString());
                 }
                 try (final CloseableHttpResponse response = privateKey.getCryptoToken().azureHttpRequest(request)) {
                     final int statusCode = response.getStatusLine().getStatusCode();
@@ -329,7 +329,7 @@ public class AzureProvider extends Provider {
 
             try {
                 // Key Vault decrypt REST API: https://docs.microsoft.com/en-us/rest/api/keyvault/decrypt/decrypt
-                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/decrypt?api-version=7.0");
+                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/decrypt?api-version=7.2");
                 request.setHeader("Content-Type", "application/json");
 
                 final HashMap<String, String> map = new HashMap<>();
