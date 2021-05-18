@@ -38,9 +38,9 @@ public interface AcmeConfigurationSessionLocal {
      * 
      * @param authenticationToken the authentication token.
      * @param alias the configuration alias.
-     * @param request the ACME protected request.
      * @param requestUrl the ACME newAccount URL.
      * @param requestJwk the base64 encoded account key in JWK form.
+     * @param eabRequestJsonString the EAB request as JSON string.
      * @return the external account identifier.
      * @throws AcmeProblemException if the message could not be verified (technically, well-formed or by content).
      */
