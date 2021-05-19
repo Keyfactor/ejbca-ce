@@ -146,6 +146,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -174,7 +175,6 @@ import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -334,9 +334,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>8<td>=<td>7.3.0
      * <tr><th>9<td>=<td>7.4.1
      * <tr><th>10<td>=<td>7.4.2
-     * <tr><th>10<td>=<td>7.5.0
+     * <tr><th>11<td>=<td>7.5.0
+     * <tr><th>12<td>=<td>7.5.1
+     * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 11;
+    private static final int RA_MASTER_API_VERSION = 12;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1770,7 +1772,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     ei.getKeyStoreAlgorithmType(), // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
-                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
+                    endEntity.getTokenType(), // Type of token
                     loadKeysFlag, // Perform key recovery?
                     saveKeysFlag, // Save private keys?
                     reuseCertificateFlag, // Reuse recovered cert?
@@ -2367,6 +2369,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
         return scepMessageDispatcherSession.dispatchRequest(authenticationToken, operation, message, scepConfigurationAlias);
     }
+    
+    @Override
+    public byte[] verifyScepPkcs10RequestMessage(AuthenticationToken authenticationToken, String alias, byte[] message) throws CertificateCreateException {
+        return scepMessageDispatcherSession.verifyRequestMessage(authenticationToken, alias, message);
+    }
 
     @Override
     public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
@@ -2801,7 +2808,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getExtendedInformation().getKeyStoreAlgorithmType(), // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
-                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
+                    endEntity.getTokenType(), // Type of token
                     loadKeysFlag, // Perform key recovery?
                     saveKeysFlag, // Save private keys?
                     reuseCertificateFlag, // Reuse recovered cert?
@@ -2891,6 +2898,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         } else if (OAuthConfiguration.class.getName().equals(type.getName())) {
             result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        } else if (ScepConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
             if (result != null) {
@@ -2902,4 +2911,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return result;
     }
 
+    @Override
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)
+            throws NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException,
+            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
+        return scepMessageDispatcherSession.dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+    }
 }

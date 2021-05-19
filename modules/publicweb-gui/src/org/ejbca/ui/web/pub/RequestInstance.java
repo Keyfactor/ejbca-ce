@@ -340,7 +340,7 @@ public class RequestInstance {
 			        throw new IncomatibleTokenTypeException();
 			    }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_P12, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {
 					sendOpenVPNToken(ks, username, password, response);
 				} else {
@@ -354,7 +354,7 @@ public class RequestInstance {
                     throw new IncomatibleTokenTypeException();
                 }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_JKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendJKSToken(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_PEM){
@@ -364,7 +364,7 @@ public class RequestInstance {
                     throw new IncomatibleTokenTypeException();
                 }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_PEM, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendPEMTokens(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){

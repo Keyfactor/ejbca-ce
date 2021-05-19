@@ -282,7 +282,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, configAlias);
         checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert1, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN1, this.cacert1, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -365,7 +365,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert1, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN1, this.cacert1, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -419,7 +419,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -473,7 +473,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, configAlias);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
@@ -542,7 +542,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
         // FileOutputStream fos = new FileOutputStream("/home/tomas/foo.crt");
         // fos.write(cert.getEncoded());
         // fos.close();
@@ -629,7 +629,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
 
@@ -666,7 +666,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        cert = checkCmpCertRepMessage(userDN2, this.cacert2, resp, reqId);
+        cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
         altNames = CertTools.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
 
