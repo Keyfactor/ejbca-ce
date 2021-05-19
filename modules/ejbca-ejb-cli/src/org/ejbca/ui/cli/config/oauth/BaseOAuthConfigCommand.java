@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -66,7 +67,7 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     protected boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
-            final boolean hasSameInternalId = existingKeyInfo.getInternalId() == oauthKey.getInternalId();
+            final boolean hasSameInternalId = ObjectUtils.equals(existingKeyInfo.getInternalId(), oauthKey.getInternalId());
             final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
             if (hasSameInternalId || hasSameLabel) {
                 return false;

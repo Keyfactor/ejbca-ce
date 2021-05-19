@@ -606,6 +606,14 @@
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
+							<h:commandButton id="generateBcfks"
+											 value="#{msg.enroll_generate_bcfks}"
+											 action="#{enrollMakeNewRequestBean.addEndEntityAndgenerateBcfks}"
+											 rendered="#{enrollMakeNewRequestBean.generateBcfksButtonRendered}"
+											 disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
+											 styleClass="pure-button ra-button">
+								<f:param name="validationRequiredFromRequest" value="true" />
+							</h:commandButton>
 							<h:commandButton id="generateKeyStorePem"
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
