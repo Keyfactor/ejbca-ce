@@ -65,6 +65,7 @@ import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
@@ -350,6 +351,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private boolean statedumpLockdownAfterImport = false;
     private SystemConfigurationOAuthKeyManager oauthKeyManager;
     private SystemConfigurationCtLogManager ctLogManager;
+    private EABConfigManager eabConfigManager;
     private GoogleCtPolicy googleCtPolicy;
 
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
@@ -1071,6 +1073,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         currentConfig = null;
         nodesInCluster = null;
         oauthKeyManager = null;
+        eabConfigManager = null;
         oauthKeys = null;
         ctLogManager = null;
         raStyleInfos = null;
@@ -1988,13 +1991,50 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    /**
+     * Get an object which can be used to manage the EAB configuration.
+     * @return the EAB configuration manager for this bean
+     */
+    public EABConfigManager getEABConfigManager() {
+        if (eabConfigManager == null) {
+            eabConfigManager = new EABConfigManager(new EABConfigManager.SystemConfigurationHelper() {
+                @Override
+                public void addErrorMessage(String languageKey) {
+                    SystemConfigMBean.this.addErrorMessage(languageKey);
+                }
+
+                @Override
+                public void addErrorMessage(String languageKey, Object... params) {
+                    SystemConfigMBean.this.addErrorMessage(languageKey, params);
+                }
+
+                @Override
+                public void addInfoMessage(String languageKey) {
+                    SystemConfigMBean.this.addInfoMessage(languageKey);
+                }
+
+                @Override
+                public void saveEabConfig(Map<String, Set<String>> eabConfigMap) {
+                    final EABConfiguration eabConfiguration = getEjbcaWebBean().getEABConfiguration();
+                    eabConfiguration.setEabConfigMap(eabConfigMap);
+                    try {
+                        getEjbcaWebBean().saveEABConfiguration(eabConfiguration);
+                    } catch (AuthorizationDeniedException e) {
+                        String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+                        log.info(msg);
+                        addNonTranslatedErrorMessage(msg);
+                    }
+                }
+            });
+        }
+        return eabConfigManager;
+    }
+
     public List<String> getAvailableTabs() {
         final List<String> availableTabs = new ArrayList<>();
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Basic Configurations");
             availableTabs.add("Administrator Preferences");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Protocol Configuration");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
@@ -2019,9 +2059,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("External Scripts");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Configuration Checker");
+            availableTabs.add("External Account Bindings");
         }
 
         return availableTabs;

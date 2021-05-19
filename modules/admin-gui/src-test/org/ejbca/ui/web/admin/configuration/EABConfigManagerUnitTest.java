@@ -22,11 +22,11 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class EABConfigMBeanUnitTest {
+public class EABConfigManagerUnitTest {
 
     @Test
     public void emptyFile() throws EjbcaException {
-        final Map<String, Set<String>> map = EABConfigMBean.parseCsvToMap(null, null);
+        final Map<String, Set<String>> map = EABConfigManager.parseCsvToMap(null, null);
         assertNull("Result should be null for null input", map);
     }
 
@@ -41,7 +41,7 @@ public class EABConfigMBeanUnitTest {
                 "Flowers* Orchid\n" +
                 "Trees *Maple"
         ).getBytes(StandardCharsets.UTF_8);
-        final Map<String, Set<String>> map = EABConfigMBean.parseCsvToMap(bytes, "\\*");
+        final Map<String, Set<String>> map = EABConfigManager.parseCsvToMap(bytes, "\\*");
         assertEquals("Should contain 2 namespace value", 2, map.size());
         assertEquals("Flowers namespace should contain 4 values", 4, map.get("Flowers").size());
     }
@@ -58,7 +58,7 @@ public class EABConfigMBeanUnitTest {
                 "Flowers, Orchid\n" +
                 "Trees, Maple\n"
         ).getBytes(StandardCharsets.UTF_8);
-        final Map<String, Set<String>> map = EABConfigMBean.parseCsvToMap(bytes, null);
+        final Map<String, Set<String>> map = EABConfigManager.parseCsvToMap(bytes, null);
         assertEquals("Should contain 2 namespace value", 2, map.size());
         assertEquals("Flowers namespace should contain 4 values", 4, map.get("Flowers").size());
     }
@@ -68,7 +68,7 @@ public class EABConfigMBeanUnitTest {
         final byte[] bytes = ("Flowers, Rose\n" +
                 "Flowers, Lily , Something\n"
         ).getBytes(StandardCharsets.UTF_8);
-        EABConfigMBean.parseCsvToMap(bytes, null);
+        EABConfigManager.parseCsvToMap(bytes, null);
     }
 
     @Test(expected = EjbcaException.class)
@@ -76,6 +76,6 @@ public class EABConfigMBeanUnitTest {
         final byte[] bytes = ("Flowers\n" +
                 "Flowers, Lily \n"
         ).getBytes(StandardCharsets.UTF_8);
-        EABConfigMBean.parseCsvToMap(bytes, null);
+        EABConfigManager.parseCsvToMap(bytes, null);
     }
 }
