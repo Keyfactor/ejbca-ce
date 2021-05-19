@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -765,5 +766,15 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public String getConfigurationId() {
         return SCEP_CONFIGURATION_ID;
     }
+    
+    @Override
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        Set<String> aliases = getAliasList();
+        for (String alias : aliases) {
+            filterDiffMapForLogging(diff, alias + "." + SCEP_RA_AUTHPWD);
+            filterDiffMapForLogging(diff, alias + "." + AAD_APP_KEY);
+            filterDiffMapForLogging(diff, alias + "." + PROXY_PASS);            
+        }
+    } 
     
 }
