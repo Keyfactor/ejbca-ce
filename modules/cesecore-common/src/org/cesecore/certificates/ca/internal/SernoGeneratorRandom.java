@@ -74,8 +74,6 @@ import org.cesecore.internal.InternalResources;
  * value of 2N, where N is its position in the above numbering sequence. The value of the two's complement binary number is obtained by summing the
  * numerical values assigned to each bit for those bits which are set to one, excluding bit 8 of the first octet, and then reducing this value by the
  * numerical value assigned to bit 8 of the first octet if that bit is set to one.
- * 
- * @version $Id$
  */
 public class SernoGeneratorRandom implements SernoGenerator {
     /** Log4j instance */
@@ -131,6 +129,11 @@ public class SernoGeneratorRandom implements SernoGenerator {
         if (log.isTraceEnabled()) {
             log.trace("<SernoGenerator()");
         }
+    }
+
+    /** Clears all instances. Used in tests */
+    protected static void clearCache() {
+        instances = new HashMap<>();
     }
 
     private void init() {
@@ -272,6 +275,7 @@ public class SernoGeneratorRandom implements SernoGenerator {
                 throw new IllegalStateException("unable to create baseRandom: " + e.getMessage(), e);
             }
             drbg = new SP800SecureRandomBuilder(new EntropySourceProvider() {
+                @Override
                 public EntropySource get(final int bitsRequired) {
                     return new SignallingSeedMaterialSource(bitsRequired);
                 }
