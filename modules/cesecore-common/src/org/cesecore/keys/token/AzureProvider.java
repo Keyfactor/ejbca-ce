@@ -148,7 +148,7 @@ public class AzureProvider extends Provider {
                 // PS512 is SHA512WithRSAAndMGF1 (RSA-PSS)
                 // ES256K is SHA256WithECDSA with curve P-256K from NIST
                 map.put("alg", azureSignAlg);
-                map.put("value", Base64.encodeBase64String(signInput));
+                map.put("value", Base64.encodeBase64URLSafeString(signInput));
                 final JSONObject jsonObject = new JSONObject(map);
                 final StringWriter out = new StringWriter();
                 jsonObject.writeJSONString(out);
@@ -335,13 +335,15 @@ public class AzureProvider extends Provider {
                 final HashMap<String, String> map = new HashMap<>();
                 // RsaEncryption algorithm, https://docs.microsoft.com/en-us/rest/api/keyvault/decrypt/decrypt#jsonwebkeyencryptionalgorithm
                 map.put("alg", "RSA1_5");
-                map.put("value", java.util.Base64.getEncoder().encodeToString(arg0));
+                map.put("value", Base64.encodeBase64URLSafeString(arg0));
                 final JSONObject jsonObject = new JSONObject(map);
                 final StringWriter out = new StringWriter();
                 jsonObject.writeJSONString(out);
-                request.setEntity(new StringEntity(out.toString()));
+                final String reqJson = out.toString();
+                request.setEntity(new StringEntity(reqJson));
                 if (log.isDebugEnabled()) {
                     log.debug("engineDoFinal Request: " + request.toString()+", "+privateKey.toString());
+                    log.debug("engineDoFinal Request JSON: " + reqJson+", "+privateKey.toString());
                 }
                 try (final CloseableHttpResponse response = privateKey.getCryptoToken().azureHttpRequest(request)) {
                     final InputStream is = response.getEntity().getContent();
