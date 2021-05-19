@@ -394,6 +394,13 @@ function inputIntoField(oldaliasfield, aliasfield, oldalias, infotext) {
 	return false;
 }
 
+/**
+ * Create a confirmation window for a checkbox. (Checkbox stays unchecked if
+ * cancel button is clicked.)
+ *
+ * @param message confirmation window message
+ * @param field id of the checkbox element
+ */
 function checkboxConfirmation(message, field) {
     var checked = document.getElementById(field).checked;
 
