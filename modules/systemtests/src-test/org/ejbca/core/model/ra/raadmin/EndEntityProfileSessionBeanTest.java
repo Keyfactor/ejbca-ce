@@ -529,7 +529,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                     SecConst.TOKEN_SOFT_PEM, null);
             userdata.setPassword("foo123");
     	    try {
-    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
     	        ret = true;
@@ -539,7 +539,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     	    ret = false;
     	    userdata.setCardNumber(cardnumber);
     	    try {
-    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     	        ret = true;
     	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
