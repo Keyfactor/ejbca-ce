@@ -41,6 +41,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.config.EABConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -601,7 +602,8 @@ public class RegisterReqBean {
         try {
             endEntity = endEntityManagementSession.canonicalizeUser(endEntity);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
-                eeprofile.doesUserFulfillEndEntityProfile(endEntity, certProfile, false);
+                final EABConfiguration eabConfiguration = (EABConfiguration) ejbLocalHelper.getGlobalConfigurationSession().getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
+                eeprofile.doesUserFulfillEndEntityProfile(endEntity, certProfile, false, eabConfiguration);
 
             }
         } catch (EjbcaException e) {
