@@ -72,8 +72,6 @@ import org.json.simple.parser.ParseException;
 /**
  * Class implementing a keystore on Azure Key Vault, using their REST API.
  * https://docs.microsoft.com/en-us/rest/api/keyvault/
- *
- * @version $Id$
  */
 public class AzureCryptoToken extends BaseCryptoToken {
 
@@ -258,7 +256,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             if (log.isDebugEnabled()) {
                 log.debug("Cache is expired or empty, re-reading aliases: " + aliasCache.getAllNames().size());
             }
-            final HttpGet request = new HttpGet(createFullKeyURL(null, getKeyVaultName()) + "?api-version=7.0");
+            final HttpGet request = new HttpGet(createFullKeyURL(null, getKeyVaultName()) + "?api-version=7.2");
             try (final CloseableHttpResponse response = azureHttpRequest(request)) {
                 // Connect to Azure Key Vault and get the list of keys there.
                 final InputStream is = response.getEntity().getContent();
@@ -382,8 +380,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
             }
             // remove the key from azure
             // https://docs.microsoft.com/en-us/rest/api/keyvault/deletekey/deletekey
-            // DELETE {vaultBaseUrl}/keys/{key-name}?api-version=7.0
-            final HttpDelete request = new HttpDelete(createFullKeyURL(alias, getKeyVaultName()) + "?api-version=7.0");
+            // DELETE {vaultBaseUrl}/keys/{key-name}?api-version=7.2
+            final HttpDelete request = new HttpDelete(createFullKeyURL(alias, getKeyVaultName()) + "?api-version=7.2");
             try (final CloseableHttpResponse response = azureHttpRequest(request)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     final InputStream is = response.getEntity().getContent();
@@ -464,7 +462,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             }
             str.append(", \"attributes\": {\"enabled\": true}}");
             //  generate key in our previously created key vault.
-            final HttpPost request = new HttpPost(createFullKeyURL(alias, getKeyVaultName()) + "/create?api-version=7.0");
+            final HttpPost request = new HttpPost(createFullKeyURL(alias, getKeyVaultName()) + "/create?api-version=7.2");
             request.setHeader("Content-Type", "application/json");
             try {
                 request.setEntity(new StringEntity(str.toString()));
@@ -580,7 +578,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             }
             try {
                 // connect to Azure and retrieve public key, use empty version string to get last version (don't check for existing key versions to save a round trip)
-                final HttpGet request = new HttpGet(createFullKeyURL(alias, getKeyVaultName()) + "/?api-version=7.0");
+                final HttpGet request = new HttpGet(createFullKeyURL(alias, getKeyVaultName()) + "/?api-version=7.2");
                 try (final CloseableHttpResponse response = azureHttpRequest(request)) {
                     final InputStream is = response.getEntity().getContent();
                     String json = null;
