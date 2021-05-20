@@ -310,7 +310,7 @@ public class ExternalProcessToolsTest {
                 arguments.add(Integer.toString(exitCode));
                 arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
                 ExternalScriptsAllowlist list = ExternalScriptsAllowlist.fromText(
-                        "/bin/touch\n/home/user/Dev/git/ejbca/modules/systemtests/build/test/resources/platform/unix/external_process_tools_dont_write_to_disk.sh", 
+                        "/bin/touch\n" + cmd, 
                         false);
                 out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
                         this.getClass().getName(), list);
@@ -327,7 +327,7 @@ public class ExternalProcessToolsTest {
                 arguments.add(Integer.toString(exitCode));
                 arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
                 ExternalScriptsAllowlist list = ExternalScriptsAllowlist.fromText(
-                        "/bin/touch\n/home/user/Dev/git/ejbca/modules/systemtests/build/test/resources/platform/unix/external_process_tools_dont_write_to_disk.sh", 
+                        "/bin/touch\n" + cmd, 
                         true);
                 out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
                         this.getClass().getName(), list);
