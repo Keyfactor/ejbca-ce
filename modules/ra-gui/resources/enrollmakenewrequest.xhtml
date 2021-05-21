@@ -475,11 +475,21 @@
 						<h:outputText value="#{msg.enroll_provide_external_account}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
-						<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:panelGroup layout="block" styleClass="pure-control-group" id="accountBindingIdGroup">
 							<h:outputLabel for="accountBindingId" value="#{msg.enroll_EAB} *" />
 							<h:inputText id="accountBindingId" value="#{enrollMakeNewRequestBean.accountBindingId}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
-
+								<f:ajax event="keyup" execute="@this" 
+										render=":requestInfoForm:accountBindingIdAutoComplete accountBindingIdAutoComplete accountBindingIdGroup" 
+										listener="#{enrollMakeNewRequestBean.autoCompleteEabId}"/>
 							</h:inputText>
+							<h:selectOneMenu id="accountBindingIdAutoComplete" style="width: 25%; margin-left: 1px;"
+									value="#{enrollMakeNewRequestBean.eabIdAutoComplete}"
+									rendered="#{enrollMakeNewRequestBean.hasEabIdAutoCompleteSelectItems}">
+									<f:selectItems value="#{enrollMakeNewRequestBean.eabIdAutoCompleteSelectItems}"/>
+									<f:ajax event="change" execute="@this" render=":requestInfoForm:accountBindingId accountBindingIdGroup"
+										listener="#{enrollMakeNewRequestBean.setAutoCompleteForEabId}"/>
+									<f:validateRequired/>
+							</h:selectOneMenu>
 							<h:message for="accountBindingId" id="accountBindingIdMessage" styleClass="validationErrorMessage showErrorMessage"/>
 						</h:panelGroup>
 					</h:panelGroup>
