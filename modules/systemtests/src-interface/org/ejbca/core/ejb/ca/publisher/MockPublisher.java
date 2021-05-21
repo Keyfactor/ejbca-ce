@@ -18,6 +18,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
@@ -26,9 +27,6 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
  * Mock publisher that will make n successful attempts to publish and then return failures, leading to a mixed result if required.
- * 
- * @version $Id$
- *
  */
 public class MockPublisher extends CustomPublisherContainer implements ICustomPublisher {
 
@@ -93,5 +91,14 @@ public class MockPublisher extends CustomPublisherContainer implements ICustomPu
         
     }
 
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
+    }
 
 }
