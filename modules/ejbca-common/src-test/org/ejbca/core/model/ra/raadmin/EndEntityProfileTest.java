@@ -34,8 +34,7 @@ import org.junit.Test;
 
 /**
  * Unit tests for the EndEntityProfile class.
- * 
- * @version $Id$
+ *
  *
  */
 public class EndEntityProfileTest {
@@ -371,7 +370,7 @@ public class EndEntityProfileTest {
     }
 
     @Test
-    public void testOnlyUsernameValidationFieldIsChanged() throws CloneNotSupportedException {
+    public void testOnlyUsernameValidationFieldIsChanged() {
         final EndEntityProfile foo = new EndEntityProfile();
         foo.addField(DnComponents.ORGANIZATION);
         foo.addField(EndEntityProfile.CARDNUMBER);

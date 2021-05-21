@@ -911,7 +911,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	int ret = -1;
     	final String str = getValue(DEFAULTCA,0);
     	if (str != null && !StringUtils.isEmpty(str)) {
-    		ret = Integer.valueOf(str);
+    		ret = Integer.parseInt(str);
     		if (ret == CAConstants.ALLCAS) {
     		    return -1;
     		}
@@ -1212,7 +1212,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (StringUtils.isEmpty(value)) {
             return 1;
         }
-        return Integer.valueOf(value);
+        return Integer.parseInt(value);
     }
 
     public void setAllowedRequests(final int allowedRequests) {
@@ -1240,7 +1240,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             return -1;
         }
         final String value = getValue(MAXFAILEDLOGINS, 0);
-        return (StringUtils.isEmpty(value) ? -1 : Integer.valueOf(value));
+        return (StringUtils.isEmpty(value) ? -1 : Integer.parseInt(value));
     }
 
     public void setMaxFailedLogins(final int maxFailedLogins) {
