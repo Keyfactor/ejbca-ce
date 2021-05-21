@@ -44,6 +44,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 public class EditEstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private static final String HIDDEN_PWD = "**********";
+
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
             "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF");
@@ -258,7 +260,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setCertificateProfileId(certProfileID);
             estAliasGui.setCertificateRequired(estConfiguration.getCert(aliasName));
             estAliasGui.setUserName(estConfiguration.getUsername(aliasName));
-            estAliasGui.setPassword(estConfiguration.getPassword(aliasName));
+            estAliasGui.setPassword(EditEstConfigMBean.HIDDEN_PWD);
             estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
             estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
             estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
@@ -350,7 +352,10 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         }
         estConfiguration.setCert(alias, estAliasGui.getCertificateRequired());
         estConfiguration.setUsername(alias, estAliasGui.getUserName());
-        estConfiguration.setPassword(alias, estAliasGui.getPassword());
+        // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+        if (!estAliasGui.getPassword().equals(EditEstConfigMBean.HIDDEN_PWD)) {
+            estConfiguration.setPassword(alias, estAliasGui.getPassword());
+        }
         estConfiguration.setKurAllowSameKey(alias, estAliasGui.getAllowSameKey());
         estConfiguration.setExtractUsernameComponent(alias, estAliasGui.getExtUsernameComponent());
         estConfiguration.setExtractDnPwdComponent(alias, estAliasGui.getExtDnPartPwdComponent());
