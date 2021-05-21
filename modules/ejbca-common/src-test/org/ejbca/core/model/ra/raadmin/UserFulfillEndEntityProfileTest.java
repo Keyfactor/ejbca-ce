@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 
 import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
@@ -36,7 +37,6 @@ import org.junit.rules.ExpectedException;
 /**
  * Tests the end entity profile entity bean profile checks only
  *
- * @version $Id$
  */
 public class UserFulfillEndEntityProfileTest {
     private static final Logger log = Logger.getLogger(UserFulfillEndEntityProfileTest.class);
@@ -47,9 +47,9 @@ public class UserFulfillEndEntityProfileTest {
     
     private static final String SAMPLECABFORGANICATIONID = "VATSE-123456789"; 
     
-    private static CertificateProfile certProfileEndUser = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-    private static CertificateProfile certProfileRootCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-    private static CertificateProfile certProfileSubCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+    private static final CertificateProfile certProfileEndUser = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+    private static final CertificateProfile certProfileRootCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+    private static final CertificateProfile certProfileSubCa = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
     
     private EndEntityProfile createBasicProfile() {
         final EndEntityProfile profile = new EndEntityProfile();
@@ -69,7 +69,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,1,"DEP2_1;DEP2_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
         return profile;
     }
     
@@ -97,7 +97,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,2,"HARD;SOFT");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
         return profile;
     }
 
@@ -189,7 +189,7 @@ public class UserFulfillEndEntityProfileTest {
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of C value.");
         }catch(EndEntityProfileValidationException e){        	        	
-        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
+        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
         }
         log.trace("<fulfillSubjectDn");
     }
@@ -420,7 +420,7 @@ public class UserFulfillEndEntityProfileTest {
         		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
         		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN,
         		TEST_CA_1, null, certProfileEndUser, null);
-        log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK");
+        log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + "  = OK");
         log.trace("<fulfillAltNames");
     }
 
@@ -457,7 +457,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,4,"DEP3_1;DEP3_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
                 
         // Test with two OU  (2 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,C=SE","null","","",
@@ -486,7 +486,7 @@ public class UserFulfillEndEntityProfileTest {
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error Required OU fields wasn't checked propertly");
         } catch (EndEntityProfileValidationException e){
-        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
         }
         log.trace("<fulfillWithMultiple");
     }
@@ -763,7 +763,7 @@ public class UserFulfillEndEntityProfileTest {
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","DateOfBirth=18990101, CountryOfCitizenship=SE, CountryOfResidence=SE","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
     	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
-    	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+    	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
     	log.trace("<fulfillSubjectDirAttributesReversedChecks");
     }
 
@@ -787,7 +787,7 @@ public class UserFulfillEndEntityProfileTest {
         String relativeNegative = "-10:00:00";
         ExtendedInformation ei = new ExtendedInformation();
         // Use empty, should fail
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
         profile.setValidityStartTimeUsed(true);
         profile.setValidityEndTimeUsed(false);
         profile.setValidityStartTime("");
@@ -922,7 +922,7 @@ public class UserFulfillEndEntityProfileTest {
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Invalid relative start time allowed.");
         } catch (EndEntityProfileValidationException e) {
-        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+        	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
         }
         // Is this Java-version parsing dates correctly?
         long magicDateTime = 1181040300000L;	// "12:45 PM" in US Locale
@@ -947,7 +947,7 @@ public class UserFulfillEndEntityProfileTest {
         final EndEntityProfile profile = new EndEntityProfile();
         final ExtendedInformation ei = new ExtendedInformation();
         // Use empty, should fail
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
         profile.setAllowedRequestsUsed(false);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -966,7 +966,7 @@ public class UserFulfillEndEntityProfileTest {
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
     	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
-    	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
+    	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
     	log.trace("<allowMultipleRequests");
     }
 
@@ -982,7 +982,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setMaxFailedLoginsUsed(true);
         profile.setMaxFailedLoginsModifiable(false);
         profile.setMaxFailedLogins(7);
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
         
         try {
         	final ExtendedInformation ei = new ExtendedInformation();
@@ -1028,7 +1028,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,1,"DEP2_1;DEP2_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         // Test right CA
     	profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
@@ -1046,7 +1046,7 @@ public class UserFulfillEndEntityProfileTest {
         }
 
         // Set Any CA available
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
 
         // Test right CA
     	profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
@@ -1089,7 +1089,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setValue(DnComponents.ORGANIZATIONALUNIT,1,"DEP2_1;DEP2_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
         
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.UPN);
@@ -1161,7 +1161,7 @@ public class UserFulfillEndEntityProfileTest {
 
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setCabfOrganizationIdentifierUsed(false);
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         final ExtendedInformation ei = new ExtendedInformation();
         ei.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
@@ -1186,7 +1186,7 @@ public class UserFulfillEndEntityProfileTest {
 
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setCabfOrganizationIdentifierUsed(true);
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         final ExtendedInformation ei = new ExtendedInformation();
         ei.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
@@ -1210,7 +1210,7 @@ public class UserFulfillEndEntityProfileTest {
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setCabfOrganizationIdentifierUsed(true);
         profile.setCabfOrganizationIdentifierRequired(true);
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         final ExtendedInformation ei = new ExtendedInformation();
 
@@ -1234,7 +1234,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setCabfOrganizationIdentifierUsed(true);
         profile.setCabfOrganizationIdentifierRequired(true);
         profile.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         final ExtendedInformation ei = new ExtendedInformation();
         
@@ -1274,7 +1274,7 @@ public class UserFulfillEndEntityProfileTest {
         profile.setCabfOrganizationIdentifierUsed(true);
         profile.setCabfOrganizationIdentifierRequired(true);
         profile.setCabfOrganizationIdentifier(SAMPLECABFORGANICATIONID);
-        profile.setAvailableCAs(Arrays.asList(TEST_CA_1));
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);

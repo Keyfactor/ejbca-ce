@@ -1896,7 +1896,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
         if (certificateProfile != null) {
             publishers = certificateProfile.getPublisherList();
-            if (publishers == null || publishers.size() == 0) {
+            if (publishers == null || publishers.isEmpty()) {
                 if (log.isDebugEnabled()) {
                     log.debug("No publishers defined for certificate with serial #" + certSerNo.toString(16) + " issued by " + issuerDn);
                 }
@@ -1973,22 +1973,22 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<EndEntityInformation> findUsers(List<Integer> caIds, long timeModified, int status) {
-        String queryString = "SELECT a FROM UserData a WHERE (a.timeModified <=:timeModified) AND (a.status=:status)";
-        if (caIds.size() > 0) {
-            queryString += " AND (a.caId=:caId0";
+        StringBuilder queryString = new StringBuilder("SELECT a FROM UserData a WHERE (a.timeModified <=:timeModified) AND (a.status=:status)");
+        if (!caIds.isEmpty()) {
+            queryString.append(" AND (a.caId=:caId0");
             for (int i = 1; i < caIds.size(); i++) {
-                queryString += " OR a.caId=:caId" + i;
+                queryString.append(" OR a.caId=:caId").append(i);
             }
-            queryString += ")";
+            queryString.append(")");
         }
         if (log.isDebugEnabled()) {
             log.debug("Checking for " + caIds.size() + " CAs");
             log.debug("Generated query string: " + queryString);
         }
-        TypedQuery<UserData> query = entityManager.createQuery(queryString, UserData.class);
+        TypedQuery<UserData> query = entityManager.createQuery(queryString.toString(), UserData.class);
         query.setParameter("timeModified", timeModified);
         query.setParameter("status", status);
-        if (caIds.size() > 0) {
+        if (!caIds.isEmpty()) {
             for (int i = 0; i < caIds.size(); i++) {
                 query.setParameter("caId" + i, caIds.get(i));
             }
@@ -2128,7 +2128,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         final String fromemail = paramGen.interpolate(userNotification.getNotificationSender());
                         final String subject = paramGen.interpolate(userNotification.getNotificationSubject());
                         final String message = paramGen.interpolate(userNotification.getNotificationMessage());
-                        MailSender.sendMailOrThrow(fromemail, Arrays.asList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
+                        MailSender.sendMailOrThrow(fromemail, Collections.singletonList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
                         final String logmsg = intres.getLocalizedMessage("ra.sentnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.info(logmsg);
                     } catch (MailException e) {
@@ -2157,7 +2157,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Selecting 1 column is optimal speed
         final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE a.username=:username");
         query.setParameter("username", username);
-        return query.getResultList().size() > 0;
+        return !query.getResultList().isEmpty();
     }
 
     @Override
