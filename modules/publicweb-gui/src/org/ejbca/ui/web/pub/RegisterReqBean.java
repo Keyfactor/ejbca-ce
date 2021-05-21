@@ -63,7 +63,6 @@ import org.ietf.ldap.LDAPDN;
  * Used by enrol/reg*.jsp for self-registration. This bean implements implements listing of certificate types (defined in web.properties),
  * listing of modifiable end-entity fields and submission of requests.
  *
- * @version $Id$
  */
 public class RegisterReqBean {
 
