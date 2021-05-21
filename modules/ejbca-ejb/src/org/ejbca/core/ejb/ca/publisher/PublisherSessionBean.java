@@ -67,7 +67,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -78,7 +77,6 @@ import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
-import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
@@ -92,8 +90,6 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
  * Handles management of Publishers.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -772,11 +768,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public Map<Integer, BasePublisher> getAllPublishers() {
         final Map<Integer, BasePublisher> returnval = new HashMap<>();
-        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
         BasePublisher publisher = null;
         for (PublisherData publisherData : findAll()) {
             publisher = getPublisher(publisherData);
-            if (publisher != null && enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
+            if (publisher != null) {
                 returnval.put(publisherData.getId(), publisher);
             }
         }
@@ -787,13 +782,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public HashMap<Integer, String> getPublisherIdToNameMap() {
         final HashMap<Integer, String> returnval = new HashMap<>();
-        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
-        BasePublisher publisher = null;
         for (PublisherData publisherData : findAll()) {
-            publisher = getPublisher(publisherData);
-            if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
-                returnval.put(publisherData.getId(), publisherData.getName());
-            }
+            returnval.put(publisherData.getId(), publisherData.getName());
         }
         return returnval;
     }
@@ -801,13 +791,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public HashMap<String, Integer> getPublisherNameToIdMap() {
         final HashMap<String, Integer> returnval = new HashMap<>();
-        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
-        BasePublisher publisher;
         for (PublisherData publisherData : findAll()) {
-            publisher = getPublisher(publisherData);
-            if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
-                returnval.put(publisherData.getName(), publisherData.getId());
-            }
+            returnval.put(publisherData.getName(), publisherData.getId());
         }
         return returnval;
     }
