@@ -116,7 +116,7 @@
 	    		disabled="#{scepConfigMBean.currentAlias.useIntune}">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputSecret>
-	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+	    	<h:outputText value="**********" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
 		<h:outputLabel for="rascheme" value="#{web.text.SCEP_RA_NAME_GEN_SCHEME}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
