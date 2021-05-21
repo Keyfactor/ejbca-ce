@@ -20,7 +20,10 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
@@ -28,6 +31,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.EABConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.junit.Rule;
@@ -1283,5 +1287,118 @@ public class UserFulfillEndEntityProfileTest {
                                                 "", "", "", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                                                 false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                                                 new ExtendedInformation(), certProfileEndUserWithCabFOIdUse, null);
+    }
+
+    @Test
+    public void testEABInEEPwithNotDefinedEabInCP() throws Exception {
+        log.trace(">testEABInEEPwithNotDefinedEabInCP");
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
+        final ExtendedInformation ei = new ExtendedInformation();
+        ei.setAccountBindingId("AccountBindingId");
+
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                certProfileEndUser, null);
+        log.trace("<testEABInEEPwithNotDefinedEabInCP");
+    }
+
+    @Test
+    public void testEABNotSetInEEPDefinedInCP() throws EndEntityProfileValidationException {
+        log.trace(">testEABNotSetInEEPDefinedInCP");
+
+        expectedException.expect(EndEntityProfileValidationException.class);
+        expectedException.expectMessage("Certificate profile requires an External account ID");
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEabNamespace("EABNamespace");
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                null, certificateProfile, null);
+        log.trace("<testEABNotSetInEEPDefinedInCP");
+    }
+
+    @Test
+    public void testEABInEEPNamespaceNotInConfigs() throws EndEntityProfileValidationException {
+        log.trace(">testEABInEEPNamespaceNotInConfigs");
+
+        expectedException.expect(EndEntityProfileValidationException.class);
+        expectedException.expectMessage("Account bindings namespace in Certificate profile is outdated (not present in System Configurations)");
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setAccountBindingId("AccountBindingId");
+
+        EABConfiguration eabConfiguration = new EABConfiguration();
+        LinkedHashMap<String, Set<String>> map = new LinkedHashMap<>();
+        map.put("Namespace1", new LinkedHashSet<>());
+        map.put("Namespace2", new LinkedHashSet<>());
+        eabConfiguration.setEabConfigMap(map);
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEabNamespace("EABNamespace");
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                ei, certificateProfile, eabConfiguration);
+        log.trace("<testEABInEEPNamespaceNotInConfigs");
+    }
+
+    @Test
+    public void testEABInEEPAccountIdNotInConfigs() throws EndEntityProfileValidationException {
+        log.trace(">testEABInEEPNamespaceNotInConfigs");
+
+        expectedException.expect(EndEntityProfileValidationException.class);
+        expectedException.expectMessage("External account ID is not in the list of allowed account ids");
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setAccountBindingId("AccountBindingId");
+
+        EABConfiguration eabConfiguration = new EABConfiguration();
+        LinkedHashMap<String, Set<String>> map = new LinkedHashMap<>();
+        final String eabNamespace = "Namespace1";
+        map.put(eabNamespace, new LinkedHashSet<>());
+        map.put("Namespace2", new LinkedHashSet<>());
+        eabConfiguration.setEabConfigMap(map);
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEabNamespace(eabNamespace);
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                ei, certificateProfile, eabConfiguration);
+        log.trace("<testEABInEEPNamespaceNotInConfigs");
+    }
+
+    @Test
+    public void testEABInEEPAccountIdInConfigs() throws EndEntityProfileValidationException {
+        log.trace(">testEABInEEPNamespaceNotInConfigs");
+        final String accountBindingId = "AccountBindingId";
+        final String eabNamespace = "Namespace1";
+
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setAccountBindingId(accountBindingId);
+
+        EABConfiguration eabConfiguration = new EABConfiguration();
+        LinkedHashMap<String, Set<String>> map = new LinkedHashMap<>();
+        final LinkedHashSet<String> set = new LinkedHashSet<>();
+        set.add(accountBindingId);
+        map.put(eabNamespace, set);
+        map.put("Namespace2", new LinkedHashSet<>());
+        eabConfiguration.setEabConfigMap(map);
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEabNamespace(eabNamespace);
+        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                ei, certificateProfile, eabConfiguration);
+        log.trace("<testEABInEEPNamespaceNotInConfigs");
     }
 } 
