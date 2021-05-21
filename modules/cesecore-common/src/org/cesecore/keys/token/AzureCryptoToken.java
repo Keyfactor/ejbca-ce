@@ -95,8 +95,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
     
     public AzureCryptoToken() {
         // This can be used to find creations not followed by a setAuthKeyProvider()
-        if (log.isDebugEnabled()) {
-            log.debug("Created an AzureCryptoToken", new Exception("for stack trace"));
+        if (log.isTraceEnabled()) {
+            log.trace("Created an AzureCryptoToken", new Exception("for stack trace"));
         }
     }
 
@@ -943,7 +943,6 @@ public class AzureCryptoToken extends BaseCryptoToken {
     }
 
     public void setAuthKeyProvider(KeyAndCertFinder keyAndCertFinder) {
-        log.error("In AzureCryptoToken setting keyAndCertFinder = " + keyAndCertFinder);
         this.authKeyProvider = keyAndCertFinder;
     }
 }
