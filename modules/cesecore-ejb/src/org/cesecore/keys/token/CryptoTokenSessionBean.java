@@ -112,7 +112,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     // 4. If database is different from cache, create the crypto token and replace it in the cache (while trying to keep activation)
                     //    (Invokes org.cesecore.keys.token.CryptoTokenFactory.createCryptoToken)
                     try {
-                        if (inClassname.equals(AzureCryptoToken.class.getName())) {
+                        if (AzureCryptoToken.class.getName().equals(inClassname)) {
                             // Key Vault may need to find a key pair for authentication
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
                                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
