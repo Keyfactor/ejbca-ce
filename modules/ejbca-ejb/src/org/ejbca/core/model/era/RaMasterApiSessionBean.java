@@ -214,8 +214,10 @@ import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeConfigurationSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -307,6 +309,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
+    @EJB
+    private AcmeConfigurationSessionLocal acmeConfigurationSession;
     @EJB
     private AcmeAccountDataSessionLocal acmeAccountDataSession;
     @EJB
@@ -2698,6 +2702,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId) {
         return acmeAccountDataSession.getAcmeAccountByPublicKeyStorageId(publicKeyStorageId);
+    }
+
+    @Override
+    public String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException {
+        return acmeConfigurationSession.parseAcmeEabMessage(authenticationToken, alias, requestUrl, requestJwk, eabRequestJsonString);
     }
 
     @Override
