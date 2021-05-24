@@ -83,6 +83,7 @@ import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
+import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
@@ -1336,6 +1337,19 @@ public interface RaMasterApi {
      * @return the sought AcmeAccount or null if not found
      */
     AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId);
+
+    /**
+     * Parses the EAB request.
+     * 
+     * @param authenticationToken the authentication token.
+     * @param requestUrl the ACME newAccount URL.
+     * @param requestJwk the base64 encoded account key in JWK form.
+     * @param eabRequestJsonString the EAB request as JSON string.
+     * @return the external account identifier.
+     * @throws AcmeProblemException if the message could not be verified (technically, well-formed or by content).
+     */
+    String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException;
 
     /**
      * Create or update the AcmeAccount.

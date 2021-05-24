@@ -15,13 +15,12 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.ca.publisher.CustomPublisherAccessRulesSupport;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 
 /**
- * @version $Id$
- *
  */
 public class UnAuthorizedCustomPublisherMock extends CustomPublisherContainer implements ICustomPublisher, CustomPublisherAccessRulesSupport {
 
@@ -45,6 +44,16 @@ public class UnAuthorizedCustomPublisherMock extends CustomPublisherContainer im
     @Override
     public boolean isReadOnly() {
         return false;
+    }
+
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
     }
 
 }
