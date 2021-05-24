@@ -947,14 +947,14 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-					<h:outputText value="#{web.text.MS_CONFORMANT}" />
+					<h:outputText value="#{web.text.MS_COMPATIBILIY_MODE}" />
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:panelGroup id="msconformantgroup">
 						<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.msConformant}">
 							<h:selectBooleanCheckbox id="msconformant"
 													 value="#{editCAsMBean.caInfoDto.msConformant}"
-													 onclick="return checkboxConfirmation('#{web.text.MS_CONFORMANT_CONFIRMATION}', 'editcapage:msconformant')"
+													 onclick="return checkboxConfirmation('#{web.text.MS_COMPATIBILIY_MODE_CONFIRMATION}', 'editcapage:msconformant')"
 													 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.caInfoDto.msConformant}">
 								<f:ajax render="msconformantgroup"/>
 							</h:selectBooleanCheckbox>
@@ -962,7 +962,7 @@
 										   value="#{web.text.USE}" />
 						</h:panelGroup>
 						<h:outputText rendered="#{editCAsMBean.caInfoDto.msConformant}"
-									  value="#{web.text.MS_CONFORMANT_IRREVERSIBLE}" />
+									  value="#{web.text.MS_COMPATIBILIY_MODE_IRREVERSIBLE}" />
 					</h:panelGroup>
 				</h:panelGroup>
 
