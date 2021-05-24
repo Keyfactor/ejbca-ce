@@ -179,6 +179,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      * Modern request/responses will use SHA-256.
      */
     private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA256;
+    
+    /**
+     * originalDigestAlgorithm to use if legacy digest algorithms such as SHA1 and md5 are allowed by SCEP alias
+     * If the configuration does not allow legacy algorithms, default SHA256 will be used  
+     */
+    private transient String originalDigestAlgorithm = CMSSignedGenerator.DIGEST_SHA256; 
+    
     /** preferred content encryption algorithm to use in replies, if applicable.
      *  Defaults to SMIMECapability.dES_CBC for SCEP messages. If SCEP request is 
      * encrypted with dES_EDE3_CBC it is set to this though. This is only for backwards compatibility issues, as specified in a SCEP draft.
@@ -268,8 +275,16 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             Iterator<SignerInformation> iter = signers.iterator();
             if (iter.hasNext()) {
             	SignerInformation si = (SignerInformation)iter.next();
-            	preferredDigestAlg = si.getDigestAlgOID();
-            	log.debug("Set "+ preferredDigestAlg+" as preferred digest algorithm for SCEP");
+            	final String reqAlg = si.getDigestAlgOID();
+            	originalDigestAlgorithm = reqAlg;
+            	if (reqAlg == CMSSignedGenerator.DIGEST_SHA1 || reqAlg == CMSSignedGenerator.DIGEST_MD5){
+            	    // If the request use any of these without explicitly configured to allow them in the SCEP alias, keep using the default instead.
+            	    log.debug("Legacy request digest algorithm will only be used if explicitly allowed in SCEP alias, defaulting to " + preferredDigestAlg);
+            	} else {
+            	    // To be nice to the client and make sure it can verify our response, use the same digest algorithm in the response as was in the request
+            	    preferredDigestAlg = reqAlg;
+            	    log.debug("Set "+ preferredDigestAlg+" as preferred digest algorithm for SCEP");
+            	}
             }        	
         } catch (CMSException e) {
         	// ignore, use default digest algo
@@ -777,7 +792,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             this.jceProvider = provider;        	
         }
     }
-
+        
     @Override
     public int getErrorNo() {
         return error;
@@ -806,6 +821,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     @Override
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
+    }
+    
+    /**
+     * Method to control digest algorithm in response based on SCEP alias configuration check in ScepMessageDispatcherSessionBean    
+     */
+    public void setPreferredDigestAlg(String preferredDigestAlg) {
+        this.preferredDigestAlg = preferredDigestAlg;
+    }
+    
+    /**
+     * Method to get the original digest algorithm from the request in case SCEP alias allow legacy algorithms, such as SHA1, md5
+     * @return the original digest algorithm from the request
+     */
+    public String getOriginalDigestAlgorithm() {
+        return originalDigestAlgorithm;
     }
     
     /** Returns the type of SCEP message it is
