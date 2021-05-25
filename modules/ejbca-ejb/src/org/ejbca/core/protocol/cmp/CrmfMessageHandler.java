@@ -319,7 +319,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                 authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
         ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  null,  authenticated);
-        if(authenticationModule == null) {
+        if (authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();
             LOG.info(errmsg);
             return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
@@ -431,7 +431,21 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                     LOG.debug("Creating new request with eeProfileId '" + eeProfileId + "', certProfileId '" + certProfileId + "', caId '" + caId
                             + "'");
                 }
-                resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, CmpResponseMessage.class);
+                // If it was a certificate authenticated admin, we want to use this admin token to pass down core layers which will make 
+                // authorization checks on it
+                final AuthenticationToken adminForEjb;
+                if (authenticationModule.getAuthenticationToken() != null) {
+                    adminForEjb = authenticationModule.getAuthenticationToken();
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Using admin from AuthenticationModule to call EJB. AuthModule=" + authenticationModule.getName() + ", admin: " + adminForEjb.toString());
+                    }
+                } else {
+                    adminForEjb = this.admin;    
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Using AlwaysAllow admin to call EJB, admin: " + adminForEjb.toString());
+                    }               
+                }
+                resp = this.certificateRequestSession.processCertReq(adminForEjb, userdata, req, CmpResponseMessage.class);
             } catch (EndEntityExistsException e) {
                 final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
                 LOG.info(updateMsg);
