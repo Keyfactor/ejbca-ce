@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 
 import java.io.BufferedReader;
@@ -108,8 +109,13 @@ public class EABConfigManager {
                         throw new EjbcaException("Wrong file format error in line " + line);
                     }
                     final String namespace = data[0].trim();
+                    final String accountId = data[1].trim();
+                    if (!StringTools.checkValueIsAlfaNumericWithSpecialChars(namespace)
+                            || !StringTools.checkValueIsAlfaNumericWithSpecialChars(accountId)) {
+                        throw new EjbcaException("Namespace or accountId contains characters, what are not allowed in line " + line);
+                    }
                     result.computeIfAbsent(namespace, k -> new LinkedHashSet<>());
-                    result.get(namespace).add(data[1].trim());
+                    result.get(namespace).add(accountId);
                 }
             }
             reader.close();
