@@ -1511,13 +1511,13 @@ function checkallfields(){
                         String disabled = "";
 	               	    if(profile.getCopy(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])
                                 && EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
-	               	        disabled = "disabled";
+	               	        disabled = "hidden";
                             %>
                             <input
                                 type="checkbox"
                                 id="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"
                                 onchange="toggleModifySubjectAltName(this, '<%= TEXTFIELD_SUBJECTALTNAME + i %>')"
-                                checked>
+                                checked disabled>
                             <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>">Use entity CN</label><br />
                         <% }
 				        final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);

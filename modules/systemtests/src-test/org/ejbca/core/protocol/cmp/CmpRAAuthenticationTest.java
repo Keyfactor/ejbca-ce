@@ -54,9 +54,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * This will test that different PBE shared secrets can be used to authenticate the RA to different CAs.
- * 
- * @version $Id$
+ * This will test that different PBE shared secrets can be used to authenticate 
+ * the RA to different CAs.
  */
 public class CmpRAAuthenticationTest extends CmpTestCase {
 
@@ -272,7 +271,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200, this.configAlias);
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, subjectDN, caCertificate, resp, reqId);
 
             assertTrue("Failed to create user " + USERNAME, this.endEntityManagementSession.existsUser(USERNAME));
             
