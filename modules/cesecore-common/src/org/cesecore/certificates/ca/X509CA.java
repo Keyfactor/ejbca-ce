@@ -36,9 +36,9 @@ public interface X509CA extends CA {
 
     void setPolicies(List<CertificatePolicy> policies);
 
-    boolean isMsConformant();
+    boolean isMsCaCompatible();
 
-    void setMsConformant(boolean isMsConformant);
+    void setMsCaCompatible(boolean isMsCaCompatible);
 
     boolean getUseAuthorityKeyIdentifier();
 
