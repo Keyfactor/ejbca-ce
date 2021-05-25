@@ -94,7 +94,7 @@ public class EABConfigManagerUnitTest {
     @Test
     public void unecpectedCharactersInAccountID() throws EjbcaException {
         expectedException.expect(EjbcaException.class);
-        expectedException.expectMessage("Namespace or accountId contains characters, what are not allowed in line");
+        expectedException.expectMessage("Namespace or accountId contains characters that are not allowed in line");
         final byte[] bytes = ( "Flowers, Li@ly \n").getBytes(StandardCharsets.UTF_8);
         EABConfigManager.parseCsvToMap(bytes, null);
     }
@@ -102,7 +102,7 @@ public class EABConfigManagerUnitTest {
     @Test
     public void unecpectedCharactersInNamespace() throws EjbcaException {
         expectedException.expect(EjbcaException.class);
-        expectedException.expectMessage("Namespace or accountId contains characters, what are not allowed in line");
+        expectedException.expectMessage("Namespace or accountId contains characters that are not allowed in line");
         final byte[] bytes = ( "Flowers, Lily \n Flo*wers, Lily \n").getBytes(StandardCharsets.UTF_8);
         EABConfigManager.parseCsvToMap(bytes, null);
     }

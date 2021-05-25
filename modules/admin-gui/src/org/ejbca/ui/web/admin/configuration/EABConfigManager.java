@@ -112,7 +112,7 @@ public class EABConfigManager {
                     final String accountId = data[1].trim();
                     if (!StringTools.checkValueIsAlfaNumericWithSpecialChars(namespace)
                             || !StringTools.checkValueIsAlfaNumericWithSpecialChars(accountId)) {
-                        throw new EjbcaException("Namespace or accountId contains characters, what are not allowed in line " + line);
+                        throw new EjbcaException("Namespace or accountId contains characters that are not allowed in line " + line);
                     }
                     result.computeIfAbsent(namespace, k -> new LinkedHashSet<>());
                     result.get(namespace).add(accountId);
