@@ -140,13 +140,15 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                // Skip this because it can be too long in the case of a long EAB ID file.
                 if (!"changed:eabmap".equals(entry.getKey().toString())) {
                     details.put(entry.getKey().toString(), entry.getValue().toString());
                 }
             }
+            // If applicable log all of the EAB namespaces and the number of IDs in each of them
             if (conf != null && conf.getClass().equals(EABConfiguration.class)) {
                 for (Map.Entry<String,Set<String>> entry : ((EABConfiguration) conf).getEABMap().entrySet()) {
-                    details.put(entry.getKey(), entry.getValue().size());
+                    details.put("eabnamespace:" + entry.getKey(), entry.getValue().size());
                 }
             }
             auditSession.log(EventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
