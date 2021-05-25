@@ -1290,8 +1290,8 @@ public class UserFulfillEndEntityProfileTest {
     }
 
     @Test
-    public void testEABInEEPwithNotDefinedEabInCP() throws Exception {
-        log.trace(">testEABInEEPwithNotDefinedEabInCP");
+    public void testEABInEEwithNotDefinedEabInCP() throws Exception {
+        log.trace(">testEABInEEwithNotDefinedEabInCP");
 
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
@@ -1301,12 +1301,12 @@ public class UserFulfillEndEntityProfileTest {
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
                 certProfileEndUser, null);
-        log.trace("<testEABInEEPwithNotDefinedEabInCP");
+        log.trace("<testEABInEEwithNotDefinedEabInCP");
     }
 
     @Test
-    public void testEABNotSetInEEPDefinedInCP() throws EndEntityProfileValidationException {
-        log.trace(">testEABNotSetInEEPDefinedInCP");
+    public void testEABNotSetInEEDefinedInCP() throws EndEntityProfileValidationException {
+        log.trace(">testEABNotSetInEEDefinedInCP");
 
         expectedException.expect(EndEntityProfileValidationException.class);
         expectedException.expectMessage("Certificate profile requires an External account ID");
@@ -1319,12 +1319,12 @@ public class UserFulfillEndEntityProfileTest {
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 null, certificateProfile, null);
-        log.trace("<testEABNotSetInEEPDefinedInCP");
+        log.trace("<testEABNotSetInEEDefinedInCP");
     }
 
     @Test
-    public void testEABInEEPNamespaceNotInConfigs() throws EndEntityProfileValidationException {
-        log.trace(">testEABInEEPNamespaceNotInConfigs");
+    public void testEABInEENamespaceNotInConfigs() throws EndEntityProfileValidationException {
+        log.trace(">testEABInEENamespaceNotInConfigs");
 
         expectedException.expect(EndEntityProfileValidationException.class);
         expectedException.expectMessage("Account bindings namespace in Certificate profile is outdated (not present in System Configurations)");
@@ -1345,12 +1345,12 @@ public class UserFulfillEndEntityProfileTest {
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
-        log.trace("<testEABInEEPNamespaceNotInConfigs");
+        log.trace("<testEABInEENamespaceNotInConfigs");
     }
 
     @Test
-    public void testEABInEEPAccountIdNotInConfigs() throws EndEntityProfileValidationException {
-        log.trace(">testEABInEEPNamespaceNotInConfigs");
+    public void testEABInEEAccountIdNotInConfigs() throws EndEntityProfileValidationException {
+        log.trace(">testEABInEENamespaceNotInConfigs");
 
         expectedException.expect(EndEntityProfileValidationException.class);
         expectedException.expectMessage("External account ID is not in the list of allowed account ids");
@@ -1372,12 +1372,12 @@ public class UserFulfillEndEntityProfileTest {
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
-        log.trace("<testEABInEEPNamespaceNotInConfigs");
+        log.trace("<testEABInEENamespaceNotInConfigs");
     }
 
     @Test
-    public void testEABInEEPAccountIdInConfigs() throws EndEntityProfileValidationException {
-        log.trace(">testEABInEEPNamespaceNotInConfigs");
+    public void testEABInEEAccountIdInConfigs() throws EndEntityProfileValidationException {
+        log.trace(">testEABInEENamespaceNotInConfigs");
         final String accountBindingId = "AccountBindingId";
         final String eabNamespace = "Namespace1";
 
@@ -1399,6 +1399,6 @@ public class UserFulfillEndEntityProfileTest {
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
-        log.trace("<testEABInEEPNamespaceNotInConfigs");
+        log.trace("<testEABInEENamespaceNotInConfigs");
     }
 } 
