@@ -1055,9 +1055,35 @@
     </h:form>
 	<!-- External Account bindings -->
 	<h:form id="eabForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'External Account Bindings'}">
-		<h3><h:outputText value="#{web.text.EABTAB_IMPORT}"/></h3>
+		<!-- Preview -->
+		<h3><h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_HEADER}"/></h3>
 		<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP1}"/></p>
+		<h:panelGroup layout="block" rendered="#{not systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
+			<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_EMPTY}"/>
+		</h:panelGroup>
+		<h:panelGroup layout="block" rendered="#{systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
+			<h:dataTable id="eabNamespaces" value="#{systemConfigMBean.EABConfigManager.eabNamespaces}" var="namespace" styleClass="grid">
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_NAMESPACE}"/>
+					</f:facet>
+					<h:outputText value="#{namespace.name}"/>
+				</h:column>
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="#{web.text.EABTAB_PREVIEWTABLE_EABCOUNT}"/>
+					</f:facet>
+					<h:outputText value="#{namespace.count}" styleClass="numberCell"/>
+				</h:column>
+			</h:dataTable>
+		</h:panelGroup>
+		<p>&nbsp;</p>
+		<!-- Import -->
+		<h3><h:outputText value="#{web.text.EABTAB_IMPORT}"/></h3>
 		<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP2}"/></p>
+		<h:panelGroup layout="block" rendered="#{systemConfigMBean.EABConfigManager.eabConfigurationAvailable}">
+			<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP_REPLACE}"/></p>
+		</h:panelGroup>
 		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="eabCsvFile" value="#{web.text.EABTAB_SELECTFILE}"/>
 			<t:inputFileUpload id="eabCsvFile" value="#{systemConfigMBean.EABConfigManager.eabCSVFile}"/>
