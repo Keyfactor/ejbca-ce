@@ -575,7 +575,7 @@ public class CAInterfaceBean implements Serializable {
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
                             .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
-                            .setMsConformant(caInfoDto.isMsConformant())
+                            .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                             .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                     if (buttonCreateCa) {
                         X509CAInfo x509cainfo =  x509CAInfoBuilder
@@ -960,7 +960,7 @@ public class CAInterfaceBean implements Serializable {
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                        .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                        .setCrlPartitions(caInfoDto.getCrlPartitions())
-                       .setMsConformant(caInfoDto.isMsConformant())
+                       .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                        .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                cainfo = x509CAInfoBuilder.buildForUpdate();
