@@ -17,11 +17,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,10 +27,10 @@ public class EABConfiguration extends ConfigurationBase implements Serializable 
     private static final Logger log = Logger.getLogger(EABConfiguration.class);
     private static final long serialVersionUID = 1L;
     public static final String EAB_CONFIGURATION_ID = "EAB";
-    // Default OAuth Keys
     private static final LinkedHashMap<String, Set<String>> EAB_MAP_DEFAULT = new LinkedHashMap<>();
 
     private static final   String EAB_MAP          = "eabmap";
+    private static final   String FILE_HASH        = "filehash";
 
     public Map<String, Set<String>> getEABMap() {
         final Map<String, Set<String>>  ret = (Map<String, Set<String>> )data.get(EAB_MAP);
@@ -44,6 +40,15 @@ public class EABConfiguration extends ConfigurationBase implements Serializable 
     /** Sets the available OAuth keys */
     public void setEabConfigMap(Map<String, Set<String>> eabMap) {
         data.put(EAB_MAP, eabMap);
+    }
+    
+    public String getFileHash() {
+        return (String) data.get(FILE_HASH);
+    }
+
+    /** Sets the SHA-256 hash of the uploaded CSV file */
+    public void setFileHash(String fileHash) {
+        data.put(FILE_HASH, fileHash);
     }
 
     @Override
