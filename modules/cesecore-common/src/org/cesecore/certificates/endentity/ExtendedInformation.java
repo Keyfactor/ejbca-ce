@@ -258,7 +258,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @return The number of remaining allowed failed login attempts or -1 for unlimited
      */
     public int getRemainingLoginAttempts() {
-        return Integer.valueOf(data.get(REMAININGLOGINATTEMPTS).toString());
+        return Integer.parseInt(data.get(REMAININGLOGINATTEMPTS).toString());
     }
 
     /**
@@ -274,7 +274,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @return The maximum number of allowed failed login attempts or -1 for unlimited
      */
     public int getMaxLoginAttempts() {
-        return Integer.valueOf(data.get(MAXFAILEDLOGINATTEMPTS).toString());
+        return Integer.parseInt(data.get(MAXFAILEDLOGINATTEMPTS).toString());
     }
 
     /**
@@ -349,7 +349,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         int ret = RevokedCertInfo.NOT_REVOKED;
         final String revocationReason = getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
         if (revocationReason != null) {
-            ret = Integer.valueOf(revocationReason);
+            ret = Integer.parseInt(revocationReason);
         }
         if (log.isDebugEnabled()) {
             log.debug("User issuance revocation reason is " + ret);
