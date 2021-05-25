@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -21,9 +22,12 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -87,6 +91,12 @@ public class EABConfigManager {
          * @param eabConfigMap the EAB configuration Map to save
          */
         public void saveEabConfig(Map<String, Set<String>> eabConfigMap);
+
+        /**
+         * Gets the current EAB configuration map
+         * @return map with namespaces as keys, and sets of account bindings as values
+         */
+        public Map<String, Set<String>> getEabConfig();
     }
 
     public static Map<String, Set<String>> parseCsvToMap(final byte[] bytes, String delimeter) throws EjbcaException {
@@ -117,5 +127,35 @@ public class EABConfigManager {
             throw new EjbcaException("Failed to read file content", e);
         }
         return result;
+    }
+
+    /** Returns true if account bindings have been uploaded */
+    public boolean isEabConfigurationAvailable() {
+        return MapUtils.isNotEmpty(systemConfigurationHelper.getEabConfig());
+    }
+
+    public static final class EabNamespaceGuiInfo {
+        private final String name;
+        private final int count;
+        public EabNamespaceGuiInfo(final String name, final int count) {
+            this.name = name;
+            this.count = count;
+        }
+        /** Returns the name of this namespace */
+        public String getName() {
+            return name;
+        }
+        /** Returns the number of account bindings in this namespace */
+        public int getCount() {
+            return count;
+        }
+    }
+
+    public List<EabNamespaceGuiInfo> getEabNamespaces() {
+        final List<EabNamespaceGuiInfo> namespaces = new ArrayList<>();
+        for (final Entry<String, Set<String>> namespace : systemConfigurationHelper.getEabConfig().entrySet()) {
+            namespaces.add(new EabNamespaceGuiInfo(namespace.getKey(), namespace.getValue().size()));
+        }
+        return namespaces;
     }
 }
