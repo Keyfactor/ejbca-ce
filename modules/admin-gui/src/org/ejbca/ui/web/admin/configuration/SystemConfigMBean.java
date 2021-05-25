@@ -2025,6 +2025,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                         addNonTranslatedErrorMessage(msg);
                     }
                 }
+
+                @Override
+                public Map<String, Set<String>> getEabConfig() {
+                    final EABConfiguration eabConfiguration = getEjbcaWebBean().getEABConfiguration();
+                    return eabConfiguration.getEABMap();
+                }
             });
         }
         return eabConfigManager;
