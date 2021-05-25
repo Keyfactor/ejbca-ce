@@ -59,4 +59,9 @@ public class DateValidator implements DynamicUiPropertyValidator<String> {
         return VALIDATOR_TYPE;
     }
 
+    @Override
+    public void setName(String name) {
+        // Not implemented.
+    }
+
 }
