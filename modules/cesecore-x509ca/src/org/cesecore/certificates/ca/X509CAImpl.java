@@ -217,7 +217,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(SUBJECTALTNAME, cainfo.getSubjectAltName());
         data.put(CABase.CATYPE, CAInfo.CATYPE_X509);
         data.put(VERSION, LATEST_VERSION);
-        setMsConformant(cainfo.isMsConformant());
+        setMsCaCompatible(cainfo.isMsCaCompatible());
         setUseAuthorityKeyIdentifier(cainfo.getUseAuthorityKeyIdentifier());
         setAuthorityKeyIdentifierCritical(cainfo.getAuthorityKeyIdentifierCritical());
         setUseCRLNumber(cainfo.getUseCRLNumber());
@@ -332,7 +332,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCrlPartitions(getCrlPartitions())
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
                 .setRequestPreProcessor(getRequestPreProcessor())
-                .setMsConformant(isMsConformant())
+                .setMsCaCompatible(isMsCaCompatible())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -367,18 +367,18 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
 
     @Override
-    public boolean isMsConformant() {
-        Object isConformant = data.get(MSCONFORMANT);
-        if (isConformant == null) {
+    public boolean isMsCaCompatible() {
+        Object isMsCaCompatible = data.get(MSCACOMPATIBLE);
+        if (isMsCaCompatible == null) {
             return false;
         }
 
-        return (Boolean) isConformant;
+        return (Boolean) isMsCaCompatible;
     }
 
     @Override
-    public void setMsConformant(boolean isMsConformant) {
-        data.put(MSCONFORMANT, isMsConformant);
+    public void setMsCaCompatible(boolean isMsCaCompatible) {
+        data.put(MSCACOMPATIBLE, isMsCaCompatible);
     }
 
     /* (non-Javadoc)
@@ -822,7 +822,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setDoStoreOcspResponsesOnDemand(info.isDoStoreOcspResponsesOnDemand());
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
-        setMsConformant(info.isMsConformant());
+        setMsCaCompatible(info.isMsCaCompatible());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
     }
