@@ -40,6 +40,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
@@ -139,7 +140,14 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                details.put(entry.getKey().toString(), entry.getValue().toString());
+                if (!"changed:eabmap".equals(entry.getKey().toString())) {
+                    details.put(entry.getKey().toString(), entry.getValue().toString());
+                }
+            }
+            if (conf != null && conf.getClass().equals(EABConfiguration.class)) {
+                for (Map.Entry<String,Set<String>> entry : ((EABConfiguration) conf).getEABMap().entrySet()) {
+                    details.put(entry.getKey(), entry.getValue().size());
+                }
             }
             auditSession.log(EventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
