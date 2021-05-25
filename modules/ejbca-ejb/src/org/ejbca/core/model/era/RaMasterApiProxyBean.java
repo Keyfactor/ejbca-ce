@@ -95,6 +95,7 @@ import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
+import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -1974,10 +1975,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
                 try {
-                    byte[] response;
                     try {
-                        response = raMasterApi.scepDispatch(authenticationToken, operation, message, scepConfigurationAlias);
-                        return response;
+                        return raMasterApi.scepDispatch(authenticationToken, operation, message, scepConfigurationAlias);
                         // Try all implementations before failing on this exception
                     } catch (NoSuchAliasException e) {
                         caughtException = e;
@@ -3060,6 +3059,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                // ECA-10044 Handle AuthorizationDeniedException.
+                try {
+                    return raMasterApi.parseAcmeEabMessage(authenticationToken, alias, requestUrl, requestJwk, eabRequestJsonString);                            
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public String persistAcmeAccount(final AcmeAccount acmeAccount) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
@@ -3383,4 +3398,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
 
+    /**
+     * Try dispatching a SCEP request to an Intune capable backend.
+     */
+    @Override
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) throws
+            CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException,
+            CertificateExtensionException, CertificateRenewalException, NoSuchAliasException, AuthorizationDeniedException {
+        NoSuchAliasException caughtException = null;
+
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 12) {
+                try {
+                    try {
+                        return raMasterApi.scepDispatchIntune(authenticationToken, operation, message, scepConfigurationAlias);
+                        // Try all implementations before failing on this exception
+                    } catch (NoSuchAliasException e) {
+                        caughtException = e;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+
+        if (caughtException != null) {
+            throw caughtException;
+        } else {
+            return null;
+        }
+    }
 }
