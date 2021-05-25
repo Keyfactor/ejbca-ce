@@ -66,6 +66,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String AWSKMS_ACCESSKEYID= "--awskmsaccesskeyid";
     private static final String AWSKMS_REGION= "--awskmsregion";
     private static final String AZUREVAULT_TYPE= "--azurevaulttype";
+    private static final String AZUREVAULT_USE_KEY_BINDING = "--azurevaultusekeybinding";
+    private static final String AZUREVAULT_KEY_BINDING = "--azurevaultkeybinding";
     private static final String AZUREVAULT_NAME= "--azurevaultname";
     private static final String AZUREVAULT_CLIENTID= "--azurevaultclientid";
 
@@ -103,6 +105,11 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(AzureCryptoToken) Key Vault type, Premium or Standard."));
         registerParameter(new Parameter(AZUREVAULT_CLIENTID, "Client ID", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(AzureCryptoToken) Key Vault Client ID as noted when creating the App Registration, example 2f6bd1d7-81ee-52cf-b0a4-8dd570196701."));
+        registerParameter(new Parameter(AZUREVAULT_USE_KEY_BINDING, "Use Key Binding", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "(AzureCryptoToken) Whether or not to use an Internal Key Binding when authenticating to Azure."));
+        registerParameter(new Parameter(AZUREVAULT_KEY_BINDING, "Key Binding", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(AzureCryptoToken) Internal Key Binding to use when authenticating to Azure."));
+
         // ePassport CSCA only
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
@@ -173,6 +180,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, parameters.get(AZUREVAULT_CLIENTID));
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, parameters.get(AZUREVAULT_USE_KEY_BINDING));
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, parameters.get(AZUREVAULT_KEY_BINDING));
         } else if (PKCS11CryptoToken.class.getSimpleName().equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
             if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
                 className = PKCS11CryptoToken.class.getName();

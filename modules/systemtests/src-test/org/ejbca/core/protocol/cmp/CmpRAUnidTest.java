@@ -73,9 +73,7 @@ import static org.junit.Assume.assumeTrue;
  * which will be used as reference for future OCSP requests, which for this purpose will contain the UnID as opposed to the FNR as an extension
  * in the response. 
  * 
- * The UnID <> FNR mapping is handled and lookup up from a separate datasource. 
- * 
- * @version $Id$
+ * The UnID <> FNR mapping is handled and lookup up from a separate datasource.
  */
 public class CmpRAUnidTest extends CmpTestCase {
 
@@ -251,7 +249,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             } else {
                 checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
                         PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-                final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, cacert, resp, reqId);
+                final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
                 log.debug("Unid received in certificate response: " + unid);
@@ -317,7 +315,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             } else {
                 checkCmpResponseGeneral(resp, CmpRAUnidTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
                         PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-                final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, cacert, resp, reqId);
+                final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
 
