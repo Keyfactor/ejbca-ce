@@ -950,18 +950,18 @@
 					<h:outputText value="#{web.text.MS_COMPATIBILIY_MODE}" />
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-					<h:panelGroup id="msconformantgroup">
-						<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.msConformant}">
-							<h:selectBooleanCheckbox id="msconformant"
-													 value="#{editCAsMBean.caInfoDto.msConformant}"
-													 onclick="return checkboxConfirmation('#{web.text.MS_COMPATIBILIY_MODE_CONFIRMATION}', 'editcapage:msconformant')"
-													 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.caInfoDto.msConformant}">
-								<f:ajax render="msconformantgroup"/>
+					<h:panelGroup id="mscompatiblegroup">
+						<h:panelGroup rendered="#{not editCAsMBean.caInfoDto.msCaCompatible}">
+							<h:selectBooleanCheckbox id="mscompatible"
+													 value="#{editCAsMBean.caInfoDto.msCaCompatible}"
+													 onclick="return checkboxConfirmation('#{web.text.MS_COMPATIBILIY_MODE_CONFIRMATION}', 'editcapage:mscompatible')"
+													 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.caInfoDto.msCaCompatible}">
+								<f:ajax render="mscompatiblegroup"/>
 							</h:selectBooleanCheckbox>
-							<h:outputLabel for="msconformant"
+							<h:outputLabel for="mscompatible"
 										   value="#{web.text.USE}" />
 						</h:panelGroup>
-						<h:outputText rendered="#{editCAsMBean.caInfoDto.msConformant}"
+						<h:outputText rendered="#{editCAsMBean.caInfoDto.msCaCompatible}"
 									  value="#{web.text.MS_COMPATIBILIY_MODE_IRREVERSIBLE}" />
 					</h:panelGroup>
 				</h:panelGroup>
