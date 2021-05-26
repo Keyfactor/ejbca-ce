@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.cesecore.util;
 
 import java.io.File;
 import java.text.ParseException;
@@ -22,26 +22,32 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.StringTools;
 
 /**
- * Class containing logic for a whitelist of scripts allowed to be executed by "External Command Validators".
- * @version $Id$
+ * Class containing logic for a list of scripts allowed to be executed by "External Command Validators".
  */
-public class ExternalScriptsWhitelist {
+public class ExternalScriptsAllowlist {
     
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(ExternalScriptsWhitelist.class);
+    private static final Logger log = Logger.getLogger(ExternalScriptsAllowlist.class);
 
     private final List<File> scripts;
     private final boolean isEnabled;
 
     /**
-     * Creates a whitelist which permits all external commands to be executed.
-     * @return a new empty whitelist marked as disabled
+     * Creates a list which permits all external commands to be executed.
+     * @return a new empty list marked as disabled
      */
-    public static ExternalScriptsWhitelist permitAll() {
-        return new ExternalScriptsWhitelist(new ArrayList<File>(), false);
+    public static ExternalScriptsAllowlist permitAll() {
+        return new ExternalScriptsAllowlist(new ArrayList<File>(), false);
+    }
+
+    /**
+     * Creates a list which forbids all external commands to be executed.
+     * @return a new empty list marked as enabled, with no allowed paths
+     */
+    public static ExternalScriptsAllowlist forbidAll() {
+        return new ExternalScriptsAllowlist(new ArrayList<File>(), true);
     }
 
     /**
@@ -52,7 +58,7 @@ public class ExternalScriptsWhitelist {
      * @return an External Scripts Whitelist object constructed from the input
      * @throws ParseException if the whitelist is enabled and one of paths does not point to a file
      */
-    public static ExternalScriptsWhitelist fromText(final String text, final boolean isEnabled) {
+    public static ExternalScriptsAllowlist fromText(final String text, final boolean isEnabled) {
         final List<File> scripts = new ArrayList<>();
         final String[] lines = StringTools.splitByNewlines(text);
         for (int i = 0; i < lines.length; i++) {
@@ -64,7 +70,7 @@ public class ExternalScriptsWhitelist {
             final File script = new File(path);
             scripts.add(script);
         }
-        return new ExternalScriptsWhitelist(scripts, isEnabled);
+        return new ExternalScriptsAllowlist(scripts, isEnabled);
     }
 
     /**
@@ -74,8 +80,8 @@ public class ExternalScriptsWhitelist {
      * @return an External Scripts Whitelist object constructed from the input
      * @throws ParseException if one of paths does not point to a file
      */
-    public static ExternalScriptsWhitelist fromText(final String text) {
-        return ExternalScriptsWhitelist.fromText(text, true);
+    public static ExternalScriptsAllowlist fromText(final String text) {
+        return ExternalScriptsAllowlist.fromText(text, true);
     }
 
     /**
@@ -83,7 +89,7 @@ public class ExternalScriptsWhitelist {
      * @param scripts a list of files
      * @param isEnabled true if the whitelist is enabled
      */
-    public ExternalScriptsWhitelist(final List<File> scripts, final boolean isEnabled) {
+    public ExternalScriptsAllowlist(final List<File> scripts, final boolean isEnabled) {
         this.scripts = scripts;
         this.isEnabled = isEnabled;
     }
@@ -92,7 +98,7 @@ public class ExternalScriptsWhitelist {
      * Create a new enabled whitelist permitting execution of the scripts given as input.
      * @param scripts a list of path strings
      */
-    public ExternalScriptsWhitelist(final String... paths) {
+    public ExternalScriptsAllowlist(final String... paths) {
         this.scripts = new ArrayList<>();
         this.isEnabled = true;
         for (final String path : paths) {
@@ -159,6 +165,9 @@ public class ExternalScriptsWhitelist {
     public boolean hasInvalidPaths() {
         for (final File script : scripts) {
             if (!script.isFile()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid script path: '" + script.getAbsolutePath() + "'.");
+                }
                 return true;
             }
         }
