@@ -819,9 +819,8 @@
 					</h:panelGroup>
             </h:panelGrid>
 
-			<!-- SSH Certificate Data -->
 
-            
+			<!-- SSH Certificate Data -->
 			<h:panelGrid id="header_sshcertificatedata" columns="3"
                 styleClass="edit-top" cellspacing="3" cellpadding="3"
                 border="0" width="100%" rowClasses="Row0,Row1"
@@ -868,7 +867,8 @@
 	                value="#{endEntityProfileMBean.sshFieldList}"
 	                cellspacing="1" cellpadding="3" border="0" width="100%"
 	                rowClasses="Row0,Row1"
-	                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
+	                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
+	                rendered="#{endEntityProfileMBean.typeSshAvailable}">
                 <h:column>
                     <h:selectBooleanCheckbox
                         id="removeSshFieldCheckBox"
@@ -934,7 +934,7 @@
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
-                rendered="#{not endEntityProfileMBean.viewOnly}">
+                rendered="#{not endEntityProfileMBean.viewOnly and endEntityProfileMBean.typeSshAvailable}">
                 <h:panelGroup id="removeSshFieldGroup">
                     <h:commandButton id="removeSshFieldButton"
                         value="#{web.text.REMOVE}"
@@ -956,7 +956,7 @@
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
-                rendered="#{not endEntityProfileMBean.viewOnly}">
+                rendered="#{endEntityProfileMBean.typeSshAvailable}">
             	<h:panelGroup>
 						&nbsp;
 				</h:panelGroup>
