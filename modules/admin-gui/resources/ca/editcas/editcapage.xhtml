@@ -960,7 +960,11 @@
 							</h:selectBooleanCheckbox>
 							<h:outputLabel for="mscompatible"
 										   value="#{web.text.USE}" />
+							<br/>
+							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible}"
+										  value="#{web.text.MS_COMPATIBILIY_MODE_WARNING}" />
 						</h:panelGroup>
+
 						<h:outputText rendered="#{editCAsMBean.caInfoDto.msCaCompatible}"
 									  value="#{web.text.MS_COMPATIBILIY_MODE_IRREVERSIBLE}" />
 					</h:panelGroup>
