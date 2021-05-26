@@ -16,12 +16,11 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 
 /** 
  * Session bean to handle global configuration and such.
- * 
- * @version $Id$
  */
 public interface GlobalConfigurationSession {
     
@@ -31,8 +30,9 @@ public interface GlobalConfigurationSession {
      * {@link #MIN_TIME_BETWEEN_GLOBCONF_UPDATES} or when {@link #flushCache()}
      * is executed. This method should be used in all cases where a quick
      * response isn't necessary, otherwise use {@link #flushCache()}.
-     * 
-     * @return the cached GlobalConfiguration value.
+     *
+     * @param configID configuration ID of the specific configuration to be returned, special value is "0" which is GlobalConfiguration in EJBCA that can not be referenced by name as it is in another module
+     * @return the cached Configuration (ConfigurationBase) value.
      */
     ConfigurationBase getCachedConfiguration(String configID);
 

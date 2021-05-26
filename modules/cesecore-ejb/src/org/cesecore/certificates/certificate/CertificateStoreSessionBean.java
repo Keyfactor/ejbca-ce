@@ -234,7 +234,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         entityManager.persist(certificateData);
         if (doAuditLog) {
             final String serialNo = CertTools.getSerialNumberAsString(incert);
-            final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateData.getFingerprint(), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
+            final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateData.getFingerprint(), certificateData.getSubjectDnNeverNull(), 
+                    certificateData.getIssuerDN(), serialNo, certificateData.getAccountBindingId());
             final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
             logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(), caId,
                     serialNo, username, msg);
@@ -350,8 +351,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String username = data.getUsername();
         final String serialNo = CertTools.getSerialNumberAsString(certificate);
         final int issuerHash = CertTools.getIssuerDN(certificate).hashCode();
-        final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateFingerprint, 
-                data.getSubjectDnNeverNull(), issuerHash, serialNo);
+        final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateFingerprint, 
+                data.getSubjectDnNeverNull(), issuerHash, serialNo, accountBindingId);
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         final String caId = String.valueOf(issuerHash);

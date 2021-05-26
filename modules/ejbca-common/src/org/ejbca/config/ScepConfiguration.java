@@ -60,6 +60,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RAMODE_OLD = "ra.createOrEditUser";
     public static final String SCEP_OPERATIONMODE = "operationmode";
     public static final String SCEP_INCLUDE_CA = "includeca";
+    public static final String SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM = "allowLegacyDigestAlgorithm";
     public static final String SCEP_RA_CERTPROFILE = "ra.certificateProfile";
     public static final String SCEP_RA_ENTITYPROFILE = "ra.entityProfile";
     public static final String SCEP_RA_AUTHPWD = "ra.authPwd";
@@ -101,6 +102,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
     public static final String DEFAULT_OPERATION_MODE = Mode.CA.getResource();
     public static final String DEFAULT_INCLUDE_CA = Boolean.TRUE.toString();
+    public static final String DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM = Boolean.FALSE.toString();
     public static final String DEFAULT_CLIENT_CERTIFICATE_RENEWAL = Boolean.FALSE.toString();
     public static final String DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = Boolean.FALSE.toString();
     public static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
@@ -127,9 +129,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     /** Initializes a new scep configuration with default values. */
     public void initialize(String alias){
         alias += ".";
-    
         data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
         data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
+        data.put(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
         data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
         data.put(alias + SCEP_RA_ENTITYPROFILE, DEFAULT_RA_ENTITYPROFILE);
         data.put(alias + SCEP_RA_DEFAULTCA, DEFAULT_RA_DEFAULTCA);
@@ -161,6 +163,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         Set<String> keys = new LinkedHashSet<String>();
         keys.add(alias + SCEP_OPERATIONMODE);
         keys.add(alias + SCEP_INCLUDE_CA);
+        keys.add(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM);
         keys.add(alias + SCEP_RA_CERTPROFILE);
         keys.add(alias + SCEP_RA_ENTITYPROFILE);
         keys.add(alias + SCEP_RA_DEFAULTCA);
@@ -271,7 +274,23 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         String key = alias + "." + SCEP_INCLUDE_CA;
         setValue(key, Boolean.toString(includeca), alias);
     }
-
+    
+    public boolean getAllowLegacyDigestAlgorithm(String alias) {
+        String key = alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM;
+        String value = getValue(key, alias);
+        // Allow for SCEP configurations older than 7.5.1 to use SHA-1 in responses by default
+        if(value == null) {
+            data.put(alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, "true");
+            return Boolean.getBoolean("true");
+        }
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+        
+    public void setAllowLegacyDigestAlgorithm(String alias, boolean allowLegacyDigestAlgorithm) {
+        String key = alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM;
+        setValue(key, Boolean.toString(allowLegacyDigestAlgorithm), alias);
+    }
+    
     public String getRACertProfile(String alias) {
         String key = alias + "." + SCEP_RA_CERTPROFILE;
         return getValue(key, alias);

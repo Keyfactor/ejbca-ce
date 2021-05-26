@@ -1233,8 +1233,8 @@ public final class StringTools {
                 secondString = "0";
             }
             if (StringUtils.isNumeric(firstString) && StringUtils.isNumeric(secondString)) {
-                final int firstNumber = Integer.valueOf(firstString);
-                final int secondNumber = Integer.valueOf(secondString);
+                final int firstNumber = Integer.parseInt(firstString);
+                final int secondNumber = Integer.parseInt(secondString);
                 if (firstNumber != secondNumber) {
                     return firstNumber < secondNumber;
                 }
@@ -1314,6 +1314,16 @@ public final class StringTools {
             }
         }
         return subjectDN;
+    }
+
+    /**
+     * Checks a string for legal chars (alpha-numeric , including special chars (like . or -)).
+     * @param value the string value
+     * @return true if the string only contains legal characters.
+     */
+    public static boolean checkValueIsAlfaNumericWithSpecialChars(final String value) {
+        final String whiteList = "[a-zA-Z0-9-_\\s\\.]+";
+        return Pattern.matches(whiteList, value);
     }
 
 

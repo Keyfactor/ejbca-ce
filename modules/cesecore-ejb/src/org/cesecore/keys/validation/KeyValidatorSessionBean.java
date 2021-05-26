@@ -65,6 +65,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 
 /**
  * Handles management of key validators.
@@ -566,7 +567,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                                 fingerprint));
                         final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession
                                 .getCachedConfiguration("0");
-                        final ExternalScriptsWhitelist externalScriptsWhitelist = ExternalScriptsWhitelist.fromText(
+                        final ExternalScriptsAllowlist externalScriptsWhitelist = ExternalScriptsAllowlist.fromText(
                                 externalScriptsConfiguration.getExternalScriptsWhitelist(),
                                 externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());
                         final List<String> messages = validator.validate(ca, certificate, externalScriptsWhitelist);

@@ -46,7 +46,7 @@ public interface AcmeExternalAccountBinding extends AccountBinding, ConfigDumpIt
      * @param requestUrl the ACME newAccount URL.
      * @param jwk the base64 encoded account key in JWK form.
      * @return the external account identifier.
-     * @throws AcmeEabRequestParsingException if the message could not be verified (technically, well-formed or by content).
+     * @throws AcmeProblemException if the message could not be verified (technically, well-formed or by content).
      */
     // ECA-9474 Refactor method signature.
     String parseEabRequestMessage(Object request, String requestUrl, String jwk) throws AcmeProblemException;
