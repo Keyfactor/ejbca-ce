@@ -1056,6 +1056,8 @@
 	<!-- External Account bindings -->
 	<h:form id="eabForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'External Account Bindings'}">
 		<h3><h:outputText value="#{web.text.EABTAB_IMPORT}"/></h3>
+		<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP1}"/></p>
+		<p class="helpNotWide"><h:outputText value="#{web.text.EABTAB_IMPORT_HELP2}"/></p>
 		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="eabCsvFile" value="#{web.text.EABTAB_SELECTFILE}"/>
 			<t:inputFileUpload id="eabCsvFile" value="#{systemConfigMBean.EABConfigManager.eabCSVFile}"/>
