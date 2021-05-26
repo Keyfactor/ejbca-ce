@@ -16,6 +16,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 
@@ -24,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,9 +61,9 @@ public class EABConfigManager {
         } else {
             try {
                 final Map<String, Set<String>> eabConfigMap = parseCsvToMap(eabCSVFile.getBytes(), ",");
-                systemConfigurationHelper.saveEabConfig(eabConfigMap);
+                systemConfigurationHelper.saveEabConfig(eabConfigMap, generateEabConfigFileHash(eabCSVFile));
                 systemConfigurationHelper.addInfoMessage("EABTAB_UPLOADED");
-            } catch (EjbcaException | IOException e) {
+            } catch (EjbcaException | IOException | NoSuchAlgorithmException e) {
                 log.error("Can not parse EAB configurations", e);
                 systemConfigurationHelper.addErrorMessage("EABTAB_BADEABFILE");
             }
@@ -91,7 +94,7 @@ public class EABConfigManager {
          * Saves a list of EAB config to persistent storage.
          * @param eabConfigMap the EAB configuration Map to save
          */
-        public void saveEabConfig(Map<String, Set<String>> eabConfigMap);
+        public void saveEabConfig(Map<String, Set<String>> eabConfigMap, String eabConfigFileHash);
 
         /**
          * Gets the current EAB configuration map
@@ -163,5 +166,15 @@ public class EABConfigManager {
             namespaces.add(new EabNamespaceGuiInfo(namespace.getKey(), namespace.getValue().size()));
         }
         return namespaces;
+    }
+
+    public String generateEabConfigFileHash(UploadedFile eabCSVFile) throws NoSuchAlgorithmException, IOException {
+        if (eabCSVFile == null) {
+            return null;
+        }
+        byte[] uploadedFileBytes = eabCSVFile.getBytes();
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(uploadedFileBytes);
+        return new String(Hex.encode(hash));
     }
 }
