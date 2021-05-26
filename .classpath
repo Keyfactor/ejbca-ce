@@ -224,9 +224,6 @@
 	<classpathentry kind="lib" path="lib/ext/test/powermock/javassist-3.24.0-GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.10.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/intune/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/intune/content-type-2.1.jar"/>
@@ -240,8 +237,19 @@
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
 	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-9.4.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/cxf-core-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/cxf-rt-bindings-soap-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/cxf-rt-frontend-jaxws-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/cxf-rt-frontend-simple-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/cxf-rt-transports-http-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/cxf-rt-wsdl-3.3.10.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/istack-commons-runtime-3.0.11.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/jakarta.xml.bind-api-2.3.3.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/jaxb-runtime-2.3.3.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/stax2-api-3.1.4.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/woodstox-core-5.0.3.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/wsdl4j-1.6.3.jar"/>
+	<classpathentry kind="lib" path="/home/mark/eclipse-workspace/ejbca/lib/jee/soapclient/xmlschema-core-2.2.5.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
