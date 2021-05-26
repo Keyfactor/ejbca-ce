@@ -77,7 +77,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private boolean useIntune;
         private String intuneAuthority;
         private String intuneAadAppId;
+        private boolean intuneAadUseKeyBinding;
         private String intuneAadAppKey;
+        private String intuneAadAppKeyBinding;
         private String intuneTenant;
         private String intuneResourceUrl;
         private String intuneGraphApiVersion;
@@ -135,6 +137,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.intuneAuthority = "";
                     this.intuneAadAppId = "";
                     this.intuneAadAppKey = "";
+                    this.intuneAadAppKeyBinding = "";
+                    this.setIntuneAadUseKeyBinding(false);
                     this.intuneTenant = "";
                     this.intuneResourceUrl = "";
                     this.intuneGraphApiVersion = "";
@@ -369,7 +373,26 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneProxyPass(String intuneProxyPass) {
             this.intuneProxyPass = intuneProxyPass;
         }
+
+        public String getIntuneAadAppKeyBinding() {
+            return intuneAadAppKeyBinding;
+        }
+
+        public void setIntuneAadAppKeyBinding(String intuneAadKeyBinding) {
+            this.intuneAadAppKeyBinding = intuneAadKeyBinding;
+        }
+
+        public boolean isIntuneAadUseKeyBinding() {
+            return intuneAadUseKeyBinding;
+        }
+
+        public void setIntuneAadUseKeyBinding(boolean intuneAadUseKeyBinding) {
+            this.intuneAadUseKeyBinding = intuneAadUseKeyBinding;
+        }
     }
+
+    private static final long serialVersionUID = 2L;
+    private static final Logger log = Logger.getLogger(ScepConfigMBean.class);
 
     private ListDataModel<ScepAliasGuiInfo> aliasGuiList = null;
     private String currentAliasStr;
@@ -493,10 +516,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
             scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
-            // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+            scepConfig.setIntuneAadUseKeyBinding(alias, currentAlias.isIntuneAadUseKeyBinding());
+	    // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
             if (!currentAlias.getIntuneAadAppKey().equals(ScepConfigMBean.HIDDEN_PWD)) {
                 scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
             }
+	    scepConfig.setIntuneAadAppKeyBinding(alias, currentAlias.getIntuneAadAppKeyBinding());
             scepConfig.setIntuneTenant(alias, currentAlias.getIntuneTenant());
             scepConfig.setIntuneResourceUrl(alias, currentAlias.getIntuneResourceUrl());
             scepConfig.setIntuneGraphApiVersion(alias, currentAlias.getIntuneGraphApiVersion());
