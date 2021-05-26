@@ -52,9 +52,6 @@ import org.ejbca.util.SelectItemComparator;
 @SessionScoped
 public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
-    private static final long serialVersionUID = 2L;
-    private static final Logger log = Logger.getLogger(ScepConfigMBean.class);
-
     private static final String HIDDEN_PWD = "**********";
 
     /** GUI table representation of a SCEP alias that can be interacted with. */
