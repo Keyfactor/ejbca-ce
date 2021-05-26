@@ -34,6 +34,7 @@ import org.cesecore.profiles.Profile;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
@@ -181,7 +182,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     }
 
     @Override
-    public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsWhitelist externalScriptsWhitelist)
+    public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsAllowlist externalScriptsWhitelist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
         final List<String> messages = new ArrayList<>();
         if (log.isDebugEnabled()) {
@@ -388,7 +389,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                 }
                 if (message == null) { // Run command.
                     try {
-                        out.addAll(runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates()));
+                        out.addAll(runExternalCommandInternal(getExternalCommand(), ExternalScriptsAllowlist.permitAll(), getTestCertificates()));
                         if (log.isDebugEnabled()) {
                             log.debug("Tested certificate with external command STOUT/ERROUT:" + System.getProperty("line.separator") + out);
                         }
@@ -453,10 +454,11 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @throws ExternalProcessException if the command wasn't found
      * @throws ValidatorNotApplicableException if external scripts whitelist wasn't permitted
      */
-    private List<String> runExternalCommandInternal(final String externalCommand, final ExternalScriptsWhitelist externalScriptsWhitelist,
+    private List<String> runExternalCommandInternal(final String externalCommand, final ExternalScriptsAllowlist externalScriptsWhitelist,
             final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException, ValidatorNotApplicableException {
         final String cmd = extractCommand(externalCommand);
         if (!externalScriptsWhitelist.isPermitted(cmd)) {
+            // Special case when script not allowed, we note the validator as not applicable.
              throw new ValidatorNotApplicableException(intres.getLocalizedMessage("process.whitelist.error.notlisted", cmd));
         }
         // Test if specified script file exists and is executable (hits files and symbolic links, but no aliases).
@@ -479,7 +481,8 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final List<String> out = new ArrayList<>();
         try {
             out.addAll(ExternalProcessTools.launchExternalCommand(cmd, certificates.get(0).getEncoded(),
-                    isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, this.getClass().getSimpleName()));
+                    isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, this.getClass().getSimpleName(),
+                    externalScriptsWhitelist));
         } catch (ExternalProcessException e) {
             log.info("Could not call external command '" + cmd + "' with arguments " + arguments + " sucessfully: " + e.getMessage());
             if (log.isDebugEnabled()) {
