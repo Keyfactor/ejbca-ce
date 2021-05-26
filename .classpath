@@ -240,5 +240,8 @@
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
 	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-9.4.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.10.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.10.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.10.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
