@@ -20,27 +20,43 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSHeader.Builder;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.NameValuePair;
@@ -74,6 +90,13 @@ import org.json.simple.parser.ParseException;
  * https://docs.microsoft.com/en-us/rest/api/keyvault/
  */
 public class AzureCryptoToken extends BaseCryptoToken {
+    
+    public AzureCryptoToken() {
+        // This can be used to find creations not followed by a setAuthKeyProvider()
+        if (log.isTraceEnabled()) {
+            log.trace("Created an AzureCryptoToken", new Exception("for stack trace"));
+        }
+    }
 
     private static final long serialVersionUID = 7719014139640717867L;
 
@@ -92,8 +115,15 @@ public class AzureCryptoToken extends BaseCryptoToken {
     private String clientSecret;
     /** The same but for client ID */
     private String clientID;
+    /** The same but for secretKey for OAuth2 authentication */
+    private PrivateKey privateKey;
+    /** The same but for certificate for OAuth2 authentication */
+    private X509Certificate certificate;
     /** Fail fast status flag, of token is on- or off-line */
     private int status = STATUS_OFFLINE;
+    
+    /** This should be set when after creating this object to allow it to the key/cert for auth to Azure on init */
+    private KeyAndCertFinder authKeyProvider = null;
 
     /** We can make two types of requests, to different hosts/URLs, one is for the REST API requests 
      * and the other for the authorization URL we need to go to if we don't have a valid authorizationHeader
@@ -128,13 +158,31 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */ 
     public static final String KEY_VAULT_CLIENTID = "keyVaultClientID";    
     
+    /**
+     * Property for storing whether we will use app secret or an internal key binding when authenticating to Azure.
+     */
+    public static final String KEY_VAULT_USE_KEY_BINDING = "keyVaultUseKeyBinding";    
+    
+    /**
+     * Named key binding to use when authenticating to Azure
+     */
+    public static final String KEY_VAULT_KEY_BINDING = "keyVaultKeyBinding";
+    
     /** Cache for key aliases, to speed things up so we don't have to make multiple REST calls all the time to list aliases and public keys
      * We cache for a short time, 60 seconds to speed up GUI operations, but still allow for key generation on different nodes in a cluster, just leaving the 
      * other node not knowing of the new key for 60 seconds 
      */
     private KeyAliasesCache aliasCache = new KeyAliasesCache();
+
+    /**
+     * EJBCA uses a non-null activation code to indicate "should activate" is several places.  When using public key authentication, 
+     * there's no authentication code but we still want to be able to "activate" the token.  This value can be used as an 
+     * "activation code" in those situations to indicate to the reader that this is a special case.
+     */
+    public static final String DUMMY_ACTIVATION_CODE = "azure-dummy-pin";
     
     private static volatile PublicKey ecPublicDummyKey = null;
+
     private static final byte[] ecPublicKeyBytes = Base64.decodeBase64("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
             "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==");
     /** @return a dummy key (hardcoded prime256v1) to add in initial stage of caching, because we can not put anything empty in the cache, because putting null means remove...
@@ -157,6 +205,14 @@ public class AzureCryptoToken extends BaseCryptoToken {
     /** get the keyVaultType, set during init of crypto token */
     private String getKeyVaultType() {
         return getProperties().getProperty(AzureCryptoToken.KEY_VAULT_TYPE);
+    }
+    /** get the keyVaultType, set during init of crypto token */
+    private boolean isKeyVaultUseKeyBinding() {
+        return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
+    }
+    /** get the keyVaultType, set during init of crypto token */
+    private int getKeyVaultKeyBinding() {
+        return Integer.parseInt(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, "-1"));
     }
 
     /** Construct a provider name for this instance of the crypto token. Make the name "AzureKeyVaultProvider-cryptoTokenID",
@@ -193,8 +249,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
     }
     
     @Override
-    public void init(final Properties properties, final byte[] data, final int id) throws CryptoTokenOfflineException, NoSuchSlotException {
-
+    public void init(final Properties properties, final byte[] data, final int id) 
+            throws NoSuchSlotException, CryptoTokenOfflineException {
         // Create HttpClients to connect to Azure Key Vault, and Azure OAuth service (for authorization token)
         final HttpClientBuilder clientBuilder = HttpClientBuilder.create();
         final RequestConfig requestConfig = RequestConfig.custom()
@@ -205,7 +261,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         clientBuilder.setDefaultRequestConfig(requestConfig);
         httpClient = clientBuilder.build();
         authHttpClient = clientBuilder.build();
-        
+
         setProperties(properties);
         log.info("Initializing Azure Key Vault: Name=" + getKeyVaultName() + ", type=" + getKeyVaultType());
         init(properties, false, id);
@@ -217,9 +273,9 @@ public class AzureCryptoToken extends BaseCryptoToken {
         // Check that key vault name does not have any bad characters, should follow the same regexp as aliases, except also allow dots
         checkVaultName(keyVaultName);
         clientID = properties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);
-        log.info("Initializing Azure Key Vault: Type=" + properties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE) + 
-                ", Name=" + keyVaultName + ", clientID=" + clientID);
-        
+        log.info("Initializing Azure Key Vault: Type=" + properties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE) + ", Name=" + keyVaultName
+                + ", clientID=" + clientID);
+
         // Install the Azure key vault signature provider for this crypto token
         Provider sigProvider = Security.getProvider(getAzureProviderName(id));
         if (sigProvider != null) {
@@ -230,13 +286,15 @@ public class AzureCryptoToken extends BaseCryptoToken {
         Security.addProvider(sigProvider);
         setJCAProvider(sigProvider);
 
-        String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
-        try {
-            if (StringUtils.isNotEmpty(autoPwd)) {
-                activate(autoPwd.toCharArray());
+        if (!isKeyVaultUseKeyBinding()) {
+            String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
+            try {
+                if (StringUtils.isNotEmpty(autoPwd)) {
+                    activate(autoPwd.toCharArray());
+                }
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                throw new CryptoTokenOfflineException(e);
             }
-        } catch (CryptoTokenAuthenticationFailedException e) {
-            throw new CryptoTokenOfflineException(e);
         }
     }
 
@@ -355,6 +413,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
     public void deactivate() {
         log.debug(">deactivate");
         clientSecret = null;
+        privateKey = null;
+        certificate = null;
         authorizationHeader = null;
         aliasCache.flush();
         status = STATUS_OFFLINE;        
@@ -365,6 +425,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
         log.debug(">reset");
         clientSecret = null;
         authorizationHeader = null;
+        privateKey = null;
+        certificate = null;
         aliasCache.flush();
     }
 
@@ -692,8 +754,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     CloseableHttpResponse azureHttpRequest(HttpRequestBase request) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         // Don't even try to make a request if we don't have a client secret as it is required. Better fail fast
-        if (StringUtils.isEmpty(clientSecret)) {
-            throw new CryptoTokenOfflineException("Crypto token with Key Vault '" + getKeyVaultName() + "' is not active, there is no client secret available: " + request.toString());
+        if (StringUtils.isEmpty(clientSecret) && !isKeyVaultUseKeyBinding()) {
+            throw new CryptoTokenOfflineException("Crypto token with Key Vault '" + getKeyVaultName() + "' is not active, there is no client secret or keypair available: " + request.toString());
         }
         try {
             final CloseableHttpResponse response = httpRequestWithAuthHeader(request);
@@ -780,11 +842,38 @@ public class AzureCryptoToken extends BaseCryptoToken {
         final HttpPost request = new HttpPost(oauthServiceURL + "/oauth2/token");
         final ArrayList<NameValuePair> parameters = new ArrayList<>();
         parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));                
-        // ECA-8473: We only support client_secret for authentication right now. A more recommended way is to use certificate to authenticate.
         parameters.add(new BasicNameValuePair("client_id", clientID));
-        parameters.add(new BasicNameValuePair("client_secret", clientSecret));
-        if (log.isDebugEnabled()) {
-            log.debug("Using client_id and client_secret: '" + clientID + (StringUtils.isNotEmpty(clientSecret) ? ":<nologgingcleartextpasswords>'" : ":<empty pwd>"));
+        if (!isKeyVaultUseKeyBinding()) {
+            // app id/secret authentication
+            parameters.add(new BasicNameValuePair("client_secret", clientSecret));
+            if (log.isDebugEnabled()) {
+                log.debug("Using client_id and client_secret: '" + clientID + (StringUtils.isNotEmpty(clientSecret) ? ":<nologgingcleartextpasswords>'" : ":<empty pwd>"));
+            }
+        }
+        else {
+            try {
+                if (privateKey == null) {
+                    final int keyBindingId = getKeyVaultKeyBinding();
+                    final Pair<X509Certificate, PrivateKey> keyAndCert = this.authKeyProvider.find(keyBindingId)
+                            .orElseThrow(() -> new CryptoTokenAuthenticationFailedException(
+                                    "Azure Key Vault authentication key binding id = " + keyBindingId + " not found."));
+                    privateKey = keyAndCert.getRight();
+                    certificate = keyAndCert.getLeft();
+                }
+                
+                // key pair authentication
+                if (log.isDebugEnabled()) {
+                    log.debug("Using client_id and key pair: '" + clientID + "', '" + certificate.getSubjectX500Principal().toString() + "'");
+                }
+                final String jwtString = getJwtString(oauthServiceURL + "/oauth2/token", clientID, (int) this.aliasCache.getMaxCacheLifeTime()/1000, privateKey, certificate);
+                parameters.add(new BasicNameValuePair("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"));
+                parameters.add(new BasicNameValuePair("client_assertion", jwtString));
+                if (log.isDebugEnabled()) {
+                    log.debug("Azure jwt: '" + jwtString + "'");
+                }
+            } catch (CertificateEncodingException | NoSuchAlgorithmException | JOSEException | CryptoTokenOfflineException e) {
+                throw new CryptoTokenAuthenticationFailedException("Unable to create signed assertion for Azure authentication", e);
+            }
         }
         parameters.add(new BasicNameValuePair("resource", oauthResource));
         request.setEntity(new UrlEncodedFormEntity(parameters));
@@ -819,5 +908,39 @@ public class AzureCryptoToken extends BaseCryptoToken {
         }
     }
 
+    /**
+     * Given the audience, client id, time-to-live and credentials, create JWT encoded as a string to send to an OAUTH2-enabled API.
+     * 
+     * @param jwtAudience The URL we are authenticating to
+     * @param clientId Our client ID
+     * @param tokenLifetimeSeconds How long should this token be valid in seconds
+     * @param key Authentication key
+     * @param certificate Authentication certificate
+     * @return The JWT encoded as a string
+     * @throws CertificateEncodingException certificate is not formatted correctly
+     * @throws NoSuchAlgorithmException Unexpected error
+     * @throws JOSEException Error formatting JWT
+     */
+    private static String getJwtString(String jwtAudience, String clientId, int tokenLifetimeSeconds, final PrivateKey key,
+            final X509Certificate certificate) throws CertificateEncodingException, NoSuchAlgorithmException, JOSEException {
+        final long time = System.currentTimeMillis();
+        final JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().audience(Collections.singletonList(jwtAudience)).issuer(clientId)
+                .jwtID(UUID.randomUUID().toString()).notBeforeTime(new Date(time))
+                .expirationTime(new Date(time + tokenLifetimeSeconds * 1000)).subject(clientId).build();
 
+        JWSHeader.Builder builder = new Builder(JWSAlgorithm.RS256);
+        List<com.nimbusds.jose.util.Base64> certs = new ArrayList<com.nimbusds.jose.util.Base64>();
+        certs.add(new com.nimbusds.jose.util.Base64(java.util.Base64.getEncoder().encodeToString(certificate.getEncoded())));
+        builder.x509CertChain(certs);
+        String certHash = java.util.Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest(certificate.getEncoded()));
+        builder.x509CertThumbprint(new Base64URL(certHash));
+        SignedJWT jwt = new SignedJWT(builder.build(), claimsSet);
+        jwt.sign(new RSASSASigner(key));
+        String jwtString = jwt.serialize();
+        return jwtString;
+    }
+
+    public void setAuthKeyProvider(KeyAndCertFinder keyAndCertFinder) {
+        this.authKeyProvider = keyAndCertFinder;
+    }
 }
