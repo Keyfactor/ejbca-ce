@@ -214,8 +214,10 @@ import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeConfigurationSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -308,6 +310,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
+    private AcmeConfigurationSessionLocal acmeConfigurationSession;
+    @EJB
     private AcmeAccountDataSessionLocal acmeAccountDataSession;
     @EJB
     private AcmeOrderDataSessionLocal acmeOrderDataSession;
@@ -335,9 +339,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>8<td>=<td>7.3.0
      * <tr><th>9<td>=<td>7.4.1
      * <tr><th>10<td>=<td>7.4.2
-     * <tr><th>10<td>=<td>7.5.0
+     * <tr><th>11<td>=<td>7.5.0
+     * <tr><th>12<td>=<td>7.5.1
+     * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 11;
+    private static final int RA_MASTER_API_VERSION = 12;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -2699,6 +2705,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException {
+        return acmeConfigurationSession.parseAcmeEabMessage(authenticationToken, alias, requestUrl, requestJwk, eabRequestJsonString);
+    }
+
+    @Override
     public String persistAcmeAccount(final AcmeAccount acmeAccount) {
         return acmeAccountDataSession.createOrUpdate(acmeAccount);
     }
@@ -2929,4 +2941,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return result;
     }
 
+    @Override
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)
+            throws NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException,
+            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
+        return scepMessageDispatcherSession.dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+    }
 }
