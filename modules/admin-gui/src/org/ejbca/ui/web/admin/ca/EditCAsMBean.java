@@ -1391,6 +1391,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return "";
             }
             if (cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()) {
+                // TODO handle MS Compatible here too.
                 cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, newSubjectDn);
             } else {
                 cadatahandler.renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
