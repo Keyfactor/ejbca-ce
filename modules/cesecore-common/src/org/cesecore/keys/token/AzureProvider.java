@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -90,10 +91,10 @@ public class AzureProvider extends Provider {
         private KeyVaultPrivateKey privateKey;
         /** the hash algorithm to use to hash the toBeSigned data, hashing is done in SW before signing */
         protected String hashAlg;
-        /** data to be signed */
-        private byte[] toBeSigned;
         /** the signature algorithm as named by the Azure Key Vault REST API, to be used for signing the hashed toBeSigned data */
         protected String azureSignAlg;
+        /** data to be signed */
+        private ByteArrayOutputStream tbs;
 
         @Override
         protected void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {
@@ -110,7 +111,15 @@ public class AzureProvider extends Provider {
 
         @Override
         protected void engineUpdate(byte[] b, int off, int len) throws SignatureException {
-            this.toBeSigned = Arrays.copyOfRange(b, off, len);
+            if (this.tbs == null) {
+                this.tbs = new ByteArrayOutputStream();
+            }
+            try {
+                this.tbs.write(Arrays.copyOfRange(b, off, len));
+            } catch (IOException e) {
+                log.warn("I/O exception occurred when writing byte array to output stream (offset = " + off + "), length = (" + len + ").");
+                throw new SignatureException(e);
+            }
         }
 
         @Override
@@ -127,7 +136,7 @@ public class AzureProvider extends Provider {
                 final byte[] signInput;
                 try {
                     final MessageDigest digest = MessageDigest.getInstance(hashAlg, BouncyCastleProvider.PROVIDER_NAME);
-                    signInput = digest.digest(toBeSigned);
+                    signInput = digest.digest(tbs.toByteArray());
                 } catch (NoSuchAlgorithmException e) {
                     throw new SignatureException("Hash algorithm " + hashAlg + " can not be found in the BC provider: ", e);
                 } catch (NoSuchProviderException e) {
