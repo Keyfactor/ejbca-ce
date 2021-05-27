@@ -33,7 +33,6 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
@@ -114,12 +113,7 @@ public class AzureProvider extends Provider {
             if (this.tbs == null) {
                 this.tbs = new ByteArrayOutputStream();
             }
-            try {
-                this.tbs.write(Arrays.copyOfRange(b, off, len));
-            } catch (IOException e) {
-                log.warn("I/O exception occurred when writing byte array to output stream (offset = " + off + "), length = (" + len + ").");
-                throw new SignatureException(e);
-            }
+            this.tbs.write(b, off, len);
         }
 
         @Override
