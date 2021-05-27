@@ -48,6 +48,7 @@ public class CaInfoDto {
     private String caSubjectAltName;
     private String policyId;
     private boolean useAuthorityKeyIdentifier = true; // Default in create ca page
+    private boolean msCaCompatible;
     private boolean authorityKeyIdentifierCritical;
     private boolean useCrlNumber = true; // Default
     private boolean crlNumberCritical;
@@ -324,6 +325,14 @@ public class CaInfoDto {
 
     public void setUseAuthorityKeyIdentifier(boolean useAuthorityKeyIdentifier) {
         this.useAuthorityKeyIdentifier = useAuthorityKeyIdentifier;
+    }
+
+    public boolean isMsCaCompatible() {
+        return msCaCompatible;
+    }
+
+    public void setMsCaCompatible(boolean msCaCompatible) {
+        this.msCaCompatible = msCaCompatible;
     }
 
     public boolean isAuthorityKeyIdentifierCritical() {
