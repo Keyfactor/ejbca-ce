@@ -262,42 +262,24 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected void engineUpdate(byte[] bytes, int offset, int length) throws SignatureException {
-            try {
-                switch (type) {
-                case T_UPDATE:
-                    if (offset != 0 || length != bytes.length) {
-                        byte[] newArray = Arrays.copyOfRange(bytes, offset, (offset + length));
-                        myKey.getSlot().getCryptoki().SignUpdate(session, newArray);
-                    } else {
-                        myKey.getSlot().getCryptoki().SignUpdate(session, bytes);
-                    }
-                    break;
-                case T_RAW: // No need to call SignUpdate as hash is supplied already
-                    buffer = new ByteArrayOutputStream();
-                    buffer.write(bytes, offset, length);
-                    break;
-                case T_DIGEST:
-                    if (offset != 0 || length != bytes.length) {
-                        // we've got the final bytes, write to buffer, truncated to the length 
-                        final byte[] newbytes = Arrays.copyOfRange(bytes, offset, (offset + length));
-                        if (buffer == null) {
-                            buffer = new ByteArrayOutputStream();
-                        }
-                        buffer.write(newbytes);
-                    } else {
-                        // we've got a full buffer, write it whole, most likely part of larger multi-chunk data
-                        if (buffer == null) {
-                            buffer = new ByteArrayOutputStream();
-                        }
-                        buffer.write(bytes);
-                    }
-                    break;
-                default:
-                    throw new ProviderException("Internal error, type not recognized: " + type);
+            switch (type) {
+            case T_UPDATE:
+                if (offset != 0 || length != bytes.length) {
+                    byte[] newArray = Arrays.copyOfRange(bytes, offset, (offset + length));
+                    myKey.getSlot().getCryptoki().SignUpdate(session, newArray);
+                } else {
+                    myKey.getSlot().getCryptoki().SignUpdate(session, bytes);
                 }
-            } catch (IOException e) {
-                log.warn("I/O exception occurred when writing byte array to output stream (offset = " + offset + "), length = (" + length + ").");
-                throw new SignatureException(e);
+                break;
+            case T_RAW: // No need to call SignUpdate as hash is supplied already
+            case T_DIGEST: // Will hash the buffer in engineSign
+                if (buffer == null) {
+                    buffer = new ByteArrayOutputStream();
+                }
+                buffer.write(bytes, offset, length);
+                break;
+            default:
+                throw new ProviderException("Internal error, type not recognized: " + type);
             }
         }
 
@@ -336,7 +318,7 @@ public class JackNJI11Provider extends Provider {
                     seq.addObject(new ASN1Integer(sig[1]));
                     seq.close();
                     return baos.toByteArray();
-                } else {
+                } else { // T_RAW
                     return myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
                 }
             } catch (IOException e) {
