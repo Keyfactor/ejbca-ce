@@ -20,6 +20,7 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -1315,7 +1316,8 @@ public class UserFulfillEndEntityProfileTest {
         profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfile.setEabNamespace("EABNamespace");
+        Set<String> namespaces = new HashSet<>(Collections.singletonList("EABNamespace"));
+        certificateProfile.setEabNamespaces(namespaces);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 null, certificateProfile, null);
@@ -1341,7 +1343,8 @@ public class UserFulfillEndEntityProfileTest {
         eabConfiguration.setEabConfigMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfile.setEabNamespace("EABNamespace");
+        Set<String> namespaces = new HashSet<>(Collections.singletonList("EABNamespace"));
+        certificateProfile.setEabNamespaces(namespaces);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
@@ -1364,11 +1367,13 @@ public class UserFulfillEndEntityProfileTest {
         LinkedHashMap<String, Set<String>> map = new LinkedHashMap<>();
         final String eabNamespace = "Namespace1";
         map.put(eabNamespace, new LinkedHashSet<>());
+        map.get(eabNamespace).add("SomeId");
         map.put("Namespace2", new LinkedHashSet<>());
         eabConfiguration.setEabConfigMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfile.setEabNamespace(eabNamespace);
+        Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));
+        certificateProfile.setEabNamespaces(namespaces);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
@@ -1395,7 +1400,8 @@ public class UserFulfillEndEntityProfileTest {
         eabConfiguration.setEabConfigMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfile.setEabNamespace(eabNamespace);
+        Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));
+        certificateProfile.setEabNamespaces(namespaces);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);

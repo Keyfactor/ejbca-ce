@@ -559,7 +559,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setOverridableExtensionOIDs(new LinkedHashSet<>());
         setNonOverridableExtensionOIDs(new LinkedHashSet<>());
-        setEabNamespace(null);
+        setEabNamespaces(new LinkedHashSet<>());
     }
 
     /**
@@ -1969,15 +1969,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
-    public String getEabNamespace() {
-        return StringUtils.defaultString((String) data.get(EABNAMESPACE));
+    public Set<String> getEabNamespaces() {
+        if (data.get(EABNAMESPACE) == null) {
+            return new LinkedHashSet<>();
+        }
+        return (Set<String>) data.get(EABNAMESPACE);
     }
 
-    public void setEabNamespace(String eabNamespace) {
-        if (eabNamespace == null) {
-            data.put(EABNAMESPACE, "");
+    public void setEabNamespaces(Set<String> eabNamespaces) {
+        if (eabNamespaces == null) {
+            data.put(EABNAMESPACE, new LinkedHashSet<>());
         } else {
-            data.put(EABNAMESPACE, eabNamespace);
+            data.put(EABNAMESPACE, new LinkedHashSet<>(eabNamespaces));
         }
     }
 

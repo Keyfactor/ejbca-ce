@@ -1943,12 +1943,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @throws EndEntityProfileValidationException If there are extensions in the request that are not in the Certificate Profile
      */
     private void checkUnusableExtensionsByCertificateProfile(final CertificateProfile certProf, final ExtendedInformation ei, EABConfiguration eabConfiguration) throws EndEntityProfileValidationException {
-        if (StringUtils.isNotBlank(certProf.getEabNamespace())) {
+        if (certProf.getEabNamespaces() != null && !certProf.getEabNamespaces().isEmpty()) {
             if (ei == null || StringUtils.isEmpty(ei.getAccountBindingId())) {
                 throw new EndEntityProfileValidationException("Certificate profile requires an External account ID");
             } else {
-                final Set<String> allowedAccountIds = eabConfiguration.getEABMap().get(certProf.getEabNamespace());
-                if (allowedAccountIds == null) {
+                final Set<String> allowedAccountIds = new HashSet<>();
+                for (String namespace : certProf.getEabNamespaces()) {
+                    final Set<String> idList = eabConfiguration.getEABMap().get(namespace);
+                    if (idList != null && !idList.isEmpty())
+                        allowedAccountIds.addAll(idList);
+                }
+                if (allowedAccountIds.isEmpty()) {
                     throw new EndEntityProfileValidationException("Account bindings namespace in Certificate profile is outdated (not present in System Configurations)");
                 } else if (!allowedAccountIds.contains(ei.getAccountBindingId())) {
                     throw new EndEntityProfileValidationException("External account ID is not in the list of allowed account ids");
