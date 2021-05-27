@@ -560,7 +560,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isEABrendered(){
-        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (getCertificateProfile() != null && StringUtils.isNotEmpty(getCertificateProfile().getEabNamespace()));
+        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (getCertificateProfile() != null
+                && getCertificateProfile().getEabNamespaces() != null && !getCertificateProfile().getEabNamespaces().isEmpty());
         if (result && eabConfiguration == null) {
             eabConfiguration = raMasterApiProxyBean.getGlobalConfiguration(EABConfiguration.class);
         }
@@ -2337,14 +2338,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
             if (cp != null && eabConfiguration != null) {
-                final String namespace = cp.getEabNamespace();
-                final Set<String> ids = eabConfiguration.getEABMap().get(namespace);
-                if (ids != null) {
+                final Set<String> eabNamespaces = cp.getEabNamespaces();
+                final Set<String> ids = new HashSet<>();
+                for (String namespace : eabNamespaces) {
+                    ids.addAll(eabConfiguration.getEABMap().get(namespace));
+                }
+                if (ids != null && !ids.isEmpty()) {
                     eabIdAutoCompleteSelectItems.add(new SelectItem("..."));
-                    ids.stream().limit(32).filter(e -> e.toLowerCase().startsWith(value.toLowerCase())).forEach(v -> eabIdAutoCompleteSelectItems.add(new SelectItem(v)));
+                    ids.stream().filter(e -> e.toLowerCase().startsWith(value.toLowerCase())).limit(32).forEach(v -> eabIdAutoCompleteSelectItems.add(new SelectItem(v)));
                 }
                 if (log.isTraceEnabled()) {
-                    log.trace("Result set for EAB ID auto complete for namespace '" + namespace + "': " 
+                    String namespaces = String.join(",", eabNamespaces);
+                    log.trace("Result set for EAB ID auto complete for namespaces '" + namespaces + "': "
                             + eabIdAutoCompleteSelectItems.stream().map(e -> e.getValue()).toArray());
                 }
             }
