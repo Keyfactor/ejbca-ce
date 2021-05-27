@@ -280,14 +280,12 @@ public class JackNJI11Provider extends Provider {
                     if (offset != 0 || length != bytes.length) {
                         // we've got the final bytes, write to buffer, truncated to the length 
                         final byte[] newbytes = Arrays.copyOfRange(bytes, offset, (offset + length));
-                        log.error("T_DIGEST1:"+newbytes.length);
                         if (buffer == null) {
                             buffer = new ByteArrayOutputStream();
                         }
                         buffer.write(newbytes);
                     } else {
                         // we've got a full buffer, write it whole, most likely part of larger multi-chunk data
-                        log.error("T_DIGEST2:"+bytes.length);
                         if (buffer == null) {
                             buffer = new ByteArrayOutputStream();
                         }
@@ -312,7 +310,6 @@ public class JackNJI11Provider extends Provider {
                 if (type == T_UPDATE) {
                     return myKey.getSlot().getCryptoki().SignFinal(session);
                 } else if (type == T_DIGEST) {
-                    log.error("T_DIGEST");
                     // Since it's T_DIGEST, hash the buffer before signing it
                     final byte[] digest = AlgorithmTools.getDigestFromAlgoName(this.algorithm).digest(buffer.toByteArray());
                     final byte[] rawSig = myKey.getSlot().getCryptoki().Sign(session, digest);
