@@ -463,6 +463,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    public int getEABNamespacesListAvailableSize() { return Math.max(1, Math.min(5, getEjbcaWebBean().getEABConfiguration().getEABMap().size())); }
+
     public List<SelectItem> getAvailableEABNamespaces() {
         List<SelectItem> ret = new ArrayList<>();
         final Map<String, Set<String>> eabMap = getEjbcaWebBean().getEABConfiguration().getEABMap();
@@ -473,7 +475,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         // Sort list by name
         ret.sort((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
-        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
         return ret;
     }
 
