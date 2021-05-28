@@ -26,6 +26,7 @@ import net.tirasa.adsddl.ntsd.ACE;
 import net.tirasa.adsddl.ntsd.SDDL;
 import net.tirasa.adsddl.ntsd.SID;
 import net.tirasa.adsddl.ntsd.data.AceType;
+import net.tirasa.adsddl.ntsd.data.AceRights.ObjectRight;
 import net.tirasa.adsddl.ntsd.utils.GUID;
 
 public class LDAPAttributeHelper {
@@ -138,6 +139,19 @@ public class LDAPAttributeHelper {
                         GUID.getGuidAsString(ace.getObjectType()).equals(AD_ACCESS_TYPE_ENROLL)) {
                     if (groupMembership.contains(ace.getSid().toString())) {
                         enrollAllowed = true;
+                    }
+                }
+                if (!autoenrollAllowed && !enrollAllowed && ace.getType() == AceType.ACCESS_ALLOWED_ACE_TYPE) {
+                    // Check if "All extended rights" or "Full control" is allowed
+                    for (ObjectRight objectRight : ace.getRights().getObjectRights()) {
+                        // ACE allows all extended rights (incl. enrollment) OR "Full control" 
+                        if ((objectRight.name().equals(ObjectRight.CR.name()) || objectRight.name().equals(ObjectRight.GA.name())) 
+                                && groupMembership.contains(ace.getSid().toString())) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("ACE allows all extended rights on the group: " + ace.getSid().toString());
+                            }
+                            return new boolean[] {true, true};
+                        }
                     }
                 }
             }
