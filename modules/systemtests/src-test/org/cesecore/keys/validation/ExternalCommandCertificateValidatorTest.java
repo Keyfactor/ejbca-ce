@@ -30,6 +30,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -67,7 +68,7 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, createCert("C=Test,O=Test,OU=Test,CN=testDisabledWhitelist"), ExternalScriptsWhitelist.permitAll());
+        validator.validate(null, createCert("C=Test,O=Test,OU=Test,CN=testDisabledWhitelist"), ExternalScriptsAllowlist.permitAll());
     }
 
     @Test
@@ -83,14 +84,14 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.FAIL_ON_STANDARD_ERROR, false);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        List<String> out = validator.validate(null, certificate, new ExternalScriptsWhitelist(path));
+        List<String> out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
         assertEquals("Validation with external script logged to ERROUT with failOnStandardError=false must succeed.", out.size(), 0);
         
         // B: Let validation fail (result list size > 0).
         // B.1 Sample script logs to error stream with failOnStandardError=true.
         data.put(ExternalCommandCertificateValidator.FAIL_ON_STANDARD_ERROR, true);
         validator.setDataMap(data);
-        out = validator.validate(null, certificate, new ExternalScriptsWhitelist(path));
+        out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
         assertTrue("Validation with external script logged to ERROUT with failOnStandardError=true must have failed.", out.size() > 0);
         log.info( "ECCV validation called with result: " + out);
         
@@ -112,7 +113,7 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.LOG_STANDARD_OUT, true);
         data.put(ExternalCommandCertificateValidator.LOG_ERROR_OUT, true);
         validator.setDataMap(data);
-        out = validator.validate(null, certificate, new ExternalScriptsWhitelist(path));
+        out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
         assertTrue("Validation with external script logged to ERROUT with failOnStandardError=true must have failed.", out.size() > 0);
         log.info( "ECCV validation called with result: " + out);
         
@@ -120,7 +121,7 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.LOG_STANDARD_OUT, false);
         data.put(ExternalCommandCertificateValidator.LOG_ERROR_OUT, false);
         validator.setDataMap(data);
-        out = validator.validate(null, certificate, new ExternalScriptsWhitelist(path));
+        out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
         assertTrue("Validation with external script logged to ERROUT with failOnStandardError=true, logStandardOut=false and logErrorOut=false must have failed as well.", out.size() > 0);
         log.info( "ECCV validation called with result: " + out);
     }
@@ -133,7 +134,7 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path + " param1 param2");
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        final List<String> out = validator.validate(null, createCert("C=Test,O=Test,OU=Test,CN=testAllowedCommandWithParameters"), new ExternalScriptsWhitelist(path));
+        final List<String> out = validator.validate(null, createCert("C=Test,O=Test,OU=Test,CN=testAllowedCommandWithParameters"), new ExternalScriptsAllowlist(path));
         log.info( "External script called with result: " + out);
     }
 
@@ -145,7 +146,7 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, null, new ExternalScriptsWhitelist(path + "/foo/doesnotexist"));
+        validator.validate(null, null, new ExternalScriptsAllowlist(path + "/foo/doesnotexist"));
     }
 
     @Test(expected = ValidatorNotApplicableException.class)
@@ -156,7 +157,7 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path + " param1 param2");
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, null, new ExternalScriptsWhitelist(path + "/foo/doesnotexist"));
+        validator.validate(null, null, new ExternalScriptsAllowlist(path + "/foo/doesnotexist"));
     }
     
     @Test(expected = ValidatorNotApplicableException.class)
@@ -167,7 +168,7 @@ public class ExternalCommandCertificateValidatorTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, null, new ExternalScriptsWhitelist(path));
+        validator.validate(null, null, new ExternalScriptsAllowlist(path));
     }
 
     /**
