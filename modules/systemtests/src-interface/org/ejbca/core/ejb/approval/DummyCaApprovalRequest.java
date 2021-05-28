@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -23,8 +22,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 public class DummyCaApprovalRequest extends DummyApprovalRequest {
 
 	private static final long serialVersionUID = -2L;
-	private static final Logger log = Logger.getLogger(DummyApprovalRequest.class);
-	private static final int LATEST_VERSION = 1;
 
 	public DummyCaApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId,
 								boolean executable, final ApprovalProfile approvalProfile) {
