@@ -915,6 +915,7 @@ public class CAInterfaceBean implements Serializable {
                        .setCaToken(catoken)
                        .setDescription(caInfoDto.getDescription())
                        .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
+                       .setSubjectAltName(caInfoDto.getCaSubjectAltName())
                        .setCrlPeriod(caInfoDto.getCrlPeriod())
                        .setCrlIssueInterval(caInfoDto.getCrlIssueInterval())
                        .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
