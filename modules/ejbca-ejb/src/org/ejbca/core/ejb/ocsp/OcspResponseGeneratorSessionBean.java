@@ -243,9 +243,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @PostConstruct
     public void init() {
-        final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
-                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (globalOcspConfiguration.getIsSafeOcspLoggingEnabled()) {
+        if (OcspConfiguration.getLogSafer()) {
             SaferDailyRollingFileAppender.addSubscriber(this);
             log.info("Added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
         }
@@ -1162,8 +1160,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         byte[] respBytes = null;
         final Date startTime = new Date();
         OCSPResp ocspResponse = null;
-        final GlobalOcspConfiguration globalOcspConfiguration = ((GlobalOcspConfiguration)
-                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID));
         // Start logging process time after we have received the request
         if (!isPreSigning && transactionLogger.isEnabled()) {
             transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
@@ -1753,7 +1749,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 transactionLogger.writeln();
                 transactionLogger.flush();
             }
-            if (globalOcspConfiguration.getIsSafeOcspLoggingEnabled()) {
+            if (OcspConfiguration.getLogSafer()) {
                 // See if the Errorhandler has found any problems
                 if (hasErrorHandlerFailedSince(startTime)) {
                     log.info("ProbableErrorhandler reported error, cannot answer request");
