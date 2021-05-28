@@ -15,12 +15,14 @@ package org.ejbca.util.crypto;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -40,11 +42,11 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * This utility class contains static utility methods related to cryptographic functions.
- * 
  */
 public class CryptoTools {
     
@@ -185,7 +187,6 @@ public class CryptoTools {
             CMSEnvelopedData ed = new CMSEnvelopedData(data);
             RecipientInformationStore recipients = ed.getRecipientInfos();
             RecipientInformation recipient = recipients.getRecipients().iterator().next();
-            ObjectInputStream ois = null;
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
             rec.setProvider(cryptoToken.getEncProviderName());
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -194,9 +195,33 @@ public class CryptoTools {
             // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
             rec.setMustProduceEncodableUnwrappedKey(true);
             byte[] recdata = recipient.getContent(rec);
-            ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
-            log.info("Decrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
-            return (KeyPair) ois.readObject();
+            try (LookAheadObjectInputStream ois = new LookAheadObjectInputStream(new ByteArrayInputStream(recdata))) {
+                // we have things like:
+                // org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey implements [interface org.bouncycastle.jcajce.interfaces.EdDSAPrivateKey] 
+                // and...
+                // public interface EdDSAPrivateKey extends EdDSAKey, PrivateKey
+                // We can set the interface (EdDSAPrivateKey) to accepted by using setEnabledInterfaceImplementations, 
+                // but as the interface extends java.security.PrivateKey the setEnabledSubclassing does not work for class->implementing interface->extending
+                // as the class itself does not extend java.security.PrivateKey
+                // that doesn't work even for RSA, so we need to add the specific interfaces 
+                Set<Class<? extends Serializable>> keypairclasses = new HashSet<Class<? extends Serializable>>();
+                keypairclasses.add(java.security.KeyPair.class);
+                keypairclasses.add(java.security.interfaces.RSAPrivateKey.class);
+                keypairclasses.add(java.security.interfaces.RSAPublicKey.class);
+                keypairclasses.add(java.security.interfaces.ECPrivateKey.class);
+                keypairclasses.add(java.security.interfaces.ECPublicKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.EdDSAPrivateKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.EdDSAPublicKey.class);
+                keypairclasses.add(java.security.interfaces.DSAPrivateKey.class);
+                keypairclasses.add(java.security.interfaces.DSAPublicKey.class);
+                ois.setAcceptedClasses(keypairclasses);
+                // only allow BC to implement key classes, which should work since we use BC to read the CMS structure, which will create BC keys internally
+                ois.setEnabledInterfaceImplementations(true, "org.bouncycastle"); 
+                // public and private keys contain a lot of BigIntegers and such, but 50 seems to work for all keys I tried (RSA, EC, EdDSA, DSA)
+                ois.setMaxObjects(50);
+                log.info("Decrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
+                return (KeyPair) ois.readObject();                
+            }
         } catch (ClassNotFoundException e) {
             throw new IOException("Could not deserialize key pair after decrypting it due to missing class: " + e.getMessage(), e);
         } catch (CMSException e) {
@@ -227,7 +252,12 @@ public class CryptoTools {
             // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
             rec.setMustProduceEncodableUnwrappedKey(true);
             SecretKeySpec spec; 
-            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(recipient.getContent(rec)))) {
+            try (LookAheadObjectInputStream ois = new LookAheadObjectInputStream(new ByteArrayInputStream(recipient.getContent(rec)))) {
+                Set<Class<? extends Serializable>> keypairclasses = new HashSet<Class<? extends Serializable>>();
+                keypairclasses.add(javax.crypto.spec.SecretKeySpec.class);
+                ois.setAcceptedClasses(keypairclasses);
+                // secret key sects contain other object, this works for all keys I tried (AES)
+                ois.setMaxObjects(10);
                 spec = (SecretKeySpec) ois.readObject();
                 log.info("Decrypted key using key alias '" + alias + "' from Crypto Token " + cryptoToken.getId());
             } catch(IOException e) {
