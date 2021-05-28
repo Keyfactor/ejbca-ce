@@ -293,7 +293,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private boolean isOcspAuditLoggingEnabled;
     private String ocspAuditLogPattern;
     private String ocspAuditLogValues;
-    private boolean isSafeOcspLoggingEnabled;
     private String ocspLoggingDateFormat;
 
     @PostConstruct
@@ -306,7 +305,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         isOcspAuditLoggingEnabled = globalConfiguration.getIsOcspAuditLoggingEnabled();
         ocspAuditLogPattern = globalConfiguration.getOcspAuditLogPattern();
         ocspAuditLogValues = globalConfiguration.getOcspAuditLogValues();
-        isSafeOcspLoggingEnabled = globalConfiguration.getIsSafeOcspLoggingEnabled();
         ocspLoggingDateFormat = globalConfiguration.getOcspLoggingDateFormat();
     }
 
@@ -540,7 +538,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         configuration.setOcspTransactionLogPattern(ocspTransactionLogPattern);
         configuration.setOcspAuditLogValues(ocspAuditLogValues);
         configuration.setOcspTransactionLogValues(ocspTransactionLogValues);
-        configuration.setIsSafeOcspLoggingEnabled(isSafeOcspLoggingEnabled);
         configuration.setOcspLoggingDateFormat(ocspLoggingDateFormat);
         globalConfigurationSession.saveConfiguration(getAdmin(), configuration);
     }
@@ -1027,14 +1024,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     public String getOcspLoggingDateFormat() {
         return ocspLoggingDateFormat;
-    }
-
-    public void setIsSafeOcspLoggingEnabled(final boolean isSafeOcspLoggingEnabled) {
-        this.isSafeOcspLoggingEnabled = isSafeOcspLoggingEnabled;
-    }
-
-    public boolean getIsSafeOcspLoggingEnabled() {
-        return isSafeOcspLoggingEnabled;
     }
 
     public Integer getCurrentCertificateAuthority() {

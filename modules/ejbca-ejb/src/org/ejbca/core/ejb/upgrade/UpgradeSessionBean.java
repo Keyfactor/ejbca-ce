@@ -1916,11 +1916,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // value = ConfigurationHolder.getString("ocsp.log-timezone")
             log.info("Ignoring ocsp.log-timezone, using the timezone in blah instead. This behaviour is not configurable.");
 
-            value = ConfigurationHolder.getString("ocsp.log-safer");
-            final boolean isSafeOcspLoggingEnabled = "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-            globalOcspConfiguration.setIsSafeOcspLoggingEnabled(isSafeOcspLoggingEnabled);
-            log.info("Migrated ocsp.log-date => " + isSafeOcspLoggingEnabled);
-
             value = ConfigurationHolder.getString("ocsp.audit-log-pattern");
             globalOcspConfiguration.setOcspAuditLogPattern(value);
             log.info("Migrated ocsp.log-date => " + value);

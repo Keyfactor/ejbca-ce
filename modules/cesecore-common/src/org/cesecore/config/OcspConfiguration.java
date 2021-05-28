@@ -397,6 +397,11 @@ public class OcspConfiguration {
     public static boolean getHealthCheckCertificateValidity() {
         return !ConfigurationHolder.getString("ocsphealthcheck.checkSigningCertificateValidity").toLowerCase().contains("false");
     }
+
+    public static boolean getLogSafer() {
+        final String value = ConfigurationHolder.getString("ocsp.log-safer");
+        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
+    }
     
     /**
      * The default number of milliseconds a response is valid, or 0 to disable. See RFC5019.

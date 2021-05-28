@@ -37,7 +37,6 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED = "ocspAuditLoggingEnabled";
     private static final String PROPERTY_OCSP_AUDIT_LOG_PATTERN = "ocspAuditLogPattern";
     private static final String PROPERTY_OCSP_AUDIT_LOG_VALUES = "ocspAuditLogValues";
-    private static final String PROPERTY_IS_SAFE_OCSP_LOGGING_ENABLED = "isSafeOcspLoggingEnabled";
     private static final String PROPERTY_OCSP_LOGGING_DATE_FORMAT = "ocspLoggingDateFormat";
 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
@@ -166,17 +165,6 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
                     "\";\\nOCSP RESPONSE:\\n\"${OCSPRESPONSE}\";\\nSTATUS:${STATUS}";
         }
         return (String) data.get(PROPERTY_OCSP_AUDIT_LOG_VALUES);
-    }
-
-    public void setIsSafeOcspLoggingEnabled(final boolean isSafeOcspLoggingEnabled) {
-        data.put(PROPERTY_IS_SAFE_OCSP_LOGGING_ENABLED, isSafeOcspLoggingEnabled);
-    }
-
-    public boolean getIsSafeOcspLoggingEnabled() {
-        if (data.get(PROPERTY_IS_SAFE_OCSP_LOGGING_ENABLED) == null) {
-            return false;
-        }
-        return (Boolean) data.get(PROPERTY_IS_SAFE_OCSP_LOGGING_ENABLED);
     }
 
     public void setOcspLoggingDateFormat(final String ocspLoggingDateFormat) {
