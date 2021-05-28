@@ -34,8 +34,6 @@ public abstract class BaseProtocolsConfigCommand extends ConfigBaseCommand {
 
     protected static final String KEY_NAME = "--name";
 
-    private AvailableProtocolsConfiguration availableProtocolsConfiguration = null;
-
     @Override
     public String[] getCommandPath() {
         return new String[] { super.getCommandPath()[0] , "protocols" };
