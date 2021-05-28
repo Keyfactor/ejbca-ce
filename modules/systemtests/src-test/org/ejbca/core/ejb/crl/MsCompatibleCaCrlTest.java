@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.crl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +25,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -104,9 +106,28 @@ public class MsCompatibleCaCrlTest {
         assertNotNull("Initial CRL not found after CA renewal", crlStoreSession.getCRL(CA_DN, -1, 1));
         assertNotNull("Initial CRL not recreated after CA renewal", crlStoreSession.getCRL(CA_DN, -1, 2));
         assertNotNull("CRL partition not created after CA renewal", crlStoreSession.getCRL(CA_DN, 1, 1));
-        assertNull("CRL partition not created after CA renewal", crlStoreSession.getCRL(CA_DN, 1, 2));
+
     }
     
+    @Test
+    public void testDontPartitionSameCaKey() throws Exception {
+        // Given (Renew the CA with existing key pair)
+        final String currentCrlSignKey = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+        caAdminSession.renewCA(admin, caId, currentCrlSignKey, null, true);
+        publishingCrlSession.forceCRL(admin, caId);
+        
+        // Then (New CRL partition should not be created)
+        final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, caId);
+        assertNull("CRL partition created after CA renewal with same CRL sign key", crlStoreSession.getCRL(CA_DN, 1, 1));
+        assertFalse("Partitioned CRLs was enabled after renewing MS compatible CA with the same CRL sign key", 
+                caInfo.getUsePartitionedCrl());
+        assertFalse("'Issuing Distribution Point on CRLs' was enabled after renewing MS compatible CA with the same CRL sign key", 
+                caInfo.getUseCrlDistributionPointOnCrl());
+        assertEquals("Wrong number of CRL partitions set after MS Compatible CA renewal", 
+                0, caInfo.getCrlPartitions());
+        assertEquals("Wrong number of suspended CRL partitions set after MS Compatible CA renewal", 
+                0, caInfo.getSuspendedCrlPartitions());
+    }
     
     private static void cleanupTestCase() throws AuthorizationDeniedException {
         CaTestCase.removeTestCA(TEST_CA);
