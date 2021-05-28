@@ -604,9 +604,11 @@
 			</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/intune" erroronmissingdir="false">    
         		<include name="adal4j-*.jar"/>
+  				<include name="content-type-*.jar"/>
 				<include name="csr-validation-*.jar"/>
 				<include name="json-*.jar"/>
   				<include name="oauth2-oidc-sdk-*.jar"/>
+        		<include name="gson-*.jar"/>
         	</zipfileset>
         	
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
