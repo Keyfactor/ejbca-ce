@@ -167,9 +167,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
-    private String requestScheme;
     private String requestServerName;
-    private int requestServerPort;
     private String currentRemoteIp;
 
     /*
@@ -263,9 +261,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             resetAuthSessionState();
             // Escape value taken from the request, just to be sure there can be no XSS
-            requestScheme = HTMLTools.htmlescape(httpServletRequest.getScheme());
+            HTMLTools.htmlescape(httpServletRequest.getScheme());
             requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
-            requestServerPort = httpServletRequest.getServerPort();
             currentRemoteIp = httpServletRequest.getRemoteAddr();
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
