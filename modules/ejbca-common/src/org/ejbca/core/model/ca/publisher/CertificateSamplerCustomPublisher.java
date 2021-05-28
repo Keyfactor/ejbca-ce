@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -32,7 +33,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * certificates that should be sampled.
  * 
  * @see SamplingMethod
- * @version $Id$
  */
 public class CertificateSamplerCustomPublisher implements ICustomPublisher {
     private static final Logger LOG = Logger.getLogger(CertificateSamplerCustomPublisher.class);
@@ -357,4 +357,15 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
         // Method not applicable for this publisher type!
         return false;
     }
+    
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
+    }
+
 }

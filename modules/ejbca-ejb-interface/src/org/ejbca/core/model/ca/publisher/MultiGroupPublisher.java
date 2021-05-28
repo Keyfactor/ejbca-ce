@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -36,7 +37,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  * <p>
  * Useful when you have a lot of publishers, and you want to manage them in a single place.
  * </p>
- * @version $Id$
  */
 public class MultiGroupPublisher extends BasePublisher {
 
@@ -272,6 +272,15 @@ public class MultiGroupPublisher extends BasePublisher {
     public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
         // Method not applicable for this publisher type!
         return false;
+    }
+    
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
     }
 
 }

@@ -13,38 +13,6 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.BaseCertificateData;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
-import org.cesecore.certificates.crl.CRLData;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.jndi.JndiConstants;
-import org.cesecore.oscp.OcspResponseData;
-import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.PublisherConst;
-import org.ejbca.core.model.ca.publisher.PublisherException;
-import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.ejb.CreateException;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,10 +27,45 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.ejb.CreateException;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.BaseCertificateData;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.ExternalScriptsConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.jndi.JndiConstants;
+import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
+import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
+
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherQueueSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -85,6 +88,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     
     @EJB
     private OcspDataSessionLocal ocspDataSession;
+
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
@@ -464,6 +470,20 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @Override
     public boolean publishCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws PublisherException {
+        if (publisher.isCallingExternalScript()) {
+            final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession.
+                    getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            if (externalScriptsConfiguration.getEnableExternalScripts()) {
+                // if the publisher claims to call external scripts, and we have not enabled calling external scripts, the publisher default, 
+                // typically ExternalScriptsAllowlist.forbidAll() will be used.
+                // If we have enabled external scripts, the below will allow all (ExternalScriptsAllowlist.permitAll) if allow list is not set, 
+                // and only the commands on the allow list if an allows list is enabled and configured.
+                final ExternalScriptsAllowlist allowlist = ExternalScriptsAllowlist.fromText(
+                        externalScriptsConfiguration.getExternalScriptsWhitelist(),
+                        externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());                
+                publisher.setExternalScriptsAllowlist(allowlist);
+            }
+        }
         if (publisher.isFullEntityPublishingSupported()) {
             return publisher.storeCertificate(admin, certWrapper.getCertificateDataOrCopy(), certWrapper.getBase64CertData(), password, userDN, extendedinformation);
         } else {
@@ -491,6 +511,16 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @Override
     public boolean publishCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN)
             throws PublisherException {
+        if (publisher.isCallingExternalScript()) {
+            final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession.
+                    getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            if (externalScriptsConfiguration.getEnableExternalScripts()) {
+                final ExternalScriptsAllowlist allowlist = ExternalScriptsAllowlist.fromText(
+                        externalScriptsConfiguration.getExternalScriptsWhitelist(),
+                        externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());                
+                publisher.setExternalScriptsAllowlist(allowlist);
+            }
+        }
         return publisher.storeCRL(admin, incrl, cafp, number, userDN);
     }
     
@@ -498,6 +528,16 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @Override
     public boolean publishOcspResponsesNonTransactional(CustomPublisherContainer publisher, AuthenticationToken admin, OcspResponseData ocspResponseData)
             throws PublisherException {
+        if (publisher.isCallingExternalScript()) {
+            final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession.
+                    getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            if (externalScriptsConfiguration.getEnableExternalScripts()) {
+                final ExternalScriptsAllowlist allowlist = ExternalScriptsAllowlist.fromText(
+                        externalScriptsConfiguration.getExternalScriptsWhitelist(),
+                        externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());                
+                publisher.setExternalScriptsAllowlist(allowlist);
+            }
+        }
         return publisher.storeOcspResponseData(ocspResponseData);
     }
 

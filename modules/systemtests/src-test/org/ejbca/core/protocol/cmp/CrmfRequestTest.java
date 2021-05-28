@@ -241,7 +241,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
@@ -277,7 +277,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true, "primekey");
-        cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+        cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
         altNames = CertTools.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
@@ -391,7 +391,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN1, this.cacert, resp, reqId);
 
             // Now revoke the certificate!
             PKIMessage rev = genRevReq(ISSUER_DN, userDN1, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
@@ -417,7 +417,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(userDN2, this.cacert, resp, reqId);
+            cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN2, this.cacert, resp, reqId);
 
             // Now revoke this certificate too
             rev = genRevReq(ISSUER_DN, userDN2, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
@@ -480,7 +480,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, requestName, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sRequestName)), this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sRequestName)), this.cacert, resp, reqId);
             assertNotNull(cert);
 
             // Now revoke the bastard!
@@ -520,7 +520,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(dn, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, dn, this.cacert, resp, reqId);
             assertNotNull(cert);
 
             // Now revoke the bastard!
@@ -606,7 +606,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, subcaDN, userDN, subcaCert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            final X509Certificate cert = checkCmpCertRepMessage(userDN, subcaCert, resp, reqId);
+            final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, subcaCert, resp, reqId);
             assertNotNull(cert);
 
             // ------- Check that the entire certificate chain is in the extraCerts field in the response
@@ -742,7 +742,7 @@ public class CrmfRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Now we should have a cert response
             PKIMessage pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN1, this.cacert, resp, reqId);
             assertNotNull(cert);
             fingerprint1 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
@@ -777,7 +777,7 @@ public class CrmfRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Now we should have a cert response
             pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN1, this.cacert, resp, reqId);
             assertNotNull(cert);
             fingerprint2 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
@@ -886,7 +886,7 @@ public class CrmfRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Now we should have a cert response
             pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN1, this.cacert, resp, reqId);
             assertNotNull(cert);
             fingerprint3 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
@@ -948,7 +948,7 @@ public class CrmfRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Now we should have a cert response
             pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN1, this.cacert, resp, reqId);
             assertNotNull(cert);
             fingerprint4 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
