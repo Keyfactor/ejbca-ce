@@ -146,7 +146,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     // Helper objects.
     private X509CA testCA;
     private CertificateProfile testCertificateProfile;
-    private EndEntityProfile testEndEntityProfile;
     private EndEntityInformation testUser;
 
     @Before
@@ -169,7 +168,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
         // Create test EEP.
         removeEndEntityProfileIfExist(TEST_EEP_NAME);
-        testEndEntityProfile = createTestEndEntityProfile(TEST_EEP_NAME);
+        createTestEndEntityProfile(TEST_EEP_NAME);
 
         // Create test user.
         removeUserIfExists(TEST_EE_NAME);
