@@ -86,6 +86,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -149,6 +152,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
     @EJB
@@ -716,14 +721,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             throw new CertificateCreateException("Error receiving ScepMessage for alias " + alias, e);
         }
 
-        final Properties properties = scepConfig.getIntuneProperties(alias);
-        IntuneScepServiceClient intuneScepServiceClient;
-        try {
-            intuneScepServiceClient = new IntuneScepServiceClient(properties);
-        } catch (IllegalArgumentException e) {
-            throw new CertificateCreateException("Failed to initialize MS Intune SCEP service client for alias '" + alias + "'.", e);
-        }
-
+        final IntuneScepServiceClient intuneScepServiceClient = getIntuneScepServiceClient(alias, scepConfig);
         try {
             final byte[] derEncodedCsr = raMasterApiProxyBean.verifyScepPkcs10RequestMessage(authenticationToken, alias, message);
             if (log.isDebugEnabled()) {
@@ -741,6 +739,56 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             // ValidateRequest(String transactionId, String certificateRequest) throws IntuneScepServiceException, Exception
             throw new CertificateCreateException("MS Intune enrollment failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ",
                     e);
+        }
+    }
+
+    /**
+     * Return an Intune client for the current configuration.
+     * 
+     * @param alias SCEP alias
+     * @param scepConfig configuration used to build the client
+     * @return client for sending commands to Intune
+     * @throws CertificateCreateException Unable to create the client
+     */
+    /**
+     * @param alias
+     * @param scepConfig
+     * @return
+     * @throws CertificateCreateException
+     */
+    private IntuneScepServiceClient getIntuneScepServiceClient(final String alias, final ScepConfiguration scepConfig)
+            throws CertificateCreateException {
+        try {
+            final Properties properties = scepConfig.getIntuneProperties(alias);
+            if (!scepConfig.getIntuneAadUseKeyBinding(alias)) {
+                // use the app id secret value for authentication to intune
+                log.debug("Authenticating to Intune using app secret");
+                return new IntuneScepServiceClient(properties);
+            } else {
+                // use public key for authentication to Intune
+                final String keyBindingName = scepConfig.getIntuneAadAppKeyBinding(alias);
+                log.debug("Authenticating to Intune using internal key binding " + keyBindingName);
+                final InternalKeyBindingInfo keyBindingInfo = internalKeyBindingMgmtSession
+                        .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream()
+                        .filter(i -> i.getName().equals(keyBindingName))
+                        .findFirst()
+                        .orElseThrow(() -> {
+                    return new CertificateCreateException("Intune Key Binding " + keyBindingName + " not found.");
+                });
+                final Certificate certificate = certificateStoreSession.findCertificateByFingerprint(keyBindingInfo.getCertificateId());
+                log.debug("Authenticating to Intune using certificate " + certificate);
+                final CryptoToken token = cryptoTokenSession.getCryptoToken(keyBindingInfo.getCryptoTokenId());
+                log.debug("Authenticating to Intune using token " + token.getTokenName());
+                try {
+                    PrivateKey privateKey = token.getPrivateKey(keyBindingInfo.getKeyPairAlias());
+                    return new IntuneScepServiceClient((X509Certificate) certificate, privateKey, properties);
+                } catch (CryptoTokenOfflineException e) {
+                    log.debug("Crypto token " + token.getTokenName() + " offline.", e);
+                    throw new CertificateCreateException("Crypto token " + token.getTokenName() + " offline.", e);
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            throw new CertificateCreateException("Failed to initialize MS Intune SCEP service client for alias '" + alias + "'.", e);
         }
     }
 
@@ -933,13 +981,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
 
         final ScepConfiguration scepConfig = (ScepConfiguration) raMasterApiProxyBean.getGlobalConfiguration(ScepConfiguration.class);
-        final Properties properties = scepConfig.getIntuneProperties(alias);
-        final IntuneScepServiceClient intuneScepServiceClient;
-        try {
-            intuneScepServiceClient = new IntuneScepServiceClient(properties);
-        } catch (IllegalArgumentException e) {
-            throw new CertificateCreateException("Failed to initialize MS Intune SCEP service client for alias '" + alias + "'.", e);
-        }
+        final IntuneScepServiceClient intuneScepServiceClient = getIntuneScepServiceClient(alias, scepConfig);
 
         try {
             if (log.isDebugEnabled()) {
