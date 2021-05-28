@@ -2066,7 +2066,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             final CAToken caToken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
-            final boolean isMSCompatibleCA = true; // TODO Replace with configured value
             final String currentSignKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             cryptoToken.testKeyPair(nextSignKeyAlias);
             caToken.setNextCertSignKey(nextSignKeyAlias);
@@ -2156,9 +2155,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             } else {
                 ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
                 
-                if (ca instanceof X509CA && isMSCompatibleCA && !currentSignKeyAlias.equals(nextSignKeyAlias)) {
+                if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && !currentSignKeyAlias.equals(nextSignKeyAlias)) {
                     // CA is re-keyed
                     X509CA x509Ca = (X509CA) ca;
+                    //TODO REMOVE
                     log.debug("Rekeying CA with MS compatability mode");
                     log.debug("Current number of partitions: " + x509Ca.getCrlPartitions());
                     log.debug("Current suspended partitions: " + x509Ca.getSuspendedCrlPartitions());
