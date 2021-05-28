@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -41,8 +47,10 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -114,9 +122,11 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalNameException;
@@ -140,12 +150,14 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -170,18 +182,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.internal.ArrayComparisonFailure;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * Helper class for CMP Junit tests. 
  * You can run this test against a CMP Proxy instead of directoy to the CA by setting the system property httpCmpProxyURL, 
  * for example to "http://localhost:8080/cmpProxy-6.4.0"
- * 
- * @version $Id$
  */
 public abstract class CmpTestCase extends CaTestCase {
 
@@ -197,6 +201,7 @@ public abstract class CmpTestCase extends CaTestCase {
     private final String httpReqPath; // = "http://127.0.0.1:8080/ejbca";
     private final String CMP_HOST; // = "127.0.0.1";
 
+    protected final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     protected final CertificateStoreSession certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     protected final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     protected final EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -282,6 +287,14 @@ public abstract class CmpTestCase extends CaTestCase {
     private void cleanup() throws AuthorizationDeniedException {
         endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME);
         certProfileSession.removeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME);
+    }
+    
+    protected final void removeCAs(CA[] cas) throws AuthorizationDeniedException {
+        for (CA ca : cas) {
+            if (ca != null ) {
+                CaTestUtils.removeCa(ADMIN, ca.getCAInfo());
+            }
+        }    
     }
 
     public static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
@@ -1015,11 +1028,11 @@ public abstract class CmpTestCase extends CaTestCase {
         assertArrayEquals("User DN '" + userDn + "' was given, but certificate DN is '" + certificateDn + "'.", userDn.getEncoded(), certificateDn.getEncoded());
     }
 
-    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId) throws Exception {
-        return checkCmpCertRepMessage(userDN, cacert, pkiMessageBytes, requestId, ResponseStatus.SUCCESS.getValue());
+    protected X509Certificate checkCmpCertRepMessage(CmpConfiguration configuration, String alias, X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId) throws Exception {
+        return checkCmpCertRepMessage(configuration, alias, userDN, cacert, pkiMessageBytes, requestId, ResponseStatus.SUCCESS.getValue());
     }
     
-    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId, int responseStatus) throws Exception {
+    protected X509Certificate checkCmpCertRepMessage(CmpConfiguration configuration, String alias, X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId, int responseStatus) throws Exception {
         // Parse response message
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
@@ -1050,12 +1063,16 @@ public abstract class CmpTestCase extends CaTestCase {
                 checkDnIncludingAttributeOrder(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
                 assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
                 // Verify the issuer of cert
-                final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
-                final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
-                assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
-                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
-                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
-                return leafCertificate;
+                if (configuration.getResponseCaPubsIssuingCA(alias)) {
+                    final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
+                    final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
+                    assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
+                    assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
+                    assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
+                    return leafCertificate;
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }
@@ -1276,6 +1293,28 @@ public abstract class CmpTestCase extends CaTestCase {
         return res;
     }
     
+    protected List<X509Certificate> caPubsCertificatesFromCmpResponse(final byte[] pkiMessageBytes) throws Exception {
+        // Parse response message
+        final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+        assertNotNull(pkiMessage);
+        // Verify body type
+        final PKIBody pkiBody = pkiMessage.getBody();
+        // Verify the response
+        final List<X509Certificate> result = new ArrayList<>();
+        if (pkiBody.getContent() instanceof CertRepMessage) {
+            final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+            assertNotNull(certRepMessage);
+            X509Certificate certificate = null;
+            if (certRepMessage.getCaPubs() != null) {
+                for (CMPCertificate cmpCertificate : certRepMessage.getCaPubs()) {
+                    certificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
+                    assertNotNull(certificate);
+                    result.add(certificate);
+                }
+            }
+        }
+        return result.size() > 0 ? result : null;
+    }
 
     protected static void updatePropertyOnServer(String property, String value) {
         log.debug("Setting property on server: " + property + "=" + value);
