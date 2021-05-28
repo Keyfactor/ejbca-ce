@@ -2066,7 +2066,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             final CAToken caToken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
-            final String currentSignKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            final String currentSignKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
             cryptoToken.testKeyPair(nextSignKeyAlias);
             caToken.setNextCertSignKey(nextSignKeyAlias);
             // Activate the next signing key(s) and generate audit log
@@ -2158,20 +2158,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && !currentSignKeyAlias.equals(nextSignKeyAlias)) {
                     // CA is re-keyed
                     X509CA x509Ca = (X509CA) ca;
-                    //TODO REMOVE
-                    log.debug("Rekeying CA with MS compatability mode");
-                    log.debug("Current number of partitions: " + x509Ca.getCrlPartitions());
-                    log.debug("Current suspended partitions: " + x509Ca.getSuspendedCrlPartitions());
                     if (x509Ca.getUsePartitionedCrl() == false && x509Ca.getCrlPartitions() == 0) {
                         // First time enabling MS Compatibility Mode.
-                        log.debug("First time enabling MS Compatibility Mode");
+                        log.debug("Enabling MS Compatibility Mode");
                         ((X509CA)ca).setUsePartitionedCrl(true);
                         ((X509CA)ca).setCrlPartitions(1);
                         ((X509CA)ca).setSuspendedCrlPartitions(0);
                         ((X509CA)ca).setUseCrlDistributionPointOnCrl(true);
                     } else {
-                        // Suspend previous partition and open a new one
-                        log.debug("Suspending previous CRL partition");
+                        // Suspend previous partition and open a new one.
+                        log.debug("MS Compatible CA renewed. Suspending previous CRL partition");
                         ((X509CA)ca).setCrlPartitions(x509Ca.getCrlPartitions() + 1);
                         ((X509CA)ca).setSuspendedCrlPartitions(x509Ca.getSuspendedCrlPartitions() + 1);
                     }
