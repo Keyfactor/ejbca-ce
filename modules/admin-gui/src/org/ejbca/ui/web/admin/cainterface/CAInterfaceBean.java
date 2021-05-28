@@ -907,6 +907,7 @@ public class CAInterfaceBean implements Serializable {
                final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
                        ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
 
+               final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -916,6 +917,7 @@ public class CAInterfaceBean implements Serializable {
                        .setDescription(caInfoDto.getDescription())
                        .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
                        .setSubjectAltName(caInfoDto.getCaSubjectAltName())
+                       .setPolicies(policies)
                        .setCrlPeriod(caInfoDto.getCrlPeriod())
                        .setCrlIssueInterval(caInfoDto.getCrlIssueInterval())
                        .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())

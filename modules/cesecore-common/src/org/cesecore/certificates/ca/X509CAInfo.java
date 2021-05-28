@@ -1112,6 +1112,7 @@ public class X509CAInfo extends CAInfo {
                     doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand, 
                     acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, requestPreProcessor);
             caInfo.setCAId(caId);
+            caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);
             return caInfo;
         }
