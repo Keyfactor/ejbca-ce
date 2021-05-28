@@ -20,9 +20,6 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Holder class for preserving the data remaining from the old community VA Publisher
- * 
- * @version $Id$
- *
  */
 public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase implements CustomPublisherUiSupport {
 
@@ -190,5 +187,11 @@ public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase im
     public void validateDataSource(String dataSource) throws PublisherException {
         super.validateDataSource(dataSource);
     }
+    
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+
 }
 

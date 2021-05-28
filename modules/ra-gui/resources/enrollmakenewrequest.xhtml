@@ -364,10 +364,7 @@
                                         <h:message for="upnRfcEmail" id="upnRfcEmailMessage" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
 									<h:panelGroup rendered="#{instance.copyDns}">
-										<h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].dnsCopyCheckbox}"
-																 disabled="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].required}">
-											<f:ajax event="click" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
-										</h:selectBooleanCheckbox>
+										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText"/>
 									</h:panelGroup>
 								</h:panelGroup>
 							</ui:repeat>
