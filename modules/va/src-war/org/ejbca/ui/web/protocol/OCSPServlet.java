@@ -13,19 +13,6 @@
 
 package org.ejbca.ui.web.protocol;
 
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.security.InvalidKeyException;
-import java.security.cert.X509Certificate;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
@@ -55,6 +42,18 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.IPatternLogger;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.security.InvalidKeyException;
+import java.security.cert.X509Certificate;
+import java.util.Set;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -230,10 +229,9 @@ public class OCSPServlet extends HttpServlet {
         }
 
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
-        // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress, configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress, configuration);
         try {
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
