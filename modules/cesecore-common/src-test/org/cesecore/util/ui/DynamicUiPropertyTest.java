@@ -17,22 +17,37 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleData;
 import org.junit.Test;
 
 /**
- * @version $Id$
- *
+ * Unit Test for DynamicUiProperty.
+ * 
+ * DynamicUiProperty is serialized into DB (see ECA-9560 Fix DynamicUiProperty serialization 
+ * into ProfileData table with approval profiles).
+ * 
+ * Therefore a serialization / deserialization test is required if the class has been changed 
+ * (i.e. getters or setters renamed or removed, or more). See deserializeRelease7_5_0_DynamicUiProperty
  */
 public class DynamicUiPropertyTest {
 
+    private static final Logger log = Logger.getLogger(DynamicUiPropertyTest.class);
+    
     final static private String roleName = "anybody";
     
     @Test
@@ -102,5 +117,51 @@ public class DynamicUiPropertyTest {
         assertNotNull("Should return an empty list, not null.", property.getValues());
         assertEquals("Should return an empty list.", 0, property.getValues().size());
     }
+    
+    @Test
+    public void deserializeRelease7_5_0_DynamicUiProperty() throws Exception {
+        final DynamicUiProperty<String> property = deserialize("/SerializedDynamicUiProperty750.dat");
+        assertNotNull("Deserialized UI property must not be null.", property);
+        assertEquals("Deserialized UI property name does not match.", "myName", property.getName());
+        assertEquals("Deserialized UI property default value does not match.", "TestDynamicUiPropertyDeserialization750", property.getDefaultValue());
+    }
+    
+    public static void serialize(final String filename, final Serializable serializable){
+        try (FileOutputStream file = new FileOutputStream (filename); 
+             ObjectOutputStream out = new ObjectOutputStream (file)) {      
+            out.writeObject(serializable);       
+        } catch (IOException e) {
+            log.error(e);
+            fail("Could not serialize and store DynamicUiProperty: " + e.getMessage());
+        } 
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static DynamicUiProperty<String> deserialize(final String filename) {
+        final URL url = DynamicUiPropertyTest.class.getResource(filename);
+        assertNotNull("Found serialized DynamicUiProperty path must not be null.", url);
 
+        DynamicUiProperty<String> property = null;
+        try (FileInputStream fis = new FileInputStream (url.getFile()); 
+             ObjectInputStream in = new ObjectInputStream(fis)) {                                  
+            property = (DynamicUiProperty<String>) in.readObject();  
+        } 
+        catch (IOException e) {
+            log.error(e);
+            fail("DynamicUiProperty serialized object file not found: " + e.getMessage());
+        } 
+        catch (ClassNotFoundException e) {
+            log.error(e);
+            fail("DynamicUiProperty serialized object class not found: " + e.getMessage());    
+        }
+        return property;
+    }
+    
+//    public static void main(String[] args) {      
+//        DynamicUiProperty<String> property = new DynamicUiProperty<>(String.class, "myName", "TestDynamicUiPropertyDeserialization750");
+//        property.setValidator(StringValidator.base64Instance(1, 64));
+//        serialize("<changePath>/SerializedDynamicUiProperty750.dat", property);
+//        property = deserialize("<changePath>/SerializedDynamicUiProperty750.dat");
+//    }
+    
 }
