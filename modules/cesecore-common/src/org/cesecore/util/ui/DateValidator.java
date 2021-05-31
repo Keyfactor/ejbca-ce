@@ -33,6 +33,8 @@ public class DateValidator implements DynamicUiPropertyValidator<String> {
     
     private static final String VALIDATOR_TYPE = "dateValidator";
     
+    private String name;
+    
     @Override
     public void validate(String value) throws PropertyValidationException {
         if (!StringUtils.isEmpty(value)) {
@@ -60,8 +62,13 @@ public class DateValidator implements DynamicUiPropertyValidator<String> {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public void setName(String name) {
-        // Not implemented.
+        this.name = name;
     }
 
 }
