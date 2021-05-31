@@ -2345,7 +2345,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
                 if (ids != null && !ids.isEmpty()) {
                     eabIdAutoCompleteSelectItems.add(new SelectItem("..."));
-                    ids.stream().filter(e -> e.toLowerCase().startsWith(value.toLowerCase())).limit(32).forEach(v -> eabIdAutoCompleteSelectItems.add(new SelectItem(v)));
+                    ids.stream().filter(e -> e.toLowerCase().startsWith(value.toLowerCase())).sorted()
+                            .limit(32).forEach(v -> eabIdAutoCompleteSelectItems.add(new SelectItem(v)));
                 }
                 if (log.isTraceEnabled()) {
                     String namespaces = String.join(",", eabNamespaces);
