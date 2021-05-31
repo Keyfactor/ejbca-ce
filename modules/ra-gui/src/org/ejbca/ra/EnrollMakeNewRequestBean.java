@@ -869,7 +869,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private ExtendedInformation getProcessedExtendedInformation() {
         final ExtendedInformation extendedInformation = new ExtendedInformation();
         final Properties properties = new Properties();
-
+        
+        extendedInformation.setMaxLoginAttempts(getEndEntityProfile().getMaxFailedLogins());
+        extendedInformation.setRemainingLoginAttempts(getEndEntityProfile().getMaxFailedLogins());
+        
         if (getUserDefinedValidityIfSpecified() != null) {
             extendedInformation.setCertificateEndTime(getUserDefinedValidityIfSpecified());
         }
