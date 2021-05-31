@@ -37,7 +37,16 @@ public interface DynamicUiPropertyValidator<T extends Serializable> extends Seri
     String getValidatorType();
     
     /**
+     * Gets the name of the property used as i18n key in the validator.
+     * While rendering the i18n key is replaced by its label, if existent. 
+     * 
+     * @return the name.
+     */
+    String getName();
+    
+    /**
      * Sets the name of the property used as i18n key in the validator.
+     * While rendering the i18n key is replaced by its label, if existent.
      * 
      * @param name the name.
      */
