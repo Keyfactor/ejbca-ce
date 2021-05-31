@@ -48,6 +48,11 @@ public class PositiveIntegerValidator implements DynamicUiPropertyValidator<Inte
     }
 
     @Override
+    public String getName() {
+        return null;
+    }
+    
+    @Override
     public void setName(String name) {
         // Not implemented.
     }
