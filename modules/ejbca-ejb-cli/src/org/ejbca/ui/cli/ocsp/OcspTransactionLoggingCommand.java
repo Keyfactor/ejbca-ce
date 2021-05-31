@@ -60,7 +60,7 @@ public class OcspTransactionLoggingCommand extends EjbcaCliUserCommandBase {
                 MandatoryMode.OPTIONAL,
                 StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT,
-                "Specify how time should be logged using an RFC 3339-compliant date string, e.g. \"yyyy-MM-dd HH:mm:ss.SSSZ\"."));
+                "Specify how time should be logged using an RFC 3339 compliant date string, e.g. \"yyyy-MM-dd HH:mm:ss.SSSZ\"."));
         registerParameter(new Parameter(PRINT_KEY,
                 "Print",
                 MandatoryMode.OPTIONAL,
