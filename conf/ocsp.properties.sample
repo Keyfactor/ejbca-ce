@@ -214,7 +214,10 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.rekeying.trigging.hosts=
 
 #------------------- OCSP Logging settings -------------
-# Set to true if you want transactions to be aborted when logging fails.
+# By enabling configuration of OCSP Audit and Transaction logging it is possible to get detailed logging of every request and response.
+# See the documentation how to enable this feature.
+#
+# As an additional, rare, setting it is possible to configure the system to aborted transactions when logging fails, for example if the disk is full.
 # This option needs other configuration changes as well, see  "Safer Log4j Logging" in the documentation for more information.
 # Default: false
 #ocsp.log-safer = true
