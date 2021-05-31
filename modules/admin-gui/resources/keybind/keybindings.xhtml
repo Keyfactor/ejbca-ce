@@ -303,8 +303,8 @@
 								  rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
 				</h:panelGroup>
 
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT}"/>
-				<h:panelGroup>
+				<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT}" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled or internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
+				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled or internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
 					<h:inputText value="#{internalKeyBindingMBean.ocspLoggingDateFormat}"
 								 disabled="#{not internalKeyBindingMBean.inEditMode}" size="80" />
 					<br/>
