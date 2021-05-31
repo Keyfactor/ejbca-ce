@@ -14,7 +14,9 @@ package org.cesecore.certificates.ocsp.logging;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
+
+import java.text.SimpleDateFormat;
 
 /**
  * OCSP transaction logger.
@@ -81,9 +83,10 @@ public class TransactionLogger extends PatternLogger {
     /** The HTTP X-Forwarded-For header value. */
     public static final String FORWARDED_FOR = "FORWARDED_FOR";
 
-    public TransactionLogger(Integer logId, String sessionId, String clientIp) {
-        super(OcspConfiguration.getTransactionLog(), TransactionLogger.class, OcspConfiguration.getTransactionLogPattern(),
-                OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
+    public TransactionLogger(Integer logId, String sessionId, String clientIp, GlobalOcspConfiguration ocspConfiguration) {
+        super(ocspConfiguration.getIsOcspTransactionLoggingEnabled(), TransactionLogger.class, ocspConfiguration.getOcspTransactionLogPattern(),
+                ocspConfiguration.getOcspTransactionLogValues(), ocspConfiguration.getOcspLoggingDateFormat(),
+                new SimpleDateFormat(ocspConfiguration.getOcspLoggingDateFormat()).getTimeZone().toString());
         paramPut(PatternLogger.LOG_ID, logId);
         paramPut(PatternLogger.SESSION_ID, sessionId);
         paramPut(PatternLogger.CLIENT_IP, clientIp);
