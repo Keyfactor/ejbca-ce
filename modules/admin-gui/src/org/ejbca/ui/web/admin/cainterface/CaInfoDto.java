@@ -333,6 +333,11 @@ public class CaInfoDto {
 
     public void setMsCaCompatible(boolean msCaCompatible) {
         this.msCaCompatible = msCaCompatible;
+
+        if (msCaCompatible) {
+            // CRL Partitions for MS Compatible CA's are handled differently.
+            resetUseCrlPartitionsSettings();
+        }
     }
 
     public boolean isAuthorityKeyIdentifierCritical() {
@@ -637,6 +642,12 @@ public class CaInfoDto {
 
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
+    }
+
+    private void resetUseCrlPartitionsSettings() {
+        this.usePartitionedCrl = false;
+        this.crlPartitions = 0;
+        this.suspendedCrlPartitions = 0;
     }
 }
 
