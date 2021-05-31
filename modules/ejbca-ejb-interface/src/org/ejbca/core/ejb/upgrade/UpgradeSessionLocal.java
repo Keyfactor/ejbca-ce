@@ -71,7 +71,7 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     /** For internal user from UpgradeSessionBean only */
     void migrateDatabase730();
     /** For internal user from UpgradeSessionBean only */
-    void migrateDatabase740() throws UpgradeFailedException;
+    void fixPartitionedCrls() throws UpgradeFailedException;
     
     /** Persist the time when the post-upgrade starts or 0L when it is no longer running. */
     boolean setPostUpgradeStarted(long startTimeMs);
