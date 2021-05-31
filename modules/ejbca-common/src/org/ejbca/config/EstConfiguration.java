@@ -342,7 +342,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
      */
     public String getPassword(String alias) {
         String key = alias + "." + CONFIG_REQPASSWORD;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
 
     /** Username required for RA password authentication
@@ -351,7 +351,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
      */
     public void setPassword(String alias, String password) {
         String key = alias + "." + CONFIG_REQPASSWORD;
-        setValue(key, password, alias);
+        setValue(key, getEncryptedValue(password), alias);
     }
 
     /**

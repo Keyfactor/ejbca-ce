@@ -535,6 +535,9 @@ public class CertificateView implements Serializable {
     }
     
     public String getAccountBindingId() {
+        if (certificateData == null) {
+            return "";
+        }
         return certificateData.getAccountBindingId();
     }
 }
