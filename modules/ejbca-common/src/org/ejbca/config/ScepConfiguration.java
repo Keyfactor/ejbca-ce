@@ -327,11 +327,11 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     public String getRAAuthPassword(String alias) {
         String key = alias + "." + SCEP_RA_AUTHPWD;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
     public void setRAAuthpassword(String alias, String pwd) {
         String key = alias + "." + SCEP_RA_AUTHPWD;
-        setValue(key, pwd, alias);
+        setValue(key, getEncryptedValue(pwd), alias);
     }
 
     public String getRANameGenerationScheme(String alias) {
@@ -413,12 +413,12 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     public void setIntuneAadAppKey(final String alias, final String value) {
         String key = alias + "." + AAD_APP_KEY;
-        setValue(key, value, alias);
+        setValue(key, getEncryptedValue(value), alias);
     }
     
     public String getIntuneAadAppKey(final String alias) {
         String key = alias + "." + AAD_APP_KEY;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
 
     public String getIntuneAadAppKeyBinding(final String alias) {
@@ -503,12 +503,12 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     public void setIntuneProxyPass(final String alias, final String value) {
         String key = alias + "." + PROXY_PASS;
-        setValue(key, value, alias);
+        setValue(key, getEncryptedValue(value), alias);
     }
     
     public String getIntuneProxyPass(final String alias) {
         String key = alias + "." + PROXY_PASS;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
 
     public Properties getIntuneProperties(final String alias) {
