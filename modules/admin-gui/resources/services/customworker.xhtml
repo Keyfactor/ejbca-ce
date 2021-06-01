@@ -114,6 +114,9 @@
 				<h:inputText rendered="#{customUiProperty.typeText}"
 					value="#{customUiProperty.value}" style="min-width: 240px;"
 					disabled="#{not editService.hasEditRights}" />
+				<h:inputSecret rendered="#{customUiProperty.typeSecret}"
+					value="#{customUiProperty.value}" style="min-width: 240px;"
+					disabled="#{not editService.hasEditRights}" />
 				<h:selectBooleanCheckbox rendered="#{customUiProperty.typeBoolean}"
 					value="#{customUiProperty.booleanValue}"
 					disabled="#{not editService.hasEditRights}" />
