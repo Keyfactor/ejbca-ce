@@ -26,7 +26,7 @@ import javax.faces.convert.FacesConverter;
  *
  */
 @FacesConverter("radioButtonConverter")
-public class RadioButtonConverter implements Converter{
+public class RadioButtonConverter implements Converter<Object>{
     
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

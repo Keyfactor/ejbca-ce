@@ -34,6 +34,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     private static final   String DEFAULT_OAUTH_KEY   = "defaultoauthkey";
 
     public Map<String,OAuthKeyInfo> getOauthKeys() {
+        @SuppressWarnings("unchecked")
         final Map<String,OAuthKeyInfo> ret = (Map<String,OAuthKeyInfo>)data.get(OAUTH_KEYS);
         return (ret == null ? new LinkedHashMap<>() : new LinkedHashMap<>(ret));
     }
