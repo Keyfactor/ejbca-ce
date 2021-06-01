@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -22,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +41,9 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * <p>Run these tests with:
