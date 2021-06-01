@@ -342,10 +342,10 @@ public class BasicCertificateExtensionTest {
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
 		DLSequence seq = (DLSequence)value;
 		assertEquals(3, seq.size());
-        Enumeration<ASN1Encodable> e = seq.getObjects();
+        Enumeration<?> e = seq.getObjects();
 		int i = 1;
 		while(e.hasMoreElements()) {
-			ASN1Encodable v = e.nextElement();
+			ASN1Encodable v = (ASN1Encodable) e.nextElement();
 			assertTrue(v.getClass().toString(),v instanceof DERUTF8String);
 			String str = ((DERUTF8String)v).getString();
 			log.info(str);
@@ -536,10 +536,10 @@ public class BasicCertificateExtensionTest {
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
 		DLSequence seq = (DLSequence)value;
 		assertEquals(3, seq.size());
-        Enumeration<ASN1Encodable> e = seq.getObjects();
+        Enumeration<?> e = seq.getObjects();
 		int i = 1;
 		while (e.hasMoreElements()) {
-		    ASN1Encodable v = e.nextElement();
+		    ASN1Encodable v = (ASN1Encodable) e.nextElement();
 			assertTrue(v.getClass().toString(), v instanceof DERPrintableString);
 			String str = ((DERPrintableString) v).getString();
 			assertEquals(str, "The static value " + i++);        
@@ -557,7 +557,7 @@ public class BasicCertificateExtensionTest {
 		e = seq.getObjects();
 		i = 1;
 		while (e.hasMoreElements()) {
-			ASN1Encodable v = e.nextElement();
+			ASN1Encodable v = (ASN1Encodable) e.nextElement();
 			assertTrue(v.getClass().toString(), v instanceof DERPrintableString);
 			String str = ((DERPrintableString) v).getString();
 			assertEquals(str, "A dynamic value " + i++);        

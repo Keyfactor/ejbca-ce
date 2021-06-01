@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -146,10 +147,10 @@ public class VaPeerStatusServlet extends HttpServlet {
     }
 
     private String errorResponseFrom(final String errorMessage) {
-        final JSONObject errorResponse = new JSONObject();
+        final HashMap<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("error", true);
         errorResponse.put("message", errorMessage);
-        return errorResponse.toJSONString();
+        return new JSONObject(errorResponse).toJSONString();
     }
     
     private boolean isAuthorized(final HttpServletRequest request) {
@@ -187,9 +188,9 @@ public class VaPeerStatusServlet extends HttpServlet {
                 continue;
             }
             if (publisherName == null || StringUtils.equals(publisherName, publisher.getName())) {
-                final JSONObject vaOutOfSync = new JSONObject();
+                HashMap<String, String> vaOutOfSync = new HashMap<>();
                 vaOutOfSync.put("name", publisher.getName());
-                outOfSync.add(vaOutOfSync);
+                new JSONObject(vaOutOfSync);
             }
         }
         // Sanity check, produce a log message on error level if the monitoring
@@ -200,9 +201,9 @@ public class VaPeerStatusServlet extends HttpServlet {
                     "code 200 for this request, but this may not be accurate. Please update the configuration for " +
                     "your monitoring system.");
         }
-        final JSONObject jsonResponse = new JSONObject();
-        jsonResponse.put("error", false);
-        jsonResponse.put("outOfSync", outOfSync);
+        final HashMap<String, Object> jsonResponseMap = new HashMap<>();
+        jsonResponseMap.put("error", false);
+        jsonResponseMap.put("outOfSync", outOfSync);
         // Send the response back together with a status code.
         //     503 = Take VA(s) out of operation
         //     200 = Do nothing
@@ -210,9 +211,9 @@ public class VaPeerStatusServlet extends HttpServlet {
         // to avoid a load balancer from taking all OCSP responders out of operation at the same
         // time.
         if (!outOfSync.isEmpty() && atLeastOneVaInSync) {
-            return new AbstractMap.SimpleEntry<>(jsonResponse, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            return new AbstractMap.SimpleEntry<>(new JSONObject(jsonResponseMap), HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         } else {
-            return new AbstractMap.SimpleEntry<>(jsonResponse, HttpServletResponse.SC_OK);
+            return new AbstractMap.SimpleEntry<>(new JSONObject(jsonResponseMap), HttpServletResponse.SC_OK);
         }
     }
 

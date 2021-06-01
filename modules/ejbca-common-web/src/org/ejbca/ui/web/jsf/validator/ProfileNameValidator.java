@@ -44,7 +44,7 @@ import javax.faces.validator.ValidatorException;
  * @version $Id$
  */
 @FacesValidator("profileNameValidator")
-public class ProfileNameValidator implements Validator {
+public class ProfileNameValidator implements Validator<Object> {
 
     @Override
     public void validate(final FacesContext facesContext, final UIComponent uiComponent, final Object o) throws ValidatorException {

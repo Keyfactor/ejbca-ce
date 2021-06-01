@@ -29,7 +29,7 @@ import org.cesecore.util.SimpleTime;
  *
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator")
-public class CRLFieldValidator implements Validator {
+public class CRLFieldValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
