@@ -262,55 +262,39 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected void engineUpdate(byte[] bytes, int offset, int length) throws SignatureException {
-            try {
-                switch (type) {
-                case T_UPDATE:
-                    if (offset != 0 || length != bytes.length) {
-                        byte[] newArray = Arrays.copyOfRange(bytes, offset, (offset + length));
-                        myKey.getSlot().getCryptoki().SignUpdate(session, newArray);
-                    } else {
-                        myKey.getSlot().getCryptoki().SignUpdate(session, bytes);
-                    }
-                    break;
-                case T_RAW: // No need to call SignUpdate as hash is supplied already
-                    buffer = new ByteArrayOutputStream();
-                    buffer.write(bytes, offset, length);
-                    break;
-                case T_DIGEST:
-                    if (offset != 0 || length != bytes.length) {
-                        final byte[] digest = AlgorithmTools.getDigestFromAlgoName(this.algorithm)
-                                .digest(Arrays.copyOfRange(bytes, offset, (offset + length)));
-                        buffer = new ByteArrayOutputStream();
-                        buffer.write(digest);
-                    } else {
-                        final byte[] digest = AlgorithmTools.getDigestFromAlgoName(this.algorithm).digest(bytes);
-                        buffer = new ByteArrayOutputStream();
-                        buffer.write(digest);
-                    }
-                    break;
-                default:
-                    throw new ProviderException("Internal error");
+            switch (type) {
+            case T_UPDATE:
+                if (offset != 0 || length != bytes.length) {
+                    byte[] newArray = Arrays.copyOfRange(bytes, offset, (offset + length));
+                    myKey.getSlot().getCryptoki().SignUpdate(session, newArray);
+                } else {
+                    myKey.getSlot().getCryptoki().SignUpdate(session, bytes);
                 }
-            } catch (NoSuchAlgorithmException e) {
-                log.warn("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.", e);
-                throw new SignatureException(e);
-            } catch (IOException e) {
-                log.warn("I/O exception occurred when writing byte array to output stream (offset = " + offset + "), length = (" + length + ").");
-                throw new SignatureException(e);
-            } catch (NoSuchProviderException e) {
-                log.error("The Bouncy Castle provider has not been installed.");
-                throw new SignatureException(e);
+                break;
+            case T_RAW: // No need to call SignUpdate as hash is supplied already
+            case T_DIGEST: // Will hash the buffer in engineSign
+                if (buffer == null) {
+                    buffer = new ByteArrayOutputStream();
+                }
+                buffer.write(bytes, offset, length);
+                break;
+            default:
+                throw new ProviderException("Internal error, type not recognized: " + type);
             }
         }
 
         @Override
         protected byte[] engineSign() throws SignatureException {
-            log.debug("engineSign with " + type);
+            if (log.isDebugEnabled()) {
+                log.debug("engineSign with " + type);
+            }
             try {
                 if (type == T_UPDATE) {
                     return myKey.getSlot().getCryptoki().SignFinal(session);
                 } else if (type == T_DIGEST) {
-                    final byte[] rawSig = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                    // Since it's T_DIGEST, hash the buffer before signing it
+                    final byte[] digest = AlgorithmTools.getDigestFromAlgoName(this.algorithm).digest(buffer.toByteArray());
+                    final byte[] rawSig = myKey.getSlot().getCryptoki().Sign(session, digest);
 
                     final BigInteger[] sig = new BigInteger[2];
                     final byte[] first = new byte[rawSig.length / 2];
@@ -334,10 +318,16 @@ public class JackNJI11Provider extends Provider {
                     seq.addObject(new ASN1Integer(sig[1]));
                     seq.close();
                     return baos.toByteArray();
-                } else {
+                } else { // T_RAW
                     return myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
                 }
             } catch (IOException e) {
+                throw new SignatureException(e);
+            } catch (NoSuchAlgorithmException e) {
+                log.warn("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.", e);
+                throw new SignatureException(e);
+            } catch (NoSuchProviderException e) {
+                log.error("The Bouncy Castle provider has not been installed.");
                 throw new SignatureException(e);
             } finally {
                 // Signing is done, either successful or failed
@@ -370,6 +360,7 @@ public class JackNJI11Provider extends Provider {
         
         @Override
         protected void finalize() throws Throwable {
+            // TODO: finalize is deprecated and should not be used, should find another way to release session
             try {
                 if (hasActiveSession) {
                     log.warn("Signature object was not de-initialized. Enable debug logging to see init stack trace", debugStacktrace);
