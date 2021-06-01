@@ -18,14 +18,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 
 /**
  * Extracts password from the request DN of a CMRF request message
- *
- * @version $Id$
  *
  */
 public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
@@ -92,6 +91,11 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
     @Override
     public String getName() {
         return CmpConfiguration.AUTHMODULE_DN_PART_PWD;
+    }
+
+    @Override
+    public AuthenticationToken getAuthenticationToken() {
+        return null;
     }
 
 }
