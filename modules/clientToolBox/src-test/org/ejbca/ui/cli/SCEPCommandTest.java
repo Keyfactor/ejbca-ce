@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import java.util.Collections;
+
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,9 +42,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.runners.MethodSorters;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Run stress tests with ClientToolBax command SCEPTest

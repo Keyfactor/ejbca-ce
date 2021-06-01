@@ -33,7 +33,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.legacy.Eca7277CertificateProfileData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
