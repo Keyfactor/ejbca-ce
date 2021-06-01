@@ -300,15 +300,16 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setAuthenticationParameters(alias, authparams);
     }
     
-    
     public String getAuthenticationParameters(String alias) {
         String key = alias + "." + CONFIG_AUTHENTICATIONPARAMETERS;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
+    
     public void setAuthenticationParameters(String alias, String authParams) {
         String key = alias + "." + CONFIG_AUTHENTICATIONPARAMETERS;
-        setValue(key, authParams, alias);
+        setValue(key, getEncryptedValue(authParams), alias);
     }
+    
     public void setAuthenticationParameters(String alias, ArrayList<String> authparameters) {
         String authparam = "";
         for (String p : authparameters) {
