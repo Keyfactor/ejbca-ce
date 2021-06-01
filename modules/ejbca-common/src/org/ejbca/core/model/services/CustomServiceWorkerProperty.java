@@ -25,6 +25,7 @@ public class CustomServiceWorkerProperty {
     public static final int UI_SELECTONE  = 1;
     public static final int UI_BOOLEAN    = 2;
     public static final int UI_SELECTMANY = 3;
+    public static final int UI_SECRETINPUT = 4;
 
     private final String name;
     private final int type;
@@ -111,6 +112,8 @@ public class CustomServiceWorkerProperty {
     public boolean isTypeSelectOne() { return type == UI_SELECTONE; }
     /** @return true if this is a "select many" input field. */
     public boolean isTypeSelectMany() { return type == UI_SELECTMANY; }
+    /** @return true if this is a free text input field. */
+    public boolean isTypeSecret() { return type == UI_SECRETINPUT; }
     /** @return a List of values this property can have or null if this does not apply to the type */
     public List<String> getOptions() { return options; }
     /** @return a List of user-friendly texts corresponding to the values this property can have or null if this does not apply to the type */
