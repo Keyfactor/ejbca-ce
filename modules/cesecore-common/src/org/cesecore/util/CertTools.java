@@ -4730,7 +4730,6 @@ public abstract class CertTools {
 
         final ContentInfo info = (ContentInfo) parser.readObject();
         final CMSSignedData csd = new CMSSignedData(info);
-        @SuppressWarnings("unchecked")
         final Store<X509CertificateHolder> certstore = csd.getCertificates();
         final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
 
@@ -4779,7 +4778,6 @@ public abstract class CertTools {
         byte[] firstCertificate = null;
 
         final CMSSignedData csd = new CMSSignedData(pkcs7);
-        @SuppressWarnings("unchecked")
         final Store<X509CertificateHolder> certstore = csd.getCertificates();
         final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
 

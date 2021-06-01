@@ -15,8 +15,6 @@ package org.cesecore.configuration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
-import java.util.Properties;
-
 /** 
  * Session bean to handle global configuration and such.
  */

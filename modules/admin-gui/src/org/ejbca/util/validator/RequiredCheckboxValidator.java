@@ -25,7 +25,7 @@ import javax.faces.validator.ValidatorException;
  * @version $Id$
  */
 @FacesValidator("org.ejbca.util.validator.RequiredCheckboxValidator")
-public class RequiredCheckboxValidator implements Validator {
+public class RequiredCheckboxValidator implements Validator<Object> {
 
     @Override
     public void validate(final FacesContext facesContext, final UIComponent uiComponent, final Object o) throws ValidatorException {
