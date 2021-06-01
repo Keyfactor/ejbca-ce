@@ -746,6 +746,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
             ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
             ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
+            ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
             ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
             ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
             ServiceExecutionResult result = worker.work(ejbs);
