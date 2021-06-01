@@ -42,6 +42,10 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.ocsp.logging.AuditLogger;
+import org.cesecore.certificates.ocsp.logging.GuidHolder;
+import org.cesecore.certificates.ocsp.logging.PatternLogger;
+import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
@@ -126,6 +130,7 @@ import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -576,6 +581,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("7.4.0");
+        }
+        if (isLesserThan(oldVersion, "7.6.0")) {
+            try {
+                upgradeSession.migrateOcspLogging760();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("7.6.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1879,6 +1892,104 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 "    DELETE t1 FROM CRLData t1, CRLData t2 WHERE t1.fingerprint > t2.fingerprint AND t1.issuerDN = t2.issuerDN " + System.lineSeparator() +
                     "AND t1.deltaCRLIndicator = t2.deltaCRLIndicator AND t1.cRLNumber = t2.cRLNumber AND t1.crlPartitionIndex = t2.crlPartitionIndex;");
             // Consider the post-upgrade to be complete, even if this fails. The user can manually add indexes later.
+        }
+    }
+
+    /**
+     * Migrate the OCSP logging configuration in ocsp.properties to {@link GlobalOcspConfiguration}.
+     * @throws UpgradeFailedException if the configuration could not be migrated
+     */
+    @Override
+    public void migrateOcspLogging760() throws UpgradeFailedException {
+        try {
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            String value = ConfigurationHolder.getString("ocsp.audit-log");
+            final boolean isOcspAuditLoggingEnabled = "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
+            globalOcspConfiguration.setIsOcspAuditLoggingEnabled(isOcspAuditLoggingEnabled);
+            log.info("Migrated ocsp.audit-log => " + isOcspAuditLoggingEnabled);
+
+            value = ConfigurationHolder.getString("ocsp.log-date");
+            globalOcspConfiguration.setOcspLoggingDateFormat(value);
+            log.info("Migrated ocsp.log-date => " + value);
+
+            // value = ConfigurationHolder.getString("ocsp.log-timezone")
+            log.info("Ignoring ocsp.log-timezone, using the timezone in blah instead. This behaviour is not configurable.");
+
+            value = ConfigurationHolder.getString("ocsp.audit-log-pattern");
+            globalOcspConfiguration.setOcspAuditLogPattern(value);
+            log.info("Migrated ocsp.log-date => " + value);
+
+            value = ConfigurationHolder.getString("ocsp.audit-log-order");
+            value = value.replace("\\\"", "\"");
+            globalOcspConfiguration.setOcspAuditLogValues(value);
+            log.info("Migrated ocsp.audit-log-order => " + value);
+
+            value = ConfigurationHolder.getString("ocsp.trx-log");
+            final boolean isOcspTransactionLoggingEnabled = "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
+            globalOcspConfiguration.setIsOcspTransactionLoggingEnabled(isOcspTransactionLoggingEnabled);
+            log.info("Migrated ocsp.trx-log => " + value);
+
+            value = ConfigurationHolder.getString("ocsp.trx-log-pattern");
+            globalOcspConfiguration.setOcspTransactionLogPattern(value);
+            log.info("Migrated ocsp.trx-log-pattern => " + value);
+
+            value = ConfigurationHolder.getString("ocsp.trx-log-order");
+            value = value.replace("\\\"", "\"");
+            globalOcspConfiguration.setOcspTransactionLogValues(value);
+            log.info("Migrated ocsp.trx-log-order => " + value);
+
+            // Avoid inserting faulty values into the database, as this will prevent EJBCA from starting.
+            try {
+                final TransactionLogger transactionLogger = new TransactionLogger(
+                        1,
+                        GuidHolder.INSTANCE.getGlobalUid(),
+                        "127.0.0.1",
+                        globalOcspConfiguration);
+                transactionLogger.paramPut(PatternLogger.STATUS, "(Ocsp-Request-Status -> Int)");
+                transactionLogger.paramPut(TransactionLogger.REQ_NAME, "(Requestor-Name -> String)");
+                transactionLogger.paramPut(TransactionLogger.REQ_NAME_RAW, "(Requestor-Name-Raw -> String)");
+                transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, "(Ocsp-Signer-Issuer-Dn -> String)");
+                transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, "(Ocsp-Signer-Subject-Name -> String)");
+                transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, "(Ocsp-Signer-Serial-No -> Int)");
+                transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, "(Cert-ID -> Int");
+                transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, "(Issuer-Name-Dn -> String");
+                transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, "(Issuer-Name-Dn-Raw) -> String");
+                transactionLogger.paramPut(PatternLogger.ISSUER_NAME_HASH, "(Issuer-Name-Hash -> String)");
+                transactionLogger.paramPut(PatternLogger.ISSUER_KEY, "(Issuer-Key -> String)");
+                transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, "(Digest-Algorithm -> String)");
+                transactionLogger.paramPut(PatternLogger.SERIAL_NOHEX, "(Certificate-Serial-No -> String)");
+                transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "(Cert-Status -> Int)");
+                transactionLogger.paramPut(PatternLogger.PROCESS_TIME, "(Process-Time -> Int)");
+                transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, "(Cert-Profile-Id -> Int)");
+                transactionLogger.paramPut(TransactionLogger.FORWARDED_FOR, "(X-Forwarded-For -> String)");
+                transactionLogger.paramPut(TransactionLogger.REV_REASON, "(Revocation-Reason -> String)");
+                transactionLogger.interpolate();
+
+                final AuditLogger auditLogger = new AuditLogger(
+                        "(Ocsp-Request -> Bytes)",
+                        2,
+                        GuidHolder.INSTANCE.getGlobalUid(),
+                        "127.0.0.1",
+                        globalOcspConfiguration);
+                auditLogger.paramPut(AuditLogger.OCSPRESPONSE, "(OCSP-Response -> Bytes)");
+                auditLogger.paramPut(PatternLogger.STATUS, "(Ocsp-Request-Status -> Int)");
+                auditLogger.paramPut(PatternLogger.PROCESS_TIME, "(Process-Time -> Int)");
+                auditLogger.interpolate();
+
+                new SimpleDateFormat(globalOcspConfiguration.getOcspLoggingDateFormat()).toString();
+            } catch (Exception e) {
+                log.error("Failed to validate the current OCSP logging configuration. The error is: " + e.getMessage()
+                        + ". Adjust the configuration in ocsp.properties and redeploy the application. If you don't " +
+                        "know what to do, simply delete ocsp.properties to deploy the application with the default values.");
+                throw new UpgradeFailedException(e);
+            }
+
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
+            log.info("Migration of the OCSp audit log and OCSP transaction log settings from ocsp.properties completed!");
+        } catch (AuthorizationDeniedException e) {
+            log.error(e.getMessage());
+            throw new UpgradeFailedException(e);
         }
     }
 

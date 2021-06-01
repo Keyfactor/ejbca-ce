@@ -763,9 +763,12 @@ public final class StringTools {
      *
      * @param in clear text string to encrypt
      * @param p encryption passphrase
-     * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files)
+     * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files), or null if null is input
      */
     public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) {
+        if (in == null) {
+            return in;
+        }
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Encryption not possible due to weak crypto policy.");
