@@ -40,7 +40,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
  * @version $Id$
  */
 @FacesConverter(value="org.ejbca.OIDStringLinkedHashSetConverter")
-public class OIDStringLinkedHashSetConverter implements Converter {
+public class OIDStringLinkedHashSetConverter implements Converter<Object> {
     
     private static final Logger log = Logger.getLogger(OIDStringLinkedHashSetConverter.class);
 

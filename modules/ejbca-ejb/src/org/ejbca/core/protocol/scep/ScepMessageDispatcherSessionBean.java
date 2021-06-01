@@ -14,9 +14,7 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;

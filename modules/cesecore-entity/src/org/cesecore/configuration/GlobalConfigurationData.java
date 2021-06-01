@@ -91,7 +91,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             if (!StringUtils.isEmpty(StringTools.stripWhitespace(customClassName))) {
                 Class<? extends Serializable> customClass;
                 try {
-                    customClass = (Class<? extends Serializable>) Class.forName(customClassName);
+                    customClass = Class.forName(customClassName).asSubclass(Serializable.class);
                     ACCEPTED_SERIALIZATION_CLASSES_SET.add(customClass);
                 } catch (ClassNotFoundException e) {
                     log.info("Class '" + customClassName + "' was not found on classpath.");

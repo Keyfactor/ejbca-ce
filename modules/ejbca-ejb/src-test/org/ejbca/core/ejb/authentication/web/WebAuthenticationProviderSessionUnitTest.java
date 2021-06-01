@@ -12,18 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.isNull;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.same;
-import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -36,6 +24,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.nimbusds.jose.util.Base64URL;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
@@ -63,7 +53,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.nimbusds.jose.util.Base64URL;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isNull;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.same;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test of {@link WebAuthenticationProviderSessionBean}. See also WebAuthenticationProviderSessionBeanTest

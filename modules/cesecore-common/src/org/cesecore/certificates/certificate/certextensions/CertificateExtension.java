@@ -220,6 +220,6 @@ public abstract class CertificateExtension implements Named, Serializable {
 	 * instead of mechanism to ignore list of getters in case of import.
 	 * @param o
 	 */
-	public void setClass(Class o) {	}
+	public void setClass(Class<?> o) {	}
 	
 }

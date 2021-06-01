@@ -34,7 +34,7 @@ import org.cesecore.certificates.util.DnComponents;
  * @version $Id$
  */
 @FacesConverter(value="org.ejbca.DnObjectArrayListConverter")
-public class DnObjectArrayListConverter implements Converter {
+public class DnObjectArrayListConverter implements Converter<Object> {
     @Override
     public Object getAsObject(final FacesContext context, final UIComponent component, final String values) {
 

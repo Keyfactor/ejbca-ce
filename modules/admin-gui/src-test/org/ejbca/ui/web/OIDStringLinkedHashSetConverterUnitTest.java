@@ -18,7 +18,6 @@ import java.util.LinkedHashSet;
 
 import javax.faces.convert.ConverterException;
 
-import org.ejbca.ui.web.OIDStringLinkedHashSetConverter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
