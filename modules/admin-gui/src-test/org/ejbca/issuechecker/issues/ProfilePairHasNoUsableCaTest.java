@@ -13,8 +13,10 @@
 
 package org.ejbca.issuechecker.issues;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -24,10 +26,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.issuechecker.Ticket;
 import org.junit.Test;
 
-import java.util.*;
-
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.mock;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for {@link ProfilePairHasNoUsableCa}.
