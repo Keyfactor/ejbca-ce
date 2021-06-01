@@ -520,6 +520,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         if (StringUtils.isNotBlank(getIntuneAadAppId(alias))) {
             intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
         }
+        intuneProperties.put("AAD_USE_KEY_BINDING", Boolean.toString(getIntuneAadUseKeyBinding(alias)));
         if (!getIntuneAadUseKeyBinding(alias) && StringUtils.isNotBlank(getIntuneAadAppKey(alias))) {
             intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
         }
@@ -780,6 +781,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 }
                 if (data.get(alias + AAD_APP_KEY) == null) {
                     data.put(alias + AAD_APP_KEY, "");
+                }
+                if (data.get(alias + AAD_USE_KEY_BINDING) == null) {
+                    data.put(alias + AAD_USE_KEY_BINDING, Boolean.FALSE.toString());
                 }
                 if (data.get(alias + AAD_APP_KEY_BINDING) == null) {
                     data.put(alias + AAD_APP_KEY_BINDING, "");
