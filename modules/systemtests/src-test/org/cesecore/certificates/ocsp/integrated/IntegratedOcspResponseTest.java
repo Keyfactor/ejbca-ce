@@ -12,24 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.integrated;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchProviderException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Random;
-
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
@@ -125,6 +107,24 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Properties;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  */
 @RunWith(CryptoTokenTestRunner.class)
@@ -199,8 +199,9 @@ public class IntegratedOcspResponseTest {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             // Prepare OCSP request
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             final OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, UNKNOWN_SERIAL_NUMBER));
             OCSPReq ocspRequest = gen.build();
@@ -233,8 +234,9 @@ public class IntegratedOcspResponseTest {
             
             // Prepare OCSP request
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             final OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
             OCSPReq ocspRequest = gen.build();
@@ -273,8 +275,9 @@ public class IntegratedOcspResponseTest {
             
             // Prepare OCSP request
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             final OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
             OCSPReq ocspRequest = gen.build();
@@ -351,8 +354,9 @@ public class IntegratedOcspResponseTest {
     private CertificateStatus testOcspSignerIssuerRenewalInternal(X509Certificate eeCertificate, X509Certificate caCertificate, int expectedStatus) throws Exception {
         OCSPReq ocspReq = new OCSPReqBuilder().addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, eeCertificate.getSerialNumber())).build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspReq.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         OCSPResp response = new OCSPResp(responseBytes);
@@ -380,9 +384,10 @@ public class IntegratedOcspResponseTest {
 
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -500,10 +505,12 @@ public class IntegratedOcspResponseTest {
         OCSPReq req = gen.build();
 
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+
+            // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         // Create the audit logger for this transaction.
-            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
                     auditLogger, transactionLogger, false, false).getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
@@ -584,10 +591,9 @@ public class IntegratedOcspResponseTest {
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            // Create the transaction logger for this transaction.
-            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            // Create the audit logger for this transaction.
-            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             byte[] responseBytes = ocspResponseGeneratorSession
                     .getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"), auditLogger, transactionLogger, false, false)
                     .getOcspResponse();
@@ -598,7 +604,6 @@ public class IntegratedOcspResponseTest {
         } finally {
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED, originalValue);
         }
-
     }
 
     @Test
@@ -614,10 +619,9 @@ public class IntegratedOcspResponseTest {
 
         OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "",configuration);
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
@@ -667,10 +671,9 @@ public class IntegratedOcspResponseTest {
         // Now revoke the ocspCertificate
         internalCertificateStoreSession.setRevokeStatus(internalAdmin, ocspCertificate, new Date(), expectedRevocationReason);
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                 .getOcspResponse();
         assertRevokedOcspResponse(shouldHaveRevocationReason, expectedRevocationReason, responseBytes);
@@ -727,10 +730,9 @@ public class IntegratedOcspResponseTest {
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
                 auditLogger, transactionLogger, false, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
@@ -800,10 +802,9 @@ public class IntegratedOcspResponseTest {
             byte[] responseBytes;
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            // Create the transaction logger for this transaction.
-            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            // Create the audit logger for this transaction.
-            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                     .getOcspResponse();
             assertNotNull("OCSP responder replied null", responseBytes);
@@ -861,10 +862,9 @@ public class IntegratedOcspResponseTest {
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                 .getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
@@ -901,10 +901,8 @@ public class IntegratedOcspResponseTest {
         OCSPReq req = gen.build();
 
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
         byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                 .getOcspResponse();
         //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
@@ -1035,10 +1033,9 @@ public class IntegratedOcspResponseTest {
                     gen.setRequestExtensions(new Extensions(extensions));
                     OCSPReq ocspRequest = gen.build();
                     final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-                    // Create the transaction logger for this transaction.
-                    TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-                    // Create the audit logger for this transaction.
-                    AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+                    final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                    TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+                    AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
                     byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null, auditLogger,
                             transactionLogger, false, false).getOcspResponse();
                     assertNotNull("OCSP responder replied null", responseBytes);
@@ -1083,10 +1080,9 @@ public class IntegratedOcspResponseTest {
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            // Create the transaction logger for this transaction.
-            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            // Create the audit logger for this transaction.
-            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", configuration);
             // An OCSP request
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
