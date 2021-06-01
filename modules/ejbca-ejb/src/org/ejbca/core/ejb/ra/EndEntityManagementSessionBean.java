@@ -1822,12 +1822,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         String certificateSubjectDN = certificateData.getSubjectDnNeverNull();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certSerNo, issuerDn);
-        int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
+        int endEntityProfileId = certificateData.getEndEntityProfileIdOrZero();
         final EndEntityInformation endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
         if (certReqHistory == null) {
-            if (endEntityInformation!=null) {
+            if (endEntityInformation != null) {
+                // If for some reason the end entity profile ID was not set in the certificate data, try to get it from current userdata
                 // Get the EEP that is currently used as a fallback, if we can find it
-                endEntityProfileId = endEntityInformation.getEndEntityProfileId();
+                if (endEntityProfileId == EndEntityConstants.NO_END_ENTITY_PROFILE) {
+                    endEntityProfileId = endEntityInformation.getEndEntityProfileId();
+                }
                 // Republish with the same user DN that is currently used as a fallback, if we can find it
                 certificateSubjectDN = endEntityInformation.getCertificateDN();
                 // If for some reason the certificate profile ID was not set in the certificate data, try to get it from current userdata
@@ -1836,8 +1839,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
         } else {
+            // If for some reason the end entity profile ID was not set in the certificate data, try to get it from current userdata
             // Get the EEP that was used in the original issuance, if we can find it
-            endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
+            if (endEntityProfileId == EndEntityConstants.NO_END_ENTITY_PROFILE) {
+                endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
+            }
             // Republish with the same user DN that was used in the original publication, if we can find it
             certificateSubjectDN = certReqHistory.getEndEntityInformation().getCertificateDN();
             // If for some reason the certificate profile ID was not set in the certificate data, try to get it from the certreq history
@@ -1845,8 +1851,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 certificateProfileId = certReqHistory.getEndEntityInformation().getCertificateProfileId();
             }
         }
-        if (endEntityProfileId != -1) {
-            // We can only perform this check if we have a trail of what eep was used..
+        if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE) {
+            // We can only perform this check if we have a trail of what eep was used.
             if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.REVOKE_END_ENTITY, caId);
             }
@@ -1869,7 +1875,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw new AlreadyRevokedException(msg);
             }
         }
-        if (endEntityProfileId != -1 && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+        if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             // We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
             CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
