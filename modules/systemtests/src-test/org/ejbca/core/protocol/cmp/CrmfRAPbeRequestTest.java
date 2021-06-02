@@ -540,7 +540,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         assertNotNull(resp);
         assertTrue(resp.length > 0);
         // We expect a FailInfo.BAD_MESSAGE_CHECK
-        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", PKIBody.TYPE_ERROR, reqId, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", PKIBody.TYPE_ERROR, reqId, PKIFailureInfo.badRequest);
         log.trace("<test03CrmfHttpTooManyIterations");
     }
 
@@ -607,8 +607,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), new X500Name(userdata.getDN()), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0,
-                    ResponseStatus.FAILURE.getValue(), PKIFailureInfo.badRequest);
+            checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, PKIFailureInfo.badRequest);
             reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
             // Approve revocation and verify success
@@ -630,8 +629,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), new X500Name(userdata.getDN()), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue(), 
-                                                                    PKIFailureInfo.certRevoked);
+            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, PKIFailureInfo.certRevoked);
         } finally {
             approvalProfileSession.removeApprovalProfile(ADMIN, approvalProfileId);           
             // Delete user
