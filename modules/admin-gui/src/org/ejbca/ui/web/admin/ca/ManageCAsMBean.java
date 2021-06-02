@@ -185,7 +185,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                                         EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                                         caSession.determineCrlPartitionIndex(issuer.get().getCAId(), EJBTools.wrap(certificate)),
                                         null,
-                                        System.currentTimeMillis());
+                                        System.currentTimeMillis(), null);
                                 log.info("Imported certificate for '" + CertTools.getSubjectDN(certificate)
                                         + "' from zip entry " + unpackedFile.getFileName() + ".");
                                 certificatesImported.incrementAndGet();
