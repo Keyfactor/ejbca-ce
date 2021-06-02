@@ -3249,7 +3249,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 certificateDataWrapper = certificateStoreSession.storeCertificate(admin, cert, name, cafp,
                         futureRollover ? CertificateConstants.CERT_ROLLOVERPENDING : CertificateConstants.CERT_ACTIVE, type,
                         CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                        crlPartitionIndex, null, updateTime);
+                        crlPartitionIndex, null, updateTime, null);
                 certificateStoreSession.reloadCaCertificateCache();
             }
             if (usedpublishers != null) {
