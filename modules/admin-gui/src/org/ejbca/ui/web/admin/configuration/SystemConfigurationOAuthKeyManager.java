@@ -51,9 +51,12 @@ import com.nimbusds.jose.jwk.JWKSet;
  * new OAuth Keys.
  */
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
+    private static final Logger log = Logger.getLogger(SystemConfigurationOAuthKeyManager.class);
+
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
     private static final String OAUTH_KEY_SAVED = "saved";
-    private static final Logger log = Logger.getLogger(SystemConfigurationOAuthKeyManager.class);
+    private static final String HIDDEN_PWD = "**********";
+
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final OAuthKeyEditor oauthKeyEditor;
     private AuthenticationToken adminToken;
@@ -284,7 +287,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
             this.realm = oauthKey.getRealm();
-            this.clientSecret = "***";
+            this.clientSecret = SystemConfigurationOAuthKeyManager.HIDDEN_PWD;
             this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -710,7 +713,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 systemConfigurationHelper.saveDefaultOauthKey(defaultKey);
             }
         }
-        if (oauthKeyEditor.getClientSecret().equals("***")) {
+        // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+        if (oauthKeyEditor.getClientSecret().equals(SystemConfigurationOAuthKeyManager.HIDDEN_PWD)) {
             oauthKeyEditor.setClientSecret(oauthKeyToUpdate.getClientSecretAndDecrypt());
         }
         
