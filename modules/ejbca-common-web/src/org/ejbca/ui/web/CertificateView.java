@@ -533,4 +533,11 @@ public class CertificateView implements Serializable {
         CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
         return (ct != null && ct.hasSCTs(certificate));
     }
+    
+    public String getAccountBindingId() {
+        if (certificateData == null) {
+            return "";
+        }
+        return certificateData.getAccountBindingId();
+    }
 }
