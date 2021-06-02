@@ -1042,7 +1042,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis());
+                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
     }
 
     /** Helper method for audit logging changes */

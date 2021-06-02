@@ -111,6 +111,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private boolean qcStatement;
     private boolean certificateTransparencySCTs;
     private boolean isCvc;
+    private String accountBindingId;
     
     private String downloadCertificateLink;
     
@@ -171,6 +172,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().replace("\\,", ",").split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
             subjectDirAttributes = (certificateData.getSubjectDirAttr() == null) ? ejbcaBean.getText("SDA_NONE") : certificateData.getSubjectDirAttr();
             publicKey = composePublicKeyValue();
+            accountBindingId = certificateData.getAccountBindingId();
             
             basicConstraints = certificateData.getBasicConstraints(ejbcaBean.getText("EXT_UNUSED"), 
                     ejbcaBean.getText("EXT_PKIX_BC_CANOLIMIT"), 
@@ -473,6 +475,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     public String getPublicKey() {
         return publicKey;
+    }
+    
+    public String getAccountBindingId() {
+        return accountBindingId;
     }
     
     public String getBasicConstraints() {

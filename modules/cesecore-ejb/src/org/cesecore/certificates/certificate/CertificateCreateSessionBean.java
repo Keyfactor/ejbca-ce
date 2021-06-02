@@ -541,13 +541,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
                 final int crlPartitionIndex = ca.getCAInfo().determineCrlPartitionIndex(cert);
 
+                // Extract the accountBindingId from extendedInformation to be stored in CertificateData
+                String accountBindingId = null;
+                if (endEntityInformation != null && endEntityInformation.getExtendedInformation() != null) {
+                    accountBindingId = endEntityInformation.getExtendedInformation().getAccountBindingId();
+                }
+                
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {
                     // We still need to return a CertificateData object for publishers
                     final CertificateData throwAwayCertData = new CertificateData(cert, cert.getPublicKey(), endEntityInformation.getUsername(), 
                             cafingerprint, null, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
                             endEntityInformation.getEndEntityProfileId(), crlPartitionIndex,
-                            null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
+                            null, updateTime, false, certProfile.getStoreSubjectAlternativeName(), accountBindingId);
                     result = new CertificateDataWrapper(cert, throwAwayCertData, null);
                     // Always Store full certificate for OCSP signing certificates.
                     boolean isOcspSigner = certProfile.getExtendedKeyUsageOids().contains("1.3.6.1.5.5.7.3.9");
@@ -567,13 +573,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     if (ctLogException == null) {
                         result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
-                                crlPartitionIndex, tag, updateTime);
+                                crlPartitionIndex, tag, updateTime, accountBindingId);
                     } else {
                         tag = CertificateConstants.CERT_TAG_PRECERT;
                         // Store pre-certificate using a new transaction. We don't want CertificateData rolled back even though issuance failed.
                         result = certificateStoreSession.storeCertificateNoAuthNewTransaction(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
-                                crlPartitionIndex, tag, updateTime);
+                                crlPartitionIndex, tag, updateTime, accountBindingId);
                     }
                     storeEx = null;
                     break;

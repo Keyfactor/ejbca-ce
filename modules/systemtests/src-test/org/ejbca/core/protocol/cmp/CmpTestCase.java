@@ -799,7 +799,25 @@ public abstract class CmpTestCase extends CaTestCase {
         }
         if (signed) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
-            assertNotNull("Protection algorithm was null when expecting a signed response, this was probably an unprotected error message: "+header.getFreeText(), algId);
+            if (algId == null) {
+                // If we encounter this, try to get the actual error message, that helps debugging a lot
+                final PKIBody pkiBody = respObject.getBody();
+                final int tag = pkiBody.getType();
+                String errorStr = null; 
+                if (tag == PKIBody.TYPE_ERROR) {
+                    ErrorMsgContent errorMsgContent = (ErrorMsgContent) pkiBody.getContent();
+                    if (errorMsgContent != null) {
+                        final PKIStatusInfo pkiStatusInfo = errorMsgContent.getPKIStatusInfo();
+                        if (pkiStatusInfo != null) {
+                            final PKIFreeText pkiFreeText = pkiStatusInfo.getStatusString();
+                            if (pkiFreeText != null) {
+                                errorStr = pkiFreeText.getStringAt(0).getString();
+                            }                        
+                        }
+                    }
+                }
+                assertNotNull("Protection algorithm was null when expecting a signed response, this was probably an unprotected error message: " + tag + ":" + errorStr + ":" + header.getFreeText(), algId);
+            }
             assertEquals(expectedSignAlg, algId.getAlgorithm().getId());
         }
         if (pbe) {
@@ -1169,12 +1187,13 @@ public abstract class CmpTestCase extends CaTestCase {
     /**
      * 
      * @param pkiMessageBytes the encoded response message
-     * @param failMsg expected fail message
-     * @param tag 1 is answer to initialisation resp, 3 certification resp etc, 23 is error
-     * @param err a number from FailInfo
+     * @param failMsg expected fail message, pkiStatusInfo.getStatusString().getStringAt(0).getString()
+     * @param tag 1 is answer to initialization resp, 3 certification resp etc, 23 is error, see PKIBody.TYPE_INIT_REP etc
+     * @param requestId if the error is in response to a initialization- or certificate response (tag is PKIBody.TYPE_INIT_REP or TYPE_CERT_REP) there is a requuestId that should match between the request and response
+     * @param expectedPKIFailInfo expected code from FailInfo, pkiStatusInfo.getFailInfo.intValue()
      * @throws IOException
      */
-    protected static void checkCmpFailMessage(byte[] pkiMessageBytes, String failMsg, int exptag, int requestId, int err, int expectedPKIFailInfo) throws IOException {
+    protected static void checkCmpFailMessage(byte[] pkiMessageBytes, String failMsg, int exptag, int requestId, int expectedPKIFailInfo) throws IOException {
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
         final PKIBody pkiBody = pkiMessage.getBody();
@@ -1188,7 +1207,7 @@ public abstract class CmpTestCase extends CaTestCase {
             assertNotNull(pkiStatusInfo);
             assertEquals(ResponseStatus.FAILURE.getValue(), pkiStatusInfo.getStatus().intValue());
             int i = pkiStatusInfo.getFailInfo().intValue();
-            assertEquals(err, i);
+            assertEquals(expectedPKIFailInfo, i);
         } else if (exptag == CmpPKIBodyConstants.REVOCATIONRESPONSE) {
             RevRepContent revRepContent = (RevRepContent) pkiBody.getContent();
             pkiStatusInfo = revRepContent.getStatus()[0];

@@ -26,7 +26,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.request.FailInfo;
 
 /**
- * Return additional fields needed for some SCEP integrations.
+ * Return additional fields needed for some SCEP integrations.  This object is
+ * serialized over the peer protocol, so all member variables use whitelisted
+ * types.
  */
 public class ScepResponseInfo implements Serializable {
 
