@@ -161,6 +161,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         }
 
         extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttribute(pkcs10CertificateRequest));
+        extendedInformation.setAccountBindingId(enrollcertificateRequest.getAccountBindingId());
 
         String subjectDn = getSubjectDn(pkcs10CertificateRequest);
         endEntityInformation.setDN(subjectDn);

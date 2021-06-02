@@ -379,7 +379,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             X509Certificate cacert = (X509Certificate) rootCA.getCACertificate();
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(cacert), "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             //Create a SubCA for this test.
             subCA = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaSubjectDn, rootCA.getCAId());
             int cryptoTokenId = subCA.getCAToken().getCryptoTokenId();
@@ -388,7 +388,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             //Store the CA Certificate.
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(subCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_SUBCA, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
             final EndEntityInformation endentity = new EndEntityInformation(subCaName, subCaSubjectDn, rootCA.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
             endentity.setStatus(EndEntityConstants.STATUS_NEW);
