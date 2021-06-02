@@ -231,7 +231,8 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     CertificateConstants.NO_CRL_PARTITION,
                     "",
-                    System.currentTimeMillis());
+                    System.currentTimeMillis(),
+                    null); // accountBindingId
             return true;
         } catch (IllegalArgumentException e) {
             getLogger().error(e);
