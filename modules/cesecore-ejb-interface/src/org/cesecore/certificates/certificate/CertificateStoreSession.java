@@ -29,8 +29,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  * Stores certificate in the local database using Certificate JPA Beans. 
  * 
  * IMPORTANT: No publishing to publishersession from setRevokeStatus
- * 
- * @version $Id$
  */
 public interface CertificateStoreSession {
 

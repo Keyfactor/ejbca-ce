@@ -32,9 +32,10 @@ public class SearchCertificateCriteriaRestRequestUnitTest {
         // given
         // when
         // then
-        assertEquals("Should have proper enum set.", 2, CriteriaProperty.STRING_PROPERTIES().size());
+        assertEquals("Should have proper enum set.", 3, CriteriaProperty.STRING_PROPERTIES().size());
         assertTrue("Should have proper enum set.", CriteriaProperty.STRING_PROPERTIES().contains(CriteriaProperty.QUERY));
         assertTrue("Should have proper enum set.", CriteriaProperty.STRING_PROPERTIES().contains(CriteriaProperty.STATUS));
+        assertTrue("Should have proper enum set.", CriteriaProperty.STRING_PROPERTIES().contains(CriteriaProperty.EXTERNAL_ACCOUNT_BINDING_ID));
     }
 
     @Test

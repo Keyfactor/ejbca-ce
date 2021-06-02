@@ -75,6 +75,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
@@ -157,6 +158,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private OAuthConfiguration oAuthConfiguration = null;
+    private EABConfiguration eabConfiguration = null;
     private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
     private String usercommonname = "";
@@ -2037,6 +2039,31 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession.saveConfiguration(administrator, oAuthConfig);
         oAuthConfiguration = oAuthConfig;
     }
+    //*************************************************
+    //      External Account Binding  configurations
+    //*************************************************
+
+    @Override
+    public EABConfiguration getEABConfiguration() {
+        if (eabConfiguration == null) {
+            reloadEABConfiguration();
+        }
+        return eabConfiguration;
+    }
+
+    @Override
+    public void reloadEABConfiguration() {
+        eabConfiguration = (EABConfiguration) globalConfigurationSession
+                .getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
+    }
+
+    @Override
+    public void saveEABConfiguration(EABConfiguration eabConfiguration) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, eabConfiguration);
+        this.eabConfiguration = eabConfiguration;
+    }
+
+
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************
