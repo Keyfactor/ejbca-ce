@@ -569,14 +569,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
         }
-        if (isLesserThan(oldVersion, "7.4.0")) {
-            try {
-                upgradeSession.migrateDatabase740();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("7.4.0");
-        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -1612,8 +1604,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-        } catch (AuthorizationDeniedException e) {
-           return false;
+            fixPartitionedCrls();
+        } catch (AuthorizationDeniedException | UpgradeFailedException e) {
+            log.error(e);
+            return false;
         }
         log.info("Post upgrade to 7.4.0 complete.");
         return true;  
@@ -1834,8 +1828,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * value in the database should be incremented.
      * @throws UpgradeFailedException if upgrade fails
      */
-    @Override
-    public void migrateDatabase740() throws UpgradeFailedException {
+    public void fixPartitionedCrls() throws UpgradeFailedException {
         try {
             final long startDataNormalization = System.currentTimeMillis();
             final Query normalizeData = entityManager.createQuery(

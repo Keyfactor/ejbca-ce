@@ -12,32 +12,23 @@
  *************************************************************************/
 package org.ejbca.core.certificates.ocsp;
 
-import static org.junit.Assert.assertTrue;
-
-import java.security.SecureRandom;
-
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
-import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
+import org.easymock.EasyMock;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionBean;
-import org.junit.Before;
 import org.junit.Test;
+
+import java.security.SecureRandom;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the OcspResponseGenerator that don't involve creating a CA.
- * 
- * @version $Id$
- * 
  */
 public class OcspResponseGeneratorSessionUnitTest {
-
-    @Before
-    public void setUp() throws Exception {
-
-    }
 
     @Test
     public void testWithRandomBytes() throws OCSPException {
@@ -48,10 +39,8 @@ public class OcspResponseGeneratorSessionUnitTest {
         random.nextBytes(fakeRequest);
         boolean caught = false;
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction logger for this transaction.
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        // Create the audit logger for this transaction.
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final TransactionLogger transactionLogger = EasyMock.createNiceMock(TransactionLogger.class);
+        final AuditLogger auditLogger = EasyMock.createNiceMock(AuditLogger.class);
         try {
             ocspResponseGeneratorSession.getOcspResponse(fakeRequest, null, null, null, null, auditLogger, transactionLogger, false, false);
         } catch (MalformedRequestException e) {

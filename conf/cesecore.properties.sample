@@ -23,8 +23,8 @@
 # - ca.cmskeystorepass (in ejbca.properties)
 
 # -------------- General security --------------
-# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. End Entity and Crypto Token
-#   passwords stored in database).
+# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. End Entity, Crypto Token, 
+#   CMP Alias, SCEP Alias, etc, passwords stored in database).
 # This property should be set before initial EJBCA installation and it should't be changed later, because there could exist
 #   passwords encrypted with the key about to be changed and EJBCA would be unable to decrypt them (note that the current implementation
 #   is capable to try decryption with the default key, i.e. qhrnf.f8743;12%#75, but it won't be able to decrypt passwords encrypted

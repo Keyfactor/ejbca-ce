@@ -63,6 +63,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(MSAutoEnrollmentSettingsManagedBean.class);
     private static final long serialVersionUID = 1L;
 
+    private static final String HIDDEN_PWD = "**********";
+
     private static final String SELECT_CEP = "Select a Certificate Profile";
     private static final String SELECT_EEP = "Select an End Entity Profile";
     private static final String SELECT_MST = "Select a Template";
@@ -143,7 +145,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             isUseSSL = autoEnrollmentConfiguration.isUseSSL(autoenrollmentConfigMBean.getSelectedAlias());
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort(autoenrollmentConfigMBean.getSelectedAlias());
             adLoginDN = autoEnrollmentConfiguration.getAdLoginDN(autoenrollmentConfigMBean.getSelectedAlias());
-            adLoginPassword = autoEnrollmentConfiguration.getAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias());
+            adLoginPassword = MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD;
             authKeyBinding = autoEnrollmentConfiguration.getAuthKeyBinding(autoenrollmentConfigMBean.getSelectedAlias());
 
             caName = autoEnrollmentConfiguration.getCaName(autoenrollmentConfigMBean.getSelectedAlias());
@@ -760,7 +762,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setIsUseSsl(autoenrollmentConfigMBean.getSelectedAlias(), isUseSSL);
             autoEnrollmentConfiguration.setAdConnectionPort(autoenrollmentConfigMBean.getSelectedAlias(), adConnectionPort);
             autoEnrollmentConfiguration.setAdLoginDN(autoenrollmentConfigMBean.getSelectedAlias(), adLoginDN);
-            autoEnrollmentConfiguration.setAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias(), adLoginPassword);
+            // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+            if (!adLoginPassword.equals(MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD)) {
+                autoEnrollmentConfiguration.setAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias(), adLoginPassword);
+                adLoginPassword = MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD;
+            }
+
             autoEnrollmentConfiguration.setAuthKeyBinding(autoenrollmentConfigMBean.getSelectedAlias(), authKeyBinding);
 
             // MS Servlet Settings
