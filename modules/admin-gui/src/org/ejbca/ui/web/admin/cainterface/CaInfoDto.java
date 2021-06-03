@@ -332,12 +332,12 @@ public class CaInfoDto {
     }
 
     public void setMsCaCompatible(boolean msCaCompatible) {
-        this.msCaCompatible = msCaCompatible;
-
         if (msCaCompatible) {
             // CRL Partitions for MS Compatible CA's are handled differently.
             resetUseCrlPartitionsSettings();
         }
+
+        this.msCaCompatible = msCaCompatible;
     }
 
     public boolean isAuthorityKeyIdentifierCritical() {
