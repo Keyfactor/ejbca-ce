@@ -957,14 +957,18 @@
 							<h:selectBooleanCheckbox id="mscompatible"
 													 value="#{editCAsMBean.caInfoDto.msCaCompatible}"
 													 onclick="return checkboxConfirmation('#{web.text.MS_COMPATIBILIY_MODE_CONFIRMATION}', 'editcapage:mscompatible')"
-													 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.caInfoDto.msCaCompatible}">
-								<f:ajax render="mscompatiblegroup editcapage:crlSpecificData" />
+													 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.checkboxMsCaCompatibilityDisabled}">
+								<f:ajax immediate="true" render="mscompatiblegroup editcapage:crlSpecificData" />
 							</h:selectBooleanCheckbox>
 							<h:outputLabel for="mscompatible"
 										   value="#{web.text.USE}" />
 							<br/>
-							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible}"
+							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible and not editCAsMBean.checkboxMsCaCompatibilityDisabled}"
+										  styleClass="helpReference"
 										  value="#{web.text.MS_COMPATIBILIY_MODE_WARNING}" />
+							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible and editCAsMBean.checkboxMsCaCompatibilityDisabled}"
+										  styleClass="helpReference"
+										  value="#{web.text.MS_COMPATIBILIY_MODE_DISABLED}" />
 						</h:panelGroup>
 
 						<h:outputText rendered="#{editCAsMBean.caInfoDto.msCaCompatible}"
@@ -1088,7 +1092,7 @@
 					<h:selectBooleanCheckbox id="checkboxusecrlpartitions"
 											 value="#{editCAsMBean.caInfoDto.usePartitionedCrl}"
 											 disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
+						<f:ajax render=":editcapage:mscompatiblegroup :editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
 							onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', ev.source.checked); } } "/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxusecrlpartitions"
