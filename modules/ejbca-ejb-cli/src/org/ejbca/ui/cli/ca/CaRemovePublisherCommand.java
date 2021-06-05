@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -104,6 +105,9 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
                     }
                 } catch (CADoesntExistsException e) {
                     log.error("CA with id " + caid + "suddenly disappeared...ignoring.");
+                } catch (CaMsCompatibilityIrreversibleException e) {
+                    getLogger().error("CA microsoft compatibility irreversible: " + caid);
+                    return CommandResult.FUNCTIONAL_FAILURE;
                 } catch (InternalKeyBindingNonceConflictException e) {
                     log.error("CA with id " + caid + "has a related OCSPKeyBinding with nonce enabled in response...ignoring.");
                 }
