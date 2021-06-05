@@ -98,6 +98,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
@@ -322,7 +323,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void initializeCa(final AuthenticationToken authenticationToken, final CAInfo caInfo)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
+        throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
 
         if (caInfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
             throw new IllegalArgumentException("CA Status was not CA_UNINITIALIZED (" + CAConstants.CA_UNINITIALIZED + ")");
@@ -892,7 +893,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException {
+    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
         boolean cmsrenewcert = false;
         final int caid = cainfo.getCAId();
 
@@ -1861,6 +1862,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 editCA(authenticationToken, caInfo);
             } catch (InternalKeyBindingNonceConflictException e) {
                 // Do nothing
+            } catch (CaMsCompatibilityIrreversibleException e) {
+                // Do nothing
             }
             caInfo.setStatus(currentCaState);
             // Add CA certificate chain again, because it is removed in createCA() for CAs with state CAConstants.CA_UNINITIALIZED.
@@ -1871,6 +1874,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             editCA(authenticationToken, caInfo);
         } catch (InternalKeyBindingNonceConflictException e) {
+            // Do nothing
+        } catch (CaMsCompatibilityIrreversibleException e) {
             // Do nothing
         }
         // Update the CA certificate in the local database
