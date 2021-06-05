@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.internal.CACacheHelper;
 import org.cesecore.certificates.ca.internal.CaCache;
 import org.cesecore.certificates.ca.internal.CaIDCacheBean;
+import org.cesecore.certificates.ca.X509CAImpl;
 import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -87,6 +88,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import static org.cesecore.certificates.ca.CABaseCommon.MSCACOMPATIBLE;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -229,7 +232,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException {
+    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
         if (cainfo != null) {
         	if (log.isTraceEnabled()) {
         		log.trace(">editCA (CAInfo): "+cainfo.getName());
@@ -243,6 +246,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     			    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
     			}
                 assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
+
+                if (!((X509CAInfo)cainfo).isMsCaCompatible() && ((X509CAImpl)ca).isMsCaCompatible())
+                    throw new CaMsCompatibilityIrreversibleException();
+
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
                 AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
