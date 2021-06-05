@@ -236,7 +236,7 @@
     <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
     <target name="cesecore-ejb" depends="-build-cesecore-ejb, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface, -copy-cesecore-ejb"/>
         
-        <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface">
+        <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface, cesecore-x509ca">
             <!-- Builds cesecore-ejb which also builds all other cesecore modules -->
             <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>

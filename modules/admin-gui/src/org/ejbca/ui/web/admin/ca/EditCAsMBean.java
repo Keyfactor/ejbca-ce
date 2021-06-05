@@ -60,6 +60,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
@@ -1449,8 +1450,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             cainfo.setName(oldinfo.getName());
             caAdminSession.initializeCa(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (CryptoTokenOfflineException | InvalidAlgorithmException |
-                NumberFormatException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
+        } catch (CryptoTokenOfflineException | InvalidAlgorithmException | NumberFormatException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1636,7 +1636,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             caAdminSession.editCA(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException e) {
+        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
