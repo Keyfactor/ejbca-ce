@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -219,7 +220,7 @@ public interface CAAdminSession {
      * @throws InternalKeyBindingNonceConflictException An exception thrown when someone tries to create an InternalKeyBinding with a nonce setting that conflicts with the CA's OCSP response pre-production setting.
      */
     void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException,
-            CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException;
+        CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
     /**
      * Renews a existing CA certificate using the requested keys or by
@@ -526,7 +527,7 @@ public interface CAAdminSession {
      * @see org.cesecore.certificates.ca.CAInfo
      * @see org.cesecore.certificates.ca.X509CAInfo
      */
-    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException;
+    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
     /**
      * Method used to check if certificate profile id exists in any CA.
