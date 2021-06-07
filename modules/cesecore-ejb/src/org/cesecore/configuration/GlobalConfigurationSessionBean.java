@@ -135,7 +135,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             final Map<Object, Object> newmap = (Map<Object, Object>) conf.saveData();
             // Get the diff of what changed
             final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
-            // Make security audit log record
+            // Make security audit log record, but first have the object itself filter out any sensitive information
+            conf.filterDiffMapForLogging(diff);
             final String msg = intres.getLocalizedMessage("globalconfig.savedconf", gcdata.getConfigurationId());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
