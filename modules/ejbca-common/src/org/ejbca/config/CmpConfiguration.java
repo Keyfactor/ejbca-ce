@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -889,10 +890,15 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         return CMP_CONFIGURATION_ID;
     }
 
+    @Override
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        Set<String> aliases = getAliasList();
+        for (String alias : aliases) {
+            filterDiffMapForLogging(diff, alias + "." + CONFIG_AUTHENTICATIONPARAMETERS);
+        }
+    } 
+
 }
-
-
-
 
 
 

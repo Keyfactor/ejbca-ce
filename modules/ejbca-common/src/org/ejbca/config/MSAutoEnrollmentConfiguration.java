@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -581,7 +582,12 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         return null;
     }
     
-    
-    
+    @Override
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        Set<String> aliases = getAliasList();
+        for (String alias : aliases) {
+            filterDiffMapForLogging(diff, alias + "." + AD_LOGIN_PASSWORD);
+        }
+    }     
     
 }
