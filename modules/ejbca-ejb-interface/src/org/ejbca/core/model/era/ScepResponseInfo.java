@@ -26,7 +26,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.request.FailInfo;
 
 /**
- * Return additional fields needed for some SCEP integrations.
+ * Return additional fields needed for some SCEP integrations.  This object is
+ * serialized over the peer protocol, so all member variables use whitelisted
+ * types.
  */
 public class ScepResponseInfo implements Serializable {
 
@@ -40,9 +42,9 @@ public class ScepResponseInfo implements Serializable {
     // additional fields set with SCEP issues a certificate
     private boolean failed = false;
     private byte[] pkcs10Request = null;
-    private X500Principal issuer = null;
+    private String issuer = null;
     private BigInteger serialNumber = null;
-    private Instant notAfter = null;
+    private String notAfter = null;
     private byte[] thumbprint = null;
     private FailInfo failInfo = null;
     private String failText = null;
@@ -51,9 +53,9 @@ public class ScepResponseInfo implements Serializable {
             byte[] pkcs10Request) {
         this.pkcs10Request = pkcs10Request;
         this.pkcs7Response = pkcs7Response;
-        this.issuer = issuer;
+        this.issuer = issuer.getName(X500Principal.RFC2253);
         this.serialNumber = serialNumber;
-        this.notAfter = notAfter;
+        this.notAfter = notAfter.toString();
         this.thumbprint = thumbprint;
         failed = false;
     }
@@ -61,9 +63,9 @@ public class ScepResponseInfo implements Serializable {
     public ScepResponseInfo(byte[] pkcs7Response, X509Certificate issuedCert, byte[] pkcs10Request) {
         this.pkcs10Request = pkcs10Request;
         this.pkcs7Response = pkcs7Response;
-        this.issuer = issuedCert.getIssuerX500Principal();
+        this.issuer = issuedCert.getIssuerX500Principal().getName(X500Principal.RFC2253);
         this.serialNumber = issuedCert.getSerialNumber();
-        this.notAfter = issuedCert.getNotAfter().toInstant();
+        this.notAfter = issuedCert.getNotAfter().toInstant().toString();
         try {
             this.thumbprint = MessageDigest.getInstance("SHA-1").digest(issuedCert.getEncoded());
         } catch (CertificateEncodingException | NoSuchAlgorithmException e) {
@@ -92,7 +94,7 @@ public class ScepResponseInfo implements Serializable {
     }
 
     public X500Principal getIssuer() {
-        return issuer;
+        return new X500Principal(issuer);
     }
 
     public final byte[] getPkcs7Response() {
@@ -100,7 +102,7 @@ public class ScepResponseInfo implements Serializable {
     }
 
     public final Instant getNotAfter() {
-        return notAfter;
+        return Instant.parse(notAfter);
     }
 
     public final boolean isFailed() {
