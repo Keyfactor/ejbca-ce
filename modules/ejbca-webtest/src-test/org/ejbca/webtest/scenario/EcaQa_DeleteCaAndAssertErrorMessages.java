@@ -38,7 +38,6 @@ public class EcaQa_DeleteCaAndAssertErrorMessages extends WebTestBase {
         static final String ERROR_MESSAGE_CERTIFICATE_PROFILES = "CA is used in the following Certificate Profiles:";
         static final String ERROR_MESSAGE_ROLES = "CA is used in the following Roles:";
         static final String ERROR_MESSAGE_END_ENTITY = "CA is used in the following End Entity Profiles:";
-        static final String SELENIUM_ROLE = "SeleniumSuperAdminRole, SeleniumSupervisorRole";
         static final List<String> ERROR_DELETE_CA = new ArrayList<>();
 
     }
@@ -101,8 +100,6 @@ public class EcaQa_DeleteCaAndAssertErrorMessages extends WebTestBase {
         TestData.ERROR_DELETE_CA.add(0, TestData.ERROR_MESSAGE_ALL);
         TestData.ERROR_DELETE_CA.add(1, TestData.ERROR_MESSAGE_CERTIFICATE_PROFILES);
         TestData.ERROR_DELETE_CA.add(2,TestData.CERTIFICATE_PROFILE_NAME);
-        TestData.ERROR_DELETE_CA.add(3,TestData.ERROR_MESSAGE_ROLES);
-        TestData.ERROR_DELETE_CA.add(4,TestData.SELENIUM_ROLE);
         caHelper.assertHasErrorMessages(TestData.ERROR_DELETE_CA);
         caHelper.openPage(getAdminWebUrl());
         caHelper.assertExists(TestData.CA_NAME);
@@ -124,8 +121,6 @@ public class EcaQa_DeleteCaAndAssertErrorMessages extends WebTestBase {
         TestData.ERROR_DELETE_CA.add(0, TestData.ERROR_MESSAGE_ALL);
         TestData.ERROR_DELETE_CA.add(1, TestData.ERROR_MESSAGE_CERTIFICATE_PROFILES);
         TestData.ERROR_DELETE_CA.add(2,TestData.CERTIFICATE_PROFILE_NAME);
-        TestData.ERROR_DELETE_CA.add(3,TestData.ERROR_MESSAGE_ROLES);
-        TestData.ERROR_DELETE_CA.add(4,TestData.SELENIUM_ROLE);
         caHelper.assertHasErrorMessages(TestData.ERROR_DELETE_CA);
         caHelper.openPage(getAdminWebUrl());
         caHelper.assertExists(TestData.CA_NAME);
@@ -166,8 +161,6 @@ public class EcaQa_DeleteCaAndAssertErrorMessages extends WebTestBase {
         TestData.ERROR_DELETE_CA.add(0, TestData.ERROR_MESSAGE_ALL);
         TestData.ERROR_DELETE_CA.add(1, TestData.ERROR_MESSAGE_END_ENTITY);
         TestData.ERROR_DELETE_CA.add(2,TestData.END_ENTITY_PROFILE);
-        TestData.ERROR_DELETE_CA.add(3,TestData.ERROR_MESSAGE_ROLES);
-        TestData.ERROR_DELETE_CA.add(4,TestData.SELENIUM_ROLE);
         caHelper.assertHasErrorMessages(TestData.ERROR_DELETE_CA);
         caHelper.openPage(getAdminWebUrl());
         caHelper.assertExists(TestData.CA_NAME);
@@ -186,8 +179,6 @@ public class EcaQa_DeleteCaAndAssertErrorMessages extends WebTestBase {
         TestData.ERROR_DELETE_CA.add(0, TestData.ERROR_MESSAGE_ALL);
         TestData.ERROR_DELETE_CA.add(1, TestData.ERROR_MESSAGE_END_ENTITY);
         TestData.ERROR_DELETE_CA.add(2,TestData.END_ENTITY_PROFILE);
-        TestData.ERROR_DELETE_CA.add(3,TestData.ERROR_MESSAGE_ROLES);
-        TestData.ERROR_DELETE_CA.add(4,TestData.SELENIUM_ROLE);
         caHelper.assertHasErrorMessages(TestData.ERROR_DELETE_CA);
         caHelper.openPage(getAdminWebUrl());
         caHelper.assertExists(TestData.CA_NAME);
@@ -226,7 +217,7 @@ public class EcaQa_DeleteCaAndAssertErrorMessages extends WebTestBase {
         //Then
         TestData.ERROR_DELETE_CA.add(0, TestData.ERROR_MESSAGE_ALL);
         TestData.ERROR_DELETE_CA.add(1,TestData.ERROR_MESSAGE_ROLES);
-        TestData.ERROR_DELETE_CA.add(2, TestData.ROLE_NAME + ", " + TestData.SELENIUM_ROLE );
+        TestData.ERROR_DELETE_CA.add(2, TestData.ROLE_NAME );
         caHelper.assertHasErrorMessages(TestData.ERROR_DELETE_CA);
         caHelper.openPage(getAdminWebUrl());
         caHelper.assertExists(TestData.CA_NAME);
@@ -248,7 +239,7 @@ public class EcaQa_DeleteCaAndAssertErrorMessages extends WebTestBase {
         //Then
         TestData.ERROR_DELETE_CA.add(0, TestData.ERROR_MESSAGE_ALL);
         TestData.ERROR_DELETE_CA.add(1,TestData.ERROR_MESSAGE_ROLES);
-        TestData.ERROR_DELETE_CA.add(2, TestData.ROLE_NAME+ ", " + TestData.SELENIUM_ROLE);
+        TestData.ERROR_DELETE_CA.add(2, TestData.ROLE_NAME);
         caHelper.assertHasErrorMessages(TestData.ERROR_DELETE_CA);
         caHelper.openPage(getAdminWebUrl());
         caHelper.assertExists(TestData.CA_NAME);
