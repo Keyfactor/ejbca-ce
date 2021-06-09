@@ -1193,7 +1193,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Calculates the filename for a token (P12 or PEM file) sent back to the client based on
      * the common name of the certificate.
      *
-     * @return the file name to use in the content disposition header
+     * @return the file name to use in the content disposition header, filename safe characters
      */
     private String getFileName() {
         final String commonName = CertTools.getPartFromDN(getEndEntityInformation().getDN(), "CN");
@@ -1201,7 +1201,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return "certificatetoken";
         }
         if (StringUtils.isAsciiPrintable(commonName)) {
-            return commonName;
+            return StringTools.stripFilename(commonName);
         }
         return Base64.encodeBase64String(commonName.getBytes());
     }

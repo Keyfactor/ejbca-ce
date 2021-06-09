@@ -26,11 +26,10 @@ import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.util.HTMLTools;
 
 /**
  * Servlet used to distribute CA keys in SSH format.
- *
- * @version $Id$
  */
 public class SshServlet extends HttpServlet {
 
@@ -67,9 +66,9 @@ public class SshServlet extends HttpServlet {
         final String caName = req.getParameter(NAME_PROPERTY);
         CAInfo caInfo = caSession.getCAInfoInternal(-1, caName, true);
         if(caInfo == null) {
-            res.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA of name '" + caName + "' found.");
+            res.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA of name '" + HTMLTools.htmlescape(caName) + "' found.");
         } else if (caInfo.getCAType() != SshCaInfo.CATYPE_SSH){
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "CA of name '" + caName + "' not an SSH CA.");
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "CA of name '" + HTMLTools.htmlescape(caName) + "' is not an SSH CA.");
         } else {
             final String fileName = caName + ".pub";
             PublicKey publicKey = caInfo.getCertificateChain().get(0).getPublicKey();
