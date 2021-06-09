@@ -135,13 +135,12 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			if (nextCrlNumber == basecrlnumber) {
     				nextCrlNumber++;
     			}
-    			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber);       
+    			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber, latestCaCertForParition);       
     		} else {
     			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForParition);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back
-    		    // TODO Should this be using old fingerprint for old partition is MS comp mode?
     			String cafp = CertTools.getFingerprintAsString(ca.getCACertificate());
     			if (log.isDebugEnabled()) {
     			    log.debug("Encoding CRL to byte array. Free memory="+Runtime.getRuntime().freeMemory());
