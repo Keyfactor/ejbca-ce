@@ -54,6 +54,9 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.AuthenticationNotProvidedException;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
@@ -72,6 +75,8 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -81,7 +86,10 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -120,24 +128,24 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     private static Logger log = Logger.getLogger(EjbcaWebBeanImpl.class);
 
-    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
-    private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
-    private final AdminPreferenceSessionLocal adminPreferenceSession = ejbLocalHelper.getAdminPreferenceSession();
-    private final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
-    private final AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
-    private final CAAdminSessionLocal caAdminSession = ejbLocalHelper.getCaAdminSession();
-    private final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
-    private final CertificateProfileSessionLocal certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-    private final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
-    private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
-    private final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
-    private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
-    private final SecurityEventsLoggerSessionLocal auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
-    private final RoleSessionLocal roleSession = ejbLocalHelper.getRoleSession();
-    private final UpgradeSessionLocal upgradeSession = ejbLocalHelper.getUpgradeSession();
-    private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
-    private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
-    private final ClearCacheSessionLocal clearCacheSession = ejbLocalHelper.getClearCacheSession();
+    private final EjbBridgeSessionLocal ejbLocalHelper;
+    private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
+    private final AdminPreferenceSessionLocal adminPreferenceSession;
+    private final ApprovalProfileSessionLocal approvalProfileSession;
+    private final AuthorizationSessionLocal authorizationSession;
+    private final CAAdminSessionLocal caAdminSession;
+    private final CaSessionLocal caSession;
+    private final CertificateProfileSessionLocal certificateProfileSession;
+    private final CertificateStoreSessionLocal certificateStoreSession;
+    private final EndEntityManagementSessionLocal endEntityManagementSession;
+    private final EndEntityProfileSessionLocal endEntityProfileSession;
+    private final PublisherSessionLocal publisherSession;
+    private final SecurityEventsLoggerSessionLocal auditSession;
+    private final RoleSessionLocal roleSession;
+    private final UpgradeSessionLocal upgradeSession;
+    private final GlobalConfigurationSessionLocal globalConfigurationSession;
+    private final WebAuthenticationProviderSessionLocal authenticationSession;
+    private final ClearCacheSessionLocal clearCacheSession;
 
     private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
@@ -145,13 +153,19 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private CmpConfiguration cmpConfigForEdit = null;
     private EstConfiguration estconfiguration = null;
     private EstConfiguration estConfigForEdit = null;
+    private MSAutoEnrollmentConfiguration msAutoenrollmentConfig = null;
+    private MSAutoEnrollmentConfiguration msAutoenrollmentConfigForEdit = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
+    private OAuthConfiguration oAuthConfiguration = null;
+    private EABConfiguration eabConfiguration = null;
     private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
     private String usercommonname = "";
     private String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
     private String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
+    private boolean isAuthenticatedWithToken; // a flag to detect authentication path used
+    private String oauthAuthenticationToken; // Keep token used for authentication so we can detect changes
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
@@ -170,6 +184,29 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     /** Creates a new instance of EjbcaWebBeanImpl */
     public EjbcaWebBeanImpl() {
+        this(new EjbLocalHelper(), new EnterpriseEjbLocalHelper());
+    }
+
+    /** Constructor for unit testing with mock objects */
+    protected EjbcaWebBeanImpl(final EjbBridgeSessionLocal ejbBridge, final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbBridge) {
+        ejbLocalHelper = ejbBridge;
+        enterpriseEjbLocalHelper = enterpriseEjbBridge;
+        adminPreferenceSession = ejbLocalHelper.getAdminPreferenceSession();
+        approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
+        authorizationSession = ejbLocalHelper.getAuthorizationSession();
+        caAdminSession = ejbLocalHelper.getCaAdminSession();
+        caSession = ejbLocalHelper.getCaSession();
+        certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+        certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
+        endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
+        endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
+        publisherSession = ejbLocalHelper.getPublisherSession();
+        auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
+        roleSession = ejbLocalHelper.getRoleSession();
+        upgradeSession = ejbLocalHelper.getUpgradeSession();
+        globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
+        authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
+        clearCacheSession = ejbLocalHelper.getClearCacheSession();
     }
 
     private void commonInit() {
@@ -198,83 +235,121 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return sslSessionIdJBoss7==null ? sslSessionIdServletsStandard : sslSessionIdJBoss7;
     }
 
-    /* Sets the current user and returns the global configuration */
     @Override
     public GlobalConfiguration initialize(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
+        try {
+            return initializeInternal(httpServletRequest, resources);
+        } finally {
+            if (!initialized) {
+                // Make sure we at least have the needed information (default language strings etc.) to show an error page
+                initialize_errorpage(httpServletRequest);
+            }
+        }
+    }
+
+    /** Sets the current user and returns the global configuration */
+    private GlobalConfiguration initializeInternal(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
         // Get some variables so we can detect if the TLS session and/or TLS client certificate changes within this session
         final X509Certificate certificate = getClientX509Certificate(httpServletRequest);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
+        final String oauthBearerToken = getBearerToken(httpServletRequest);
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
-        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) || !StringUtils.equals(fingerprint, certificateFingerprint)) {
+        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)
+                || (isAuthenticatedWithToken && !StringUtils.equals(oauthAuthenticationToken, oauthBearerToken))
+                || (!isAuthenticatedWithToken && !StringUtils.equals(fingerprint, certificateFingerprint))) {
             if (log.isDebugEnabled() && initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
                 log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificateFingerprint+", new cert fp: "+fingerprint);
             }
+            resetAuthSessionState();
             // Escape value taken from the request, just to be sure there can be no XSS
             requestScheme = HTMLTools.htmlescape(httpServletRequest.getScheme());
             requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
             requestServerPort = httpServletRequest.getServerPort();
             currentRemoteIp = httpServletRequest.getRemoteAddr();
-            final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
             if (WebConfiguration.isAdminAuthenticationRequired() && certificate == null && oauthBearerToken == null) {
-                throw new AuthenticationFailedException("Client certificate or OAuth bearer token required.");
+                throw new AuthenticationNotProvidedException("Client certificate or OAuth bearer token required.");
             }
             if (certificate != null) {
                 administrator = authenticationSession.authenticateUsingClientCertificate(certificate);
                 if (administrator == null) {
-                    throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
+                    if (oauthBearerToken == null) {
+                        throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
+                    } else {
+                        log.info("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
+                    }
+                } else {
+                    // Check if certificate and user is an RA Admin
+                    final String userdn = CertTools.getSubjectDN(certificate);
+                    final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
+                    usercommonname = dn.getField(DNFieldExtractor.CN, 0);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Verifying authorization of '" + userdn + "'");
+                    }
+                    final String issuerDN = CertTools.getIssuerDN(certificate);
+                    final String sernostr = CertTools.getSerialNumberAsString(certificate);
+                    final BigInteger serno = CertTools.getSerialNumber(certificate);
+                    // Set current TLS certificate fingerprint
+                    certificateFingerprint = fingerprint;
+                    // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
+                    if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
+                        throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN + "' did not belong to any user in the database.");
+                    }
+                    final Map<String, Object> details = new LinkedHashMap<>();
+                    if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
+                        details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
+                    }
+                    if (!checkRoleMembershipAndLog(httpServletRequest, "Client certificate", issuerDN, sernostr, details)) {
+                        if (oauthBearerToken == null) {
+                            throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
+                        } else {
+                            administrator = null;
+                            certificateFingerprint = null;
+                            log.info("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
+                        }
+                    }
                 }
-                // Check if certificate and user is an RA Admin
-                final String userdn = CertTools.getSubjectDN(certificate);
-                final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
-                usercommonname = dn.getField(DNFieldExtractor.CN, 0);
-                if (log.isDebugEnabled()) {
-                    log.debug("Verifying authorization of '" + userdn + "'");
+            }
+            if (oauthBearerToken != null && administrator == null) {
+                try {
+                    administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken);
+                } catch (TokenExpiredException e) {
+                    String refreshToken = getRefreshToken(httpServletRequest);
+                    if (refreshToken != null) {
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, refreshToken);
+                        if (token != null) {
+                            httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                            if (token.getRefreshToken() != null) {
+                                httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
+                            }
+                            administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), token.getAccessToken());
+                        }
+                    }
                 }
-                final String issuerDN = CertTools.getIssuerDN(certificate);
-                final String sernostr = CertTools.getSerialNumberAsString(certificate);
-                final BigInteger serno = CertTools.getSerialNumber(certificate);
-                // Set current TLS certificate fingerprint
-                certificateFingerprint = fingerprint;
-                // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
-                if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
-                    throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
-                }
-                final Map<String, Object> details = new LinkedHashMap<>();
-                if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
-                    details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
-                }
-                if (!checkRoleMembershipAndLog(httpServletRequest, "Client certificate", issuerDN, sernostr, details)) {
-                    throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
-                }
-            } else if (oauthBearerToken != null) {
-                administrator = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
                 if (administrator == null) {
                     throw new AuthenticationFailedException("Authentication failed using OAuth Bearer Token");
                 }
+                isAuthenticatedWithToken = true;
+                oauthAuthenticationToken = oauthBearerToken;
                 final Map<String, Object> details = new LinkedHashMap<>();
                 final OAuth2AuthenticationToken oauth2Admin = (OAuth2AuthenticationToken) administrator;
                 final OAuth2Principal principal = oauth2Admin.getClaims();
                 details.put("keyhash", oauth2Admin.getPublicKeyBase64Fingerprint());
-                if (principal.getIssuer() != null) {
-                    details.put("issuer", principal.getIssuer());
-                }
-                if (principal.getSubject() != null) {
-                    details.put("subject", principal.getSubject());
-                }
-                if (principal.getAudience() != null) {
-                    details.put("audience", Arrays.toString(principal.getAudience().toArray()));
+                putOauthTokenDetails(details, principal);
+                if (oauth2Admin.getProviderLabel() != null) {
+                    details.put("provider", oauth2Admin.getProviderLabel());
                 }
                 if (!checkRoleMembershipAndLog(httpServletRequest, "OAuth Bearer Token", null, principal.getSubject(), details)) {
                     throw new AuthenticationFailedException("Authentication failed for bearer token with no access: " + principal.getName());
                 }
-                usercommonname = principal.getSubject();
-            } else {
+                usercommonname = principal.getDisplayName();
+            }
+            if (administrator == null) {
                 administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 if (!checkRoleMembershipAndLog(httpServletRequest, "AuthenticationToken", null, null, details)) {
@@ -312,6 +387,63 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
 
         return globalconfiguration;
+    }
+
+    private void putOauthTokenDetails(final Map<String, Object> details, final OAuth2Principal principal) {
+        if (principal.getIssuer() != null) {
+            details.put("issuer", principal.getIssuer());
+        }
+        if (principal.getSubject() != null) {
+            details.put("subject", principal.getSubject());
+        }
+        if (principal.getAudience() != null) {
+            details.put("audience", Arrays.toString(principal.getAudience().toArray()));
+        }
+        if (principal.getPreferredUsername() != null) {
+            details.put("preferred_username", principal.getPreferredUsername());
+        }
+        if (principal.getNameAttribute() != null) {
+            details.put("name", principal.getNameAttribute());
+        }
+        if (principal.getEmail() != null) {
+            details.put("email", principal.getEmail());
+        }
+    }
+
+    private void resetAuthSessionState() {
+        authenticationTokenTlsSessionId = null;
+        isAuthenticatedWithToken = false;
+        certificateFingerprint = null;
+        oauthAuthenticationToken = null;
+        administrator = null;
+        usercommonname = null;
+        servletContext = null;
+        currentAdminPreference = null;
+        adminsweblanguage = null;
+        initialized = false;
+        errorpage_initialized = false;
+    }
+
+    /**
+     * Gets bearer token from Authorization header or from session
+     * @param httpServletRequest
+     * @return
+     */
+    private String getBearerToken(HttpServletRequest httpServletRequest) {
+        String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+        if (oauthBearerToken == null) {
+            oauthBearerToken = (String) httpServletRequest.getSession(true).getAttribute("ejbca.bearer.token");
+        }
+        return oauthBearerToken;
+    }
+
+    /**
+     * Gets refresh token from session
+     * @param httpServletRequest
+     * @return
+     */
+    private String getRefreshToken(HttpServletRequest httpServletRequest) {
+            return  (String) httpServletRequest.getSession(true).getAttribute("ejbca.refresh.token");
     }
 
     /**
@@ -786,6 +918,18 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /**
+     * Save the given MSAutoEnrollmentConfiguration configuration.
+     *
+     * @param msAutoenrollmentConfig A MSAutoEnrollmentConfiguration
+     * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
+     */
+    @Override
+    public void saveMSAutoenrollmentConfiguration(final MSAutoEnrollmentConfiguration msAutoEnrollmentConfiguration) throws AuthorizationDeniedException {
+        this.msAutoenrollmentConfig = msAutoEnrollmentConfiguration;
+        globalConfigurationSession.saveConfiguration(administrator, msAutoEnrollmentConfiguration);
+    }
+    
+    /**
      * Save the given EST configuration.
      *
      * @param estconfiguration A EstConfiguration
@@ -805,6 +949,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
+    @Override
+    public void reloadAutoenrollmentConfiguration() {
+        msAutoenrollmentConfig = (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+    }
+    
     @Override
     public void reloadEstConfiguration() {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
@@ -1199,12 +1348,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
-    public EjbLocalHelper getEjb() {
+    public EjbBridgeSessionLocal getEjb() {
         return ejbLocalHelper;
     }
 
     @Override
-    public EnterpriseEjbLocalHelper getEnterpriseEjb() {
+    public EnterpriseEditionEjbBridgeSessionLocal getEnterpriseEjb() {
         return enterpriseEjbLocalHelper;
     }
 
@@ -1602,6 +1751,92 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
+    public MSAutoEnrollmentConfiguration getAutoenrollConfiguration() {
+        if (msAutoenrollmentConfig == null) {
+            reloadAutoenrollmentConfiguration();
+        }
+        return msAutoenrollmentConfig;
+    }
+    
+    /**
+     * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
+     *
+     * @param alias a Autoenrollment config alias.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void updateAutoenrollConfigFromClone(final String alias) throws AuthorizationDeniedException {
+        if (msAutoenrollmentConfig.aliasExists(alias) && msAutoenrollmentConfigForEdit.aliasExists(alias)) {
+            for(final String key : MSAutoEnrollmentConfiguration.getAllAliasKeys(alias)) {
+                final String value = msAutoenrollmentConfigForEdit.getValue(key, alias);
+                msAutoenrollmentConfig.setValue(key, value, alias);
+            }
+        }
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Adds an alias to the database.
+     *
+     * @param alias the name of a Autoenrollment alias.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void addAutoenrollAlias(final String alias) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.addAlias(alias);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Makes a copy of a given alias
+     *
+     * @param oldName the name of the alias to copy
+     * @param newName the name of the new alias
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void cloneAutoenrollAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.cloneAlias(oldName, newName);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Deletes a Autoenrollment alias from the database.
+     *
+     * @param alias the name of the alias to delete.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void removeAutoenrollAlias(final String alias) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.removeAlias(alias);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    /**
+     * Renames a Autoenrollment alias
+     *
+     * @param oldName the old alias name
+     * @param newName the new alias name
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    @Override
+    public void renameAutoenrollAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        msAutoenrollmentConfig.renameAlias(oldName, newName);
+        saveMSAutoenrollmentConfiguration(msAutoenrollmentConfig);
+    }
+
+    @Override
+    public void clearAutoenrollConfigClone() {
+        msAutoenrollmentConfig = null;
+    }
+
+    @Override
+    public void clearAutoenrollCache() {
+        globalConfigurationSession.flushConfigurationCache(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        reloadAutoenrollmentConfiguration();
+    }
+    
+    @Override
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
             reloadEstConfiguration();
@@ -1610,7 +1845,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         //Clear EST config of unauthorized aliases (aliases referring to CA, EEP or CPs that the current admin doesn't have access to)
         return clearEstConfigurationFromUnauthorizedAliases(estconfiguration);
     }
-
+    
     /**
      * Returns a clone of the current EstConfiguration containing only the given alias. Also caches the clone locally.
      *
@@ -1729,7 +1964,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             final String defaultCAIDStr = estConfiguration.getDefaultCAID(alias);
             if (NumberUtils.isNumber(defaultCAIDStr)) {
                 caId = Integer.valueOf(defaultCAIDStr);
-            } else {
+            } else if (StringUtils.isNotEmpty(defaultCAIDStr)) {
                 // We have a caName, and want the Id
                 final CAInfo cainfo = caSession.getCAInfoInternal(-1, defaultCAIDStr, true);
                 if (cainfo != null) {
@@ -1738,6 +1973,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                     if (log.isDebugEnabled()) {
                         log.debug("CA with name '"+defaultCAIDStr+"' does not exist, allowing everyone to view EST alias '"+alias+"'.");
                     }
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("No default CA configured, allowing everyone to view EST alias '"+alias+"'.");
                 }
             }
             if (caId != 0) {
@@ -1777,6 +2016,53 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
         availableExtendedKeyUsagesConfig = ekuConfig;
     }
+
+    //*************************************************
+    //      OAuth trusted provider configurations
+    //*************************************************
+    @Override
+    public OAuthConfiguration getOAuthConfiguration() {
+        if (oAuthConfiguration == null) {
+            reloadOAuthConfiguration();
+        }
+        return oAuthConfiguration;
+    }
+
+    @Override
+    public void reloadOAuthConfiguration() {
+        oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+    }
+
+    @Override
+    public void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, oAuthConfig);
+        oAuthConfiguration = oAuthConfig;
+    }
+    //*************************************************
+    //      External Account Binding  configurations
+    //*************************************************
+
+    @Override
+    public EABConfiguration getEABConfiguration() {
+        if (eabConfiguration == null) {
+            reloadEABConfiguration();
+        }
+        return eabConfiguration;
+    }
+
+    @Override
+    public void reloadEABConfiguration() {
+        eabConfiguration = (EABConfiguration) globalConfigurationSession
+                .getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
+    }
+
+    @Override
+    public void saveEABConfiguration(EABConfiguration eabConfiguration) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, eabConfiguration);
+        this.eabConfiguration = eabConfiguration;
+    }
+
 
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration
