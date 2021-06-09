@@ -15,8 +15,7 @@ package org.cesecore.authentication.oauth;
 
 /**
  * Exception which occurs whenever a user tries to add an OAuth Key which already exists
- * 
- * @version $Id$
+ *
  */
 public class DuplicateOAuthKeyException extends RuntimeException {
     private static final long serialVersionUID = 1L;

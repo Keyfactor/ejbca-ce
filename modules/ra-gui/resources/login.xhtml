@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<ui:remove>
+<!--
+	/*************************************************************************
+	 *                                                                       *
+	 *  EJBCA: The OpenSource Certificate Authority                          *
+	 *                                                                       *
+	 *  This software is free software; you can redistribute it and/or       *
+	 *  modify it under the terms of the GNU Lesser General Public           *
+	 *  License as published by the Free Software Foundation; either         *
+	 *  version 2.1 of the License, or any later version.                    *
+	 *                                                                       *
+	 *  See terms of license at gnu.org.                                     *
+	 *                                                                       *
+	 *************************************************************************/
+
+ -->
+</ui:remove>
+<f:metadata>
+    <f:param name="skipLoginRedirect" value="true"/>
+    <f:event type="preRenderView" listener="#{raLoginBean.onLoginPageLoad}"/>
+</f:metadata>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:define name="content">
+        <h:panelGroup layout="block" styleClass="header" id="title">
+            <h1>
+                <h:outputText value="#{msg.login_page_title_required}" rendered="#{raLoginBean.oauthKeys.size() > 0 and raAccessBean.unauthenticatedWithoutAccess}"/>
+                <h:outputText value="#{msg.login_page_title_optional}" rendered="#{raLoginBean.oauthKeys.size() > 0 and not raAccessBean.unauthenticatedWithoutAccess}"/>
+            </h1>
+        </h:panelGroup>
+        <br/>
+        <h:form id="login">
+            <h:panelGroup>
+                <h:outputText styleClass="bodyText" value="#{msg.login_page_text}" rendered="#{raLoginBean.oauthKeys.size() > 0}" />
+                <h:outputText styleClass="bodyText" value="#{msg.login_page_no_keys}" rendered="#{raLoginBean.oauthKeys.size() == 0}"/>
+                <h:dataTable value="#{raLoginBean.oauthKeys}"
+                             var="oauthkey" rendered="#{raLoginBean.oauthKeys.size() > 0}"
+                             style="margin: 5px;">
+                    <h:column>
+                        <h:commandLink action="#{raLoginBean.clickLoginLink(oauthkey.label)}"
+                                       styleClass="pure-button ra-button" style="min-width:20rem; min-height:1.4rem;">
+                            <h:outputText value="#{oauthkey.label}" style="font-size:1.0rem;"/>
+                        </h:commandLink>
+                    </h:column>
+                </h:dataTable>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

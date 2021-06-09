@@ -26,11 +26,8 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 
-
 /**
  * Holds non-sensitive information about a CVC CA (Card Verifiable Certificate).
- *
- * @version $Id$
  */
 public class CVCCAInfo extends CAInfo {
 
@@ -127,7 +124,7 @@ public class CVCCAInfo extends CAInfo {
      * Used by the web. Jsp and stuff like that.
 	 */
 	public CVCCAInfo(int caid, String encodedValidity, CAToken catoken, String description,
-			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
+			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean generateCrlUponRevocation,
 			Collection<Integer> crlpublishers, Collection<Integer> keyValidators,
 			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos,
 			Map<ApprovalRequestType, Integer> approvals,
@@ -143,6 +140,7 @@ public class CVCCAInfo extends CAInfo {
 		this.crlIssueInterval = crlIssueInterval;
 		this.crlOverlapTime = crlOverlapTime;
 		this.deltacrlperiod = deltacrlperiod;
+		this.generateCrlUponRevocation = generateCrlUponRevocation;
 		this.crlpublishers = crlpublishers;
 		this.validators = keyValidators;
 		this.finishuser = finishuser;
