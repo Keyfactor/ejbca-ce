@@ -66,7 +66,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
@@ -84,7 +84,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint(null);
         ca.updateCA(cryptoToken, cainfo, cceConfig);
-        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertNull("CRL has distribution points", xcrl.getExtensionValue(Extension.cRLDistributionPoints.getId()));
@@ -110,7 +110,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
@@ -132,7 +132,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         cainfo.setCADefinedFreshestCRL(null);
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
-        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertNull("CRL has freshest crl extension", xcrl.getExtensionValue(Extension.freshestCRL.getId()));
@@ -167,7 +167,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, 12345, revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(cryptoToken, 12345, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
@@ -387,7 +387,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         authorityInformationAccess.add("http://example.com/3");
         testCa.setAuthorityInformationAccess(authorityInformationAccess);
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
+        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0, null);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
@@ -405,7 +405,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         X509CA testCa = createTestCA(cryptoToken, "CN=foo");
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
+        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0, null);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
