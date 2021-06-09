@@ -1851,10 +1851,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @see org.cesecore.certificates.ca.X509CA#generateDeltaCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int, int)
      */
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws CryptoTokenOfflineException,
             IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
             NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, null);
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, latestCaCertForParition);
     }
 
     @Override

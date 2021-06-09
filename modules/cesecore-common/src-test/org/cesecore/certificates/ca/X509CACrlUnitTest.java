@@ -173,7 +173,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
 
         assertEquals("CRL distribution point is different", Collections.singletonList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
 
-        crl = ca.generateDeltaCRL(cryptoToken, 12345, revcerts, 2, 1);
+        crl = ca.generateDeltaCRL(cryptoToken, 12345, revcerts, 2, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals("CRL distribution point is different", Collections.singletonList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
