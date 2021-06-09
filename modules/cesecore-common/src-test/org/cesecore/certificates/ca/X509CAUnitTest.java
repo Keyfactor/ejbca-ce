@@ -355,7 +355,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a delta CRL
         revcerts = new ArrayList<>();
-        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 3, 2);
+        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 3, 2, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals(CADN, CertTools.getIssuerDN(xcrl));
@@ -366,7 +366,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(2, deltanum.intValue());
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
-        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 4, 3);
+        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 4, 3, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
