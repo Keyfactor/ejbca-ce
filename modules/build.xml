@@ -54,7 +54,7 @@
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, plugins-ee-clean, 
-		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean"/>
+		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean"/>
 	
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -166,6 +166,10 @@
 	
 	<target name="ssh-clean" if="${mod.ssh.exists}">
 	    <ant antfile="${mod.ssh.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="msae-clean" if="${mod.msae.exists}">
+	    <ant antfile="${mod.msae.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<condition property="mod.plugins-ee.exists">
@@ -500,6 +504,10 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
+	<target name="msae" depends="ejbca-common-web" description="Build the MSAE WAR">
+		<ant antfile="${mod.msae.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>
+	
 	<target name="healthcheck-ejbca-war" depends="ejbca-common-web" description="Build the EJBCA Helthcheck WAR">
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
@@ -556,7 +564,7 @@
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
 					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, 
-					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh">
+					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae">
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">

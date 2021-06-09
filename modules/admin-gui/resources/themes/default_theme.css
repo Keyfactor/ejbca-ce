@@ -35,9 +35,14 @@ a img {
 p.help {
 	font-size: 0.70em;
 	line-height: 0.70em;
+}
+p.help, .helpNormal {
 	white-space: normal;
 	color: #606060;		/* Keep it, for old web browsers */
 	color: rgba(0,0,0,.6);
+}
+.helpNotWide {
+	max-width: 40em;
 }
 
 /* Used in template.xhtml */
@@ -1117,6 +1122,25 @@ table#config tr td:first-child {
 	vertical-align: top;
 }
 
+
+/* --- Login page */
+.loginPage {
+	max-width: 45em;
+	margin: 5ex auto 1ex auto;
+}
+.oauthProviderTable a {
+	padding: 0.75ex 0;
+	font-size: 120%;
+	display: block;
+}
+.oauthProviderTable, .oauthProviderTable tr, .oauthProviderTable td {
+	margin: 0;
+	padding: 0;
+}
+.oauthProviderTable {
+	border-spacing: 0;
+	margin-top: 3ex;
+}
 
 /*--------------------------------------------------------------------------*/
 /* TABLES */

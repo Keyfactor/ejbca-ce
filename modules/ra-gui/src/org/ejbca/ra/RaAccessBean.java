@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,7 +20,10 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -31,6 +35,8 @@ import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.ConcurrentCache;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -55,12 +61,58 @@ public class RaAccessBean implements Serializable {
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
+    @EJB
+    @Deprecated // Breaks peer connections in the RA web. Will be removed in ECA-9938
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
     private static AtomicBoolean reloadEventRegistered = new AtomicBoolean(false);
+
+    /**
+     * Called before page rendering. Checks if the current user is unauthenticated and not able to do anything.
+     * If so, the user is redirected to the login page. Otherwise, the user would have to click the the "Login" link.
+     *
+     * This is not intended to be a security measure in any way, just a helpful redirect to the login page instead of showing a blank page.
+     */
+    public void preRenderView() {
+        if (!skipLoginRedirect() && isUnauthenticatedWithoutAccess() && isAnyLoginProviderAvailable()) {
+            try {
+                if (log.isDebugEnabled()) {
+                    log.debug("Unauthenticated user has no access, redirecting to login page. Authentication token: " + raAuthenticationBean.getAuthenticationToken());
+                }
+                final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+                ec.redirect(ec.getRequestContextPath() + "/login.xhtml");
+            } catch (IOException e) {
+                log.error("Unexpected error when attempting to redirect", e);
+            }
+        }
+    }
+
+    private boolean skipLoginRedirect() {
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().containsKey("skipLoginRedirect");
+    }
+
+    private boolean isAnyLoginProviderAvailable() {
+        final OAuthConfiguration  oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
+        // Older versions than 7.5.0 will return null here
+        return oauthConfiguration != null && MapUtils.isNotEmpty(oauthConfiguration.getOauthKeys());
+    }
+
+    public boolean isAuthorizedToAnything() {
+        return isAuthorizedToEnroll() || isAuthorizedToSearch() ||isAuthorizedToManageRequests() ||
+                isAuthorizedToRoles() || isAuthorizedToCas();
+    }
+
+    /**
+     * Returns true if the user is unauthenticated, and does not have access to anything.
+     * In that case, the only meaningful action is to log in.
+     */
+    public boolean isUnauthenticatedWithoutAccess() {
+        return raAuthenticationBean.isPublicUser() && !isAuthorizedToAnything();
+    }
 
     private boolean isAuthorized(String... resources) {
         final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();

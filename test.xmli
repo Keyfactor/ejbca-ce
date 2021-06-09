@@ -49,6 +49,7 @@
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/msae" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -164,6 +165,7 @@
                     <include name="modules/cli-util/src-test/**/${test.runone}.java" />
                     <include name="modules/ejbca-ejb-cli/src-test/**/${test.runone}.java" />
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
+                    <include name="modules/msae/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -259,6 +261,9 @@
         <condition property="module" value="modules/ejbca-ejb-cli">
             <matches string="${test-fullname}" pattern="^modules/ejbca-ejb-cli/.*$"/>
         </condition>
+        <condition property="module" value="modules/msae">
+                    <matches string="${test-fullname}" pattern="^modules/msae/.*$"/>
+                </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
 		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -327,6 +332,13 @@
         <ant antfile="build.xml" dir="modules/configdump" inheritall="true" inheritrefs="true">
             <target name="test:unit" />
             <target name="test:system" />
+        </ant>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:msae" description="run JUnit MSAE test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/msae" inheritall="true" inheritrefs="true">
+            <target name="test:unit" />
         </ant>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
