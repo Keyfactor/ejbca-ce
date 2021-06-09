@@ -1842,9 +1842,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @see org.cesecore.certificates.ca.X509CA#generateCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int)
      */
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, byte[] crlSignSubjectKeyIdentifier) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
             IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, crlSignSubjectKeyIdentifier);
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert);
     }
 
     /* (non-Javadoc)
@@ -1950,14 +1950,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @param crlnumber CRLNumber for this CRL
      * @param isDeltaCRL true if we should generate a DeltaCRL
      * @param basecrlnumber caseCRLNumber for a delta CRL, use 0 for full CRLs
-     * @param crlSignSubjectKeyId TODO
+     * @param partitionCaCert CA certificate to verify CRL against (mainly used for MS compatible CAs)
      * @return X509CRLHolder with the generated CRL
      * @throws CryptoTokenOfflineException
      * @throws IOException
      * @throws SignatureException
      */
     private X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, 
-            boolean isDeltaCRL, int basecrlnumber, byte[] crlSignSubjectKeyId) throws CryptoTokenOfflineException, IOException, SignatureException {
+            boolean isDeltaCRL, int basecrlnumber, Certificate partitionCaCert) throws CryptoTokenOfflineException, IOException, SignatureException {
         final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
@@ -1969,22 +1969,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         X509Certificate cacert = (X509Certificate) getCACertificate();
         final X500Name issuer;
 
-        if (isMsCaCompatible() && crlSignSubjectKeyId != null) {
-            log.debug("getRenewedCertificateChain"); //TODO REMOVE
-            final List<Certificate> renewedCertChain = getRenewedCertificateChain();
-            if (renewedCertChain != null) {
-                for (Certificate renewedCaCert : renewedCertChain) {
-                    String caCertSkid = new String(Hex.encode((CertTools.getSubjectKeyId(renewedCaCert))));
-                    log.debug("caCertSkid: " + caCertSkid);
-                    if (caCertSkid.equals
-                            (new String(Hex.encode(crlSignSubjectKeyId)))) {
-                        cacert = (X509Certificate) renewedCaCert;
-                        log.debug("Found cert related to subject key id '" + caCertSkid + "'");
-                        break;
-                    }
-                    log.debug("No old CA certificate found.");
-                }
-            }
+        if (isMsCaCompatible() && partitionCaCert != null) {
+            cacert = (X509Certificate) partitionCaCert;
         }
         
         if (cacert == null) {
@@ -2139,8 +2125,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             log.debug("Signing CRL. Free memory="+Runtime.getRuntime().freeMemory());
         }
         String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
-        if (isMsCaCompatible() && crlSignSubjectKeyId != null) {
-            alias = getSignKeyAliasFromSubjectKeyId(cryptoToken, crlSignSubjectKeyId);
+        if (isMsCaCompatible() && partitionCaCert != null) {
+            alias = getSignKeyAliasFromSubjectKeyId(cryptoToken, CertTools.getSubjectKeyId(partitionCaCert));
         }
         
         try {
@@ -2194,19 +2180,18 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] crlSubjectKeyIdentifier) {
-        log.debug("crlSubjectKeyId: " + new String(Hex.encode(crlSubjectKeyIdentifier)));
         try {
             for (String keyAlias : cryptoToken.getAliases()) {
                 String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier()));
                 if (StringUtils.equals(subjectKeyId, new String(Hex.encode(crlSubjectKeyIdentifier)))) {
-                    log.debug("Using key alias: '" + keyAlias + "' to sign CRL"); // TODO REMOVE
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using key alias: '" + keyAlias + "' to sign CRL");
+                    }
                     return keyAlias;
                 }
             }
             //TODO error handling. Should we rollback?
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException(e);
-        } catch (CryptoTokenOfflineException e) {
+        } catch (KeyStoreException | CryptoTokenOfflineException e) {
             throw new IllegalStateException(e);
         }
         throw new IllegalStateException("No key matching Subject Key Id '" + new String(Hex.encode(crlSubjectKeyIdentifier)) + "' found.");
