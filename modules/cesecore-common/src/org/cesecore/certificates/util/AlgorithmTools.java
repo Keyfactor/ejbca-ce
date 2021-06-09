@@ -1247,7 +1247,9 @@ public abstract class AlgorithmTools {
      * @throws NoSuchProviderException if the Bouncy Castle provider is not installed.
      */
     public static MessageDigest getDigestFromAlgoName(final String signatureAlgorithm) throws NoSuchAlgorithmException, NoSuchProviderException {
-        if (signatureAlgorithm.startsWith("SHA256")) {
+        if (signatureAlgorithm.startsWith("SHA224")) {
+            return MessageDigest.getInstance("SHA-224", "BC");
+        } else if (signatureAlgorithm.startsWith("SHA256")) {
             return MessageDigest.getInstance("SHA-256", "BC");
         } else if (signatureAlgorithm.startsWith("SHA384")) {
             return MessageDigest.getInstance("SHA-384", "BC");
