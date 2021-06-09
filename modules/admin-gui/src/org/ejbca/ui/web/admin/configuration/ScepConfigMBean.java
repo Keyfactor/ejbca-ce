@@ -104,6 +104,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
                     this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
                     this.setUseIntune(scepConfig.getUseIntune(alias));
+                    this.intuneAadUseKeyBinding = scepConfig.getIntuneAadUseKeyBinding(alias);
+                    this.intuneAadAppKeyBinding = scepConfig.getIntuneAadAppKeyBinding(alias);
                     this.intuneAuthority = scepConfig.getIntuneAuthority(alias);
                     this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
                     this.intuneAadAppKey = ScepConfigMBean.HIDDEN_PWD;
@@ -135,7 +137,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.intuneAadAppId = "";
                     this.intuneAadAppKey = "";
                     this.intuneAadAppKeyBinding = "";
-                    this.setIntuneAadUseKeyBinding(false);
+                    this.intuneAadUseKeyBinding = false;
                     this.intuneTenant = "";
                     this.intuneResourceUrl = "";
                     this.intuneGraphApiVersion = "";
@@ -514,11 +516,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
             scepConfig.setIntuneAadUseKeyBinding(alias, currentAlias.isIntuneAadUseKeyBinding());
-	    // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+            // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
             if (!currentAlias.getIntuneAadAppKey().equals(ScepConfigMBean.HIDDEN_PWD)) {
                 scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
             }
-	    scepConfig.setIntuneAadAppKeyBinding(alias, currentAlias.getIntuneAadAppKeyBinding());
+            scepConfig.setIntuneAadAppKeyBinding(alias, currentAlias.getIntuneAadAppKeyBinding());
             scepConfig.setIntuneTenant(alias, currentAlias.getIntuneTenant());
             scepConfig.setIntuneResourceUrl(alias, currentAlias.getIntuneResourceUrl());
             scepConfig.setIntuneGraphApiVersion(alias, currentAlias.getIntuneGraphApiVersion());

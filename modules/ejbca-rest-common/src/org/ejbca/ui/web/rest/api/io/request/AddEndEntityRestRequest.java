@@ -40,6 +40,7 @@ public class AddEndEntityRestRequest {
             allowableValues = "USERGENERATED, P12, JKS, PEM"
     )
     private String token;
+    private String accountBindingId;
     
     /** default constructor needed for serialization */
     public AddEndEntityRestRequest() {}
@@ -55,6 +56,7 @@ public class AddEndEntityRestRequest {
         private String certificateProfileName;
         private String endEntityProfileName;
         private String token;
+        private String accountBindingId;
 
         
         public Builder certificateProfileName(final String certificateProfileName) {
@@ -107,6 +109,11 @@ public class AddEndEntityRestRequest {
             this.token = token;
             return this;
         }
+        
+        public Builder accountBindingId(String accountBindingId) {
+            this.accountBindingId = accountBindingId;
+            return this;
+        }
 
         public AddEndEntityRestRequest build() {
             return new AddEndEntityRestRequest(this);
@@ -124,6 +131,7 @@ public class AddEndEntityRestRequest {
         this.email = builder.email;
         this.extensionData = builder.extensionData;
         this.token = builder.token;
+        this.accountBindingId = builder.accountBindingId;
     }
 
     /**
@@ -140,11 +148,16 @@ public class AddEndEntityRestRequest {
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
         		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
             final ExtendedInformation extendedInfo;
-            if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
+            if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                 extendedInfo = new ExtendedInformation();
-                addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                    extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
-                });
+                if (addEndEntityRestRequest.getAccountBindingId() != null) {
+                    extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
+                }
+                if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
+                    addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
+                        extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
+                    });
+                }
             } else {
                 extendedInfo = null;
             }
@@ -248,6 +261,14 @@ public class AddEndEntityRestRequest {
 	public void setToken(String token) {
 		this.token = token;
 	}
+	
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
+    public void setAccountBindingId(String accountBindingId) {
+        this.accountBindingId = accountBindingId;
+    }	
 	
 	public enum EndEntityStatus {
     	NEW(EndEntityConstants.STATUS_NEW),
