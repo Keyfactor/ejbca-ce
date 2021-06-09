@@ -113,8 +113,6 @@ import org.cesecore.util.EJBTools;
 
 /**
  * Session bean for creating certificates.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -462,6 +460,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (log.isDebugEnabled()) {
                     log.debug("SingleActiveCertificateConstraint, found "+cdws.size()+" old (non expired, active) certificates.");
                 }
+                boolean revoked = false;
                 for (final CertificateDataWrapper cdw : cdws) {
                     final CertificateData certificateData = cdw.getCertificateData();
                     if (certificateData.getStatus() == CertificateConstants.CERT_REVOKED && certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
@@ -472,6 +471,15 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     }                  
                     // Authorization to the CA was already checked at the head of this method, so no need to do so now
                     certificateStoreSession.setRevokeStatusNoAuth(admin, certificateData, new Date(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                    revoked = true;
+                }
+                if (revoked && ca.getGenerateCrlUponRevocation()) {
+                    // ECA-9716 Single active certificate constraint (SACC) functionality was processed before
+                    // in SignSessionBean.createCertificate. All other invocations of this method are caused by 
+                    // InternalKeyBindingMgmtSessionBean.renewInternallyIssuedCertificate or test classes.
+                    // The processing of SACC at this point should be verified with a separate ticket.
+                    log.warn("No CRL was generated upon revocation for CA '" + ca.getName() 
+                        + "' even though certificates had been revoked because of single active certificate constraint.");
                 }
             }
             
@@ -533,13 +541,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
                 final int crlPartitionIndex = ca.getCAInfo().determineCrlPartitionIndex(cert);
 
+                // Extract the accountBindingId from extendedInformation to be stored in CertificateData
+                String accountBindingId = null;
+                if (endEntityInformation != null && endEntityInformation.getExtendedInformation() != null) {
+                    accountBindingId = endEntityInformation.getExtendedInformation().getAccountBindingId();
+                }
+                
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {
                     // We still need to return a CertificateData object for publishers
                     final CertificateData throwAwayCertData = new CertificateData(cert, cert.getPublicKey(), endEntityInformation.getUsername(), 
                             cafingerprint, null, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
                             endEntityInformation.getEndEntityProfileId(), crlPartitionIndex,
-                            null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
+                            null, updateTime, false, certProfile.getStoreSubjectAlternativeName(), accountBindingId);
                     result = new CertificateDataWrapper(cert, throwAwayCertData, null);
                     // Always Store full certificate for OCSP signing certificates.
                     boolean isOcspSigner = certProfile.getExtendedKeyUsageOids().contains("1.3.6.1.5.5.7.3.9");
@@ -559,13 +573,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     if (ctLogException == null) {
                         result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
-                                crlPartitionIndex, tag, updateTime);
+                                crlPartitionIndex, tag, updateTime, accountBindingId);
                     } else {
                         tag = CertificateConstants.CERT_TAG_PRECERT;
                         // Store pre-certificate using a new transaction. We don't want CertificateData rolled back even though issuance failed.
                         result = certificateStoreSession.storeCertificateNoAuthNewTransaction(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
-                                crlPartitionIndex, tag, updateTime);
+                                crlPartitionIndex, tag, updateTime, accountBindingId);
                     }
                     storeEx = null;
                     break;

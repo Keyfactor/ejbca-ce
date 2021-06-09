@@ -55,11 +55,20 @@
 
                     <h:outputLabel for="wildcard" value="#{web.text.ACME_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED}" />
                     <h:selectBooleanCheckbox id="wildcard" value="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" >
-                    	<f:ajax render=":currentAliasForm:httpChallengeWildcard"/>
+                    	<f:ajax render=":currentAliasForm:httpChallengeWildcardLabel :currentAliasForm:httpChallengeWildcardField"/>
                     </h:selectBooleanCheckbox>
                     
-                    <h:outputLabel for="httpChallengeWildcard" value="#{web.text.ACME_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED}" />
-                    <h:selectBooleanCheckbox id="httpChallengeWildcard" value="#{acmeConfigMBean.currentAlias.wildcardWithHttp01ChallengeAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode or !acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                    <h:panelGroup id="httpChallengeWildcardLabel">
+                    	<h:outputLabel for="httpChallengeWildcard" value="#{web.text.ACME_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED}" rendered="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                    	<h:outputLabel for="httpChallengeWildcard" value="" rendered="#{!acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                   	</h:panelGroup>
+                   	<h:panelGroup id="httpChallengeWildcardField">
+                    	<h:selectBooleanCheckbox id="httpChallengeWildcard" 
+                    		value="#{acmeConfigMBean.currentAlias.wildcardWithHttp01ChallengeAllowed}" 
+                    		disabled="#{!acmeConfigMBean.currentAliasEditMode}"
+                    		rendered="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                        <h:outputLabel value="" rendered="#{!acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
+                    </h:panelGroup>
 
                     <h:outputLabel for="webUrl" value="#{web.text.ACME_WEBSITE_URL}" />
                     <h:panelGroup id="webUrl" >
