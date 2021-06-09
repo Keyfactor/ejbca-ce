@@ -28,6 +28,8 @@ public final class StringValidator implements DynamicUiPropertyValidator<String>
     
     private static final InternalResources intres = InternalResources.getInstance();
     
+    private String name;
+    
     private int minLength = -1;
     
     private int maxLength = -1;
@@ -56,7 +58,7 @@ public final class StringValidator implements DynamicUiPropertyValidator<String>
 
     @Override
     public void validate(final String value) throws PropertyValidationException {
-        validateString(value, minLength, maxLength, regex, messageKey);
+        validateString(value, name, minLength, maxLength, regex, messageKey);
     }
 
     @Override
@@ -121,7 +123,7 @@ public final class StringValidator implements DynamicUiPropertyValidator<String>
         return new StringValidator(minLength, maxLength, "[A-Za-z0-9_\\-=]*", "stringnotbase64url");
     }
     
-    public static final void validateString(String value, final int minLength, final int maxLength, final String regex, final String messageKey) throws PropertyValidationException{
+    public static final void validateString(String value, String name, final int minLength, final int maxLength, final String regex, final String messageKey) throws PropertyValidationException{
         if (log.isDebugEnabled()) {
             log.debug( "Validate string '" + value + "' with min " + minLength + " and max " + maxLength + " characters.");
         }
@@ -129,13 +131,13 @@ public final class StringValidator implements DynamicUiPropertyValidator<String>
             value = value.trim();
         }
         if (minLength > 0 && value != null && value.length() < minLength) {
-            throw new PropertyValidationException(intres.getLocalizedMessage("dynamic.property.validation.stringtooshort.failure", Integer.toString(minLength)));
+            throw new PropertyValidationException(name + ": " + intres.getLocalizedMessage("dynamic.property.validation.stringtooshort.failure", Integer.toString(minLength)));
         }
         if (maxLength > 0 && value != null && value.length() > maxLength) {
-            throw new PropertyValidationException(intres.getLocalizedMessage("dynamic.property.validation.stringtoolong.failure", Integer.toString(maxLength)));
+            throw new PropertyValidationException(name + ": " + intres.getLocalizedMessage("dynamic.property.validation.stringtoolong.failure", Integer.toString(maxLength)));
         }
         if (regex != null && regex.length() > 0 && !value.matches(regex)) {
-            throw new PropertyValidationException(intres.getLocalizedMessage(messageKey, value));
+            throw new PropertyValidationException(name + ": " + intres.getLocalizedMessage(messageKey, value));
         }
     }
     
@@ -150,6 +152,16 @@ public final class StringValidator implements DynamicUiPropertyValidator<String>
     
     private static final String getMessageKey(final String shortName) {
         return "dynamic.property.validation." + shortName + ".failure"; 
+    }
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
     
 }
