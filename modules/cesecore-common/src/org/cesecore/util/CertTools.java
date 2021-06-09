@@ -2031,6 +2031,21 @@ public abstract class CertTools {
     }
 
     /**
+     * Get the Authority Key Identifier from CRL extensions
+     * 
+     * @param crl CRL containing the extension
+     * @return byte[] containing the Authority key identifier, or null if it does not exist
+     */
+    public static byte[] getAuthorityKeyId(final X509CRL crl) {
+        final ASN1Primitive asn1Sequence = getDerObjectFromByteArray(crl.getExtensionValue(Extension.authorityKeyIdentifier.getId()));
+        if (asn1Sequence != null) {
+            return AuthorityKeyIdentifier.getInstance(asn1Sequence).getKeyIdentifier();
+        }
+        log.info("AKI is null");
+        return null;
+    }
+    
+    /**
      * Get a certificate policy ID from a certificate policies extension
      * 
      * @param certificate certificate containing the extension
