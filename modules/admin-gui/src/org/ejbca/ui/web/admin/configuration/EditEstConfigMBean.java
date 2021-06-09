@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -43,6 +44,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 public class EditEstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private static final String HIDDEN_PWD = "**********";
+
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
             "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF");
@@ -67,7 +70,16 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         private String userName;
         private String password;
         private Boolean allowSameKey;
-
+        private String extUsernameComponent;
+        private String operationmode;
+        private String authModule;
+        private String vendorCas;
+        private String selectedVendorCa;
+        private boolean vendorMode;
+        private boolean allowChangeSubjectName;
+        private String extDnPartPwdComponent;
+        
+        
         public String getName() {
             return name;
         }
@@ -131,6 +143,102 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         public void setAllowSameKey(Boolean allowSameKey) {
             this.allowSameKey = allowSameKey;
         }
+        
+        public String getOperationMode() {
+            return operationmode;
+        }
+        
+        public void setOperationMode(String operationmode) {
+            this.operationmode = operationmode;
+        }
+        
+        public void setVendorMode(boolean vendorMode) {
+            this.vendorMode = vendorMode;
+        }
+        
+        public  boolean getVendorMode() {
+            return this.vendorMode;
+        }
+        
+        public void setAllowChangeSubjectName(boolean allowChangeSubjectName) {
+            this.allowChangeSubjectName = allowChangeSubjectName;
+        }
+        
+        public  boolean getAllowChangeSubjectName() {
+            return this.allowChangeSubjectName;
+        }
+        
+        public void setSelectedVendorCa(String selectedVendorCa) {
+            this.selectedVendorCa = selectedVendorCa;
+        }
+        
+        public  String getSelectedVendorCa() {
+            return selectedVendorCa == null ? "" : selectedVendorCa;
+        }
+        
+        public void setVendorCas(String vendorCas) {
+            this.vendorCas = vendorCas;
+        }
+        
+        
+        public  String getVendorCas() {
+            return vendorCas == null ? "" : vendorCas;
+        }
+        
+        public void setAuthenticationModule(final String authModule) {
+            this.authModule = authModule;
+        }
+        
+        public String getAuthenticationModule() {
+            return this.authModule;
+        }
+        
+        public String getExtDnPartPwdComponent() {
+            return extDnPartPwdComponent;
+        }
+        
+        public void setExtDnPartPwdComponent(String extDnPartPwdComponent) {
+            this.extDnPartPwdComponent = extDnPartPwdComponent;
+        }
+        
+        public boolean getDnPartPwdSelected() {
+            if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD)) {
+                return true;  
+            }
+            return false;
+        }
+        
+        public void setDnPartPwdSelected(boolean dnPartPwdSelected) {
+            if (dnPartPwdSelected) {
+                setAuthenticationModule(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD);
+            } else if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD)) {
+                setAuthenticationModule("");
+            }
+        }
+        
+        
+        public boolean getChallengePwdSelected() {
+            if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD)) {
+                return true;  
+            }
+            return false;
+        }
+        
+        public void setChallengePwdSelected(boolean challengePwdSelected) {
+            if (challengePwdSelected) {
+                setAuthenticationModule(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
+            } else if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD)) {
+                setAuthenticationModule("");
+            }
+        }
+        
+        public void setExtUsernameComponent(String extUsernameComponent) {
+            this.extUsernameComponent = extUsernameComponent;
+        }
+        
+        public String getExtUsernameComponent() {
+            return extUsernameComponent;
+        }
     }
 
     public EstAliasGui getEstAlias() {
@@ -143,7 +251,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setEndEntityProfileId(String.valueOf(estConfiguration.getEndEntityProfileID(aliasName)));
             String certProfileID = estConfiguration.getCertProfileID(aliasName);
             // If we had the old type, EJBCA 6.11 of CP, which is the name, convert it to ID
-            if (!NumberUtils.isNumber(certProfileID)) {
+            if (certProfileID != null && !NumberUtils.isNumber(certProfileID)) {
                 Map<String, Integer> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
                 if (certificateProfiles.get(certProfileID) != null) {
                     certProfileID = String.valueOf(certificateProfiles.get(certProfileID));
@@ -152,8 +260,18 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setCertificateProfileId(certProfileID);
             estAliasGui.setCertificateRequired(estConfiguration.getCert(aliasName));
             estAliasGui.setUserName(estConfiguration.getUsername(aliasName));
-            estAliasGui.setPassword(estConfiguration.getPassword(aliasName));
+            estAliasGui.setPassword(EditEstConfigMBean.HIDDEN_PWD);
             estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
+            estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
+            estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
+            estAliasGui.setVendorMode(estConfiguration.getVendorMode(aliasName));
+            estAliasGui.setSelectedVendorCa(estConfiguration.getVendorCAs(aliasName));
+            estAliasGui.setAuthenticationModule(estConfiguration.getAuthenticationModule(aliasName));
+            estAliasGui.setChallengePwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD));
+            estAliasGui.setDnPartPwdSelected(estConfiguration.getAuthenticationModule(aliasName).equals(EstConfiguration.CONFIG_AUTHMODULE_DN_PART_PWD));
+            estAliasGui.setExtDnPartPwdComponent(estConfiguration.getExtractDnPwdComponent(aliasName));
+            estAliasGui.setAllowChangeSubjectName(estConfiguration.getAllowChangeSubjectName(aliasName));
+            estAliasGui.setVendorCas(estConfiguration.getVendorCAs(aliasName));
             this.estAliasGui = estAliasGui;
         }
         return estAliasGui;
@@ -163,7 +281,21 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     public boolean isViewOnly() {
         return estConfigMBean.isViewOnly();
     }
-
+    
+    public boolean isRaMode() {
+        return estAliasGui.getOperationMode().equals("ra");
+    }
+    
+    public boolean isVendorMode() {
+       return estAliasGui.getVendorMode();
+    }
+       
+    public List<SelectItem> getExtUsernameComponentSelectItems() {
+        final List<SelectItem> selectItems = getDnFieldSelectItems(); 
+        selectItems.add(0, new SelectItem("DN"));
+        return selectItems;
+    }
+    
     public List<SelectItem> getCaItemList() {
         final List<SelectItem> ret = new ArrayList<>();
         if (StringUtils.isEmpty(getEstAlias().getCaId())) {
@@ -220,13 +352,66 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         }
         estConfiguration.setCert(alias, estAliasGui.getCertificateRequired());
         estConfiguration.setUsername(alias, estAliasGui.getUserName());
-        estConfiguration.setPassword(alias, estAliasGui.getPassword());
+        // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+        if (!estAliasGui.getPassword().equals(EditEstConfigMBean.HIDDEN_PWD)) {
+            estConfiguration.setPassword(alias, estAliasGui.getPassword());
+        }
         estConfiguration.setKurAllowSameKey(alias, estAliasGui.getAllowSameKey());
+        estConfiguration.setExtractUsernameComponent(alias, estAliasGui.getExtUsernameComponent());
+        estConfiguration.setExtractDnPwdComponent(alias, estAliasGui.getExtDnPartPwdComponent());
+        estConfiguration.setOperationMode(alias, estAliasGui.getOperationMode());
+        estConfiguration.setVendorMode(alias, estAliasGui.getVendorMode());
+        estConfiguration.setVendorCAs(alias, estAliasGui.getSelectedVendorCa());
+        estConfiguration.setAuthenticationModule(alias, estAliasGui.getAuthenticationModule());
+        estConfiguration.setAllowChangeSubjectName(alias, estAliasGui.getAllowChangeSubjectName());
+        estConfiguration.setVendorCAs(alias, getCurrentVendorCas());
         getEjbcaWebBean().updateEstConfigFromClone(alias);
         reset();
         return "done";
     }
-
+    
+    
+    public void actionAddVendorCa() {
+        final String currentVendorCas = getCurrentVendorCas();
+        List<String> currentVendorCaList = new ArrayList<>();
+        if (StringUtils.isNotBlank(currentVendorCas)) {
+            currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";"))); 
+        }
+        if (!currentVendorCaList.contains(estAliasGui.getSelectedVendorCa())) {
+            currentVendorCaList.add(estAliasGui.getSelectedVendorCa());
+        }
+        setCurrentVendorCas(StringUtils.join(currentVendorCaList, ";"));
+    }
+    
+    public void actionRemoveVendorCa() {
+        final String currentVendorCas = getCurrentVendorCas();
+        if (StringUtils.isNotBlank(currentVendorCas)) {
+            final List<String> currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";")));
+            if (currentVendorCaList.remove(estAliasGui.getSelectedVendorCa())) {
+                setCurrentVendorCas(StringUtils.join(currentVendorCaList, ";"));
+            }
+        }
+    }
+    
+    public List<SelectItem> getVendorCaSelectItems() {
+        final List<SelectItem> selectItems = new ArrayList<>();
+        final TreeMap<String, Integer> caOptions = getEjbcaWebBean().getCAOptions();
+        for (String ca : caOptions.keySet()) {
+            selectItems.add(new SelectItem(ca));
+        }
+        return selectItems;
+    }
+    
+    private String vendorCas;
+    
+    public String getCurrentVendorCas() {
+        return vendorCas == null? estAliasGui.getVendorCas(): vendorCas;
+    }
+    
+    public void setCurrentVendorCas(String vendorCas) {
+        this.vendorCas = vendorCas;
+    }
+           
     /**
      * Add DN field to name generation parameter
      *
