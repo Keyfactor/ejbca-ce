@@ -381,7 +381,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     if (log.isTraceEnabled()) {
                         log.trace("<storeOCSPResponse");
                     }
-                    return false;
+                    continue;
                 }
                 
                 if (publishStatus != PublisherConst.STATUS_SUCCESS) {
