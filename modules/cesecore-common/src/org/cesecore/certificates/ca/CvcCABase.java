@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -137,7 +138,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	}
 
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, byte[] crlSignSubjectKeyIdentifier) {
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;

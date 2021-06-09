@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
+import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -40,6 +41,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -64,6 +66,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
     private CrlStoreSessionLocal crlSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
@@ -83,7 +87,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		log.trace(">createCRL(Collection)");
     	}
     	byte[] crlBytes = null; // return value
-    	log.info("generateAndStoreCRL..."); //TODO REMOVE
     	// Check that we are allowed to create CRLs
     	// Authorization for other things, that we have access to the CA has already been done
     	final int caid = ca.getCAId();
@@ -102,22 +105,28 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		    throw new CryptoTokenOfflineException("Could not find CryptoToken with id " + ca.getCAToken().getCryptoTokenId());
     		}
     		
+
             //TODO deltaCrl?
-    		byte[] crlSignKeySubjectKeyId = null;
+    		Certificate latestCaCertForParition = null; 
     		if (((X509CA)ca).isMsCaCompatible()) {
     		    CRLInfo crlInfo = crlSession.getLastCRLInfo(ca.getSubjectDN(), crlPartitionIndex, false);
     		    if (crlInfo != null) {
-    		        byte[] crlSubjectKeyId = CertTools.getAuthorityKeyId(crlInfo.getCrl());
-    		        if (crlSubjectKeyId != null) {
-    		            crlSignKeySubjectKeyId = crlSubjectKeyId;
-    		            log.debug("Authority key Id found: " + new String(Hex.encode(crlSignKeySubjectKeyId)) + " for crlNr: " + crlInfo.getLastCRLNumber()); //TODO REMOVE
+    		        byte[] lastCrlAuthorityKeyId = CertTools.getAuthorityKeyId(crlInfo.getCrl());
+    		        if (lastCrlAuthorityKeyId != null) {
+    		            if (log.isDebugEnabled()) {
+    		                log.debug("Authority key Id for last CRL in partition '" + crlPartitionIndex + "': " 
+    		                        + new String(Hex.encode(lastCrlAuthorityKeyId)));
+    		            }
+    		            latestCaCertForParition = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(lastCrlAuthorityKeyId);
     		        } else {
-    		            log.debug("CRL for CA '" + ca.getSubjectDN() + "' partition '" + crlPartitionIndex +"' does not contain any Authority Key Identifier extension. "
-    		                    + "Next CRL will be signed by current CRL sign key");
+    		            log.info("Last CRL for CA '" + ca.getSubjectDN() + "' partition '" + crlPartitionIndex +"' does not contain any Authority Key Identifier extension. "
+    		                    + "Next CRL will be signed by latest CRL sign key");
     		        }
     		    } else {
-    		        log.debug("No CRL for partition " + crlPartitionIndex + " exists. "
-    		                + "Signing new CRL with '" + ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
+    		        if (log.isDebugEnabled()) {
+    		            log.debug("No CRL for partition " + crlPartitionIndex + " exists. "
+    		                    + "Signing new CRL with '" + ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
+    		        }
     		    }
     		}
     		
@@ -128,7 +137,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			}
     			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber);       
     		} else {
-    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, crlSignKeySubjectKeyId);
+    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForParition);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back
