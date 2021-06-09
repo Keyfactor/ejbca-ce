@@ -66,8 +66,8 @@ public class X509TrustManagerAcceptAll implements X509TrustManager {
     @Override
     public X509Certificate[] getAcceptedIssuers() {
         // only called from server side
-        if (log.isDebugEnabled()) {
-            log.debug(">getAcceptedIssuers");
+        if (log.isTraceEnabled()) {
+            log.trace(">getAcceptedIssuers (returning null)");
         }
         return null;
     }

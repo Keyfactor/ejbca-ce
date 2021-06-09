@@ -24,8 +24,6 @@ import org.apache.commons.lang.StringUtils;
 
 /** 
  * Class to parse and format relative time values, i.e. '1y-2mo+3d-4h+5m-6s7ms'.
- *  
- * @version $Id$
  */
 public final class TimeUnitFormat {
     
@@ -134,5 +132,23 @@ public final class TimeUnitFormat {
             builder.append(ZERO).append(zeroType);
         }
         return builder.toString();
+    }
+
+    /**
+     * Converts microsoft FILETIME from text presentation to milli seconds.
+     * @param text the microsoft FILETIME text presentation (example 1year = "{0, 64, 57, 135, 46, 225, 254, 255}").
+     * @return the milliseconds as long value from 0.
+     */
+    public static long fileTimeToMillis(final byte[] bytes) {
+//        String[] bytes = text.replaceAll("\\{|\\}|,", "")
+//            .split(" ");
+
+        long hundredNano = 0l;
+        for (int i=7; i>=0; i--) {
+            hundredNano <<= 8;
+            byte winByte = new Integer(bytes[i]).byteValue();
+            hundredNano += 0xff & winByte;
+        }
+        return Math.abs(hundredNano/10000);
     }
 }

@@ -2586,7 +2586,17 @@
                     </h:panelGrid>
                 </h:panelGrid>
                 <h:panelGroup>
-					&nbsp;
+                    <h:outputLabel for="eabNamespaces"
+                                   value="#{web.text.ACCOUNT_BINDING_NAMESPACE}" />
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectManyListbox styleClass="select-list"   id="eabNamespaces"
+                             value="#{certProfileBean.certificateProfile.eabNamespaces}"
+                             size="#{certProfileBean.EABNamespacesListAvailableSize}" disabled="#{certProfileBean.viewOnly}">
+                        <f:selectItems value="#{certProfileBean.availableEABNamespaces}" />
+                    </h:selectManyListbox>
+                </h:panelGroup>
+                <h:panelGroup>
 				</h:panelGroup>
                 <h:panelGroup>
                     <h:commandButton id="saveProfileButton"

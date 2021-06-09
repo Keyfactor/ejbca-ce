@@ -69,8 +69,6 @@ import org.ejbca.core.protocol.NoSuchAliasException;
  * 
  *  Responses of type 'CertRepMessage' may contain additional CA certificates in its 'caPubs' field 
  *  which can be configured in the CMP configuration ({@link CmpConfiguration#getResponseCaPubsCA(String)}.
- *  
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CmpMessageDispatcherSessionRemote")
 public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSessionLocal, CmpMessageDispatcherSessionRemote {
@@ -209,6 +207,10 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 unknownMessageType = tagno;
                 log.info("Received an unknown message type, tagno=" + tagno);
                 break;
+            }
+            
+            if (cmpMessage != null) {
+                cmpMessage.setIncludeCaCert(cmpConfiguration.getResponseCaPubsIssuingCA(cmpConfigurationAlias));
             }
             
             addAdditionalResponseCaPubsCertificates(authenticationToken, cmpConfiguration, cmpConfigurationAlias, cmpMessage);

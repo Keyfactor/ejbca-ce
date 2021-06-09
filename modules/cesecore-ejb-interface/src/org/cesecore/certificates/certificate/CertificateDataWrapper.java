@@ -21,9 +21,7 @@ import org.cesecore.util.CertTools;
 
 /**
  * 
- * Wrapper class for returning cloned specific CertificateData and Base64CertData objects. 
- * 
- * @version $Id$
+ * Wrapper class for returning cloned specific CertificateData and Base64CertData objects.
  *
  */
 public class CertificateDataWrapper implements CertificateWrapper, Comparable<CertificateDataWrapper>, Serializable {
@@ -135,10 +133,10 @@ public class CertificateDataWrapper implements CertificateWrapper, Comparable<Ce
     public int compareTo(final CertificateDataWrapper other) {
         if (getCertificate()!=null && other.getCertificate()!=null) {
             // Sort descending by issuance date if certificates are available 
-            return new Long(CertTools.getNotBefore(other.getCertificate()).getTime()).compareTo(CertTools.getNotBefore(getCertificate()).getTime());          
+            return Long.valueOf(CertTools.getNotBefore(other.getCertificate()).getTime()).compareTo(CertTools.getNotBefore(getCertificate()).getTime());
         } else {
             // Sort descending by expiration date if certificates are not available        
-            return new Long(other.getCertificateData().getExpireDate()).compareTo(getCertificateData().getExpireDate());
+            return Long.valueOf(other.getCertificateData().getExpireDate()).compareTo(getCertificateData().getExpireDate());
         }
     }
 

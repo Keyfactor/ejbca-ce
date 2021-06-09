@@ -32,6 +32,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.ErrorCode;
+import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -48,6 +49,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
@@ -111,12 +113,16 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
             return admin;
         } else if (oauthBearerToken != null) {
-            final AuthenticationToken admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthBearerToken);
-
-            if (admin == null) {
-                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
+            final AuthenticationToken admin;
+            final OAuthConfiguration oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
+            try {
+                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
+                if (admin == null) {
+                    throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
+                }
+            } catch (TokenExpiredException e) {
+                throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token. JWT token has expired.");
             }
-
             return admin;
         } else {
             throw new AuthorizationDeniedException("Authorization failed. No certificates or OAuth token provided.");
@@ -155,6 +161,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         }
 
         extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttribute(pkcs10CertificateRequest));
+        extendedInformation.setAccountBindingId(enrollcertificateRequest.getAccountBindingId());
 
         String subjectDn = getSubjectDn(pkcs10CertificateRequest);
         endEntityInformation.setDN(subjectDn);

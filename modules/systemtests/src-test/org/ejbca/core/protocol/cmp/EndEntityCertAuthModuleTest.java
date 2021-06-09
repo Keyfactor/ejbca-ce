@@ -40,6 +40,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -106,9 +107,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * System tests for EndEntityCertificateAuthenticationModule
- * 
- * @version $Id$
+ * System tests for EndEntityCertificateAuthenticationModule.
  */
 public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
@@ -126,8 +125,10 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     private final static String AUTH_PARAM_CA = "EECertAuthModTestAuthCA";
     private final static String AUTH_PARAM_SUBCA = "EECertAuthModTestAuthSubCA";
     private final static String RA1_ADMIN_ROLE = "EECertAuthModTestRA1AdminRole";
+    private final static String RA1_ADMIN_ROLENOEEP = "EECertAuthModTestRA1AdminNoEEPRole";
     private final static String RA2_ADMIN_ROLE = "ECertAuthModTestRA2AdminRole";
     private final static String RA1_ADMIN = "EECertAuthModTestRA1Admin";
+    private final static String RA1_ADMINNOEEP = "EECertAuthModTestRA1AdminNoEEP";
     private final static String RA2_ADMIN = "EECertAuthModTestRA2Admin";
     private final static String RA3_ADMIN = "EECertAuthModTestRA3Admin";
     
@@ -139,9 +140,11 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     private static CA adminca;
     private static CAInfo adminsubca;
     private Certificate ra1admincert;
+    private Certificate ra1admincertnoeep;
     private Certificate ra2admincert;
     private Certificate ra3admincert;
     private KeyPair ra1adminkeys;
+    private KeyPair ra1adminkeysnoeep;
     private KeyPair ra2adminkeys;
     private KeyPair ra3adminkeys;
     
@@ -162,6 +165,11 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         AuthenticationToken ra1admin = createAdminToken(ra1adminkeys, RA1_ADMIN, "CN="+RA1_ADMIN, adminca.getCAId(), 
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ra1admincert = getCertFromAuthenticationToken(ra1admin);
+
+        ra1adminkeysnoeep = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        AuthenticationToken ra1adminnoeep = createAdminToken(ra1adminkeysnoeep, RA1_ADMINNOEEP, "CN="+RA1_ADMINNOEEP, adminca.getCAId(), 
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        ra1admincertnoeep = getCertFromAuthenticationToken(ra1adminnoeep);
 
         ra2adminkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         AuthenticationToken ra2admin = createAdminToken(ra2adminkeys, RA2_ADMIN, "CN="+RA2_ADMIN, adminca.getCAId(), 
@@ -325,10 +333,32 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.APPROVE_END_ENTITY,
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.KEYRECOVERY_RIGHTS
                         )));
-        // Add the second RA role
-        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, adminca.getCAId(), 
+                RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA1_ADMIN, role1.getRoleId(), null));
+        // Add variant of the first RA role, modified to not have access to EE profile
+        final Role role1noeep = roleSession.persistRole(ADMIN, new Role(null, RA1_ADMIN_ROLENOEEP, Arrays.asList(
+                AccessRulesConstants.ROLE_ADMINISTRATOR,
+                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                StandardRules.CREATECERT.resource(),
+                AccessRulesConstants.REGULAR_VIEWENDENTITY,
+                AccessRulesConstants.REGULAR_CREATEENDENTITY,
+                AccessRulesConstants.REGULAR_EDITENDENTITY,
+                AccessRulesConstants.REGULAR_DELETEENDENTITY,
+                AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+                AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY,
+                StandardRules.CAACCESS.resource() + ca1.getCAId(),
+                // Add access rule for EEP2 here, so this role lacks authorization for EEP1
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id
+                ), Arrays.asList(
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.APPROVE_END_ENTITY,
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.KEYRECOVERY_RIGHTS
+                        )));
+        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, adminca.getCAId(), 
+                RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                RA1_ADMINNOEEP, role1noeep.getRoleId(), null));
+
+        // Add the second RA role
         final Role role2 = roleSession.persistRole(ADMIN, new Role(null, RA2_ADMIN_ROLE, Arrays.asList(
                 AccessRulesConstants.ROLE_ADMINISTRATOR,
                 AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
@@ -345,13 +375,13 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.APPROVE_END_ENTITY,
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.KEYRECOVERY_RIGHTS
                         )));
-        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, adminca.getCAId(), 
+                RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA2_ADMIN, role2.getRoleId(), null));
 
         // For simplicity, make raadmin3 member of the same role as raadmin3
-        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                adminsubca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, adminsubca.getCAId(), 
+                RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA3_ADMIN, role2.getRoleId(), null));
     }
     
@@ -364,7 +394,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         cmpconf.removeAlias(RA2_ALIAS);
         cmpconf.removeAlias(RA3_ALIAS);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpconf);
-        for (final String roleName : Arrays.asList(RA1_ADMIN_ROLE, RA2_ADMIN_ROLE)) {
+        for (final String roleName : Arrays.asList(RA1_ADMIN_ROLE, RA1_ADMIN_ROLENOEEP, RA2_ADMIN_ROLE)) {
             try {
                 final Role role = roleSession.getRole(ADMIN, null, roleName);
                 if (role!=null) {
@@ -375,7 +405,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug(e.getMessage());
             }
         }
-        for (final String username : Arrays.asList(RA1_ADMIN, RA2_ADMIN, RA3_ADMIN)) {
+        for (final String username : Arrays.asList(RA1_ADMIN, RA1_ADMINNOEEP, RA2_ADMIN, RA3_ADMIN)) {
             try {
                 if (endEntityManagementSession.existsUser(username)) {
                     endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, ReasonFlags.unused);
@@ -385,7 +415,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug(e.getMessage());
             }
         }
-        for (final Certificate certificate : Arrays.asList(ra1admincert, ra2admincert, ra3admincert)) {
+        for (final Certificate certificate : Arrays.asList(ra1admincert, ra1admincertnoeep, ra2admincert, ra3admincert)) {
             try {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
             } catch (Exception e) {
@@ -429,7 +459,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         try {
             final X500Name testUserDN = new X500Name("CN=" + testUsername);
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genCertReq(ca1.getSubjectDN(), testUserDN, keys, ca1.getCACertificate(), nonce, 
                     transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
             assertNotNull("Generating CrmfRequest failed.", msg);
@@ -453,9 +483,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA1_ALIAS);
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), testUserDN, ca1.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca1.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA1_ALIAS, testUserDN, (X509Certificate) ca1.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
@@ -473,7 +503,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             
             final X500Name testUserDN = new X500Name("CN=" + testUsername);
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
                     transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
             assertNotNull("Generating CrmfRequest failed.", msg);
@@ -497,9 +527,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA2_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA2_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
@@ -517,7 +547,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         try {
             final X500Name testUserDN = new X500Name("CN=" + testUsername);
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
                     transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
             assertNotNull("Generating CrmfRequest failed.", msg);
@@ -542,9 +572,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
@@ -561,7 +591,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         try {            
             final X500Name testUserDN = new X500Name("CN=" + testUsername);
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
                     transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
             assertNotNull("Generating CrmfRequest failed.", msg);
@@ -587,9 +617,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
@@ -606,7 +636,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         try {            
             final X500Name testUserDN = new X500Name("CN=" + testUsername);
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
                     transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
             assertNotNull("Generating CrmfRequest failed.", msg);
@@ -632,9 +662,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
@@ -651,7 +681,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         try {            
             final X500Name testUserDN = new X500Name("CN=" + testUsername);
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
                     transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
             assertNotNull("Generating CrmfRequest failed.", msg);
@@ -679,9 +709,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
             checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert = checkCmpCertRepMessage(cmpConfiguration, RA3_ALIAS, testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
@@ -710,7 +740,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         String testUsername = "ra1testuser";
         X500Name testUserDN = new X500Name("CN=" + testUsername);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
         PKIMessage msg = genCertReq(ca1.getSubjectDN(), testUserDN, keys, ca1.getCACertificate(), nonce, 
                 transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Generating CrmfRequest failed.", msg);
@@ -757,7 +787,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         testUsername = "ra2testuser";
         testUserDN = new X500Name("CN=" + testUsername);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
         msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
                 transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Generating CrmfRequest failed.", msg);
@@ -771,7 +801,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         sig.initVerify(ra1admincert.getPublicKey());
         sig.update(CmpMessageHelper.getProtectedBytes(msg));
         verified = sig.verify(msg.getProtection().getBytes());
-        assertTrue("Signing the message failed.", verified);
+        assertTrue("Verifying the message failed.", verified);
         //***************************************************
         
         bao = new ByteArrayOutputStream();
@@ -799,8 +829,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     }
 
     /**
-     * 1- Sends a revocation request signed by RA2Admin to RA1. Expected: Fail
-     * 2- Sends a revocation request signed by RA1Admin to RA1. Expected: Success
+     * 1- Sends a revocation request signed by RA2Admin to RA1. Expected: Fail (not access to CA)
+     * 2- Sends a revocation request signed by RA1Admin2 to RA1. Expected: Fail (not access to EE profile)
+     * 3- Sends a revocation request signed by RA1Admin to RA1. Expected: Success (access to both CA and EE profile)
      * 
      * @throws Exception
      */
@@ -820,7 +851,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             assertNotNull("No certificate to revoke.", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
 
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genRevReq(ca1.getSubjectDN(), new X500Name(userDN), CertTools.getSerialNumber(cert), ca1.getCACertificate(), 
                     nonce, transid, false, pAlg, null);
             assertNotNull("Generating revocation request failed.", msg);
@@ -841,7 +872,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                     msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
                     false, null, null);
             ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-            final PKIMessage respObject;
+            PKIMessage respObject;
             try {
                 respObject = PKIMessage.getInstance(asn1InputStream.readObject());
             } finally {
@@ -855,8 +886,34 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             String expectedErrMsg = "'CN=" + RA2_ADMIN + "' is not an authorized administrator.";
             assertEquals(expectedErrMsg, errMsg);
 
+            // Sign the request with RA1 Admin_NoEEP: should fail (since no access to EE profile)
+            // Sign the revocation request with RA1 Admin_NoEEP
+            extraCert = getCMPCert(ra1admincertnoeep);
+            protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeysnoeep.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
+            assertNotNull("Signing CMP message failed.", protectedMsg);
+            // Send the CMP request to RA1. Expected: Fail
+            bao = new ByteArrayOutputStream();
+            out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
+            out.writeObject(protectedMsg);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200, RA1_ALIAS);
+            checkCmpResponseGeneral(resp, ca1.getSubjectDN(), new X500Name(userDN), ca1.getCACertificate(), 
+                    msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
+                    false, null, null);
+            asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+            try {
+                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            } finally {
+                asn1InputStream.close();
+            }
+            assertNotNull("Reading CMP response failed.", respObject);
+            body = respObject.getBody();
+            expectedErrMsg = "Not authorized to revoke certificate for the user with issuer: CN=" + CA1 + " and serno: " + CertTools.getSerialNumberAsString(cert).toLowerCase() + ".";
+            checkCmpFailMessage(resp, expectedErrMsg, PKIBody.TYPE_REVOCATION_REP, 0, PKIFailureInfo.notAuthorized);
             
-            // Sign the revocation request with RA1 Admin
+            // Sign the revocation request with RA1 Admin, that have all access
+            // Now it should work
             extraCert = getCMPCert(ra1admincert);
             protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), 
                     AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
@@ -870,7 +927,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, RA1_ALIAS);
             checkCmpResponseGeneral(resp, ca1.getSubjectDN(), new X500Name(userDN), ca1.getCACertificate(), 
                     msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), 
-                    true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             int revStatus = checkRevokeStatus(ca1.getSubjectDN(), CertTools.getSerialNumber(cert));
             assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
@@ -882,12 +939,11 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     
     /**
      * Sends a revocation request signed by RA2Admin to revoke a certificate issued by a CA RA2Admin is not authorized to. Expected: Fail
-     * 
-     * @throws Exception
+     * (same test as test03RevocationRequest?)
      */
     @Test
-    public void test04RevocationRequest() throws Exception {
-        log.trace(">test04RevocationRequest");
+    public void test04RevocationRequestUnauthorized() throws Exception {
+        log.trace(">test04RevocationRequestUnauthorized");
         String username = "ra1testuser";
         String fingerprintCert = null;
         try {
@@ -901,7 +957,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             assertNotNull("No certificate to revoke.", cert);
             fingerprintCert = CertTools.getFingerprintAsString(cert);
 
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genRevReq(ca1.getSubjectDN(), new X500Name(userDN), CertTools.getSerialNumber(cert), ca1.getCACertificate(), 
                     nonce, transid, false, pAlg, null);
             assertNotNull("Generating revocation request failed.", msg);
@@ -939,7 +995,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         } finally {
             internalCertStoreSession.removeCertificate(fingerprintCert);
             endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, ReasonFlags.unused);
-            log.trace("<test04RevocationRequest");
+            log.trace("<test04RevocationRequestUnauthorized");
         }
     }
 

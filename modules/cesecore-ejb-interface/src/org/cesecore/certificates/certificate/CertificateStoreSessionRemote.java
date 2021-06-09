@@ -39,11 +39,12 @@ public interface CertificateStoreSessionRemote extends CertificateStoreSession {
      * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
      * @param tag a custom string tagging this certificate for some purpose
      * @param updateTime epoch millis to use as last update time of the stored object
+     * @param accountBindingId external account binding identifier
      *
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
     void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper cert, String username, String cafp, int status, int type,
-            int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime) throws AuthorizationDeniedException;
+            int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime, String accountBindingId) throws AuthorizationDeniedException;
 
     /**
      * Finds a certificate by fingerprint (remote EJB interface, supports unnamed ECC and Brainpool)

@@ -43,9 +43,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * 
- * @version $Id$
- *
+ * Tests EST alias handling, that aliases can be created and cloned, that requests to non-existing aliases gives errors 
+ * and that protocol configuration denies access when EST is not enabled.
  */
 public class EstAliasTest extends EstTestCase {
 
@@ -75,7 +74,9 @@ public class EstAliasTest extends EstTestCase {
     /**
      * Sends a EST request with the alias requestAlias in the URL and expects a HTTP error message 
      * if that extractedAlias does not  exist.
-     * 
+     *
+     * @param config the specific EST alias configuration to use
+     * @param operation the EST operation, i.e. cacerts, simpleenroll, simplereenroll, etc
      * @param requestAlias the alias that is specified in the URL
      * @param extractedAlias the alias that EJBCA will use to handle the EST request
      * @throws Exception if connection to server can not be established
@@ -95,7 +96,7 @@ public class EstAliasTest extends EstTestCase {
                 this.globalConfigurationSession.saveConfiguration(ADMIN, config);
             }
 
-            String urlString = this.httpReqPath;
+            String urlString = this.httpsPubReqPath;
             if(StringUtils.isNotEmpty(requestAlias)) {
                 urlString += requestAlias; 
                 urlString += "/" + operation;
@@ -118,10 +119,12 @@ public class EstAliasTest extends EstTestCase {
             con.setHostnameVerifier(new SimpleVerifier()); // no hostname verification for testing
 
             con.setDoOutput(true);
-            con.setRequestMethod("POST");
             if (operation.contains("simple")) {
-                // mime-type for simpleenroll and simplereenroll as specified in RFC7030 section 4.2.1
+                // mime-type for simpleenroll and simplereenroll as specified in RFC7030 section 3.2.4 and 4.2.1
                 con.setRequestProperty("Content-type", "application/pkcs10");
+                con.setRequestMethod("POST");
+            } else {
+                con.setRequestMethod("GET"); // cacerts uses GET, Content-type is N/A according to RFC7030 section 3.2.4
             }
             con.connect();
             // An EST alias that does not exist will result in a HTTP bad request error

@@ -1945,8 +1945,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final OCSPReqBuilder gen = new OCSPReqBuilder();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         final String remoteAddress = "127.0.0.1";
-        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
-        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
+        final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress, ocspConfiguration);
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress, ocspConfiguration);
         CertificateID certId;
         try {
             if (isSHA1(certIDHashAlgorithm)) {

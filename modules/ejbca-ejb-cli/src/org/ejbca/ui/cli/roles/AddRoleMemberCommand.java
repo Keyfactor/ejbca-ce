@@ -15,11 +15,13 @@ package org.ejbca.ui.cli.roles;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -28,6 +30,8 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookup
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -43,8 +47,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Adds a role member.
- *
- * @version $Id$
  */
 public class AddRoleMemberCommand extends BaseRolesCommand {
 
@@ -52,6 +54,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
 
     private static final String ROLE_NAME_KEY = "--role";
     private static final String CA_NAME_KEY = "--caname";
+    private static final String PROVIDER_NAME_KEY = "--provider";
     private static final String MATCH_WITH_KEY = "--with";
     private static final String MATCH_TYPE_KEY = "--type";
     private static final String MATCH_VALUE_KEY = "--value";
@@ -62,7 +65,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Role to add admin to."));
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Name of issuing CA"));
+                "Name of issuing CA. Set to empty string if not applicable"));
         registerParameter(new Parameter(MATCH_WITH_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The MatchWith Value"));
         registerParameter(new Parameter(MATCH_TYPE_KEY, "Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -73,6 +76,8 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 "A human readable description of the role member."));
         registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The namespace the role belongs to."));
+        registerParameter(new Parameter(PROVIDER_NAME_KEY, "OAuth Provider Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of OAuth Provider. Required for OAuth"));
     }
 
     @Override
@@ -118,6 +123,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             }
         }
         final int tokenIssuerId;
+        final int tokenProviderId;
         if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
             final String caName = parameters.get(CA_NAME_KEY);
             final CAInfo caInfo;
@@ -132,10 +138,30 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             tokenIssuerId = caInfo.getCAId();
-        } else {
-            // To be backwards compatible with existing scripts in the wild, we will still have to require parameter but we ignore the value if is unused
-            //getLogger().info("Ignoring mandatory '" + CA_NAME_KEY + "' parameter value for the selected Token Type '" + tokenType + "'.");
+            tokenProviderId = RoleMember.NO_PROVIDER;
+        } else if (OAuth2AuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
+            final String providerLabel = parameters.get(PROVIDER_NAME_KEY);
+            if (StringUtils.isEmpty(providerLabel)) {
+                getLogger().error("--provider is required for this match value.");
+                return CommandResult.CLI_FAILURE;
+            }
+            final OAuthConfiguration oauthConfig = (OAuthConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class).
+                    getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+            if (oauthConfig == null || MapUtils.isEmpty((oauthConfig.getOauthKeys()))) {
+                getLogger().error("No OAuth providers have been configured. Can't add role member.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            final OAuthKeyInfo oauthInfo = oauthConfig.getOauthKeyByLabel(providerLabel);
+            if (oauthInfo == null) {
+                getLogger().error("No such OAuth provider '" + providerLabel + "'.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            tokenProviderId = oauthInfo.getInternalId();
+            // To be backwards compatible with existing scripts in the wild, we will still have to require the --caname parameter but we ignore the value if is unused
             tokenIssuerId = RoleMember.NO_ISSUER;
+        } else {
+            tokenIssuerId = RoleMember.NO_ISSUER;
+            tokenProviderId = RoleMember.NO_PROVIDER;
         }
         final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(tokenType, matchWithKey);
         if (accessMatchValue == null) {
@@ -162,7 +188,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
            matchValue = parameters.get(MATCH_VALUE_KEY);
         }  
                 
-        final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
+        final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
                 matchValue , role.getRoleId(), description);
         try {
             final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
@@ -172,6 +198,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             roleMemberSession.persist(getAuthenticationToken(), roleMember);
+            getLogger().info("Role member was successfully added.");
         } catch (AuthorizationDeniedException e) {
             getLogger().error("CLI user not authorized to edit role");
             return CommandResult.AUTHORIZATION_FAILURE;
@@ -201,12 +228,21 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             availableRoles += availableRoles.length() == 0 ? "" : ", ";
             availableRoles += "'" + super.getFullRoleName(role.getNameSpace(), role.getRoleName()) + "'";
         }
-        sb.append("Available Roles: " + availableRoles + "\n");
+        sb.append("\nAvailable Roles: " + availableRoles + "\n");
         String availableCas = "";
         for (final String caName : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaNames(getAuthenticationToken())) {
             availableCas += (availableCas.length() == 0 ? "" : ", ") + "" + caName + "";
         }
-        sb.append("Available CAs: " + availableCas + "\n");
+        sb.append("\nAvailable CAs: " + availableCas + "\n");
+        sb.append("\nAvailable OAuth Providers: ");
+        final OAuthConfiguration oauthConfig = (OAuthConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class).
+                getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        if (oauthConfig == null || MapUtils.isEmpty((oauthConfig.getOauthKeys()))) {
+            sb.append("<No providers configured>");
+        } else {
+            sb.append(String.join(", ", oauthConfig.getOauthKeys().keySet()));
+        }
+        sb.append("\n");
         String availableAccessMatchValues = "";
         for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
             final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
@@ -216,7 +252,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 }
             }
         }
-        sb.append("Match with is one of ('CertificateAuthenticationToken:' can be omitted): " + availableAccessMatchValues + "\n");
+        sb.append("\nMatch with is one of ('CertificateAuthenticationToken:' can be omitted): " + availableAccessMatchValues + "\n");
         return sb.toString();
     }
 

@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -210,12 +209,11 @@ public class CertificateRestResource extends BaseRestResource {
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyStoreRestRequest.getKeyAlg());
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keyStoreRestRequest.getKeySpec());
         final int tokenType = endEntityInformation.getTokenType();
-        if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS)) {
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be PKCS12 or JKS");
+        if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS || tokenType ==SecConst.TOKEN_SOFT_BCFKS)) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        final KeyStore keyStore = KeyTools.createKeyStore(keyStoreBytes, keyStoreRestRequest.getPassword());
-        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStore, keyStoreRestRequest.getPassword());
+        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType());
         return Response.status(Status.CREATED).entity(response).build();
     }
 
@@ -367,10 +365,11 @@ public class CertificateRestResource extends BaseRestResource {
         code = 201)
     public Response finalizeEnrollment(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Approval request id") @PathParam("request_id") int requestId,
-            @ApiParam(value = "responseFormat must be one of 'P12', 'JKS', 'DER'") FinalizeRestRequest request)
+            @ApiParam(value = "Approval request id")
+            @PathParam("request_id") int requestId,
+            @ApiParam(value = "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'") FinalizeRestRequest request)
                     throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException,
-                        KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
+                        KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
         final String password = request.getPassword();
@@ -435,29 +434,29 @@ public class CertificateRestResource extends BaseRestResource {
             }
         } else {
             // Initial request was server generated key store
-            byte[] certificateBytes;
+            byte[] keyStoreBytes;
             if (responseFormat.equals(TokenDownloadType.JKS.name())) {
                 endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
             } else if (responseFormat.equals(TokenDownloadType.P12.name())) {
                 endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
             } else if (responseFormat.equals(TokenDownloadType.PEM.name())) {
                 endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_PEM);
+            } else if  (responseFormat.equals(TokenDownloadType.BCFKS.name())) {
+                endEntityInformation.setTokenType((EndEntityConstants.TOKEN_SOFT_BCFKS));
             } else {
-                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid response format. Must be 'JKS', 'P12' or 'PEM'");
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid response format. Must be 'JKS', 'P12', 'BCFKS', or 'PEM'");
             }
 
-            certificateBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
+            keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
-                Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
-                response = CertificateRestResponse.builder().setCertificate(certificateBytes).
+                Certificate certificate = CertTools.getCertfromByteArray(keyStoreBytes, Certificate.class);
+                response = CertificateRestResponse.builder().setCertificate(keyStoreBytes).
                         setSerialNumber(CertTools.getSerialNumberAsString(certificate)).setResponseFormat("PEM").build();
             } else if (responseFormat.equals(TokenDownloadType.DER.name())) {
-                final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
+                final Certificate certificate = CertTools.getCertfromByteArray(keyStoreBytes, Certificate.class);
                 response = CertificateRestResponse.converter().toRestResponse(certificate);
             } else {
-                // JKS or PKCS12. Will be detected by content.
-                final KeyStore keyStore = KeyTools.createKeyStore(certificateBytes, password);
-                response = CertificateRestResponse.converter().toRestResponse(keyStore, password);
+                response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType());
             }
         }
         return Response.status(Status.CREATED).entity(response).build();

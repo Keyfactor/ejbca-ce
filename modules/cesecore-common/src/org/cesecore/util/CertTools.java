@@ -13,6 +13,110 @@
 
 package org.cesecore.util;
 
+import com.novell.ldap.LDAPDN;
+import org.apache.commons.lang.CharUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERGeneralString;
+import org.bouncycastle.asn1.DERGeneralizedTime;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.pkcs.Attribute;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
+import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.X500NameStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralSubtree;
+import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.NameConstraints;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
+import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.cms.CMSAbsentContent;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.util.Store;
+import org.bouncycastle.util.encoders.DecoderException;
+import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.internal.InternalResources;
+import org.ejbca.cvc.AuthorizationRole;
+import org.ejbca.cvc.CVCAuthorizationTemplate;
+import org.ejbca.cvc.CVCObject;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.ReferenceField;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -76,109 +180,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.novell.ldap.LDAPDN;
-
-import org.apache.commons.lang.CharUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Encoding;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1Object;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERGeneralString;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.pkcs.Attribute;
-import org.bouncycastle.asn1.pkcs.CertificationRequest;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.util.ASN1Dump;
-import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
-import org.bouncycastle.asn1.x500.RDN;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.bouncycastle.asn1.x500.X500NameStyle;
-import org.bouncycastle.asn1.x500.style.IETFUtils;
-import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.DistributionPointName;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.GeneralSubtree;
-import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.NameConstraints;
-import org.bouncycastle.asn1.x509.PolicyInformation;
-import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
-import org.bouncycastle.asn1.x509.ReasonFlags;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
-import org.bouncycastle.cert.CertIOException;
-import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.cms.CMSAbsentContent;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
-import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.operator.BufferingContentSigner;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.ContentVerifierProvider;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.util.CollectionStore;
-import org.bouncycastle.util.encoders.DecoderException;
-import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.certificates.certificate.ssh.SshCertificate;
-import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.config.OcspConfiguration;
-import org.cesecore.internal.InternalResources;
-import org.ejbca.cvc.AuthorizationRole;
-import org.ejbca.cvc.CVCAuthorizationTemplate;
-import org.ejbca.cvc.CVCObject;
-import org.ejbca.cvc.CVCertificate;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.CertificateParser;
-import org.ejbca.cvc.ReferenceField;
-import org.ejbca.cvc.exception.ConstructionException;
-import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Tools to handle common certificate operations.
@@ -875,7 +876,7 @@ public abstract class CertTools {
      * @return String containing the issuers DN, or null if cert is null.
      */
     public static String getIssuerDN(final Certificate cert) {
-        if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+        if (cert != null && StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
             SshCertificate sshCertificate = (SshCertificate) cert;
             return sshCertificate.getIssuerIdentifier();
         } else {
@@ -2806,7 +2807,8 @@ public abstract class CertTools {
 
         for (final String guid : CertTools.getPartsFromDN(altName, CertTools.GUID)) {
             final ASN1EncodableVector v = new ASN1EncodableVector();
-            byte[] guidbytes = Hex.decode(guid);
+            final String dashRemovedGuid = guid.replace("-", "");
+            byte[] guidbytes = Hex.decode(dashRemovedGuid);
             if (guidbytes != null) {
                 v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
                 v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
@@ -4719,5 +4721,73 @@ public abstract class CertTools {
             }
         }
         return commonName;
+    }
+
+    public static Collection<X509CertificateHolder> parseP7B(InputStream is) throws CMSException, IOException {
+
+        final InputStreamReader isr = new InputStreamReader(is);
+        final PEMParser parser = new PEMParser(isr);
+
+        final ContentInfo info = (ContentInfo) parser.readObject();
+        final CMSSignedData csd = new CMSSignedData(info);
+        @SuppressWarnings("unchecked")
+        final Store<X509CertificateHolder> certstore = csd.getCertificates();
+        final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
+
+        parser.close();
+        return collection;
+    }
+
+    private static byte[] getFirstCertificate(Collection<X509CertificateHolder> collection) throws CertificateException {
+
+        if (null != collection) {
+            final X509CertificateHolder certholder = collection.iterator().next();
+            final X509Certificate x509cert = new JcaX509CertificateConverter().getCertificate(certholder);
+            return Base64.encode(x509cert.getEncoded());
+        }
+
+        return null;
+    }
+
+    public static byte[] getPKCS7Certificate(InputStream is) throws CertificateException, IOException, CMSException {
+
+        final InputStreamReader isr = new InputStreamReader(is);
+        final PEMParser parser = new PEMParser(isr);
+
+        final ContentInfo info = (ContentInfo) parser.readObject();
+        final CMSSignedData csd = new CMSSignedData(info);
+
+        return csd.getEncoded();
+    }
+
+    public static String getPEMCertificate(Collection<X509CertificateHolder> collection) throws CertificateException {
+        final byte[] b64 = CertTools.getFirstCertificate(collection);
+        return BEGIN_CERTIFICATE + "\n" + new String(b64) + "\n" + END_CERTIFICATE;
+    }
+
+    public static String getPEMCertificate(byte[] bytes) {
+        final byte[] b64 = Base64.encode(bytes);
+        return BEGIN_CERTIFICATE + "\n" + new String(b64) + "\n" + END_CERTIFICATE;
+    }
+
+    public static String getPKCS7PEMCertificate(byte[] bytes) {
+        final byte[] b64 = Base64.encode(bytes);
+        return BEGIN_PKCS7 + "\n" + new String(b64) + "\n" + END_PKCS7;
+    }
+
+    public static byte[] getFirstCertificateFromPKCS7(byte[] pkcs7) throws CMSException, IOException {
+        byte[] firstCertificate = null;
+
+        final CMSSignedData csd = new CMSSignedData(pkcs7);
+        @SuppressWarnings("unchecked")
+        final Store<X509CertificateHolder> certstore = csd.getCertificates();
+        final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
+
+        final Iterator<X509CertificateHolder> ci = collection.iterator();
+        if (ci.hasNext()) {
+            firstCertificate = ci.next().getEncoded();
+        }
+
+        return firstCertificate;
     }
 }

@@ -40,7 +40,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
-import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -85,9 +84,7 @@ import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
- * Message handler for certificate request messages in the CRMF format
- * 
- * @version $Id$
+ * Message handler for certificate request messages in the CRMF format.
  */
 public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
 	
@@ -322,7 +319,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                 authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
         ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  null,  authenticated);
-        if(authenticationModule == null) {
+        if (authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();
             LOG.info(errmsg);
             return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
@@ -429,17 +426,31 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         try {
             // Do we have a public key in the request? If not we may be trying to do server generated keys
             enrichWithServerGeneratedKeyOrThrow((ICrmfRequestMessage) req, certProfileId);
-            try {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Creating new request with eeProfileId '" + eeProfileId + "', certProfileId '" + certProfileId + "', caId '" + caId
+                        + "'");
+            }
+            // If it was a certificate authenticated admin, we want to use this admin token to pass down core layers which will make 
+            // authorization checks on it
+            final AuthenticationToken adminForEjb;
+            if (authenticationModule.getAuthenticationToken() != null) {
+                adminForEjb = authenticationModule.getAuthenticationToken();
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Creating new request with eeProfileId '" + eeProfileId + "', certProfileId '" + certProfileId + "', caId '" + caId
-                            + "'");
+                    LOG.debug("Using admin from AuthenticationModule to call EJB. AuthModule=" + authenticationModule.getName() + ", admin: " + adminForEjb.toString());
                 }
-                resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, CmpResponseMessage.class);
+            } else {
+                adminForEjb = this.admin;    
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Using AlwaysAllow admin to call EJB, admin: " + adminForEjb.toString());
+                }               
+            }
+            try {
+                resp = this.certificateRequestSession.processCertReq(adminForEjb, userdata, req, CmpResponseMessage.class);
             } catch (EndEntityExistsException e) {
                 final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
                 LOG.info(updateMsg);
                 // Try again
-                resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, CmpResponseMessage.class);
+                resp = this.certificateRequestSession.processCertReq(adminForEjb, userdata, req, CmpResponseMessage.class);
             }
         } catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request 

@@ -17,6 +17,7 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.cesecore.util.ui.DynamicUiModelAware;
 
 /**
@@ -39,6 +40,6 @@ public interface CertificateValidator extends Validator, ValidityAwareValidator,
      * @throws ValidationException if the certificate could not be validated by the external command (exit code > 0).
      * @throws CertificateException if one of the certificates could not be parsed.
      */
-    List<String> validate(CA ca, Certificate certificate, ExternalScriptsWhitelist whitelist)
+    List<String> validate(CA ca, Certificate certificate, ExternalScriptsAllowlist whitelist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException;
 }

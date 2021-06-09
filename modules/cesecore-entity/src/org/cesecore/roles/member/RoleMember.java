@@ -22,18 +22,19 @@ import org.cesecore.util.StringTools;
 /**
  * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely.
  *
- * @version $Id$
  */
 public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public static int ROLE_MEMBER_ID_UNASSIGNED = 0;
     public static int NO_ROLE = Role.ROLE_ID_UNASSIGNED;
     public static int NO_ISSUER = 0;
+    public static int NO_PROVIDER = 0;
 
     private static final long serialVersionUID = 1L;
     private int id;
     private String tokenType;
     private int tokenIssuerId;
+    private int tokenProviderId;
     private int tokenMatchKey;
     private int tokenMatchOperator;
     private String tokenMatchValue;
@@ -44,31 +45,41 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
      * Constructor for a new RoleMember. Will by default be constructed with the primary key 0, which means that this object hasn't been
      * persisted yet. In that case, the primary key will be set by the CRUD bean.
      *
-     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
-     * @param tokenIssuerId the issuer identifier of this token or 0 if not relevant
+     * @param tokenIssuerId the issuer identifier of this token or {@link #NO_ISSUER} if not relevant
+     * @param tokenProviderId the OAuth provider identifier, or {@link #NO_PROVIDER} if not relevant
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param description a human readable description of this role member.
      */
+    public RoleMember(final String tokenType, final int tokenIssuerId, final int tokenProviderId, final int tokenMatchKey, final int tokenMatchOperator,
+            final String tokenMatchValue, final int roleId, final String description) {
+        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
+    }
+
+    /**
+     * @deprecated Since EJBCA 7.5.0. Please use the constructor with tokenProviderId instead, and set the parameter to {@link #NO_PROVIDER}.
+     */
+    @Deprecated
     public RoleMember(final String tokenType, final int tokenIssuerId, final int tokenMatchKey, final int tokenMatchOperator,
             final String tokenMatchValue, final int roleId, final String description) {
-        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
+        this(ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, NO_PROVIDER, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
     }
 
     /**
      * Constructor for a RoleMember object that has already been assigned an ID (the RoleMember already exists).
      *
-     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
-     * @param tokenIssuerId the issuer identifier of this token or 0 if not relevant
+     * @param tokenIssuerId the issuer identifier of this token or {@link #NO_ISSUER} if not relevant
+     * @param tokenProviderId the OAuth provider identifier, or {@link #NO_PROVIDER} if not relevant
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
      * @param description a human readable description of this role member.
      */
-    public RoleMember(final int id, final String tokenType, final int tokenIssuerId, final int tokenMatchKey, final int tokenMatchOperator,
+    public RoleMember(final int id, final String tokenType, final int tokenIssuerId, final int tokenProviderId, final int tokenMatchKey, final int tokenMatchOperator,
             final String tokenMatchValue, final int roleId, final String description) {
         this.id = id;
         this.tokenType = tokenType;
         this.tokenIssuerId = tokenIssuerId;
+        this.tokenProviderId = tokenProviderId;
         this.tokenMatchKey = tokenMatchKey;
         this.tokenMatchOperator = tokenMatchOperator;
         this.tokenMatchValue = tokenMatchValue;
@@ -81,6 +92,7 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
         this.id = roleMember.id;
         this.tokenType = roleMember.tokenType;
         this.tokenIssuerId = roleMember.tokenIssuerId;
+        this.tokenProviderId = roleMember.tokenProviderId;
         this.tokenMatchKey = roleMember.tokenMatchKey;
         this.tokenMatchOperator = roleMember.tokenMatchOperator;
         this.tokenMatchValue = roleMember.tokenMatchValue;
@@ -110,6 +122,14 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public void setTokenIssuerId(final int tokenIssuerId) {
         this.tokenIssuerId = tokenIssuerId;
+    }
+
+    public int getTokenProviderId() {
+        return tokenProviderId;
+    }
+
+    public void setTokenProviderId(int tokenProviderId) {
+        this.tokenProviderId = tokenProviderId;
     }
 
     public AccessMatchType getAccessMatchType() {
@@ -158,6 +178,7 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public boolean isSameAs(final RoleMember roleMember) {
         return this.getTokenIssuerId() == roleMember.getTokenIssuerId() 
+                && this.getTokenProviderId() == roleMember.getTokenProviderId()
                 && this.getTokenMatchKey() == roleMember.getTokenMatchKey()
                 && this.getTokenMatchOperator() == roleMember.getTokenMatchOperator()
                 && StringUtils.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
@@ -176,6 +197,9 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
         }
         if (tokenIssuerId != o.tokenIssuerId) {
             return tokenIssuerId - o.tokenIssuerId;
+        }
+        if (tokenProviderId!= o.tokenProviderId) {
+            return tokenProviderId - o.tokenProviderId;
         }
         diff = StringTools.compare(tokenMatchKey, o.tokenMatchKey);
         if (diff != 0) {

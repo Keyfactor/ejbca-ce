@@ -14,15 +14,14 @@ package org.ejbca.ui.cli.config.oauth;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.cert.CertificateParsingException;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.util.KeyTools;
-import org.ejbca.config.GlobalConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
@@ -33,58 +32,54 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     private static final Logger log = Logger.getLogger(BaseOAuthConfigCommand.class);
 
-    private GlobalConfiguration globalConfiguration = null;
+    private OAuthConfiguration oAuthConfiguration = null;
 
     @Override
     public String[] getCommandPath() {
         return new String[] { super.getCommandPath()[0] , "oauth" };
     }
     
-    protected GlobalConfiguration getGlobalConfiguration() {
-        if (globalConfiguration == null) {
-            globalConfiguration = (GlobalConfiguration) getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    protected OAuthConfiguration getOAuthConfiguration() {
+        if (oAuthConfiguration == null) {
+            oAuthConfiguration = (OAuthConfiguration) getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         }
-        return globalConfiguration;
+        return oAuthConfiguration;
     }
     
     protected boolean saveGlobalConfig() {
         try {
-            getGlobalConfigurationSession().saveConfigurationWithRootAccessCheck(getAuthenticationToken(), getGlobalConfiguration());
-            getGlobalConfigurationSession().flushConfigurationCache(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            getGlobalConfigurationSession().saveConfigurationWithRootAccessCheck(getAuthenticationToken(), getOAuthConfiguration());
+            getGlobalConfigurationSession().flushConfigurationCache(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
             return true;
         } catch (AuthorizationDeniedException e) {
             return false;
         }
     }
     
-    protected byte[] getOauthKeyPublicKey(final String publicKey) {
+    protected byte[] getFileBytes(final String filename) {
         try {
-            byte[] uploadedFileBytes = Files.readAllBytes(Paths.get(publicKey));
-            return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
-        } catch (final CertificateParsingException e) {
-            log.info("Could not parse the public key file.", e);
-            return ArrayUtils.EMPTY_BYTE_ARRAY;
+            return Files.readAllBytes(Paths.get(filename));
         } catch (final Exception e) {
-            log.info("Failed to add Public Key.", e);
+            log.info("Failed to read Public Key file.", e);
             return ArrayUtils.EMPTY_BYTE_ARRAY;
         }
     }
     
     protected boolean canAdd(final OAuthKeyInfo oauthKey) {
-        for (OAuthKeyInfo existingKeyInfo : getGlobalConfiguration().getOauthKeys().values()) {
-            final boolean hasSameInternalId = existingKeyInfo.getInternalId() == oauthKey.getInternalId();
-            final boolean hasSameKeyIdentifier = StringUtils.equals(existingKeyInfo.getKeyIdentifier(), oauthKey.getKeyIdentifier());
-            if (hasSameInternalId || hasSameKeyIdentifier) {
+        for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
+            final boolean hasSameInternalId = ObjectUtils.equals(existingKeyInfo.getInternalId(), oauthKey.getInternalId());
+            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
+            if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
         }
         return true;
     }
     
-    protected boolean canEditKid(final String kid) {
-        for (OAuthKeyInfo existingKeyInfo : getGlobalConfiguration().getOauthKeys().values()) {
-            final boolean hasSameKeyIdentifier = StringUtils.equals(existingKeyInfo.getKeyIdentifier(), kid);
-            if (hasSameKeyIdentifier) {
+    protected boolean canEditLabel(final String label) {
+        for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
+            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), label);
+            if (hasSameLabel) {
                 return false;
             }
         }

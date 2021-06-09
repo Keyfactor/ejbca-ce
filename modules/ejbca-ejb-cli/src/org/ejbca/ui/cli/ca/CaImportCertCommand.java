@@ -343,7 +343,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(certificate),
                     username, CertTools.getFingerprintAsString(cacert), CertificateConstants.CERT_ACTIVE, certificateType, certificateprofileid, endentityprofileid,
-                    crlPartitionIndex, null, new Date().getTime());
+                    crlPartitionIndex, null, new Date().getTime(), null);
             if (status == CertificateConstants.CERT_REVOKED) {
                 try {
                     endEntityManagementSession.revokeCert(getAuthenticationToken(), CertTools.getSerialNumber(certificate), revocationTime, CertTools.getIssuerDN(certificate),

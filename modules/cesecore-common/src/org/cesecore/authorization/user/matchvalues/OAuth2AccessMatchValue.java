@@ -28,9 +28,16 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     CLAIM_ISSUER(2),
     /** Matches an "aud" (audience) claim */
     CLAIM_AUDIENCE(3),
+    /** Matches the "oid" (object identifier) claim */
+    CLAIM_OBJECTID(4),
+    // NOTE: preferred_username, email, etc. should not be considered to be stable, according to the OpenID connect specification.
+    // And according to Azure documentation, they MUST NOT be used for authorization decisions. See:
+    // https://openid.net/specs/openid-connect-core-1_0.html
+    // https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/active-directory/develop/id-tokens.md
+
 //  Possible future extension, to allow for arbitrary claims, and to require multiple different claims
 //    /** An JSON string with claims */
-//    JSON_CLAIMS(4)
+//    JSON_CLAIMS()
     ;
 
     private final int numericValue;
@@ -58,6 +65,12 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     public boolean isIssuedByCa() {
         return false;
     }
+
+    @Override
+    public boolean isIssuedByOauthProvider() {
+        return true;
+    }
+
 
     @Override
     public List<AccessMatchType> getAvailableAccessMatchTypes() {

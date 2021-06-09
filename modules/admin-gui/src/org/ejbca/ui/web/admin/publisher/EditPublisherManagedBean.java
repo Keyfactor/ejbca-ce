@@ -307,8 +307,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
                 Arrays.asList(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
         authorizedPublisherIds.remove(this.publisherId);
         final Map<Integer, String> publisherIdToNameMap = publisherSession.getPublisherIdToNameMap();
-        for (final int publisherId : authorizedPublisherIds) {
-            availablePublisherList.add(publisherIdToNameMap.get(publisherId));
+        for (final int authPublisherId : authorizedPublisherIds) {
+            if (!publisherIdToNameMap.containsKey(authPublisherId)) {
+                log.warn("Cannot find publisher with ID " + publisherId + ". Perhaps it is not allowed with external scripts disabled?");
+                continue;
+            }
+            availablePublisherList.add(publisherIdToNameMap.get(authPublisherId));
         }
         Collections.sort(availablePublisherList);
         return availablePublisherList;

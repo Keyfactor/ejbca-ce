@@ -62,6 +62,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -113,6 +114,10 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.cvc.PublicKeyEC;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.AsymmetricJWK;
+import com.nimbusds.jose.jwk.JWK;
 
 /**
  * Tools to handle common key and keystore operations.
@@ -605,48 +610,85 @@ public final class KeyTools {
      * 
      * @param alias
      *            the alias used for the key entry
-     * @param privKey
+     * @param privateKey
      *            private key
-     * @param cert
+     * @param certificate
      *            user certificate
-     * @param cachain
+     * @param caCertificateChain
      *            CA-certificate chain or null if only one cert in chain, in that case use 'cert'.
      * @return KeyStore containing PKCS12-keystore
      * @throws CertificateException if the certificate couldn't be parsed
      * @throws CertificateEncodingException if the encoded bytestream of the certificate couldn't be retrieved
      * @throws NoSuchAlgorithmException if the algorithm defined in privKey couldn't be found
      * @throws InvalidKeySpecException if the key specification defined in privKey couldn't be found
-
      */
-    public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate[] cachain)
+    public static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
             throws CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        try {
+            KeyStore store = CesecoreConfiguration.useLegacyPkcs12Keystore()
+                    ? KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME)
+                    : KeyStore.getInstance("PKCS12-3DES-3DES", BouncyCastleProvider.PROVIDER_NAME);
+            store.load(null, null);
+            return createP12(alias, privateKey, certificate, caCertificateChain, store);
+        } catch (IOException | KeyStoreException | NoSuchProviderException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Create a Bouncy Castle's BCFKS. See https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
+     *
+     * @param alias the alias to use for keystore entries.
+     * @param privateKey the private key to store in the keystore.
+     * @param certificate the user's certificate to store in the keystore.
+     * @param caCertificateChain the CA certificate chain to store in the keystore.
+     * @return a BCFKS keystore as a {@link KeyStore} object.
+     *
+     * @throws CertificateEncodingException if the certificate could not be decoded.
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException if an algorithm is unavailable.
+     * @throws InvalidKeySpecException
+     */
+    public static KeyStore createBcfks(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain)
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        try {
+            KeyStore store = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
+            store.load(null, null);
+            return createP12(alias, privateKey, certificate, caCertificateChain, store);
+        } catch (IOException | KeyStoreException | NoSuchProviderException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static KeyStore createP12(final String alias, final PrivateKey privateKey, final Certificate certificate, final Certificate[] caCertificateChain, final KeyStore store)
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
-            log.trace(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
-                    + ((cachain == null) ? 0 : cachain.length));
+            log.trace(">createP12: alias=" + alias + ", privateKey, certificate=" + CertTools.getSubjectDN(certificate) + ", caCertificateChain.length="
+                    + ((caCertificateChain == null) ? 0 : caCertificateChain.length));
         }
         // Certificate chain
-        if (cert == null) {
-            throw new IllegalArgumentException("Parameter cert cannot be null.");
+        if (certificate == null) {
+            throw new IllegalArgumentException("Parameter certificate cannot be null.");
         }
         int len = 1;
-        if (cachain != null) {
-            len += cachain.length;
+        if (caCertificateChain != null) {
+            len += caCertificateChain.length;
         }
         final Certificate[] chain = new Certificate[len];
         // To not get a ClassCastException we need to generate a real new certificate with BC
         final CertificateFactory cf = CertTools.getCertificateFactory();
-        chain[0] = cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
+        chain[0] = cf.generateCertificate(new ByteArrayInputStream(certificate.getEncoded()));
 
-        if (cachain != null) {
-            for (int i = 0; i < cachain.length; i++) {
-                final X509Certificate tmpcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cachain[i].getEncoded()));
+        if (caCertificateChain != null) {
+            for (int i = 0; i < caCertificateChain.length; i++) {
+                final X509Certificate tmpcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertificateChain[i].getEncoded()));
                 chain[i + 1] = tmpcert;
             }
         }
         if (chain.length > 1) {
             for (int i = 1; i < chain.length; i++) {
                 final X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(chain[i].getEncoded()));
-                // Set attributes on CA-cert
+                // Set attributes on CA-certificate
                 try {
                     final PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
                     // We construct a friendly name for the CA, and try with some parts from the DN if they exist.
@@ -672,7 +714,7 @@ public final class KeyTools {
             }
         }
 
-        // Set attributes on user-cert
+        // Set attributes on user-certificate
         try {
             final PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
             certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
@@ -682,23 +724,19 @@ public final class KeyTools {
             log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
         }
         try {
-            // Store the key and the certificate chain
-            // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
-            final KeyStore store = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-            store.load(null, null);            
-            // "Clean" private key, i.e. remove any old attributes, 
+            // "Clean" private key, i.e. remove any old attributes,
             // As well as convert any EdDSA key to v1 format that is understood by openssl v1.1.1 and earlier
             // EdDSA (Ed25519 or Ed448) keys have a v1 format, with only the private key, and a v2 format that includes both the private and public
-            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
+            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privateKey.getEncoded());
             final PrivateKeyInfo v1PkInfo = new PrivateKeyInfo(pkInfo.getPrivateKeyAlgorithm(), pkInfo.parsePrivateKey());
-            final KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
+            final KeyFactory keyfact = KeyFactory.getInstance(privateKey.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
             final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(v1PkInfo.getEncoded()));
-            // The PKCS#12 bag attributes PKCSObjectIdentifiers.pkcs_9_at_friendlyName and PKCSObjectIdentifiers.pkcs_9_at_localKeyId 
+            // The PKCS#12 bag attributes PKCSObjectIdentifiers.pkcs_9_at_friendlyName and PKCSObjectIdentifiers.pkcs_9_at_localKeyId
             // are set automatically by BC when setting the key entry
             store.setKeyEntry(alias, pk, null, chain);
             if (log.isTraceEnabled()) {
-                log.trace("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) + ", cachain.length="
-                        + ((cachain == null) ? 0 : cachain.length));
+                log.trace("<createP12: alias=" + alias + ", privateKey, certificate=" + CertTools.getSubjectDN(certificate) + ", caCertificateChain.length="
+                        + ((caCertificateChain == null) ? 0 : caCertificateChain.length));
             }
             return store;
         } catch (NoSuchProviderException e) {
@@ -708,7 +746,7 @@ public final class KeyTools {
         } catch (IOException e) {
             throw new IllegalStateException("IOException should not be thrown when instancing an empty keystore.", e);
         }
-    } // createP12
+    }
 
     /**
      * Creates JKS-file that can be used with JDK. The alias for the private key is set to 'privateKey' and the private key password is null.
@@ -793,37 +831,12 @@ public final class KeyTools {
         }
         return store;
     } // createJKS
-
-    /**
-     * Generates KeyStore from key store byte array. Token type (JKS / P12) is determined 
-     * automatically by the byte array content
-     * @param keyStoreBytes byte array containing key store
-     * @param password of the key store
-     * @return JKS or P12 KeyStore depending of input content
-     */
-    public static KeyStore createKeyStore(byte[] keyStoreBytes, String password) throws KeyStoreException, 
-            NoSuchProviderException, IOException, NoSuchAlgorithmException, CertificateException {
-        final byte PKCS12_MAGIC = (byte)48;
-        final byte JKS_MAGIC = (byte)(0xfe);
-
-        final KeyStore keyStore;
-        if (keyStoreBytes[0] == PKCS12_MAGIC) {
-            keyStore = KeyStore.getInstance("PKCS12", "BC");
-        } else if (keyStoreBytes[0] == JKS_MAGIC) {
-            keyStore = KeyStore.getInstance("JKS");
-        } else {
-            throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
-        }
-        keyStore.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
-        return keyStore;
-    }
-    
     
     /**
      * Convert a KeyStore to PEM format.
      */
-    public static byte[] getSinglePemFromKeyStore(final KeyStore ks, final char[] password) throws KeyStoreException, CertificateEncodingException,
-    IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
+    public static byte[] getSinglePemFromKeyStore(final KeyStore ks, final char[] password) throws KeyStoreException,
+            CertificateEncodingException, IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Find the key private key entry in the keystore
@@ -1509,7 +1522,7 @@ public final class KeyTools {
         }
     }
 
-    /** Like {@link getBytesFromPublicKeyFile}, but allows for missing ----BEGIN... and END lines. */
+    /** Like {@link #getBytesFromCtLogKey(byte[])} , but allows for missing ----BEGIN... and END lines. */
     public static byte[] getBytesFromCtLogKey(final byte[] file) throws CertificateParsingException {
         try {
             return getBytesFromPublicKeyFile(file);
@@ -1534,6 +1547,60 @@ public final class KeyTools {
                 log.debug(msg);
                 throw new CertificateParsingException(msg, e);
             }
+        }
+    }
+
+    /** Like {@link getBytesFromPublicKeyFile}, but allows certificates and JWK keys also <code>{"kid":</code>... */
+    public static byte[] getBytesFromOauthKey(final byte[] bytes) throws CertificateParsingException {
+        try {
+            return getBytesFromPublicKeyFile(bytes);
+        } catch (CertificateParsingException originalException) {
+            if (bytes.length == 0) {
+                throw originalException; // No point in parsing empty files as cert or JWK
+            }
+            log.debug("Could not parse key as PEM or DER, trying to parse as certificate.");
+            try {
+                final X509Certificate cert = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
+                final PublicKey publicKey = cert.getPublicKey();
+                return publicKey.getEncoded();
+            } catch (CertificateParsingException certException) {
+                log.debug("Could not parse key as PEM, DER or certificate, trying to parse as JWK.");
+                try {
+                    final JWK jwk = JWK.parse(new String(bytes, StandardCharsets.US_ASCII));
+                    if (jwk instanceof AsymmetricJWK) {
+                        return ((AsymmetricJWK) jwk).toPublicKey().getEncoded();
+                    } else {
+                        throw new CertificateParsingException("Wrong type of JWK key. Expected asymmetric key (EC or RSA), got unsupported key type " + jwk.getKeyType().toString());
+                    }
+                } catch (ParseException | JOSEException | RuntimeException jwkException) {
+                    log.debug("Failed to parse key as PEM, DER, X.509 certificate or JWK. Exception stack traces follow.");
+                    log.debug("PEM/DER public key parsing exception", originalException);
+                    log.debug("PEM/DER certificate parsing exception", certException);
+                    log.debug("JWK parsing exception", jwkException);
+                    throw new CertificateParsingException("Key could neither be parsed as PEM, DER, certificate or JWK", originalException);
+                }
+            }
+        }
+    }
+
+    /**
+     * Extracts the Key ID from JWK key.
+     * @param bytes Encoded public key. Do <em>not</em> use the return value from getBytesFromOauthKey, that is always in DER format.
+     * @return Key ID as a string, or null on any error (e.g. non JWK key)
+     */
+    public static String getKeyIdFromJwkKey(final byte[] bytes) {
+        try {
+            final JWK jwk = JWK.parse(new String(bytes, StandardCharsets.US_ASCII));
+            final String keyId = jwk.getKeyID();
+            if (log.isDebugEnabled()) {
+                log.debug("Extracted JWK Key ID: " + keyId);
+            }
+            return keyId;
+        } catch (RuntimeException | ParseException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Not a JWK key, ignoring: " + e.getMessage(), e);
+            }
+            return null;
         }
     }
 

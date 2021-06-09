@@ -104,8 +104,6 @@ import static org.junit.Assert.assertTrue;
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
  * for example "-DhttpCmpProxyURL=http://localhost:8080/cmpProxy-6.3.3", which can be set in Run Configurations if running the 
  * test from Eclipse.
- * 
- * @version $Id$
  */
 public class CrmfRARequestTest extends CmpTestCase {
 
@@ -214,14 +212,14 @@ public class CrmfRARequestTest extends CmpTestCase {
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, issuerDN, userDN, caCert, nonce, transid, sFailMessage == null, null, sigAlg);
             if (sFailMessage == null) {
-                cert = checkCmpCertRepMessage(userDN, caCert, resp, reqId);
+                cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, caCert, resp, reqId);
                 // verify if custom cert serial number was used
                 if (customCertSerno != null) {
                     Assert.assertTrue(cert.getSerialNumber().toString(16) + " is not same as expected " + customCertSerno.toString(16), cert
                             .getSerialNumber().equals(customCertSerno));
                 }
             } else {
-                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest);
             }
         }
         {
@@ -399,7 +397,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, cacert, resp, reqId);
             BigInteger serialnumber = cert.getSerialNumber();
 
             // Revoke the created certificate
@@ -506,8 +504,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
                 // do not check signing if we expect a failure (sFailMessage==null)
                 checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-                checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, 
-                        PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, PKIFailureInfo.incorrectData);
 
 
                 // Create a new user that fulfills the end entity profile
@@ -532,7 +529,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 final byte[] resp2 = sendCmpHttp(ba2, 200, cmpAlias);
                 // do not check signing if we expect a failure (sFailMessage==null)
                 checkCmpResponseGeneral(resp2, ISSUER_DN, userDN, cacert, nonce2, transid2, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-                X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp2, reqId2);
+                X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, cacert, resp2, reqId2);
                 BigInteger serialnumber = cert.getSerialNumber();
 
                 EndEntityInformation ee = eeAccessSession.findUser(ADMIN, "keyidtest2");
@@ -568,7 +565,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 // do not check signing if we expect a failure (sFailMessage==null)
                 checkCmpResponseGeneral(resp3, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
                 checkCmpFailMessage(resp3, "End Entity Profile of name \"CMPKEYIDTESTPROFILEFAIL\" was not found", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId3, 
-                        PKIFailureInfo.systemUnavail, PKIFailureInfo.systemUnavail);
+                        PKIFailureInfo.systemUnavail);
 
             } finally {
                 try {
@@ -640,7 +637,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, cacert, resp, reqId);
             fingerprint = CertTools.getFingerprintAsString(cert);
             
         } finally {
@@ -689,7 +686,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, cacert, resp, reqId);
             BigInteger serialnumber = cert.getSerialNumber();
 
             // create a second user with the same serialnumber, but spelled "SERIALNUMBER" instead of "SN"
@@ -711,7 +708,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             checkCmpFailMessage(resp, "Error: SubjectDN serial number already exists.", CmpPKIBodyConstants.ERRORMESSAGE, reqId,
-                    PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                    PKIFailureInfo.badRequest);
 
             // Revoke the created certificate
             final PKIMessage con = genRevReq(ISSUER_DN, userDN, serialnumber, cacert, nonce, transid, false, null, null);
@@ -802,7 +799,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
+            checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
             {
                 final CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
                 cp.setAllowDNOverride(true);
@@ -884,7 +881,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
             
             // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF.
             boolean[] kubits = cert.getKeyUsage();
@@ -930,7 +927,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
+            cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
             
             // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF.
             kubits = cert.getKeyUsage();
@@ -975,7 +972,7 @@ public class CrmfRARequestTest extends CmpTestCase {
            // Send request and receive response
            resp = sendCmpHttp(ba, 200, cmpAlias);
            checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-           cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
+           cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
            
            // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF. 
            kubits = cert.getKeyUsage();
@@ -1018,7 +1015,7 @@ public class CrmfRARequestTest extends CmpTestCase {
           // Send request and receive response
           resp = sendCmpHttp(ba, 200, cmpAlias);
           checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-          cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
+          cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
           
           // Checking key usage is decipherOnly the value was changed by CRMF.
           kubits = cert.getKeyUsage();
@@ -1127,7 +1124,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
 
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
                         
         List<PolicyInformation> piList = CertTools.getCertificatePolicies(cert);
         assertEquals("Should be 3 Cert Policies", 3, piList.size());
@@ -1206,7 +1203,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 200, cmpAlias);
 
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        cert = checkCmpCertRepMessage(new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
+        cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
                         
         piList = CertTools.getCertificatePolicies(cert);
         assertEquals("Should be 3 Cert Policies", 3, piList.size());

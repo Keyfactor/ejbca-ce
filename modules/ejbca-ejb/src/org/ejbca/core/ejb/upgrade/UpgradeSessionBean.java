@@ -142,7 +142,6 @@ import java.util.concurrent.Future;
  * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
  *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -569,14 +568,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         if (isLesserThan(oldVersion, "7.3.0")) {
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
-        }
-        if (isLesserThan(oldVersion, "7.4.0")) {
-            try {
-                upgradeSession.migrateDatabase740();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("7.4.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1200,8 +1191,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     tokenMatchOperator = AccessMatchType.TYPE_UNUSED.getNumericValue();
                 }
                 // Assign upgraded role members the same ID as the old AdminEndEntity.primaryKey so members are merged in case this runs several times (like in tests)
+                // In 6.7.x we did not support OAuth provider authentication, so we set that to NO_PROVIDER
                 roleMemberDataSession.persistRoleMember(new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
-                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
+                        tokenIssuerId, RoleMember.NO_PROVIDER, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
             }
         }
         // Note that this has to happen here and not in X509CA or CvcCA due to the fact that this step has to happen after approval profiles have
@@ -1612,8 +1604,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-        } catch (AuthorizationDeniedException e) {
-           return false;
+            fixPartitionedCrls();
+        } catch (AuthorizationDeniedException | UpgradeFailedException e) {
+            log.error(e);
+            return false;
         }
         log.info("Post upgrade to 7.4.0 complete.");
         return true;  
@@ -1834,8 +1828,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * value in the database should be incremented.
      * @throws UpgradeFailedException if upgrade fails
      */
-    @Override
-    public void migrateDatabase740() throws UpgradeFailedException {
+    public void fixPartitionedCrls() throws UpgradeFailedException {
         try {
             final long startDataNormalization = System.currentTimeMillis();
             final Query normalizeData = entityManager.createQuery(

@@ -121,8 +121,10 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -145,6 +147,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -173,7 +176,6 @@ import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -212,8 +214,10 @@ import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeConfigurationSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -306,6 +310,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
+    private AcmeConfigurationSessionLocal acmeConfigurationSession;
+    @EJB
     private AcmeAccountDataSessionLocal acmeAccountDataSession;
     @EJB
     private AcmeOrderDataSessionLocal acmeOrderDataSession;
@@ -333,9 +339,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>8<td>=<td>7.3.0
      * <tr><th>9<td>=<td>7.4.1
      * <tr><th>10<td>=<td>7.4.2
-     * <tr><th>10<td>=<td>7.5.0
+     * <tr><th>11<td>=<td>7.5.0
+     * <tr><th>12<td>=<td>7.5.1
+     * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 11;
+    private static final int RA_MASTER_API_VERSION = 12;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -489,7 +497,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean hasMatchTypes = !defaultValue.getAvailableAccessMatchTypes().isEmpty();
 
             result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap, defaultValue.name(), defaultValue.isIssuedByCa(),
-                    hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
+                    defaultValue.isIssuedByOauthProvider(), hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
 
         }
         return result;
@@ -1072,11 +1080,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final String subjectDnSearchString = request.getSubjectDnSearchString();
         final String subjectAnSearchString = request.getSubjectAnSearchString();
         final String usernameSearchString = request.getUsernameSearchString();
+        final String externalAccountIdSearchString = request.getExternalAccountIdSearchString();
         final String serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
         final String serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
         final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
-                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()) {
+                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()
+                || !StringUtils.isEmpty(externalAccountIdSearchString)) {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
@@ -1110,8 +1120,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (!serialNumberSearchStringFromHex.isEmpty()) {
                 if (firstAppended) {
                     sb.append(" OR ");
+                } else {
+                    firstAppended = true;
                 }
                 sb.append("a.serialNumber LIKE :serialNumberHex");
+            }
+            if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
+                if (firstAppended) {
+                    sb.append(" OR ");
+                }
+                sb.append("UPPER(a.accountBindingId) LIKE :accountBindingId");
             }
             sb.append(")");
         }
@@ -1202,6 +1220,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.setParameter("serialNumberHex", serialNumberSearchStringFromHex);
             if (log.isDebugEnabled()) {
                 log.debug(" serialNumberHex: " + serialNumberSearchStringFromHex);
+            }
+        }
+        if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
+            if (request.isExternalAccountIdSearchExact()) {
+                query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
+            } else {
+                query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
             }
         }
         if (request.isIssuedAfterUsed()) {
@@ -1512,6 +1537,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!StringUtils.isEmpty(request.getGenericSearchString())) {
             sb.append(" AND (a.tokenMatchValueColumn LIKE :searchStringInexact OR a.descriptionColumn LIKE :searchStringInexact)");
         }
+        if (!request.getProviderIds().isEmpty()) {
+            sb.append(" AND  a.tokenProviderId IN (:providerId) ");
+        }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);
         query.setParameter("roleId", authorizedLocalRoleIds);
@@ -1520,6 +1548,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             //query.setParameter("searchString", request.getGenericSearchString());
             query.setParameter("searchStringInexact", request.getGenericSearchString() + '%');
         }
+        if (!request.getProviderIds().isEmpty()) {
+            query.setParameter("providerId", request.getProviderIds());
+        }
+
 
         final int maxResults = getGlobalCesecoreConfiguration().getMaximumQueryCount();
         query.setMaxResults(maxResults);
@@ -1762,7 +1794,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     ei.getKeyStoreAlgorithmType(), // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
-                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
+                    endEntity.getTokenType(), // Type of token
                     loadKeysFlag, // Perform key recovery?
                     saveKeysFlag, // Save private keys?
                     reuseCertificateFlag, // Reuse recovered cert?
@@ -2104,7 +2136,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
@@ -2112,7 +2144,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // If called from the wrong instance, return to proxybean and try next implementation
             return false;
         } else {
-            endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
+            if (newUsername == null)
+                endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
+            else
+                endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd, newUsername);
             return true;
         }
     }
@@ -2121,7 +2156,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, EjbcaException {
-        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS), userDataVOWS.isClearPwd());
+        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS), userDataVOWS.isClearPwd(), null);
     }
 
     @Override
@@ -2295,6 +2330,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
+        throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
+        endEntityManagementSession.revokeAndDeleteUser(authenticationToken, username, reason);
+    }
+
+    @Override
     public void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, CertificateProfileDoesNotExistException {
@@ -2350,6 +2391,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
         return scepMessageDispatcherSession.dispatchRequest(authenticationToken, operation, message, scepConfigurationAlias);
     }
+    
+    @Override
+    public byte[] verifyScepPkcs10RequestMessage(AuthenticationToken authenticationToken, String alias, byte[] message) throws CertificateCreateException {
+        return scepMessageDispatcherSession.verifyRequestMessage(authenticationToken, alias, message);
+    }
 
     @Override
     public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
@@ -2365,7 +2411,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new NoSuchAliasException("CA configuration does not allow RA to use legacy API for EST."); // No better exception. We can't change an existing API.
         }
         try {
-            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legay RA API call"), operation, alias, cert, username, password, requestBody);
+            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legacy RA API call"), operation, alias, cert, username, password, requestBody);
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("Should not get AuthorizationDeniedException with AlwaysAllowLocalAuthenticationToken");
         }
@@ -2659,6 +2705,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException {
+        return acmeConfigurationSession.parseAcmeEabMessage(authenticationToken, alias, requestUrl, requestJwk, eabRequestJsonString);
+    }
+
+    @Override
     public String persistAcmeAccount(final AcmeAccount acmeAccount) {
         return acmeAccountDataSession.createOrUpdate(acmeAccount);
     }
@@ -2784,7 +2836,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getExtendedInformation().getKeyStoreAlgorithmType(), // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
-                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
+                    endEntity.getTokenType(), // Type of token
                     loadKeysFlag, // Perform key recovery?
                     saveKeysFlag, // Save private keys?
                     reuseCertificateFlag, // Reuse recovered cert?
@@ -2872,11 +2924,29 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         } else if (GlobalUpgradeConfiguration.class.getName().equals(type.getName())) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        } else if (OAuthConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        } else if (ScepConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        } else if (EABConfiguration.class.getName().equals(type.getName())) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Found Global configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            if (result != null) {
+                log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            } else  {
+                log.debug("Could not find configuration with class '" + type.getName() + "'. Probably the request was sent from an RA peer of a newer version");
+            }
         }
         return result;
     }
 
+    @Override
+    public ScepResponseInfo scepDispatchIntune(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)
+            throws NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException,
+            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
+        return scepMessageDispatcherSession.dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+    }
 }
