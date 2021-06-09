@@ -189,6 +189,8 @@
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
 	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
+	<property name="mod.msae.path" location="${mod.path}/msae" />
+	<property name="mod.msae.war" location="${mod.dist.path}/msae.war" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
@@ -315,10 +317,13 @@
 	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-log4j*.jar"/></path>
 	<path id="lib.slf4japi.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-api*.jar"/></path>
 	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>
-	<path id="lib.commons-lang3.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang3-*.jar"/></path>
+    <path id="lib.commons-lang.classpath">
+        <!-- Include both commons-lang 2 and 3 -->
+        <fileset dir="${ejbca.home}/lib" includes="commons-lang*.jar"/>
+    </path>
 	<path id="lib.commons-text.classpath">
 		<!-- Needed for commons-text -->
-		<path refid="lib.commons-lang3.classpath" />
+		<path refid="lib.commons-lang.classpath" />
 		<fileset dir="${ejbca.home}/lib" includes="commons-text-*.jar"/>
 	</path>
 	<path id="lib.commons-beanutils.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-beanutils-*.jar"/></path>
@@ -339,6 +344,7 @@
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.owaspcsrfguard.classpath"><fileset dir="${ejbca.home}/lib/" includes="csrfguard-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
+	<path id="lib.adsddl.classpath"><fileset dir="${ejbca.home}/lib" includes="adsddl-*.jar"/></path>
 	<path id="lib.xstream.classpath"><fileset dir="${ejbca.home}/lib/xstream" includes="*.jar"/></path>
 	<path id="lib.xmlpull.classpath">
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
@@ -347,13 +353,20 @@
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.json-simple.classpath"><fileset dir="${ejbca.home}/lib" includes="json-simple-*.jar"/></path>
 	<path id="lib.snakeyaml.classpath"><fileset dir="${ejbca.home}/lib" includes="snakeyaml*.jar"/></path>
-	<path id="lib.nimbus-jose-jwt.classpath"><fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/></path>
+	<path id="lib.nimbus-jose-jwt.classpath">
+		<fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/" includes="jcip-annotations-*.jar"/>
+	</path>
 	<path id="lib.json-smart.classpath"><fileset dir="${ejbca.home}/lib/" includes="json-smart-*.jar"/></path>
 	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
 	<path id="lib.dnssecjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnssecjava-*.jar"/></path>
 	<path id="lib.guava.classpath"><fileset dir="${ejbca.home}/lib" includes="guava-*.jar"/></path>
-	<path id="lib.jacknji.classpath"><fileset dir="${ejbca.home}/lib/" includes="jacknji11-*.jar"/></path>
-	<path id="lib.jna.classpath"><fileset dir="${ejbca.home}/lib/" includes="jna-*.jar"/></path>
+	<path id="lib.jacknji.classpath">
+		<fileset dir="${ejbca.home}/lib/"> 
+			<include name="jacknji11-*.jar"/>
+            <include name="jna-*.jar"/>
+		</fileset>
+	</path>
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
 			<include name="commons-*.jar"/>
@@ -505,8 +518,6 @@
 	        <include name="*.jar"/>
         </fileset>
 	</path>
-            	
-            	
 
     <!-- Now when everything is set up, we can load the old property defaults -->
     <condition property="jndi.properties.file" value="${ejbca.home}/conf/jndi.properties.${appserver.subtype}">
@@ -601,6 +612,10 @@
 
 	<condition property="mod.ssh.exists">
 		<available file="${mod.ssh.path}/build.xml" />
+	</condition>
+	
+	<condition property="mod.msae.exists">
+		<available file="${mod.msae.path}/build.xml" />
 	</condition>
 	
     <condition property="mod.acme.exists">

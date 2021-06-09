@@ -13,7 +13,6 @@
 package org.ejbca.ui.cli.config.oauth;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -33,11 +32,11 @@ public class RemoveOAuthProviderCommand extends BaseOAuthConfigCommand {
     
     private static final Logger log = Logger.getLogger(RemoveOAuthProviderCommand.class);
     
-    private static final String KEY_IDENTIFIER = "--keyidentifier";
+    private static final String LABEL = "--label";
 
     {
-        registerParameter(new Parameter(KEY_IDENTIFIER, "Key identifier", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Key identifier of the Trusted OAuth Provider which is going to be removed."));
+        registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider name."));
     }
     
     @Override
@@ -53,22 +52,22 @@ public class RemoveOAuthProviderCommand extends BaseOAuthConfigCommand {
     @Override
     protected CommandResult execute(ParameterContainer parameters) {
         
-        String kidToRemove = parameters.get(KEY_IDENTIFIER);
+        String labelToRemove = parameters.get(LABEL);
         
-        LinkedHashMap<Integer, OAuthKeyInfo> currentOAuthKeys = getGlobalConfiguration().getOauthKeys();
-        OAuthKeyInfo defaultKey = getGlobalConfiguration().getDefaultOauthKey();
+        Map<String, OAuthKeyInfo> currentOAuthKeys = getOAuthConfiguration().getOauthKeys();
+        OAuthKeyInfo defaultKey = getOAuthConfiguration().getDefaultOauthKey();
         
-        for (Iterator<Map.Entry<Integer, OAuthKeyInfo>> iterator = currentOAuthKeys.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry<Integer, OAuthKeyInfo> entry = iterator.next();
-            if (entry.getValue().getKeyIdentifier().equals(kidToRemove)) {
+        for (Iterator<Map.Entry<String, OAuthKeyInfo>> iterator = currentOAuthKeys.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String, OAuthKeyInfo> entry = iterator.next();
+            if (entry.getValue().getLabel().equals(labelToRemove)) {
                 // Found the kid to be removed!
                 iterator.remove();
-                getGlobalConfiguration().setOauthKeys(currentOAuthKeys);
-                if (defaultKey != null && kidToRemove.equals(defaultKey.getKeyIdentifier())) {
-                    getGlobalConfiguration().setDefaultOauthKey(null);
+                getOAuthConfiguration().setOauthKeys(currentOAuthKeys);
+                if (defaultKey != null && labelToRemove.equals(defaultKey.getLabel())) {
+                    getOAuthConfiguration().setDefaultOauthKey(null);
                 }
                 if(saveGlobalConfig()) {
-                    log.info("Trusted OAuth Provider with kid: " + kidToRemove + " successfully removed!");
+                    log.info("Trusted OAuth Provider with label: " + labelToRemove + " successfully removed!");
                     return CommandResult.SUCCESS;
                 } else {
                     log.info("Failed to update configuration due to authorization issue!");
@@ -76,8 +75,8 @@ public class RemoveOAuthProviderCommand extends BaseOAuthConfigCommand {
                 }
             }
         }
-        
-        log.info("Trusted OAuth Provider with kid: " + kidToRemove + " not found!");
+
+        log.info("Trusted OAuth Provider with label: " + labelToRemove + " not found!");
         return CommandResult.FUNCTIONAL_FAILURE;
     }
 

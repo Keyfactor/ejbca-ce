@@ -287,7 +287,7 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 getLogger().info("Adding end entity certificate with fingerprint '" + fingerprint + "' to the database, with status active (not revoked), for end entity: " + username);
                 certStoreSession.storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(userCertificate),
                         username, CertTools.getFingerprintAsString(cacert), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, 
-                        certificateprofileid, endentityprofileid, crlPartitionIndex, null, new Date().getTime());
+                        certificateprofileid, endentityprofileid, crlPartitionIndex, null, new Date().getTime(), null);
             }
             // Finally add the key recovery data
             final PublicKey p12PublicKey = userCertificate.getPublicKey();
