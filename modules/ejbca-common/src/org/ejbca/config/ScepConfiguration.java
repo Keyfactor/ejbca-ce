@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -520,6 +521,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         if (StringUtils.isNotBlank(getIntuneAadAppId(alias))) {
             intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
         }
+        intuneProperties.put("AAD_USE_KEY_BINDING", Boolean.toString(getIntuneAadUseKeyBinding(alias)));
         if (!getIntuneAadUseKeyBinding(alias) && StringUtils.isNotBlank(getIntuneAadAppKey(alias))) {
             intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
         }
@@ -781,6 +783,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(alias + AAD_APP_KEY) == null) {
                     data.put(alias + AAD_APP_KEY, "");
                 }
+                if (data.get(alias + AAD_USE_KEY_BINDING) == null) {
+                    data.put(alias + AAD_USE_KEY_BINDING, Boolean.FALSE.toString());
+                }
                 if (data.get(alias + AAD_APP_KEY_BINDING) == null) {
                     data.put(alias + AAD_APP_KEY_BINDING, "");
                 }
@@ -818,5 +823,15 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return SCEP_CONFIGURATION_ID;
     }
 
+    
+    @Override
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        Set<String> aliases = getAliasList();
+        for (String alias : aliases) {
+            filterDiffMapForLogging(diff, alias + "." + SCEP_RA_AUTHPWD);
+            filterDiffMapForLogging(diff, alias + "." + AAD_APP_KEY);
+            filterDiffMapForLogging(diff, alias + "." + PROXY_PASS);            
+        }
+    } 
     
 }
