@@ -776,6 +776,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         final int deltacrlnumber = crlSession.getLastCRLNumber(certSubjectDN, crlPartitionIndex, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
         final int nextCrlNumber = ( fullcrlnumber > deltacrlnumber ? fullcrlnumber : deltacrlnumber ) +1;
+        log.info("Generating CRL..."); //TODO REMOVE
         final byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, delta?fullcrlnumber:-1, nextCrlNumber);
         this.publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, cafp, nextCrlNumber, certSubjectDN);
         return crlBytes;

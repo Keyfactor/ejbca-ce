@@ -137,7 +137,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	}
 
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) {
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, byte[] crlSignSubjectKeyIdentifier) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
