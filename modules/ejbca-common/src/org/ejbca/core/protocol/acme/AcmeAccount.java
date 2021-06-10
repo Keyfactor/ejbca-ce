@@ -34,6 +34,10 @@ public interface AcmeAccount extends Serializable, IUpgradeableData {
     String getAccountId();
 
     void setAccountId(String accountId);
+    
+    String getApprovalRequestIdForAccountCreation();
+
+    void setApprovalRequestIdForAccountCreation(String id);
 
     /** The status of this account. Possible values are: "valid", "deactivated", and "revoked". ...*/
     String getStatus();

@@ -36,7 +36,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     protected static final InternalResources intres = InternalResources.getInstance();
     
-    protected static final float LATEST_VERSION = 5;
+    protected static final float LATEST_VERSION = 6;
     
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
@@ -62,6 +62,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
+    private static final String APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
+    private static final String APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
 
     private static final int DEFAULT_END_ENTITY_PROFILE_ID = EndEntityConstants.NO_END_ENTITY_PROFILE;
     private static final boolean DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING = false;
@@ -77,6 +79,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
     
     private static final boolean DEFAULT_USE_DNSSEC_VALIDATION = true;
+    
+    public static final int DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID = -1;
+    public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
 
     public AcmeConfiguration() {}
 
@@ -94,6 +99,13 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         if (Float.compare(getLatestVersion(), getVersion()) > 0) {
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
+            // v6. Added approvals for account management.
+            if (data.get(APPROVAL_FOR_NEW_ACCOUNT_ID) == null) {
+                setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
+            }
+            if (data.get(APPROVAL_FOR_KEY_CHANGE_ID) == null) {
+                setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
+            }
             // v5. Added configurable order validity.
             if (data.get(KEY_ORDER_VALIDITY) == null) {
                 setOrderValidity(DEFAULT_ORDER_VALIDITY);
@@ -322,6 +334,32 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_USE_DNSSEC_VALIDATION, String.valueOf(useDnsSecValidation));
     }
 
+    public int getApprovalForNewAccountId() {
+        final Integer value = (Integer) data.get(APPROVAL_FOR_NEW_ACCOUNT_ID);
+        return Objects.isNull(value) ? DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID : value;
+    }
+
+    public void setApprovalForNewAccountId(int approvalForNewAccountId) {
+        data.put(APPROVAL_FOR_NEW_ACCOUNT_ID, approvalForNewAccountId);
+    }
+
+    public int getApprovalForKeyChangeId() {
+        final Integer value = (Integer) data.get(APPROVAL_FOR_KEY_CHANGE_ID);
+        return Objects.isNull(value) ? DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID : value;
+    }
+
+    public void setApprovalForKeyChangeId(int approvalForKeyChangeId) {
+        data.put(APPROVAL_FOR_KEY_CHANGE_ID, approvalForKeyChangeId);
+    }
+    
+    public boolean isApprovalForNewAccountRequired() {
+        return DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID != getApprovalForNewAccountId(); 
+    }
+    
+    public boolean isApprovalForKeyChangeRequired() {
+        return DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID != getApprovalForKeyChangeId();
+    }
+    
     /** Initializes a new acme configuration with default values. */
     public void initialize(String alias) {
         alias += ".";
@@ -345,5 +383,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setDnssecTrustAnchor(DnsSecDefaults.IANA_ROOT_ANCHORS_DEFAULT);
         setDnsPort(DNS_SERVER_PORT_DEFAULT);
         setUseDnsSecValidation(DEFAULT_USE_DNSSEC_VALIDATION);
+        setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
+        setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
     }
 }
