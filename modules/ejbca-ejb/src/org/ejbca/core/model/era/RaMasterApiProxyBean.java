@@ -1963,6 +1963,39 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+    
+    @Override
+    public Integer createApprovalRequest(final AuthenticationToken authenticationToken, final int type, final int approvalProfileId, final String acmeAccountId)
+            throws AuthorizationDeniedException, ApprovalException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        ApprovalException approvalException = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    return raMasterApi.createApprovalRequest(authenticationToken, type, approvalProfileId, acmeAccountId);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (ApprovalException e) {
+                    if (approvalException == null) {
+                        approvalException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (approvalException != null) {
+            throw approvalException;
+        }
+        return null;
+    }
 
     @Override
     public byte[] scepDispatch(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) throws
@@ -2784,6 +2817,30 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         if (approvalRequestExpiredException != null) {
             throw approvalRequestExpiredException;
+        }
+        return null;
+    }
+    
+    @Override
+    public Integer getApprovalStatus(final AuthenticationToken authenticationToken, final int approvalId)
+            throws AuthorizationDeniedException, ApprovalException {
+        ApprovalException approvalException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            // ECA-10091 TODO Check API version.
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getApprovalStatus(authenticationToken, approvalId);
+                } catch (ApprovalException e) {
+                    if (approvalException == null) {
+                        approvalException = e;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (approvalException != null) {
+            throw approvalException;
         }
         return null;
     }
