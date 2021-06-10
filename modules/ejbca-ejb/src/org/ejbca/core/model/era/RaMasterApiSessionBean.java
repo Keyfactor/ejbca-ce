@@ -185,6 +185,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.approvalrequests.AcmeNewAccountApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -2364,6 +2365,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
+    
+    @Override
+    public Integer createApprovalRequest(final AuthenticationToken authenticationToken, final int type, final int approvalProfileId, final String acmeAccountId) throws AuthorizationDeniedException, ApprovalException {
+        if (ApprovalRequestType.ADDEDITENDENTITY.getIntegerValue() == type) {
+            final ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            final AcmeNewAccountApprovalRequest approvalRequest = new AcmeNewAccountApprovalRequest(authenticationToken, profile, acmeAccountId);
+            int requestId = approvalSession.addApprovalRequest(authenticationToken, approvalRequest);
+            return requestId;
+        }
+        return null;
+    }
 
     @Override
     public byte[] scepDispatch(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)
@@ -2574,6 +2586,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public Integer isApproved(final AuthenticationToken authenticationToken, final int approvalId)
             throws ApprovalException, ApprovalRequestExpiredException {
         return approvalSession.isApproved(approvalId);
+    }
+    
+    @Override
+    public Integer getApprovalStatus(final AuthenticationToken authenticationToken, final int approvalId)
+            throws AuthorizationDeniedException, ApprovalException {
+        return approvalSession.getStatus(approvalId);
     }
 
     @Override

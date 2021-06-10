@@ -872,6 +872,8 @@ public interface RaMasterApi {
      */
     ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException;
 
+    Integer createApprovalRequest(AuthenticationToken authenticationToken, int type, final int approvalProfileId, final String acmeAccountId) throws AuthorizationDeniedException, ApprovalException;
+    
     /**
      * Performs all "deep" checks of user data (EndEntityInformation) intended to be added. Checks like uniqueness of SubjectDN or username should be part of this test.
      * @param admin auth. token
@@ -1242,6 +1244,17 @@ public interface RaMasterApi {
     */
    Integer isApproved(AuthenticationToken authenticationToken, int approvalId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
 
+   
+   /**
+    * Returns the current status of the approval request with the given request ID.
+    * 
+    * @param authenticationToken the administrator performing the action.
+    * @param approvalId the ID (hash) of the request.
+    * @return the status of the request, never null.
+    * @throws ApprovalException thrown if there's no request with the given request ID.
+    */
+   Integer getApprovalStatus(AuthenticationToken authenticationToken, int approvalId) throws AuthorizationDeniedException, ApprovalException; 
+   
    /**
     * Checks if a user is authorized to a given resource.
     *
