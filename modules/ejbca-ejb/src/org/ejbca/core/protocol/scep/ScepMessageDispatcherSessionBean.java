@@ -14,9 +14,7 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -43,9 +41,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
-
-import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
-import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
 
 import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
 import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
