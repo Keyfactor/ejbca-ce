@@ -237,7 +237,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (cainfo != null) {
                 certs = cainfo.getCertificateChain();
             }
-            if ((certs != null) && (certs.size() == 1)) {
+            if ((certs != null) && (certs.size() == 1) || (!scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias) && certs.size() > 1)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Returning X.509 certificate as response for GetCACert for single CA: " + caname);
                 }
@@ -247,7 +247,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
                 }
                 return ScepResponseInfo.onlyResponseBytes(cert.getEncoded());
-            } else if ((certs != null) && (certs.size() > 1)) {
+            } else if ((certs != null) && (certs.size() > 1 && scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias))) {
                 try {
                     if (log.isDebugEnabled()) {
                         log.debug("Creating certs-only CMS message as response for GetCACert for CA chain: " + caname);
@@ -255,7 +255,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     List<X509Certificate> certList = CertTools.convertCertificateChainToX509Chain(certs);
                     // TODO: test workaround for certificate order, MS likes it reverse?
                     Collections.reverse(certList);
-                    byte[] resp = CertTools.createCertsOnlyCMS(certList);
+                    final byte[] resp = CertTools.createCertsOnlyCMS(certList);
                     if (log.isDebugEnabled()) {
                         log.debug("Sent certificates-only CMS for CA '" + caname + "' to SCEP client.");
                     }
