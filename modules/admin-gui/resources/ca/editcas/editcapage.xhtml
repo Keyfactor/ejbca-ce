@@ -1020,7 +1020,7 @@
 						value="#{editCAsMBean.caInfoDto.useCrlDistributiOnPointOnCrl}"
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
 						<f:validator validatorId="org.ejbca.util.validator.RequiredCheckboxValidator"
-									 disabled="#{editCAsMBean.caExternal or not editCAsMBean.caInfoDto.usePartitionedCrl}"/>
+									 disabled="#{editCAsMBean.caExternal or not editCAsMBean.issuingDistributionPointValidated}"/>
 						<f:attribute name="errorMessage" value="#{web.text.PARTITIONEDCRLS_WITHOUT_IDPONCRL}"/>
 						<f:ajax render="checkboxcrldistributionpointoncrlcritical"/>
 					</h:selectBooleanCheckbox>
@@ -1277,10 +1277,10 @@
 						value="#{editCAsMBean.caInfoDto.defaultCRLDistPoint}"
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}"
-						required="#{editCAsMBean.caInfoDto.usePartitionedCrl}" requiredMessage="#{web.text.PARTITIONEDCRLS_WITHOUT_DEFAULTCDP}">
+						required="#{editCAsMBean.caInfoDto.usePartitionedCrl or editCAsMBean.caInfoDto.msCaCompatible}" requiredMessage="#{web.text.PARTITIONEDCRLS_WITHOUT_DEFAULTCDP}">
 						<f:validator validatorId="urlValidator"/>
 						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.PartitionedCrlUrlValidator"
-									 disabled="#{editCAsMBean.caExternal or not editCAsMBean.caInfoDto.usePartitionedCrl}"/>
+									 disabled="#{editCAsMBean.caExternal or not editCAsMBean.defaultCRLDistributionPointValidated}"/>
 						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_CDP_DEFAULTURI_ERROR}"/>
 					</h:inputText>
 					<h:commandButton type="button"
