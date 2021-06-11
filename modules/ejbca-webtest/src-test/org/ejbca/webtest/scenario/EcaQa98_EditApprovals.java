@@ -43,7 +43,6 @@ import org.openqa.selenium.WebElement;
  * profile.firefox.raadmin      (SeleniumRaAdmin)
  * profile.firefox.raadminalt   (SeleniumRaAdmin1)
  *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
