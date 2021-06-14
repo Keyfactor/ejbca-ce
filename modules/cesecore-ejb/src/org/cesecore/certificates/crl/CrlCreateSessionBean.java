@@ -107,7 +107,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		
 
     		Certificate latestCaCertForParition = null; 
-    		if (((X509CA)ca).isMsCaCompatible()) {
+    		if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible()) {
     		    CRLInfo crlInfo = crlSession.getLastCRLInfo(ca.getSubjectDN(), crlPartitionIndex, false);
     		    if (crlInfo != null) {
     		        byte[] lastCrlAuthorityKeyId = CertTools.getAuthorityKeyId(crlInfo.getCrl());
