@@ -106,7 +106,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		}
     		
 
-            //TODO deltaCrl?
     		Certificate latestCaCertForParition = null; 
     		if (((X509CA)ca).isMsCaCompatible()) {
     		    CRLInfo crlInfo = crlSession.getLastCRLInfo(ca.getSubjectDN(), crlPartitionIndex, false);

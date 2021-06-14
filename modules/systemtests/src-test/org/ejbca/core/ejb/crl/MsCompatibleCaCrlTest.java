@@ -18,8 +18,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -28,7 +30,9 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -41,24 +45,27 @@ public class MsCompatibleCaCrlTest {
     private static final Logger log = Logger.getLogger(PartitionedCrlSystemTest.class);
 
     private static final String TEST_NAME = "MsCompatibleCaCrlTest";
+    private static final String TEST_CA_NAME = TEST_NAME + "_CA";
+    private static final String CA_DN = "CN=" + TEST_CA_NAME + ",OU=QA,O=TEST,C=SE";
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(TEST_NAME);
 
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static final CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+    private static final CryptoTokenManagementSessionRemote cryptoTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertificateSessionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
     
-    private static final String TEST_CA = TEST_NAME + "_CA";
-    private static final String CA_DN = "CN=" + TEST_CA + ",OU=QA,O=TEST,C=SE";
-    private static int caId;
+    private int caId;
+    private int caTokenId;
     
     @Before
     public void beforeClass() throws Exception {
-        CaTestCase.createTestCA(TEST_CA, 1024, CA_DN, CAInfo.SELFSIGNED, null);
-        caId = caSession.getCAInfo(admin, TEST_CA).getCAId();
+        CaTestCase.createTestCA(TEST_CA_NAME, 1024, CA_DN, CAInfo.SELFSIGNED, null);
+        final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, TEST_CA_NAME);
+        caId = caInfo.getCAId();
+        caTokenId = caInfo.getCAToken().getCryptoTokenId();
         // Set common settings to all tests CA
-        final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, TEST_CA);
         caInfo.setUseCRLNumber(true);
         caInfo.setMsCaCompatible(true);
         caAdminSession.editCA(admin, caInfo);
@@ -129,8 +136,40 @@ public class MsCompatibleCaCrlTest {
                 0, caInfo.getSuspendedCrlPartitions());
     }
     
+    @Test
+    public void testSignCrlWithKeyCorrespondingToPartition() throws Exception {
+        // Given (Renew CA twice, with new key pair, MS compatibility mode enabled and generate new CRLs)
+        final String crlSignKeyAlias0 = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+        caAdminSession.renewCA(admin, caId, true, null, true);
+        final String crlSignKeyAlias1 = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+        caAdminSession.renewCA(admin, caId, true, null, true);
+        final String crlSignKeyAlias2 = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+        publishingCrlSession.forceCRL(admin, caId);
+        
+        // Then (We should now have 3 partitions, each containing a CRL, signed by different keys.)
+        byte[] partitionedCrl0 = crlStoreSession.getCRL(CA_DN, -1, 1);
+        byte[] partitionedCrl1 = crlStoreSession.getCRL(CA_DN, 1, 1);
+        byte[] partitionedCrl2 = crlStoreSession.getCRL(CA_DN, 2, 1);
+        
+        final String crlAuthorityKeyId0 = new String(Hex.encode(CertTools.getAuthorityKeyId(CertTools.getCRLfromByteArray(partitionedCrl0))));
+        final String crlAuthorityKeyId1 = new String(Hex.encode(CertTools.getAuthorityKeyId(CertTools.getCRLfromByteArray(partitionedCrl1))));
+        final String crlAuthorityKeyId2 = new String(Hex.encode(CertTools.getAuthorityKeyId(CertTools.getCRLfromByteArray(partitionedCrl2))));
+        
+        // Expect (the CRL for each partition should have been signed with its corresponding crlSignKey)
+        if (cryptoTokenSession == null) {
+            fail("null");
+        }
+        assertEquals("CRL was not signed by the expected key", 
+                cryptoTokenSession.getKeyPairInfo(admin, caTokenId, crlSignKeyAlias0).getSubjectKeyID(), crlAuthorityKeyId0);
+        assertEquals("CRL was not signed by the expected key", 
+                cryptoTokenSession.getKeyPairInfo(admin, caTokenId, crlSignKeyAlias1).getSubjectKeyID(), crlAuthorityKeyId1);
+        assertEquals("CRL was not signed by the expected key", 
+                cryptoTokenSession.getKeyPairInfo(admin, caTokenId, crlSignKeyAlias2).getSubjectKeyID(), crlAuthorityKeyId2);
+    }
+    
+    
     private static void cleanupTestCase() throws AuthorizationDeniedException {
-        CaTestCase.removeTestCA(TEST_CA);
+        CaTestCase.removeTestCA(TEST_CA_NAME);
         internalCertificateSessionSession.removeCertificatesBySubject(CA_DN);
         internalCertificateSessionSession.removeCRLs(admin, CA_DN);
     }
