@@ -61,6 +61,7 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
@@ -872,7 +873,19 @@ public interface RaMasterApi {
      */
     ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException;
 
-    Integer createApprovalRequest(AuthenticationToken authenticationToken, int type, final int approvalProfileId, final String acmeAccountId) throws AuthorizationDeniedException, ApprovalException;
+    /**
+     * Creates an approval request.
+     *  
+     * @param authenticationToken the authentication token.
+     * @param approvalType the type of approval request ({@link ApprovalDataVO#getApprovalType()}).
+     * @param approvalProfileId the ID.
+     * @param endEntityProfileId the end entity profile ID.
+     * @param acmeAccountId the ID (key identifier) of the ACME account. 
+     * @return the ID of the approval request created or null.
+     * @throws AuthorizationDeniedException if the authorization has been denied.
+     * @throws ApprovalException if the approval request could not be created because it already exists.
+     */
+    Integer createApprovalRequest(AuthenticationToken authenticationToken, int approvalType, final int approvalProfileId, int endEntityProfileId, String acmeAccountId) throws AuthorizationDeniedException, ApprovalException;
     
     /**
      * Performs all "deep" checks of user data (EndEntityInformation) intended to be added. Checks like uniqueness of SubjectDN or username should be part of this test.

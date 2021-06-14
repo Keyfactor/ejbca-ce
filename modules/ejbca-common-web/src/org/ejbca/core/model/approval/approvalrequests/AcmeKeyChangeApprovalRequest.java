@@ -27,12 +27,12 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
- * Approval Request created when calling for the ACME newAccount resource.
+ * Approval Request created when calling for the ACME keyChange resource.
  */
-public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
+public class AcmeKeyChangeApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
-	private static final Logger log = Logger.getLogger(AcmeNewAccountApprovalRequest.class);
+	private static final Logger log = Logger.getLogger(AcmeKeyChangeApprovalRequest.class);
 	private static final int LATEST_VERSION = 1;
 
 	private String acmeAccountId;
@@ -40,7 +40,7 @@ public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
 	private int endEntityProfileId;
 	
 	/** Default constructor. */
-	public AcmeNewAccountApprovalRequest() {}
+	public AcmeKeyChangeApprovalRequest() {}
 
 	/**
 	 * Creates an approval request to register a new ACME account using the newAccount resource.
@@ -51,7 +51,7 @@ public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
 	 * @param endEntityProfileId the ID of the end entity profile.
 	 * @param acmeAccountId the ACME account ID.
 	 */
-    public AcmeNewAccountApprovalRequest(final AuthenticationToken token, final ApprovalProfile approvalProfile, final int caId, final int endEntityProfileId, final String acmeAccountId) {
+    public AcmeKeyChangeApprovalRequest(final AuthenticationToken token, final ApprovalProfile approvalProfile, final int caId, final int endEntityProfileId, final String acmeAccountId) {
         super(token, null, REQUESTTYPE_SIMPLE, caId, endEntityProfileId, approvalProfile, /* validation results */ null);
         this.acmeAccountId = acmeAccountId;
         this.caId = caId;
@@ -75,7 +75,7 @@ public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
 
 	@Override
     public int getApprovalType() {
-		return ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_REGISTRATION;
+		return ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_KEYCHANGE;
 	}
 
 	/**
@@ -88,11 +88,11 @@ public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
-		if ( acmeAccountId != null ) {
+		if (acmeAccountId != null) {
 			retval.add(new ApprovalDataText("ACMEACCOUNTID", acmeAccountId, true, false));
 		}
 		retval.add(new ApprovalDataText("CAID", Integer.toString(caId), true, false));
-        retval.add(new ApprovalDataText("EEPID", Integer.toString(endEntityProfileId), true, false));
+		retval.add(new ApprovalDataText("EEPID", Integer.toString(endEntityProfileId), true, false));
 		return retval;
 	}
 
