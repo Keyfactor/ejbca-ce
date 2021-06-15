@@ -78,7 +78,6 @@ import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.protocol.acme.eab.AcmeEabWithHMac;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
@@ -915,17 +914,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final List<String> result = new ArrayList<>();
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
                 globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
-        AcmeConfiguration acmeAlias;
-        AcmeEabWithHMac eab; 
+        AcmeConfiguration acmeAlias; 
         for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
             acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId); 
             try {
                 if (acmeAlias != null && acmeAlias.isRequireExternalAccountBinding() 
-                        && acmeAlias.getExternalAccountBinding() instanceof AcmeEabWithHMac) {
-                   eab = (AcmeEabWithHMac) acmeAlias.getExternalAccountBinding();
-                   if (eab.getEncryptKey() && Integer.toString(cryptoTokenId).equals(eab.getEncryptionKeyId())) {
-                       result.add(acmeAlias.getConfigurationId());
-                   }
+                        && acmeAlias.getExternalAccountBinding().getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
+                        && (Boolean) acmeAlias.getExternalAccountBinding().getDataMap().get("encryptKey")
+                        && Integer.toString(cryptoTokenId).equals(acmeAlias.getExternalAccountBinding().getDataMap().get("encryptionKeyId"))) {
+                    result.add(acmeAlias.getConfigurationId());
                 }
             } catch (AccountBindingException e) {
                 log.warn("Could not load ACME EAB '" + acmeAliasId 
