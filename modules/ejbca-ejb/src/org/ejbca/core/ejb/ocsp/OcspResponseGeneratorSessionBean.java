@@ -365,7 +365,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                                 final String signatureProviderName = cryptoToken.getSignProviderName();
                                 if (!caCertificateChain.isEmpty()) {
-                                    generateOcspSigningCacheEntry(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caId,
+                                    generateOcspSigningAndConfigCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caId,
                                             preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
                                 } else {
                                     log.warn("CA with ID " + caId
@@ -399,7 +399,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (!caCertificateChain.isEmpty()) {
-                                generateOcspSigningCacheEntry(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caId,
+                                generateOcspSigningAndConfigCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caId,
                                         preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
                             } else {
                                 log.warn("CA with ID " + caId
@@ -514,7 +514,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         throw new IllegalStateException("No key matching Subject Key Id '" + new String(Hex.encode(certificateSubjectKeyId)) + "' found.");
     }
     
-    private void generateOcspSigningCacheEntry(List<X509Certificate> caCertificateChain, String signatureProviderName, PrivateKey privateKey,
+    private void generateOcspSigningAndConfigCacheEntries(List<X509Certificate> caCertificateChain, String signatureProviderName, PrivateKey privateKey,
             GlobalOcspConfiguration ocspConfiguration, int caId, boolean preProduceOcspResponse, boolean storeOcspResponseOnDemand, boolean isMsCaCompatible) {
         X509Certificate caCertificate = caCertificateChain.get(0);
         final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
