@@ -684,7 +684,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             sb.append(encode(cainfo.getSubjectDN()));
         }
-        if (isUsePartitionedCrlChecked()) {
+        if (isUsePartitionedCrlChecked() || caInfoDto.isMsCaCompatible()) {
             sb.append("&partition=*");
         }
         caInfoDto.setDefaultCRLDistPoint(sb.toString());
