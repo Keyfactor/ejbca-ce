@@ -99,7 +99,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 5f;
+    public static final float LATEST_VERSION = 6f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
@@ -829,6 +829,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 }
                 if (data.get(alias + PROXY_PASS) == null) {
                     data.put(alias + PROXY_PASS, "");
+                }
+                if (data.get(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT) == null) {
+                    data.put(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT, Boolean.FALSE.toString());
                 }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));         
