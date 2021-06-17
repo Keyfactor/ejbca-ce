@@ -145,7 +145,6 @@ import static org.junit.Assume.assumeTrue;
 
 /** JUnit test for X.509 CA
  *
- * @version $Id$
  */
 public class X509CAUnitTest extends X509CAUnitTestBase {
 

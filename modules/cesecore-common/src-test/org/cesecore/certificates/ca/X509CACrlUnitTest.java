@@ -44,7 +44,6 @@ import org.junit.Test;
 /**
  * Unit test for Partitioned CRL functionality in the X509CA class.
  * 
- * @version $Id$
  */
 public class X509CACrlUnitTest extends X509CAUnitTestBase {
 
