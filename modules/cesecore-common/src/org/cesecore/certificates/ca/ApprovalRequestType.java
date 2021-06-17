@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,8 +28,8 @@ public enum ApprovalRequestType {
     KEYRECOVER(2, "APPROVEKEYRECOVER"),
     REVOCATION(3, "APPROVEREVOCATION"),
     ACTIVATECA(4, "APPROVEACTIVATECA"),
-    ACMEACCOUNTREGISTRATION(4, "APPROVEACMEACCOUNTREGISTRATION"),
-    ACMEACCOUNTKEYCHANGE(4, "APPROVEACMEACCOUNTKEYCHANGE");
+    ACMEACCOUNTREGISTRATION(5, "APPROVEACMEACCOUNTREGISTRATION"),
+    ACMEACCOUNTKEYCHANGE(6, "APPROVEACMEACCOUNTKEYCHANGE");
 
     private final  int integerValue;
     private final String languageString;
@@ -55,4 +57,14 @@ public enum ApprovalRequestType {
     public static ApprovalRequestType getFromIntegerValue(int integerValue) {
         return reverseLookupMap.get(integerValue);
     }
+    
+    public static List<ApprovalRequestType> values2() {
+        final List<ApprovalRequestType> result = new ArrayList<>();
+        result.add(ADDEDITENDENTITY);
+        result.add(KEYRECOVER);
+        result.add(REVOCATION);
+        result.add(ACTIVATECA);
+        return result;
+    }
+   
 }
