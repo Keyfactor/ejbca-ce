@@ -37,7 +37,6 @@ import org.cesecore.keys.token.CryptoToken;
  * There can be many different implementations of CVC CA which are quite different, for example EU EAC electronic passports,
  * Tachographs and eIDs.  
  *
- * @version $Id$
  */
 public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 

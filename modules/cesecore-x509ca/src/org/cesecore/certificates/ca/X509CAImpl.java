@@ -2179,7 +2179,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return crl;
     }
 
-    private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] crlSubjectKeyIdentifier) {
+    private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] crlSubjectKeyIdentifier) throws CryptoTokenOfflineException {
         try {
             for (String keyAlias : cryptoToken.getAliases()) {
                 String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier()));
@@ -2190,9 +2190,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     return keyAlias;
                 }
             }
-            //TODO error handling. Should we rollback?
-        } catch (KeyStoreException | CryptoTokenOfflineException e) {
-            throw new IllegalStateException(e);
+        } catch (KeyStoreException e) {
+            throw new CryptoTokenOfflineException(e);
         }
         throw new IllegalStateException("No key matching Subject Key Id '" + new String(Hex.encode(crlSubjectKeyIdentifier)) + "' found.");
     }
