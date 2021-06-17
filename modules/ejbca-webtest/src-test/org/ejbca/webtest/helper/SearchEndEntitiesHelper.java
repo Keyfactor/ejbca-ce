@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import java.util.List;
+
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -257,5 +259,23 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      */
     public void clickReactive() {
         clickLink(Page.BUTTON_REACTIVE);
+    }
+
+    /**
+     * Asserts the element 'Reactive' button is not shown on page.
+     */
+    public void assertReactiveButtonNotPresent() {
+        assertNull(findElementWithoutWait(Page.BUTTON_REACTIVE, false));
+    }
+
+    public void acceptAlert() {
+        Alert alert = webDriver.switchTo().alert();
+        alert.accept();
+    }
+
+    public void switchToCertificateViewPopup() {
+        for (String windowHandle : webDriver.getWindowHandles()) {
+            webDriver.switchTo().window(windowHandle);
+        }
     }
 }
