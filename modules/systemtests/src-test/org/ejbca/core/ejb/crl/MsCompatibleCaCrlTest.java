@@ -15,10 +15,10 @@ package org.ejbca.core.ejb.crl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -155,10 +155,12 @@ public class MsCompatibleCaCrlTest {
         final String crlAuthorityKeyId1 = new String(Hex.encode(CertTools.getAuthorityKeyId(CertTools.getCRLfromByteArray(partitionedCrl1))));
         final String crlAuthorityKeyId2 = new String(Hex.encode(CertTools.getAuthorityKeyId(CertTools.getCRLfromByteArray(partitionedCrl2))));
         
-        // Expect (the CRL for each partition should have been signed with its corresponding crlSignKey)
-        if (cryptoTokenSession == null) {
-            fail("null");
-        }
+        
+        // Expect
+        // These two assertions aren't really relevant for this test. However, without them we may get false positives.
+        assertNotEquals("CRL Sign key was not updated upon CA renewal", crlSignKeyAlias0, crlSignKeyAlias1);
+        assertNotEquals("CRL Sign key was not updated upon CA renewal", crlSignKeyAlias1, crlSignKeyAlias2);
+        // The CRL for each partition should have been signed with its corresponding crlSignKey
         assertEquals("CRL was not signed by the expected key", 
                 cryptoTokenSession.getKeyPairInfo(admin, caTokenId, crlSignKeyAlias0).getSubjectKeyID(), crlAuthorityKeyId0);
         assertEquals("CRL was not signed by the expected key", 
