@@ -2041,7 +2041,6 @@ public abstract class CertTools {
         if (asn1Sequence != null) {
             return AuthorityKeyIdentifier.getInstance(asn1Sequence).getKeyIdentifier();
         }
-        log.info("AKI is null");
         return null;
     }
     

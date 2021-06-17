@@ -53,7 +53,6 @@ import org.cesecore.util.CryptoProviderTools;
 /**
  * Business class for CRL actions, i.e. running CRLs. 
  * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -106,7 +105,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		}
     		
 
-    		Certificate latestCaCertForParition = null; 
+    		Certificate latestCaCertForPartition = null; 
     		if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible()) {
     		    CRLInfo crlInfo = crlSession.getLastCRLInfo(ca.getSubjectDN(), crlPartitionIndex, false);
     		    if (crlInfo != null) {
@@ -116,7 +115,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		                log.debug("Authority key Id for last CRL in partition '" + crlPartitionIndex + "': " 
     		                        + new String(Hex.encode(lastCrlAuthorityKeyId)));
     		            }
-    		            latestCaCertForParition = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(lastCrlAuthorityKeyId);
+    		            latestCaCertForPartition = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(lastCrlAuthorityKeyId);
     		        } else {
     		            log.info("Last CRL for CA '" + ca.getSubjectDN() + "' partition '" + crlPartitionIndex +"' does not contain any Authority Key Identifier extension. "
     		                    + "Next CRL will be signed by latest CRL sign key");
@@ -134,9 +133,9 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			if (nextCrlNumber == basecrlnumber) {
     				nextCrlNumber++;
     			}
-    			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber, latestCaCertForParition);       
+    			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber, latestCaCertForPartition);       
     		} else {
-    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForParition);
+    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForPartition);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back
