@@ -33,8 +33,7 @@ import org.openqa.selenium.WebElement;
  * 
  * Always reset filterTime before using the methods in this class, which makes sure
  * there only exists entries in the Audit Log for the test step currently executing.
- * 
- * @version $Id$
+ *
  */
 public class AuditLogHelper extends BaseHelper {
 
@@ -81,6 +80,20 @@ public class AuditLogHelper extends BaseHelper {
         static By getProtocolEnabled(final String protocol) {
             return By.xpath("//span[contains(text(),'msg=Saved global configuration with id AVAILABLE_PROTOCOLS.; changed:" + protocol + "=true')]");
         }
+
+        static By getAddedEndEntityRecord(String endEntityName) {
+            return By.xpath("//span[contains(text(),'Added end entity " + endEntityName + "')]");
+        }
+
+        static By getRevokedEndEntityRecord(String endEntityName) {
+            return By.xpath("//td[contains(text(),'Revoked end entity " + endEntityName + ".')]");
+        }
+
+        static By getCertificateOnHoldRecord(String endEntityName) {
+            return By.xpath("//span[contains(@title,\"Activated certificate on hold for username '" + endEntityName + "'\")]");
+
+        }
+
     }
 
     // Used to filter the Audit Log, only Audit Log entries after this time will be displayed
@@ -222,6 +235,18 @@ public class AuditLogHelper extends BaseHelper {
                 assertTrue("The expected detail [" + detailText + "] for event [" + eventText + "] doesn't exist.", detailsValue.contains(detailText));
             }
         }
+    }
+
+    public String getAddEndEntityRecordText(String endEntityName){
+        return webDriver.findElement(Page.getAddedEndEntityRecord(endEntityName)).getText();
+    }
+
+    public String getRevokedEndEntityRecordText(String endEntityName){
+        return webDriver.findElement(Page.getRevokedEndEntityRecord(endEntityName)).getText();
+    }
+
+    public String getCertificateOnHoldRecordText(String endEntityName){
+        return webDriver.findElement(Page.getCertificateOnHoldRecord(endEntityName)).getText();
     }
 
     public void assertProtocolEnabledLogExists(final String protocol) {
