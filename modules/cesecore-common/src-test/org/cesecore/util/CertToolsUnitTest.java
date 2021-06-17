@@ -1790,6 +1790,14 @@ public class CertToolsUnitTest {
         assertEquals("Should return IDP URL for CRL with issuingDistributionPoint.", 1, uris.size());
         assertEquals("Extracted string from issuingDistributionPoint is wrong.", "http://crl.example.com/CA.crl", uris.iterator().next());
     }
+    
+    @Test
+    public void testGetCrlAuthorityKeyId() throws Exception {
+        final X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
+        final byte[] authorityKeyIdBytes = CertTools.getAuthorityKeyId(crl);
+        final String authorityKeyId = new String(Hex.encode(authorityKeyIdBytes));
+        assertEquals("Unexpected Authorirt Key Id returned", "b77f6cdfcf88f1f3f476252cf18f1362d09aafc8", authorityKeyId);
+    }
 
     @Test
     public void test25AiaCaIssuerUri() throws Exception {
