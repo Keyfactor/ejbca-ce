@@ -14,24 +14,18 @@ package org.ejbca.webtest.scenario;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
-import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.RaWebUseUsernameRequestHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * This test checks the Certificate Details page in RA Web.
@@ -130,7 +124,7 @@ public class EcaQa224_CertificateLifeCycle extends WebTestBase {
     public void testE_ReactivateCertificate() {
         searchEndEntitiesHelper.clickViewCertificateForRow(TestData.END_ENTITY_COMMON_NAME);
         String mainWindow = webDriver.getWindowHandle();
-        searchEndEntitiesHelper.switchToCertificateViewPopup();
+        searchEndEntitiesHelper.switchToPopup();
         searchEndEntitiesHelper.clickReactive();
         searchEndEntitiesHelper.acceptAlert();
         webDriver.close();
@@ -141,7 +135,7 @@ public class EcaQa224_CertificateLifeCycle extends WebTestBase {
     public void testF_CheckReactiveBtnIsAvailible() {
         searchEndEntitiesHelper.clickViewCertificateForRow(TestData.END_ENTITY_COMMON_NAME);
         String mainWindow = webDriver.getWindowHandle();
-        searchEndEntitiesHelper.switchToCertificateViewPopup();
+        searchEndEntitiesHelper.switchToPopup();
         searchEndEntitiesHelper.assertReactiveButtonNotPresent();
         webDriver.close();
         webDriver.switchTo().window(mainWindow);
@@ -151,16 +145,12 @@ public class EcaQa224_CertificateLifeCycle extends WebTestBase {
     public void testG_AuditLogEndEntityAddedInDetails() {
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.reloadView();
-        String addedElement = auditLogHelper.getAddEndEntityRecordText(TestData.END_ENTITY_NAME);
-        auditLogHelper.assertLogEntryByEventText("End Entity Add", "Success", null,
-                Collections.singletonList(addedElement));
+        auditLogHelper.assertAddEndEntityLogExists(TestData.END_ENTITY_NAME);
     }
     
     @Test
     public void testH_AuditLogEndEntityRevokeInDetails() {
-        String revokedRecord = auditLogHelper.getRevokedEndEntityRecordText(TestData.END_ENTITY_NAME);
-        auditLogHelper.assertLogEntryByEventText("End Entity Revoke", "Success", null,
-                Collections.singletonList(revokedRecord));
+        auditLogHelper.assertRevokeEndEntityLogExists(TestData.END_ENTITY_NAME);
     }
     
     @Test
