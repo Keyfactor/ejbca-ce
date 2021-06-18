@@ -26,6 +26,11 @@ public class CmpConfigurationHelper extends BaseHelper {
         static final By BUTTON_ADD = By.id("cmpaliasesform:buttonaddcmpalias");
         static final By BUTTON_RENAME = By.id("cmpaliasesform:buttonrenamecmpalias");
         static final By BUTTON_CLONE = By.id("cmpaliasesform:buttonclonecmpalias");
+        static final By BUTTON_EDIT = By.id("cmpaliasesform:buttoneditcmpalias");
+        static final By BUTTON_DELETE = By.id("cmpaliasesform:buttondeletecmpalias");
+        
+        static final By BUTTON_CANCEL_DELETE = By.id("cmpaliasesform:buttoncanceldeletecmpalias");
+        static final By BUTTON_CONFIRM_DELETE = By.id("cmpaliasesform:buttonconfirmdeletecmpalias");
 
         /** Input field for alias name */
         static final By INPUT_NAME = By.id("cmpaliasesform:textfielcmpaliasname");
@@ -56,6 +61,40 @@ public class CmpConfigurationHelper extends BaseHelper {
     public void addCmpAlias(final String alias) {
         fillInput(Page.INPUT_NAME, alias);
         clickLink(Page.BUTTON_ADD);
+    }
+    
+    /**
+     * Edits a CMP alias by selecting it and clicking the 'Edit CMP Alias' button
+     * 
+     * @param alias name of the alias to edit
+     */
+    public void editCmpAlias(final String alias) {
+        selectOptionByName(Page.SELECT_ALIAS, alias);
+        clickLink(Page.BUTTON_EDIT);
+    }
+    
+    /**
+     * Initiates deletion of a CMP alias by selecting it and clicking the 'Delete CMP Alias' button
+     * 
+     * @param alias name of the alias to delete
+     */
+    public void deleteCmpAlias(final String alias) {
+        selectOptionByName(Page.SELECT_ALIAS, alias);
+        clickLink(Page.BUTTON_DELETE);
+    }
+    
+    /**
+     * Confirms deletion of a CMP alias by clicking the 'Confirm deletion' button
+     */
+    public void confirmDeleteCmpAlias() {
+        clickLink(Page.BUTTON_CONFIRM_DELETE);
+    }
+    
+    /**
+     * Cancels deletion of a CMP alias by clicking the 'Cancel' button
+     */
+    public void cancelDeleteCmpAlias() {
+        clickLink(Page.BUTTON_CANCEL_DELETE);
     }
 
     /**
@@ -93,5 +132,15 @@ public class CmpConfigurationHelper extends BaseHelper {
     public void assertCmpAliasExists(final String alias) {
         final List<String> selectNames = getSelectNames(Page.SELECT_ALIAS);
         assertTrue("CMP alias '" +  alias  + "' was not found in the list of CMP aliases", selectNames.contains(alias));
+    }
+    
+    /**
+     * Asserts the list of available CMP aliases in the Admin GUI does not contain the specified alias.
+     * 
+     * @param alias to check for
+     */
+    public void assertCmpAliasDoesNotExist(final String alias) {
+        final List<String> selectNames = getSelectNames(Page.SELECT_ALIAS);
+        assertTrue("CMP alias '" +  alias  + "' was not found in the list of CMP aliases", !selectNames.contains(alias));
     }
 }
