@@ -626,6 +626,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlNumber() || isCaexternal);
     }
 
+    public boolean isCheckboxMsCaCompatibilityDisabled() {
+        // ECA-10086: A CA that is already using Partitions shouldn't be able made MS Ca Compatible.
+        return !caInfoDto.isMsCaCompatible() && caInfoDto.isUsePartitionedCrl();
+    }
+
     public boolean isCheckboxCrlDistributionPointOnCrlCriticalDisabled() {
         return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlDistributiOnPointOnCrl() || isCaexternal);
     }
