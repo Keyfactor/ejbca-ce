@@ -13,6 +13,41 @@
 
 package org.ejbca.core.ejb.upgrade;
 
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URL;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -103,40 +138,6 @@ import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URL;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -1604,7 +1605,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-            fixPartitionedCrls();
+            upgradeSession.fixPartitionedCrls();
+            fixPartitionedCrlIndexes();
         } catch (AuthorizationDeniedException | UpgradeFailedException e) {
             log.error(e);
             return false;
@@ -1824,10 +1826,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * <code>(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)</code> and
      * <code>(issuerDN, crlPartitionIndex, cRLNumber)</code>. See ECA-8680 for more details.
      *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     *
      * @return true if migration should be considered complete and the <code>lastPostUpgradedToVersion</code>
      * value in the database should be incremented.
      * @throws UpgradeFailedException if upgrade fails
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public void fixPartitionedCrls() throws UpgradeFailedException {
         try {
             final long startDataNormalization = System.currentTimeMillis();
@@ -1843,35 +1849,60 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.error("    UPDATE CRLData SET crlPartitionIndex=-1 WHERE crlPartitionIndex IS NULL OR crlPartitionIndex=0;");
             throw new UpgradeFailedException(e);
         }
-        try {
-            final long startReindex = System.currentTimeMillis();
-            final Query dropCrlDataIndex3 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx3 ON CRLData");
-            final Query dropCrlDataIndex4 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx4 ON CRLData");
-            final Query createCrlDataIndex5 = entityManager.createNativeQuery(
-                    "CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
-            final Query createCrlDataIndex6 = entityManager.createNativeQuery(
-                    "CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)");
-            log.debug("Executing SQL query: " + dropCrlDataIndex3);
-            dropCrlDataIndex3.executeUpdate();
-            log.debug("Executing SQL query: " + dropCrlDataIndex4);
-            dropCrlDataIndex4.executeUpdate();
-            log.debug("Executing SQL query: " + createCrlDataIndex5);
-            createCrlDataIndex5.executeUpdate();
-            log.debug("Executing SQL query: " + createCrlDataIndex6);
-            createCrlDataIndex6.executeUpdate();
-            log.info("Successfully updated indexes for database table 'CRLData'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
-        } catch (RuntimeException e) {
-            log.error("An error occurred when adjusting indexes for database table 'CRLData': " + e);
-            log.error("You can update the indexes manually by running the following SQL queries:");
-            log.error("    DROP INDEX IF EXISTS crldata_idx3 ON CRLData;");
-            log.error("    DROP INDEX IF EXISTS crldata_idx4 ON CRLData;");
-            log.error("    CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);");
-            log.error("    CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);");
-            log.error("These changes are only needed if you want to use 'Partitioned CRLs'. See ECA-8680.");
+    }
+
+    private void fixPartitionedCrlIndexes() {
+        final IndexUpgradeResult res3 = upgradeSession.upgradeIndex("crldata_idx3", "CRLData", "CREATE INDEX crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
+        final IndexUpgradeResult res4 = upgradeSession.upgradeIndex("crldata_idx4", "CRLData", "CREATE UNIQUE INDEX crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)");
+        if (res3 != IndexUpgradeResult.OK_UPDATED || res4 != IndexUpgradeResult.OK_UPDATED) {
+            if (res3 == IndexUpgradeResult.NO_EXISTNG_INDEX || res4 == IndexUpgradeResult.NO_EXISTNG_INDEX) {
+                log.warn("Indexes for CRLs could not be dropped. Perhaps they did not exist?");
+            }
+            log.info("You can update the indexes manually by running the following SQL queries:");
+            log.info("    DROP INDEX IF EXISTS crldata_idx3 ON CRLData;");
+            log.info("    DROP INDEX IF EXISTS crldata_idx4 ON CRLData;");
+            log.info("    CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);");
+            log.info("    CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);");
+            log.info("These changes are only needed if you want to use 'Partitioned CRLs'. See ECA-8680.");
             log.info("If an index could not be created because duplicates were found you could remove them using something like:" + System.lineSeparator() +
                 "    DELETE t1 FROM CRLData t1, CRLData t2 WHERE t1.fingerprint > t2.fingerprint AND t1.issuerDN = t2.issuerDN " + System.lineSeparator() +
                     "AND t1.deltaCRLIndicator = t2.deltaCRLIndicator AND t1.cRLNumber = t2.cRLNumber AND t1.crlPartitionIndex = t2.crlPartitionIndex;");
             // Consider the post-upgrade to be complete, even if this fails. The user can manually add indexes later.
+        }
+    }
+
+    /**
+     * Replaces a database index. Called by {@link #fixPartitionedCrlIndexes}.
+     * Runs in a new transaction because the queries will fail if the index does not exist.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery) {
+        try {
+            final long startReindex = System.currentTimeMillis();
+            // Unfortunately, "IF EXISTS" and "IF NOT EXISTS" are not supported in index
+            // operations in mariadb-connector (tested with version 2.7.3)
+            final Query dropCrlDataIndex = entityManager.createNativeQuery("DROP INDEX " + oldIndexName + " ON " + tableName);
+            final Query createCrlDataIndex = entityManager.createNativeQuery(createIndexQuery);
+            try {
+                log.debug("Executing SQL query: " + dropCrlDataIndex);
+                dropCrlDataIndex.executeUpdate();
+            } catch (RuntimeException e) {
+                log.warn("Index '" + oldIndexName + "' could not be dropped.");
+                log.debug("Error stack trace for index removal: " + e, e);
+                // Since the old indexes don't exist, we assume the user does not want the new indexes either
+                return IndexUpgradeResult.NO_EXISTNG_INDEX;
+            }
+            log.debug("Executing SQL query: " + createCrlDataIndex);
+            createCrlDataIndex.executeUpdate();
+            log.info("Successfully updated index '" + oldIndexName + "' for database table '" + tableName + "'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
+            return IndexUpgradeResult.OK_UPDATED;
+        } catch (RuntimeException e) {
+            log.error("An error occurred when adjusting index '" + oldIndexName + "' for database table '" + tableName + "': " + e);
+            if (log.isDebugEnabled()) {
+                log.debug("Error stack trace for index creation", e);
+            }
+            return IndexUpgradeResult.ERROR;
         }
     }
 
