@@ -1119,7 +1119,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
     }
 
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) {
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "SSH");
         log.info(msg);
         return null;
@@ -1127,7 +1127,7 @@ public class SshCaImpl extends CABase implements Serializable, SshCa {
 
     @Override
     public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlNumber,
-            int baseCrlNumber) {
+            int baseCrlNumber, Certificate latestCaCertForParition) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "SSH");
         log.info(msg);
         return null;
