@@ -85,8 +85,8 @@ public class AuditLogHelper extends BaseHelper {
             return By.xpath("//span[contains(text(),'Added end entity " + endEntityName + "')]");
         }
 
-        static By getRevokedEndEntityRecord(String endEntityName) {
-            return By.xpath("//td[contains(text(),'Revoked end entity " + endEntityName + ".')]");
+        static By getEditedEndEntityRecord(String endEntityName) {
+            return By.xpath("//span[contains(text(),'Edited end entity " + endEntityName + "')]");
         }
 
         static By getCertificateOnHoldRecord(String endEntityName) {
@@ -241,8 +241,8 @@ public class AuditLogHelper extends BaseHelper {
         return webDriver.findElement(Page.getAddedEndEntityRecord(endEntityName)).getText();
     }
 
-    public String getRevokedEndEntityRecordText(String endEntityName){
-        return webDriver.findElement(Page.getRevokedEndEntityRecord(endEntityName)).getText();
+    public String getEditEndEntityRecordText(String endEntityName){
+        return webDriver.findElement(Page.getEditedEndEntityRecord(endEntityName)).getText();
     }
 
     public String getCertificateOnHoldRecordText(String endEntityName){
@@ -252,6 +252,28 @@ public class AuditLogHelper extends BaseHelper {
     public void assertProtocolEnabledLogExists(final String protocol) {
         final WebElement addedElement = webDriver.findElement(Page.getProtocolEnabled(protocol));
         assertLogEntryByEventText("System Configuration Edit", "Success", null, Collections.singletonList(addedElement.getText()));
+    }
+
+    public void assertAddEndEntityLogExists(final String endEntityName) {
+        final String addEndEntityRecordText = getAddEndEntityRecordText(endEntityName);;
+        assertLogEntryByEventText("End Entity Add", "Success", null,
+                Collections.singletonList(addEndEntityRecordText));
+    }
+
+    public void assertEditEndEntityLogExists(final String endEntityName) {
+        final String editEndEntityRecordText = getEditEndEntityRecordText(endEntityName);;
+        assertLogEntryByEventText("End Entity Edit", "Success", null,
+                Collections.singletonList(editEndEntityRecordText));
+    }
+
+    public void assertRevokeEndEntityLogExists(final String endEntityName) {
+        assertLogEntryByEventText("End Entity Revoke", "Success", null,
+                Collections.singletonList("Revoked end entity " + endEntityName + "."));
+    }
+
+    public void assertRemoveEndEntityLogExists(final String endEntityName) {
+        assertLogEntryByEventText("End Entity Remove", "Success", null,
+                Collections.singletonList("Removed end entity " + endEntityName + "."));
     }
 
     //==================================================================================================================
