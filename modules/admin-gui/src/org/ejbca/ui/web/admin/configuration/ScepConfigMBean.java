@@ -59,6 +59,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String alias;
         private String mode;
         private boolean includeCA;
+        private boolean returnCaChainInGetCaCert;
         private boolean allowLegacyDigestAlgorithm;
         private String raCertProfile;
         private String raEEProfile;
@@ -92,7 +93,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 if (scepConfig.aliasExists(alias)) {
                     this.mode = (scepConfig.getRAMode(alias) ? ScepConfiguration.Mode.RA.getResource() : ScepConfiguration.Mode.CA.getResource());
                     this.includeCA = scepConfig.getIncludeCA(alias);
-                    this.allowLegacyDigestAlgorithm = scepConfig.getAllowLegacyDigestAlgorithm(alias) ;
+                    this.returnCaChainInGetCaCert = scepConfig.getReturnCaChainInGetCaCert(alias);
+                    this.allowLegacyDigestAlgorithm = scepConfig.getAllowLegacyDigestAlgorithm(alias);
                     this.raCertProfile = scepConfig.getRACertProfile(alias);
                     this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
                     this.raAuthPassword = ScepConfigMBean.HIDDEN_PWD;
@@ -120,6 +122,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 } else {
                     this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE.toUpperCase();
                     this.includeCA = Boolean.valueOf(ScepConfiguration.DEFAULT_INCLUDE_CA);
+                    this.returnCaChainInGetCaCert = Boolean.valueOf(ScepConfiguration.DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT);
                     this.allowLegacyDigestAlgorithm = Boolean.valueOf(ScepConfiguration.DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
                     this.raCertProfile = ScepConfiguration.DEFAULT_RA_CERTPROFILE;
                     this.raEEProfile = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
@@ -388,6 +391,14 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneAadUseKeyBinding(boolean intuneAadUseKeyBinding) {
             this.intuneAadUseKeyBinding = intuneAadUseKeyBinding;
         }
+
+        public boolean isReturnCaChainInGetCaCert() {
+            return returnCaChainInGetCaCert;
+        }
+
+        public void setReturnCaChainInGetCaCert(boolean returnCaChainInGetCaCert) {
+            this.returnCaChainInGetCaCert = returnCaChainInGetCaCert;
+        }
     }
 
     private static final long serialVersionUID = 2L;
@@ -498,6 +509,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             String alias = currentAlias.getAlias();
             scepConfig.setRAMode(alias, "ra".equalsIgnoreCase(currentAlias.getMode()));
             scepConfig.setIncludeCA(alias, currentAlias.isIncludeCA());
+            scepConfig.setReturnCaChainInGetCaCert(alias, currentAlias.isReturnCaChainInGetCaCert());
             scepConfig.setAllowLegacyDigestAlgorithm(alias, currentAlias.allowLegacyDigestAlgorithm);
             scepConfig.setRACertProfile(alias, currentAlias.getRaCertProfile());
             scepConfig.setRAEndEntityProfile(alias, currentAlias.getRaEEProfile());
