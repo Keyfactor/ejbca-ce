@@ -931,6 +931,7 @@
 					value="#{web.text.CRLSPECIFICDATA}" style="font-weight: bold;" />
 				<h:panelGroup id="header_crl_specific_data" />
 
+				<!-- External CA -->
 				<h:panelGroup
 					rendered="#{editCAsMBean.caExternal and editCAsMBean.caInfoDto.caTypeX509}">
 					<h:outputText name="textfieldexternalcdp"
@@ -943,9 +944,10 @@
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:validator validatorId="urlValidator"/>
 						<f:attribute name="errorMessage" value="#{web.text.CRL_CA_CRLDP_EXTERNAL_ERROR}"/>						
-				</h:inputText>
+					</h:inputText>
 				</h:panelGroup>
 
+				<!-- Microsoft CA Compatibility Mode -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.MS_COMPATIBILIY_MODE}" />
 				</h:panelGroup>
@@ -955,14 +957,18 @@
 							<h:selectBooleanCheckbox id="mscompatible"
 													 value="#{editCAsMBean.caInfoDto.msCaCompatible}"
 													 onclick="return checkboxConfirmation('#{web.text.MS_COMPATIBILIY_MODE_CONFIRMATION}', 'editcapage:mscompatible')"
-													 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.caInfoDto.msCaCompatible}">
-								<f:ajax render="mscompatiblegroup"/>
+													 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.checkboxMsCaCompatibilityDisabled}">
+								<f:ajax immediate="true" render="mscompatiblegroup editcapage:crlSpecificData" />
 							</h:selectBooleanCheckbox>
 							<h:outputLabel for="mscompatible"
 										   value="#{web.text.USE}" />
 							<br/>
-							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible}"
+							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible and not editCAsMBean.checkboxMsCaCompatibilityDisabled}"
+										  styleClass="helpReference"
 										  value="#{web.text.MS_COMPATIBILIY_MODE_WARNING}" />
+							<h:outputText rendered="#{not editCAsMBean.caInfoDto.msCaCompatible and editCAsMBean.checkboxMsCaCompatibilityDisabled}"
+										  styleClass="helpReference"
+										  value="#{web.text.MS_COMPATIBILIY_MODE_DISABLED}" />
 						</h:panelGroup>
 
 						<h:outputText rendered="#{editCAsMBean.caInfoDto.msCaCompatible}"
@@ -970,6 +976,7 @@
 					</h:panelGroup>
 				</h:panelGroup>
 
+				<!-- Authority Key Id -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_EXT_AUTHORITYKEYID}" />
 				</h:panelGroup>
@@ -990,6 +997,7 @@
 						value="#{web.text.EXT_CRITICAL}" />
 				</h:panelGroup>
 
+				<!-- CRL Number -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_EXT_CRLNUMBER}" />
 				</h:panelGroup>
@@ -1008,13 +1016,13 @@
 						value="#{web.text.EXT_CRITICAL}" />
 				</h:panelGroup>
 
+				<!-- CRL Issuing Distribution -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_EXT_ISSUINGDISTPOINT}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Issuing_Distribution_Point_on_CRLs')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
-
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl"
 						value="#{editCAsMBean.caInfoDto.useCrlDistributiOnPointOnCrl}"
@@ -1036,7 +1044,7 @@
 						value="#{web.text.EXT_CRITICAL}" />
 				</h:panelGroup>
 
-
+				<!-- CA Issuers URI -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_EXT_CAISSUERS_URI}" />
 					<h:outputText
@@ -1053,17 +1061,18 @@
 					</h:inputText>						
 				</h:panelGroup>
 
+				<!-- EXT: Authority Information Access -->
 				<h:panelGroup rendered="#{editCAsMBean.caExternal}"></h:panelGroup>
 				<h:panelGroup rendered="#{editCAsMBean.caExternal}">
 					<h:outputText value="#{editCAsMBean.caInfoDto.authorityInformationAccess}" />
 				</h:panelGroup>
 
+				<!-- Keep Expired CRL -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.KEEPEXPIREDONCRL}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Keep_Expired_Certificates_on_CRL')}"
 						escape="false" styleClass="helpReference"/>
-
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxkeepexpiredoncrl"
@@ -1073,14 +1082,17 @@
 						value="#{web.text.USE}" />
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-					<h:outputText value="#{web.text.USECRLPARTITIONS}" />
+				<!-- Use CRL Partitions -->
+				<h:panelGroup id="useCrlPartitionsTitle"
+							  rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.msCaCompatible}">
+						<h:outputText  value="#{web.text.USECRLPARTITIONS}" />
 				</h:panelGroup>
-				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+				<h:panelGroup id="useCrlPartitionsGroup"
+							  rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.msCaCompatible}">
 					<h:selectBooleanCheckbox id="checkboxusecrlpartitions"
 											 value="#{editCAsMBean.caInfoDto.usePartitionedCrl}"
 											 disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
+						<f:ajax render=":editcapage:mscompatiblegroup :editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
 							onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', ev.source.checked); } } "/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxusecrlpartitions"
@@ -1093,12 +1105,12 @@
 					}
 					</h:outputScript>
 				</h:panelGroup>
-				<h:column rendered="#{not editCAsMBean.caExternal}">
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.msCaCompatible}">
 					<h:panelGroup id="crlNumberOfPartitionsLabelGroup" styleClass="crlPartitionCellContents">
 						<h:outputText value="#{web.text.CRLPARTITIONNUMBER}" />
 					</h:panelGroup>
-				</h:column>
-				<h:column rendered="#{not editCAsMBean.caExternal}">
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.msCaCompatible}">
 				    <h:panelGroup id="crlNumberOfPartitionsInputGroup" styleClass="crlPartitionCellContents">
 						<h:inputText id="crlpartitions"  value="#{editCAsMBean.caInfoDto.crlPartitions}" size="3" title="#{web.text.FORMAT_INTEGER}"
 									 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
@@ -1107,13 +1119,13 @@
 							<f:validateLongRange minimum="0"/>
 						</h:inputText>
 					</h:panelGroup>
-				</h:column>
-				<h:column rendered="#{not editCAsMBean.caExternal}">
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.msCaCompatible}">
 					<h:panelGroup id="suspendedPartitionLabelGroup" styleClass="crlPartitionCellContents">
 						<h:outputText value="#{web.text.CRLSUSPENDEDPARTITIONNUMBER}" rendered="#{not editCAsMBean.caExternal}" />
 					</h:panelGroup>
-				</h:column>
-				<h:column rendered="#{not editCAsMBean.caExternal}">
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.msCaCompatible}">
 					<h:panelGroup id="suspendedPartitionInputGroup" styleClass="crlPartitionCellContents">
 						<h:inputText id="crlsuspendedpartitions" value="#{editCAsMBean.caInfoDto.suspendedCrlPartitions}" size="3" title="#{web.text.FORMAT_INTEGER}"
 									 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
@@ -1123,8 +1135,9 @@
 							<f:validateLongRange minimum="0"/>
 						</h:inputText>
 					</h:panelGroup>
-				</h:column>
+				</h:panelGroup>
 
+				<!-- CRL Period -->
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText value="#{web.text.CRL_CA_CRLPERIOD}"
 						style="font-weight: bold;" />
