@@ -53,6 +53,7 @@ public class EcaQa220_CRLIssuance extends WebTestBase {
     @AfterClass
     public static void exit() {
         removeCaAndCryptoToken(TestData.CA_NAME);
+        removeCrlByIssuerDn("CN=" + TestData.CA_NAME);
         afterClass();
     }
 
