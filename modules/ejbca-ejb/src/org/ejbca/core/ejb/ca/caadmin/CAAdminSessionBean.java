@@ -2178,9 +2178,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Publish the new CA certificate
             publishCACertificate(authenticationToken, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
+            
             // Generate a new CRL, but not partitions, which could take very long time.
             publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+            if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && ((X509CA)ca).getCrlPartitions() != 0) {
+                for (int crlPartitionIndex = 1; crlPartitionIndex <= ((X509CA)ca).getCrlPartitions(); crlPartitionIndex++) {
+                    publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex);
+                    publishingCrlSession.forceDeltaCRL(authenticationToken, caid, crlPartitionIndex);
+                }
+            }
 
             if (subjectDNWillBeChanged) {
                 // If CA has gone through Name Change, add new caid to available CAs for every certificate profile
