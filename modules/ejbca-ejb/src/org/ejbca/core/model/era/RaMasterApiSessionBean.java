@@ -2596,12 +2596,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws ApprovalException, ApprovalRequestExpiredException {
         return approvalSession.isApproved(approvalId);
     }
-    
-    @Override
-    public Integer getApprovalStatus(final AuthenticationToken authenticationToken, final int approvalId)
-            throws AuthorizationDeniedException, ApprovalException {
-        return approvalSession.getStatus(approvalId);
-    }
 
     @Override
     public boolean isAuthorized(final AuthenticationToken authenticationToken, final String... resource) {
