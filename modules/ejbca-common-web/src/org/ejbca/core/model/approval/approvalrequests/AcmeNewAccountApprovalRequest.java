@@ -18,7 +18,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -31,8 +30,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
  */
 public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
 
-	private static final long serialVersionUID = -1L;
-	private static final Logger log = Logger.getLogger(AcmeNewAccountApprovalRequest.class);
 	private static final int LATEST_VERSION = 1;
 
 	private String acmeAccountId;
