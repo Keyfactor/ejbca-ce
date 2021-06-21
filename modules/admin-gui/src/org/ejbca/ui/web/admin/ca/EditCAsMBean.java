@@ -1207,6 +1207,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCA && !isCaUninitialized && isHasEditRight();
     }
 
+    public  boolean isAuthorityKeyIdentifierValidated(){
+        return caInfoDto.isMsCaCompatible();
+    }
+
     public boolean isIssuingDistributionPointValidated() {
         return caInfoDto.isUsePartitionedCrl() || caInfoDto.isMsCaCompatible();
     }
