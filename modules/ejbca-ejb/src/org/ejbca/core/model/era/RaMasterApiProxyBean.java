@@ -2822,30 +2822,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public Integer getApprovalStatus(final AuthenticationToken authenticationToken, final int approvalId)
-            throws AuthorizationDeniedException, ApprovalException {
-        ApprovalException approvalException = null;
-        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            // ECA-10091 TODO Check API version.
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
-                try {
-                    return raMasterApi.getApprovalStatus(authenticationToken, approvalId);
-                } catch (ApprovalException e) {
-                    if (approvalException == null) {
-                        approvalException = e;
-                    }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        if (approvalException != null) {
-            throw approvalException;
-        }
-        return null;
-    }
-
-    @Override
     public boolean isAuthorized(final AuthenticationToken authenticationToken, final String... resource) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
