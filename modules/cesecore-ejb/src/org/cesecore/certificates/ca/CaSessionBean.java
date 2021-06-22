@@ -247,7 +247,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     			}
                 assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
 
-                if (!((X509CAInfo)cainfo).isMsCaCompatible() && ((X509CAImpl)ca).isMsCaCompatible())
+                if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CAImpl && ((X509CAImpl)ca).isMsCaCompatible())
                     throw new CaMsCompatibilityIrreversibleException();
 
                 @SuppressWarnings("unchecked")
