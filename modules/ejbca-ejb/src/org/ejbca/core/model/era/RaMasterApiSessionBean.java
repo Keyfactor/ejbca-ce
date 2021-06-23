@@ -185,8 +185,6 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.approval.approvalrequests.AcmeKeyChangeApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.AcmeNewAccountApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -2369,21 +2367,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public Integer createApprovalRequest(final AuthenticationToken authenticationToken, final int type, final int approvalProfileId, final int endEntityProfileId, final String acmeAccountId) throws AuthorizationDeniedException, ApprovalException {
-        final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
-        final int caId = eep.getDefaultCA();
-        
-        if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.getIntegerValue() == type) {
-            final ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-            final ApprovalRequest approvalRequest = new AcmeNewAccountApprovalRequest(authenticationToken, profile, caId, endEntityProfileId, acmeAccountId);
-            final int requestId = approvalSession.addApprovalRequest(authenticationToken, approvalRequest);
-            return requestId;
-        } else if (ApprovalRequestType.ACMEACCOUNTKEYCHANGE.getIntegerValue() == type) {
-            final ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-            final ApprovalRequest approvalRequest = new AcmeKeyChangeApprovalRequest(authenticationToken, profile, caId, endEntityProfileId, acmeAccountId);
-            final int requestId = approvalSession.addApprovalRequest(authenticationToken, approvalRequest);
-            return requestId;
-        }
-        return null;
+        return approvalSession.createApprovalRequest(authenticationToken, type, approvalProfileId, endEntityProfileId, acmeAccountId);
     }
 
     @Override
