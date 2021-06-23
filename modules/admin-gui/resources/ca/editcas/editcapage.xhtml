@@ -984,6 +984,9 @@
 					<h:selectBooleanCheckbox id="checkboxauthoritykeyidentifier"
 						value="#{editCAsMBean.caInfoDto.useAuthorityKeyIdentifier}"
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+						<f:validator validatorId="org.ejbca.util.validator.RequiredCheckboxValidator"
+									 disabled="#{editCAsMBean.caExternal or not editCAsMBean.authorityKeyIdentifierValidated}"/>
+						<f:attribute name="errorMessage" value="#{web.text.MS_COMPABILITY_MODE_WITHOUT_AUTHORITYKEYID}"/>
 						<f:ajax render="checkboxauthoritykeyidentifiercritical"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxauthoritykeyidentifier"
