@@ -1030,6 +1030,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             else {
                 // use java.util to ensure there are no crlfs
                 final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
+                log.debug("Logging SCEP success for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 log.debug("scep id = " + transactionId);
                 log.debug("scep base64Message = " + base64Message);
                 final String thumbprint = toMicrosoftHex(response.getThumbprint());
@@ -1041,7 +1042,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 intuneScepServiceClient.SendSuccessNotification(transactionId, base64Message, thumbprint, hexSerialNumber, response.getNotAfter().toString(),
                         issuer, issuer, issuer);
             }
-            log.info("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+            log.info("MS Intune status update succeeded for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
         } catch (IntuneScepServiceException e) {
             final String msg = "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
             log.info(msg, e);
