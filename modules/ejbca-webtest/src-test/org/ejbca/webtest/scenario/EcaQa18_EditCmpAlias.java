@@ -34,6 +34,8 @@ public class EcaQa18_EditCmpAlias extends WebTestBase {
 
     public static class TestData {
         static final String cmpAlias = "ECAQA-18-CMPAlias";
+        static final String caName = "ManagementCA";
+        static final String disabled = "(disabled)";
     }
 
     @BeforeClass
@@ -62,11 +64,30 @@ public class EcaQa18_EditCmpAlias extends WebTestBase {
     }
     
     /**
-     * Delete the alias and verify that it doesn't exist any more.
+     * Edit the alias and cancel.
      */
     @Test
-    public void testB_editCmpAlias() {
+    public void testB_cancelEditCmpAlias() {
         cmpConfigHelper.openPage(getAdminWebUrl());
         cmpConfigHelper.editCmpAlias(TestData.cmpAlias);
+        cmpConfigHelper.selectDefaultCA(TestData.caName);
+        cmpConfigHelper.cancelEditCmpAlias();
+        cmpConfigHelper.assertCmpAliasExists(TestData.cmpAlias);
+        cmpConfigHelper.editCmpAlias(TestData.cmpAlias);
+        cmpConfigHelper.assertCmpAliasDefaultCA(TestData.disabled);
+    }
+    
+    /**
+     * Edit the alias and save.
+     */
+    @Test
+    public void testC_saveEditCmpAlias() {
+        cmpConfigHelper.openPage(getAdminWebUrl());
+        cmpConfigHelper.editCmpAlias(TestData.cmpAlias);
+        cmpConfigHelper.selectDefaultCA(TestData.caName);
+        cmpConfigHelper.saveEditCmpAlias();
+        cmpConfigHelper.assertCmpAliasExists(TestData.cmpAlias);
+        cmpConfigHelper.editCmpAlias(TestData.cmpAlias);
+        cmpConfigHelper.assertCmpAliasDefaultCA(TestData.caName);
     }
 }
