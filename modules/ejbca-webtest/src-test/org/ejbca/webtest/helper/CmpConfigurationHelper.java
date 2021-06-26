@@ -37,7 +37,11 @@ public class CmpConfigurationHelper extends BaseHelper {
 
         /** List of available CMP aliases */
         static final By SELECT_ALIAS = By.id("cmpaliasesform:selectaliaslist");
-
+        
+        /** Editing the alias */
+        static final By SELECT_DEFAULT_CA = By.id("editcmpaliasform:cmpdefaultca");
+        static final By BUTTON_CANCEL_ALIAS_EDIT = By.id("editcmpaliasform:cancelbutton");
+        static final By BUTTON_SAVE_ALIAS_EDIT = By.id("editcmpaliasform:savebutton");
     }
     
     public CmpConfigurationHelper(final WebDriver webDriver) {
@@ -122,6 +126,39 @@ public class CmpConfigurationHelper extends BaseHelper {
         selectOptionByName(Page.SELECT_ALIAS, oldAlias);
         fillInput(Page.INPUT_NAME, cloneAlias);
         clickLink(Page.BUTTON_CLONE);
+    }
+    
+    /**
+     * Selects a default CA as specified by the input parameter
+     * 
+     * @param caName name of the CA to set as default
+     */
+    public void selectDefaultCA(final String caName) {
+        selectOptionByName(Page.SELECT_DEFAULT_CA, caName);
+    }
+    
+    /**
+     * Cancels editing the CMP alias by clicking the 'Cancel' button
+     */
+    public void cancelEditCmpAlias() {
+        clickLink(Page.BUTTON_CANCEL_ALIAS_EDIT);
+    }
+    
+    /**
+     * Saves the CMP alias by clicking the 'Save' button
+     */
+    public void saveEditCmpAlias() {
+        clickLink(Page.BUTTON_SAVE_ALIAS_EDIT);
+    }
+    
+    /**
+     * Asserts the the specified CA is set as default in the CMP alias.
+     * 
+     * @param caName CA to check for
+     */
+    public void assertCmpAliasDefaultCA(String caName) {
+        final List<String> selectedDefaultCAs = getSelectSelectedNames(Page.SELECT_DEFAULT_CA);
+        assertTrue("The the CA '" + caName + "' was not set as default in the CMP alias", selectedDefaultCAs.contains(caName));
     }
     
     /**
