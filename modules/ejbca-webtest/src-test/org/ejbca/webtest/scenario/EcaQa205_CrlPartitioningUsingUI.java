@@ -85,6 +85,8 @@ public class EcaQa205_CrlPartitioningUsingUI extends WebTestBase {
     @AfterClass
     public static void exit() {
         // Remove generated artifacts
+        removeEndEntityByUsername(TestData.USERNAME);
+        removeCertificateByUsername(TestData.USERNAME);
         removeCrlByIssuerDn(TestData.ISSUER_DN);
         removeCaAndCryptoToken(TestData.CA_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
