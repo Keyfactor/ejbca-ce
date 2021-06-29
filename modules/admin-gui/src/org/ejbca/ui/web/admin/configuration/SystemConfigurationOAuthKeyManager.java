@@ -250,6 +250,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public boolean isTypeGeneric() {
             return OAuthProviderType.TYPE_GENERIC.getIndex() == type.getIndex();
         }
+        
+        public boolean isTypePingId() {
+            return OAuthProviderType.TYPE_PINGID.getIndex() == type.getIndex();
+        }
 
         public boolean isTypeKeycloak() {
             return OAuthProviderType.TYPE_KEYCLOAK.getIndex() == type.getIndex();
