@@ -20,6 +20,8 @@ public class OAuthProviderUIHelper {
             validateAzureType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK.getIndex() == provider.getType().getIndex()) {
             validateKeycloakType(provider);
+        } else if (OAuthKeyInfo.OAuthProviderType.TYPE_PINGID.getIndex() == provider.getType().getIndex()) {
+            validatePingIdType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_GENERIC.getIndex() != provider.getType().getIndex()) {
             throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Provider Type"));
         }
@@ -54,7 +56,22 @@ public class OAuthProviderUIHelper {
             throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Realm"));
         }
     }
-    
+
+    public static void validatePingIdType(final OAuthKeyEditor provider) {
+        if (StringUtils.isEmpty(provider.getUrl())) {
+            throw new MissingOAuthKeyAttributeException(
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "URL"));
+        }
+        if (StringUtils.isEmpty(provider.getClient())) {
+            throw new MissingOAuthKeyAttributeException(
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Client"));
+        }
+        if (StringUtils.isEmpty(provider.getRealm())) {
+            throw new MissingOAuthKeyAttributeException(
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Realm"));
+        }
+    }
+
     private static void validateCommonType(final OAuthKeyEditor provider) {
         if (StringUtils.isEmpty(provider.getLabel())) {
             throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Label"));

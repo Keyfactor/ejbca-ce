@@ -42,6 +42,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String GENERIC = "GENERIC";
     private static final String KEYCLOAK = "KEYCLOAK";
     private static final String AZURE = "AZURE";
+    private static final String PINGID = "PINGID";
 
     {
         registerParameter(new Parameter(TYPE, "Provider type.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -96,13 +97,16 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 case AZURE:
                     type = OAuthProviderType.TYPE_AZURE;
                     break;
+                case PINGID:
+                    type = OAuthProviderType.TYPE_PINGID;
+                    break;
                 default:
                     break;
             }
         }
 
         if (type == null) {
-            log.info("Unsupported provider type was specified. Currently supported provider types are " + GENERIC + ", " + AZURE + " and " + KEYCLOAK);
+            log.info("Unsupported provider type was specified. Currently supported provider types are " + GENERIC + ", " + AZURE + ", " + PINGID + " and " + KEYCLOAK);
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         
