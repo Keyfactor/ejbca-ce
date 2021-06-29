@@ -39,7 +39,8 @@ public final class OAuthKeyInfo implements Serializable {
     public enum OAuthProviderType {
         TYPE_GENERIC(0, "Generic"),
         TYPE_AZURE(1, "Azure"),
-        TYPE_KEYCLOAK(2, "Keycloak");
+        TYPE_KEYCLOAK(2, "Keycloak"),
+        TYPE_PINGID(3, "PingID");
 
         private final int index;
         private final String label;
@@ -234,6 +235,9 @@ public final class OAuthKeyInfo implements Serializable {
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
             return getTypeSpecificUrl("authorize");
         }
+        if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
+            return getTypeSpecificUrl("authorize");
+        }
         return url;
     }
 
@@ -258,6 +262,15 @@ public final class OAuthKeyInfo implements Serializable {
                 uri += getUrl().endsWith("/") ? "" : "/";
                 uri += getRealm() + "/oauth2/v2.0/" + endpoint;
                 return uri;
+            }
+            case TYPE_PINGID: {
+                final String pingIdEndpoint = endpoint.equals("logout") ? "signoff" : endpoint;
+                final String uri = getUrl();
+                if (uri.endsWith("/")) {
+                    return uri + getRealm() + "/as/" + pingIdEndpoint;
+                } else {
+                    return uri + "/" + getRealm() + "/as/" + pingIdEndpoint;
+                }
             }
             case TYPE_GENERIC: {
                 return getUrl();
