@@ -69,6 +69,7 @@
                 size="10"/>
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_REALM}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeKeycloak}"/>
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_TENANT}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ENVIRONMENT}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typePingId}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.realm}" size="46" id="realm"
                          disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
                          rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeGeneric}">
