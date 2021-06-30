@@ -504,7 +504,7 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="msae" depends="ejbca-common-web" description="Build the MSAE WAR">
+	<target name="msae" if="${mod.msae.exists}" depends="ejbca-common-web" description="Build the MSAE WAR">
 		<ant antfile="${mod.msae.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
