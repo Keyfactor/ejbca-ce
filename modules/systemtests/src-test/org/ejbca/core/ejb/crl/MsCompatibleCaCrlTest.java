@@ -87,8 +87,6 @@ public class MsCompatibleCaCrlTest {
         X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, caId);
         assertTrue("Partitioned CRLs was not enabled after re-keying MS compatible CA", 
                 caInfo.getUsePartitionedCrl());
-        assertTrue("'Issuing Distribution Point on CRLs' was not enabled after re-keying MS compatible CA", 
-                caInfo.getUseCrlDistributionPointOnCrl());
         assertEquals("Wrong number of CRL partitions set after MS Compatible CA re-keying", 
                 1, caInfo.getCrlPartitions());
         assertEquals("Wrong number of suspended CRL partitions set after MS Compatible CA re-keying", 
