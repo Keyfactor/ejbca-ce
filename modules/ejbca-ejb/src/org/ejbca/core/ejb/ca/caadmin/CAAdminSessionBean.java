@@ -2097,7 +2097,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && !currentSignKeyAlias.equals(nextSignKeyAlias) && !subjectDNWillBeChanged) {
                 // CA is re-keyed
                 X509CA x509Ca = (X509CA) ca;
-                if (x509Ca.getUsePartitionedCrl() == false && x509Ca.getCrlPartitions() == 0) {
+                if (!x509Ca.getUsePartitionedCrl() && x509Ca.getCrlPartitions() == 0) {
                     // First time enabling MS Compatibility Mode.
                     log.debug("Enabling CRL partitions for MS Compatibility Mode");
                     ((X509CA)ca).setUsePartitionedCrl(true);
