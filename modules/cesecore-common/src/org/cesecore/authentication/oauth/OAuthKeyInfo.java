@@ -78,7 +78,10 @@ public final class OAuthKeyInfo implements Serializable {
     private String url;
     private String clientSecret;
     private int skewLimit = 60000;
-
+    
+    // PingID fields
+    private String tokenUrl;
+    private String logoutUrl;
 
     /**
      * Creates a OAuth Key info object
@@ -236,16 +239,24 @@ public final class OAuthKeyInfo implements Serializable {
             return getTypeSpecificUrl("authorize");
         }
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
-            return getTypeSpecificUrl("authorize");
+            return url;
         }
         return url;
     }
 
     public String getTokenUrl() {
-        return getTypeSpecificUrl("token");
+        if (getType() == OAuthProviderType.TYPE_PINGID) {
+            return tokenUrl;
+        }
+        
+        return getTypeSpecificUrl(getType() == OAuthProviderType.TYPE_KEYCLOAK ? "id_token" : "token");
     }
 
     public String getLogoutUrl() {
+        if (getType() == OAuthProviderType.TYPE_PINGID) {
+            return logoutUrl;
+        }
+        
         return getTypeSpecificUrl("logout");
     }
 
@@ -263,15 +274,7 @@ public final class OAuthKeyInfo implements Serializable {
                 uri += getRealm() + "/oauth2/v2.0/" + endpoint;
                 return uri;
             }
-            case TYPE_PINGID: {
-                final String pingIdEndpoint = endpoint.equals("logout") ? "signoff" : endpoint;
-                final String uri = getUrl();
-                if (uri.endsWith("/")) {
-                    return uri + getRealm() + "/as/" + pingIdEndpoint;
-                } else {
-                    return uri + "/" + getRealm() + "/as/" + pingIdEndpoint;
-                }
-            }
+            case TYPE_PINGID: 
             case TYPE_GENERIC: {
                 return getUrl();
             }
@@ -314,5 +317,13 @@ public final class OAuthKeyInfo implements Serializable {
     @Override
     public String toString() {
         return label;
+    }
+
+    public void setTokenUrl(String tokenUrl) {
+        this.tokenUrl = tokenUrl;
+    }
+
+    public void setLogoutUrl(String logoutUrl) {
+        this.logoutUrl = logoutUrl;
     }
 }
