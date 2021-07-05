@@ -114,7 +114,7 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
             log.error("CA " + name + " could not be modified, OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (CaMsCompatibilityIrreversibleException e) {
-            log.error("Failed CA edit operation for " + name + ". Because microsoft compatibility is irreversible.");
+            log.error("Failed CA edit operation for " + name + ". Microsoft compatibility is irreversible.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
     }

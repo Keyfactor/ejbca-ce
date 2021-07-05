@@ -89,13 +89,11 @@ public class CaChangeCATokenSignAlgCommand extends BaseCaAdminCommand {
                     + "Ignoring since the pre-production of OCSP responses setting was not modified here.");
             log.trace("<execute()");
         } catch (CaMsCompatibilityIrreversibleException e) {
-            getLogger().error("Failed CA edit operation for " + caName + ". Because microsoft compatibility is irreversible.");
+            getLogger().error("Failed CA edit operation for " + caName + ". Microsoft compatibility is irreversible.");
         }
 
         log.trace("<execute()");
         return CommandResult.SUCCESS;
-     
-        
     }
 
     @Override

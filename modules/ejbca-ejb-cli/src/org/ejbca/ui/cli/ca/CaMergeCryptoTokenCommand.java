@@ -159,7 +159,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             log.error(getCaList());
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (CaMsCompatibilityIrreversibleException e) {
-            getLogger().error("Failed CA edit operation for " + caName + ". Because microsoft compatibility is irreversible.");
+            getLogger().error("Failed CA edit operation for " + caName + ". Microsoft compatibility is irreversible.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNonceConflictException e) {
             log.error("Conflict for " + caName + "detected. OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response. "
