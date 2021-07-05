@@ -524,6 +524,7 @@ public interface CAAdminSession {
      * @throws AuthorizationDeniedException             if the administrators isn't authorized
      * @throws CmsCertificatePathMissingException       An exception thrown when someone tries to activate the CMS Service for a CA that does not have a CMS certificate path
      * @throws InternalKeyBindingNonceConflictException An exception thrown when someone tries to create an InternalKeyBinding with a nonce setting that conflicts with the CA's OCSP response pre-production setting.
+     * @throws CaMsCompatibilityIrreversibleException An exception thrown when someone tries to change msCaCompatible from true to false.
      * @see org.cesecore.certificates.ca.CAInfo
      * @see org.cesecore.certificates.ca.X509CAInfo
      */

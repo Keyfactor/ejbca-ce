@@ -78,6 +78,7 @@ public interface CaSession {
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
      * @throws InternalKeyBindingNonceConflictException 
+     * @throws CaMsCompatibilityIrreversibleException
      */
     void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
