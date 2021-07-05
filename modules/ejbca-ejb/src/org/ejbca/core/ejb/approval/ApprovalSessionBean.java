@@ -65,6 +65,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -73,6 +74,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalNotificationParameterGenerator;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.approvalrequests.AcmeKeyChangeApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.AcmeNewAccountApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -84,6 +87,7 @@ import org.ejbca.core.model.approval.profile.ApprovalPartitionWorkflowState;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
@@ -117,6 +121,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -180,6 +186,26 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return requestId;
     }
     
+    @Override
+    public Integer createApprovalRequest(final AuthenticationToken admin, final int approvalType, final int approvalProfileId, final int endEntityProfileId, final String acmeAccountId) throws ApprovalException {
+        final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+        final int caId = eep.getDefaultCA();
+        if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.getIntegerValue() == approvalType) {
+            log.info("Add approval for ACME account registration (account ID=" + acmeAccountId + ", approval profile ID=" + approvalProfileId + ").");
+            final ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            final ApprovalRequest approvalRequest = new AcmeNewAccountApprovalRequest(admin, profile, caId, endEntityProfileId, acmeAccountId);
+            final int requestId = approvalSession.addApprovalRequest(admin, approvalRequest);
+            return requestId;
+        } else if (ApprovalRequestType.ACMEACCOUNTKEYCHANGE.getIntegerValue() == approvalType) {
+            log.info("Add approval for ACME account key change (account ID=" + acmeAccountId + ", approval profile ID=" + approvalProfileId + ").");
+            final ApprovalProfile profile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+            final ApprovalRequest approvalRequest = new AcmeKeyChangeApprovalRequest(admin, profile, caId, endEntityProfileId, acmeAccountId);
+            final int requestId = approvalSession.addApprovalRequest(admin, approvalRequest);
+            return requestId;
+        }
+        return null;
+    }
+
     @Override
     public void editApprovalRequest(final AuthenticationToken admin, final int requestId, final ApprovalRequest approvalRequest) throws ApprovalException {
         if (log.isTraceEnabled()) {
