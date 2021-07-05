@@ -160,6 +160,32 @@
                         <h:outputText value="#{acmeConfigMBean.currentAlias.orderValidity}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
                     
+                    <h:outputLabel for="approvalForNewAccount" value="#{web.text.ACME_APPROVAL_NEW_ACCOUNT}" />
+                    <h:panelGroup id="approvalForNewAccount" >
+                        <h:panelGroup layout="block" styleClass="">
+                            <h:selectOneMenu id="approvalForNewAccountId" value="#{acmeConfigMBean.currentAlias.approvalForNewAccountId}"
+                                             disabled="#{!acmeConfigMBean.currentAliasEditMode}">
+                                <f:selectItems value="#{acmeConfigMBean.availableApprovalProfiles}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="">
+                        	<h:outputText id="approvalForNewAccountText" value="#{web.text.ACME_APPROVAL_NEW_ACCOUNT_HELP}" styleClass="help"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    
+                    <h:outputLabel for="approvalForKeyChange" value="#{web.text.ACME_APPROVAL_KEY_CHANGE}" />
+                    <h:panelGroup id="approvalForKeyChange" >
+                        <h:panelGroup layout="block" styleClass="">
+                            <h:selectOneMenu id="approvalForKeyChangeId" value="#{acmeConfigMBean.currentAlias.approvalForKeyChangeId}"
+                                             disabled="#{!acmeConfigMBean.currentAliasEditMode}">
+                                <f:selectItems value="#{acmeConfigMBean.availableApprovalProfiles}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="">
+                        	<h:outputText id="approvalForKeyChangeText" value="#{web.text.ACME_APPROVAL_KEY_CHANGE_HELP}" styleClass="help"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    
                     <h:outputLabel for="externalAccountBinding" value="#{web.text.ACME_REQUIRE_EXTERNAL_ACCOUNT_BINDING}" />
                     <h:selectBooleanCheckbox id="externalAccountBinding" value="#{acmeConfigMBean.currentAlias.requireExternalAccountBinding}" disabled="#{!acmeConfigMBean.currentAliasEditMode}">
                     	<f:ajax listener="#{acmeConfigMBean.toggleCurrentEabEditMode}" render="@all"></f:ajax>
