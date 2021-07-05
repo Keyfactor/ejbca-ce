@@ -2030,34 +2030,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     + ocspKeyBinding.getCertificateId());
                         }
                     } else {
-
-                        if (isMsCaCompatible) {
-                            final String caCertificateSubjectDn = CertTools.getSubjectDN(issuingCertificate);
-
-                            CertificateStatusHolder certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(caCertificateSubjectDn,
-                                    certId.getSerialNumber());
-
-                            X509Certificate certificate = (X509Certificate) certificateStatusHolder.getCertificate(); // The actual certificate in question from db
-
-                            final byte[] certificateFromRequestSubjectKeyId = getAuthorityKeyIdentifier(certificate);
-                            final byte[] currentIssuingCertSubjectKeyId = getAuthorityKeyIdentifier(issuingCertificate);
-
-                            try {
-                                if (StringUtils.equals(new String(Hex.encode(certificateFromRequestSubjectKeyId)),
-                                        new String(Hex.encode(currentIssuingCertSubjectKeyId)))
-                                        && certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
-                                    //We found it! Unless it's not active, or something else was wrong with it. 
-                                    ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspCertificate, ocspKeyBinding);
-                                    //If it was all right, add it to the cache for future use.
-                                    if (ocspSigningCacheEntry != null) {
-                                        OcspSigningCache.INSTANCE.addSingleEntry(ocspSigningCacheEntry);
-                                        break;
-                                    }
-                                }
-                            } catch (OCSPException e) {
-                                throw new IllegalStateException("Could not create BcDigestCalculatorProvider", e);
-                            }
-                        } else {
+                        if (!isMsCaCompatible) { // Normal CA case
                             try {
                                 if (certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
                                     //We found it! Unless it's not active, or something else was wrong with it. 
@@ -2071,8 +2044,33 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             } catch (OCSPException e) {
                                 throw new IllegalStateException("Could not create BcDigestCalculatorProvider", e);
                             }
-                        }
+                        } else { // MS Compatible CA case
+                            
+                            List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(CertTools.getSubjectDN(issuingCertificate),
+                                    CertTools.getIssuerDN(issuingCertificate), true);
+                            
+                            final byte[] currentIssuingCertSubjectKeyId = getAuthorityKeyIdentifier(issuingCertificate);
 
+                            for(Certificate cert : activeCaCertificates) {
+                                final byte[] certificateFromRequestSubjectKeyId = getAuthorityKeyIdentifier((X509Certificate) cert);
+
+                                try {
+                                    if (StringUtils.equals(new String(Hex.encode(certificateFromRequestSubjectKeyId)),
+                                            new String(Hex.encode(currentIssuingCertSubjectKeyId)))
+                                            && certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
+                                        //We found it! Unless it's not active, or something else was wrong with it. 
+                                        ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspCertificate, ocspKeyBinding);
+                                        //If it was all right, add it to the cache for future use.
+                                        if (ocspSigningCacheEntry != null) {
+                                            OcspSigningCache.INSTANCE.addSingleEntry(ocspSigningCacheEntry);
+                                            break;
+                                        }
+                                    }
+                                } catch (OCSPException e) {
+                                    throw new IllegalStateException("Could not create BcDigestCalculatorProvider", e);
+                                }
+                            }
+                        } 
                     }
                 }
             }
