@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -87,12 +88,12 @@ public class CaChangeCATokenSignAlgCommand extends BaseCaAdminCommand {
             log.error("CA " + caName + " conflict detected. OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response."
                     + "Ignoring since the pre-production of OCSP responses setting was not modified here.");
             log.trace("<execute()");
+        } catch (CaMsCompatibilityIrreversibleException e) {
+            getLogger().error("Failed CA edit operation for " + caName + ". Microsoft compatibility is irreversible.");
         }
 
         log.trace("<execute()");
         return CommandResult.SUCCESS;
-     
-        
     }
 
     @Override

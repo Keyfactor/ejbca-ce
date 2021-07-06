@@ -19,6 +19,7 @@ import org.cesecore.certificates.ca.CABase;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
@@ -111,6 +112,9 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNonceConflictException e) {
             log.error("CA " + name + " could not be modified, OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (CaMsCompatibilityIrreversibleException e) {
+            log.error("Failed CA edit operation for " + name + ". Microsoft compatibility is irreversible.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
     }

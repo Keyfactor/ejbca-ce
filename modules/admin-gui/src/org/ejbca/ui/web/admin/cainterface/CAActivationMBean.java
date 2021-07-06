@@ -32,6 +32,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
@@ -276,7 +277,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                final CAInfo caInfo = caSession.getCAInfoInternal(ca.getCaId(), null, false);
 	                caInfo.setIncludeInHealthCheck(ca.isMonitoredNewState());
 	                caAdminSession.editCA(authenticationToken, caInfo);
-	            } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException e) {
+	            } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
 	                super.addNonTranslatedErrorMessage(e.getMessage());
 	            }
 	        }
