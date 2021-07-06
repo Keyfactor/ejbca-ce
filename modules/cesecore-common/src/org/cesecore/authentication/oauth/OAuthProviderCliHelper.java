@@ -56,8 +56,17 @@ public class OAuthProviderCliHelper {
         if (StringUtils.isEmpty(provider.getUrl())) {
             throw new MissingOAuthKeyAttributeException("The URL field is mandatory for PingID OAuth Providers.");
         }
-        if (StringUtils.isEmpty(provider.getRealm())) {
-            throw new MissingOAuthKeyAttributeException("The Environment field is mandatory for PingID Trusted OAuth Providers.");
+        if (StringUtils.isEmpty(provider.getTokenUrl())) {
+            throw new MissingOAuthKeyAttributeException("The Token URL field is mandatory for PingID OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getLogoutUrl())) {
+            throw new MissingOAuthKeyAttributeException("The Logout URL field is mandatory for PingID OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getClient())) {
+            throw new MissingOAuthKeyAttributeException("The Client Name field is mandatory for PingID Trusted OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getClientSecretAndDecrypt())) {
+            throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for PingID Trusted OAuth Providers.");
         }
 
     }

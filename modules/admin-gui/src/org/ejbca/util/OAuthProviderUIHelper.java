@@ -66,9 +66,17 @@ public class OAuthProviderUIHelper {
             throw new MissingOAuthKeyAttributeException(
                     EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Client"));
         }
-        if (StringUtils.isEmpty(provider.getRealm())) {
+        if (StringUtils.isEmpty(provider.getClientSecret())) {
             throw new MissingOAuthKeyAttributeException(
-                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Realm"));
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Client secret"));
+        }
+        if (StringUtils.isEmpty(provider.getTokenUrl())) {
+            throw new MissingOAuthKeyAttributeException(
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Token URL"));
+        }
+        if (StringUtils.isEmpty(provider.getLogoutUrl())) {
+            throw new MissingOAuthKeyAttributeException(
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Logout URL"));
         }
     }
 
