@@ -34,6 +34,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String TYPE = "--type";
     private static final String SKEW_LIMIT = "--skewlimit";
     private static final String URL = "--url";
+    private static final String TOKENURL = "--tokenurl";
+    private static final String LOGOUTURL = "--logouturl";
     private static final String LABEL = "--label";
     private static final String CLIENT = "--client";
     private static final String CLIENT_SECRET = "--clientsecret";
@@ -46,11 +48,15 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
 
     {
         registerParameter(new Parameter(TYPE, "Provider type.", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Type of the Trusted OAuth Provider. Supported types are GENERIC, KEYCLOAK and AZURE."));
+                "Type of the Trusted OAuth Provider. Supported types are GENERIC, PINGID, KEYCLOAK and AZURE."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be used."));
         registerParameter(new Parameter(URL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider authorization endpoint URL."));
+        registerParameter(new Parameter(TOKENURL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider token endpoint URL."));
+        registerParameter(new Parameter(LOGOUTURL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider logout endpoint URL."));
         registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider name."));
         registerParameter(new Parameter(REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -61,6 +67,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Client name for EJBCA in Trusted OAuth Provider."));
         registerParameter(new Parameter(CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client secret in Trusted OAuth Provider."));
+        registerParameter(new Parameter(TOKENURL, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Client secret in Trusted OAuth Provider."));
+
     }
 
     @Override
@@ -78,6 +87,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String typeString = parameters.get(TYPE);
         String skewLimit = parameters.get(SKEW_LIMIT);
         String url = parameters.get(URL);
+        String tokenUrl = parameters.get(TOKENURL);
+        String logoutUrl = parameters.get(LOGOUTURL);
         String label = parameters.get(LABEL);
         String client = parameters.get(CLIENT);
         String clientSecret = parameters.get(CLIENT_SECRET);
@@ -122,6 +133,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         OAuthKeyInfo keyInfo = new OAuthKeyInfo(label,  skewLimitInt, type);
         // Since the UI already saves missing values as empty strings it's better to match that behaviour
         keyInfo.setUrl(keyInfo.fixUrl(url != null ? url : ""));
+        keyInfo.setTokenUrl(keyInfo.fixUrl(url != null ? tokenUrl : ""));
+        keyInfo.setLogoutUrl(keyInfo.fixUrl(url != null ? logoutUrl : ""));
         keyInfo.setClient(client != null ? client : "");
         keyInfo.setClientSecretAndEncrypt(clientSecret != null ? clientSecret : "");
         keyInfo.setRealm(realm != null ? realm : "");
