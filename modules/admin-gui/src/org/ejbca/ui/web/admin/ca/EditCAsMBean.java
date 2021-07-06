@@ -731,11 +731,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final Map<ApprovalRequestType, Integer> approvals = getApprovals();
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 int approvalProfileId;
-                // Hide ACME approval types.
-                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType) 
-                 || ApprovalRequestType.ACMEACCOUNTKEYCHANGE.equals(approvalRequestType)) {
-                    continue;
-                }
                 approvalProfileId = approvals.getOrDefault(approvalRequestType, -1);
                 approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));
             }
@@ -2203,6 +2198,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (cainfo != null && cainfo.getApprovals() != null) {
             final LinkedHashMap<ApprovalRequestType, Integer> approvals = (LinkedHashMap<ApprovalRequestType, Integer>) cainfo.getApprovals();
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                // Hide ACME approval types.
+                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType) 
+                 || ApprovalRequestType.ACMEACCOUNTKEYCHANGE.equals(approvalRequestType)) {
+                    continue;
+                }
                 approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvals.getOrDefault(approvalRequestType, -1)));
             }
         }
