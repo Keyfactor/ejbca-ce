@@ -171,7 +171,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
             final JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
-                LOG.trace("JWT Claims:" + claims);
+                LOG.debug("JWT Claims:" + claims);
             }
             final Date expiry = claims.getExpirationTime();
             final Date now = new Date();
