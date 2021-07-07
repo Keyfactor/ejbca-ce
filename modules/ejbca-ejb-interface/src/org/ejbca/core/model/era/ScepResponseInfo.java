@@ -46,7 +46,7 @@ public class ScepResponseInfo implements Serializable {
     private BigInteger serialNumber = null;
     private String notAfter = null;
     private byte[] thumbprint = null;
-    private FailInfo failInfo = null;
+    private int failInfo = 0;
     private String failText = null;
 
     public ScepResponseInfo(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter, byte[] thumbprint,
@@ -77,7 +77,7 @@ public class ScepResponseInfo implements Serializable {
     public ScepResponseInfo(byte[] pkcs7Response, FailInfo failInfo, String failText, byte[] pkcs10Request) {
         this.pkcs10Request = pkcs10Request;
         this.pkcs7Response = pkcs7Response;
-        this.failInfo = failInfo;
+        this.failInfo = failInfo.intValue();
         if (failText != null)
             this.failText = failText;
         else
@@ -110,7 +110,12 @@ public class ScepResponseInfo implements Serializable {
     }
 
     public final FailInfo getFailInfo() {
-        return failInfo;
+        for (FailInfo possibleValue : FailInfo.class.getEnumConstants()) {
+            if (possibleValue.intValue() == failInfo)
+                return possibleValue;
+        }
+        log.error("Unexpected FailInfo value:" + failInfo);
+        return FailInfo.BAD_REQUEST;
     }
 
     public final String getFailText() {
