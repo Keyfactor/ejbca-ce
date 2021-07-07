@@ -170,6 +170,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             final JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            if (LOG.isDebugEnabled()) {
+                LOG.trace("JWT Claims:" + claims);
+            }
             final Date expiry = claims.getExpirationTime();
             final Date now = new Date();
             final String subject = keyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE) ?
