@@ -248,7 +248,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
 
                 if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CAImpl && ((X509CAImpl)ca).isMsCaCompatible())
-                    throw new CaMsCompatibilityIrreversibleException();
+                    throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
 
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
