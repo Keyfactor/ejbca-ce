@@ -21,6 +21,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -237,7 +238,7 @@ public class CaRemovePublisherCommandSystemTest {
         }
     }
 
-    private void addPublisherIdToCa() throws AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CADoesntExistsException {
+    private void addPublisherIdToCa() throws AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CADoesntExistsException, CaMsCompatibilityIrreversibleException {
         // Add a reference to a CA
         final CAInfo caInfo = CA_SESSION.getCAInfo(ADMIN, CA_NAME);
         caInfo.setCRLPublishers(new ArrayList<>(Collections.singletonList(ldapPublisherId)));
