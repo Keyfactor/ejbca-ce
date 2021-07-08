@@ -731,6 +731,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final Map<ApprovalRequestType, Integer> approvals = getApprovals();
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 int approvalProfileId;
+                // Hide ACME approval types (initial CA creation).
+                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType) 
+                 || ApprovalRequestType.ACMEACCOUNTKEYCHANGE.equals(approvalRequestType)) {
+                    continue;
+                }
                 approvalProfileId = approvals.getOrDefault(approvalRequestType, -1);
                 approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));
             }
