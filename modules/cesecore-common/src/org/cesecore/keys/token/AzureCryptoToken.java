@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
@@ -67,6 +68,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -855,6 +857,77 @@ public class AzureCryptoToken extends BaseCryptoToken {
             throw new CryptoTokenAuthenticationFailedException(
                     "We did not find a 'Bearer authorization' uri in the WWW-Authenticate for a 401 response");
         }
+        boolean useMachineIdentity = true;
+        final HttpRequestBase request = useMachineIdentity ? createMachineIdentityTokenRequest(oauthResource) : createOauthTokenPostRequest(oauthServiceURL, oauthResource);
+        try (final CloseableHttpResponse authResponse = authHttpClient.execute(request)) {
+            final int authStatusCode = authResponse.getStatusLine().getStatusCode();
+            if (log.isDebugEnabled()) {
+                log.debug("Status code for authorization request is: " + authStatusCode);
+                log.debug("Response.toString: " + authResponse.toString());
+            }
+            final String json = IOUtils.toString(authResponse.getEntity().getContent(), StandardCharsets.UTF_8);
+            if (log.isDebugEnabled()) {
+                log.debug("Authorization JSON response: " + json);
+            }
+            final JSONParser jsonParser = new JSONParser();
+            final JSONObject parse = (JSONObject) jsonParser.parse(json);
+            if (authStatusCode == 401 || authStatusCode == 400) { // 401 expected for no secret or wrong secret, 400 expected for wrong client_id
+                authorizationHeader = null;
+                log.info("Authorization denied with statusCode " + authStatusCode + " for Azure Crypto Token authentication call to URI "
+                        + request.getURI() + ", for client_id " + clientID);
+                throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization denied, JSON response: " + json);
+            } else if (authStatusCode == 200) {
+                final String accessToken = (String) parse.get("access_token");
+                authorizationHeader = "Bearer " + accessToken;
+                if (log.isDebugEnabled()) {
+                    log.debug("Authorization header from authentication response: " + authorizationHeader);
+                }
+            } else {
+                throw new CryptoTokenAuthenticationFailedException(
+                        "Azure Crypto Token authorization failed with unknown response code " + authStatusCode + ", JSON response: " + json);
+            }
+        }
+    }
+
+    /**
+     * Create an HTTP request that will request a Bearer token from the Azure Machine Identity URL.
+     * 
+     * @see <a 
+     *  href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token#get-a-token-using-http">
+     * How to use managed identities for Azure resources on an Azure VM to acquire an access token</a>
+     * 
+     * @param oauthServiceURL Base URL for Azure's OAuth2 Authorization Server
+     * @param oauthResource The resource we're requesting access to
+     * @return A POST request that can be sent to retrieve the bearer token
+     * @throws CryptoTokenAuthenticationFailedException unable to create the request
+     */
+    private HttpGet createMachineIdentityTokenRequest(String oauthResource) throws CryptoTokenAuthenticationFailedException {
+        try {
+            // It should be OK to have that address hard-coded.  It's part of the Azure Machine Identity specification
+            //@formatter:off
+            return new HttpGet(
+                    new URIBuilder("http://169.254.169.254/metadata/identity/oauth2/token")
+                    .setParameter("api-version", "2018-02-01")
+                    .setParameter("resource", oauthResource)
+                    .setParameter("Metadata", "true")
+                    .build());
+            //@formatter:on
+        } catch (URISyntaxException e) {
+            throw new CryptoTokenAuthenticationFailedException("Unable to create Machine Identity URL", e);
+        }
+    }
+
+    /**
+     * Create an HTTP request that will request a Bearer token from Azure's Authorization Server (specified in oauthServiceUrl).
+     * 
+     * @param oauthServiceURL Base URL for Azure's OAuth2 Authorization Server
+     * @param oauthResource The resource we're requesting access to
+     * @return A POST request that can be sent to retrieve the bearer token
+     * @throws CryptoTokenAuthenticationFailedException unable to create the POST request
+     * @throws UnsupportedEncodingException Unable to format the POST request
+     */
+    private HttpPost createOauthTokenPostRequest(String oauthServiceURL, String oauthResource)
+            throws CryptoTokenAuthenticationFailedException, UnsupportedEncodingException {
         final HttpPost request = new HttpPost(oauthServiceURL + "/oauth2/token");
         final ArrayList<NameValuePair> parameters = new ArrayList<>();
         parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));
@@ -892,39 +965,12 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 throw new CryptoTokenAuthenticationFailedException("Unable to create signed assertion for Azure authentication", e);
             }
         }
-        parameters.add(new BasicNameValuePair("resource", oauthResource));
         request.setEntity(new UrlEncodedFormEntity(parameters));
+        parameters.add(new BasicNameValuePair("resource", oauthResource));
         if (log.isDebugEnabled()) {
             log.debug("Authorization request: " + request.toString());
         }
-        try (final CloseableHttpResponse authResponse = authHttpClient.execute(request)) {
-            final int authStatusCode = authResponse.getStatusLine().getStatusCode();
-            if (log.isDebugEnabled()) {
-                log.debug("Status code for authorization request is: " + authStatusCode);
-                log.debug("Response.toString: " + authResponse.toString());
-            }
-            final String json = IOUtils.toString(authResponse.getEntity().getContent(), StandardCharsets.UTF_8);
-            if (log.isDebugEnabled()) {
-                log.debug("Authorization JSON response: " + json);
-            }
-            final JSONParser jsonParser = new JSONParser();
-            final JSONObject parse = (JSONObject) jsonParser.parse(json);
-            if (authStatusCode == 401 || authStatusCode == 400) { // 401 expected for no secret or wrong secret, 400 expected for wrong client_id
-                authorizationHeader = null;
-                log.info("Authorization denied with statusCode " + authStatusCode + " for Azure Crypto Token authentication call to URI "
-                        + request.getURI() + ", for client_id " + clientID);
-                throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization denied, JSON response: " + json);
-            } else if (authStatusCode == 200) {
-                final String accessToken = (String) parse.get("access_token");
-                authorizationHeader = "Bearer " + accessToken;
-                if (log.isDebugEnabled()) {
-                    log.debug("Authorization header from authentication response: " + authorizationHeader);
-                }
-            } else {
-                throw new CryptoTokenAuthenticationFailedException(
-                        "Azure Crypto Token authorization failed with unknown response code " + authStatusCode + ", JSON response: " + json);
-            }
-        }
+        return request;
     }
 
     /**
