@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 package org.ejbca.core.model.era;
- 
+
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -110,9 +110,24 @@ public class ScepResponseInfo implements Serializable {
     }
 
     public final FailInfo getFailInfo() {
-        for (FailInfo possibleValue : FailInfo.class.getEnumConstants()) {
-            if (possibleValue.intValue() == failInfo)
-                return possibleValue;
+        // sure would be nice if this were an enum...
+        //@formatter:off
+        for (FailInfo test : new FailInfo[] { 
+                FailInfo.BAD_ALGORITHM, 
+                FailInfo.BAD_CERTIFICATE_ID, 
+                FailInfo.BAD_MESSAGE_CHECK, 
+                FailInfo.BAD_POP,
+                FailInfo.BAD_REQUEST, 
+                FailInfo.BAD_TIME, 
+                FailInfo.CERT_REVOKED, 
+                FailInfo.INCORRECT_DATA, 
+                FailInfo.NOT_AUTHORIZED,
+                FailInfo.SYSTEM_UNAVAILABLE, 
+                FailInfo.WRONG_AUTHORITY }) {
+            //@formatter:on
+            if (test.intValue() == failInfo) {
+                return test;
+            }
         }
         log.error("Unexpected FailInfo value:" + failInfo);
         return FailInfo.BAD_REQUEST;
