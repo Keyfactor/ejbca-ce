@@ -60,6 +60,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
@@ -626,6 +627,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlNumber() || isCaexternal);
     }
 
+    public boolean isCheckboxMsCaCompatibilityDisabled() {
+        // ECA-10086: A CA that is already using Partitions shouldn't be able made MS Ca Compatible.
+        return !caInfoDto.isMsCaCompatible() && caInfoDto.isUsePartitionedCrl();
+    }
+
     public boolean isCheckboxCrlDistributionPointOnCrlCriticalDisabled() {
         return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlDistributiOnPointOnCrl() || isCaexternal);
     }
@@ -684,7 +690,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             sb.append(encode(cainfo.getSubjectDN()));
         }
-        if (isUsePartitionedCrlChecked()) {
+        if (isUsePartitionedCrlChecked() || caInfoDto.isMsCaCompatible()) {
             sb.append("&partition=*");
         }
         caInfoDto.setDefaultCRLDistPoint(sb.toString());
@@ -715,7 +721,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             sb.append(encode(cainfo.getSubjectDN()));
         }
-        if (isUsePartitionedCrlChecked()) {
+        if (isUsePartitionedCrlChecked() || caInfoDto.isMsCaCompatible()) {
             sb.append("&partition=*");
         }
         caInfoDto.setCaDefinedFreshestCRL(sb.toString());
@@ -1212,6 +1218,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCA && !isCaUninitialized && isHasEditRight();
     }
 
+    public  boolean isAuthorityKeyIdentifierValidated(){
+        return caInfoDto.isMsCaCompatible();
+    }
+
+    public boolean isIssuingDistributionPointValidated() {
+        return caInfoDto.isUsePartitionedCrl() || caInfoDto.isMsCaCompatible();
+    }
+
+    public boolean isDefaultCRLDistributionPointValidated() {
+        return caInfoDto.isUsePartitionedCrl() || caInfoDto.isMsCaCompatible();
+    }
+
     public boolean isCheckboxAcceptRevocationsNonExistingEntryDisabled() {
         return (!isHasEditRight() || caInfoDto.isUseCertificateStorage());
     }
@@ -1396,6 +1414,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return "";
             }
             if (cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()) {
+                // TODO handle MS Compatible here too.
                 cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, newSubjectDn);
             } else {
                 cadatahandler.renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
@@ -1454,8 +1473,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             cainfo.setName(oldinfo.getName());
             caAdminSession.initializeCa(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (CryptoTokenOfflineException | InvalidAlgorithmException |
-                NumberFormatException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
+        } catch (CryptoTokenOfflineException | InvalidAlgorithmException | NumberFormatException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1641,7 +1659,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             caAdminSession.editCA(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException e) {
+        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1909,6 +1927,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setCaSerialNumberOctetSize(String.valueOf(x509cainfo.getCaSerialNumberOctetSize()));
             caInfoDto.setDoPreProduceOcspResponses(x509cainfo.isDoPreProduceOcspResponses());
             caInfoDto.setDoStoreOcspResponsesOnDemand(x509cainfo.isDoStoreOcspResponsesOnDemand());
+            caInfoDto.setMsCaCompatible(x509cainfo.isMsCaCompatible());
 
             if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().isEmpty())) {
                 caInfoDto.setPolicyId(getEjbcaWebBean().getText("NONE"));

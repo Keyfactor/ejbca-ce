@@ -145,7 +145,6 @@ import static org.junit.Assume.assumeTrue;
 
 /** JUnit test for X.509 CA
  *
- * @version $Id$
  */
 public class X509CAUnitTest extends X509CAUnitTestBase {
 
@@ -310,7 +309,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Calendar before = Calendar.getInstance();
         before.set(Calendar.MILLISECOND, 0);
         final Date justBefore = before.getTime(); // Round to seconds
-        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals(CADN, CertTools.getIssuerDN(xcrl));
@@ -334,7 +333,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Revoke some cert
         Date revDate = new Date();
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
-        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 2);
+        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 2, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         set = xcrl.getRevokedCertificates();
@@ -355,7 +354,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a delta CRL
         revcerts = new ArrayList<>();
-        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 3, 2);
+        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 3, 2, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals(CADN, CertTools.getIssuerDN(xcrl));
@@ -366,7 +365,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(2, deltanum.intValue());
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
-        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 4, 3);
+        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 4, 3, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
@@ -393,7 +392,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
         
         // Generate a CRL with default CRL period, should now not create a CRL with max date value
-        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         // Max date from RFC5280 4.1.2.5, 99991231235959Z
@@ -407,7 +406,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // 365 days per year, 24 hours per day, 3600 seconds per hour, 1000ms per second 
         long l = 9999L*365L*24L*3600L*1000L;
         x509ca.setCRLPeriod(l);
-        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertTrue("nextUpdate of CRL should be maxvalue from RFC5280 (" + cal.getTime() + ") but was " + xcrl.getNextUpdate(), xcrl.getNextUpdate().equals(cal.getTime()));
@@ -954,7 +953,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         } 
         try {
             Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-            x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+            x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
             fail("should not work to issue this CRL");
         } catch (SignatureException e) {
             Certificate cacert = x509ca.getCACertificate();
@@ -977,7 +976,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         assertNotNull(usercert);
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
     }
 
@@ -1166,7 +1165,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         X509CA testCa = createTestCA(cryptoToken, "CN=foo");
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
+        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0, null);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
