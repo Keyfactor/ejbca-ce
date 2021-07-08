@@ -20,6 +20,7 @@ import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
@@ -41,6 +42,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
 
+    private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
+    private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
+    private static final String KEY_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
+    private static final String KEY_RA_NAMEGENERATIONPOSTFIX= "ra.namegenerationpostfix";
     private static final String KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING = "requireExternalAccountBinding";
     private static final String KEY_EXTERNAL_ACCOUNT_BINDING = "externalAccountBinding";
     private static final String KEY_PRE_AUTHORIZATION_ALLOWED = "preAuthorizationAllowed";
@@ -65,6 +70,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
     private static final String APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
 
+    private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.RANDOM;
+    private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
+    private static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
+    private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
     private static final int DEFAULT_END_ENTITY_PROFILE_ID = EndEntityConstants.NO_END_ENTITY_PROFILE;
     private static final boolean DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING = false;
     private static final boolean DEFAULT_PRE_AUTHORIZATION_ALLOWED = false;
@@ -99,12 +108,25 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         if (Float.compare(getLatestVersion(), getVersion()) > 0) {
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
+
             // v6. Added approvals for account management.
             if (data.get(APPROVAL_FOR_NEW_ACCOUNT_ID) == null) {
                 setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
             }
             if (data.get(APPROVAL_FOR_KEY_CHANGE_ID) == null) {
                 setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
+            }
+            if (data.get(KEY_RA_NAMEGENERATIONSCHEME) == null) {
+                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_SCHEME);
+            }
+            if (data.get(KEY_RA_NAMEGENERATIONPARAMS) == null) {
+                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+            }
+            if (data.get(KEY_RA_NAMEGENERATIONPREFIX) == null) {
+                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+            }
+            if (data.get(KEY_RA_NAMEGENERATIONPOSTFIX) == null) {
+                setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
             }
             // v5. Added configurable order validity.
             if (data.get(KEY_ORDER_VALIDITY) == null) {
@@ -138,6 +160,95 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public String getConfigurationId() { return configurationId; }
     public void setConfigurationId(final String configurationId) { this.configurationId = configurationId; }
 
+    /**
+     * Getter for RA Name Generation Scheme for given alias
+     * @param alias the EST alias to get the name generation scheme for
+     * @return name generation scheme, one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
+     */
+    public String getRANameGenScheme() {
+        // Set default to RANDOM for aliases created before RA name generation was added.
+        String value = (String) data.get(KEY_RA_NAMEGENERATIONSCHEME);
+        if (value == null) {
+            value = UsernameGeneratorParams.RANDOM;
+        }
+        return value;
+    }
+
+    /**
+     * Setter for RA Name Generation Scheme
+     * @param alias the EST alias to set the name generation scheme for
+     * @param scheme one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
+     */
+    public void setRANameGenScheme(String scheme) {
+        data.put(KEY_RA_NAMEGENERATIONSCHEME, scheme);
+    }
+    
+    /**
+     * Getter for RA Name Generation Params for given alias
+     * @param alias the EST alias to get the name generation DN parameters for
+     * @return RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
+     */
+    public String getRANameGenParams() {
+        return (String) data.get(KEY_RA_NAMEGENERATIONPARAMS);
+    }
+
+    /**
+     * Setter for RA Name Generation Parameters
+     * @param alias the EST alias to set the name generation DN parameters for
+     * @param params RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
+     */    
+    public void setRANameGenParams(String params) {
+        data.put(KEY_RA_NAMEGENERATIONPARAMS, params);
+    }
+
+    /**
+     * Getter for RA Name Generation Prefix for given alias
+     * @param alias the EST alias to get the name generation prefix for
+     *
+     */
+    public String getRANameGenPrefix() {
+        //Set default to empty String for aliases created before RA name generation was added.
+        String value = (String) data.get(KEY_RA_NAMEGENERATIONPREFIX);
+        if (value == null) {
+            value = "";
+        }
+        return value;
+    }
+
+    /**
+     * Setter for RA Name Generation Prefix
+     * @param alias the EST alias to set the name generation prefix for
+     * @param prefix RA name prefix
+     *
+     */ 
+    public void setRANameGenPrefix(String prefix) {
+        data.put(KEY_RA_NAMEGENERATIONPREFIX, prefix);
+    }
+    
+    /**
+     * Getter for RA Name Generation Postfix
+     * @param alias the EST alias to set the name generation postfix for
+     *
+     */     
+    public String getRANameGenPostfix() {
+        // Set default to empty String for aliases created before RA name generation was added.
+        String value = (String) data.get(KEY_RA_NAMEGENERATIONPOSTFIX);
+        if (value == null) {
+            value = "";
+        }
+        return value;
+    }
+
+     /**
+     * Setter for RA Name Generation Postfix
+     * @param alias the EST alias to set the name generation postfix for
+     * @param postfix RA name postfix
+     *
+     */    
+    public void setRANameGenPostfix(String postfix) {
+        data.put(KEY_RA_NAMEGENERATIONPOSTFIX, postfix);
+    }
+    
     /**
      * External Account Binding
      * https://tools.ietf.org/html/rfc8555#section-7.3.4
@@ -363,6 +474,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     /** Initializes a new acme configuration with default values. */
     public void initialize(String alias) {
         alias += ".";
+        setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_SCHEME);
+        setRANameGenParams(DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+        setRANameGenPrefix(DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+        setRANameGenPostfix(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
         setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
         setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
         try {
