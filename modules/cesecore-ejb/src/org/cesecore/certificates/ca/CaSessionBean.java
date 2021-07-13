@@ -31,7 +31,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.internal.CACacheHelper;
 import org.cesecore.certificates.ca.internal.CaCache;
 import org.cesecore.certificates.ca.internal.CaIDCacheBean;
-import org.cesecore.certificates.ca.X509CAImpl;
 import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -88,8 +87,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import static org.cesecore.certificates.ca.CABaseCommon.MSCACOMPATIBLE;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -247,7 +244,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     			}
                 assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
 
-                if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CAImpl && ((X509CAImpl)ca).isMsCaCompatible())
+                if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
                     throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
 
                 @SuppressWarnings("unchecked")
