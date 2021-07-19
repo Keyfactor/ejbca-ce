@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 package org.ejbca.core.model.era;
- 
+
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -46,7 +46,7 @@ public class ScepResponseInfo implements Serializable {
     private BigInteger serialNumber = null;
     private String notAfter = null;
     private byte[] thumbprint = null;
-    private FailInfo failInfo = null;
+    private int failInfo = 0;
     private String failText = null;
 
     public ScepResponseInfo(byte[] pkcs7Response, X500Principal issuer, BigInteger serialNumber, Instant notAfter, byte[] thumbprint,
@@ -77,7 +77,7 @@ public class ScepResponseInfo implements Serializable {
     public ScepResponseInfo(byte[] pkcs7Response, FailInfo failInfo, String failText, byte[] pkcs10Request) {
         this.pkcs10Request = pkcs10Request;
         this.pkcs7Response = pkcs7Response;
-        this.failInfo = failInfo;
+        this.failInfo = failInfo.intValue();
         if (failText != null)
             this.failText = failText;
         else
@@ -110,7 +110,27 @@ public class ScepResponseInfo implements Serializable {
     }
 
     public final FailInfo getFailInfo() {
-        return failInfo;
+        // sure would be nice if this were an enum...
+        //@formatter:off
+        for (FailInfo test : new FailInfo[] { 
+                FailInfo.BAD_ALGORITHM, 
+                FailInfo.BAD_CERTIFICATE_ID, 
+                FailInfo.BAD_MESSAGE_CHECK, 
+                FailInfo.BAD_POP,
+                FailInfo.BAD_REQUEST, 
+                FailInfo.BAD_TIME, 
+                FailInfo.CERT_REVOKED, 
+                FailInfo.INCORRECT_DATA, 
+                FailInfo.NOT_AUTHORIZED,
+                FailInfo.SYSTEM_UNAVAILABLE, 
+                FailInfo.WRONG_AUTHORITY }) {
+            //@formatter:on
+            if (test.intValue() == failInfo) {
+                return test;
+            }
+        }
+        log.error("Unexpected FailInfo value:" + failInfo);
+        return FailInfo.BAD_REQUEST;
     }
 
     public final String getFailText() {
