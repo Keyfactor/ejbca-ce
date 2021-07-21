@@ -128,7 +128,8 @@ public class CryptoTokenInfo implements Named, Serializable {
         if (Boolean.parseBoolean(cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"))) {
             return AzureAuthenticationType.KEY_BINDING;
         }
-        return AzureAuthenticationType.valueOf(cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_AUTHENTICATION_TYPE));
+        final String authenticationTypeString = cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_AUTHENTICATION_TYPE);
+        return authenticationTypeString == null ? AzureAuthenticationType.APP_ID_AND_SECRET : AzureAuthenticationType.valueOf(authenticationTypeString);
     }
 
     /**
