@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -160,9 +161,16 @@ public class AzureCryptoToken extends BaseCryptoToken {
     public static final String KEY_VAULT_CLIENTID = "keyVaultClientID";
 
     /**
-     * Property for storing whether we will use app secret or an internal key binding when authenticating to Azure.
+     * Property for storing whether we will use app secret or an internal key binding when authenticating to Azure.  
+     * This is a legacy setting - in versions 7.7.1 and up, we use the KEY_VAULT_AUTENTICATION_TYPE enumeration.
      */
     public static final String KEY_VAULT_USE_KEY_BINDING = "keyVaultUseKeyBinding";
+
+    /**
+     * Holds an {@link AzureAuthenticationType} enumeration.  Determines how we will authenticate to Azure when using
+     * the key vault.
+     */
+    public static final String KEY_VAULT_AUTHENTICATION_TYPE = "keyVaultAuthenticationType";
 
     /**
      * Named key binding to use when authenticating to Azure
@@ -212,7 +220,24 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     /** get the keyVaultType, set during init of crypto token */
     private boolean isKeyVaultUseKeyBinding() {
-        return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
+        // check the original, boolean setting
+        final String authenticationTypeString = getProperties().getProperty(KEY_VAULT_AUTHENTICATION_TYPE);
+        if (authenticationTypeString == null) {
+            return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
+        }
+        
+        // check the newer enumeration of authentication types
+        return AzureAuthenticationType.valueOf(authenticationTypeString) == AzureAuthenticationType.KEY_BINDING;
+    }
+    
+    private boolean isKeyVaultUseManagedIdentity() {
+        // if this is a 7.7 or earlier properties, this value won't be set
+        final String authenticationTypeString = getProperties().getProperty(KEY_VAULT_AUTHENTICATION_TYPE);
+        if (authenticationTypeString == null) {
+            return false;
+        }
+        
+        return AzureAuthenticationType.valueOf(authenticationTypeString) == AzureAuthenticationType.MANAGED_IDENTITY;
     }
 
     /** get the keyVaultType, set during init of crypto token */
@@ -823,8 +848,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private void azureAuthorizationRequestFrom401Response(CloseableHttpResponse response)
             throws CryptoTokenAuthenticationFailedException, ParseException, IOException {
+        log.debug("in azureAuthorizationRequestFrom401Response");
         // Get bearer token (authentication token) from the response.
         final Header lastHeader = response.getLastHeader("WWW-Authenticate");
+        log.debug("lastHeader = " + lastHeader);
         // Close as soon as possible, we don't need this response, it's an "Error Response" for invalid_token 
         response.close();
         final HeaderElement[] elements = lastHeader.getElements();
@@ -857,8 +884,9 @@ public class AzureCryptoToken extends BaseCryptoToken {
             throw new CryptoTokenAuthenticationFailedException(
                     "We did not find a 'Bearer authorization' uri in the WWW-Authenticate for a 401 response");
         }
-        boolean useMachineIdentity = true;
-        final HttpRequestBase request = useMachineIdentity ? createMachineIdentityTokenRequest(oauthResource) : createOauthTokenPostRequest(oauthServiceURL, oauthResource);
+        final HttpRequestBase request = isKeyVaultUseManagedIdentity() 
+                ? createManagedIdentityTokenRequest(oauthResource) 
+                : createOauthTokenPostRequest(oauthServiceURL, oauthResource);
         try (final CloseableHttpResponse authResponse = authHttpClient.execute(request)) {
             final int authStatusCode = authResponse.getStatusLine().getStatusCode();
             if (log.isDebugEnabled()) {
@@ -895,23 +923,27 @@ public class AzureCryptoToken extends BaseCryptoToken {
      * @see <a 
      *  href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token#get-a-token-using-http">
      * How to use managed identities for Azure resources on an Azure VM to acquire an access token</a>
+     * @see <a href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/tutorial-windows-vm-access-nonaad">
+     * Tutorial: Use a Windows VM system-assigned managed identity to access Azure Key Vault</a>
      * 
      * @param oauthServiceURL Base URL for Azure's OAuth2 Authorization Server
      * @param oauthResource The resource we're requesting access to
      * @return A POST request that can be sent to retrieve the bearer token
      * @throws CryptoTokenAuthenticationFailedException unable to create the request
      */
-    private HttpGet createMachineIdentityTokenRequest(String oauthResource) throws CryptoTokenAuthenticationFailedException {
+    private HttpGet createManagedIdentityTokenRequest(final String oauthResource) throws CryptoTokenAuthenticationFailedException {
         try {
-            // It should be OK to have that address hard-coded.  It's part of the Azure Machine Identity specification
+            // It should be OK to have that address hard-coded.  It's part of the Azure Managed Identity specification
             //@formatter:off
-            return new HttpGet(
-                    new URIBuilder("http://169.254.169.254/metadata/identity/oauth2/token")
-                    .setParameter("api-version", "2018-02-01")
-                    .setParameter("resource", oauthResource)
-                    .setParameter("Metadata", "true")
-                    .build());
+            final URI managedIdentityUrl = new URIBuilder("http://169.254.169.254/metadata/identity/oauth2/token")
+                .setParameter("api-version", "2018-02-01")
+                .setParameter("resource", oauthResource)
+                .build();
             //@formatter:on
+            log.debug("Created managed identity url: " + managedIdentityUrl.toString());
+            HttpGet httpGet = new HttpGet(managedIdentityUrl);
+            httpGet.setHeader("Metadata", "true");
+            return httpGet;
         } catch (URISyntaxException e) {
             throw new CryptoTokenAuthenticationFailedException("Unable to create Machine Identity URL", e);
         }
