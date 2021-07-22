@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -177,37 +178,22 @@ public class SubjectDirAttrExtension extends CertTools {
      * @see #getSubjectDirectoryAttributes(Certificate)
      */
     public static Collection<Attribute> getSubjectDirectoryAttributes(String dirAttr) {
-    	ArrayList<Attribute> ret = new ArrayList<>();
-    	Attribute attr = null;
-        String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");
+        final ArrayList<Attribute> ret = new ArrayList<>();
+        ret.addAll(makeAsn1Attributes(id_pda_countryOfResidence, "countryOfResidence", dirAttr));
+        ret.addAll(makeAsn1Attributes(id_pda_countryOfCitizenship, "countryOfCitizenship", dirAttr));
+        String value = CertTools.getPartFromDN(dirAttr, "gender");
         if (!StringUtils.isEmpty(value)) {
-        	ASN1EncodableVector vec = new ASN1EncodableVector();
-        	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_countryOfResidence),new DERSet(vec));
-        	ret.add(attr);
-        }
-        value = CertTools.getPartFromDN(dirAttr, "countryOfCitizenship");
-        if (!StringUtils.isEmpty(value)) {
-        	ASN1EncodableVector vec = new ASN1EncodableVector();
-        	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_countryOfCitizenship),new DERSet(vec));
-        	ret.add(attr);
-        }
-        value = CertTools.getPartFromDN(dirAttr, "gender");
-        if (!StringUtils.isEmpty(value)) {
-        	ASN1EncodableVector vec = new ASN1EncodableVector();
-        	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_gender),new DERSet(vec));
-        	ret.add(attr);
+            ASN1EncodableVector vec = new ASN1EncodableVector();
+            vec.add(new DERPrintableString(value));
+            ret.add(new Attribute(new ASN1ObjectIdentifier(id_pda_gender),new DERSet(vec)));
         }
         value = CertTools.getPartFromDN(dirAttr, "placeOfBirth");
         if (!StringUtils.isEmpty(value)) {
-        	ASN1EncodableVector vec = new ASN1EncodableVector();
-        	X509DefaultEntryConverter conv = new X509DefaultEntryConverter();
-        	ASN1Primitive obj = conv.getConvertedValue(new ASN1ObjectIdentifier(id_pda_placeOfBirth), value);
-        	vec.add(obj);
-        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_placeOfBirth),new DERSet(vec));
-        	ret.add(attr);
+            ASN1EncodableVector vec = new ASN1EncodableVector();
+            X509DefaultEntryConverter conv = new X509DefaultEntryConverter();
+            ASN1Primitive obj = conv.getConvertedValue(new ASN1ObjectIdentifier(id_pda_placeOfBirth), value);
+            vec.add(obj);
+            ret.add(new Attribute(new ASN1ObjectIdentifier(id_pda_placeOfBirth),new DERSet(vec)));
         }        
         // dateOfBirth that is a GeneralizedTime
         // The correct format for this is YYYYMMDD, it will be padded to YYYYMMDD120000Z
@@ -215,12 +201,24 @@ public class SubjectDirAttrExtension extends CertTools {
         if (!StringUtils.isEmpty(value)) {
             if (value.length() == 8) {
                 value += "120000Z"; // standard format according to rfc3739
-            	ASN1EncodableVector vec = new ASN1EncodableVector();
+                ASN1EncodableVector vec = new ASN1EncodableVector();
                 vec.add(new DERGeneralizedTime(value));
-                attr = new Attribute(new ASN1ObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
-                ret.add(attr);                
+                ret.add(new Attribute(new ASN1ObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec)));
             } else {
                 log.error("Wrong length of data for 'dateOfBirth', should be of format YYYYMMDD, skipping...");
+            }
+        }
+        return ret;
+    }
+
+    private static List<Attribute> makeAsn1Attributes(final String attributeOid, final String attributeName, final String dirAttrs) {
+        final List<Attribute> ret = new ArrayList<>();
+        final List<String> values = CertTools.getPartsFromDN(dirAttrs, attributeName);
+        for (final String value : values) {
+            if (!StringUtils.isEmpty(value)) {
+                ASN1EncodableVector vec = new ASN1EncodableVector();
+                vec.add(new DERPrintableString(value));
+                ret.add(new Attribute(new ASN1ObjectIdentifier(attributeOid),new DERSet(vec)));
             }
         }
         return ret;
