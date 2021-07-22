@@ -248,8 +248,7 @@ public final class OAuthKeyInfo implements Serializable {
         if (getType() == OAuthProviderType.TYPE_PINGID) {
             return tokenUrl;
         }
-        
-        return getTypeSpecificUrl(getType() == OAuthProviderType.TYPE_KEYCLOAK ? "id_token" : "token");
+        return getTypeSpecificUrl("token");
     }
 
     public String getLogoutUrl() {
