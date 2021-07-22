@@ -3102,7 +3102,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
             CACommon ca = caSession.getCAForEdit(admin, caid);
             ca.setStatus(CAConstants.CA_ACTIVE);
-            caSession.editCA(admin, ca, false);
+            caSession.editCA(
+                    new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Activating Ca " + ca.getName() + ".")),
+                    ca, false);
         } else {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.errornotoffline", cainfo.getName());
             logAuditEvent(
@@ -3137,7 +3139,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             return;
         } else if (ca.getStatus() == CAConstants.CA_ACTIVE) {
             ca.setStatus(CAConstants.CA_OFFLINE);
-            caSession.editCA(admin, ca, false);
+            caSession.editCA(
+                    new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Deactivating Ca "+ ca.getName()+".")),
+                    ca, false);
             logAuditEvent(
                     EventTypes.CA_SERVICEDEACTIVATE, EventStatus.SUCCESS,
                     admin, caid,
