@@ -53,9 +53,9 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Skew limit to be used."));
         registerParameter(new Parameter(URL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider authorization endpoint URL."));
-        registerParameter(new Parameter(TOKENURL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(TOKENURL, "Provider Token URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider token endpoint URL."));
-        registerParameter(new Parameter(LOGOUTURL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(LOGOUTURL, "Provider Logout URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider logout endpoint URL."));
         registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider name."));
@@ -67,9 +67,6 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Client name for EJBCA in Trusted OAuth Provider."));
         registerParameter(new Parameter(CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client secret in Trusted OAuth Provider."));
-        registerParameter(new Parameter(TOKENURL, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Client secret in Trusted OAuth Provider."));
-
     }
 
     @Override
