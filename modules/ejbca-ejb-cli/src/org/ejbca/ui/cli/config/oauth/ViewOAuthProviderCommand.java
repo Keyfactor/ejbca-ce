@@ -71,6 +71,10 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
                 log.info("Tenant: " + info.getRealm());
                 log.info("Scope: " + info.getScope());
             }
+            if (info.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
+                log.info("Token URL: " + info.getTokenUrl());
+                log.info("Logout URL: " + info.getLogoutUrl());
+            }
             log.info("Client: " + info.getClient());
         } else {
             log.info("An OAuth Provider with the label " + label + " was not found.");
