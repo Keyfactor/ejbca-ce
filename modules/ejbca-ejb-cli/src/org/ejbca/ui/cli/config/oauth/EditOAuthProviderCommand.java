@@ -35,6 +35,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String LABEL = "--label";
     private static final String NEW_SKEW_LIMIT = "--new-skewlimit";
     private static final String NEW_URL = "--new-url";
+    private static final String NEW_TOKEN_URL = "--new-tokenurl";
+    private static final String NEW_LOGOUT_URL = "--new-logouturl";
     private static final String NEW_LABEL = "--new-label";
     private static final String NEW_CLIENT = "--new-client";
     private static final String NEW_CLIENT_SECRET = "--new-clientsecret";
@@ -48,6 +50,10 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "New Skew Limit."));
         registerParameter(new Parameter(NEW_URL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New authorization endpoint URL."));
+        registerParameter(new Parameter(NEW_TOKEN_URL, "Provider Token URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New token endpoint URL."));
+        registerParameter(new Parameter(NEW_LOGOUT_URL, "Provider Logout URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New logout endpoint URL."));
         registerParameter(new Parameter(NEW_LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Provider Label."));
         registerParameter(new Parameter(NEW_REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -118,6 +124,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             final OAuthKeyInfo keyInfoToBeEdited) {
         final String newSkewLimit= parameters.get(NEW_SKEW_LIMIT);
         final String newUrl = parameters.get(NEW_URL);
+        final String newTokenUrl = parameters.get(NEW_TOKEN_URL);
+        final String newLogoutUrl = parameters.get(NEW_LOGOUT_URL);
         final String newLabel = parameters.get(NEW_LABEL);
         final String newClient = parameters.get(NEW_CLIENT);
         final String newClientSecret = parameters.get(NEW_CLIENT_SECRET);
@@ -143,6 +151,12 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         if (newUrl != null) {
             keyInfoToBeEdited.setUrl(keyInfoToBeEdited.fixUrl(newUrl));
+        }
+        if (newTokenUrl != null) {
+            keyInfoToBeEdited.setTokenUrl(keyInfoToBeEdited.fixUrl(newTokenUrl));
+        }
+        if (newLogoutUrl != null) {
+            keyInfoToBeEdited.setLogoutUrl(keyInfoToBeEdited.fixUrl(newLogoutUrl));
         }
         if (newClient != null) {
             keyInfoToBeEdited.setClient(newClient);
