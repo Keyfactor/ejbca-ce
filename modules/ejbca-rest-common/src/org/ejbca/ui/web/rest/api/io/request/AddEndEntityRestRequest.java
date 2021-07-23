@@ -313,7 +313,7 @@ public class AddEndEntityRestRequest {
     	USERGENERATED(EndEntityConstants.TOKEN_USERGEN),
     	P12(EndEntityConstants.TOKEN_SOFT_P12),
     	JKS(EndEntityConstants.TOKEN_SOFT_JKS),
-    	PEM(EndEntityConstants.TOKEN_SOFT);
+    	PEM(EndEntityConstants.TOKEN_SOFT_PEM);
 
         private final int tokenValue;
 
