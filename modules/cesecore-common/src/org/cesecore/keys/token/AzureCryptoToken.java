@@ -997,8 +997,8 @@ public class AzureCryptoToken extends BaseCryptoToken {
                 throw new CryptoTokenAuthenticationFailedException("Unable to create signed assertion for Azure authentication", e);
             }
         }
-        request.setEntity(new UrlEncodedFormEntity(parameters));
         parameters.add(new BasicNameValuePair("resource", oauthResource));
+        request.setEntity(new UrlEncodedFormEntity(parameters));
         if (log.isDebugEnabled()) {
             log.debug("Authorization request: " + request.toString());
         }
