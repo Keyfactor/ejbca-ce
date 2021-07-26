@@ -329,7 +329,7 @@
 									<h:outputText value="#{raSearchCertificate.username}" />
 								</h:outputLink>
 	                        </h:column>
-                            <h:column>
+                            <h:column rendered="#{raAccessBean.authorizedToSearchEndEntities}">
                                 <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_action}"/></f:facet>
                                 <h:commandButton id="viewButton" action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}" value="#{msg.search_certs_page_show_command}"/>
                             </h:column>
