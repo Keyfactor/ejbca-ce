@@ -66,6 +66,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
@@ -2862,7 +2863,55 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
     }
     
- 
+    @Test
+    public void createCertificateWithSubjectDirAttrs() throws Exception {
+        final String username = "EjbcaWSTest_createCertificateWithSubjectDirAttrs";
+        final String profileName = "EjbcaWSTest_CertificateWithSubjectDirAttrs";
+        final String subjectDn = "CN=createCertificateWithSubjectDirAttrs,OU=EjbcaWSTest";
+        final String subjectDirAttrs = "COUNTRYOFRESIDENCE=AU, COUNTRYOFRESIDENCE=FR, COUNTRYOFCITIZENSHIP=SE, COUNTRYOFCITIZENSHIP=DE, COUNTRYOFCITIZENSHIP=US";
+        final UserDataVOWS userdata = new UserDataVOWS();
+        userdata.setStatus(EndEntityConstants.STATUS_NEW);
+        userdata.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        userdata.setEndEntityProfileName(profileName);
+        userdata.setCertificateProfileName(profileName);
+        userdata.setCaName(getAdminCAName());
+        userdata.setUsername(username);
+        userdata.setSubjectDN(subjectDn);
+        final List<ExtendedInformationWS> ei = new ArrayList<>();
+        ei.add(new ExtendedInformationWS("subjectdirattributes", subjectDirAttrs));
+        userdata.setExtendedInformation(ei);
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        try {
+            // Create profiles with Subject Directory Attributes
+            CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certProf.setUseSubjectDirAttributes(true);
+            int certProfId = certificateProfileSession.addCertificateProfile(admin, profileName, certProf);
+            EndEntityProfile eeProf = new EndEntityProfile();
+            eeProf.addField("ORGANIZATIONALUNIT");
+            eeProf.addField("COUNTRYOFCITIZENSHIP");
+            eeProf.addField("COUNTRYOFCITIZENSHIP");
+            eeProf.addField("COUNTRYOFCITIZENSHIP");
+            eeProf.addField("COUNTRYOFRESIDENCE");
+            eeProf.addField("COUNTRYOFRESIDENCE");
+            eeProf.setAvailableCertificateProfileIds(Collections.singleton(certProfId));
+            eeProf.setDefaultCertificateProfile(certProfId);
+            eeProf.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+            endEntityProfileSession.addEndEntityProfile(admin, profileName, eeProf);
+            // Issue the certificate
+            final CertificateResponse resp = ejbcaraws.certificateRequest(userdata, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            final X509Certificate cert = resp.getCertificate();
+            assertEquals(subjectDn, CertTools.getSubjectDN(cert));
+            final String actualSubjectDirAttrs = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cert);
+            assertNotNull("Subject Directory Attributes was missing from certificate", actualSubjectDirAttrs);
+            assertEquals(subjectDirAttrs, actualSubjectDirAttrs.toUpperCase(Locale.ROOT));
+        } finally {
+            deleteUser(username);
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityProfileSession.removeEndEntityProfile(admin, profileName);
+            certificateProfileSession.removeCertificateProfile(admin, profileName);
+        }
+    }
 
     private void assertCertificateEquals(final String label, final byte[] left, final CAInfo caInfo)
             throws CertificateParsingException, CertificateEncodingException {
