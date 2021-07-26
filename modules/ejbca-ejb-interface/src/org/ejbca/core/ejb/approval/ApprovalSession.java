@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.approval;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -44,6 +45,19 @@ public interface ApprovalSession {
      */
      int addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
 
+     /**
+      * Adds an approval request (for ACME account registration or account key change).
+      * 
+      * @param admin the authentication token.
+      * @param approvalRequestType the approval Type ({@link ApprovalRequestType#ACMEACCOUNTREGISTRATION} and {@link ApprovalRequestType#ACMEACCOUNTKEYCHANGE}).
+      * @param approvalProfileId the approval profile ID.
+      * @param endEntityProfileId the end entity profile ID.
+      * @param acmeAccountId the ACME account ID (=public key fingerprint).
+      * @return the ID of the approval request or null, if no approval request could be created and stored.
+      * @throws ApprovalException if an approval request with this ID already exists.
+      */
+     Integer createApprovalRequest(AuthenticationToken admin, int approvalRequestType, int approvalProfileId, int endEntityProfileId, String acmeAccountId) throws ApprovalException;
+     
      /**
       * Checks if the approval request by the given identifier is approved or not. 
       * 
