@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -190,6 +191,9 @@ nextCertSignKey fooalias03
         } catch (CADoesntExistsException e) {
             getLogger().error("No such CA with name: " + caName);
             getLogger().error(getCaList());
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (CaMsCompatibilityIrreversibleException e) {
+            getLogger().error("CA microsoft compatibility irreversible: " + caName);
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNonceConflictException e) {
             getLogger().error("CA " + caName + " can not be modified, OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response. "

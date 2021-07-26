@@ -236,7 +236,7 @@
     <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
     <target name="cesecore-ejb" depends="-build-cesecore-ejb, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface, -copy-cesecore-ejb"/>
         
-        <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface">
+        <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface, cesecore-x509ca">
             <!-- Builds cesecore-ejb which also builds all other cesecore modules -->
             <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
@@ -504,7 +504,7 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="msae" depends="ejbca-common-web" description="Build the MSAE WAR">
+	<target name="msae" if="${mod.msae.exists}" depends="ejbca-common-web" description="Build the MSAE WAR">
 		<ant antfile="${mod.msae.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
