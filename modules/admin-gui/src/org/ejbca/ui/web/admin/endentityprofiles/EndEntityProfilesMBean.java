@@ -594,7 +594,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             addNonTranslatedInfoMessage("Ignored files: " + StringUtils.join(ignoredFiles, ", "));
         }
         if (!ignoredCAsByProfile.isEmpty()) {
-            ignoredCAsByProfile.forEach((endEntityProfileName, caIds) -> addNonTranslatedInfoMessage(createMessageForIgnoredCA(endEntityProfileName, caIds)));
+            ignoredCAsByProfile.forEach((profileName, caIds) -> addNonTranslatedInfoMessage(createMessageForIgnoredCA(profileName, caIds)));
         }
         if (importedFiles.isEmpty()) {
             addErrorMessage("No End Entity Profiles were imported.");
