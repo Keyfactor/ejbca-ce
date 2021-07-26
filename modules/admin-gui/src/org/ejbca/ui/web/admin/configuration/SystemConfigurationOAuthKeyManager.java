@@ -266,6 +266,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return OAuthProviderType.TYPE_AZURE.getIndex() == type.getIndex();
         }
 
+        public boolean isShowUrls() {
+            return OAuthProviderType.TYPE_PINGID.getIndex() == type.getIndex() || OAuthProviderType.TYPE_GENERIC.getIndex() == type.getIndex();
+        }
+
+
         public boolean isFileForm() {
             return this.keyInTheFormOf.equals(PublicKeyUploadInFormOf.FILE);
         }
