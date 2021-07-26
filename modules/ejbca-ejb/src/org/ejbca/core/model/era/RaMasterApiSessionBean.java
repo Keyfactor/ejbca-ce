@@ -2382,6 +2382,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
+    
+    @Override
+    public Integer createApprovalRequest(final AuthenticationToken authenticationToken, final int type, final int approvalProfileId, final int endEntityProfileId, final String acmeAccountId) throws AuthorizationDeniedException, ApprovalException {
+        return approvalSession.createApprovalRequest(authenticationToken, type, approvalProfileId, endEntityProfileId, acmeAccountId);
+    }
 
     @Override
     public byte[] scepDispatch(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias)

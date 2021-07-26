@@ -395,7 +395,7 @@
 		        		<br/>
 		      			<h:outputText value="#{web.text.CMPDEFAULTCA_HELP}" styleClass="help"/>
 	      			</h:panelGroup>
-	      			<h:selectOneMenu value="#{editCmpConfigMBean.responseConfigDefaultCa}" disabled="#{editCmpConfigMBean.viewOnly}">
+	      			<h:selectOneMenu id="cmpdefaultca" value="#{editCmpConfigMBean.responseConfigDefaultCa}" disabled="#{editCmpConfigMBean.viewOnly}">
 	      				<f:selectItems value="#{editCmpConfigMBean.certConfirmCaSelectItems}"/>
 	      			</h:selectOneMenu>
 	    		</h:panelGrid>

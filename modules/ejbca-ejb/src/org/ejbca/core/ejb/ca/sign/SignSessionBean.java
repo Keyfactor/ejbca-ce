@@ -1343,6 +1343,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 log.debug("SingleActiveCertificateConstraint, found " + cdws.size() + " old (non expired, active) certificates and "
                         + publishers.size() + " publishers.");
             }
+            // Set the revocation dates
+            for (CertificateDataWrapper cdw : cdws) {
+                if (cdw.getCertificateData().getRevocationDate() == -1) {
+                    cdw.getCertificateData().setRevocationDate(new Date());
+                }
+            }
             // Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
             // the certificate must be revoked nonetheless. 
             revocationSession.revokeCertificates(admin, cdws, publishers, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
