@@ -245,18 +245,28 @@ public final class OAuthKeyInfo implements Serializable {
     }
 
     public String getTokenUrl() {
-        if (getType() == OAuthProviderType.TYPE_PINGID) {
-            return tokenUrl;
+        switch (getType()){
+            case TYPE_AZURE:
+            case TYPE_KEYCLOAK:
+                return getTypeSpecificUrl("token");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return tokenUrl;
         }
-        return getTypeSpecificUrl("token");
+
     }
 
     public String getLogoutUrl() {
-        if (getType() == OAuthProviderType.TYPE_PINGID) {
-            return logoutUrl;
+        switch (getType()){
+            case TYPE_AZURE:
+            case TYPE_KEYCLOAK:
+                getTypeSpecificUrl("logout");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return logoutUrl;
         }
-        
-        return getTypeSpecificUrl("logout");
     }
 
     private String getTypeSpecificUrl(String endpoint){
