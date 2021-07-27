@@ -12,52 +12,6 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.cesecore.ErrorCode;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
-import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.era.IdNameHashMap;
-import org.ejbca.core.model.era.KeyToValueHolder;
-import org.ejbca.core.model.era.RaApprovalRequestInfo;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.faces.validator.ValidatorException;
-import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -76,6 +30,61 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.ViewScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
+import javax.faces.validator.ValidatorException;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.ErrorCode;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.KeyToValueHolder;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+
 /**
  * Managed bean that backs up the enrollwithrequestid.xhtml page
  */
@@ -86,6 +95,8 @@ public class EnrollWithRequestIdBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EnrollWithRequestIdBean.class);
 
+    protected String requestId;
+    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -104,7 +115,6 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     private CertificateProfile certificateProfile;
-    private String requestId;
     private String requestUsername;
     private String selectedAlgorithm;
     private String certificateRequest;
@@ -112,7 +122,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     private EndEntityInformation endEntityInformation;
     private byte[] generatedToken;
     private IdNameHashMap<CAInfo> authorizedCAInfos;
-    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
+    protected IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private boolean isCsrChanged;
     private boolean isKeyRecovery;
 
@@ -309,7 +319,9 @@ public class EnrollWithRequestIdBean implements Serializable {
         endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
         generateKeyStore();
         downloadToken(generatedToken, "application/x-pkcs12", ".p12");
-        reset();
+        if (requestId == null) {
+            reset();
+        }
     }
 
     public void generateKeyStoreBcfks() {
@@ -327,9 +339,14 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     protected void generateKeyStore() {
+    	// We use the variable to tunnel the user input.
+        if (log.isDebugEnabled()) {
+            log.debug("Select key algorithm by user: " + getPreSetKeyAlgorithm());
+        }
+        final AuthenticationToken admin = raAuthenticationBean.getAuthenticationToken();
         if (isKeyRecovery) {
             try {
-                raMasterApiProxyBean.checkUserStatus(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                raMasterApiProxyBean.checkUserStatus(admin, endEntityInformation.getUsername(), endEntityInformation.getPassword());
             } catch (NoSuchEndEntityException | AuthStatusException | AuthLoginException e) {
                 raLocaleBean.addMessageError("enrollwithusername_user_not_found_or_wrongstatus_or_invalid_enrollmentcode", endEntityInformation.getUsername());
                 return;
@@ -371,7 +388,48 @@ public class EnrollWithRequestIdBean implements Serializable {
             getEndEntityInformation().getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
             getEndEntityInformation().getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
         }
-
+        
+        // Update EE information, if the key specification has changed. This might require an approval.
+        if (setPreSetKeyAlgorithm(getEndEntityInformation(), getSelectedAlgorithm())) {
+            try {
+                raMasterApiProxyBean.editUser(admin, endEntityInformation, false, null);
+                log.info("Updated end entity '" + getEndEntityInformation().getUsername() + "' key specification to '" + getSelectedAlgorithm() + "' due to manual certificate enrollment in RA mode.");
+            } catch (CADoesntExistsException e1) {
+                raLocaleBean.addMessageInfo("enroll_ca_not_found", e1.getMessage());
+                log.info("CA with ID '" + endEntityInformation.getCAId() + "' could not be found.", e1);
+                return;
+            } catch (ApprovalException e1) {
+                // ECA-10199 Improve user messages.
+                throw new IllegalStateException(e1);
+            } catch (CertificateSerialNumberException e1) {
+                // Should not be thrown here (there is no certificate created).
+                throw new IllegalStateException(e1);
+            } catch (IllegalNameException e1) {
+                // Should not be thrown here (username=null).
+                throw new IllegalStateException(e1);
+            } catch (NoSuchEndEntityException e1) {
+                raLocaleBean.addMessageError("enroll_end_entity_not_found", e1.getMessage());
+                log.info("End entity '" + endEntityInformation.getUsername() + "' could not be found.", e1);
+                return;
+            } catch (CustomFieldException e1) {
+                // Should not be thrown here.
+                throw new IllegalStateException(e1);
+            } catch (AuthorizationDeniedException e1) {
+                raLocaleBean.addMessageError("enroll_unauthorized_operation", e1.getMessage());
+                log.info(admin + " is not authorized to execute this operation", e1);
+                return;
+            } catch (EndEntityProfileValidationException e1) {
+                raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", e1.getMessage());
+                log.info("Could not update key specification of end entity '" + endEntityInformation.getUsername() + "'. Check certificate profile settings.", e1);
+                return;
+            } catch (WaitingForApprovalException e1) {
+                // Thrown after the approval request was created and is waiting for approval.
+                log.info("Waiting for approval of request with ID " + e1.getRequestId() + " for end entity '" + getEndEntityInformation().getUsername() + "'.");
+                requestId = Integer.toString(e1.getRequestId());
+                return;
+            }
+        }
+        
         try {
             byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
             log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
@@ -758,5 +816,33 @@ public class EnrollWithRequestIdBean implements Serializable {
     public String getPreSetKeyAlgorithm() {
         final String subType = endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmSubType(); // can be null, but that's ok
         return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() + (subType != null ? (" " + subType) : "");
+    }
+    
+    /** @param keySpec sets the algorithm and key size to be used for keystore / certificate enrollment. Format: 'algorithm keysize'*/
+    private boolean setPreSetKeyAlgorithm(final EndEntityInformation endEntity, final String keySpec) {
+        boolean result = false;
+        if (keySpec != null) {
+            final int index = keySpec.indexOf('_');
+            final int length = keySpec.length();
+            ExtendedInformation eeInfo = endEntity.getExtendedInformation();
+            if (eeInfo == null) {
+                eeInfo = new ExtendedInformation();
+                endEntityInformation.setExtendedInformation(eeInfo);
+            }
+            if (index > -1 && index != length) {
+                final String alg = keySpec.substring(0, index); // i.e. RSA.
+                final String spec = keySpec.substring(index + 1, keySpec.length()); // i.e. 2048 or null.
+                result = !alg.equals(eeInfo.getKeyStoreAlgorithmType()) || !spec.equals(eeInfo.getKeyStoreAlgorithmSubType());
+                eeInfo.setKeyStoreAlgorithmType(alg);
+                eeInfo.setKeyStoreAlgorithmSubType(spec);
+            } else {
+                result = !keySpec.equals(eeInfo.getKeyStoreAlgorithmType());
+                eeInfo.setKeyStoreAlgorithmType(keySpec);
+            }
+            if (result) {
+                log.info("Change end entity key specification to '" + keySpec + "'");
+            }
+        }
+        return result;
     }
 }
