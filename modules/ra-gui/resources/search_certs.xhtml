@@ -315,7 +315,7 @@
 	                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.accountBindingId}"/>
 	                            </h:panelGrid>
 	                        </h:column>
-	                        <h:column>
+	                        <h:column rendered="#{raAccessBean.authorizedToSearchEndEntities}">
 	                            <f:facet name="header">
 	                                <h:outputLabel for="sortUsername" value="#{msg.search_certs_page_colhead_username} #{raSearchCertsBean.sortedByUsername}"/>
 	                                <h:commandButton id="sortUsername" action="#{raSearchCertsBean.sortByUsername}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
@@ -329,7 +329,7 @@
 									<h:outputText value="#{raSearchCertificate.username}" />
 								</h:outputLink>
 	                        </h:column>
-                            <h:column rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                            <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_action}"/></f:facet>
                                 <h:commandButton id="viewButton" action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}" value="#{msg.search_certs_page_show_command}"/>
                             </h:column>
