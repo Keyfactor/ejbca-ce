@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -25,6 +27,7 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,9 +40,13 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.ra.EnrollMakeNewRequestBean.KeyPairGeneration;
 
 /**
  * Managed bean that backs up the enrollwithusername.xhtml page. Extends EnrollWithRequestIdBean to make use of common code
@@ -53,7 +60,11 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
 
     public static String PARAM_USERNAME = "username";
     public static String PARAM_ENROLLMENT_CODE = "enrollmentcode";
+    public static String PARAM_REQUESTID = "requestId";
 
+    private boolean renderNonModifiableTemplates = false;
+    private String selectedEndEntityProfile;    
+    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -230,6 +241,106 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         return this.certificateProfile;
     }
 
+    /**
+     * @return true if the selectKeyAlgorithm should be rendered
+     */
+    public boolean isSelectKeyAlgorithmRendered() {
+        return true;
+    }
+    
+    /**
+     * @return true if fields that the client can't modify should still be rendered
+     */
+    public boolean isRenderNonModifiableTemplates() {
+        return renderNonModifiableTemplates;
+    }    
+    
+    /**
+     * @return the current available key generation types as determined by state of dependencies for UI rendering
+     */
+    public List<SelectItem> getAvailableKeyPairGenerationSelectItems() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for (final KeyPairGeneration keyPairGeneration : getAvailableKeyPairGenerations()) {
+            final String label = raLocaleBean.getMessage("enroll_key_pair_generation_" + keyPairGeneration.name().toLowerCase());
+            ret.add(new SelectItem(keyPairGeneration.name(), label));
+        }
+        return ret;
+    }
+    
+    /**
+     * @return the current EndEntityProfile as determined by state of dependencies
+     */
+    public EndEntityProfile getEndEntityProfile() {
+        if (getSelectedEndEntityProfile() != null) {
+            final KeyToValueHolder<EndEntityProfile> temp = authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile()));
+            if (temp != null) {
+                return temp.getValue();
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * @return the current lazy initialized selectedEndEntityProfile
+     */
+    public String getSelectedEndEntityProfile() {
+        final List<Integer> availableEndEntityProfiles = getAvailableEndEntityProfiles();
+        if (availableEndEntityProfiles.size() == 1) {
+            setSelectedEndEntityProfile(String.valueOf(availableEndEntityProfiles.get(0)));
+        }
+        if (StringUtils.isNotEmpty(selectedEndEntityProfile)) {
+            if (!availableEndEntityProfiles.contains(Integer.parseInt(selectedEndEntityProfile))) {
+                setSelectedEndEntityProfile(null);
+            }
+        }
+        return selectedEndEntityProfile;
+    }
+    
+    /**
+     * @param selectedEndEntityProfile the selectedEndEntityProfile to set
+     */
+    public void setSelectedEndEntityProfile(final String selectedEndEntityProfile) {
+        if (!StringUtils.equals(selectedEndEntityProfile, this.selectedEndEntityProfile)) {
+            this.selectedEndEntityProfile = selectedEndEntityProfile;
+        }
+    }
+    
+    /**
+     * @return a List of available end entity profile identifiers
+     */
+    private List<Integer> getAvailableEndEntityProfiles() {
+        return new ArrayList<>(authorizedEndEntityProfiles.idKeySet());
+    }
+    
+    /**
+     * @return the current available key generation types as determined by state of dependencies
+     */
+    private List<KeyPairGeneration> getAvailableKeyPairGenerations() {
+        final List<KeyPairGeneration> ret = new ArrayList<>();
+        final EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if (endEntityProfile != null) {
+            final String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
+            if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
+                    || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
+                    || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))) {
+                ret.add(KeyPairGeneration.ON_SERVER);
+            }
+            if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BROWSERGEN))) {
+                ret.add(KeyPairGeneration.PROVIDED_BY_USER);
+            }
+            ret.add(KeyPairGeneration.POSTPONE);
+        }
+        return ret;
+    }
+    
+    public boolean isRequestIdInfoRendered() {
+        return requestId != null;
+    }
+    
+    public final String getParamRequestId() {
+        return PARAM_REQUESTID;
+    }
+    
     //-----------------------------------------------------------------
     //Getters/setters
     
@@ -252,4 +363,5 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     public void setEnrollmentCode(String enrollmentCode) {
         this.enrollmentCode = enrollmentCode;
     }
+
 }
