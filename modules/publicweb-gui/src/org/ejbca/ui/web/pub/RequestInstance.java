@@ -49,6 +49,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -67,6 +68,8 @@ import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -331,6 +334,31 @@ public class RequestInstance {
 				}
 			}
 
+            final String storedKeyAlg;
+            final String storedKeySpec;
+            if (data.getExtendedInformation() != null) {
+                storedKeyAlg = data.getExtendedInformation().getKeyStoreAlgorithmType();
+                storedKeySpec = data.getExtendedInformation().getKeyStoreAlgorithmSubType();
+            } else {
+                data.setExtendedInformation(new ExtendedInformation());
+                storedKeyAlg = null;
+                storedKeySpec = null;
+            }
+            
+            boolean update = false;
+            if (keyalg != null && !keyalg.equals(storedKeyAlg)) {
+                data.getExtendedInformation().setKeyStoreAlgorithmType(keyalg);
+                update = true;
+            }
+            // ECA-10199 Test for non RSA keys.
+            if (keylength == null && !keylength.equals(storedKeySpec)) {
+                data.getExtendedInformation().setKeyStoreAlgorithmSubType(keylength);
+                update = true;
+            }
+            if (update) {
+                endEntityManagementSession.changeUser(administrator, data, false);
+            }
+            
 			// get users Token Type.
 			tokentype = data.getTokenType();
 			if(tokentype == SecConst.TOKEN_SOFT_P12){
@@ -464,6 +492,11 @@ public class RequestInstance {
                     throw new Exception("No known request type received.");
 				}
 			}
+		} 
+		catch (WaitingForApprovalException | ApprovalException e) {
+		    // ECA-10199 Improve user messages.
+		    iErrorMessage = e.getMessage();
+		    log.info(iErrorMessage);
 		} catch (AuthStatusException ase) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongstatus");
         } catch (ObjectNotFoundException oe) {
