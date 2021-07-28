@@ -112,6 +112,7 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.util.cert.OID;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -826,12 +827,20 @@ public class CAInterfaceBean implements Serializable {
 
     public List<CertificatePolicy> parsePolicies(String policyid) {
         final ArrayList<CertificatePolicy> policies = new ArrayList<>();
-        if (!(policyid == null || policyid.trim().equals(""))) {
+        if (!(policyid == null || policyid.trim().equals("") || policyid.trim().equals("None"))) {
             final String[] str = policyid.split("\\s+");
             if (str.length > 1) {
-                policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
+                if (OID.isValidOid(str[0])) {
+                    policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
+                } else {
+                    log.warn("OID '" + str[0] + "' is not a valid OID, not storing in CA");
+                }
             } else {
-                policies.add(new CertificatePolicy((policyid.trim()),null,null));
+                if (OID.isValidOid(policyid.trim())) {
+                    policies.add(new CertificatePolicy((policyid.trim()),null,null));
+                } else {
+                    log.debug("OID '" + policyid.trim() + "' is not a valid OID, not storing in CA");
+                }
             }
         }
         return policies;
