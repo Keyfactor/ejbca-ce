@@ -827,20 +827,12 @@ public class CAInterfaceBean implements Serializable {
 
     public List<CertificatePolicy> parsePolicies(String policyid) {
         final ArrayList<CertificatePolicy> policies = new ArrayList<>();
-        if (!(policyid == null || policyid.trim().equals("") || policyid.trim().equals("None"))) {
+        if (!(policyid == null || policyid.trim().isEmpty() || policyid.trim().equals(ejbcawebbean.getText("NONE")))) {
             final String[] str = policyid.split("\\s+");
             if (str.length > 1) {
-                if (OID.isValidOid(str[0])) {
-                    policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
-                } else {
-                    log.warn("OID '" + str[0] + "' is not a valid OID, not storing in CA");
-                }
+                policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
             } else {
-                if (OID.isValidOid(policyid.trim())) {
-                    policies.add(new CertificatePolicy((policyid.trim()),null,null));
-                } else {
-                    log.debug("OID '" + policyid.trim() + "' is not a valid OID, not storing in CA");
-                }
+                policies.add(new CertificatePolicy((policyid.trim()),null,null));
             }
         }
         return policies;
