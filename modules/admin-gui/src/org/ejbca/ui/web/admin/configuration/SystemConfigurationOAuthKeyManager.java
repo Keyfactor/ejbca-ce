@@ -104,7 +104,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         PublicKeyUploadInFormOf keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
         String publicKeyValue;
         String publicKeyUrl;
-
+        
+        // PingID-specific fields
+        private String logoutUrl;
+        private String tokenUrl;
 
         public String getKeyIdentifier() {
             return keyIdentifier;
@@ -250,6 +253,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public boolean isTypeGeneric() {
             return OAuthProviderType.TYPE_GENERIC.getIndex() == type.getIndex();
         }
+        
+        public boolean isTypePingId() {
+            return OAuthProviderType.TYPE_PINGID.getIndex() == type.getIndex();
+        }
 
         public boolean isTypeKeycloak() {
             return OAuthProviderType.TYPE_KEYCLOAK.getIndex() == type.getIndex();
@@ -293,6 +300,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.oauthKeyBeingEdited = oauthKey;
             this.defaultKeyLabel = defaultKeyLabel;
             this.keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
+            
+            this.logoutUrl = oauthKey.getLogoutUrl();
+            this.tokenUrl = oauthKey.getTokenUrl();
         }
 
         /**
@@ -304,6 +314,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             publicKeyFile = null;
             publicKeys = null;
             url = null;
+            logoutUrl = null;
+            tokenUrl = null;
             label = null;
             client = null;
             clientSecret = null;
@@ -327,6 +339,22 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public void stopEditing() {
             oauthKeyBeingEdited = null;
             clear();
+        }
+
+        public String getLogoutUrl() {
+            return logoutUrl;
+        }
+
+        public String getTokenUrl() {
+            return tokenUrl;
+        }
+
+        public void setLogoutUrl(String logoutUrl) {
+            this.logoutUrl = logoutUrl;
+        }
+
+        public void setTokenUrl(String tokenUrl) {
+            this.tokenUrl = tokenUrl;
         }
     }
 
@@ -579,6 +607,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setScope(oauthKeyEditor.getScope());
         newOauthKey.setClient(oauthKeyEditor.getClient());
+        newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
+        newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
 
         if (oauthKeyEditor.getPublicKeys().isEmpty()) {
@@ -744,6 +774,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
+        oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
+        oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
 
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();

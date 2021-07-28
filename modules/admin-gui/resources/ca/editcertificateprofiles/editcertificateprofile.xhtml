@@ -1609,7 +1609,7 @@
                         value="#{certProfileBean.certificateProfile.useQCEtsiValueLimit}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax  execute="@form" render=":content:qcetsivaluelimitgroup" />
+                        <f:ajax render=":content:qcetsivaluelimitgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsivaluelimit"
                         value="#{web.text.ADD}…"
@@ -1661,7 +1661,7 @@
                         value="#{certProfileBean.certificateProfile.useQCEtsiRetentionPeriod}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax  execute="@form" render=":content:qcetsiretentionperiodgroup" />
+                        <f:ajax render=":content:qcetsiretentionperiodgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsiretentionperiod"
                         value="#{web.text.ADD}…"
