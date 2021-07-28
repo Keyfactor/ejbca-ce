@@ -39,7 +39,8 @@ public final class OAuthKeyInfo implements Serializable {
     public enum OAuthProviderType {
         TYPE_GENERIC(0, "Generic"),
         TYPE_AZURE(1, "Azure"),
-        TYPE_KEYCLOAK(2, "Keycloak");
+        TYPE_KEYCLOAK(2, "Keycloak"),
+        TYPE_PINGID(3, "PingID");
 
         private final int index;
         private final String label;
@@ -77,7 +78,10 @@ public final class OAuthKeyInfo implements Serializable {
     private String url;
     private String clientSecret;
     private int skewLimit = 60000;
-
+    
+    // PingID fields
+    private String tokenUrl;
+    private String logoutUrl;
 
     /**
      * Creates a OAuth Key info object
@@ -234,14 +238,24 @@ public final class OAuthKeyInfo implements Serializable {
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
             return getTypeSpecificUrl("authorize");
         }
+        if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
+            return url;
+        }
         return url;
     }
 
     public String getTokenUrl() {
+        if (getType() == OAuthProviderType.TYPE_PINGID) {
+            return tokenUrl;
+        }
         return getTypeSpecificUrl("token");
     }
 
     public String getLogoutUrl() {
+        if (getType() == OAuthProviderType.TYPE_PINGID) {
+            return logoutUrl;
+        }
+        
         return getTypeSpecificUrl("logout");
     }
 
@@ -259,6 +273,7 @@ public final class OAuthKeyInfo implements Serializable {
                 uri += getRealm() + "/oauth2/v2.0/" + endpoint;
                 return uri;
             }
+            case TYPE_PINGID: 
             case TYPE_GENERIC: {
                 return getUrl();
             }
@@ -301,5 +316,13 @@ public final class OAuthKeyInfo implements Serializable {
     @Override
     public String toString() {
         return label;
+    }
+
+    public void setTokenUrl(String tokenUrl) {
+        this.tokenUrl = tokenUrl;
+    }
+
+    public void setLogoutUrl(String logoutUrl) {
+        this.logoutUrl = logoutUrl;
     }
 }
