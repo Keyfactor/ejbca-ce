@@ -489,6 +489,11 @@ public class CAInterfaceBean implements Serializable {
 
 	            /* Process certificate policies. */
 	            final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
+	            for (CertificatePolicy certificatePolicy : policies) {
+	                if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
+	                    throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));                                              
+	                }
+	            }
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
 	            final List<Integer> crlPublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
 	            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
@@ -910,6 +915,11 @@ public class CAInterfaceBean implements Serializable {
                        ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
 
                final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
+               for (CertificatePolicy certificatePolicy : policies) {
+                   if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
+                       throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));                                              
+                   }
+               }
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
