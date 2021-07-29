@@ -71,6 +71,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -154,6 +155,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String selectedEndEntityProfile;
     private String selectedCertificateProfile;
     private String selectedCertificateAuthority;
+    private Integer selectedIssuanceRevocationReason;
     private String validity = StringUtils.EMPTY;
     private EABConfiguration eabConfiguration;
 
@@ -179,6 +181,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
     private int selectedTokenType;
+
     private UploadedFile uploadFile;
     private String certificateRequest;
     private String publicKeyModulus;
@@ -654,7 +657,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isRenderOtherCertificateData() {
-        return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() || isCabfOrganizationIdentifierRendered();
+        return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() || 
+                isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
 
     public boolean isRenderCertExtensionDataField() {
@@ -665,6 +669,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return getEndEntityProfile().isPsd2QcStatementUsed();
     }
 
+    public boolean isRenderIssuanceRevocationReason() {
+        return getEndEntityProfile().isIssuanceRevocationReasonUsed();
+    }
+    
     public void setRenderCsrDetailedInfo(boolean renderCsrDetailedInfo) {
         this.renderCsrDetailedInfo = renderCsrDetailedInfo;
     }
@@ -926,7 +934,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
             extendedInformation.setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
         }
         extendedInformation.setCabfOrganizationIdentifier(cabfOrganizationIdentifier);
-
+        
+        // Add issuance revocation reason
+        if (getEndEntityProfile().isIssuanceRevocationReasonUsed()) {
+            if (getEndEntityProfile().isIssuanceRevocationReasonModifiable()) {
+                extendedInformation.setIssuanceRevocationReason(selectedIssuanceRevocationReason);
+            } else {
+                extendedInformation.setIssuanceRevocationReason(getEndEntityProfile().getIssuanceRevocationReason().getDatabaseValue());
+            }
+        }
+        
         return extendedInformation;
     }
     
@@ -962,7 +979,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setKeyRecoverable(getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault() && !endEntityInformation.getKeyRecoverable());
         endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
-
+        
         // Fill end-entity information (Username and Password)
         final byte[] randomData = new byte[16];
         final Random random = new SecureRandom();
@@ -1676,7 +1693,24 @@ public class EnrollMakeNewRequestBean implements Serializable {
         );
         return ret;
     }
-
+    
+    public List<SelectItem> getAvailableRevocationReasons() {
+        final List<SelectItem> revocationReasonSelectItems = new ArrayList<>();
+        for (RevocationReasons revocationReason : RevocationReasons.values()) {
+            final String humanReadable = revocationReason.getHumanReadable();
+            if (revocationReason == RevocationReasons.NOT_REVOKED) {
+                revocationReasonSelectItems.add(0, new SelectItem(revocationReason.getDatabaseValue(), raLocaleBean.getMessage("component_certdetails_status_active")));
+            } else if (revocationReason == RevocationReasons.CERTIFICATEHOLD) {
+                revocationReasonSelectItems.add(1, new SelectItem(revocationReason.getDatabaseValue(), 
+                        raLocaleBean.getMessage("component_certdetails_status_revoked_reason_suspended")+ ": " + humanReadable));
+            } else {
+                revocationReasonSelectItems.add(new SelectItem(revocationReason.getDatabaseValue(), 
+                        raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked") + ": " + humanReadable));
+            }
+        }
+        return revocationReasonSelectItems;
+    }
+    
     private List<Integer> getAvilableTokenTypes() {
         List<Integer> ret = new ArrayList<>();
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -1954,6 +1988,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isCabfOrganizationIdentifierRequired() {
         return getEndEntityProfile().isCabfOrganizationIdentifierRequired();
+    }
+    
+    public Integer getSelectedIssuanceRevocationReason() {
+        if (selectedIssuanceRevocationReason == null) {
+            return getEndEntityProfile().getIssuanceRevocationReason().getDatabaseValue();
+        }
+        return selectedIssuanceRevocationReason;
+    }
+
+    public void setSelectedIssuanceRevocationReason(Integer selectedIssuanceRevocationReason) {
+        this.selectedIssuanceRevocationReason = selectedIssuanceRevocationReason;
+    }
+    
+    public boolean isIssuanceRevocationReasonModifable() {
+        return getEndEntityProfile().isIssuanceRevocationReasonModifiable();
     }
 
     /**
