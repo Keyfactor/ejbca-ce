@@ -446,6 +446,13 @@
 								</h:inputText>
 								<h:message for="cabfOrganizationIdentifier" id="cabfOrganizationIdentifierMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderIssuanceRevocationReason}">
+								<h:outputLabel for="issuanceRevocationReason" value="#{msg.enroll_issuance_revocation_reason}"/>
+								<h:selectOneMenu id="issuanceRevocationReason" value="#{enrollMakeNewRequestBean.selectedIssuanceRevocationReason}"
+									disabled="#{!enrollMakeNewRequestBean.issuanceRevocationReasonModifable}">
+									<f:selectItems value="#{enrollMakeNewRequestBean.availableRevocationReasons}"/>
+								</h:selectOneMenu>
+							</h:panelGroup>
 						</h:panelGroup>
 						
                         <fieldset>
