@@ -258,7 +258,7 @@ public class RaCertificateDetails {
                 isPreCertificate = x509Certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID) != null;
                 this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
             } else if (certificate instanceof CardVerifiableCertificate) {
-                this.created = ValidityDate.formatAsUTC(CertTools.getNotBefore(certificate).getTime());
+                this.created = ValidityDate.formatAsUTCSecondsGranularity(CertTools.getNotBefore(certificate).getTime());
                 final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate)certificate;
                 this.typeVersion = String.valueOf(CVCertificateBody.CVC_VERSION);
                 // Role and access rights
@@ -273,7 +273,7 @@ public class RaCertificateDetails {
                         log.debug("Failed to parse CVC AuthorizationTemplate's AuthorizationField: " + e.getMessage());
                     }
                 }
-                this.expires = ValidityDate.formatAsUTC(expireDate);
+                this.expires = ValidityDate.formatAsUTCSecondsGranularity(expireDate);
             }
         }
 
