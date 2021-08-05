@@ -275,8 +275,9 @@
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="geronimo-osgi-locator-1.1.jar"/>
 			<include name="reactive-streams-1.*.jar"/>
-			<include name="resteasy-client-3.*.jar"/>
-			<include name="resteasy-jackson2-provider-3.*.jar"/>
+			<include name="resteasy-client-4.*.jar"/>
+			<include name="resteasy-client-api-4.*.jar"/>
+			<include name="resteasy-jackson2-provider-4.*.jar"/>
 			<include name="resteasy-jaxrs-3.*.jar"/>
 			<include name="scannotation-1.0.3.jar"/>
 			<include name="json-patch-1.*.jar"/>
