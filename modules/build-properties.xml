@@ -273,7 +273,6 @@
     <mkdir dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
-			<include name="geronimo-osgi-locator-1.1.jar"/>
 			<include name="reactive-streams-1.*.jar"/>
 			<include name="resteasy-client-4.*.jar"/>
 			<include name="resteasy-client-api-4.*.jar"/>
@@ -284,7 +283,6 @@
 			<include name="undertow-servlet-2.*.jar"/>
 			<include name="jboss-servlet-api_4.0_spec-2.0.0.Final.jar"/>
 			<include name="resteasy-jackson2-provider-4.*.jar"/>
-			<include name="scannotation-1.0.3.jar"/>
 			<include name="json-patch-1.*.jar"/>
 			<include name="javax.ws.rs-api-2.*.jar"/>
 		</fileset>
