@@ -399,7 +399,6 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info("CA with ID '" + endEntityInformation.getCAId() + "' could not be found.", e1);
                 return;
             } catch (ApprovalException e1) {
-                // ECA-10199 Improve user messages.
                 throw new IllegalStateException(e1);
             } catch (CertificateSerialNumberException e1) {
                 // Should not be thrown here (there is no certificate created).

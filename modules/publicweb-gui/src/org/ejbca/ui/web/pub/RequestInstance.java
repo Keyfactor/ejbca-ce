@@ -334,29 +334,37 @@ public class RequestInstance {
 				}
 			}
 
-            final String storedKeyAlg;
-            final String storedKeySpec;
-            if (data.getExtendedInformation() != null) {
-                storedKeyAlg = data.getExtendedInformation().getKeyStoreAlgorithmType();
-                storedKeySpec = data.getExtendedInformation().getKeyStoreAlgorithmSubType();
-            } else {
+            if (data.getExtendedInformation() == null) {
                 data.setExtendedInformation(new ExtendedInformation());
-                storedKeyAlg = null;
-                storedKeySpec = null;
             }
             
             boolean update = false;
-            if (keyalg != null && !keyalg.equals(storedKeyAlg)) {
+            if (!StringUtils.equals(keyalg, data.getExtendedInformation().getKeyStoreAlgorithmType())) {
                 data.getExtendedInformation().setKeyStoreAlgorithmType(keyalg);
                 update = true;
             }
-            // ECA-10199 Test for non RSA keys.
-            if (keylength == null && !keylength.equals(storedKeySpec)) {
+            if (!StringUtils.equals(keylength, data.getExtendedInformation().getKeyStoreAlgorithmSubType())) {
                 data.getExtendedInformation().setKeyStoreAlgorithmSubType(keylength);
                 update = true;
             }
             if (update) {
-                endEntityManagementSession.changeUser(administrator, data, false);
+                try {
+                    endEntityManagementSession.changeUser(administrator, data, false);
+                } catch(ApprovalException e) {
+                    // Exception message is rendered as is.
+                    // "Approval request with approvalID 1234... already exists."
+                    // Is thrown if there is pending approval and the user tries to enroll a certificate 
+                    // with a key specification unequal to the one stored at the extended end entity information.
+                    throw e;
+                } catch(WaitingForApprovalException e) {
+                    // Exception message is rendered as is. Add the request ID.
+                    // "Add Entity request has been added for approval by authorized administrators. Request ID 1234..."
+                    throw new WaitingForApprovalException(e.getMessage() + " Request ID " + e.getRequestId() + ".", e.getRequestId());
+                }
+            } else {
+                // NOOP: There might be a pending approval to change the key specification, but the user is still allowed to enroll 
+                // certificates with the last used key specification. Effectively this works only if 'Finish user' in the CA settings 
+                // is disabled. Otherwise the end entity has to transition to status NEW or FAILED which would require a second approval. 
             }
             
 			// get users Token Type.
@@ -494,7 +502,6 @@ public class RequestInstance {
 			}
 		} 
 		catch (WaitingForApprovalException | ApprovalException e) {
-		    // ECA-10199 Improve user messages.
 		    iErrorMessage = e.getMessage();
 		    log.info(iErrorMessage);
 		} catch (AuthStatusException ase) {
