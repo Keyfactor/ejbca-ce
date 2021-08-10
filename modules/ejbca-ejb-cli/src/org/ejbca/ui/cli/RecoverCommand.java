@@ -64,6 +64,12 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
     private static final String LOG_FILE_KEY = "--log-file";
     private static final String IGNORE_ERRORS_KEY = "--ignore-errors";
     private static final String EXECUTE_KEY = "--execute";
+    private static final String DELTA_KEY = "--delta";
+    
+    private static final int RECOVERY_STATUS_SKIPPED = 1; 
+    private static final int RECOVERY_STATUS_SUCCESSFUL = 2;
+    private static final int RECOVERY_STATUS_FAILED = 3;
+    
     private final Map<Integer, String> caFingerprintCache = new HashMap<>();
     private boolean ignoreErrors = false;
 
@@ -86,6 +92,12 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
                 StandaloneMode.FORBID,
                 ParameterMode.FLAG,
                 "Confirm that the recovery command should be executed, potentially importing records into the database. Without the flag, information about what would be imported will be printed, but nothing will be recovered."));
+        registerParameter(new Parameter(DELTA_KEY,
+                "Execute the delta command",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.FORBID,
+                ParameterMode.FLAG,
+                "Compares delta in between persisted entries with logged creations"));
     }
 
     @Override
@@ -117,45 +129,62 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
     public CommandResult execute(final ParameterContainer parameters) {
         this.ignoreErrors = parameters.containsKey(IGNORE_ERRORS_KEY);
         final boolean executeFlag = parameters.containsKey(EXECUTE_KEY);
+        final boolean deltaFlag = parameters.containsKey(DELTA_KEY);
         int numberOfCertificatesRecovered = 0;
         int numberOfCertificatesNotRecovered = 0;
+        int numberOfCertificatesSkipped = 0;
         int numberOfEndEntitiesRecovered = 0;
         int numberOfEndEntitiesNotRecovered = 0;
+        int numberOfEndEntitiesSkipped = 0;
         long lineNumber = 0;
+        if (!executeFlag) {
+            getLogger().info("Execute flag not provided, the following entries will be imported if execute flag is provided:");
+        }
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(parameters.get(LOG_FILE_KEY)))) {
             for (String line; (line = bufferedReader.readLine()) != null;) {
                 if (endEntityWasCreated(line)) {
-                    if (recoverEndEntity(executeFlag, line, lineNumber)) {
+                    int status = recoverEndEntity(executeFlag, deltaFlag, line, lineNumber);
+                    if (status == RECOVERY_STATUS_SUCCESSFUL) {
                         numberOfEndEntitiesRecovered++;
+                    } else if (status == RECOVERY_STATUS_SKIPPED) {
+                        numberOfEndEntitiesSkipped++;
                     } else {
                         numberOfEndEntitiesNotRecovered++;                        
                     }
                 } else if (certificateWasCreated(line)) {
-                    final boolean certificateWasRecovered = recoverCertificate(executeFlag, line, lineNumber);
-                    if (certificateWasRecovered) {
-                        ++numberOfCertificatesRecovered;
+                    final int status = recoverCertificate(executeFlag, deltaFlag, line, lineNumber);
+                    if (status == RECOVERY_STATUS_SUCCESSFUL) {
+                        numberOfCertificatesRecovered++;
+                    } else if (status == RECOVERY_STATUS_SKIPPED) {
+                        numberOfCertificatesSkipped++;
                     } else {
-                        ++numberOfCertificatesNotRecovered;
+                        numberOfCertificatesNotRecovered++;
                     }
                 }
                 ++lineNumber;
             }
             if (executeFlag) {
-                if (numberOfEndEntitiesRecovered == 0) {
+                if (numberOfEndEntitiesRecovered == 0 && numberOfEndEntitiesSkipped == 0) {
                     getLogger().info("No end entities were recovered. Does the log contain any 'RA_ADDENDENTITY' audit log events?");
                 } else {
                     getLogger().info("Recovered " + numberOfEndEntitiesRecovered + " end entities.");
                 }
-                if (numberOfEndEntitiesNotRecovered > 0) {
-                    getLogger().warn("Failed to recover " + numberOfEndEntitiesNotRecovered + " end entities.");
-                }
-                if (numberOfCertificatesRecovered == 0) {
+                if (numberOfCertificatesRecovered == 0 && numberOfCertificatesSkipped == 0) {
                     getLogger().info("No certificates were recovered. Does the log contain any 'CERT_CREATION' audit log events?");
                 } else {
                     getLogger().info("Recovered " + numberOfCertificatesRecovered + " certificates.");
                 }
+                if (numberOfEndEntitiesNotRecovered > 0) {
+                    getLogger().warn("Failed to recover " + numberOfEndEntitiesNotRecovered + " end entities.");
+                }
                 if (numberOfCertificatesNotRecovered > 0) {
                     getLogger().warn("Failed to recover " + numberOfCertificatesNotRecovered + " certificates.");
+                }
+                if (numberOfEndEntitiesSkipped > 0) {
+                    getLogger().info("Skipped " + numberOfEndEntitiesSkipped + " end entities (already existing in datbase).");
+                }
+                if (numberOfCertificatesSkipped > 0) {
+                    getLogger().info("Skipped " + numberOfCertificatesSkipped + " certificates (already existing in datbase).");
                 }
             }
             return CommandResult.SUCCESS;
@@ -195,12 +224,13 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
      * </pre>
      *
      * @param execute if false will only print on console the values that would be imported if flag was set to true 
+     * @param delta ignore entries which already exists in database.
      * @param line the log line to process.
      * @param lineNumber the line number of the line currently being processed.
      * @return true if the certificate was recovered successfully.
      * @throws AuthorizationDeniedException if the CLI administrator is not authorised to store certificates.
      */
-    private boolean recoverCertificate(boolean execute, final String line, final long lineNumber) throws AuthorizationDeniedException, CADoesntExistsException {
+    private int recoverCertificate(boolean execute, boolean delta, final String line, final long lineNumber) throws AuthorizationDeniedException, CADoesntExistsException {
         try {
             final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
             final Certificate certificate = new LogLineParser(line).extractDataFromCaptureGroup(";cert=(.+)").getCertificateFromBase64Data();
@@ -209,16 +239,19 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
             final String certificateFingerprint = CertTools.getFingerprintAsString(certificate);
             final int certificateProfileId = new LogLineParser(line).extractDataFromCaptureGroup(";certprofile=(-?\\d+);").getInteger();
             if (!execute) {
-                getLogger().info("Execute flag not provided, this certificate information will be imported if execute flag is provided:");
+                if (delta && certificateStoreSession.findCertificateByFingerprintRemote(certificateFingerprint) != null) {
+                    return RECOVERY_STATUS_SKIPPED;
+                }
+                getLogger().info("\nEntry type: Certificate");
                 getLogger().info("  Fingerprint: " + certificateFingerprint);
                 getLogger().info("  CA fingerprint: " + caFingerprint);
                 getLogger().info("  End entity username: " + endEntityUsername);
                 getLogger().info("  Certificate profile ID: " + certificateProfileId);
-                return true;
+                return RECOVERY_STATUS_SUCCESSFUL;
             }
             if (certificateStoreSession.findCertificateByFingerprintRemote(certificateFingerprint) != null) {
                 getLogger().debug("Certificate with fingerprint " + certificateFingerprint + " already exists in the database.");
-                return true;
+                return RECOVERY_STATUS_SKIPPED;
             }
             certificateStoreSession.storeCertificateRemote(
                     getAuthenticationToken(),
@@ -233,12 +266,12 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
                     "",
                     System.currentTimeMillis(),
                     null); // accountBindingId
-            return true;
+            return RECOVERY_STATUS_SUCCESSFUL;
         } catch (IllegalArgumentException e) {
             getLogger().error(e);
             getLogger().error("Unable to recover certificate on line " + lineNumber + ".");
             if (ignoreErrors) {
-                return false;
+                return RECOVERY_STATUS_FAILED;
             } else {
                 throw e;
             }
@@ -278,6 +311,7 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
      * </pre>
      *
      * @param execute if false will only print on console the values that would be imported if flag was set to true 
+     * @param delta ignore entries which already exists in database.
      * @param line the log line to process.
      * @param lineNumber the line number of the line currently being processed.
      * @return true if the end entity was recovered successfully.
@@ -287,13 +321,19 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
      * entity profile.
      * @throws WaitingForApprovalException if the CA requires approval for editing/adding end entities
      */
-    private boolean recoverEndEntity(boolean execute, final String line, final long lineNumber) throws AuthorizationDeniedException,
+    private int recoverEndEntity(boolean execute, boolean delta, final String line, final long lineNumber) throws AuthorizationDeniedException,
             CADoesntExistsException, EndEntityProfileValidationException, WaitingForApprovalException {
         try {
             final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
             final String endEntityUsername = new LogLineParser(line).extractDataFromCaptureGroup(";username=(.+)").getString();
             final String subjectDn = new LogLineParser(line).extractDataFromCaptureGroup("=;subjectDN=B64:(.+);subjectEmail").base64Decode().getString();
-            final int endEntityProfileId = new LogLineParser(line).extractDataFromCaptureGroup(";endentityprofileid=(-?\\d+);extendedInformation").getInteger();
+            int endEntityProfileId;
+            try {
+                endEntityProfileId = new LogLineParser(line).extractDataFromCaptureGroup(";endentityprofileid=(-?\\d+);extendedInformation").getInteger();
+            } catch (IllegalArgumentException e) {
+                // ExtendedInformation may be null
+                endEntityProfileId = new LogLineParser(line).extractDataFromCaptureGroup(";endentityprofileid=(-?\\d+);status").getInteger();
+            }
             final int certificateProfileId = new LogLineParser(line).extractDataFromCaptureGroup(";certificateprofileid=(-?\\d+);endentityprofileid").getInteger();
             final int tokenType = new LogLineParser(line).extractDataFromCaptureGroup(";tokentype=(-?\\d+);type").getInteger();
             final int caId = new LogLineParser(line).extractDataFromCaptureGroup(";caid=(-?\\d+);cardnumber=").getInteger();
@@ -314,22 +354,28 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
                 endEntityInformation.setSubjectAltName(new String(Base64.decode(subjectAltName.get().getBytes(StandardCharsets.US_ASCII))));
             }
             if (!execute) {
-                getLogger().info("Execute flag not provided, this end entity information will be imported if execute flag is provided:");
+                if (delta && endEntityManagementSession.existsUser(endEntityUsername)) {
+                    return RECOVERY_STATUS_SKIPPED;
+                }
+                getLogger().info("\nEntry type: End Entity");
                 getLogger().info("  Username: " + endEntityInformation.getUsername());
                 getLogger().info("  Subject DN: " + endEntityInformation.getDN());
                 getLogger().info("  Subject altName: " + endEntityInformation.getSubjectAltName());
                 getLogger().info("  End entity profile ID: " + endEntityInformation.getEndEntityProfileId());
                 getLogger().info("  Certificate profile ID: " + endEntityInformation.getCertificateProfileId());
                 getLogger().info("  CA ID: " + endEntityInformation.getCAId());
-                return true;
+                return RECOVERY_STATUS_SUCCESSFUL;
             }
 
             if (endEntityManagementSession.existsUser(endEntityUsername)) {
+                if (delta) {
+                    return RECOVERY_STATUS_SKIPPED;
+                }
                 endEntityManagementSession.changeUser(getAuthenticationToken(), endEntityInformation, false);
             } else {
                 endEntityManagementSession.addUser(getAuthenticationToken(), endEntityInformation, false);
             }
-            return true;
+            return RECOVERY_STATUS_SUCCESSFUL;
         } catch (IllegalNameException |
                  NoSuchEndEntityException |
                  EndEntityExistsException |
@@ -339,7 +385,7 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
                  IllegalArgumentException e) {
             getLogger().error("Unable to recover end entity on line " + lineNumber + ".");
             if (ignoreErrors) {
-                return false;
+                return RECOVERY_STATUS_FAILED;
             } else {
                 throw new RuntimeException(e);
             }
