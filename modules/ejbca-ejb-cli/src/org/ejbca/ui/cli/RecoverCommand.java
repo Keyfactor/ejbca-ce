@@ -181,10 +181,10 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
                     getLogger().warn("Failed to recover " + numberOfCertificatesNotRecovered + " certificates.");
                 }
                 if (numberOfEndEntitiesSkipped > 0) {
-                    getLogger().info("Skipped " + numberOfEndEntitiesSkipped + " end entities (already existing in datbase).");
+                    getLogger().info("Skipped " + numberOfEndEntitiesSkipped + " end entities (already existing in database).");
                 }
                 if (numberOfCertificatesSkipped > 0) {
-                    getLogger().info("Skipped " + numberOfCertificatesSkipped + " certificates (already existing in datbase).");
+                    getLogger().info("Skipped " + numberOfCertificatesSkipped + " certificates (already existing in database).");
                 }
             }
             return CommandResult.SUCCESS;
