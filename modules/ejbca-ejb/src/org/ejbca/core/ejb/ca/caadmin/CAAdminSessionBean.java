@@ -98,6 +98,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
@@ -322,7 +323,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void initializeCa(final AuthenticationToken authenticationToken, final CAInfo caInfo)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
+        throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
 
         if (caInfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
             throw new IllegalArgumentException("CA Status was not CA_UNINITIALIZED (" + CAConstants.CA_UNINITIALIZED + ")");
@@ -892,7 +893,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException {
+    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
         boolean cmsrenewcert = false;
         final int caid = cainfo.getCAId();
 
@@ -1861,6 +1862,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 editCA(authenticationToken, caInfo);
             } catch (InternalKeyBindingNonceConflictException e) {
                 // Do nothing
+            } catch (CaMsCompatibilityIrreversibleException e) {
+                // Do nothing
             }
             caInfo.setStatus(currentCaState);
             // Add CA certificate chain again, because it is removed in createCA() for CAs with state CAConstants.CA_UNINITIALIZED.
@@ -1871,6 +1874,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             editCA(authenticationToken, caInfo);
         } catch (InternalKeyBindingNonceConflictException e) {
+            // Do nothing
+        } catch (CaMsCompatibilityIrreversibleException e) {
             // Do nothing
         }
         // Update the CA certificate in the local database
@@ -2066,6 +2071,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             final CAToken caToken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
+            final String currentSignKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
             cryptoToken.testKeyPair(nextSignKeyAlias);
             caToken.setNextCertSignKey(nextSignKeyAlias);
             // Activate the next signing key(s) and generate audit log
@@ -2093,6 +2099,30 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             //Save old CA certificate before renewal, so we can use its expire date when creating link certificate
             Certificate oldCaCertificate = ca.getCACertificate();
 
+            if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && !currentSignKeyAlias.equals(nextSignKeyAlias) && !subjectDNWillBeChanged) {
+                // CA is re-keyed
+                X509CA x509Ca = (X509CA) ca;
+                if (!x509Ca.getUsePartitionedCrl() && x509Ca.getCrlPartitions() == 0) {
+                    // First time enabling MS Compatibility Mode.
+                    log.debug("Enabling CRL partitions for MS Compatibility Mode");
+                    ((X509CA)ca).setUsePartitionedCrl(true);
+                    ((X509CA)ca).setCrlPartitions(1);
+                    ((X509CA)ca).setSuspendedCrlPartitions(0);
+                    // Set in CAInfo for immediate effect during CA certificate renewal
+                    ((X509CAInfo)ca.getCAInfo()).setUsePartitionedCrl(true);
+                    ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(1);
+                    ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(0);
+                } else {
+                    // Suspend previous partition and open a new one.
+                    log.debug("MS Compatible CA re-keyed. Suspending previous CRL partition");
+                    ((X509CA)ca).setCrlPartitions(x509Ca.getCrlPartitions() + 1);
+                    ((X509CA)ca).setSuspendedCrlPartitions(x509Ca.getSuspendedCrlPartitions() + 1);
+                    ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(((X509CAInfo)ca.getCAInfo()).getCrlPartitions() + 1);
+                    ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(((X509CAInfo)ca.getCAInfo()).getSuspendedCrlPartitions() + 1);
+                }
+                caSession.editCA(authenticationToken, ca, true);
+            }
+            
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 if (subjectDNWillBeChanged) {
                     ca.setSubjectDN(newSubjectDN);
@@ -2158,9 +2188,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Publish the new CA certificate
             publishCACertificate(authenticationToken, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
+            
             // Generate a new CRL, but not partitions, which could take very long time.
             publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+            if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && ((X509CA)ca).getCrlPartitions() != 0) {
+                for (int crlPartitionIndex = 1; crlPartitionIndex <= ((X509CA)ca).getCrlPartitions(); crlPartitionIndex++) {
+                    publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex);
+                    publishingCrlSession.forceDeltaCRL(authenticationToken, caid, crlPartitionIndex);
+                }
+            }
 
             if (subjectDNWillBeChanged) {
                 // If CA has gone through Name Change, add new caid to available CAs for every certificate profile
@@ -3065,7 +3102,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
             CACommon ca = caSession.getCAForEdit(admin, caid);
             ca.setStatus(CAConstants.CA_ACTIVE);
-            caSession.editCA(admin, ca, false);
+            caSession.editCA(
+                    new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Activating Ca " + ca.getName() + ".")),
+                    ca, false);
         } else {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.errornotoffline", cainfo.getName());
             logAuditEvent(
@@ -3100,7 +3139,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             return;
         } else if (ca.getStatus() == CAConstants.CA_ACTIVE) {
             ca.setStatus(CAConstants.CA_OFFLINE);
-            caSession.editCA(admin, ca, false);
+            caSession.editCA(
+                    new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Deactivating Ca "+ ca.getName()+".")),
+                    ca, false);
             logAuditEvent(
                     EventTypes.CA_SERVICEDEACTIVATE, EventStatus.SUCCESS,
                     admin, caid,
