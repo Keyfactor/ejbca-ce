@@ -61,6 +61,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RAMODE_OLD = "ra.createOrEditUser";
     public static final String SCEP_OPERATIONMODE = "operationmode";
     public static final String SCEP_INCLUDE_CA = "includeca";
+    public static final String SCEP_RETURN_CA_CHAIN_IN_GETCACERT = "returnCaChainInGetCaCert";
     public static final String SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM = "allowLegacyDigestAlgorithm";
     public static final String SCEP_RA_CERTPROFILE = "ra.certificateProfile";
     public static final String SCEP_RA_ENTITYPROFILE = "ra.entityProfile";
@@ -90,7 +91,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String PROXY_PASS = "intuneProxyPass";
        
     // This List is used in the command line handling of updating a config value to insure a correct value.
-    public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA);
+    public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA, SCEP_RETURN_CA_CHAIN_IN_GETCACERT);
     
     public static final String SCEP_CONFIGURATION_ID = "2";
     
@@ -98,7 +99,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 5f;
+    public static final float LATEST_VERSION = 6f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
@@ -116,6 +117,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
     public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
+    public static final String DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT = Boolean.TRUE.toString();
 
     
     /** Creates a new instance of ScepConfiguration */
@@ -135,6 +137,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         alias += ".";
         data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
         data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
+        data.put(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT, DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT);
         data.put(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
         data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
         data.put(alias + SCEP_RA_ENTITYPROFILE, DEFAULT_RA_ENTITYPROFILE);
@@ -169,6 +172,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         Set<String> keys = new LinkedHashSet<String>();
         keys.add(alias + SCEP_OPERATIONMODE);
         keys.add(alias + SCEP_INCLUDE_CA);
+        keys.add(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT);
         keys.add(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM);
         keys.add(alias + SCEP_RA_CERTPROFILE);
         keys.add(alias + SCEP_RA_ENTITYPROFILE);
@@ -278,10 +282,23 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
+    
     public void setIncludeCA(String alias, boolean includeca) {
         String key = alias + "." + SCEP_INCLUDE_CA;
         setValue(key, Boolean.toString(includeca), alias);
     }
+    
+    public boolean getReturnCaChainInGetCaCert(String alias) {
+        String key = alias + "." + SCEP_RETURN_CA_CHAIN_IN_GETCACERT;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+
+    public void setReturnCaChainInGetCaCert(String alias, boolean returnCaChainInGetCaCert) {
+        String key = alias + "." + SCEP_RETURN_CA_CHAIN_IN_GETCACERT;
+        setValue(key, Boolean.toString(returnCaChainInGetCaCert), alias);
+    } 
+
     
     public boolean getAllowLegacyDigestAlgorithm(String alias) {
         String key = alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM;
@@ -813,6 +830,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(alias + PROXY_PASS) == null) {
                     data.put(alias + PROXY_PASS, "");
                 }
+                if (data.get(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT) == null) {
+                    data.put(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT, Boolean.FALSE.toString());
+                }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));         
         }
@@ -832,6 +852,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             filterDiffMapForLogging(diff, alias + "." + AAD_APP_KEY);
             filterDiffMapForLogging(diff, alias + "." + PROXY_PASS);            
         }
-    } 
+    }
+
     
 }

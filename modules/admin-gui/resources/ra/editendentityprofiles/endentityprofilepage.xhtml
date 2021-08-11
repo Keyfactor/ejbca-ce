@@ -1096,6 +1096,8 @@
 					<h:panelGroup>
                         <h:outputLabel for="availableCA"
                             value="#{web.text.AVAILABLECAS}" />
+                        <br/>
+                        <h:outputText styleClass="smallHelp" value="#{web.text.AVAILABLECAS_EEPROFILE_HELP}"/> 
                     </h:panelGroup>
                 </h:panelGrid>
                 <h:panelGrid id="PGb2" columns="1">
@@ -1676,7 +1678,7 @@
                             value="#{web.text.NOTIFICATIONSUBJECT}" />
                         <h:inputText id="textFieldNotificationSubject"
                             value="#{userNotification.notificationSubject}"
-                            size="25" maxlength="40" required="true"
+                            size="25" maxlength="255" required="true"
                             requiredMessage="#{web.text.MUSTFILLINANOTIFICATIONSUBJECT}"
                             title="#{web.text.FORMAT_STRING}"
                             disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">
