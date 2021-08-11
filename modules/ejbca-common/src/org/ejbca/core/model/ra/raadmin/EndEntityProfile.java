@@ -128,7 +128,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String AUTOGENPASSWORDLENGTH = "AUTOGENPASSWORDLENGTH";
 
     public static final String EMAIL              = "EMAIL";
-    private static final String DESCRIPTION        = "DESCRIPTION";
+    private static final String PROFILEDESCRIPTION        = "PROFILEDESCRIPTION";
     public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
     public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
     /** A list of available certificate profile names can be retrieved with getAvailableCertificateProfileNames() */
@@ -174,6 +174,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(CLEARTEXTPASSWORD, 2);
     	DATA_CONSTANTS.put(AUTOGENPASSWORDTYPE, 95);
     	DATA_CONSTANTS.put(AUTOGENPASSWORDLENGTH, 96);
+    	DATA_CONSTANTS.put(PROFILEDESCRIPTION, 110);
         // DN components
 
     	DATA_CONSTANTS.put(EMAIL, 26);
@@ -1189,11 +1190,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public String getDescription() {
-        return getValue(DESCRIPTION, 0);
+        return getValue(PROFILEDESCRIPTION, 0);
     }
 
     public void setDescription(final String description) {
-        setValue(DESCRIPTION, 0, description);
+        setValue(PROFILEDESCRIPTION, 0, description);
     }
 
     public boolean isAllowedRequestsUsed() {
@@ -1910,7 +1911,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (getUse(MAXFAILEDLOGINS, 0) && !isModifyable(MAXFAILEDLOGINS,0)) {
     		// If we MUST have MAXFAILEDLOGINS, ei can not be null
     		if ((ei == null) || !getValue(MAXFAILEDLOGINS, 0).equals(Integer.toString(ei.getMaxLoginAttempts()))) {
-    			throw new EndEntityProfileValidationException("Max failed logins is not modifyable.");
+    			throw new EndEntityProfileValidationException("Max failed logins is not modifiable.");
     		}
     	}
     	// Check if PSD2 QC Statement is allowed when requested

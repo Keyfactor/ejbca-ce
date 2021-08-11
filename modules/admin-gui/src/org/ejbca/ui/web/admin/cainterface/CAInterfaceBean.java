@@ -112,6 +112,7 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.util.cert.OID;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -488,6 +489,11 @@ public class CAInterfaceBean implements Serializable {
 
 	            /* Process certificate policies. */
 	            final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
+	            for (CertificatePolicy certificatePolicy : policies) {
+	                if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
+	                    throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));                                              
+	                }
+	            }
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
 	            final List<Integer> crlPublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
 	            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
@@ -575,6 +581,7 @@ public class CAInterfaceBean implements Serializable {
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
                             .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
+                            .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                             .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                     if (buttonCreateCa) {
                         X509CAInfo x509cainfo =  x509CAInfoBuilder
@@ -825,7 +832,7 @@ public class CAInterfaceBean implements Serializable {
 
     public List<CertificatePolicy> parsePolicies(String policyid) {
         final ArrayList<CertificatePolicy> policies = new ArrayList<>();
-        if (!(policyid == null || policyid.trim().equals(""))) {
+        if (!(policyid == null || policyid.trim().isEmpty() || policyid.trim().equals(ejbcawebbean.getText("NONE")))) {
             final String[] str = policyid.split("\\s+");
             if (str.length > 1) {
                 policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
@@ -908,6 +915,11 @@ public class CAInterfaceBean implements Serializable {
                        ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
 
                final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
+               for (CertificatePolicy certificatePolicy : policies) {
+                   if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
+                       throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));                                              
+                   }
+               }
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -962,6 +974,7 @@ public class CAInterfaceBean implements Serializable {
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                        .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                        .setCrlPartitions(caInfoDto.getCrlPartitions())
+                       .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                        .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                cainfo = x509CAInfoBuilder.buildForUpdate();

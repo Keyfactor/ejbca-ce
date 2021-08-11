@@ -13,6 +13,41 @@
 
 package org.ejbca.core.ejb.upgrade;
 
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URL;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -42,10 +77,6 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
-import org.cesecore.certificates.ocsp.logging.AuditLogger;
-import org.cesecore.certificates.ocsp.logging.GuidHolder;
-import org.cesecore.certificates.ocsp.logging.PatternLogger;
-import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
@@ -107,41 +138,6 @@ import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URL;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -573,14 +569,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         if (isLesserThan(oldVersion, "7.3.0")) {
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
-        }
-        if (isLesserThan(oldVersion, "7.7.1")) {
-            try {
-                upgradeSession.migrateDatabase771();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("7.7.1");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1617,7 +1605,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-            fixPartitionedCrls();
+            upgradeSession.fixPartitionedCrls();
+            fixPartitionedCrlIndexes();
         } catch (AuthorizationDeniedException | UpgradeFailedException e) {
             log.error(e);
             return false;
@@ -1837,10 +1826,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * <code>(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)</code> and
      * <code>(issuerDN, crlPartitionIndex, cRLNumber)</code>. See ECA-8680 for more details.
      *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     *
      * @return true if migration should be considered complete and the <code>lastPostUpgradedToVersion</code>
      * value in the database should be incremented.
      * @throws UpgradeFailedException if upgrade fails
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public void fixPartitionedCrls() throws UpgradeFailedException {
         try {
             final long startDataNormalization = System.currentTimeMillis();
@@ -1856,31 +1849,21 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.error("    UPDATE CRLData SET crlPartitionIndex=-1 WHERE crlPartitionIndex IS NULL OR crlPartitionIndex=0;");
             throw new UpgradeFailedException(e);
         }
-        try {
-            final long startReindex = System.currentTimeMillis();
-            final Query dropCrlDataIndex3 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx3 ON CRLData");
-            final Query dropCrlDataIndex4 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx4 ON CRLData");
-            final Query createCrlDataIndex5 = entityManager.createNativeQuery(
-                    "CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
-            final Query createCrlDataIndex6 = entityManager.createNativeQuery(
-                    "CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)");
-            log.debug("Executing SQL query: " + dropCrlDataIndex3);
-            dropCrlDataIndex3.executeUpdate();
-            log.debug("Executing SQL query: " + dropCrlDataIndex4);
-            dropCrlDataIndex4.executeUpdate();
-            log.debug("Executing SQL query: " + createCrlDataIndex5);
-            createCrlDataIndex5.executeUpdate();
-            log.debug("Executing SQL query: " + createCrlDataIndex6);
-            createCrlDataIndex6.executeUpdate();
-            log.info("Successfully updated indexes for database table 'CRLData'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
-        } catch (RuntimeException e) {
-            log.error("An error occurred when adjusting indexes for database table 'CRLData': " + e);
-            log.error("You can update the indexes manually by running the following SQL queries:");
-            log.error("    DROP INDEX IF EXISTS crldata_idx3 ON CRLData;");
-            log.error("    DROP INDEX IF EXISTS crldata_idx4 ON CRLData;");
-            log.error("    CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);");
-            log.error("    CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);");
-            log.error("These changes are only needed if you want to use 'Partitioned CRLs'. See ECA-8680.");
+    }
+
+    private void fixPartitionedCrlIndexes() {
+        final IndexUpgradeResult res3 = upgradeSession.upgradeIndex("crldata_idx3", "CRLData", "CREATE INDEX crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
+        final IndexUpgradeResult res4 = upgradeSession.upgradeIndex("crldata_idx4", "CRLData", "CREATE UNIQUE INDEX crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)");
+        if (res3 != IndexUpgradeResult.OK_UPDATED || res4 != IndexUpgradeResult.OK_UPDATED) {
+            if (res3 == IndexUpgradeResult.NO_EXISTNG_INDEX || res4 == IndexUpgradeResult.NO_EXISTNG_INDEX) {
+                log.warn("Indexes for CRLs could not be dropped. Perhaps they did not exist?");
+            }
+            log.info("You can update the indexes manually by running the following SQL queries:");
+            log.info("    DROP INDEX IF EXISTS crldata_idx3 ON CRLData;");
+            log.info("    DROP INDEX IF EXISTS crldata_idx4 ON CRLData;");
+            log.info("    CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);");
+            log.info("    CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);");
+            log.info("These changes are only needed if you want to use 'Partitioned CRLs'. See ECA-8680.");
             log.info("If an index could not be created because duplicates were found you could remove them using something like:" + System.lineSeparator() +
                 "    DELETE t1 FROM CRLData t1, CRLData t2 WHERE t1.fingerprint > t2.fingerprint AND t1.issuerDN = t2.issuerDN " + System.lineSeparator() +
                     "AND t1.deltaCRLIndicator = t2.deltaCRLIndicator AND t1.cRLNumber = t2.cRLNumber AND t1.crlPartitionIndex = t2.crlPartitionIndex;");
@@ -1889,108 +1872,37 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
-     * Migrate the OCSP logging configuration in ocsp.properties to {@link GlobalOcspConfiguration}.
-     * @throws UpgradeFailedException if the configuration could not be migrated
+     * Replaces a database index. Called by {@link #fixPartitionedCrlIndexes}.
+     * Runs in a new transaction because the queries will fail if the index does not exist.
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public void migrateDatabase771() throws UpgradeFailedException {
+    public IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery) {
         try {
-            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
-                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            if (globalOcspConfiguration.getOcspTransactionLogValues() != null) {
-                log.info("Skipping migration of OCSP logging settings from ocsp.properties to the database " +
-                        "as it looks like data has been migrated already.");
-                if (log.isDebugEnabled()) {
-                    log.debug("Existing data found in the database: " + System.lineSeparator() + globalOcspConfiguration.getRawData());
-                }
-                return;
-            }
-            String value = ConfigurationHolder.getString("ocsp.audit-log");
-            final boolean isOcspAuditLoggingEnabled = "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-            globalOcspConfiguration.setIsOcspAuditLoggingEnabled(isOcspAuditLoggingEnabled);
-            log.info("Migrated ocsp.audit-log => " + isOcspAuditLoggingEnabled);
-
-            value = ConfigurationHolder.getString("ocsp.log-date");
-            globalOcspConfiguration.setOcspLoggingDateFormat(value);
-            log.info("Migrated ocsp.log-date => " + value);
-
-            // value = ConfigurationHolder.getString("ocsp.log-timezone")
-            log.info("Ignoring ocsp.log-timezone, using the timezone in blah instead. This behaviour is not configurable.");
-
-            value = ConfigurationHolder.getString("ocsp.audit-log-pattern");
-            globalOcspConfiguration.setOcspAuditLogPattern(value);
-            log.info("Migrated ocsp.log-date => " + value);
-
-            value = ConfigurationHolder.getString("ocsp.audit-log-order");
-            value = value.replace("\\\"", "\"");
-            globalOcspConfiguration.setOcspAuditLogValues(value);
-            log.info("Migrated ocsp.audit-log-order => " + value);
-
-            value = ConfigurationHolder.getString("ocsp.trx-log");
-            final boolean isOcspTransactionLoggingEnabled = "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-            globalOcspConfiguration.setIsOcspTransactionLoggingEnabled(isOcspTransactionLoggingEnabled);
-            log.info("Migrated ocsp.trx-log => " + value);
-
-            value = ConfigurationHolder.getString("ocsp.trx-log-pattern");
-            globalOcspConfiguration.setOcspTransactionLogPattern(value);
-            log.info("Migrated ocsp.trx-log-pattern => " + value);
-
-            value = ConfigurationHolder.getString("ocsp.trx-log-order");
-            value = value.replace("\\\"", "\"");
-            globalOcspConfiguration.setOcspTransactionLogValues(value);
-            log.info("Migrated ocsp.trx-log-order => " + value);
-
-            // Avoid inserting faulty values into the database, as this will prevent EJBCA from starting.
+            final long startReindex = System.currentTimeMillis();
+            // Unfortunately, "IF EXISTS" and "IF NOT EXISTS" are not supported in index
+            // operations in mariadb-connector (tested with version 2.7.3)
+            final Query dropCrlDataIndex = entityManager.createNativeQuery("DROP INDEX " + oldIndexName + " ON " + tableName);
+            final Query createCrlDataIndex = entityManager.createNativeQuery(createIndexQuery);
             try {
-                final TransactionLogger transactionLogger = new TransactionLogger(
-                        1,
-                        GuidHolder.INSTANCE.getGlobalUid(),
-                        "127.0.0.1",
-                        globalOcspConfiguration);
-                transactionLogger.paramPut(PatternLogger.STATUS, "(Ocsp-Request-Status -> Int)");
-                transactionLogger.paramPut(TransactionLogger.REQ_NAME, "(Requestor-Name -> String)");
-                transactionLogger.paramPut(TransactionLogger.REQ_NAME_RAW, "(Requestor-Name-Raw -> String)");
-                transactionLogger.paramPut(TransactionLogger.SIGN_ISSUER_NAME_DN, "(Ocsp-Signer-Issuer-Dn -> String)");
-                transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, "(Ocsp-Signer-Subject-Name -> String)");
-                transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, "(Ocsp-Signer-Serial-No -> Int)");
-                transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, "(Cert-ID -> Int");
-                transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, "(Issuer-Name-Dn -> String");
-                transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, "(Issuer-Name-Dn-Raw) -> String");
-                transactionLogger.paramPut(PatternLogger.ISSUER_NAME_HASH, "(Issuer-Name-Hash -> String)");
-                transactionLogger.paramPut(PatternLogger.ISSUER_KEY, "(Issuer-Key -> String)");
-                transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, "(Digest-Algorithm -> String)");
-                transactionLogger.paramPut(PatternLogger.SERIAL_NOHEX, "(Certificate-Serial-No -> String)");
-                transactionLogger.paramPut(TransactionLogger.CERT_STATUS, "(Cert-Status -> Int)");
-                transactionLogger.paramPut(PatternLogger.PROCESS_TIME, "(Process-Time -> Int)");
-                transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, "(Cert-Profile-Id -> Int)");
-                transactionLogger.paramPut(TransactionLogger.FORWARDED_FOR, "(X-Forwarded-For -> String)");
-                transactionLogger.paramPut(TransactionLogger.REV_REASON, "(Revocation-Reason -> String)");
-                transactionLogger.interpolate();
-
-                final AuditLogger auditLogger = new AuditLogger(
-                        "(Ocsp-Request -> Bytes)",
-                        2,
-                        GuidHolder.INSTANCE.getGlobalUid(),
-                        "127.0.0.1",
-                        globalOcspConfiguration);
-                auditLogger.paramPut(AuditLogger.OCSPRESPONSE, "(OCSP-Response -> Bytes)");
-                auditLogger.paramPut(PatternLogger.STATUS, "(Ocsp-Request-Status -> Int)");
-                auditLogger.paramPut(PatternLogger.PROCESS_TIME, "(Process-Time -> Int)");
-                auditLogger.interpolate();
-
-                new SimpleDateFormat(globalOcspConfiguration.getOcspLoggingDateFormat()).toString();
-            } catch (Exception e) {
-                log.error("Failed to validate the current OCSP logging configuration. The error is: " + e.getMessage()
-                        + ". Adjust the configuration in ocsp.properties and redeploy the application. If you don't " +
-                        "know what to do, simply delete ocsp.properties to deploy the application with the default values.");
-                throw new UpgradeFailedException(e);
+                log.debug("Executing SQL query: " + dropCrlDataIndex);
+                dropCrlDataIndex.executeUpdate();
+            } catch (RuntimeException e) {
+                log.warn("Index '" + oldIndexName + "' could not be dropped.");
+                log.debug("Error stack trace for index removal: " + e, e);
+                // Since the old indexes don't exist, we assume the user does not want the new indexes either
+                return IndexUpgradeResult.NO_EXISTNG_INDEX;
             }
-
-            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
-            log.info("Migration of the OCSp audit log and OCSP transaction log settings from ocsp.properties completed!");
-        } catch (AuthorizationDeniedException e) {
-            log.error(e.getMessage());
-            throw new UpgradeFailedException(e);
+            log.debug("Executing SQL query: " + createCrlDataIndex);
+            createCrlDataIndex.executeUpdate();
+            log.info("Successfully updated index '" + oldIndexName + "' for database table '" + tableName + "'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
+            return IndexUpgradeResult.OK_UPDATED;
+        } catch (RuntimeException e) {
+            log.error("An error occurred when adjusting index '" + oldIndexName + "' for database table '" + tableName + "': " + e);
+            if (log.isDebugEnabled()) {
+                log.debug("Error stack trace for index creation", e);
+            }
+            return IndexUpgradeResult.ERROR;
         }
     }
 

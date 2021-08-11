@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import java.util.List;
+import java.util.Map;
+
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -11,7 +14,6 @@ import org.openqa.selenium.WebElement;
 /**
  * Search End Entities helper class for EJBCA Web Tests.
  *
- * @version $Id$
  */
 public class SearchEndEntitiesHelper extends BaseHelper {
 
@@ -36,10 +38,12 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         static final By BUTTON_EDIT_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='Edit End Entity (popup window)']");
         static final By BUTTON_REVOKE_SELECTED = By.xpath("//input[@name='buttonrevokeusers']");
         static final By BUTTON_REACTIVE = By.xpath("//input[@value=\"Reactivate\"]");
+        static final By BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED = By.id("viewModeSwitchBasicOrAdvanced");
+        static final By BUTTON_SAVE_END_ENTITY = By.xpath("//input[@name='buttonedituser']");
+        static final By BUTTON_RELOAD = By.xpath("//input[@name='buttonreload']");
 
         static final String TEXT_VIEW_MODE_SWITCH_BASIC = "Basic Mode";
         static final String TEXT_VIEW_MODE_SWITCH_ADVANCED = "Advanced Mode";
-        static final By BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED = By.id("viewModeSwitchBasicOrAdvanced");
         // Select drop downs
         static final By SELECT_SEARCH_STATUS = By.xpath("//select[@name='selectliststatus']");
         static final By SELECT_REVOCATION_REASON = By.xpath("//select[@name=\"selectrevokereason\"]");
@@ -49,6 +53,9 @@ public class SearchEndEntitiesHelper extends BaseHelper {
 
         static By getColumnContainingCommonName(final String cn) {
             return By.xpath("//table[@class='results']/tbody/tr/td[4][contains(text(),'" + cn + "')]");
+        }
+        static By getInputFieldLocatorByKey(final String key) {
+            return By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[not(@type='checkbox')]");
         }
     }
 
@@ -257,5 +264,51 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      */
     public void clickReactive() {
         clickLink(Page.BUTTON_REACTIVE);
+    }
+
+    /**
+     * Asserts the element 'Reactive' button is not shown on page.
+     */
+    public void assertReactiveButtonNotPresent() {
+        assertNull(findElementWithoutWait(Page.BUTTON_REACTIVE, false));
+    }
+
+    public void acceptAlert() {
+        Alert alert = webDriver.switchTo().alert();
+        alert.accept();
+    }
+
+    public void switchToPopup() {
+        for (String windowHandle : webDriver.getWindowHandles()) {
+            webDriver.switchTo().window(windowHandle);
+        }
+    }
+
+    /**
+     * Sets fields when editing an End Entity. in popup
+     *
+     * Can only be used to set fields which contain a single text field,
+     * e.g. 'Username' and 'CN, Common name'.
+     *
+     * @param fieldMap a map with {Key->Value} entries on the form {'Username'->'User123', 'CN, Common name'->'John Doe'}
+     */
+    public void fillEndEntityEditFields(final Map<String, String> fieldMap) {
+        for (final String key : fieldMap.keySet()) {
+            fillInput(Page.getInputFieldLocatorByKey(key), fieldMap.get(key));
+        }
+    }
+
+    /**
+     * Clicks the 'Save' button in Edit End Entity popup
+     */
+    public void saveEndEntity() {
+        clickLink(Page.BUTTON_SAVE_END_ENTITY);
+    }
+
+    /**
+     * Clicks the 'Reload' button
+     */
+    public void reload() {
+        clickLink(Page.BUTTON_RELOAD);
     }
 }
