@@ -28,12 +28,18 @@ public class OcspDataConfigCacheEntry {
     private final int caId;
     private final boolean preProductionEnabled;
     private final boolean storeResponsesOnDemand;
-    
-    public OcspDataConfigCacheEntry(X509Certificate issuerCertificate, int caId, boolean preProductionEnabled, boolean storeResponseOnDemand) {
+    private final boolean isMsCaCompatible;
+
+    public OcspDataConfigCacheEntry(X509Certificate issuerCertificate, int caId, boolean preProductionEnabled, boolean storeResponseOnDemand, boolean isMsCaCompatible) {
         certificateID = OcspDataConfigCache.getCertificateIdFromCertificate(issuerCertificate);
         this.caId = caId;
         this.preProductionEnabled = preProductionEnabled;
         this.storeResponsesOnDemand = storeResponseOnDemand;
+        this.isMsCaCompatible = isMsCaCompatible;
+    }
+    
+    public boolean isMsCaCompatible() {
+        return isMsCaCompatible;
     }
 
     /** @return certificate ID of the CA that we want to respond for */
