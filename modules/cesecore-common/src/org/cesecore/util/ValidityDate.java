@@ -99,7 +99,7 @@ public class ValidityDate {
 
 	/** Convert a Date to the format "yyyy-MM-dd HH:mm:ss" with implied TimeZone UTC. */
 	public static String formatAsUTCSecondsGranularity(final Date date) {
-	    return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[1], TIMEZONE_UTC).format(date);
+	    return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[1], TIMEZONE_UTC).format(date) + " UTC";
 	}
 	
 	/** Convert a absolute number of milliseconds to the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC. */
@@ -109,7 +109,7 @@ public class ValidityDate {
 	
 	/** Convert a absolute number of milliseconds to the format "yyyy-MM-dd HH:mm:ss" with implied TimeZone UTC. */
     public static String formatAsUTCSecondsGranularity(final long millis) {
-        return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[1], TIMEZONE_UTC).format(millis);
+        return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[1], TIMEZONE_UTC).format(millis) + " UTC";
     }
 	
 	/** Convert a Date to the format "yyyy-MM-dd HH:mm:ssZZ" (the T is not required). The server's time zone is used. */
