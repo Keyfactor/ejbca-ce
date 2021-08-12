@@ -72,22 +72,22 @@ public class AlgorithmToolsTest {
         assertNull("null if no match", AlgorithmTools.getKeyAlgorithm(new MockNotSupportedPublicKey()));
         assertEquals("Should find DSA key",
                 AlgorithmConstants.KEYALGORITHM_DSA,
-                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_DSA_PRIV).getPublic());
+                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_DSA_PRIV).getPublic().getAlgorithm());
         assertEquals("Should find RSA key",
                 AlgorithmConstants.KEYALGORITHM_RSA,
-                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_RSA_PRIV).getPublic());
+                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_RSA_PRIV).getPublic().getAlgorithm());
         assertEquals("Should find secp256r1 key",
                 AlgorithmConstants.KEYALGORITHM_ECDSA,
-                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_EC_SECP256R1_PRIV).getPublic());
+                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_EC_SECP256R1_PRIV).getPublic().getAlgorithm());
         assertEquals("Should find secp384r1 key",
                 AlgorithmConstants.KEYALGORITHM_ECDSA,
-                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_EC_SECP384R1_PRIV).getPublic());
+                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_EC_SECP384R1_PRIV).getPublic().getAlgorithm());
         assertEquals("Should find Ed25519 key",
                 AlgorithmConstants.KEYALGORITHM_ED25519,
-                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_ED25519_PRIV).getPublic());
+                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_ED25519_PRIV).getPublic().getAlgorithm());
         assertEquals("Should find Ed448 key",
                 AlgorithmConstants.KEYALGORITHM_ED448,
-                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_ED25519_PRIV).getPublic());
+                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_ED448_PRIV).getPublic().getAlgorithm());
     }
 
     @Test
