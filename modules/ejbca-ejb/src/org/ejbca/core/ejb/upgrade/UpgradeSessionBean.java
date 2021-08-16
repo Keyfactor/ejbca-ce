@@ -1949,7 +1949,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
             value = ConfigurationHolder.getString("ocsp.audit-log-pattern");
             globalOcspConfiguration.setOcspAuditLogPattern(value);
-            log.info("Migrated ocsp.log-date => " + value);
+            log.info("Migrated ocsp.audit-log-pattern => " + value);
 
             value = ConfigurationHolder.getString("ocsp.audit-log-order");
             value = value.replace("\\\"", "\"");
