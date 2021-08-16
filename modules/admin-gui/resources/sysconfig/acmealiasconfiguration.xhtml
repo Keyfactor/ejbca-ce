@@ -233,6 +233,15 @@
                         <h:outputText value="#{acmeConfigMBean.currentAlias.retryAfter}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
                     
+                    <h:outputLabel for="authorizedRedirectPorts" value="#{web.text.ACME_AUTHORIZED_REDIRECT_PORTS}" />
+                    <h:panelGroup id="authorizedRedirectPorts" >
+                        <h:inputText  value="#{acmeConfigMBean.currentAlias.authorizedRedirectPorts}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}" 
+                        			  validatorMessage="#{web.text.INVALID_AUTHORIZED_REDIRECT_PORTS}" label="Authorized Redirect Ports">
+                        	<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.PortListValidator"/>
+                        </h:inputText>
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.authorizedRedirectPorts}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
+                    
                     <h:outputLabel for="orderValidity" value="#{web.text.ACME_ORDER_VALIDITY}" />
                     <h:panelGroup id="orderValidity" >
                         <h:inputText title="#{web.text.FORMAT_LONG}" value="#{acmeConfigMBean.currentAlias.orderValidity}" 
