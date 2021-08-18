@@ -13,6 +13,37 @@
 
 package org.ejbca.ui.cli.ca;
 
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.cvc.AccessRightsIS;
+import org.ejbca.cvc.AuthorizationRoleEnum;
+import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.CertificateGenerator;
+import org.ejbca.cvc.HolderReferenceField;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,37 +63,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAExistsException;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.cvc.AccessRightEnum;
-import org.ejbca.cvc.AuthorizationRoleEnum;
-import org.ejbca.cvc.CAReferenceField;
-import org.ejbca.cvc.CVCertificate;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.CertificateGenerator;
-import org.ejbca.cvc.HolderReferenceField;
-import org.ejbca.cvc.exception.ConstructionException;
-import org.ejbca.ui.cli.infrastructure.command.CommandResult;
-import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
-import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
-import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
-import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
-import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Imports a PKCS#8 file and created a new CA from it.
@@ -216,7 +216,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
                     CVCertificate cvc;
                     try {
                         cvc = CertificateGenerator.createCertificate(pubKey, privKey, sigAlg, caRef, holderRef, authRole,
-                                AccessRightEnum.READ_ACCESS_DG3_AND_DG4, notBefore, notAfter.getTime(), BouncyCastleProvider.PROVIDER_NAME);
+                                AccessRightsIS.DG3_AND_DG4(), notBefore, notAfter.getTime(), BouncyCastleProvider.PROVIDER_NAME);
                     } catch (SignatureException e) {
                         throw new IllegalStateException("Unknown SignatureException was encountered.", e);
                     } catch (ConstructionException e) {
