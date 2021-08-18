@@ -152,7 +152,7 @@
 	<classpathentry kind="lib" path="lib/ext/webtest/report/extentreports-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/report/freemarker-2.3.29.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
-	<classpathentry kind="lib" path="lib/cert-cvc-1.4.12.jar"/>
+	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-2.1.8.jar"/>
 	<classpathentry kind="lib" path="lib/dnssecjava-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
