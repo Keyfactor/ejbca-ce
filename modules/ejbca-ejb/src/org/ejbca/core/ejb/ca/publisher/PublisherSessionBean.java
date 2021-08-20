@@ -137,6 +137,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
+        
+        boolean safeDirectPublish = true; //TODO configurable in publisher
+        
         final BaseCertificateData certificateData = certWrapper.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
@@ -158,7 +161,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             if (publ != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
                 if (publ.willPublishCertificate(status, revocationReason)) {
-                    if (publ.getOnlyUseQueue()) {
+                    if (publ.getOnlyUseQueue() || safeDirectPublish) {
                         if (publ.getUseQueueForCertificates()) {
                             publishersToQueuePending.add(publ);
                             // Publishing to the queue directly is not considered a successful write to the publisher (since we don't know that it will be)
