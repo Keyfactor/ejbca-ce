@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
@@ -64,6 +65,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  */
 @Entity
 @Table(name = "PublisherQueueData")
+@EntityListeners(PublisherQueueDataEntityListener.class)
 public class PublisherQueueData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
