@@ -129,6 +129,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
     public static int MAX_CSR_LENGTH = 10240;
+    private static final int MIN_OPTIONAL_FIELDS_TO_SHOW = 2;
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -204,11 +205,63 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private UIComponent confirmPasswordComponent;
     private UIComponent validityInputComponent;
 
+    private int numberOfOptionalSubjectDNFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    private int numberOfOptionalSANFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    private int numberOfOptionalsubjectDirectoryAttributesFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    
     @PostConstruct
     private void postContruct() {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
         this.authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
         this.authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+    }
+    
+    public int getNumberOfOptionalSubjectDNFieldsToShow() {
+        return numberOfOptionalSubjectDNFieldsToShow;
+    }
+    
+    public int getNumberOfOptionalSANFieldsToShow() {
+        return numberOfOptionalSANFieldsToShow;
+    }
+    
+    public int getNumberOfOptionalSubjectDirectoryAttributesFieldsToShow() {
+        return numberOfOptionalsubjectDirectoryAttributesFieldsToShow;
+    }
+    
+    public void showFullOptionalSubjectDNFieldsToggle() {
+        if(numberOfOptionalSubjectDNFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSubjectDNFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSubjectDNFieldsToShow = subjectDn.getOptionalFieldInstances().size();
+        }
+    }
+    
+    public void showFullOptionalSANFieldsToggle() {
+        if(numberOfOptionalSANFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSANFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSANFieldsToShow = subjectAlternativeName.getOptionalFieldInstances().size();
+        }
+    }
+    
+    public void showFullOptionalSubjectDirectoryAttributesFieldsToggle() {
+        if(numberOfOptionalsubjectDirectoryAttributesFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalsubjectDirectoryAttributesFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalsubjectDirectoryAttributesFieldsToShow = subjectDirectoryAttributes.getOptionalFieldInstances().size();
+        }
+    }
+
+    public boolean isShowMoreOptionalSANField() {
+        return subjectAlternativeName.getOptionalFieldInstances().size() > numberOfOptionalSANFieldsToShow;
+    }
+    
+    public boolean isShowMoreOptionalSubjectDNField() {
+        return subjectDn.getOptionalFieldInstances().size() > numberOfOptionalSubjectDNFieldsToShow;
+    }
+    
+    public boolean isShowMoreOptionalSubjectDirectoryAttributesField() {
+        return subjectDirectoryAttributes.getOptionalFieldInstances().size() > numberOfOptionalsubjectDirectoryAttributesFieldsToShow;
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -551,6 +604,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return true;
         }
         return false;
+    }
+    
+    public boolean isRenderShowFullOptionalSubjectDNField() {
+        return subjectDn.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
+    }
+
+    public boolean isRenderShowFullOptionalSANField() {
+        return subjectAlternativeName.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
+    }
+    
+    public boolean isRenderShowFullOptionalSubjectDirectoryAttributeField() {
+        return subjectDirectoryAttributes.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
     }
 
     private boolean isAllFieldInstancesRendered(final Collection<FieldInstance> fieldInstances) {
@@ -2127,6 +2192,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     return true;
                 }
             }
+            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getOptionalFieldInstances()) {
+                if (isFieldInstanceRendered(fieldInstance)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -2145,11 +2215,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return the if there is at least one field in subject directory attributes that should be rendered
+     * @return the if there is at least one field (required or optional) in subject directory attributes that should be rendered
      */
     public boolean isSubjectDirectoryAttributesRendered() {
         if (getSubjectDirectoryAttributes()!=null) {
             for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getFieldInstances()) {
+                if (isFieldInstanceRendered(fieldInstance)) {
+                    return true;
+                }
+            }
+            for(final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getOptionalFieldInstances()) {
                 if (isFieldInstanceRendered(fieldInstance)) {
                     return true;
                 }
@@ -2175,6 +2250,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return true if the field instance should be rendered
      */
     public boolean isFieldInstanceRendered(final FieldInstance fieldInstance) {
+        
+        if(fieldInstance == null) {
+            return false;
+        }
         if (log.isTraceEnabled()) {
             log.trace("isFieldInstanceRendered name=" + fieldInstance.getName() + " used=" + fieldInstance.isUsed() + " selectable=" + fieldInstance.isSelectable() +
                     " modifiable=" + fieldInstance.isModifiable() + " selectableValues.size=" + (fieldInstance.getSelectableValues() == null ? 0 : fieldInstance.getSelectableValues().size()));
