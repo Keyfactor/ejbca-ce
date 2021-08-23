@@ -39,6 +39,8 @@ public abstract class RaAbstractDn {
     private static final Logger log = Logger.getLogger(RaAbstractDn.class);
     
     private final Collection<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
+    private final Collection<EndEntityProfile.FieldInstance> optionalFieldInstances = new ArrayList<>();
+
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
     protected String value;
     protected X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
@@ -80,7 +82,11 @@ public abstract class RaAbstractDn {
                 if (dnFieldExtractor!=null) {
                     fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
                 }
-                fieldInstances.add(fieldInstance);
+                if (fieldInstance.isRequired()) {
+                    fieldInstances.add(fieldInstance);
+                } else {
+                    optionalFieldInstances.add(fieldInstance);
+                }
                 fieldInstancesMap.get(key).put(fieldInstance.getNumber(), fieldInstance);
             }
         }
@@ -92,6 +98,14 @@ public abstract class RaAbstractDn {
     public Collection<EndEntityProfile.FieldInstance> getFieldInstances() {
         return fieldInstances;
     }
+    
+    /**
+     * @return the list interface for the optional subject DN fields
+     */
+    public Collection<EndEntityProfile.FieldInstance> getOptionalFieldInstances() {
+        return optionalFieldInstances;
+    }
+
 
     /**
      * @return the map interface for the subject DN fields.
@@ -101,17 +115,21 @@ public abstract class RaAbstractDn {
     }
 
     /**
-     * Updates the the result string value of Subject DN.
+     * Updates the result string value of Subject DN.
      */
     public void update() {
         StringBuilder dn = new StringBuilder();
-        for (EndEntityProfile.FieldInstance fieldInstance : fieldInstances) {
+        Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
+        fullListOfInstances.addAll(fieldInstances);
+        fullListOfInstances.addAll(optionalFieldInstances);
+        
+        for (EndEntityProfile.FieldInstance fieldInstance : fullListOfInstances) {
             if (fieldInstance != null) {
-                String value = fieldInstance.getValue();
-                if (!StringUtils.isBlank(value)) {
-                    value = value.trim();
+                String instanceValue = fieldInstance.getValue();
+                if (!StringUtils.isBlank(instanceValue)) {
+                    instanceValue = instanceValue.trim();
                     int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
-                    String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + value;
+                    String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + instanceValue;
                     nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
                     if (dn.length() != 0) {
                         dn.append(", ");
