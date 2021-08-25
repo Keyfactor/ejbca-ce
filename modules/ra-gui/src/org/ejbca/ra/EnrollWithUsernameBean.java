@@ -242,7 +242,9 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     }
 
     /**
-     * @return true if the selectKeyAlgorithm should be rendered
+     * The selection for the key specification is rendered always to indicate the user the available key specification(s). 
+     * 
+     * @return true if the selectKeyAlgorithm should be rendered.
      */
     public boolean isSelectKeyAlgorithmRendered() {
         return true;
@@ -288,10 +290,8 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         if (availableEndEntityProfiles.size() == 1) {
             setSelectedEndEntityProfile(String.valueOf(availableEndEntityProfiles.get(0)));
         }
-        if (StringUtils.isNotEmpty(selectedEndEntityProfile)) {
-            if (!availableEndEntityProfiles.contains(Integer.parseInt(selectedEndEntityProfile))) {
-                setSelectedEndEntityProfile(null);
-            }
+        if (StringUtils.isNotEmpty(selectedEndEntityProfile) && !availableEndEntityProfiles.contains(Integer.parseInt(selectedEndEntityProfile))) {
+            setSelectedEndEntityProfile(null);
         }
         return selectedEndEntityProfile;
     }

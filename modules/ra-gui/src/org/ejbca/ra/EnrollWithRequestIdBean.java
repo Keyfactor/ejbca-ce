@@ -338,10 +338,14 @@ public class EnrollWithRequestIdBean implements Serializable {
         reset();
     }
 
+    /**
+     * Updates the end entity, if the key specification selected by the user differs 
+     * from the end entities last key specification used. If successful, the key pair is generated.
+     */
     protected void generateKeyStore() {
     	// We use the variable to tunnel the user input.
         if (log.isDebugEnabled()) {
-            log.debug("Select key algorithm by user: " + getPreSetKeyAlgorithm());
+            log.debug("Selected key algorithm by user: " + getPreSetKeyAlgorithm());
         }
         final AuthenticationToken admin = raAuthenticationBean.getAuthenticationToken();
         if (isKeyRecovery) {
@@ -399,6 +403,8 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info("CA with ID '" + endEntityInformation.getCAId() + "' could not be found.", e1);
                 return;
             } catch (ApprovalException e1) {
+                // Should not be thrown here.
+                // Usually thrown, if an approval request with this ID already exists (i.e. system tries to create a second one with same properties -> same ID).
                 throw new IllegalStateException(e1);
             } catch (CertificateSerialNumberException e1) {
                 // Should not be thrown here (there is no certificate created).
@@ -817,7 +823,15 @@ public class EnrollWithRequestIdBean implements Serializable {
         return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() + (subType != null ? (" " + subType) : "");
     }
     
-    /** @param keySpec sets the algorithm and key size to be used for keystore / certificate enrollment. Format: 'algorithm keysize'*/
+    /**
+     * Populates the end entities ExtendedInformation fields for the key specification 
+     * (keyStoreAlgorithmType and keyStoreAlgorithmSubType).
+     * 
+     * @param endEntity the end entity.
+     * @param keySpec the key specification.
+     * 
+     * @return true, if the end entities ExtendedInformation fields for the key specification have been changed.  
+     */
     private boolean setPreSetKeyAlgorithm(final EndEntityInformation endEntity, final String keySpec) {
         boolean result = false;
         if (keySpec != null) {
