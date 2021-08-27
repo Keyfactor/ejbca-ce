@@ -121,12 +121,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public String getSerialNumberSearchStringFromDec() { return serialNumberSearchStringFromDec; }
     /** Set the serialNumber search string as a decimal String if it has potential to be a decimal certificate serial number. */
     public void setSerialNumberSearchStringFromDec(final String serialNumberSearchStringFromDec) {
-        // Assuming 8 octets and some leading zeroes
+        // Assuming 4 octets and some leading zeroes
         String value = "";
-        if (serialNumberSearchStringFromDec.length()>=16) {
+        if (serialNumberSearchStringFromDec.length()>=10) {
             try {
                 value = new BigInteger(serialNumberSearchStringFromDec, 10).toString(10);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ignored) {
             }
         }
         this.serialNumberSearchStringFromDec = value;
@@ -135,12 +135,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public String getSerialNumberSearchStringFromHex() { return serialNumberSearchStringFromHex; }
     /** Set the serialNumber search string as a decimal String if it has potential to be a hex certificate serial number. */
     public void setSerialNumberSearchStringFromHex(final String serialNumberSearchStringFromHex) {
-        // Assuming 8 octets and some leading zeroes
+        // Assuming 4 octets and some leading zeroes
         String value = "";
-        if (serialNumberSearchStringFromHex.length()>=14) {
+        if (serialNumberSearchStringFromHex.length()>=8) {
             try {
                 value = new BigInteger(serialNumberSearchStringFromHex, 16).toString(10);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ignored) {
             }
         }
         this.serialNumberSearchStringFromHex = value;
