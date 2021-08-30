@@ -69,6 +69,7 @@ public class OAuthConfigurationCache implements ConfigurationCache {
         return oAuthConfiguration;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public ConfigurationBase getConfiguration(HashMap data) {
         ConfigurationBase returnval = new OAuthConfiguration();

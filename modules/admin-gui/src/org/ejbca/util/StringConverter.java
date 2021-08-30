@@ -22,12 +22,9 @@ import org.cesecore.util.ui.UrlString;
 
 /**
  * When using dynamic properties, JSF can't handle String conversions for some strange reason. This converter takes care of that. 
- * 
- * @version $Id$
- *
  */
 @FacesConverter("stringConverter")
-public class StringConverter implements Converter{
+public class StringConverter implements Converter<Object> {
 
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
