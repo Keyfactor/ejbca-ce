@@ -29,8 +29,6 @@ import org.cesecore.util.Named;
  * All extensions should inherit this class.
  * 
  * The methods that need implementation is getValue
- * 
- * @version $Id$
  */
 public abstract class CertificateExtension implements Named, Serializable {
 	
@@ -220,6 +218,6 @@ public abstract class CertificateExtension implements Named, Serializable {
 	 * instead of mechanism to ignore list of getters in case of import.
 	 * @param o
 	 */
-	public void setClass(Class o) {	}
+	public void setClass(Class<?> o) {	}
 	
 }

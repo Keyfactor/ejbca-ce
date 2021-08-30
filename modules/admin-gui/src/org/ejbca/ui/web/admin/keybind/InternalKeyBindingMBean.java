@@ -874,6 +874,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
                     true,
                     BouncyCastleProvider.PROVIDER_NAME);
+            // ECA-10283 Unused. Is this a relevant test?
             final byte[] requestBytes = new OCSPReqBuilder()
                     .addRequest(
                         new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),
