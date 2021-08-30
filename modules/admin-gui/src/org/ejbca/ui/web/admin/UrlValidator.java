@@ -27,10 +27,8 @@ import java.net.URISyntaxException;
 
 /**
  * JSF validator to check that input fields are valid urls
- *
- * @version $Id: UrlValidator.java 28844 2018-05-04 08:31:02Z samuellb $
  */
-public class UrlValidator implements Validator {
+public class UrlValidator implements Validator<Object> {
     private static final Logger log = Logger.getLogger(UrlValidator.class);
     
     

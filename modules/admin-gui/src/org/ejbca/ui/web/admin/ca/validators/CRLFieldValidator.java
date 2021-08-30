@@ -24,12 +24,9 @@ import org.cesecore.util.SimpleTime;
 
 /**
  * Validator used in validating CRL and Validity fields.
- * 
- * @version $Id: CRLFieldValidator.java 30439 2018-11-08 13:35:31Z aminkh $
- *
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator")
-public class CRLFieldValidator implements Validator {
+public class CRLFieldValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
