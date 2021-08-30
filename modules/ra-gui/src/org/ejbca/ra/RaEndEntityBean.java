@@ -245,8 +245,15 @@ public class RaEndEntityBean implements Serializable {
         ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
 
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
-            // A new status was selected, verify the enrollment codes
-            if (verifyEnrollmentCodes()) {
+            // A new status was selected. When status changed to generated, no enrollment code is needed.
+            if (endEntityInformation.getStatus() == 10) {
+                // Change the End Entity's status and set the new password without validation
+                endEntityInformation.setStatus(selectedStatus);
+                endEntityInformation.setPassword(enrollmentCode);
+                endEntityInformation.setTokenType(getNewTokenTypeValue(selectedTokenType, endEntityInformation));
+                changed = true;
+                //verify the enrollment codes for status changes other than generated
+            } else if (verifyEnrollmentCodes()) {
                 // Change the End Entity's status and set the new password
                 endEntityInformation.setStatus(selectedStatus);
                 endEntityInformation.setPassword(enrollmentCode);
