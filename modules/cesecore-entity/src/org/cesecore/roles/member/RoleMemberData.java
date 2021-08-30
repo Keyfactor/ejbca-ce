@@ -41,6 +41,8 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 public class RoleMemberData extends ProtectedData implements Serializable, Comparable<RoleMemberData> {
 
     private static final long serialVersionUID = 1L;
+    
+    private static final int LATEST_PROTECT_VERSON = 2;
    
     private int primaryKey;
 
@@ -237,15 +239,18 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getPrimaryKey()).append(getTokenType()).append(getTokenIssuerId()).append(getTokenProviderId()).append(getTokenMatchKey()).append(getTokenMatchOperator()).
+        build.append(getPrimaryKey()).append(getTokenType()).append(getTokenIssuerId()).append(getTokenMatchKey()).append(getTokenMatchOperator()).
             append(getTokenMatchValue()).append(getRoleId()).append(getDescription());
+        if (version >= 2) {
+            build.append(getTokenProviderId());
+        }
         return build.toString();
     }
 
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 1;
+        return LATEST_PROTECT_VERSON;
     }
 
     @PrePersist
