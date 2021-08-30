@@ -118,7 +118,6 @@
 		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 	    	<h:inputSecret redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}"
 	    		disabled="#{scepConfigMBean.currentAlias.useIntune}">
-	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="**********" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
@@ -200,9 +199,7 @@
 			
 		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}"/>
 		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}">
-	    	<h:inputSecret  redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}">
-	    		<f:validator validatorId="legalCharsValidator"/>
-	    	</h:inputSecret>
+	    	<h:inputSecret  redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				
