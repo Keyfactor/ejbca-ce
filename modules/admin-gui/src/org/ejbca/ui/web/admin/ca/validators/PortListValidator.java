@@ -12,10 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca.validators;
 
-import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
