@@ -444,7 +444,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     public void setAuthorizedRedirectPorts(String ports) {
         if (ports != null && ports.length() > 0) {
-            ports = Stream.of(ports.split(",")).map(Integer::parseInt).collect(Collectors.toUnmodifiableSet())
+            ports = Stream.of(ports.split(",")).map(Integer::parseInt).collect(Collectors.toSet())
                     .stream().sorted().map(i -> Integer.toString(i)).collect(Collectors.joining(","));
             super.data.put(KEY_AUTHORIZED_REDIRECT_PORTS, ports);
         } else {
