@@ -35,8 +35,6 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
  * Revokes a given certificate. Difference with normal RevokeCertCommand is that 
  * this one here allows to include a list of keyvaluepair input parameters
  * for example "reason=REV_SUPERSEDED" "certificateProfileId=12"
- *
- * @version $Id: RevokeCertWithMetadataCommand.java 28395 2018-02-27 14:19:00Z tarmo_r_helmes $
  */
 public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -116,7 +114,7 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 
                 if (key.equalsIgnoreCase(REASON_KEY)) {
                     final int reason = getRevokeReason(parts[1]);
-                    keyValuePair.setValue(new Integer(reason).toString());
+                    keyValuePair.setValue(Integer.toString(reason));
                 } else {
                     keyValuePair.setValue(parts[1]);
                 }

@@ -56,8 +56,6 @@ import org.cesecore.util.StringTools;
 
 /**
  * Entity Bean for database persisted configurations
- *
- * @version $Id: GlobalConfigurationData.java 35111 2020-05-22 09:41:00Z mikekushner $
  */
 @Entity
 @Table(name = "GlobalConfigurationData")
@@ -87,6 +85,11 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             RaStyleInfo.class));	
 
     static {
+        namedInitStatic();
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static void namedInitStatic() {
         for (String customClassName : CesecoreConfiguration.getCustomClassWhitelist().split(",")) {
             if (!StringUtils.isEmpty(StringTools.stripWhitespace(customClassName))) {
                 Class<? extends Serializable> customClass;
