@@ -15,7 +15,6 @@ package org.cesecore.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -25,9 +24,8 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-/** Tests Base64 HashMap XML encoding and decoding
- * 
- * @version $Id$
+/** 
+ * Tests Base64 HashMap XML encoding and decoding
  */
 public class HashMapTest {
 
