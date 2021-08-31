@@ -33,16 +33,11 @@ import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 /**
  * Plugin class for SCEP plugins which expect a ResponseMessage in reply
- * 
- * @version $Id$
- *
  */
-
 public interface ScepResponsePlugin {
 
     /**
