@@ -173,6 +173,17 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (LOG.isDebugEnabled()) {
                 LOG.debug("JWT Claims:" + claims);
             }
+            
+            // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
+            final String expectedAudience = keyInfo.getAudience();
+            if (expectedAudience.isEmpty()) {
+                LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
+                        + ".  This is supported for recent upgrades from versions before 7.7.1, but a value should be set IMMEDIATELY.");
+            } else if (!claims.getAudience().contains(expectedAudience)) {
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
+                return null;
+            }
+            
             final Date expiry = claims.getExpirationTime();
             final Date now = new Date();
             final String subject = keyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE) ?
