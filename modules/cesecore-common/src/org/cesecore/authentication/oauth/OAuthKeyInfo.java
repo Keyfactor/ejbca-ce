@@ -335,4 +335,24 @@ public final class OAuthKeyInfo implements Serializable {
     public void setLogoutUrl(String logoutUrl) {
         this.logoutUrl = logoutUrl;
     }
+
+    public String getLogString(){
+        StringBuilder msg = new StringBuilder();
+        msg.append("{ type=").append( getType().getLabel()).append(", ")
+                .append("client=").append(getClient()).append(", ")
+                .append("realm=").append(getRealm()).append(", ")
+                .append("scope=").append(getScope()).append(", ")
+                .append("url=").append(getUrl()).append(", ")
+                .append("tokenUrl=").append(getTokenUrl()).append(", ")
+                .append("logoutUrl=").append(getLogoutUrl()).append(", ")
+                .append("skewLimit=").append(getSkewLimit()).append(", ")
+                .append("keys=[");
+        if (getKeys() != null) {
+            for (String key : getKeys().keySet()) {
+                msg.append(key + ";");
+            }
+        }
+        msg.append("]}");
+        return msg.toString();
+    }
 }
