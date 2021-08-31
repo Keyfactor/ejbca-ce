@@ -325,6 +325,8 @@ public class EstVendorModeTest extends EstTestCase {
             //We also want to make a request with only a subjectAltName in the ChangeSubjectName attribute...
             p10 = generateCertReq(requestDN, null, null, requestAltName, null, ec256client);
             reqmsg = Base64.encode(p10.getEncoded());
+            endEntityManagementSession.setUserStatus(ADMIN, VENDOR_USERNAME, EndEntityConstants.STATUS_NEW );
+                        
             byte[] onlySANresp = sendEstRequest(true, alias, "simpleenroll", reqmsg, 200, null, null, null);
             assertNotNull("There must be response data to simpleenroll request", onlySANresp);
             CMSSignedData onlySANrespmsg = new CMSSignedData(Base64.decode(onlySANresp));
