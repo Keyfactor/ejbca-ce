@@ -38,7 +38,15 @@ public class Eca10289RoleMemberData extends RoleMemberData {
         // We cannot use the standard constructor, since it performs upgrades,
         // which could modify the data and change the resulting protect string.
         super();
-        setPrimaryKey(data.getPrimaryKey());      
+        setPrimaryKey(data.getPrimaryKey());
+        setTokenType(data.getTokenType());
+        setTokenIssuerId(data.getTokenIssuerId());
+        setTokenProviderId(data.getTokenProviderId());
+        setTokenMatchKey(data.getTokenMatchKey());
+        setTokenMatchOperator(data.getTokenMatchOperator());
+        setTokenMatchValue(data.getTokenMatchValue());
+        setRoleId(data.getRoleId());
+        setDescription(data.getDescription());
         this.setRowVersion(data.getRowVersion());
         this.setRowProtection(data.getRowProtection());
     }
