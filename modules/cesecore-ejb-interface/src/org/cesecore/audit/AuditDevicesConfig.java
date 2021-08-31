@@ -38,8 +38,6 @@ import org.cesecore.util.ValidityDate;
  * 
  * Custom properties for each device is reformatted. E.g. "securityeventsaudit.deviceproperty.1.key1.key2=value" is available to the log device
  * implementation 1 as "key1.key2=value"
- * 
- * @version $Id$
  */
 public class AuditDevicesConfig {
 
@@ -100,7 +98,7 @@ public class AuditDevicesConfig {
                         try {
                             // Instantiate device
                             final Class<AuditLogDevice> implClass = (Class<AuditLogDevice>) Class.forName(deviceClass);
-                            final AuditLogDevice auditLogDevice = implClass.newInstance();
+                            final AuditLogDevice auditLogDevice = implClass.getDeclaredConstructor(new Class<?>[] {}).newInstance( new Object[] {});
                             final String name = implClass.getSimpleName();
                             loggers.put(name, auditLogDevice);
                             log.info("Registered audit device using implementation: " + deviceClass);
