@@ -2,7 +2,6 @@ package org.ejbca.core.protocol.ws.client;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -32,10 +31,7 @@ import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 /**
  * Base class inherited by all EJBCA RA WS cli commands.
  * Checks the property file and creates a webservice connection.
- *  
- * $Id$
  */
-
 public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
     private static final String PROPERTY_FILE = "ejbcawsracli.properties";
     final protected String[] args;
