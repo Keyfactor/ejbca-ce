@@ -85,6 +85,7 @@ import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.IncompletelyIssuedCertificateInfo;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -1636,6 +1637,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 } else if (certGenParams.getSctDataCallback() == null) {
                     log.debug("Not logging to CT. No sctData persistance callback was passed.");
                 } else {
+                   // Commit certificate information in case of a rollback, power outage, or similar. This will be picked up by an IncompleteIssuanceServiceWorker (if enabled)
+                   final int crlPartitionIndex = getCAInfo().determineCrlPartitionIndex(cert);
+                   certGenParams.addToIncompleteIssuanceJournal(new IncompletelyIssuedCertificateInfo(getCAId(), serno, new Date(), subject, cert, cacert, crlPartitionIndex));
                    // Get certificate chain
                    final List<Certificate> chain = new ArrayList<>();
                    chain.add(cert);

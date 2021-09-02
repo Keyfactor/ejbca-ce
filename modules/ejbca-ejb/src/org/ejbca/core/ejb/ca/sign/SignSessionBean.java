@@ -59,6 +59,7 @@ import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.IncompletelyIssuedCertificateInfo;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
@@ -108,6 +109,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -136,6 +139,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -154,10 +158,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * Creates and signs certificates.
@@ -488,20 +496,20 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
                         singleActiveCertificateConstraint(admin, endEntityInformation);
                         // Issue the certificate from the request
+                        final CertificateGenerationParams certGenParams = fetchCertGenParams();
                         try {
-                            ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, fetchCertGenParams(),
-                                    updateTime);
+                            ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, certGenParams, updateTime);
                         } catch (CTLogException e) {
                             if (e.getPreCertificate() != null) {
                                 CertificateDataWrapper certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                                 // Publish pre-certificate and abort issuance
                                 postCreateCertificate(admin, endEntityInformation, ca,
-                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()), true);
+                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()), true, certGenParams);
                             }
                             throw new CertificateCreateException(e);
                         }
                         postCreateCertificate(admin, endEntityInformation, ca,
-                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false);
+                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
                     }
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
@@ -1303,18 +1311,19 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         singleActiveCertificateConstraint(admin, endEntityInformation);
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         CertificateDataWrapper certWrapper;
+        final CertificateGenerationParams certGenParams = fetchCertGenParams();
         try {
             certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
-                    notBefore, notAfter, extensions, sequence, fetchCertGenParams(), updateTime);
+                    notBefore, notAfter, extensions, sequence, certGenParams, updateTime);
         } catch (CTLogException e) {
             if (e.getPreCertificate() != null) {
                 certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                 // Publish pre-certificate and abort issuance
-                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true);
+                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true, certGenParams);
             }
             throw new CertificateCreateException(e);
         }
-        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false);
+        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
@@ -1379,10 +1388,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param endEntity the end entity involved
      * @param ca the relevant CA
      * @param certificateWrapper the newly created Certificate
+     * @param certGenParams Used to add certificate to IncompleteIssuanceJournalData
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
     private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
-            final CertificateDataWrapper certificateWrapper, final boolean storePreCert) throws AuthorizationDeniedException {
+            final CertificateDataWrapper certificateWrapper, final boolean storePreCert, final CertificateGenerationParams certGenParams) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificateWrapper.getCertificate(), endEntity);
@@ -1390,6 +1400,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final int certProfileId = endEntity.getCertificateProfileId();
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         final Collection<Integer> publishers = certProfile.getPublisherList();
+        addToIncompleteIssuanceJournal(ca, certificateWrapper, publishers, certGenParams, endEntity);
         if (!publishers.isEmpty()) {
             if (storePreCert) {
                 // CTLogException occurred store pre-cert in new transaction to avoid rollback.
@@ -1400,6 +1411,48 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         endEntity.getCertificateDN(), endEntity.getExtendedInformation());
             }
         }
+        // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
+        final Certificate cert = certificateWrapper.getCertificate();
+        certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), CertTools.getSerialNumber(cert));
+    }
+
+    private void addToIncompleteIssuanceJournal(final CA ca, final CertificateDataWrapper certificateWrapper, final Collection<Integer> publishers,
+            final CertificateGenerationParams certGenParams, final EndEntityInformation endEntity) {
+        if (isUsingDirectPublishing(publishers)) {
+            final BigInteger serialNumber = CertTools.getSerialNumber(certificateWrapper.getCertificate());
+            final Certificate cert = certificateWrapper.getCertificate();
+            final int crlPartitionIndex = ca.getCAInfo().determineCrlPartitionIndex(cert);
+            final IncompletelyIssuedCertificateInfo info = new IncompletelyIssuedCertificateInfo(ca.getCAId(), serialNumber, new Date(),
+                    endEntity, cert, ca.getCACertificate(), crlPartitionIndex);
+            certGenParams.addToIncompleteIssuanceJournal(info);
+        }
+    }
+
+    /** Returns true if any of the pubishers in the given list is using direct publishing */
+    private boolean isUsingDirectPublishing(final Collection<Integer> publishers) {
+        final Set<Integer> processedPublishers = new HashSet<>();
+        final Queue<Integer> pendingPublishers = new LinkedList<>(publishers);
+        while (!pendingPublishers.isEmpty()) { // Can't use for, because the list is modified
+            final Integer publisherId = pendingPublishers.poll();
+            if (!processedPublishers.add(publisherId)) {
+                continue; // Don't process twice (can happen with MultiGroupPublisher, which can reference other publishers)
+            }
+            final BasePublisher publisher = publisherSession.getPublisher(publisherId);
+            if (publisher == null) {
+                log.debug("Non-existent publisher ID " + publisherId + " is enabled in the certificate profile");
+                continue;
+            }
+            if (publisher instanceof MultiGroupPublisher) {
+                // Check referenced publishers
+                final MultiGroupPublisher mgp = (MultiGroupPublisher) publisher;
+                for (final Set<Integer> publisherGroup : mgp.getPublisherGroups()) {
+                    pendingPublishers.addAll(publisherGroup);
+                }
+            } else if (!publisher.getOnlyUseQueue()) {
+                return true; // Using direct publishing
+            }
+        }
+        return false;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
