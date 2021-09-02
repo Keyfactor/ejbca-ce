@@ -30,6 +30,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -176,9 +177,12 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             
             // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
             final String expectedAudience = keyInfo.getAudience();
-            if (expectedAudience.isEmpty()) {
+            if (StringUtils.isBlank(expectedAudience)) {
                 LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
                         + ".  This is supported for recent upgrades from versions before 7.7.1, but a value should be set IMMEDIATELY.");
+            } else if (claims.getAudience() == null) {
+                LOG.warn("No audience claim in JWT.  Can't confirm valitity.");
+                return null;
             } else if (!claims.getAudience().contains(expectedAudience)) {
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
                 return null;
