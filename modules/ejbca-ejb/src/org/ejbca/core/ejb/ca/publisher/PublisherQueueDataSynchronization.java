@@ -12,56 +12,50 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
-import javax.ejb.EJB;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.util.EjbLocalHelper;
+
 
 public class PublisherQueueDataSynchronization implements Synchronization {
 
-    private static final Logger log = Logger.getLogger(PublisherQueueDataSynchronization.class);
-    
-    private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal Publishing");
-    
-    @EJB
-    PublisherQueueSessionLocal publisherQueueSession;
-    @EJB
-    PublisherSessionLocal publisherSession;
-    @EJB
-    CertificateStoreSessionLocal certificateStoreSession;
-    
+    private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
+
+    private EjbLocalHelper ejbLocalHelper;
+
+    private PublisherSessionLocal publisherSession;
     private PublisherQueueData entity;
     
-    PublisherQueueDataSynchronization(PublisherQueueData entity) {
+    public PublisherQueueDataSynchronization(PublisherQueueData entity) {
         this.entity = entity;
+        ejbLocalHelper = new EjbLocalHelper();
+        publisherSession = ejbLocalHelper.getPublisherSession();
     }
     
     @Override
     public void afterCompletion(int transactionStatus) {
+        // PublisherQueueDataEntry has been committed to database. Should be safe to publish.
         if (transactionStatus == Status.STATUS_COMMITTED) {
-            log.info("### Transaction committed");
             final BasePublisher publisher = publisherSession.getPublisher(entity.getPublisherId());
-            if (!publisher.getOnlyUseQueue()) {
-                final List<BasePublisher> publisherList = new ArrayList<>();
-                publisherList.add(publisher);
-                final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(entity.getFingerprint());            
-                publisherQueueSession.publishCertificateNonTransactionalInternal(publisherList, authenticationToken, certificateDataWrapper, 
-                        entity.getPublisherQueueVolatileData().getPassword(), entity.getPublisherQueueVolatileData().getUserDN(), entity.getPublisherQueueVolatileData().getExtendedInformation());
+            // We only care about direct certificate publishing
+            // TODO safeDirect &&  (or transient field on the entity)
+            if (!publisher.getOnlyUseQueue() && publisher.getType() == PublisherConst.PUBLISH_TYPE_CERT) {
+                org.ejbca.core.model.ca.publisher.PublisherQueueData queuedData = 
+                        new org.ejbca.core.model.ca.publisher.PublisherQueueData(entity.getPk(), new Date(entity.getTimeCreated()), new Date(entity.getLastUpdate()),
+                        entity.getPublishStatus(), entity.getTryCounter(), entity.getPublishType(), entity.getFingerprint(), entity.getPublisherId(),
+                        entity.getPublisherQueueVolatileData());
+                
+                publisherSession.publishQueuedEntry(authenticationToken, publisher, queuedData);
             }
-        } else if (transactionStatus == Status.STATUS_ROLLEDBACK) {
-            log.info("### Transaction rolled back");
+            
         }
     }
 
