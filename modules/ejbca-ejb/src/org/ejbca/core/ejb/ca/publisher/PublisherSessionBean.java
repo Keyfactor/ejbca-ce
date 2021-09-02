@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -86,6 +87,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
@@ -127,6 +129,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
+    @Asynchronous
+    @Override
+    public void publishQueuedEntry(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData entity) {
+        publisherQueueSession.doPublish(admin, publisher, entity);
+    }
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public boolean storeCertificateNewTransaction(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,

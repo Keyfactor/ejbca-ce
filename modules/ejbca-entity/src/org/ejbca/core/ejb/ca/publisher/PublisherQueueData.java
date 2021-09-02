@@ -65,7 +65,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  */
 @Entity
 @Table(name = "PublisherQueueData")
-@EntityListeners(PublisherQueueDataEntityListener.class)
+//@EntityListeners(PublisherQueueDataEntityListener.class) defined in orm-ejbca-x.xml 
 public class PublisherQueueData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -133,8 +133,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
     /**
      * PublishType is one of
-     * org.ejbca.core.model.ca.publisher.PublisherConst.PUBLISH_TYPE_CERT or
-     * CRL
+     * org.ejbca.core.model.ca.publisher.PublisherConst.PUBLISH_TYPE_CERT, CRL or OCSP
      */
     //@Column
     public int getPublishType() { return publishType; }
