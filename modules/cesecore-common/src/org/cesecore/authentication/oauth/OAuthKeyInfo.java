@@ -29,7 +29,6 @@ import org.cesecore.util.StringTools;
 
 /**
  * Represents an OAuth Public Key entry
- *
  */
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -73,7 +72,6 @@ public final class OAuthKeyInfo implements Serializable {
     private Map<String, OAuthPublicKey> keys = new LinkedHashMap<>();
     private String label;
     private String client;
-    private String audience;
     private String realm;
     private String scope;
     private String url;
@@ -84,6 +82,8 @@ public final class OAuthKeyInfo implements Serializable {
     private String tokenUrl;
     private String logoutUrl;
 
+    private String audience;
+    
     /**
      * Creates a OAuth Key info object
      *
