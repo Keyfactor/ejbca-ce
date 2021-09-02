@@ -28,6 +28,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 
 
 /**
@@ -128,7 +129,8 @@ public interface PublisherSession {
     void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
 
     /**
-     * Removes a publisher. References to the publisher from CA, certificate profiles and Multi Group Publishers
+     * Removes a publisher. References to the publisher from CA, certificate prof@Override
+    iles and Multi Group Publishers
      * are checked.
      * 
      * @param admin AuthenticationToken of admin.
@@ -214,5 +216,7 @@ public interface PublisherSession {
      * @throws PublisherException if something goes wrong with publishing OCSP response
      */
     boolean storeOcspResponses(final AuthenticationToken admin, final Collection<Integer> publisherids, final OcspResponseData ocspResponseData) throws AuthorizationDeniedException, PublisherException;
+
+    void publishQueuedEntry(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData entity);
     
 }

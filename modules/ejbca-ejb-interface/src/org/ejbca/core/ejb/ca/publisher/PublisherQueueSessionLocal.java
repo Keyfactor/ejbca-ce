@@ -175,4 +175,6 @@ public interface PublisherQueueSessionLocal {
      * @return how many publishing operations that succeeded and failed 
      */
     PublishingResult doChunk(AuthenticationToken admin, BasePublisher publisher);
+
+    PublishingResult doPublish(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData publisherQueueData);
 }

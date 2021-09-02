@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -322,6 +323,11 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         return doPublish(admin, publisher, publisherQueueDatas);
     }
 
+    @Override
+    public PublishingResult doPublish(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData publisherQueueData) {
+        return doPublish(admin, publisher, Collections.singletonList(publisherQueueData));
+    }
+    
     /** 
      * @param admin the administrator that must be authorized for publishing
      * @param publisher the publisher to publish to
