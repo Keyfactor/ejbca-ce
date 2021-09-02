@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -21,28 +20,19 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
-
 
 public class PublisherQueueDataEntityListener {
-
-    private static final Logger log = Logger.getLogger(PublisherQueueDataEntityListener.class);
 
     @Resource
     TransactionSynchronizationRegistry registry;
     
-    @PostConstruct
-    public void init() throws NamingException {
-        registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/TransactionSynchronizationRegistry");        
-    }
-    
-    
     @PostUpdate
     @PostPersist
     public void postUpdate(final PublisherQueueData entity) throws NamingException {
+        if (registry == null) {
+            registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/TransactionSynchronizationRegistry");
+        }
         registry.registerInterposedSynchronization(new PublisherQueueDataSynchronization(entity));
     }
-    
     
 }
