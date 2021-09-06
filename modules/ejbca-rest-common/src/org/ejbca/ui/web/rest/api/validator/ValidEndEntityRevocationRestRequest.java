@@ -18,10 +18,8 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
 
-import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.ejbca.ui.web.rest.api.io.request.EndEntityRevocationRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SetEndEntityStatusRestRequest;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;

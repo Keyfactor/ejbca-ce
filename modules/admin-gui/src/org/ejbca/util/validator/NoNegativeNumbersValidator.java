@@ -26,11 +26,8 @@ import org.cesecore.internal.InternalResources;
 
 /**
  * Validates that no negative numbers can be set for a Rsa Key Validator.
- * 
- * @version $Id$
  */
-
-public class NoNegativeNumbersValidator implements Validator {
+public class NoNegativeNumbersValidator implements Validator<Object> {
     
     /** Localization of log and error messages. */
     private static final InternalResources intres = InternalResources.getInstance();
