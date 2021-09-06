@@ -122,6 +122,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.cert.Certificate;
@@ -793,14 +794,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
         BasePublisherConverter publisherFactory;
         try {
-            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").newInstance();
-        } catch (InstantiationException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (IllegalAccessException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        } catch (ClassNotFoundException e) {
+            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").getDeclaredConstructor(new Class<?>[] {}).newInstance( new Object[] {});
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             //Shouldn't happen since we've already checked that we're running Enterprise
             throw new IllegalStateException(e);
         }

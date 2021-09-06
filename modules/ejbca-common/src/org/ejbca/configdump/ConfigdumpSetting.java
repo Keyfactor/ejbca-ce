@@ -191,9 +191,9 @@ public class ConfigdumpSetting implements Serializable {
     private ProcessingMode processingMode;
     private OverwriteMode overwriteMode = OverwriteMode.NONE;
     private ResolveReferenceMode resolveReferenceMode = ResolveReferenceMode.NO_RESOLUTION_SET;
-    private Map<ConfigdumpItem, OverwriteMode> overwriteResolutions = new HashMap<>();
-    private Map<ConfigdumpItem, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
-    private Map<ConfigdumpItem, String> passwords = new HashMap<>();
+    private Map<ConfigdumpItem<?>, OverwriteMode> overwriteResolutions = new HashMap<>();
+    private Map<ConfigdumpItem<?>, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
+    private Map<ConfigdumpItem<?>, String> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas = true; // needs to be true in import mode, or overwrite detection will not work
@@ -286,23 +286,23 @@ public class ConfigdumpSetting implements Serializable {
         this.resolveReferenceMode = resolveReferenceMode;
     }
 
-    public void setOverwriteResolutions(final Map<ConfigdumpItem, OverwriteMode> overwriteResolutions) {
+    public void setOverwriteResolutions(final Map<ConfigdumpItem<?>, OverwriteMode> overwriteResolutions) {
         this.overwriteResolutions = new HashMap<>(overwriteResolutions);
     }
 
-    public Map<ConfigdumpItem, OverwriteMode> getOverwriteResolutions() {
+    public Map<ConfigdumpItem<?>, OverwriteMode> getOverwriteResolutions() {
         return Collections.unmodifiableMap(overwriteResolutions);
     }
 
-    public void addOverwriteResolution(final ConfigdumpItem item, final OverwriteMode resolution) {
+    public void addOverwriteResolution(final ConfigdumpItem<?> item, final OverwriteMode resolution) {
         overwriteResolutions.put(item, resolution);
     }
 
-    public Map<ConfigdumpItem, ResolveReferenceMode> getReferenceModeResolutions() {
+    public Map<ConfigdumpItem<?>, ResolveReferenceMode> getReferenceModeResolutions() {
         return Collections.unmodifiableMap(resolveReferenceModeResolutions);
     }
 
-    public void addResolveReferenceModeResolution(final ConfigdumpItem item, final ResolveReferenceMode resolveReferenceMode) {
+    public void addResolveReferenceModeResolution(final ConfigdumpItem<?> item, final ResolveReferenceMode resolveReferenceMode) {
         resolveReferenceModeResolutions.put(item, resolveReferenceMode);
     }
 
@@ -372,11 +372,11 @@ public class ConfigdumpSetting implements Serializable {
         return true;
     }
 
-    public void putPassword(final ConfigdumpItem configdumpItem, final String password) {
+    public void putPassword(final ConfigdumpItem<?> configdumpItem, final String password) {
         passwords.put(configdumpItem, password);
     }
 
-    public Optional<String> getPasswordFor(final ConfigdumpItem configdumpItem) {
+    public Optional<String> getPasswordFor(final ConfigdumpItem<?> configdumpItem) {
         return Optional.ofNullable(passwords.get(configdumpItem));
     }
 }
