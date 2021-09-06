@@ -145,7 +145,7 @@ public abstract class DatabaseIndexUtil {
             // If this failed, try the searching for the table as returned by the database meta data
             if (tableIndexMap.isEmpty()) {
                 log.trace("Looking up all available tables available in the datasource to find a matching table.");
-                try (final ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, null, null)) {
+                try (final ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, tableName, new String[] { "TABLE" })) {
                     while (resultSetSchemas.next()) {
                         final String tableCatalog = resultSetSchemas.getString("TABLE_CAT");
                         final String tableSchema = resultSetSchemas.getString("TABLE_SCHEM");
