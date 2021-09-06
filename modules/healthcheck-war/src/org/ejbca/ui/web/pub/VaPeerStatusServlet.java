@@ -145,6 +145,7 @@ public class VaPeerStatusServlet extends HttpServlet {
         log.debug("The HTTP status code sent to the client was: " + response.getStatus());
     }
 
+    @SuppressWarnings("unchecked")
     private String errorResponseFrom(final String errorMessage) {
         final JSONObject errorResponse = new JSONObject();
         errorResponse.put("error", true);
@@ -168,6 +169,7 @@ public class VaPeerStatusServlet extends HttpServlet {
      *                      the monitoring system is querying for all VAs.
      * @return a JSON object and an HTTP status code to send back to the monitoring system.
      */
+    @SuppressWarnings("unchecked")
     private AbstractMap.SimpleEntry<JSONObject, Integer> createResponse(final String publisherName) {
         boolean atLeastOneVaInSync = false;
         final JSONArray outOfSync = new JSONArray();
