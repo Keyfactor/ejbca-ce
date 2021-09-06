@@ -41,12 +41,10 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.runners.MethodSorters;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
  * Run stress tests with ClientToolBax command SCEPTest
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SCEPCommandTest {

@@ -13,7 +13,6 @@
 package org.cesecore.certificates.crl;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -21,12 +21,9 @@ import javax.faces.validator.ValidatorException;
 
 /**
  * Validator used in validating IP addresses in jsf pages (Acme alias configuration for example).
- *  
- * @version $Id$
- *
  */
 @FacesValidator("org.ejbca.util.validator.ipAddressValidator")
-public class IpAddressValidator implements Validator {
+public class IpAddressValidator implements Validator<Object> {
  
     private static final String IP_ADDRESS_PATTERN =
             "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +

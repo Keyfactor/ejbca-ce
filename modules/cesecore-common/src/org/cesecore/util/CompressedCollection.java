@@ -42,8 +42,6 @@ import org.apache.log4j.Logger;
  * 
  * Example use-case: a RevokedCertInfo takes 248 bytes in serialized form, but averages at only 48
  * bytes in compressed serialized form.
- * 
- * @version $Id$
  */
 public class CompressedCollection<T extends Serializable> implements Collection<T> , Serializable {
 
@@ -58,6 +56,7 @@ public class CompressedCollection<T extends Serializable> implements Collection<
     private final Set<Class<? extends Serializable>> acceptedClasses;
 
     @SafeVarargs
+    @SuppressWarnings("unchecked")
     public CompressedCollection(final Class<T> elementClass, final Class<? extends Serializable>... nestedClasses) {
         acceptedClasses = SetUtils.typedSet(new HashSet<>(nestedClasses.length + 1), Serializable.class); // generic varargs are not type safe
         acceptedClasses.add(elementClass);

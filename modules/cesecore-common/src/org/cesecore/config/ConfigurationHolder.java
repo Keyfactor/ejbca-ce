@@ -41,8 +41,6 @@ import org.apache.log4j.Logger;
  * ConfigurationHolder.getExpandedString("my.conf.property.key", "default value"); to be able to parse values containing ${property}
  *
  * See in-line comments below for the sources added to the configuration.
- *
- * @version $Id$
  */
 public final class ConfigurationHolder {
 
@@ -208,6 +206,7 @@ public final class ConfigurationHolder {
      */
     public static Properties getAsProperties() {
         final Properties properties = new Properties();
+        @SuppressWarnings("unchecked")
         final Iterator<String> i = instance().getKeys();
         while (i.hasNext()) {
             final String key = i.next();
@@ -322,6 +321,7 @@ public final class ConfigurationHolder {
     public static List<String> getPrefixedPropertyNames(String prefix) {
         Set<String> algs = new HashSet<>();
         // Just get the keys from configuration that starts with prefix, we assume below that it has a . following the prefix
+        @SuppressWarnings("unchecked")
         Iterator<String> iterator = config.getKeys(prefix);
         while (iterator.hasNext()) {
             final String key = iterator.next();

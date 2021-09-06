@@ -19,15 +19,11 @@ import java.security.cert.Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests base64 encoding and decoding
- * 
- * @version $Id$
+/** 
+ * Tests base64 encoding and decoding
  */
 public class HexTest {
     private static final Logger log = Logger.getLogger(HexTest.class);

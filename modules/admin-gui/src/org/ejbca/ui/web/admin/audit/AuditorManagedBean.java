@@ -657,7 +657,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
             }
             
             try {
-                auditExporter = exporterClass.newInstance();
+                auditExporter = exporterClass.getDeclaredConstructor(new Class<?>[] {}).newInstance( new Object[] {});
             } catch (Exception e) {
                 log.warn("AuditExporter for " + getDevice() + " is not configured correctly.", e);
             }

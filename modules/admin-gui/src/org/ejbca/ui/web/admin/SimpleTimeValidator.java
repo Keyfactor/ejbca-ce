@@ -25,11 +25,10 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.TimeUnitFormat;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
-/** JSF validator to check that the input does not contain any invalid characters and is a valid time unit format (i.e. '3y 6mo -10d 6h +30m 30s'). 
- * 
- * @version $Id$
+/** 
+ * JSF validator to check that the input does not contain any invalid characters and is a valid time unit format (i.e. '3y 6mo -10d 6h +30m 30s'). 
  */
-public class SimpleTimeValidator implements Validator {
+public class SimpleTimeValidator implements Validator<Object> {
 
     private static final Logger log = Logger.getLogger(SimpleTimeValidator.class);
 

@@ -26,12 +26,9 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Validator used in validating new subject dn field (edit ca page).
- * 
- * @version $Id$
- *
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.NewSubjectDNValidator")
-public class NewSubjectDNValidator implements Validator {
+public class NewSubjectDNValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {

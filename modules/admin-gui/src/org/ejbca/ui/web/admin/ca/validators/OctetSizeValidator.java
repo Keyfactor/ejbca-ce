@@ -23,12 +23,9 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Validator used in validating Serial Number Octet Size field.
- * 
- * @version $Id$
- *
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.OctetSizeValidator")
-public class OctetSizeValidator implements Validator {
+public class OctetSizeValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {

@@ -18,7 +18,6 @@ import java.util.LinkedHashSet;
 
 import javax.faces.convert.ConverterException;
 
-import org.ejbca.ui.web.OIDStringLinkedHashSetConverter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -28,8 +27,6 @@ import static org.junit.Assert.fail;
 
 /**
  * A unit test for JSF converter.
- *
- * @version $Id$
  */
 public class OIDStringLinkedHashSetConverterUnitTest {
 
