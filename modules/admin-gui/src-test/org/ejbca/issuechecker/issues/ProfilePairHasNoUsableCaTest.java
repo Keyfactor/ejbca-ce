@@ -14,7 +14,6 @@
 package org.ejbca.issuechecker.issues;
 
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -31,8 +30,6 @@ import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link ProfilePairHasNoUsableCa}.
- * 
- * @version $Id$
  */
 public class ProfilePairHasNoUsableCaTest {
 
