@@ -95,6 +95,8 @@ import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileField
  *
  * Instead of 20000 you may use the values X*10000 where X may be (0 = value, 1 = use, 2 = required, 3 = modifiable, 4 = validation regexp).
  * If you want to access a field which is not a DN field, see the "dataConstants.put" lines below (e.g. Available CAs = 38)
+ *
+ * @version $Id$
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -308,6 +310,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     /** Creates a new instance of EndEntity Profile used during cloning or when we load all the data from the database. */
+    @SuppressWarnings("unused")
     public EndEntityProfile(final int unused) {
     }
 

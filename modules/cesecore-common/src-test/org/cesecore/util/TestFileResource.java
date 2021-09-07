@@ -19,10 +19,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // TODO ECA-8963: Extract into a separate module ejbca-unittest, as it is common utility class that can be reused.
 /**
  * This is a help class to locate an input file for a test from classpath.
+ *
+ * @version $Id: TestFileResource.java 34683 2020-03-20 16:30:48Z andrey_s_helmes $
  */
 public class TestFileResource {
 
