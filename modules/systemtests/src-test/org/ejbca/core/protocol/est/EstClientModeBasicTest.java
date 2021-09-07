@@ -362,7 +362,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             // Make request with username in DN
             final String dn = "CN=" + CN + ",O=EJBCA,C=SE";
             final String requestDN = "UID=" + username + "," + dn;
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "bar123", null, null, ec256);
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "bar123", null, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             byte[] resp = sendEstRequest(alias, "simpleenroll", reqmsg, 200, null);
             assertNotNull("There must be response data to simpleenroll request", resp);
