@@ -1969,7 +1969,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Set<String> getEabNamespaces() {
         if (data.get(EABNAMESPACES) == null) {
             return new LinkedHashSet<>();

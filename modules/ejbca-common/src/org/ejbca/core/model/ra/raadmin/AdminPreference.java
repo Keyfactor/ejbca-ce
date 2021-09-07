@@ -23,6 +23,8 @@ import org.ejbca.config.GlobalConfiguration;
 
 /**
  * A class representing a admins personal preferences.
+ *
+ * @version $Id$
  */
 public class AdminPreference extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -250,7 +252,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
             if (data.get(CONFIGURATION_CHECKER_ON_FRONT_PAGE) == null) {
                 data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, true);
             }
-            data.put(VERSION, LATEST_VERSION);
+            data.put(VERSION, new Float(LATEST_VERSION));
         }
     }
 }

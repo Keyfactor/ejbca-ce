@@ -26,9 +26,12 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Validator used in validating CVC subject dn field (create ca page).
+ * 
+ * @version $Id: CvcSubjectDNValidator.java 30378 2018-11-02 21:05:32Z aminkh $
+ *
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator")
-public class CvcSubjectDNValidator implements Validator<Object> {
+public class CvcSubjectDNValidator implements Validator {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
