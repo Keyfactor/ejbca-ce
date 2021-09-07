@@ -80,9 +80,10 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 
-/** 
- * Handles and maintains the CA-part of the CMS message functionality.
+/** Handles and maintains the CA-part of the CMS message functionality.
  *  The service has its own certificate used for signing and encryption 
+ * 
+ * @version $Id$
  */
 public class CmsCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -135,7 +136,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		setSubjectDN(info.getSubjectDN());
 		setSubjectAltName(info.getSubjectAltName());                       
 		setStatus(serviceinfo.getStatus());
-		data.put(VERSION, LATEST_VERSION);
+		data.put(VERSION, new Float(LATEST_VERSION));
 	}
 
 	public CmsCAService(final HashMap<Object, Object> data) throws IllegalArgumentException {
@@ -365,7 +366,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
 			data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
-			data.put(VERSION, LATEST_VERSION);
+			data.put(VERSION, new Float(LATEST_VERSION));
 		}
 	}
 
