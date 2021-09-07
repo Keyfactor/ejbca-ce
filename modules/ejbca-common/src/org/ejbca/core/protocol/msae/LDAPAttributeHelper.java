@@ -49,9 +49,7 @@ public class LDAPAttributeHelper {
     
     // Certificate Template Name Flags
     // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-crtd/1192823c-d839-4bc3-9b6b-fa8c53507ae1
-    @SuppressWarnings("unused")
     private static final int CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT = 1;
-    @SuppressWarnings("unused")
     private static final int CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT_ALT_NAME = 65536;
     private static final int CT_FLAG_SUBJECT_ALT_REQUIRE_DOMAIN_DNS =  4194304;
     private static final int CT_FLAG_SUBJECT_ALT_REQUIRE_DIRECTORY_GUID = 16777216;
@@ -63,7 +61,6 @@ public class LDAPAttributeHelper {
     private static final int CT_FLAG_SUBJECT_REQUIRE_EMAIL = 536870912;
     private static final int CT_FLAG_SUBJECT_REQUIRE_COMMON_NAME = 1073741824;
     private static final int CT_FLAG_SUBJECT_REQUIRE_DIRECTORY_PATH = -2147483648;
-    @SuppressWarnings("unused")
     private static final int CT_FLAG_OLD_CERT_SUPPLIES_SUBJECT_AND_ALT_NAME = 8;
 
     public static MSAutoEnrollmentSettingsTemplate getMSAutoEnrollmentSettingTemplate(final javax.naming.directory.Attributes attributes) {
@@ -222,7 +219,7 @@ public class LDAPAttributeHelper {
             return null;
         }
         try {
-            return Long.parseLong(String.valueOf(attribute.get()));
+            return new Long(String.valueOf(attribute.get()));
         } catch (NamingException e) {
             log.warn("Could find attributeId '" + attributeId + "' in AD search results");
             return null;

@@ -78,6 +78,8 @@ import java.util.Date;
 /**
  * Implementation of KeyStoreCreateSession
  * Class that has helper methods to generate tokens for users in ejbca.
+ *
+ * @version $Id$
  */
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyStoreCreateSessionRemote")
@@ -153,6 +155,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         try {
             final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId,
                     keySpecification, keyAlgorithm, null, null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
+            final String alias = keyStore.aliases().nextElement();
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException e) { // Is handled as EjbcaException at caller (EjbcaWS).
             throw e;
