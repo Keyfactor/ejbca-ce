@@ -12,14 +12,11 @@
  *************************************************************************/
 package org.ejbca.webtest.util;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
  * This class contains utility methods for web tests.
- *
- * @version $Id$
  */
 public abstract class WebTestUtil {
 

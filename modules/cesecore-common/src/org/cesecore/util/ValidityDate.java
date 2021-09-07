@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 /**
  * Class for encoding and decoding certificate validity and end date.
  * 
- * @version $Id$
  */
 public class ValidityDate {
 	/** The date and time format defined in ISO8601. The 'T' can be omitted (and we do to save some parsing cycles). */
@@ -107,6 +106,11 @@ public class ValidityDate {
 	public static String formatAsUTC(final long millis) {
 		return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[0], TIMEZONE_UTC).format(millis);
 	}
+	
+	/** Convert a absolute number of milliseconds to the format "yyyy-MM-dd HH:mm:ss" with implied TimeZone UTC. */
+    public static String formatAsUTCSecondsGranularity(final long millis) {
+        return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[1], TIMEZONE_UTC).format(millis);
+    }
 	
 	/** Convert a Date to the format "yyyy-MM-dd HH:mm:ssZZ" (the T is not required). The server's time zone is used. */
 	public static String formatAsISO8601(final Date date, final TimeZone timeZone) {

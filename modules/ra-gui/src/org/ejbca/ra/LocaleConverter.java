@@ -21,12 +21,9 @@ import javax.faces.convert.FacesConverter;
 
 /**
  * Used in preferences section of RA GUI to convert selected locale and make it digestible by Preferences.xhtml and vice versa.
- *
- * @version $Id$
- *
  */
 @FacesConverter("localeConverter")
-public class LocaleConverter implements Converter {
+public class LocaleConverter implements Converter<Object> {
 
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

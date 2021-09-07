@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.validation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -38,8 +39,6 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Tests RSA key validator functions, see {@link RsaKeyValidator}.
- *
- * @version $Id$
  */
 public class RsaKeyValidatorTest {
 
@@ -467,9 +466,13 @@ public class RsaKeyValidatorTest {
     }
 
     /** Tests public key validation for the ROCA vulnerable key generation. CVE-2017-15361
+     * @throws SecurityException 
+     * @throws NoSuchMethodException 
+     * @throws InvocationTargetException 
+     * @throws IllegalArgumentException 
      */
     @Test
-    public void testRocaWeakKeys() throws CertificateParsingException, InstantiationException, IllegalAccessException, ValidatorNotApplicableException, ValidationException {
+    public void testRocaWeakKeys() throws CertificateParsingException, InstantiationException, IllegalAccessException, ValidatorNotApplicableException, ValidationException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         log.trace(">testRocaWeakKeys()");
         X509Certificate noroca = CertTools.getCertfromByteArray(noRocaCert, X509Certificate.class);
         X509Certificate roca = CertTools.getCertfromByteArray(rocaCert, X509Certificate.class);

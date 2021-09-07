@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +49,6 @@ import org.junit.Test;
  * <p>Run these tests with:
  * 
  * <pre>ant test:runone -Dtest.runone=UpdatePublicKeyBlacklistCommandTest</pre>.
- * 
- * @version $Id$
  */
 public class UpdatePublicKeyBlacklistCommandTest {
 
