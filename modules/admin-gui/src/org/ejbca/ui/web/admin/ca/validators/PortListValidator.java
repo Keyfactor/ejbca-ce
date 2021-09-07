@@ -31,7 +31,7 @@ public class PortListValidator implements Validator<String> {
     public void validate(FacesContext context, UIComponent component, String value) throws ValidatorException {
         boolean isValid = true;
         if (value != null && value.length() > 0) {
-            if (Pattern.matches("^([1-9]{1,5})(,([0-9]{1,5}))*$", value)) {
+            if (Pattern.matches("^([0-9]{1,5})(,([0-9]{1,5}))*$", value)) {
                 final String[] tokens = value.split(",");
                 for (String token : tokens) {
                     final int port = Integer.parseInt(token);
