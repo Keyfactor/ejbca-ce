@@ -31,14 +31,13 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  * for the DN fields of the specified end entity profile. It is
  * extended by Subject DN, SubjectAlternateName and Subject Directory Attributes
  * 
- * @version $Id$
  *
  */
 public abstract class RaAbstractDn {
 
     private static final Logger log = Logger.getLogger(RaAbstractDn.class);
     
-    private final Collection<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
+    private final Collection<EndEntityProfile.FieldInstance> requiredFieldInstances = new ArrayList<>();
     private final Collection<EndEntityProfile.FieldInstance> optionalFieldInstances = new ArrayList<>();
 
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
@@ -62,11 +61,11 @@ public abstract class RaAbstractDn {
      */
     protected abstract String reorder(String dnBeforeReordering);
     
-    public RaAbstractDn(final EndEntityProfile endEntityProfile) {
+    protected RaAbstractDn(final EndEntityProfile endEntityProfile) {
         this(endEntityProfile, null);
     }
 
-    public RaAbstractDn(final EndEntityProfile endEntityProfile, final String dn) {
+    protected RaAbstractDn(final EndEntityProfile endEntityProfile, final String dn) {
         DNFieldExtractor dnFieldExtractor = null;
         if (dn!=null) {
             dnFieldExtractor = new DNFieldExtractor(dn, getAbstractDnFieldExtractorType());
@@ -83,7 +82,7 @@ public abstract class RaAbstractDn {
                     fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
                 }
                 if (fieldInstance.isRequired()) {
-                    fieldInstances.add(fieldInstance);
+                    requiredFieldInstances.add(fieldInstance);
                 } else {
                     optionalFieldInstances.add(fieldInstance);
                 }
@@ -93,10 +92,10 @@ public abstract class RaAbstractDn {
     }
     
     /**
-     * @return the list interface for the subject DN fields
+     * @return the list interface for the required subject DN fields
      */
-    public Collection<EndEntityProfile.FieldInstance> getFieldInstances() {
-        return fieldInstances;
+    public Collection<EndEntityProfile.FieldInstance> getRequiredFieldInstances() {
+        return requiredFieldInstances;
     }
     
     /**
@@ -120,7 +119,7 @@ public abstract class RaAbstractDn {
     public void update() {
         StringBuilder dn = new StringBuilder();
         Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
-        fullListOfInstances.addAll(fieldInstances);
+        fullListOfInstances.addAll(requiredFieldInstances);
         fullListOfInstances.addAll(optionalFieldInstances);
         
         for (EndEntityProfile.FieldInstance fieldInstance : fullListOfInstances) {
