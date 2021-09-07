@@ -29,8 +29,10 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Validates hexadecimal serial numbers entered in the Admin GUI by constructing a BigInteger.
+ * 
+ * @version $Id$
  */
-public class HexSerialNumberValidator implements Validator<Object> {
+public class HexSerialNumberValidator implements Validator {
 	private static final Logger log = Logger.getLogger(HexSerialNumberValidator.class);
 
 	@Override
