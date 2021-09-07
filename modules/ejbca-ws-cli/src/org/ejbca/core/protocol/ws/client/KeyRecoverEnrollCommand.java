@@ -31,9 +31,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 /**
- * 
- * @version $Id$
- *
+ * CLI command for key recovery.
  */
 public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -46,6 +44,7 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
      * 'hardtokensn' is deprecated since 7.1.0, just use NONE here. Is kept for client compatibility for now.
      */
     @Deprecated
+    @SuppressWarnings("unused")
     private static final int ARG_HARDTOKENSN              = 5;
     
     private static final int ARG_OUTPUTPATH               = 6;

@@ -27,8 +27,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
 /**
  * The model holds additional data needed to be able to republish a certificate or CRL after publishing have failed.
  * This data will be stored in PublisherQueueData. 
- *
- * @version $Id$
  */
 public class PublisherQueueVolatileInformation extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -151,10 +149,10 @@ public class PublisherQueueVolatileInformation extends UpgradeableDataHashMap im
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("publisher.queuedataupgrade", new Float(getVersion()));
+			String msg = intres.getLocalizedMessage("publisher.queuedataupgrade", getVersion());
             log.info(msg);
     		
-    		data.put(VERSION, new Float(LATEST_VERSION));
+    		data.put(VERSION, LATEST_VERSION);
     	}
     }
     
