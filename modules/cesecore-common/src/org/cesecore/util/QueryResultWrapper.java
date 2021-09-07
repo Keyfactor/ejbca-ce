@@ -19,6 +19,8 @@ import javax.persistence.Query;
 
 /**
  * Helper class to cope with Hibernates JPA 1.0 Provider implementation.
+ * 
+ * @version $Id$
  */
 public abstract class QueryResultWrapper {
 
@@ -67,7 +69,6 @@ public abstract class QueryResultWrapper {
     }
 
     /** @return the first result of the query or null */
-    @SuppressWarnings("unchecked")
     public static <T> T getLastResult(final Query query) {
         final List<T> resultList = query.getResultList();
         switch (resultList.size()) {
