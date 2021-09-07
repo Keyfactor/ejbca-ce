@@ -22,9 +22,11 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * JSF converter that trims strings  
+ * 
+ * @version $Id$
  */
 @FacesConverter("trimConverter")
-public class TrimConverter implements Converter<Object> {
+public class TrimConverter implements Converter {
 
     @Override
     public Object getAsObject(final FacesContext context, final UIComponent component, final String value) {

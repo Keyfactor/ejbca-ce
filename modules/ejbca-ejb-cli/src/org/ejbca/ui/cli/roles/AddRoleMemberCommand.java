@@ -85,6 +85,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         return "addrolemember";
     }
 
+    @SuppressWarnings("unused")
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);

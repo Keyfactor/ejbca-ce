@@ -33,6 +33,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.legacy.Eca7277CertificateProfileData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -46,6 +47,8 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  * Passwords should me manipulated through helper functions setPassword() and setOpenPassword(). The setPassword() function sets the hashed password,
  * while the setOpenPassword() method sets both the hashed password and the clear text password. The method comparePassword() is used to verify a
  * password against the hashed password.
+ * 
+ * @version $Id$
  */
 @Entity
 @Table(name = "UserData")

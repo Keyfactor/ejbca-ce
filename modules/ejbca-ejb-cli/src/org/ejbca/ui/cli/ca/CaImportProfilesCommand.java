@@ -51,6 +51,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Import profiles from XML-files to the database.
+ *
+ * @version $Id$
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
 
@@ -369,7 +371,6 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
             return originalProfileId;
         }
 
-        @SuppressWarnings("unused")
         boolean isCertificateProfile() {
             return isCertificateProfile;
         }

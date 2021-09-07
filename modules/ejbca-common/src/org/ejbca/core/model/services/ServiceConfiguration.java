@@ -26,6 +26,9 @@ import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 /**
  * Value class used for persist the worker, interval and action configurations
  * to database
+ * 
+ *
+ * @version $Id$
  */
 public class ServiceConfiguration extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -230,7 +233,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	public void upgrade() {
 		if (Float.compare(LATEST_VERSION, getVersion()) > 0) {
             // New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("services.upgrade", getVersion());
+			String msg = intres.getLocalizedMessage("services.upgrade", new Float(getVersion()));
             log.info(msg);
 
             log.debug(LATEST_VERSION);
@@ -312,7 +315,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
                 setRunOnAllNodes(false);
             }
 
-			data.put(VERSION, LATEST_VERSION);
+			data.put(VERSION, new Float(LATEST_VERSION));
 		}		
 	}
 	

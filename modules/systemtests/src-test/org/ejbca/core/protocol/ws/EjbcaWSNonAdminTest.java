@@ -23,6 +23,7 @@ import java.security.KeyStore;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -80,7 +81,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * System test for EJBCA web services.
+ * 
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EjbcaWSNonAdminTest extends CommonEjbcaWs {

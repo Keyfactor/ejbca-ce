@@ -24,7 +24,7 @@ import org.cesecore.util.ui.PropertyValidationException;
  * Validator which will validate an integer to greater or equal to 0, mirrors {@link org.cesecore.util.ui.IntegerValidator}
  */
 // ECA-9474 Remove. Seems not to be referenced at all...
-public class PositiveIntegerValidator implements Validator<Object> {
+public class PositiveIntegerValidator implements Validator {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object object) throws ValidatorException {

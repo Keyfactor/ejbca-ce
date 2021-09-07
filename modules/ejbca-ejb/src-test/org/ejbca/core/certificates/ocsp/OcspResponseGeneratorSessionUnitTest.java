@@ -38,8 +38,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         byte[] fakeRequest = new byte[MAX_REQUEST_SIZE + 1];
         random.nextBytes(fakeRequest);
         boolean caught = false;
-        // Increases the transaction number!
-        TransactionCounter.INSTANCE.getTransactionNumber();
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         final TransactionLogger transactionLogger = EasyMock.createNiceMock(TransactionLogger.class);
         final AuditLogger auditLogger = EasyMock.createNiceMock(AuditLogger.class);
         try {
