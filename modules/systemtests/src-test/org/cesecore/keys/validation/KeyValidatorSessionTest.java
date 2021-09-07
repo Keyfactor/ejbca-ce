@@ -21,7 +21,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -100,6 +99,8 @@ import org.junit.Test;
 
 /**
  * Tests Key validator session.
+ * 
+ * @version $Id$
  */
 public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
@@ -146,7 +147,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     // Helper objects.
     private X509CA testCA;
     private CertificateProfile testCertificateProfile;
-    @SuppressWarnings("unused")
     private EndEntityProfile testEndEntityProfile;
     private EndEntityInformation testUser;
 
@@ -858,7 +858,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         assertEquals("RsaKeyValidator with CAB forum settings must have public key modulus do not allow power of prime value.",
                 keyValidator.isPublicKeyModulusDontAllowPowerOfPrime(), RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_DONT_ALLOW_POWER_OF_PRIME);
         assertEquals("RsaKeyValidator with CAB forum settings must have min factor value.", keyValidator.getPublicKeyModulusMinFactor(),
-                Integer.valueOf(RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR));
+                new Integer(RsaKeyValidator.CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR));
         assertNull("RsaKeyValidator with CAB forum settings must have public key modulus min value.", keyValidator.getPublicKeyModulusMin());
         assertNull("RsaKeyValidator with CAB forum settings must have public key modulus max value.", keyValidator.getPublicKeyModulusMax());
     }
@@ -1005,8 +1005,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     // Code duplication: see org.cesecore.keys.validation.KeyValidatorTestUtil
     public static KeyValidator createKeyValidator(final Class<? extends KeyValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
-            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        KeyValidator result = type.getDeclaredConstructor(new Class<?>[] {}).newInstance(new Object[] {});
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
+        KeyValidator result = type.newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);

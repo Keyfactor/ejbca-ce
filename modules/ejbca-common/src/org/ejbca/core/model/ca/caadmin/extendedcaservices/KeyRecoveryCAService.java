@@ -38,8 +38,9 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.crypto.CryptoTools;
 
-/** 
- * Handles and maintains the CA-part of the Key Recovery functionality
+/** Handles and maintains the CA-part of the Key Recovery functionality
+ * 
+ * @version $Id$
  */
 public class KeyRecoveryCAService extends ExtendedCAService implements Serializable {
 
@@ -61,7 +62,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 		data = new LinkedHashMap<Object, Object>();
 		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());
 		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE));
-		data.put(VERSION, LATEST_VERSION);
+		data.put(VERSION, new Float(LATEST_VERSION));
 		setStatus(serviceinfo.getStatus());
 	}
 
@@ -186,9 +187,9 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	@Override
 	public void upgrade() {
 		if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
-			String msg = intres.getLocalizedMessage("caservice.upgrade", getVersion());
+			String msg = intres.getLocalizedMessage("caservice.upgrade", new Float(getVersion()));
 			log.info(msg);
-			data.put(VERSION, LATEST_VERSION);
+			data.put(VERSION, new Float(LATEST_VERSION));
 		}  		
 	}
 

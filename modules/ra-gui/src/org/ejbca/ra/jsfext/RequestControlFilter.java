@@ -60,6 +60,7 @@ import org.apache.log4j.Logger;
  * 
  * @author Kevin Chipalowsky and Ivelin Ivanov
  * Changed to WebFilter and modernized by PrimeKey
+ * @version $Id$
  */
 @WebFilter(filterName = "RequestControlFilter", urlPatterns = {"/*"}, initParams= {
         @WebInitParam(name="excludePattern.1",value="^.+\\.((gif))$"),
@@ -103,7 +104,7 @@ public class RequestControlFilter implements Filter {
                 if (endDuration != -1) {
                     durationString = durationString.substring(0, endDuration);
                 }
-                Long duration = Long.parseLong(durationString);
+                Long duration = new Long(durationString);
 
                 // compile the corresponding pattern, and store it with this delay in the map
                 Pattern waitPattern = Pattern.compile(paramValue);

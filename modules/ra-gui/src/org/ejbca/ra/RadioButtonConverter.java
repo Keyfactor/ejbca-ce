@@ -21,9 +21,12 @@ import javax.faces.convert.FacesConverter;
 /**
  * Handles conversions of radio buttons from the UI. Radio buttons will generally be handled in the UI as encoded strings, so this converter simply 
  * treats them as such. 
+ * 
+ * @version $Id$
+ *
  */
 @FacesConverter("radioButtonConverter")
-public class RadioButtonConverter implements Converter<Object> {
+public class RadioButtonConverter implements Converter{
     
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

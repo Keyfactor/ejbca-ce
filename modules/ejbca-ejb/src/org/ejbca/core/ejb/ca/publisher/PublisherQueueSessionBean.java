@@ -587,7 +587,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 Object publisherResult;
                 try {
                     final long maxTimeToWait = Math.max(1000L, deadline - System.currentTimeMillis());
-                    publisherResult = future.get(maxTimeToWait, TimeUnit.MILLISECONDS);
+                    publisherResult = new Boolean(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
                 } catch (Exception e) {
                     publisherResult = getAsPublisherException(e);
                 }

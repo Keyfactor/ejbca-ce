@@ -169,10 +169,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
-    @SuppressWarnings("unused")
     private String requestScheme;
     private String requestServerName;
-    @SuppressWarnings("unused")
     private int requestServerPort;
     private String currentRemoteIp;
 

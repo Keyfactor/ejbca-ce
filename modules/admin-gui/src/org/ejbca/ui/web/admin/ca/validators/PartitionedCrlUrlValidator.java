@@ -23,9 +23,11 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Validator used for validating CRL DP URLs with partition number placeholders (edit ca page).
+ *
+ * @version $Id$
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.PartitionedCrlUrlValidator")
-public class PartitionedCrlUrlValidator implements Validator<Object> {
+public class PartitionedCrlUrlValidator implements Validator {
 
     @Override
     public void validate(FacesContext facesContext, UIComponent component, Object o) throws ValidatorException {

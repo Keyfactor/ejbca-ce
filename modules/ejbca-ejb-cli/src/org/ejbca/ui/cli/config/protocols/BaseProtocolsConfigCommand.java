@@ -25,12 +25,16 @@ import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
  * Base class for controlling enabled protocols.
+ * 
+ * @version $Id$
  */
 public abstract class BaseProtocolsConfigCommand extends ConfigBaseCommand {
 
     protected final Logger log = Logger.getLogger(this.getClass());
 
     protected static final String KEY_NAME = "--name";
+
+    private AvailableProtocolsConfiguration availableProtocolsConfiguration = null;
 
     @Override
     public String[] getCommandPath() {

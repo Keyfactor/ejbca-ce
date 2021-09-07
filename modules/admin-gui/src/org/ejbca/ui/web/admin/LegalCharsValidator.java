@@ -27,8 +27,10 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /** JSF validator to check that input fields do not contain characters that might be dangerous for SQL queries 
  * (non parameterized queries that is).
+ * 
+ * @version $Id$
  */
-public class LegalCharsValidator implements Validator<Object> {
+public class LegalCharsValidator implements Validator {
 	private static final Logger log = Logger.getLogger(LegalCharsValidator.class);
 
 	@Override
