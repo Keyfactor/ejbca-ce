@@ -40,9 +40,11 @@ import javax.faces.validator.ValidatorException;
  *
  * @see StringTools#checkFieldForLegalChars(String)
  * @see ValidationHelper#matchConditionalValidation(FacesContext, UIComponent)
+ *
+ * @version $Id$
  */
 @FacesValidator("profileNameValidator")
-public class ProfileNameValidator implements Validator<Object> {
+public class ProfileNameValidator implements Validator {
 
     @Override
     public void validate(final FacesContext facesContext, final UIComponent uiComponent, final Object o) throws ValidatorException {

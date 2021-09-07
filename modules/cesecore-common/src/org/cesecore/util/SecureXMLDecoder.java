@@ -12,6 +12,20 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,20 +49,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificateprofile.CertificatePolicy;
-import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
 
 /**
@@ -461,7 +461,6 @@ public class SecureXMLDecoder implements AutoCloseable {
      * @return Enum value as a Java object
      * @throws IOException On parse error, or if the class if not allowed.
      */
-    @SuppressWarnings("unchecked")
     private Object toEnumValue(final String enumType, final String valueName) throws IOException {
         if (!enumType.startsWith("org.cesecore.") && !enumType.startsWith("org.ejbca.") && !enumType.startsWith("org.signserver.")) {
             throw new IOException(errorMessage("Instantation of enum type \"" + enumType + "\" not allowed"));
@@ -469,7 +468,7 @@ public class SecureXMLDecoder implements AutoCloseable {
         if (valueName.endsWith("INSTANCE")) {
             throw new IOException(errorMessage("Not allowed to use singleton \"" + valueName + "\" from enum type \"" + enumType + "\""));
         }
-        try {            
+        try {
             return Enum.valueOf(Class.forName(enumType).asSubclass(Enum.class), valueName);
         } catch (ClassNotFoundException e) {
             throw new IOException(errorMessage("Enum class \"" + enumType + "\" was not found"), e);
@@ -772,7 +771,6 @@ public class SecureXMLDecoder implements AutoCloseable {
             final Object extendedInformation = Class.forName("org.ejbca.core.model.ra.ExtendedInformation")
                     .getConstructor()
                     .newInstance();
-            @SuppressWarnings("unchecked")
             final LinkedHashMap<Object, Object> rawData = (LinkedHashMap<Object, Object>) MethodUtils.invokeMethod(extendedInformation, "getRawData");
             rawData.putAll(parsedData);
             // Skip
