@@ -20,9 +20,11 @@ import org.cesecore.util.CertTools;
  * Example usage: 
  * <f:validator validatorId="oidValidator"/>
  * <f:attribute name="beginsWith" value="true"/>
+ * 
+ * @version $Id$
  */
 @FacesValidator("oidValidator")
-public class OidValidator implements Validator<Object> {
+public class OidValidator implements Validator {
 
     private static final String OID_PATTERN = "(\\.?\\d+)*";
     private static final String LINE_SEPARATOR = "\n";

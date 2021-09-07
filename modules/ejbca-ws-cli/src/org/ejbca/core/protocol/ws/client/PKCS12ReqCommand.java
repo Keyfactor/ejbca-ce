@@ -25,6 +25,8 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 /**
  * Request a keystore given a pkcs12
+ *
+ * @version $Id$
  */
 public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -38,7 +40,6 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
      * 'hardtokensn' is deprecated since 7.1.0, just use NONE here. Is kept for client compatibility for now.
      */
     @Deprecated
-    @SuppressWarnings("unused")
 	private static final int ARG_HARDTOKENSN              = 5;
 	private static final int ARG_OUTPUTPATH               = 6;
 	
