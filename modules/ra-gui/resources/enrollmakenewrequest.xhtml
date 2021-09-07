@@ -264,11 +264,11 @@
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.requestInfoRendered}">
 						<h:panelGroup id="subjectDNSection" layout="block">
 							<h3>
-								<h:outputText value="#{msg.enroll_subject_dn_attributes}" />
+								<h:outputText value="#{msg.enroll_subject_dn_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances.size() gt 0}"/>
 							</h3>
-							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" rendered="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances.size() gt 0}">
 								<ui:repeat id="subjectDn"
-									value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances}"
+									value="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances}"
 									var="instance"
 									varStatus="loop">
 									<h:panelGroup layout="block" styleClass="pure-control-group">
@@ -278,7 +278,7 @@
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required and instance.modifiable}" />
-										<h:inputText id="subjectDnField" value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+										<h:inputText id="subjectDnField" value="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
 											 rendered="#{instance.modifiable and !instance.selectable}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
@@ -290,8 +290,8 @@
                                             <f:ajax event="keyup" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:inputText>
-										<h:outputText id="subjectDnNonModifiableField" rendered="#{!instance.modifiable}" value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances[loop.index].value}" style="color:white;"/>
-										<h:selectOneMenu value="#{enrollMakeNewRequestBean.subjectDn.fieldInstances[loop.index].value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
+										<h:outputText id="subjectDnNonModifiableField" rendered="#{!instance.modifiable}" value="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances[loop.index].value}" style="color:white;"/>
+										<h:selectOneMenu value="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances[loop.index].value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 											<f:selectItems value="#{instance.selectableValues}" />
 											<f:attribute name="_label" value="#{instance.name}"/>
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
@@ -303,11 +303,11 @@
 								</ui:repeat>
 							</h:panelGroup>
 							<h3>
-								<h:outputText value="#{msg.enroll_optional_subject_dn_attributes}" />
+								<h:outputText value="#{msg.enroll_optional_subject_dn_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDn.optionalFieldInstances.size() gt 0}"/>
 							</h3>
-							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" rendered="#{enrollMakeNewRequestBean.subjectDn.optionalFieldInstances.size() gt 0}">
 							
-								<ui:param name="limit" value="#{enrollMakeNewRequestBean.numberOfOptionalSubjectDNFieldsToShow}"/>
+								<ui:param name="limit" value="#{enrollMakeNewRequestBean.numberOfOptionalSdnFieldsToShow}"/>
 								<ui:repeat id="subjectDnOptionalFields"
 									value="#{enrollMakeNewRequestBean.subjectDn.optionalFieldInstances}"
 									var="instance"
@@ -347,9 +347,9 @@
 							<h:inputHidden id="subjectDnMessageInput" binding="#{enrollMakeNewRequestBean.subjectDnMessagesComponent}"/>
 							<h:message for="subjectDnMessageInput" id="subjectDnMessage" errorClass="subjectErrorMessage showErrorMessage"/>
 							<fieldset>
-							 <h:commandButton id="showFullOptionalSubjectDNFieldsToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSubjectDNFieldsToggle}"
-                                rendered="#{enrollMakeNewRequestBean.renderShowFullOptionalSubjectDNField}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
-                                value="#{enrollMakeNewRequestBean.showMoreOptionalSubjectDNField ? msg.enroll_render_more_optional_fields: msg.enroll_render_less_optional_fields}"
+							 <h:commandButton id="showFullOptionalSubjectDNFieldsToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSdnFieldsToggle}"
+                                rendered="#{enrollMakeNewRequestBean.renderOptionalSdnFieldToggler}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
+                                value="#{enrollMakeNewRequestBean.showMoreOptionalSdnFields ? msg.enroll_render_more_optional_fields: msg.enroll_render_less_optional_fields}"
                                 styleClass="toggleMoreButton" immediate="true">
 								<f:ajax execute="@this"
 									render=":requestInfoForm:subjectDNSection" />
@@ -358,12 +358,12 @@
 						</h:panelGroup>
 						<h:panelGroup id="sanSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectAlternativeNameRendered}">
 							<h3>
-								<h:outputText value="#{msg.enroll_subject_alternative_name_attributes}" />
+								<h:outputText value="#{msg.enroll_subject_alternative_name_attributes}" rendered="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances.size() gt 0}"/>
 							</h3>
-							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" rendered="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances.size() gt 0}">
 							
 							<ui:repeat id="subjectAlternativeName"
-								value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances}"
+								value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances}"
 								var="instance"
 								varStatus="loop">
 								<h:panelGroup layout="block" styleClass="pure-control-group">
@@ -374,7 +374,7 @@
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required and instance.modifiable}" />
                                     <h:panelGroup rendered="#{!instance.unModifiableUpnRfc and !instance.rfcUseEmail and !instance.dnsCopyCheckbox}">
-                                        <h:inputText id="subjectAltNameField" value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
+                                        <h:inputText id="subjectAltNameField" value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
                                             rendered="#{!instance.selectable and instance.modifiable}">
                                             <f:validator validatorId="extendedRegexValidator" />
                                             <f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
@@ -386,8 +386,8 @@
                                             <f:ajax event="keyup" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
                                         </h:inputText>
-										<h:outputText id="sANNonModifiableField" rendered="#{!instance.modifiable}" value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].value}" style="color:white;"/>
-                                        <h:selectOneMenu value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
+										<h:outputText id="sANNonModifiableField" rendered="#{!instance.modifiable}" value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].value}" style="color:white;"/>
+                                        <h:selectOneMenu value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
                                             <f:selectItems value="#{instance.selectableValues}" />
                                             <f:attribute name="_label" value="#{instance.name}"/>
                                             <f:ajax event="change" execute="@this"
@@ -397,7 +397,7 @@
                                         <h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{instance.rfcUseEmail}">
-                                        <h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].rfcEmailUsed}">
+                                        <h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].rfcEmailUsed}">
                                             <f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"
                                                 execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                                         </h:selectBooleanCheckbox>
@@ -424,11 +424,11 @@
 							</h:panelGroup>
 							
 							<h3>
-								<h:outputText value="#{msg.enroll_optional_subject_alternative_name_attributes}" />
+								<h:outputText value="#{msg.enroll_optional_subject_alternative_name_attributes}" rendered="#{enrollMakeNewRequestBean.subjectAlternativeName.optionalFieldInstances.size() gt 0}"/>
 							</h3>
-							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" rendered="#{enrollMakeNewRequestBean.subjectAlternativeName.optionalFieldInstances.size() gt 0}">
 							
-							<ui:param name="limit" value="#{enrollMakeNewRequestBean.numberOfOptionalSANFieldsToShow}"/>
+							<ui:param name="limit" value="#{enrollMakeNewRequestBean.numberOfOptionalSanFieldsToShow}"/>
 							<ui:repeat id="subjectAlternativeNameOptional"
 								value="#{enrollMakeNewRequestBean.subjectAlternativeName.optionalFieldInstances}"
 								var="instance"
@@ -490,9 +490,9 @@
 							</h:panelGroup>
 							
 							<fieldset>
-							 <h:commandButton id="showFullOptionalSANFieldToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSANFieldsToggle}"
-                                rendered="#{enrollMakeNewRequestBean.renderShowFullOptionalSANField}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
-                                value="#{enrollMakeNewRequestBean.showMoreOptionalSANField ? msg.enroll_render_more_optional_fields: msg.enroll_render_less_optional_fields}"
+							 <h:commandButton id="showFullOptionalSANFieldToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSanFieldsToggle}"
+                                rendered="#{enrollMakeNewRequestBean.renderOptionalSanFieldToggler}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
+                                value="#{enrollMakeNewRequestBean.showMoreOptionalSanFields ? msg.enroll_render_more_optional_fields: msg.enroll_render_less_optional_fields}"
                                 styleClass="toggleMoreButton" immediate="true">
 								<f:ajax execute="@this"
 									render=":requestInfoForm:sanSection" />
@@ -502,12 +502,12 @@
 						</h:panelGroup>
 						<h:panelGroup id="subjectDirectoryAttributeSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributesRendered}">
 							<h3>
-								<h:outputText value="#{msg.enroll_subject_directory_attributes}" />
+								<h:outputText value="#{msg.enroll_subject_directory_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.requiredFieldInstances.size() gt 0}" />
 							</h3>
-							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.requiredFieldInstances.size() gt 0}">
 							
 							<ui:repeat id="subjectDirectoryAttributes"
-								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.fieldInstances}"
+								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.requiredFieldInstances}"
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group">
 									<h:outputLabel for="subjectDirectoryField"
@@ -544,11 +544,11 @@
 							</h:panelGroup>
 							
 							<h3>
-								<h:outputText value="#{msg.enroll_optional_subject_directory_attributes}" />
+								<h:outputText value="#{msg.enroll_optional_subject_directory_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.optionalFieldInstances.size() gt 0}"/>
 							</h3>
-							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.optionalFieldInstances.size() gt 0}">
 							
-							<ui:param name="limit" value="#{enrollMakeNewRequestBean.numberOfOptionalSubjectDirectoryAttributesFieldsToShow}"/>
+							<ui:param name="limit" value="#{enrollMakeNewRequestBean.numberOfOptionalSdaFieldsToShow}"/>
 							<ui:repeat id="subjectDirectoryOptionalAttributes"
 								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.optionalFieldInstances}"
 								var="instance"
@@ -583,9 +583,9 @@
 							</h:panelGroup>
 							
 							<fieldset>
-							 <h:commandButton id="showFullOptionalSubjectDirectoryAttributeFieldToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSubjectDirectoryAttributesFieldsToggle}"
-                                rendered="#{enrollMakeNewRequestBean.renderShowFullOptionalSubjectDirectoryAttributeField}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
-                                value="#{enrollMakeNewRequestBean.showMoreOptionalSubjectDirectoryAttributesField ? msg.enroll_render_more_optional_fields: msg.enroll_render_less_optional_fields}"
+							 <h:commandButton id="showFullOptionalSubjectDirectoryAttributeFieldToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSdaFieldsToggle}"
+                                rendered="#{enrollMakeNewRequestBean.renderOptionalSdaFieldToggler}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
+                                value="#{enrollMakeNewRequestBean.showMoreOptionalSdaFields ? msg.enroll_render_more_optional_fields: msg.enroll_render_less_optional_fields}"
                                 styleClass="toggleMoreButton" immediate="true">
 								<f:ajax execute="@this"
 									render=":requestInfoForm:subjectDirectoryAttributeSection" />
