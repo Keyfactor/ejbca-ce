@@ -132,7 +132,26 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Asynchronous
     @Override
     public void publishQueuedEntry(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData entity) {
-        publisherQueueSession.doPublish(admin, publisher, entity);
+        PublishingResult publisherResult = publisherQueueSession.doPublish(admin, publisher, entity);
+
+        boolean success = false;
+        success = publisherResult.getSuccesses() > 0;
+        if (success) {
+            final String msg = intres.getLocalizedMessage("publisher.store", entity.getVolatileData().getUserDN(), publisher.getName(), success);
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
+                    EjbcaServiceTypes.EJBCA, admin.toString(), null, entity.getFingerprint(), entity.getVolatileData().getUsername(), details);
+        } else {
+            final String msg = intres.getLocalizedMessage("publisher.errorstore", publisher.getName(), entity.getFingerprint());
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            if (publisherResult.getMessage(entity.getFingerprint()) != null) {
+                details.put("error", publisherResult.getMessage(entity.getFingerprint()));
+            }
+            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
+                    EjbcaServiceTypes.EJBCA, admin.toString(), null, entity.getFingerprint(), entity.getVolatileData().getUsername(), details);
+        }
     }
     
     @Override

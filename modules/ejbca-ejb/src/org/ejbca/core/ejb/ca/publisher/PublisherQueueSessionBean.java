@@ -438,7 +438,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 // getLogSession().log
                 log.debug(e.getMessage());
                 // We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
-                result.addFailure(fingerprint);
+                result.addFailure(fingerprint, e.getMessage());
             }
             if (published) {
                 if (publisher.getKeepPublishedInQueue()) {
