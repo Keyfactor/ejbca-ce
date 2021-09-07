@@ -100,6 +100,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private boolean deleteInProgress = false;
     private boolean addFromTemplateInProgress = false;
     private String certProfileName = "";
+    private boolean viewOnly = true;
     private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
 
     public CertProfilesBean() {
@@ -206,6 +207,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     public String actionView() {
         selectCurrentRowData();
         if (selectedProfileExists()) {
+            viewOnly = true;
             return "view"; // Outcome is defined in faces-config.xml
         } else {
             return "";
