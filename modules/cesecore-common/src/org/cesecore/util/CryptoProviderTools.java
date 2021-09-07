@@ -32,6 +32,8 @@ import org.ejbca.cvc.CVCProvider;
 
 /**
  * Basic crypto provider helper methods.
+ * 
+ * @version $Id$
  */
 public final class CryptoProviderTools {
 	
@@ -86,7 +88,7 @@ public final class CryptoProviderTools {
         // Also remove the CVC provider
         Security.removeProvider("CVC");
     }
-    @SuppressWarnings({"deprecation", "unchecked"})
+    @SuppressWarnings("deprecation")
     public static synchronized void installBCProvider() {
     	
         // A flag that ensures that we install the parameters for implcitlyCA only when we have installed a new provider
