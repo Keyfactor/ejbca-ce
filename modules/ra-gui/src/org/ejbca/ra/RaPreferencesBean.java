@@ -41,7 +41,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  */
 @ManagedBean
 @ViewScoped
-public class RaPreferencesBean implements Converter<Object>, Serializable {
+public class RaPreferencesBean implements Converter, Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaPreferencesBean.class);

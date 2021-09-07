@@ -24,6 +24,8 @@ import java.util.List;
 
 /**
  * 'Inspect Certificate CSR' helper class for EJBCA Web Tests.
+ *
+ * @version $Id: InspectCertificateCsrHelper.java 35074 2020-05-25 15:43:51Z margaret_d_thomas $
  */
 public class InspectCertificateCsrHelper extends BaseHelper {
 
@@ -108,6 +110,7 @@ public class InspectCertificateCsrHelper extends BaseHelper {
         //Get certificate contents from screen
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
         String fileContents = certificateDump.getText();
+        List<String> fileContentsList = new ArrayList<>(Arrays.asList(fileContents.split("\n")));
 
         //For each row in the array assert it exists in the fileContents
         for (String certificateRow : certificateRows) {
