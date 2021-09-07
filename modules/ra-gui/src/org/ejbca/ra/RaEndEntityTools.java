@@ -13,6 +13,8 @@
 package org.ejbca.ra;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.faces.component.UIComponent;
@@ -30,6 +32,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Tools to handle common RA End Entity operations.
+ * 
+ * @version $Id$
  */
 public class RaEndEntityTools {
 
