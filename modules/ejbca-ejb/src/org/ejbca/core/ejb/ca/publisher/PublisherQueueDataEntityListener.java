@@ -13,26 +13,33 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import javax.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.apache.log4j.Logger;
+
 
 public class PublisherQueueDataEntityListener {
 
-    @Resource
+    private static final Logger log = Logger.getLogger(PublisherQueueDataEntityListener.class);
+
+    // @Resource Annotation causes lookup failure on WF10. Lookup with JNDI instead
     TransactionSynchronizationRegistry registry;
     
     @PostUpdate
     @PostPersist
     public void postUpdate(final PublisherQueueData entity) throws NamingException {
-        if (registry == null) {
+        try {
             registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/TransactionSynchronizationRegistry");
+        } catch (NamingException e) {
+            log.info("TransactionSynchronizationRegistry JNDI lookup failed for java:comp/TransactionSynchronizationRegistry\n"
+                    + "Using java:comp/env/TransactionSynchronizationRegistry instead");
+            registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/env/TransactionSynchronizationRegistry");
+            throw new IllegalStateException(e);
         }
         registry.registerInterposedSynchronization(new PublisherQueueDataSynchronization(entity));
     }
-    
 }
