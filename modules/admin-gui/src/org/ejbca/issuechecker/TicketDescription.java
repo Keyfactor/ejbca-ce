@@ -14,7 +14,6 @@
 package org.ejbca.issuechecker;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,8 +34,6 @@ import org.ejbca.ui.web.jsf.configuration.WebLanguages;
  * 
  * <p>However, it is possible to create a ticket description by specifying the ticket description directly.
  * This can be useful during testing, or if an administrator chooses to create their own tickets. 
- *
- * @version $Id$
  */
 public class TicketDescription {
     private String languageKey;
