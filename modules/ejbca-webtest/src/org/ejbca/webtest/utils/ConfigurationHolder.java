@@ -45,17 +45,13 @@ public class ConfigurationHolder {
     private void loadProperty(final String property) throws IOException {
         final URL userProperty = configCl.getResource(property + ".properties");
         if (userProperty != null) {
-            try (FileInputStream stream = new FileInputStream(userProperty.getFile())) {
-                properties.load(stream);
-                return;
-            }
+            properties.load(new FileInputStream(userProperty.getFile()));
+            return;
         }
         final URL defaultProperty = configCl.getResource(property + ".properties.sample");
         if (defaultProperty != null) {
-            try (FileInputStream stream = new FileInputStream(defaultProperty.getFile())) {
-                properties.load(stream);
-                return;
-            }
+            properties.load(new FileInputStream(defaultProperty.getFile()));
+            return;
         }
         throw new FileNotFoundException("Property file for " + property + " could not be found.");
     }

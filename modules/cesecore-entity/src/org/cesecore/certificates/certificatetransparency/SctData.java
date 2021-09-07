@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificatetransparency;
 
+import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -28,10 +29,13 @@ import java.io.Serializable;
 
 /**
  * A storage of SCT (signed certificate timestamp from a CT log) data
+ *
+ * @version $Id$
  */
 @Entity
 @Table(name = "SctData")
 public class SctData extends ProtectedData implements Serializable {
+    private static final Logger log = Logger.getLogger(SctData.class);
 
     private static final long serialVersionUID = 1L;
 

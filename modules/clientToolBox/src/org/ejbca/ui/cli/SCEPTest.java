@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -30,6 +31,7 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
+import java.security.cert.CertStoreException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
@@ -105,6 +107,8 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to stress test the SCEP interface.
+ *
+ * @version $Id$
  */
 class SCEPTest extends ClientToolBox {
 

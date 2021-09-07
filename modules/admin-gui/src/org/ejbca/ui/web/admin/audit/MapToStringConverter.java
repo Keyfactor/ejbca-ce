@@ -20,8 +20,9 @@ import javax.faces.convert.Converter;
 
 /**
  * One way converter from Map<Object,Object> to String.
+ * @version $Id$
  */
-public class MapToStringConverter implements Converter<Object> {
+public class MapToStringConverter implements Converter {
 
 	@Override
 	public Object getAsObject(final FacesContext facesContext, final UIComponent uiComponent, final String value) {

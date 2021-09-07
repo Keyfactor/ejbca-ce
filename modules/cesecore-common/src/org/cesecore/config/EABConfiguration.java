@@ -13,6 +13,7 @@
 
 package org.cesecore.config;
 
+import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
 import java.io.Serializable;
@@ -22,6 +23,8 @@ import java.util.Set;
 
 public class EABConfiguration extends ConfigurationBase implements Serializable {
 
+    /** Class logger. */
+    private static final Logger log = Logger.getLogger(EABConfiguration.class);
     private static final long serialVersionUID = 1L;
     public static final String EAB_CONFIGURATION_ID = "EAB";
     private static final LinkedHashMap<String, Set<String>> EAB_MAP_DEFAULT = new LinkedHashMap<>();
@@ -29,7 +32,6 @@ public class EABConfiguration extends ConfigurationBase implements Serializable 
     private static final   String EAB_MAP          = "eabmap";
     private static final   String FILE_HASH        = "filehash";
 
-    @SuppressWarnings("unchecked")
     public Map<String, Set<String>> getEABMap() {
         final Map<String, Set<String>>  ret = (Map<String, Set<String>> )data.get(EAB_MAP);
         return (ret == null ? (Map<String, Set<String>>) EAB_MAP_DEFAULT.clone() : new LinkedHashMap<>(ret));

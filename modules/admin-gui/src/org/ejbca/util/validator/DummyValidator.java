@@ -19,8 +19,11 @@ import javax.faces.validator.ValidatorException;
 
 /**
  * Dummy validator used as a placeholder in cases where we require no validation but must specify a validator.
+ * 
+ * @version $Id$
+ *
  */
-public class DummyValidator implements Validator<Object> {
+public class DummyValidator implements Validator {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object object) throws ValidatorException {
