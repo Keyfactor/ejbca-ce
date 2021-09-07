@@ -13,21 +13,6 @@
 
 package org.ejbca.core.model.validation;
 
-import static java.util.stream.Collectors.toList;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -50,8 +35,24 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
+
+import static java.util.stream.Collectors.toList;
+
 /**
  * Validates domain names against the <a href="https://developers.google.com/safe-browsing">Google Safe Browsing API</a>.
+ *
+ * @version $Id$
  */
 public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNameValidator, Serializable {
     private static final long serialVersionUID = -1L;
@@ -177,7 +178,6 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
      * @param domainNames the domain names from the certificate.
      * @return a JSON payload to send to the Google Safe Browsing Lookup API.
      */
-    @SuppressWarnings("unchecked")
     private String createJsonPayload(final String[] domainNames) {
         final JSONObject client = new JSONObject();
         final JSONObject threatInfo = new JSONObject();
@@ -186,7 +186,7 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
         final JSONArray platformTypes = new JSONArray();
         final JSONArray threatEntryTypes = new JSONArray();
         final JSONArray threatEntries = new JSONArray();
-        ((HashMap<Object,Object>) client).put("clientId", InternalConfiguration.getAppNameCapital());
+        client.put("clientId", InternalConfiguration.getAppNameCapital());
         client.put("clientVersion", InternalConfiguration.getAppVersionNumber());
         threatTypes.addAll(Arrays.asList("MALWARE", "SOCIAL_ENGINEERING"));
         platformTypes.addAll(Arrays.asList("ANY_PLATFORM"));
@@ -256,7 +256,6 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
     }
 
     private String getValidationResult(final JSONArray matches, final String domainName) {
-        @SuppressWarnings("unchecked")
         final Iterator<JSONObject> iterator = matches.iterator();
         while (iterator.hasNext()) {
             final JSONObject nextMatch = iterator.next();

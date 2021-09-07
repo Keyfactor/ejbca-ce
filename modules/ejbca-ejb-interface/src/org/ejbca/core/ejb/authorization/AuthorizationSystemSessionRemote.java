@@ -17,9 +17,11 @@ import java.util.Map;
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 
 /**
  * @see AuthorizationSystemSession
+ * @version $Id$
  */
 @Remote
 public interface AuthorizationSystemSessionRemote extends AuthorizationSystemSession {

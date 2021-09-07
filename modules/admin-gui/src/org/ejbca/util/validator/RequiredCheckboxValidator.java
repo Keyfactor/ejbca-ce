@@ -21,9 +21,11 @@ import javax.faces.validator.ValidatorException;
 
 /**
  * JSF validator that shows an error if a checkbox is not checked.
+ *
+ * @version $Id$
  */
 @FacesValidator("org.ejbca.util.validator.RequiredCheckboxValidator")
-public class RequiredCheckboxValidator implements Validator<Object> {
+public class RequiredCheckboxValidator implements Validator {
 
     @Override
     public void validate(final FacesContext facesContext, final UIComponent uiComponent, final Object o) throws ValidatorException {
