@@ -21,12 +21,14 @@ import java.util.Date;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.junit.Test;
 
 
-/** 
- * Tests JUnit testable things from UserData entity bean.
+/** Tests JUnit testable things from UserData entity bean.
+*
+* @version $Id$
 */
 @SuppressWarnings("deprecation")
 public class UserDataTest {

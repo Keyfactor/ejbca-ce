@@ -30,9 +30,11 @@ import org.cesecore.certificates.util.DnComponents;
  * 
  * To Use:
  * <h:inputText ... converter="org.ejbca.DnObjectArrayListConverter"/>
+ *  
+ * @version $Id$
  */
 @FacesConverter(value="org.ejbca.DnObjectArrayListConverter")
-public class DnObjectArrayListConverter implements Converter<Object> {
+public class DnObjectArrayListConverter implements Converter {
     @Override
     public Object getAsObject(final FacesContext context, final UIComponent component, final String values) {
 
