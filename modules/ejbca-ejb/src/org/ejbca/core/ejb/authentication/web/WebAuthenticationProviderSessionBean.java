@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.authentication.web;
 
 import java.io.IOException;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -53,6 +55,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -92,6 +95,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
+    private boolean allowBlankAudience = false; 
+
     public WebAuthenticationProviderSessionBean() { }
 
     /** Constructor for unit tests */
@@ -101,6 +106,21 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         this.certificateStoreSession = certificateStoreSession;
         this.globalConfigurationSession = globalConfigurationSession;
         this.securityEventsLoggerSession = securityEventsLoggerSession;
+    }
+    
+    /**
+     * OAuth audience ('aud') claim checking was not enforced until 7.7.1.  Allow a blank Audience value in the OAuth configuration to match any Bearer token until 
+     * the database is post-upgraded to 7.7.1.  After that, it is expected that all OAuth provider configurations will have a configured Audience value and that Bearer 
+     * token 'aud' claims will match that value to be considered valid.
+     */
+    @PostConstruct
+    public void initializeAudienceCheck() {
+        GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.7.1");
+        if (isAllowBlankAudience()) {
+            LOG.debug("Database not post-upgraded to 7.7.1 yet.  Allowing OAuth logins without checking 'aud' claim.");
+        }
     }
 
     @Override
@@ -178,10 +198,15 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
             final String expectedAudience = keyInfo.getAudience();
             if (StringUtils.isBlank(expectedAudience)) {
-                LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
-                        + ".  This is supported for recent upgrades from versions before 7.7.1, but a value should be set IMMEDIATELY.");
+                if (isAllowBlankAudience()) {
+                    LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
+                            + ".  This is supported for recent upgrades from versions before 7.7.1, but a value should be set IMMEDIATELY.");
+                } else {
+                    LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
+                    return null;
+                }
             } else if (claims.getAudience() == null) {
-                LOG.warn("No audience claim in JWT.  Can't confirm valitity.");
+                LOG.warn("No audience claim in JWT.  Can't confirm validity.");
                 return null;
             } else if (!claims.getAudience().contains(expectedAudience)) {
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
@@ -363,5 +388,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
         ) + globalConfiguration.getAdminWebPath();
+    }
+
+    public boolean isAllowBlankAudience() {
+        return allowBlankAudience;
     }
 }
