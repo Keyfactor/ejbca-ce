@@ -77,10 +77,11 @@ public class GetAdminTruststoreCommand extends BaseRolesCommand {
                     if (tokenIssuerId != RoleMember.NO_ISSUER) {
                         final CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                                 member.getTokenIssuerId());
-                        Certificate certificate = info.getCertificateChain().get(0);
-                        if (certificate instanceof X509Certificate) {
-                            certs.add((X509Certificate) certificate);
-                        }
+                        info.getCertificateChain().forEach(c -> {
+                            if (c instanceof X509Certificate) {
+                                certs.add((X509Certificate) c);
+                            }
+                        });
                     }
                 }
             } catch (AuthorizationDeniedException e) {
