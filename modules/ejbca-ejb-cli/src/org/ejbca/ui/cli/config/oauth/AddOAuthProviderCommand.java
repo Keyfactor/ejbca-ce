@@ -52,6 +52,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Type of the Trusted OAuth Provider. Supported types are GENERIC, PINGID, KEYCLOAK and AZURE."));
         registerParameter(new Parameter(SKEW_LIMIT, "Skew limit", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Skew limit to be used."));
+        registerParameter(new Parameter(AUDIENCE, "Audience", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Expected value in token's 'aud' claim."));
         registerParameter(new Parameter(URL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider authorization endpoint URL."));
         registerParameter(new Parameter(TOKENURL, "Provider Token URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -92,7 +94,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String clientSecret = parameters.get(CLIENT_SECRET);
         String realm = parameters.get(REALM);
         String scope = parameters.get(SCOPE);
-        String audience= parameters.get(AUDIENCE);
+        String audience = parameters.get(AUDIENCE);
         OAuthProviderType type = null;
         
         if (typeString != null) {
