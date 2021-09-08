@@ -182,7 +182,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             // First make request without any EE created
             // Make EST simpleenroll request
             final String requestDN = "CN=" + CN + ",O=EJBCA,C=SE";
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "foo123", null, null, ec256);
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "foo123", null, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>", null, null); 
 
@@ -204,7 +204,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>", null, null); 
 
             // Make request with correct enrollment code
-            p10 = generateCertReq(requestDN, "bar123", null, null, ec256);
+            p10 = generateCertReq(requestDN, "bar123", null, null, null, ec256);
             reqmsg = Base64.encode(p10.getEncoded());
             byte[] resp = sendEstRequest(alias, "simpleenroll", reqmsg, 200, null); 
             assertNotNull("There must be response data to simpleenroll request", resp);
@@ -258,7 +258,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             // First make request without any EE created
             // Make EST simpleenroll request
             String requestDN = "CN=" + CN + ",O=EJBCA,C=SE";
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, ec256); // no challenge password
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, null, ec256); // no challenge password
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>", null, null); 
 
@@ -281,18 +281,18 @@ public class EstClientModeBasicTest extends EstTestCase {
 
             // Make EST simpleenroll request again with a EE created, but wrong enrollment code
             requestDN = "CN=" + CN + ",SERIALNUMBER=foo123,O=EJBCA,C=SE";
-            p10 = generateCertReq(requestDN, null, null, null, ec256); // no challenge password
+            p10 = generateCertReq(requestDN, null, null, null, null, ec256); // no challenge password
             reqmsg = Base64.encode(p10.getEncoded());
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>", null, null); 
 
             // with challenge password that is the correct enrollment code, should not be used
-            p10 = generateCertReq(requestDN, "bar123", null, null, ec256); 
+            p10 = generateCertReq(requestDN, "bar123", null, null, null, ec256); 
             reqmsg = Base64.encode(p10.getEncoded());
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>", null, null); 
 
             // Set the correct pwd, matching the SERIALNUMBER in request DN 
             requestDN = "CN=" + CN + ",SERIALNUMBER=bar123,O=EJBCA,C=SE";
-            p10 = generateCertReq(requestDN, null, null, null, ec256); // no challenge password
+            p10 = generateCertReq(requestDN, null, null, null, null, ec256); // no challenge password
             reqmsg = Base64.encode(p10.getEncoded());
             byte[] resp = sendEstRequest(alias, "simpleenroll", reqmsg, 200, null); 
             assertNotNull("There must be response data to simpleenroll request", resp);
@@ -324,7 +324,77 @@ public class EstClientModeBasicTest extends EstTestCase {
         }        
         log.trace("<testSimpleEnrollWithDnPwd()");
     }
-    
+
+
+    /**
+     * Tests Client mode enrollment using password authentication, using ChallengePwd from the CSR, including testing wrong password.
+     */
+    @Test
+    public void testSimpleEnrollWithChallengePwdAndUsernameInDn() throws Exception {
+        log.trace(">testSimpleEnrollWithChallengePwdAndUsernameInDn()");
+        final String alias = "testEnrollWithdUsernameInDn";
+        final String username = "EstClientTestUsername";
+
+
+        EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        try {
+            // Create alias
+            config.addAlias(alias);
+            config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
+            config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
+            config.setExtractUsernameComponent(alias, "UID");
+            globalConfigurationSession.saveConfiguration(ADMIN, config);
+
+            // Create EE
+            EndEntityInformation endEntityInfo = new EndEntityInformation();
+            endEntityInfo.setUsername(username);
+            endEntityInfo.setPassword("bar123");
+            endEntityInfo.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            endEntityInfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            endEntityInfo.setCAId(getTestCAId(TESTCA_NAME));
+            endEntityInfo.setDN("CN=" + CN + ",O=EJBCA,C=SE");
+            endEntityInfo.setTokenType(EndEntityConstants.TOKEN_USERGEN);
+            endEntityInfo.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+            endEntityInfo.setStatus(EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
+
+
+            // Make request with username in DN
+            final String dn = "CN=" + CN + ",O=EJBCA,C=SE";
+            final String requestDN = "UID=" + username + "," + dn;
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "bar123", null, null, null, ec256);
+            byte[] reqmsg = Base64.encode(p10.getEncoded());
+            byte[] resp = sendEstRequest(alias, "simpleenroll", reqmsg, 200, null);
+            assertNotNull("There must be response data to simpleenroll request", resp);
+            final CMSSignedData respmsg = new CMSSignedData(Base64.decode(resp));
+            final Store<X509CertificateHolder> certstore = respmsg.getCertificates();
+            final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
+            assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
+            final X509Certificate testcacert = (X509Certificate)getTestCACert(TESTCA_NAME);
+            final X509CertificateHolder certHolder = certs.iterator().next();
+            final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+            assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
+            try {
+                cert.verify(testcacert.getPublicKey());
+            } catch (SignatureException e) {
+                fail("simpleenroll response certifciate must verify with CA certificate");
+            }
+            assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",dn, CertTools.getSubjectDN(cert));
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+        } finally {
+            // Remove the certificates
+            internalCertStoreSession.removeCertificatesByUsername(username);
+            // Remove EST alias
+            config.removeAlias(alias);
+            globalConfigurationSession.saveConfiguration(ADMIN, config);
+            // Remove end entity
+            try {
+                endEntityManagementSession.deleteUser(ADMIN, username);
+            } catch (NoSuchEndEntityException e) {} // NOPMD
+        }
+        log.trace("<testSimpleEnrollWithChallengePwdAndUsernameInDn()");
+    }
+
     /**
      * Tests re-enrollment with EST alias in Client mode including wrong enrolment with missmatch between TLS cert and CSR as well as revoked TLS cert.
      */
@@ -366,7 +436,7 @@ public class EstClientModeBasicTest extends EstTestCase {
             endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
 
             final String requestDN = "CN=" + CN + ",O=EJBCA,C=SE";
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "foo123", null, null, ec256);
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "foo123", null, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             byte[] resp = sendEstRequest(alias, "simpleenroll", reqmsg, 200, null); 
             assertNotNull("There must be response data to simpleenroll request", resp);
@@ -400,7 +470,7 @@ public class EstClientModeBasicTest extends EstTestCase {
                     null, null);
             // A new request with new keys, but with the same subject DN should succeed
             final KeyPair ec256New = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
-            final PKCS10CertificationRequest p10New = generateCertReq(requestDN, null, null, null, ec256New);
+            final PKCS10CertificationRequest p10New = generateCertReq(requestDN, null, null, null, null, ec256New);
             final byte[] reqmsgNew = Base64.encode(p10New.getEncoded());
             resp = sendEstRequest(true, alias, "simplereenroll", reqmsgNew, 200, null, null, null);
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
@@ -449,7 +519,7 @@ public class EstClientModeBasicTest extends EstTestCase {
 
             // Change the subject DN in the CSR, should not be allowed to reenroll now
             // Log will show: 11:11:45,539 INFO  [org.ejbca.core.protocol.est.EstOperationsSessionBean] (default task-4) Can't reenroll using different subject than requesting certificate. Request DN='CN=ESTRARAReenroll204554,OU=Test,O=EJBCA,C=SE'
-            final PKCS10CertificationRequest p10NewDN = generateCertReq(requestDN + ",OU=Test", null, null, null, ec256New);
+            final PKCS10CertificationRequest p10NewDN = generateCertReq(requestDN + ",OU=Test", null, null, null, null, ec256New);
             final byte[] reqmsgNewDN = Base64.encode(p10NewDN.getEncoded());
             sendEstRequest(true, alias, "simplereenroll", reqmsgNewDN, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias 'ESTClientSimpleReEnroll'.</body></html>", 
                     null, null);
