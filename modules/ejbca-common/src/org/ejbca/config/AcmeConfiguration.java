@@ -11,9 +11,13 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
@@ -37,7 +41,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     protected static final InternalResources intres = InternalResources.getInstance();
     
-    protected static final float LATEST_VERSION = 6;
+    protected static final float LATEST_VERSION = 7;
     
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
@@ -67,6 +71,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
+    private static final String KEY_AUTHORIZED_REDIRECT_PORTS = "authorizedRedirectPorts";
     private static final String APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
     private static final String APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
 
@@ -86,7 +91,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
     private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
-    
+    private static final String DEFAULT_AUTHORIZED_REDIRECT_PORTS = "22,25,80,443";
     private static final boolean DEFAULT_USE_DNSSEC_VALIDATION = true;
     
     public static final int DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID = -1;
@@ -109,6 +114,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
+            // v7. Authorized redirect ports are not upgraded.
+            if (data.get(KEY_AUTHORIZED_REDIRECT_PORTS) == null) {
+                setAuthorizedRedirectPorts("");
+            }
             // v6. Added approvals for account management.
             if (data.get(APPROVAL_FOR_NEW_ACCOUNT_ID) == null) {
                 setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
@@ -421,6 +430,28 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         data.put(KEY_RETRY_AFTER, retryAfter);
     }
     
+    public String getAuthorizedRedirectPorts() {
+        return (String) super.data.get(KEY_AUTHORIZED_REDIRECT_PORTS);
+    }
+    
+    public Set<Integer> getAuthorizedRedirectPortsList() {
+        final String ports = getAuthorizedRedirectPorts();
+        if (ports != null && !ports.trim().isEmpty()) {
+            return Stream.of(ports.split(",")).map(Integer::parseInt).sorted().collect(Collectors.toSet());
+        }
+        return Collections.emptySet();
+    }
+
+    public void setAuthorizedRedirectPorts(String ports) {
+        if (ports != null && !ports.trim().isEmpty()) {
+            ports = Stream.of(ports.trim().split(",")).map(Integer::parseInt).collect(Collectors.toSet())
+                    .stream().sorted().map(i -> Integer.toString(i)).collect(Collectors.joining(","));
+            super.data.put(KEY_AUTHORIZED_REDIRECT_PORTS, ports);
+        } else {
+            super.data.put(KEY_AUTHORIZED_REDIRECT_PORTS, "");
+        }
+    }
+    
     public boolean isTermsOfServiceRequireNewApproval() {
         return Boolean.valueOf((String) super.data.get(KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL));
     }
@@ -498,6 +529,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setDnssecTrustAnchor(DnsSecDefaults.IANA_ROOT_ANCHORS_DEFAULT);
         setDnsPort(DNS_SERVER_PORT_DEFAULT);
         setUseDnsSecValidation(DEFAULT_USE_DNSSEC_VALIDATION);
+        setAuthorizedRedirectPorts(DEFAULT_AUTHORIZED_REDIRECT_PORTS);
         setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
         setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
     }
