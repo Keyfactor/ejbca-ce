@@ -93,11 +93,10 @@
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
             
-            <!-- Audience (but with per-oauth provider names) -->
+            <!-- Audience -->
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_AUDIENCE}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.audience}" size="46" id="audience"
-                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
-                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}">
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
             
