@@ -27,6 +27,7 @@ import org.apache.commons.lang.builder.CompareToBuilder;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.legacy.Eca10289RoleMemberData;
 
 /**
  * Entity bean for Role members. Does not correspond to a physical entity, but rather to an individual credential linked to an entity. The same 
@@ -41,6 +42,8 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 public class RoleMemberData extends ProtectedData implements Serializable, Comparable<RoleMemberData> {
 
     private static final long serialVersionUID = 1L;
+    
+    private static final int LATEST_PROTECT_VERSON = 2;
    
     private int primaryKey;
 
@@ -237,7 +240,11 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getPrimaryKey()).append(getTokenType()).append(getTokenIssuerId()).append(getTokenProviderId()).append(getTokenMatchKey()).append(getTokenMatchOperator()).
+        build.append(getPrimaryKey()).append(getTokenType()).append(getTokenIssuerId());
+        if (version >= 2) {
+            build.append(getTokenProviderId());
+        }
+        build.append(getTokenMatchKey()).append(getTokenMatchOperator()).
             append(getTokenMatchValue()).append(getRoleId()).append(getDescription());
         return build.toString();
     }
@@ -245,7 +252,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 1;
+        return LATEST_PROTECT_VERSON;
     }
 
     @PrePersist
@@ -259,6 +266,33 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     @Override
     protected void verifyData() throws DatabaseProtectionException {
         super.verifyData();
+    }
+    
+    /**
+     * Due to an issue with database protection between EJBCA 7.5 and 7.7.0 we need special handling to verify protection
+     * created between those versions. If the initial data verification failed, we should "patch" the protect string
+     * and verify again. If this fails we behave as usual, i.e. throw the original exception if erroronverify is set,
+     * or if not set just log a warning.
+     *
+     * This code can be removed once we are sure that all installations have performed post-upgrade on EJBCA version
+     * 8.x or later.
+     *
+     * @param possibleTamper an exception raised due to a possible database tamper
+     * @throws DatabaseProtectionException possibleTamper is thrown if the exception was not caused by ECA-10289, i.e
+     * the signature did not verify over the "patched" protect string either.
+     */
+    @Transient
+    @Override
+    @Deprecated
+    protected void onDataVerificationError(final DatabaseProtectionException possibleTamper) throws DatabaseProtectionException {
+        try {
+            // Try to verify again with a mocked RoleMemberData object returning a "patched"
+            // protect string
+            impl.verifyData(new Eca10289RoleMemberData(this));
+        } catch (final DatabaseProtectionException e) {
+            // Ignore the new exception and fall back to the default behaviour
+            super.onDataVerificationError(possibleTamper);
+        }
     }
 
     @Override
