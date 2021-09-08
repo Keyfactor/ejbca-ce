@@ -145,7 +145,11 @@ public abstract class DatabaseIndexUtil {
             // If this failed, try the searching for the table as returned by the database meta data
             if (tableIndexMap.isEmpty()) {
                 log.trace("Looking up all available tables available in the datasource to find a matching table.");
-                try (final ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, tableName, new String[] { "TABLE" })) {
+
+                // ECA-10120: Some supported databases have case sensitive comparison for Strings.
+                final String tablePattern = tableExists(tableName, databaseMetaData) ? tableName : tableName.toUpperCase();
+
+                try (ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, tablePattern, new String[] { "TABLE" })) {
                     while (resultSetSchemas.next()) {
                         final String tableCatalog = resultSetSchemas.getString("TABLE_CAT");
                         final String tableSchema = resultSetSchemas.getString("TABLE_SCHEM");
@@ -174,6 +178,16 @@ public abstract class DatabaseIndexUtil {
             ret.addAll(tableIndexMap.values());
         }
         return ret;
+    }
+
+    private static boolean tableExists(final String tableName, DatabaseMetaData databaseMetaData) throws SQLException {
+        try (ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, tableName, new String[] { "TABLE" })) {
+            if (resultSetSchemas.isBeforeFirst()){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @return a Map of index name and the index representations of each database index present for a schema and table */
