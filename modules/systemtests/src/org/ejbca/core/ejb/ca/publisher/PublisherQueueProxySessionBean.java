@@ -49,7 +49,7 @@ public class PublisherQueueProxySessionBean implements PublisherQueueProxySessio
     @Override
     public void addQueueData(int publisherId, int publishType, String fingerprint,
             PublisherQueueVolatileInformation queueData, int publishStatus) throws CreateException {
-        queueSession.addQueueData(publisherId, publishType, fingerprint, queueData, publishStatus);
+        queueSession.addQueueData(publisherId, publishType, fingerprint, queueData, publishStatus, false);
     }
 
     @Override
