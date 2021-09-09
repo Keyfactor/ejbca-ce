@@ -20,19 +20,25 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
 /**
- * Class processing the publisher queue. Can only run on instance in one VM on
- * one node. See method docs below for information about algorithms used.
+ * Service that revokes pre-certificates whose certificates didn't get issued.
  *
  * @version $Id$
  */
 public class IncompleteIssuanceRevocationWorker extends BaseWorker {
 
     private static final Logger log = Logger.getLogger(IncompleteIssuanceRevocationWorker.class);
+
+    public static final String PROP_MAX_ISSUANCE_TIME = "worker.maxIssuanceTime";
+    public static final String PROP_MAX_ISSUANCE_TIMEUNIT = "worker.maxIssuancceTimeUnit";
+
+    public static final String DEFAULT_MAX_ISSUANCE_TIME = "30";
+    public static final String DEFAULT_MAX_ISSUANCE_TIMEUNIT = IWorker.UNIT_MINUTES;
 
     /**
      * Semaphore making sure not two identical services run at the same time.
@@ -52,7 +58,7 @@ public class IncompleteIssuanceRevocationWorker extends BaseWorker {
      * @see org.ejbca.core.model.services.IWorker#work()
      */
     @Override
-    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) {
+    public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">work");
         final RevocationSessionLocal revocationSession = ((RevocationSessionLocal)ejbs.get(RevocationSessionLocal.class));
         // A semaphore used to not run parallel processing jobs
@@ -71,7 +77,7 @@ public class IncompleteIssuanceRevocationWorker extends BaseWorker {
             try {
                 int numRevokedCerts = 0;
                 while (true) {
-                    int revoked = revocationSession.revokeIncompletelyIssuedCertsBatched(admin);
+                    int revoked = revocationSession.revokeIncompletelyIssuedCertsBatched(admin, getMaxIssuanceTimeMillis());
                     if (revoked == 0) {
                         break;
                     }
@@ -92,6 +98,10 @@ public class IncompleteIssuanceRevocationWorker extends BaseWorker {
         }
         log.trace("<work");
         return ret;
+    }
+
+    private long getMaxIssuanceTimeMillis() throws ServiceExecutionFailedException {
+        return getTimeBeforeExpire(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIMEUNIT, IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIME);
     }
 
 
