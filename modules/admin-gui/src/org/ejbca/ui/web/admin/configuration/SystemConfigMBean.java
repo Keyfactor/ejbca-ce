@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +90,14 @@ import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.services.actions.NoAction;
+import org.ejbca.core.model.services.intervals.PeriodicalInterval;
+import org.ejbca.core.model.services.workers.IncompleteIssuanceRevocationWorker;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
@@ -353,6 +360,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private SystemConfigurationCtLogManager ctLogManager;
     private EABConfigManager eabConfigManager;
     private GoogleCtPolicy googleCtPolicy;
+    private boolean incompleteIssuanceServiceCheckDone = false;
+    private boolean incompleteIssuanceServiceAvailable;
 
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
@@ -363,6 +372,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
@@ -574,6 +584,49 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             googleCtPolicy = getGlobalConfiguration().getGoogleCtPolicy();
         }
         return googleCtPolicy;
+    }
+
+    public boolean isIncompleteIssuanceServiceAvailable() {
+        if (!incompleteIssuanceServiceCheckDone) {
+            incompleteIssuanceServiceCheckDone = true;
+            final HashMap<Integer,String> services = serviceSession.getServiceIdToNameMap();
+            incompleteIssuanceServiceAvailable = false;
+            for (final int serviceId : services.keySet()) {
+                final ServiceConfiguration service = serviceSession.getServiceConfiguration(serviceId);
+                if (IncompleteIssuanceRevocationWorker.class.getName().equals(service.getWorkerClassPath())) {
+                    incompleteIssuanceServiceAvailable = true;
+                }
+            }
+        }
+        return incompleteIssuanceServiceAvailable;
+    }
+
+    public void addIncompleteIssuanceService() {
+        final ServiceConfiguration serviceConf = new ServiceConfiguration();
+        serviceConf.setActive(true);
+        serviceConf.setDescription("This service revokes certificates where issuance has failed, but pre-certificates have been submitted to CT logs.");
+        serviceConf.setActionClassPath(NoAction.class.getName());
+        serviceConf.setIntervalClassPath(PeriodicalInterval.class.getName());
+        final Properties intervalProperties = new Properties();
+        intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, "5");
+        intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
+        serviceConf.setIntervalProperties(intervalProperties);
+        serviceConf.setWorkerClassPath(IncompleteIssuanceRevocationWorker.class.getName());
+        final Properties workerProperties = new Properties();
+        workerProperties.setProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIME, IncompleteIssuanceRevocationWorker.DEFAULT_MAX_ISSUANCE_TIME);
+        workerProperties.setProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIMEUNIT, IncompleteIssuanceRevocationWorker.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
+        serviceConf.setWorkerProperties(workerProperties);
+        serviceConf.setPinToNodes(new String[0]);
+        try {
+            final String serviceName = "Pre-Certificate Revocation Service";
+            serviceSession.addService(getAdmin(), serviceName, serviceConf);
+            addInfoMessage("CTLOGCONFIGURATION_SERVICEADDED", serviceName);
+        } catch (ServiceExistsException e) {
+            final String msg = "Service already exists.";
+            log.info(msg + e.getLocalizedMessage());
+            addNonTranslatedErrorMessage(msg);
+        }
+        incompleteIssuanceServiceCheckDone = false; // trigger a new check
     }
 
     public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
@@ -1085,6 +1138,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         selectedCustomCertExtensionID = 0;
         googleCtPolicy = null;
         validatorSettings = null;
+        incompleteIssuanceServiceCheckDone = false;
     }
 
     public void toggleUseAutoEnrollment() { getCurrentConfig().setUseAutoEnrollment(!getCurrentConfig().getUseAutoEnrollment()); }

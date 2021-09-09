@@ -257,9 +257,9 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     }
 
     @Override
-    public int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin) throws AuthorizationDeniedException {
+    public int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin, final long maxIssuanceTimeMillis) throws AuthorizationDeniedException {
         // Fetch a list of up to 100 "half-issued" certificates
-        final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch();
+        final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
         final Date now = new Date();
         int reason = RevocationReasons.CERTIFICATEHOLD.getDatabaseValue();
         for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {

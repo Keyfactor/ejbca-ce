@@ -12,26 +12,64 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.services.servicetypes;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.workers.IncompleteIssuanceRevocationWorker;
 
 /**
- *
+ * @see IncompleteIssuanceRevocationWorker
  */
 public class IncompleteIssuanceRevocationWorkerType extends BaseWorkerType {
 
     public static final String NAME = "INCOMPLETEISSUANCEREVOCATIONWORKER";
-    
+
     private static final long serialVersionUID = 1;
-    
+
+    private int maxCertAge = 60;
+    private String maxIssuanceTimeUnit = IWorker.UNIT_MINUTES;
+
     public IncompleteIssuanceRevocationWorkerType() {
-        super(ServiceTypeUtil.HSMKEEPALIVEWORKER_SUB_PAGE, NAME, true, IncompleteIssuanceRevocationWorker.class.getName());
+        super(ServiceTypeUtil.INCOMPLETEISSUANCEREVOCATIONWORKER_SUB_PAGE, NAME, true, IncompleteIssuanceRevocationWorker.class.getName());
         // No action available for this worker
         deleteAllCompatibleActionTypes();
         addCompatibleActionTypeName(NoActionType.NAME);
         addCompatibleIntervalTypeName(PeriodicalIntervalType.NAME);
-        
     }
-    
 
+    /** @return The maximum issuance time before the certificate is considered failed, and revoked */
+    public int getMaxIssuanceTime() {
+        return maxCertAge;
+    }
+
+    /** Sets the maximum issuance time before the certificate is considered failed, and revoked */
+    public void setMaxIssuanceTime(int maxCertAge) {
+        this.maxCertAge = maxCertAge;
+    }
+
+    public String getMaxIssuanceTimeUnit() {
+        return maxIssuanceTimeUnit;
+    }
+
+    public void setMaxIssuanceTimeUnit(final String maxIssuanceTimeUnit) {
+        this.maxIssuanceTimeUnit = maxIssuanceTimeUnit;
+    }
+
+    @Override
+    public Properties getProperties(final ArrayList<String> errorMessages) throws IOException {
+        Properties ret = super.getProperties(errorMessages);
+        ret.setProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge));
+        ret.setProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
+        return ret;
+    }
+
+    @Override
+    public void setProperties(Properties properties) throws IOException {
+        super.setProperties(properties);
+        maxCertAge = Integer.valueOf(properties.getProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge)));
+        maxIssuanceTimeUnit = properties.getProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
+    }
 
 }
