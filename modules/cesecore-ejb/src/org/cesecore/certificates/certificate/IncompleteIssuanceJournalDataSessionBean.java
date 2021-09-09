@@ -39,8 +39,6 @@ public class IncompleteIssuanceJournalDataSessionBean implements IncompleteIssua
 
     /** Number of rows to fetch at once */
     private static final int BATCH_SIZE = 100;
-    /** Certificates older that this number of milliseconds are considered to be in "half-issued" state, and will be revoked */
-    private static final long ISSUANCE_TIMEOUT = 60L*60L*1000L;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -84,10 +82,10 @@ public class IncompleteIssuanceJournalDataSessionBean implements IncompleteIssua
     }
 
     @Override
-    public List<IncompletelyIssuedCertificateInfo> getIncompleteIssuedCertsBatch() {
+    public List<IncompletelyIssuedCertificateInfo> getIncompleteIssuedCertsBatch(final long maxIssuanceTimeMillis) {
         final TypedQuery<IncompleteIssuanceJournalData> query = entityManager.createQuery(
                 "SELECT a FROM IncompleteIssuanceJournalData a WHERE a.startTime < :maxStartTime", IncompleteIssuanceJournalData.class);
-        query.setParameter("maxStartTime", new Date().getTime() - ISSUANCE_TIMEOUT);
+        query.setParameter("maxStartTime", new Date().getTime() - maxIssuanceTimeMillis);
         query.setMaxResults(BATCH_SIZE);
         final List<IncompletelyIssuedCertificateInfo> results = new ArrayList<>();
         for (final IncompleteIssuanceJournalData row : query.getResultList()) {
