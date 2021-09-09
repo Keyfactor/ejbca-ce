@@ -147,14 +147,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     }
 
     @Override
-    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus)
+    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus, boolean safeDirectPublish)
             throws CreateException {
         if (log.isTraceEnabled()) {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
         }
         try {
             entityManager.persist(new org.ejbca.core.ejb.ca.publisher.PublisherQueueData(publisherId, publishType, fingerprint, queueData,
-                    publishStatus));
+                    publishStatus, (safeDirectPublish && publishType == PublisherConst.PUBLISH_TYPE_CERT)));
         } catch (Exception e) {
             throw new CreateException(e.getMessage());
         }
