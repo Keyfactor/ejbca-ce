@@ -131,8 +131,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @Asynchronous
     @Override
-    public void publishQueuedEntry(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData entity) {
-        PublishingResult publisherResult = publisherQueueSession.doPublish(admin, publisher, entity);
+    public void publishQueuedEntry(AuthenticationToken admin, int publisherId, PublisherQueueData entity) {
+        final BasePublisher publisher = getPublisher(publisherId);
+        final PublishingResult publisherResult = publisherQueueSession.doPublish(admin, publisher, entity);
 
         boolean success = false;
         success = publisherResult.getSuccesses() > 0;
@@ -165,8 +166,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
         
-//        boolean safeDirectPublish = true; //TODO configurable in publisher
-        
         final BaseCertificateData certificateData = certWrapper.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
@@ -188,7 +187,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             if (publ != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
                 if (publ.willPublishCertificate(status, revocationReason)) {
-                    if (publ.getOnlyUseQueue()) {
+                    if (publ.getOnlyUseQueue() || publ.getSafeDirectPublishing()) {
                         if (publ.getUseQueueForCertificates()) {
                             publishersToQueuePending.add(publ);
                             // Publishing to the queue directly is not considered a successful write to the publisher (since we don't know that it will be)
@@ -276,7 +275,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             pqvd.setExtendedInformation(extendedInformation);
             pqvd.setUserDN(userDN);
             try {
-                publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fingerprint, pqvd, publisherStatus);
+                publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fingerprint, pqvd, publisherStatus, publ.getSafeDirectPublishing());
                 final String msg = intres.getLocalizedMessage("publisher.storequeue", name, fingerprint, status);
                 log.info(msg);
             } catch (CreateException e) {
@@ -350,7 +349,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     try {
                         // publishStatus can only be either STATUS_PENDING or STATUS_SUCCESS, for CRLs we want to store with the actual status, that may be
                         // STATUS_SUCCESS if it was published directly above (status is success, but useQueueForCRLS and keepPublishedInQueue is active)
-                        publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, publishStatus);
+                        publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, publishStatus, false);
                         String msg = intres.getLocalizedMessage("publisher.storequeue", name, fp, "CRL");
                         log.info(msg);
                     } catch (CreateException e) {
@@ -434,7 +433,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         try {
             // publishStatus can only be either STATUS_PENDING or STATUS_SUCCESS, for OCSP response we want to store with the actual status, that may be
             // STATUS_SUCCESS if it was published directly above (status is success, but useQueueForOcspResponse and keepPublishedInQueue is active)
-            publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_OCSP_RESPONSE, responseId, pqvd, publishStatus);
+            publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_OCSP_RESPONSE, responseId, pqvd, publishStatus, false);
             String msg = intres.getLocalizedMessage("publisher.storequeue", name, responseId, "OCSP Response");
             log.info(msg);
         } catch (CreateException e) {

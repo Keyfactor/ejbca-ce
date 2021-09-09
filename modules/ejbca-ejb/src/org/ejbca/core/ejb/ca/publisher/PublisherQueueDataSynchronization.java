@@ -20,15 +20,13 @@ import javax.transaction.Synchronization;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 
 public class PublisherQueueDataSynchronization implements Synchronization {
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
-
+    
     private EjbLocalHelper ejbLocalHelper;
 
     private PublisherSessionLocal publisherSession;
@@ -43,19 +41,12 @@ public class PublisherQueueDataSynchronization implements Synchronization {
     @Override
     public void afterCompletion(int transactionStatus) {
         // PublisherQueueDataEntry has been committed to database. Should be safe to publish.
-        if (transactionStatus == Status.STATUS_COMMITTED) {
-            final BasePublisher publisher = publisherSession.getPublisher(entity.getPublisherId());
-            // We only care about direct certificate publishing
-            // TODO safeDirect &&  (or transient field on the entity)
-            if (!publisher.getOnlyUseQueue() && publisher.getType() == PublisherConst.PUBLISH_TYPE_CERT) {
-                org.ejbca.core.model.ca.publisher.PublisherQueueData queuedData = 
-                        new org.ejbca.core.model.ca.publisher.PublisherQueueData(entity.getPk(), new Date(entity.getTimeCreated()), new Date(entity.getLastUpdate()),
-                        entity.getPublishStatus(), entity.getTryCounter(), entity.getPublishType(), entity.getFingerprint(), entity.getPublisherId(),
-                        entity.getPublisherQueueVolatileData());
-                
-                publisherSession.publishQueuedEntry(authenticationToken, publisher, queuedData);
-            }
-            
+        if (transactionStatus == Status.STATUS_COMMITTED && entity.isSafeDirectPublishing()) {
+            org.ejbca.core.model.ca.publisher.PublisherQueueData queuedData = 
+                    new org.ejbca.core.model.ca.publisher.PublisherQueueData(entity.getPk(), new Date(entity.getTimeCreated()), new Date(entity.getLastUpdate()),
+                    entity.getPublishStatus(), entity.getTryCounter(), entity.getPublishType(), entity.getFingerprint(), entity.getPublisherId(),
+                    entity.getPublisherQueueVolatileData());
+            publisherSession.publishQueuedEntry(authenticationToken, entity.getPublisherId(), queuedData);
         }
     }
 
@@ -63,5 +54,4 @@ public class PublisherQueueDataSynchronization implements Synchronization {
     public void beforeCompletion() {
         // NOOP
     }
-    
 }

@@ -130,6 +130,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private boolean useQueueForOcspResponses;
     private boolean keepPublishedInQueue;
     private boolean onlyUseQueue;
+    private boolean safeDirectPublishing;
 
     @ManagedProperty(value = "#{listPublishers}")
     private ListPublishersManagedBean listPublishers;
@@ -448,6 +449,14 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.onlyUseQueue = onlyUseQueue;
     }
     
+    public boolean isSafeDirectPublishing() {
+        return safeDirectPublishing;
+    }
+
+    public void setSafeDirectPublishing(boolean safeDirectPublishing) {
+        this.safeDirectPublishing = safeDirectPublishing;
+    }
+
     public String getCustomPublisherPropertyText(final CustomPublisherProperty customPublisherProperty) {
         return getEjbcaWebBean()
                 .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase());
@@ -528,6 +537,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private void setPublisherQueueAndGeneralSettings() {
         publisher.setOnlyUseQueue(onlyUseQueue);
+        publisher.setSafeDirectPublishing(safeDirectPublishing);
         publisher.setKeepPublishedInQueue(keepPublishedInQueue);
         publisher.setUseQueueForCRLs(useQueueForCRLs);
         publisher.setUseQueueForCertificates(useQueueForCertificates);
@@ -600,6 +610,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         selectedPublisherType = getSelectedPublisherValue();
         publisherDescription = publisher.getDescription();
         onlyUseQueue = publisher.getOnlyUseQueue();
+        safeDirectPublishing = publisher.getSafeDirectPublishing();
         keepPublishedInQueue = publisher.getKeepPublishedInQueue();
         useQueueForCRLs = publisher.getUseQueueForCRLs();
         useQueueForCertificates = publisher.getUseQueueForCertificates();
