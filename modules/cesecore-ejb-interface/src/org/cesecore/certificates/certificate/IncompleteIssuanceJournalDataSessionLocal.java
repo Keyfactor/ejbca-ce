@@ -32,8 +32,9 @@ public interface IncompleteIssuanceJournalDataSessionLocal extends IncompleteIss
      * Gets up to 100 incompletely issued certificates, that are older than 1 hour.
      * Those can safely be assumed to be failed issuances.
      *
+     * @param maxIssuanceTimeMillis  Time until a certificate issuance is considered to have failed.
      * @return List with one entry per certificate, or an empty list if there are no more incompletely issued certificates.
      */
-    List<IncompletelyIssuedCertificateInfo> getIncompleteIssuedCertsBatch();
+    List<IncompletelyIssuedCertificateInfo> getIncompleteIssuedCertsBatch(long maxIssuanceTimeMillis);
 
 }

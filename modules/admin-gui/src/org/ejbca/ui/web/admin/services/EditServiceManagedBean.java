@@ -302,6 +302,12 @@ public class EditServiceManagedBean extends BaseManagedBean {
         return (CRLDownloadWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
     }
 
+    /** Help method used to edit data in the IncompleteIssuanceRevocationWorkerType. */
+    public IncompleteIssuanceRevocationWorkerType getIncompleteIssuanceRevocationWorkerType() {
+        String name = IncompleteIssuanceRevocationWorkerType.NAME;
+        return (IncompleteIssuanceRevocationWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+    }
+
     /** Help method used to edit data in the custom interval type. */
     public PeriodicalIntervalType getPeriodicalIntervalType() {
         return (PeriodicalIntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PeriodicalIntervalType.NAME);
