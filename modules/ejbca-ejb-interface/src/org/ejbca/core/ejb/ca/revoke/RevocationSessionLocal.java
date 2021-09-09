@@ -97,9 +97,10 @@ public interface RevocationSessionLocal extends RevocationSession {
      * This method works in batches of 100 certificates, and returns 0 when there are no more certificates to revoke.
      *
      * @param admin  Administrator performing the operation
+     * @param maxIssuanceTimeMillis  Time until a certificate issuance is considered to have failed.
      * @return  Number of revoked certificates, or 0 when there is nothing left to revoke.
      * @throws AuthorizationDeniedException (rollback)
      */
-    int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin) throws AuthorizationDeniedException;
+    int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin, long maxIssuanceTimeMillis) throws AuthorizationDeniedException;
 
 }
