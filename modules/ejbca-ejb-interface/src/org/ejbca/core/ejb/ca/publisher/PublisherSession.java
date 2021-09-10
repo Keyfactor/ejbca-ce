@@ -129,8 +129,7 @@ public interface PublisherSession {
     void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
 
     /**
-     * Removes a publisher. References to the publisher from CA, certificate prof@Override
-    iles and Multi Group Publishers
+     * Removes a publisher. References to the publisher from CA, certificate profiles and Multi Group Publishers
      * are checked.
      * 
      * @param admin AuthenticationToken of admin.
