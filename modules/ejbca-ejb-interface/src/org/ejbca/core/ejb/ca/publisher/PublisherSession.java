@@ -218,10 +218,10 @@ public interface PublisherSession {
     boolean storeOcspResponses(final AuthenticationToken admin, final Collection<Integer> publisherids, final OcspResponseData ocspResponseData) throws AuthorizationDeniedException, PublisherException;
 
     /**
-     * TODO
-     * @param admin
-     * @param publisherId
-     * @param entity
+     * Asynchronously publish a single queued entry
+     * @param admin authentication token used to perform the operations
+     * @param publisherId Id of the Publisher associated with the queued entry.
+     * @param entity Queued entry to Publish.
      */
     void publishQueuedEntry(AuthenticationToken admin, int publisherId, PublisherQueueData entity);
     
