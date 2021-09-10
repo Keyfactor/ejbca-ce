@@ -22,9 +22,16 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
-
+/**
+ * Registered by PublisherQueueDataListener for the transaction associated with the PublisherQueueData
+ * entity object.
+ * 
+ * afterCompletion() is invoked by the transaction manager after transaction is committed (or rolled back). This
+ * allows us to take action depending on the outcome of the transaction.
+ */
 public class PublisherQueueDataSynchronization implements Synchronization {
-
+    
+    // Publishing will be executed from queue, as if a Service Worker was being used.
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
     
     private EjbLocalHelper ejbLocalHelper;

@@ -16,12 +16,19 @@ package org.ejbca.core.ejb.ca.publisher;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.apache.log4j.Logger;
 
-
+/**
+ * Entity listener for PublisherQueueData. If the entity object comes from a 
+ * "Safe Direct Publishing" operation, a callback is registered upon persist which instantly triggers
+ * publishing for the object if and only if the transaction committed successfully. This prevents data
+ * inconsistency in between the local and remote (publishing target database).
+ * @see PublisherQueueDataSynchronization
+ * 
+ * This entity listener is registered in orm-ejbca-x.xml
+ */
 public class PublisherQueueDataEntityListener {
 
     private static final Logger log = Logger.getLogger(PublisherQueueDataEntityListener.class);
@@ -29,17 +36,17 @@ public class PublisherQueueDataEntityListener {
     // @Resource Annotation causes lookup failure on WF10. Lookup with JNDI instead
     TransactionSynchronizationRegistry registry;
     
-    @PostUpdate
     @PostPersist
     public void postUpdate(final PublisherQueueData entity) throws NamingException {
-        try {
-            registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/TransactionSynchronizationRegistry");
-        } catch (NamingException e) {
-            log.info("TransactionSynchronizationRegistry JNDI lookup failed for java:comp/TransactionSynchronizationRegistry\n"
-                    + "Using java:comp/env/TransactionSynchronizationRegistry instead");
-            registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/env/TransactionSynchronizationRegistry");
-            throw new IllegalStateException(e);
+        if (entity.isSafeDirectPublishing()) {
+            try {
+                registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/TransactionSynchronizationRegistry");
+            } catch (NamingException e) {
+                log.info("TransactionSynchronizationRegistry JNDI lookup failed for java:comp/TransactionSynchronizationRegistry\n"
+                        + "Using java:comp/env/TransactionSynchronizationRegistry instead");
+                registry = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:comp/env/TransactionSynchronizationRegistry");
+            }
+            registry.registerInterposedSynchronization(new PublisherQueueDataSynchronization(entity));
         }
-        registry.registerInterposedSynchronization(new PublisherQueueDataSynchronization(entity));
     }
 }
