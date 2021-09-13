@@ -82,7 +82,12 @@ public class OAuthProviderUIHelper {
 
     private static void validateCommonType(final OAuthKeyEditor provider) {
         if (StringUtils.isEmpty(provider.getLabel())) {
-            throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Label"));
+            throw new MissingOAuthKeyAttributeException(
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Label"));
+        }
+        if (StringUtils.isEmpty(provider.getAudience())) {
+            throw new MissingOAuthKeyAttributeException(
+                    EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Audience"));
         }
     }
 }

@@ -159,7 +159,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             // If applicable log all of the OAuth providers
             if (conf != null && conf.getClass().equals(OAuthConfiguration.class)) {
                 for (Map.Entry<String,OAuthKeyInfo> entry : ((OAuthConfiguration) conf).getOauthKeys().entrySet()) {
-                    details.put("oauthkey_" + entry.getKey(), entry.getValue().getLogString());
+                    details.put("oauthkey_" + entry.getKey(), entry.getValue().createLogString());
                 }
             }
             auditSession.log(EventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,

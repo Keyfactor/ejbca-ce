@@ -12,18 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.isNull;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.same;
-import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -36,6 +24,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.nimbusds.jose.util.Base64URL;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
@@ -63,7 +53,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.nimbusds.jose.util.Base64URL;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isNull;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.same;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Test of {@link WebAuthenticationProviderSessionBean}. See also WebAuthenticationProviderSessionBeanTest
@@ -136,6 +134,7 @@ public class WebAuthenticationProviderSessionUnitTest {
         // OAuth provider configuration
         final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
+        oAuthKeyInfo.setAudience("unittest");
         oauthConfiguration = new OAuthConfiguration();
         oauthConfiguration.setDefaultOauthKey(oAuthKeyInfo);
         oauthConfiguration.addOauthKey(oAuthKeyInfo);
@@ -219,7 +218,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void unsignedToken() throws TokenExpiredException {
         log.trace(">unsignedToken");
-        final String token = encodeToken("{\"alg\":\"none\"}", "{\"sub\":\"johndoe\"}");
+        final String token = encodeToken("{\"alg\":\"none\"}", "{\"sub\":\"johndoe\", \"aud\":\"unititest\"}");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<unsignedToken");
     }
@@ -227,7 +226,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void missingSignature() throws TokenExpiredException {
         log.trace(">missingSignature");
-        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}");
+        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}");
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<missingSignature");
     }
@@ -235,7 +234,7 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void malformedSignature() throws TokenExpiredException {
         log.trace(">malformedSignature");
-        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}") + "AAAA"; // last part is signature
+        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}") + "AAAA"; // last part is signature
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<malformedSignature");
     }
@@ -245,7 +244,7 @@ public class WebAuthenticationProviderSessionUnitTest {
         log.trace(">unknownSignatureAlgorithm");
         final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
-        final String token = encodeToken("{\"alg\":\"XX\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}") + "AAAA"; // last part is signature
+        final String token = encodeToken("{\"alg\":\"XX\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}") + "AAAA"; // last part is signature
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<unknownSignatureAlgorithm");
     }
@@ -257,7 +256,7 @@ public class WebAuthenticationProviderSessionUnitTest {
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         replay(securityEventsSessionMock);
         final String timestamp = timestampFromNow(-60*60*1000); // 1 hour old
-        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
+        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\", \"exp\":" + timestamp + "}", privKey);
         try {
             assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         } catch (TokenExpiredException e) {
@@ -275,7 +274,7 @@ public class WebAuthenticationProviderSessionUnitTest {
         expectAuditLog("authentication.jwt.not_yet_valid", "johndoe", pubKeyFingerprint);
         replay(securityEventsSessionMock);
         final String timestamp = timestampFromNow(60*60*1000); // 1 hour ahead
-        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"nbf\":" + timestamp + "}", privKey);
+        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"nbf\":" + timestamp + ", \"aud\": \"unittest\"}", privKey);
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         verify(securityEventsSessionMock);
         log.trace("<notYetValidToken");
@@ -288,9 +287,9 @@ public class WebAuthenticationProviderSessionUnitTest {
         oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
         expectAuditLog("authentication.jwt.invalid_signature", pubKeyFingerprint);
         replay(securityEventsSessionMock);
-        final String originalToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
+        final String originalToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}", privKey);
         // Change the payload
-        final String newPayload = Base64URL.encode("{\"sub\":\"janedoe\"}").toString(); // johndoe -> janedoe
+        final String newPayload = Base64URL.encode("{\"sub\":\"janedoe\", \"aud\": \"unittest\"}").toString(); // johndoe -> janedoe
         final String[] pieces = originalToken.split("\\.");
         final String token = pieces[0] + "." + newPayload + "." + pieces[2];
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
@@ -309,14 +308,14 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulRsaDefaultKey() throws TokenExpiredException {
         log.trace(">successfulRsaDefaultKey");
-        final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
+        final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}", privKey);
         final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token);
         assertNotNull("Authentication should succeed", admin);
         final OAuth2Principal principal = admin.getClaims();
         assertNotNull("Should have a Principal object", principal);
         assertEquals("Incorrect subject claim", "johndoe", principal.getSubject());
         assertNull("Unexpected issuer claim", principal.getIssuer());
-        assertTrue("Unexpected audience claim", principal.getAudience().isEmpty());
+        assertEquals("Unexpected audience claim", "unittest", principal.getAudience().iterator().next());
         assertEquals("Incorrect public key fingerprint", pubKeyFingerprint, admin.getPublicKeyBase64Fingerprint());
         log.trace("<successfulRsaDefaultKey");
     }
@@ -324,14 +323,14 @@ public class WebAuthenticationProviderSessionUnitTest {
     @Test
     public void successfulRsaWithKeyId() throws TokenExpiredException {
         log.trace(">successfulRsaWithKeyId");
-        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
+        final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}", privKey);
         final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token);
         assertNotNull("Authentication should succeed", admin);
         final OAuth2Principal principal = admin.getClaims();
         assertNotNull("Should have a Principal object", principal);
         assertEquals("Incorrect subject claim", "johndoe", principal.getSubject());
         assertNull("Unexpected issuer claim", principal.getIssuer());
-        assertTrue("Unexpected audience claim", principal.getAudience().isEmpty());
+        assertEquals("Unexpected audience claim", "unittest", principal.getAudience().iterator().next());
         assertEquals("Incorrect public key fingerprint", pubKeyFingerprint, admin.getPublicKeyBase64Fingerprint());
         log.trace("<successfulRsaWithKeyId");
     }
@@ -343,14 +342,14 @@ public class WebAuthenticationProviderSessionUnitTest {
         final String expiry = timestampFromNow(60*60*1000); // 1 hour ahead
         final String notBefore = timestampFromNow(-60*60*1000); // 1 hour old
         final String token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}",
-                "{\"aud\":[\"admins\"],\"exp\":" + expiry + ",\"iss\":\"issuer1\",\"nbf\":" + notBefore + ",\"sub\":\"johndoe\"}", privKey);
+                "{\"aud\":[\"unittest\"],\"exp\":" + expiry + ",\"iss\":\"issuer1\",\"nbf\":" + notBefore + ",\"sub\":\"johndoe\"}", privKey);
         final OAuth2AuthenticationToken admin = (OAuth2AuthenticationToken) webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token);
         assertNotNull("Authentication should succeed", admin);
         final OAuth2Principal principal = admin.getClaims();
         assertNotNull("Should have a Principal object", principal);
         assertEquals("Incorrect subject claim", "johndoe", principal.getSubject());
         assertEquals("Incorrect issuer claim", "issuer1", principal.getIssuer());
-        assertEquals("Incorrect audience claim", Collections.singletonList("admins"), principal.getAudience());
+        assertEquals("Incorrect audience claim", Collections.singletonList("unittest"), principal.getAudience());
         assertEquals("Incorrect public key fingerprint", pubKeyFingerprint, admin.getPublicKeyBase64Fingerprint());
         log.trace("<successfulComplexToken");
     }

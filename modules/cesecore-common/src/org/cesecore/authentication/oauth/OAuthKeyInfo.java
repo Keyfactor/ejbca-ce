@@ -29,7 +29,6 @@ import org.cesecore.util.StringTools;
 
 /**
  * Represents an OAuth Public Key entry
- *
  */
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -83,6 +82,8 @@ public final class OAuthKeyInfo implements Serializable {
     private String tokenUrl;
     private String logoutUrl;
 
+    private String audience;
+    
     /**
      * Creates a OAuth Key info object
      *
@@ -336,13 +337,14 @@ public final class OAuthKeyInfo implements Serializable {
         this.logoutUrl = logoutUrl;
     }
 
-    public String getLogString(){
+    public String createLogString(){
         StringBuilder msg = new StringBuilder();
         msg.append("{ type=").append( getType().getLabel()).append(", ")
                 .append("client=").append(getClient()).append(", ")
                 .append("realm=").append(getRealm()).append(", ")
                 .append("scope=").append(getScope()).append(", ")
                 .append("url=").append(getUrl()).append(", ")
+                .append("audience=").append(getAudience()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
@@ -354,5 +356,13 @@ public final class OAuthKeyInfo implements Serializable {
         }
         msg.append("]}");
         return msg.toString();
+    }
+
+    public String getAudience() {
+        return audience;
+    }
+
+    public void setAudience(String audience) {
+        this.audience = audience;
     }
 }
