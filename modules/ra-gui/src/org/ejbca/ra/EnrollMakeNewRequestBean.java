@@ -129,6 +129,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
     public static int MAX_CSR_LENGTH = 10240;
+    private static final int MIN_OPTIONAL_FIELDS_TO_SHOW = 2;
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -204,11 +205,90 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private UIComponent confirmPasswordComponent;
     private UIComponent validityInputComponent;
 
+    private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    private int numberOfOptionalSdaFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    
     @PostConstruct
     private void postContruct() {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
         this.authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
         this.authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+    }
+    
+    /**
+     * @return current number of optional subject dn fields to show in the GUI
+     */
+    public int getNumberOfOptionalSdnFieldsToShow() {
+        return numberOfOptionalSdnFieldsToShow;
+    }
+
+    /**
+     * @return current number of optional subject alternative name fields to show in the GUI
+     */
+    public int getNumberOfOptionalSanFieldsToShow() {
+        return numberOfOptionalSanFieldsToShow;
+    }
+    
+    /**
+     * @return current number of optional subject directory attribute fields to show in the GUI
+     */
+    public int getNumberOfOptionalSdaFieldsToShow() {
+        return numberOfOptionalSdaFieldsToShow;
+    }
+    
+    /**
+     * Toggles between showing full optional fields or minimum optional fields for subject dn fields
+     */
+    public void showFullOptionalSdnFieldsToggle() {
+        if(numberOfOptionalSdnFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSdnFieldsToShow = subjectDn.getOptionalFieldInstances().size();
+        }
+    }
+
+    /**
+     * Toggles between showing full optional fields or minimum optional fields for subject alternative name fields
+     */
+    public void showFullOptionalSanFieldsToggle() {
+        if(numberOfOptionalSanFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSanFieldsToShow = subjectAlternativeName.getOptionalFieldInstances().size();
+        }
+    }
+    
+    /**
+     * Toggles between showing full optional fields or minimum optional fields for subject directory attribute fields
+     */
+    public void showFullOptionalSdaFieldsToggle() {
+        if(numberOfOptionalSdaFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSdaFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSdaFieldsToShow = subjectDirectoryAttributes.getOptionalFieldInstances().size();
+        }
+    }
+
+    /**
+     * @return true when the size of optional subject dn fields becomes bigger than current value 
+     */
+    public boolean isShowMoreOptionalSdnFields() {
+        return subjectDn.getOptionalFieldInstances().size() > numberOfOptionalSdnFieldsToShow;
+    }
+    
+    /**
+     * @return true when the size of optional subject alternative name fields becomes bigger than current value 
+     */
+    public boolean isShowMoreOptionalSanFields() {
+        return subjectAlternativeName.getOptionalFieldInstances().size() > numberOfOptionalSanFieldsToShow;
+    }
+    
+    /**
+     * @return true when the size of optional subject directory attribute fields becomes bigger than current value 
+     */
+    public boolean isShowMoreOptionalSdaFields() {
+        return subjectDirectoryAttributes.getOptionalFieldInstances().size() > numberOfOptionalSdaFieldsToShow;
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -541,16 +621,37 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (renderNonModifiableFields) {
             return true;
         }
-        if (getSubjectDn() != null && !isAllFieldInstancesRendered(getSubjectDn().getFieldInstances())) {
+        if (getSubjectDn() != null && !isAllFieldInstancesRendered(getSubjectDn().getRequiredFieldInstances())) {
             return true;
         }
-        if (getSubjectAlternativeName() != null && !isAllFieldInstancesRendered(getSubjectAlternativeName().getFieldInstances())) {
+        if (getSubjectAlternativeName() != null && !isAllFieldInstancesRendered(getSubjectAlternativeName().getRequiredFieldInstances())) {
             return true;
         }
-        if (getSubjectDirectoryAttributes() != null && !isAllFieldInstancesRendered(getSubjectDirectoryAttributes().getFieldInstances())) {
+        if (getSubjectDirectoryAttributes() != null && !isAllFieldInstancesRendered(getSubjectDirectoryAttributes().getRequiredFieldInstances())) {
             return true;
         }
         return false;
+    }
+    
+    /** 
+     * @return true if number of optional subject dn fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
+     */
+    public boolean isRenderOptionalSdnFieldToggler() {
+        return subjectDn.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
+    }
+
+    /**
+     * @return true if number of optional subject alternative name fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
+     */
+    public boolean isRenderOptionalSanFieldToggler() {
+        return subjectAlternativeName.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
+    }
+    
+    /**
+     * @return true if number of optional subject directory attribute fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
+     */
+    public boolean isRenderOptionalSdaFieldToggler() {
+        return subjectDirectoryAttributes.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
     }
 
     private boolean isAllFieldInstancesRendered(final Collection<FieldInstance> fieldInstances) {
@@ -712,12 +813,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr != null) {
             final PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
             if (pkcs10CertificateRequest.getSubject() != null) {
-                populateRequestFields(RequestFieldType.DN, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getFieldInstances());
+                populateRequestFields(RequestFieldType.DN, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getRequiredFieldInstances());
                 getSubjectDn().update();
             }
             final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
             if (sanExtension != null) {
-                populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getRequiredFieldInstances());
                 getSubjectAlternativeName().update();
             } else {
                 // If an updated CSR did not have any AN, make sure we clean the fields
@@ -728,7 +829,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
                 try {
                     final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
-                    populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
+                    populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getRequiredFieldInstances());
                     getSubjectDirectoryAttributes().update();
                 } catch (ParseException | IllegalArgumentException e) {
                     log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
@@ -2091,7 +2192,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public boolean isSubjectDnRendered() {
         if (getSubjectDn() != null) {
-            for (final FieldInstance fieldInstance : getSubjectDn().getFieldInstances()) {
+            for (final FieldInstance fieldInstance : getSubjectDn().getRequiredFieldInstances()) {
                 if (isFieldInstanceRendered(fieldInstance)) {
                     return true;
                 }
@@ -2122,7 +2223,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public boolean isSubjectAlternativeNameRendered() {
         if (getSubjectAlternativeName() != null) {
-            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getFieldInstances()) {
+            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getRequiredFieldInstances()) {
+                if (isFieldInstanceRendered(fieldInstance)) {
+                    return true;
+                }
+            }
+            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getOptionalFieldInstances()) {
                 if (isFieldInstanceRendered(fieldInstance)) {
                     return true;
                 }
@@ -2145,11 +2251,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return the if there is at least one field in subject directory attributes that should be rendered
+     * @return the if there is at least one field (required or optional) in subject directory attributes that should be rendered
      */
     public boolean isSubjectDirectoryAttributesRendered() {
         if (getSubjectDirectoryAttributes()!=null) {
-            for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getFieldInstances()) {
+            for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getRequiredFieldInstances()) {
+                if (isFieldInstanceRendered(fieldInstance)) {
+                    return true;
+                }
+            }
+            for(final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getOptionalFieldInstances()) {
                 if (isFieldInstanceRendered(fieldInstance)) {
                     return true;
                 }
@@ -2175,6 +2286,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return true if the field instance should be rendered
      */
     public boolean isFieldInstanceRendered(final FieldInstance fieldInstance) {
+        
+        if(fieldInstance == null) {
+            return false;
+        }
         if (log.isTraceEnabled()) {
             log.trace("isFieldInstanceRendered name=" + fieldInstance.getName() + " used=" + fieldInstance.isUsed() + " selectable=" + fieldInstance.isSelectable() +
                     " modifiable=" + fieldInstance.isModifiable() + " selectableValues.size=" + (fieldInstance.getSelectableValues() == null ? 0 : fieldInstance.getSelectableValues().size()));
@@ -2363,7 +2478,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
             concatenated = email + "@" + domain;
         }
-        List<EndEntityProfile.FieldInstance> fieldInstances = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getFieldInstances();
+        List<EndEntityProfile.FieldInstance> fieldInstances = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
         if (index >= 0 && index < fieldInstances.size()) {
             fieldInstances.get(index).setValue(concatenated);
         }
