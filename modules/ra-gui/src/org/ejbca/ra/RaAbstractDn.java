@@ -30,8 +30,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  * Represents two APIs: list (needed for JSF) and map
  * for the DN fields of the specified end entity profile. It is
  * extended by Subject DN, SubjectAlternateName and Subject Directory Attributes
- * 
- *
  */
 public abstract class RaAbstractDn {
 
