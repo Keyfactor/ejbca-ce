@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,6 +41,7 @@ import org.ejbca.util.HttpTools;
  *
  */
 public class LogOutServlet extends HttpServlet {
+    private static Logger logger = Logger.getLogger(LogOutServlet.class);
 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -67,13 +69,17 @@ public class LogOutServlet extends HttpServlet {
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         final String bearerToken = getBearerToken(request);
         OAuthKeyInfo oAuthKeyInfo = null;
-        if (!StringUtils.isEmpty(bearerToken)){
+        if (!StringUtils.isEmpty(bearerToken)) {
             OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
                     .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
             try {
                 AuthenticationToken authenticationToken = authenticationSession.authenticateUsingOAuthBearerToken(oAuthConfiguration, bearerToken);
-                OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authenticationToken;
-                oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(token.getProviderLabel());
+                if (authenticationToken == null) {
+                    logger.debug("Bearer token authentication failed in logout.");
+                } else {
+                    OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authenticationToken;
+                    oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(token.getProviderLabel());
+                }
             } catch (TokenExpiredException e) {
                 //do nothing
             }
