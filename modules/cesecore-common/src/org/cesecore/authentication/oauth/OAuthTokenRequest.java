@@ -16,9 +16,26 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSHeader.Builder;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -51,6 +68,9 @@ public class OAuthTokenRequest {
     private String clientId;
     private String uri;
     private String clientSecret;
+    private String clientAssertionAudience;
+    private PrivateKey key;
+    private X509Certificate certificate;
 
     public int getTimeoutMillis() {
         return timeoutMillis;
@@ -150,7 +170,14 @@ public class OAuthTokenRequest {
         }
         params.add(new BasicHeader("redirect_uri", redirectUri));
         params.add(new BasicHeader("client_id", clientId));
-        params.add(new BasicHeader("client_secret", clientSecret));
+        
+        if (key != null) {
+            params.add(new BasicHeader("client_assertion_type" , "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"));
+            params.add(new BasicHeader("client_assertion" , getJwtString(clientAssertionAudience, clientId, timeoutMillis, key, certificate)));
+        }
+        else {
+            params.add(new BasicHeader("client_secret", clientSecret));
+        }
         final HttpPost post = new HttpPost();
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
         try {
@@ -203,4 +230,60 @@ public class OAuthTokenRequest {
         }
     }
 
+    public void setClientAssertionAudience(String audience) {
+        this.clientAssertionAudience = audience;
+    }
+
+    /**
+     * Given the audience, client id, time-to-live and credentials, create JWT
+     * encoded as a string to send to an OAUTH2-enabled API.
+     * 
+     * @param jwtAudience
+     *            The URL we are authenticating to
+     * @param clientId
+     *            Our client ID
+     * @param tokenLifetimeSeconds
+     *            How long should this token be valid in seconds
+     * @param key
+     *            Authentication key
+     * @param certificate
+     *            Authentication certificate
+     * @return The JWT encoded as a string
+     * @throws CertificateEncodingException
+     *             certificate is not formatted correctly
+     * @throws NoSuchAlgorithmException
+     *             Unexpected error
+     * @throws JOSEException
+     *             Error formatting JWT
+     */
+    private static String getJwtString(String jwtAudience, String clientId, int tokenLifetimeMilliseconds, PrivateKey key, X509Certificate certificate)
+            throws IOException {
+        final long time = System.currentTimeMillis();
+        final JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().audience(Collections.singletonList(jwtAudience)).issuer(clientId)
+                .jwtID(UUID.randomUUID().toString()).notBeforeTime(new Date(time)).expirationTime(new Date(time + tokenLifetimeMilliseconds))
+                .subject(clientId).build();
+
+        try {
+            JWSHeader.Builder builder = new Builder(JWSAlgorithm.RS256);
+            List<com.nimbusds.jose.util.Base64> certs = new ArrayList<com.nimbusds.jose.util.Base64>();
+            certs.add(new com.nimbusds.jose.util.Base64(java.util.Base64.getEncoder().encodeToString(certificate.getEncoded())));
+            builder.x509CertChain(certs);
+            String certHash = java.util.Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest(certificate.getEncoded()));
+            builder.x509CertThumbprint(new Base64URL(certHash));
+            SignedJWT jwt = new SignedJWT(builder.build(), claimsSet);
+            jwt.sign(new RSASSASigner(key));
+            String jwtString = jwt.serialize();
+            return jwtString;
+        } catch (CertificateEncodingException | NoSuchAlgorithmException | JOSEException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public void setKey(PrivateKey key) {
+        this.key = key;
+    }
+
+    public void setCertificate(X509Certificate certificate) {
+        this.certificate = certificate;
+    }
 }

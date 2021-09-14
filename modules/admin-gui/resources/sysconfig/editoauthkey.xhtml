@@ -116,7 +116,7 @@
             <h:outputLabel for="selectOneMenuKeyBinding" value="#{web.text.OAUTHKEYCONFIGURATION_KEY_BINDING}" 
             	rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
             <h:selectOneMenu id="selectOneMenuKeyBinding" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyBinding}"
-                 disabled="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.addMode}"
+                 disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
                  rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}">
                 <f:selectItem itemValue="#{null}" itemLabel="#{web.text.OAUTHKEYCONFIGURATION_USE_CLIENT_SECRET}"/>
                 <f:selectItems value="#{systemConfigMBean.oauthKeyManager.keyBindings}" var="keyBinding" 

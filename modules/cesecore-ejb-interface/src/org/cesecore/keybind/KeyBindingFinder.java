@@ -1,4 +1,4 @@
-package org.cesecore.keys.token;
+package org.cesecore.keybind;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -7,9 +7,11 @@ import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingInfo;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyAndCertFinder;
 
 /**
  * I implement a way to find keys and certs given a binding ID using EJBs.
