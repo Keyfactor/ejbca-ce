@@ -308,6 +308,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.client = oauthKey.getClient();
             this.realm = oauthKey.getRealm();
             this.clientSecret = SystemConfigurationOAuthKeyManager.HIDDEN_PWD;
+            this.keyBinding = oauthKey.getKeyBinding();
             this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -329,6 +330,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             url = null;
             logoutUrl = null;
             tokenUrl = null;
+            keyBinding = null;
             label = null;
             client = null;
             clientSecret = null;
@@ -649,6 +651,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
+        if (oauthKeyEditor.getKeyBinding() != null) {
+            newOauthKey.setKeyBinding(oauthKeyEditor.getKeyBinding());
+        }
 
         if (oauthKeyEditor.getPublicKeys().isEmpty()) {
             newOauthKey.setKeys(null);
@@ -810,6 +815,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setUrl(oauthKeyToUpdate.fixUrl(oauthKeyEditor.getUrl()));
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
+        oauthKeyToUpdate.setKeyBinding(oauthKeyEditor.getKeyBinding());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
