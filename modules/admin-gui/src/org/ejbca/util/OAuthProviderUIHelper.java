@@ -40,8 +40,8 @@ public class OAuthProviderUIHelper {
         if (StringUtils.isEmpty(provider.getClient())) {
             throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Client"));
         }
-        if (StringUtils.isEmpty(provider.getClientSecret())) {
-            throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Client Secret"));
+        if (StringUtils.isEmpty(provider.getClientSecret()) && provider.getKeyBinding() == null) {
+            throw new MissingOAuthKeyAttributeException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(OAUTHKEYCONFIGURATION_FIELD_MANDATORY, false, "Client Secret or Key Binding"));
         }
     }
     
