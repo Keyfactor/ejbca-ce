@@ -168,4 +168,10 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** Removes all that matches the given issuer. */
     void removeCertificatesByIssuer(String issuerDN);
+
+    /** Removes a certificate from IncompleteIssuanceJournalData */
+    void removeFromIncompleteIssuanceJournal(int caId, BigInteger serialNumber);
+
+    /** Checks if a certificate is  present in IncompleteIssuanceJournalData */
+    boolean presentInIncompleteIssuanceJournal(int caId, BigInteger serialNumber);
 }
