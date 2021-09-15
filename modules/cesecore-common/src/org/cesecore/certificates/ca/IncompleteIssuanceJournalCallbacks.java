@@ -48,4 +48,9 @@ public interface IncompleteIssuanceJournalCallbacks {
      */
     void removeFromJournal(int caId, BigInteger serialNumber);
 
+    /**
+     * @see #removeFromJournal
+     */
+    void removeFromJournalNewTransaction(int caId, BigInteger serialNumber);
+
 }

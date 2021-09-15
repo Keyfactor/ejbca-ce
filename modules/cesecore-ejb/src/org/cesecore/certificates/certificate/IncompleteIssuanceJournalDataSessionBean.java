@@ -55,6 +55,16 @@ public class IncompleteIssuanceJournalDataSessionBean implements IncompleteIssua
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void removeFromJournal(final int caId, final BigInteger serialNumber) {
+        removeFromJournalInternal(caId, serialNumber);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void removeFromJournalNewTransaction(final int caId, final BigInteger serialNumber) {
+        removeFromJournalInternal(caId, serialNumber);
+    }
+
+    private void removeFromJournalInternal(final int caId, final BigInteger serialNumber) {
         if (serialNumber == null) {
             log.debug("removeFromJournal: Serial number is null.");
             return;

@@ -1407,7 +1407,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
         final BaseCertificateData certData = certificateWrapper.getBaseCertificateData();
         if (certData != null) {
-            certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()));
+            certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()), storePreCert);
         }
     }
 
