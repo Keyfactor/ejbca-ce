@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -35,7 +37,11 @@ import org.cesecore.authentication.AuthenticationNotProvidedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
@@ -58,6 +64,13 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private String stateInSession = null;
     private String oauthClicked = null;
 
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoToken;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreLocal;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
+
     public class OAuthKeyInfoGui{
         String label;
 
@@ -79,6 +92,14 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private String text;
     private OauthRequestHelper oauthRequestHelper;
 
+    /**
+     * Set the helper object that interacts with OAuth servers.
+     */
+    @PostConstruct
+    public void setRequestHelper() {
+        oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken));
+    }
+    
     /**
      * @return the general error which occurred, or welcome header
      */
@@ -203,9 +224,9 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         if (verifyStateParameter(state)) {
             OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
-                OAuthGrantResponseInfo token;
                 try {
-                    token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
+                    
+                    OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
                     if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                         if (token.getAccessToken() != null) {
                             log.debug("Successfully obtained oauth token, redirecting to main page.");
