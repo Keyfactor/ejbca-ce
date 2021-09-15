@@ -51,6 +51,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
@@ -136,6 +137,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -1403,8 +1405,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
         }
         // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
-        final Certificate cert = certificateWrapper.getCertificate();
-        certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), CertTools.getSerialNumber(cert));
+        final BaseCertificateData certData = certificateWrapper.getBaseCertificateData();
+        if (certData != null) {
+            certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()));
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
