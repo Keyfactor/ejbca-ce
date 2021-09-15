@@ -133,9 +133,18 @@ public final class CertificateGenerationParams implements Serializable {
         }
     }
 
-    public void removeFromIncompleteIssuanceJournal(final int caId, final BigInteger serialNumber) {
+    /**
+     * Removes the certificate from the incomplete issuance journal. Optionally starts a new transaction
+     * (needed if an exception with rollback has occurred)
+     */
+    public void removeFromIncompleteIssuanceJournal(final int caId, final BigInteger serialNumber, final boolean newTransaction) {
         if (incompleteIssuanceJournalCallbacks != null && wasAddedToIncompleteIssuanceJournal) {
-            incompleteIssuanceJournalCallbacks.removeFromJournal(caId, serialNumber);
+            if (newTransaction) {
+                incompleteIssuanceJournalCallbacks.removeFromJournalNewTransaction(caId, serialNumber);
+            } else {
+                incompleteIssuanceJournalCallbacks.removeFromJournal(caId, serialNumber);
+            }
         }
     }
+
 }
