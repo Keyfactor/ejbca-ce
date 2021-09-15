@@ -36,3 +36,4 @@ drop table AcmeAccountData;
 drop table AcmeOrderData;
 drop table SctData;
 drop table OcspResponseData;
+drop table IncompleteIssuanceJournalData;
