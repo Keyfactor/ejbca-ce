@@ -73,6 +73,8 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
+    @EJB
+    private IncompleteIssuanceJournalDataSessionLocal incompleteIssuanceJournalDataSession;
 
     @Override
     public void removeCertificate(BigInteger serno) {
@@ -157,6 +159,19 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         query = entityManager.createQuery("DELETE FROM NoConflictCertificateData a WHERE a.issuerDN=:issuerDN ");
         query.setParameter("issuerDN", issuerDN);
         query.executeUpdate();
+    }
+
+    @Override
+    public void removeFromIncompleteIssuanceJournal(final int caId, final BigInteger serialNumber) {
+        if (log.isDebugEnabled()) {
+            log.debug("Cleaning up journal data after test. An \"unexpectedly disappeared\" message is fine.");
+        }
+        incompleteIssuanceJournalDataSession.removeFromJournal(caId, serialNumber);
+    }
+
+    @Override
+    public boolean presentInIncompleteIssuanceJournal(final int caId, final BigInteger serialNumber) {
+        return incompleteIssuanceJournalDataSession.presentInJournal(caId, serialNumber);
     }
 
     @Override
