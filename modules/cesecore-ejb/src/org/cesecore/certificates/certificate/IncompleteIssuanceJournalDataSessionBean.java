@@ -70,6 +70,15 @@ public class IncompleteIssuanceJournalDataSessionBean implements IncompleteIssua
         }
     }
 
+    @Override
+    public boolean presentInJournal(int caId, BigInteger serialNumber) {
+        boolean present = find(caId, serialNumber) != null;
+        if (log.isDebugEnabled()) {
+            log.debug("presentInJournal(" + caId + "," + serialNumber.toString(16) + ") = " + present);
+        }
+        return present;
+    }
+
     private IncompleteIssuanceJournalData find(final int caId, final BigInteger serialNumber) {
         final TypedQuery<IncompleteIssuanceJournalData> query = entityManager.createQuery(
                 "SELECT a FROM IncompleteIssuanceJournalData a WHERE a.serialNumberAndCaId=:serialNumberAndCaId", IncompleteIssuanceJournalData.class);
