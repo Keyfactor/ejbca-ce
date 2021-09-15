@@ -461,3 +461,12 @@ CREATE TABLE OcspResponseData (
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (id)
 );
+
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(250) BINARY NOT NULL,
+    startTime BIGINT(20) NOT NULL,
+    rawData LONGTEXT,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
+);
