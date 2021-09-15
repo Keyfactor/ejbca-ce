@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import javax.ejb.Local;
@@ -36,5 +37,10 @@ public interface IncompleteIssuanceJournalDataSessionLocal extends IncompleteIss
      * @return List with one entry per certificate, or an empty list if there are no more incompletely issued certificates.
      */
     List<IncompletelyIssuedCertificateInfo> getIncompleteIssuedCertsBatch(long maxIssuanceTimeMillis);
+
+    /**
+     * Checks if the given certificate is present in IncompleteIssuanceJournalData
+     */
+    boolean presentInJournal(int caId, BigInteger serialNumber);
 
 }
