@@ -466,3 +466,11 @@ CREATE TABLE OcspResponseData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
 
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(250) BINARY NOT NULL,
+    startTime BIGINT(20) NOT NULL,
+    rawData LONGTEXT,
+    rowProtection LONG TEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;

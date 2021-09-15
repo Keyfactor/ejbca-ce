@@ -460,3 +460,12 @@ CREATE TABLE OcspResponseData (
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
+
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(256) NOT NULL,
+    startTime BIGINT NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
+);
