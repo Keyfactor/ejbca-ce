@@ -261,21 +261,19 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         // Fetch a list of up to 100 "half-issued" certificates
         final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
         final Date now = new Date();
-        int reason = RevocationReasons.CERTIFICATEHOLD.getDatabaseValue();
+        final RevocationReasons revocationReason = RevocationReasons.CERTIFICATEHOLD;
         for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
             final List<Integer> publishers = certProfile.getPublisherList();
             try {
                 // Add certificate in revoked state
                 final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
-                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
+                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
                         incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED, certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(),
                         incompleteIssuedCert.getEndEntityProfileId(), incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
-                        incompleteIssuedCert.getAccountBindingId());
-                final BaseCertificateData certificateData = cdw.getBaseCertificateData();
-                certificateData.setRevocationDate(now);
-                certificateData.setRevocationReason(reason);
+                        incompleteIssuedCert.getAccountBindingId(), revocationReason, now);
                 // Publish revocation information
+                final BaseCertificateData certificateData = cdw.getBaseCertificateData();
                 final String password = null;
                 publisherSession.storeCertificate(admin, publishers, cdw, password, certificateData.getSubjectDN(), null);
                 postRevokeCertificate(admin, cdw);
