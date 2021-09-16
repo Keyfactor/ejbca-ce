@@ -153,14 +153,14 @@ public abstract class DatabaseIndexUtil {
                 // and supplying a tablePattern doesn't play nice with other supported databases (postgresql for example)
                 // due to different case sensitivity rules when comparing table names.
                 String tablePattern = null;
+                String[] tableTypes = null;
                 if (databaseMetaData.getDatabaseProductName().equalsIgnoreCase(ORACLE) &&
                     databaseMetaData.getDatabaseMajorVersion() >= ORACLE_VERSION) {
                     tablePattern = tableName.toUpperCase();
+                    tableTypes = new String[] { "TABLE" };
                 }
 
-                System.out.println(">>> " + tablePattern);
-
-                try (ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, tablePattern, new String[] { "TABLE" })) {
+                try (ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, tablePattern, tableTypes)) {
                     while (resultSetSchemas.next()) {
                         final String tableCatalog = resultSetSchemas.getString("TABLE_CAT");
                         final String tableSchema = resultSetSchemas.getString("TABLE_SCHEM");
