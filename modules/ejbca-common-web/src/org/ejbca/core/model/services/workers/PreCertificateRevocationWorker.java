@@ -1,13 +1,10 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
- *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
- *  License as published by the Free Software Foundation; either         *
- *  version 2.1 of the License, or any later version.                    *
- *                                                                       *
- *  See terms of license at gnu.org.                                     *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           *
+ *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
@@ -30,9 +27,9 @@ import org.ejbca.core.model.services.ServiceExecutionResult.Result;
  *
  * @version $Id$
  */
-public class IncompleteIssuanceRevocationWorker extends BaseWorker {
+public class PreCertificateRevocationWorker extends BaseWorker {
 
-    private static final Logger log = Logger.getLogger(IncompleteIssuanceRevocationWorker.class);
+    private static final Logger log = Logger.getLogger(PreCertificateRevocationWorker.class);
 
     public static final String PROP_MAX_ISSUANCE_TIME = "worker.maxIssuanceTime";
     public static final String PROP_MAX_ISSUANCE_TIMEUNIT = "worker.maxIssuancceTimeUnit";
@@ -92,7 +89,7 @@ public class IncompleteIssuanceRevocationWorker extends BaseWorker {
                 }
             }
         } else {
-            final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", IncompleteIssuanceRevocationWorker.class.getName());
+            final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", PreCertificateRevocationWorker.class.getName());
             log.info(msg);
             ret = new ServiceExecutionResult(Result.NO_ACTION, msg);
         }
@@ -101,7 +98,7 @@ public class IncompleteIssuanceRevocationWorker extends BaseWorker {
     }
 
     private long getMaxIssuanceTimeMillis() throws ServiceExecutionFailedException {
-        return getTimeBeforeExpire(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIMEUNIT, IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIME);
+        return getTimeBeforeExpire(PreCertificateRevocationWorker.PROP_MAX_ISSUANCE_TIMEUNIT, PreCertificateRevocationWorker.PROP_MAX_ISSUANCE_TIME);
     }
 
 
