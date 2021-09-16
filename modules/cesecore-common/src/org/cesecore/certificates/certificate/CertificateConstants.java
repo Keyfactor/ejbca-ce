@@ -112,6 +112,4 @@ public final class CertificateConstants {
     
     /** Certificate is a pre-certificate. Used as tag in CertificateData. Do not change! */
     public static final String CERT_TAG_PRECERT = "P";
-    /** Certificate is a failed certificate, that may have been published externally */
-    public static final String CERT_TAG_FAILED = "F";
 }
