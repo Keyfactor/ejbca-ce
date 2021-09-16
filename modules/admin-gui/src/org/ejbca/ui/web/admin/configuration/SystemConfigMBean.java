@@ -97,7 +97,7 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.core.model.services.workers.IncompleteIssuanceRevocationWorker;
+import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
@@ -593,7 +593,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             incompleteIssuanceServiceAvailable = false;
             for (final int serviceId : services.keySet()) {
                 final ServiceConfiguration service = serviceSession.getServiceConfiguration(serviceId);
-                if (IncompleteIssuanceRevocationWorker.class.getName().equals(service.getWorkerClassPath())) {
+                if (PreCertificateRevocationWorkerConstants.WORKER_CLASS.equals(service.getWorkerClassPath())) {
                     incompleteIssuanceServiceAvailable = true;
                 }
             }
@@ -611,10 +611,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, "5");
         intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
         serviceConf.setIntervalProperties(intervalProperties);
-        serviceConf.setWorkerClassPath(IncompleteIssuanceRevocationWorker.class.getName());
+        serviceConf.setWorkerClassPath(PreCertificateRevocationWorkerConstants.WORKER_CLASS);
         final Properties workerProperties = new Properties();
-        workerProperties.setProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIME, IncompleteIssuanceRevocationWorker.DEFAULT_MAX_ISSUANCE_TIME);
-        workerProperties.setProperty(IncompleteIssuanceRevocationWorker.PROP_MAX_ISSUANCE_TIMEUNIT, IncompleteIssuanceRevocationWorker.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
+        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIME);
+        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
         serviceConf.setWorkerProperties(workerProperties);
         serviceConf.setPinToNodes(new String[0]);
         try {

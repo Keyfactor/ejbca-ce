@@ -38,11 +38,11 @@
 		<h:outputText value="#{web.text.REVOKEINCOMPLETEAFTER}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputText id="certCheckTimeValueTextField" value="#{editService.incompleteIssuanceRevocationWorkerType.maxIssuanceTime}" size="5" pt:type="number" title="#{web.text.FORMAT_INTEGER}"
+		<h:inputText id="certCheckTimeValueTextField" value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTime}" size="5" pt:type="number" title="#{web.text.FORMAT_INTEGER}"
 			disabled="#{not editService.hasEditRights}">
 			<f:convertNumber type="number"/>
 		</h:inputText>
-		<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.incompleteIssuanceRevocationWorkerType.maxIssuanceTimeUnit}" disabled="#{not editService.hasEditRights}">
+		<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTimeUnit}" disabled="#{not editService.hasEditRights}">
 		  <f:selectItems value="#{editService.notifyingType.availableUnits}"/>
 	    </h:selectOneMenu>
 	</h:panelGroup>
