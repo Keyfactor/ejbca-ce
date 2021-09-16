@@ -270,7 +270,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
                 final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
                         incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED, certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(),
-                        incompleteIssuedCert.getEndEntityProfileId(), incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_FAILED, now.getTime(),
+                        incompleteIssuedCert.getEndEntityProfileId(), incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
                         incompleteIssuedCert.getAccountBindingId());
                 final BaseCertificateData certificateData = cdw.getBaseCertificateData();
                 certificateData.setRevocationDate(now);
