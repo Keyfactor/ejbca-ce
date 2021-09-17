@@ -348,6 +348,11 @@
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY" metadata-complete="false">
+        <entity-listeners>
+            <entity-listener class="org.ejbca.core.ejb.ca.publisher.PublisherQueueDataEntityListener">
+                <post-persist method-name="postUpdate"/>
+            </entity-listener>
+        </entity-listeners>
         <attributes>
             <id name="pk"><column name="pk" column-definition="VARCHAR(254)"/></id>
             <basic fetch="EAGER" name="timeCreated"><column name="timeCreated" column-definition="BIGINT" nullable="false"/></basic>
