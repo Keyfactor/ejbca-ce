@@ -64,6 +64,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  */
 @Entity
 @Table(name = "PublisherQueueData")
+//@EntityListeners(PublisherQueueDataEntityListener.class) defined in orm-ejbca-x.xml 
 public class PublisherQueueData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -80,13 +81,15 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     private String volatileData;
 	private int rowVersion = 0;
 	private String rowProtection;
+	
+	private transient boolean safeDirectPublish;
 
     /**
      * @param publishType
      *            is one of PublisherConst.PUBLISH_TYPE_CERT or CRL
      * @return null
      */
-    public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus) {
+    public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus, boolean safeDirectPublish) {
         String pk = GUIDGenerator.generateGUID(this);
         setPk(pk);
         setTimeCreated(System.currentTimeMillis());
@@ -97,6 +100,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
         setFingerprint(fingerprint);
         setPublisherId(publisherId);
         setPublisherQueueVolatileData(queueData);
+        this.safeDirectPublish = safeDirectPublish;
         if (log.isDebugEnabled()) {
             log.debug("Created Publisher queue data " + pk);
         }
@@ -104,6 +108,11 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
     public PublisherQueueData() { }
 
+    @Transient
+    public boolean isSafeDirectPublishing() {
+        return safeDirectPublish;
+    }
+    
     //@Id @Column
     public String getPk() { return pk; }
     public void setPk(String pk) { this.pk = pk; }
@@ -131,8 +140,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
     /**
      * PublishType is one of
-     * org.ejbca.core.model.ca.publisher.PublisherConst.PUBLISH_TYPE_CERT or
-     * CRL
+     * org.ejbca.core.model.ca.publisher.PublisherConst.PUBLISH_TYPE_CERT, CRL or OCSP
      */
     //@Column
     public int getPublishType() { return publishType; }
