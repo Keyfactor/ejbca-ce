@@ -32,8 +32,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 /**
  * This approval archetype represents the legacy method of approvals, i.e where a fixed number of administrators need to approve a request for it to 
  * pass.
- * 
- * @version $Id$
  */
 public class AccumulativeApprovalProfile extends ApprovalProfileBase {
 
@@ -46,7 +44,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     /**
      * Note: do not change, may cause problems in deployed installations.
      */
-    private static final String TYPE_IDENTIFIER = "ACCUMULATIVE_APPROVAL";
+    public static final String TYPE_IDENTIFIER = "ACCUMULATIVE_APPROVAL";
         
     public AccumulativeApprovalProfile() {
         //Public constructor needed deserialization 
