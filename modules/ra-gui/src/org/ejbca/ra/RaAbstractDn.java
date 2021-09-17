@@ -102,7 +102,17 @@ public abstract class RaAbstractDn {
     public Collection<EndEntityProfile.FieldInstance> getOptionalFieldInstances() {
         return optionalFieldInstances;
     }
-
+    
+    /**
+     * @return the list interface for the required and optional subject DN fields
+     */
+    public Collection<EndEntityProfile.FieldInstance> getFieldInstances() {
+        Collection<EndEntityProfile.FieldInstance> allFieldInstances = new ArrayList<>();
+        allFieldInstances.addAll(requiredFieldInstances);
+        allFieldInstances.addAll(optionalFieldInstances);
+        
+        return allFieldInstances;
+    }
 
     /**
      * @return the map interface for the subject DN fields.
