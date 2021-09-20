@@ -79,12 +79,13 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
+import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -296,8 +297,9 @@ public class RestResourceSystemTestBase {
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
                 .build();
         
-        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(client);
-        Client newClient = new ResteasyClientBuilder().httpEngine(engine).build();
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(client);
+        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
+        Client newClient = builder.httpEngine(engine).build();
         WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
         
         return webTarget;
@@ -316,10 +318,10 @@ public class RestResourceSystemTestBase {
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
                 .build();
         
-        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(client);
-        Client newClient = new ResteasyClientBuilder().httpEngine(engine).build();
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(client);
+        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
+        Client newClient = builder.httpEngine(engine).build();
         WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
-        
         return webTarget;
     }
 
