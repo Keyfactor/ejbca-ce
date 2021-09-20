@@ -1335,8 +1335,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (ei != null) {
             final List<String> permittedNC = ei.getNameConstraintsPermitted();
             final List<String> excludedNC = ei.getNameConstraintsExcluded();
-            if (!certProfile.getUseNameConstraints() && (permittedNC != null && !permittedNC.isEmpty()) || (excludedNC != null && !excludedNC.isEmpty())) {
-                throw new CertificateCreateException("Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
+            if (!certProfile.getUseNameConstraints()
+                    && ((permittedNC != null && !permittedNC.isEmpty()) || (excludedNC != null && !excludedNC.isEmpty()))) {
+                throw new CertificateCreateException(
+                        "Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
             }
         }
 
