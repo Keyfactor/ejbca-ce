@@ -164,7 +164,8 @@ public class EstVendorModeTest extends EstTestCase {
 
         final String VENDOR_USERNAME = "EstVendorModeTest.vendorcert";
         final String TEST_CN = "EstVendorModeTestUser";
-
+        final String changeEndEntityDN = "CN=" + "foo" + ",O=EJBCA,C=SE";
+        
         final EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         try {
             // Create EST Alias
@@ -229,9 +230,9 @@ public class EstVendorModeTest extends EstTestCase {
             // Authentication is TLS with the vendor certificate created above
             // 
             // First with no EE created, should fail, with or without client cert authentication
-            final String requestDN = "CN=" + TEST_CN + ",O=EJBCA,C=SE";
+            String requestDN = "CN=" + TEST_CN + ",O=EJBCA,C=SE";
             final String clientpwd = pwdgen.getNewPassword(16, 16);
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, clientpwd, null, null, ec256client);
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, clientpwd, null, null, null, ec256client);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>"); 
             // Now try with actual client cert authentication, using a certificate that can be used for client cert auth, i.e. Management CA as we got above
@@ -241,8 +242,8 @@ public class EstVendorModeTest extends EstTestCase {
             sendEstRequest(true, alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>", 
                     TEST_CN, clientpwd);
 
-            
             // Second create an EE so we can issue the cert, but create EE with wrong username to start with
+            String requestAltName = "rfc822name=foo@bar.com";
             EndEntityInformation endEntityInfo = new EndEntityInformation();
             endEntityInfo.setUsername(TEST_CN); // should be CN of vendor cert in order to function, so this will fail
              // This password should not be used for anything, it's vendor cert authentication, not password auth
@@ -253,45 +254,61 @@ public class EstVendorModeTest extends EstTestCase {
             endEntityInfo.setCAId(serverCertCaInfo.getCAId());
             endEntityInfo.setDN(requestDN);
             endEntityInfo.setTokenType(EndEntityConstants.TOKEN_USERGEN);
-            endEntityInfo.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+            endEntityInfo.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
             endEntityInfo.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
-
+            
             // No client certificate should give unauthorized, regardless if we have username/pwd or not
-            p10 = generateCertReq(requestDN, clientpwd, null, null, ec256client);
+            p10 = generateCertReq(requestDN, clientpwd, null, null, null, ec256client);
             reqmsg = Base64.encode(p10.getEncoded());
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>"); 
-            p10 = generateCertReq(requestDN, clientpwd, null, null, ec256client);
+            p10 = generateCertReq(requestDN, clientpwd, null, null, null, ec256client);
             reqmsg = Base64.encode(p10.getEncoded());
             sendEstRequest(alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>");
-            
+
             // Now try with actual client cert authentication, using a certificate that can be used for client cert auth, i.e. Management CA as we got above
             setupClientKeyStore(serverCertCaInfo, ec256vendor, vendorcert);
+
             // USe a request without password now
-            p10 = generateCertReq(requestDN, null, null, null, ec256client);
+            p10 = generateCertReq(requestDN, null, null, null, null, ec256client);
             reqmsg = Base64.encode(p10.getEncoded());
+            
             // Still we have the wrong username in the EE though, the username should match the Vendor TLS cert, and not the P10 requestDN
             sendEstRequest(true, alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Invalid username, enrollment code, or end entity status</body></html>", null, null);
             
             // Set the right DN now, matching the TLS vendor certificate (CN as we use CN as extract username component)
             endEntityInfo.setUsername(VENDOR_USERNAME); // should be CN of vendor cert in order to function
+            
             endEntityManagementSession.deleteUser(ADMIN, TEST_CN); // we don't need this, we just wanted to check that there was no accidental mapping
             endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
-            // Still one error to test, since we use a different request DN from vendor DN here, we need to allow ChangeName extention and include that in the request 
+                    
+            // Since we use a different request DN from vendor DN here, we should not allow this with or without allow ChangeSubjectName attribute
             sendEstRequest(true, alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Can't enroll using different subject than requesting certificate. Request DN='CN=EstVendorModeTestUser,O=EJBCA,C=SE'</body></html>", null, null);
+            
+            // Now we allow ChangeSubjectName in alias, but DN in request still don't match the cert used for authentication
             config.setAllowChangeSubjectName(alias, true);
             globalConfigurationSession.saveConfiguration(ADMIN, config);
-            // No ChangeSubjectName extension in request, see RFC 7030 section 4.2.1
             sendEstRequest(true, alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Can't enroll using different subject than requesting certificate. Request DN='CN=EstVendorModeTestUser,O=EJBCA,C=SE'</body></html>", null, null);
-            // Add ChangeSubjectName extension, but make the attribute not be the same as the requestDN in the P10, should fail
-            p10 = generateCertReq(requestDN, null, "CN=foo," + requestDN, null, ec256client);
+            
+            // We change the DN in the request to match the authentication certificate
+            requestDN = "CN=" + VENDOR_USERNAME + ",O=Vendor,C=ES";//Request and tls must be the same DN
+            p10 = generateCertReq(requestDN, null, requestDN, null, null, ec256client);
             reqmsg = Base64.encode(p10.getEncoded());
-            sendEstRequest(true, alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>ChangeSubjectName requested but requestDN is 'CN=EstVendorModeTestUser,O=EJBCA,C=SE' and ChangeSubjectName is 'CN=foo,CN=EstVendorModeTestUser,O=EJBCA,C=SE'.</body></html>", null, null);
-            // Make ChangeSubjectName extension the same as requestDN, now it should work
-            p10 = generateCertReq(requestDN, null, requestDN, null, ec256client);
+            // We use ChangeSubjectName attribute in CSR, but it must match the end entity and since they don't we should fail
+            sendEstRequest(true, alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>ChangeSubjectName requested but End Entity DN is 'CN=EstVendorModeTestUser,O=EJBCA,C=SE' and ChangeSubjectName is 'CN=EstVendorModeTest.vendorcert,O=Vendor,C=ES'.</body></html>", null, null);
+            
+            //Now, we create a new request and configure the end entity to match a ChangeSubjectName attribute that also differs from the requestDN... 
+            // given
+            endEntityInfo.setDN(changeEndEntityDN);
+            endEntityInfo.setSubjectAltName(requestAltName);
+            endEntityManagementSession.deleteUser(ADMIN, VENDOR_USERNAME); // we don't need this, we just wanted to check that there was no accidental mapping
+            endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
+            // In this request, we want both a new subjectDN and a new altName 
+            p10 = generateCertReq(requestDN, null, changeEndEntityDN, requestAltName, null, ec256client);
             reqmsg = Base64.encode(p10.getEncoded());
-            byte[] resp = sendEstRequest(true, alias, "simpleenroll", reqmsg, 200, null, null, null); 
-
+            // when
+            byte[] resp = sendEstRequest(true, alias, "simpleenroll", reqmsg, 200, null, null, null);
+            // then
             assertNotNull("There must be response data to simpleenroll request", resp);
             CMSSignedData respmsg = new CMSSignedData(Base64.decode(resp));
             final Store<X509CertificateHolder> certstore = respmsg.getCertificates();
@@ -306,8 +323,63 @@ public class EstVendorModeTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
-            assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",requestDN, CertTools.getSubjectDN(cert));
+            assertEquals("simpleenroll response subjectDN must be the same DN as the ChangeSubjectName attribute DN", changeEndEntityDN, CertTools.getSubjectDN(cert));
+            assertEquals("simpleenroll response subjectAltName must be the same as the ChangeSubjectName attribute subjectAlName", "rfc822name=foo@bar.com", CertTools.getSubjectAlternativeName(cert));
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256client.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+                       
+            //We also want to make a request with only a subjectAltName in the ChangeSubjectName attribute.
+            // given
+            p10 = generateCertReq(requestDN, null, null, requestAltName, null, ec256client);
+            reqmsg = Base64.encode(p10.getEncoded());
+            endEntityManagementSession.setUserStatus(ADMIN, VENDOR_USERNAME, EndEntityConstants.STATUS_NEW );
+            // when    
+            byte[] onlySANresp = sendEstRequest(true, alias, "simpleenroll", reqmsg, 200, null, null, null);
+            // then
+            assertNotNull("There must be response data to simpleenroll request", onlySANresp);
+            CMSSignedData onlySANrespmsg = new CMSSignedData(Base64.decode(onlySANresp));
+            final Store<X509CertificateHolder> onlySANcertstore = onlySANrespmsg.getCertificates();
+            Collection<X509CertificateHolder> onlySANcerts = onlySANcertstore.getMatches(null);
+            assertEquals("EST simpleenroll should return a single certificate", 1, onlySANcerts.size());
+            X509Certificate onlySANtestcacert = (X509Certificate)serverCertCaInfo.getCertificateChain().get(0);
+            final X509CertificateHolder onlySANcertHolder = onlySANcerts.iterator().next();
+            X509Certificate onlySANcert = CertTools.getCertfromByteArray(onlySANcertHolder.getEncoded(), X509Certificate.class);
+            assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(onlySANtestcacert), CertTools.getIssuerDN(onlySANcert));
+            try {
+                onlySANcert.verify(onlySANtestcacert.getPublicKey());
+            } catch (SignatureException e) {
+                fail("simpleenroll response certifciate must verify with CA certificate");                
+            }
+            assertEquals("simpleenroll response subjectAltName must be the same as the ChangeSubjectName attribute subjectAlName", "rfc822name=foo@bar.com", CertTools.getSubjectAlternativeName(onlySANcert));
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256client.getPublic().getEncoded()), Base64.toBase64String(onlySANcert.getPublicKey().getEncoded()));
+                        
+            //Try with a CSR subjectDN that is matching the authentication cert, but not matching the end entity subjectDN, using no ChangeSubjectName, this should fail
+            p10 = generateCertReq(requestDN, null, null, null, null, ec256client);
+            reqmsg = Base64.encode(p10.getEncoded());
+            endEntityInfo.setDN("CN=" + "foo" + ",O=Vendor,C=ES");
+            endEntityManagementSession.deleteUser(ADMIN, VENDOR_USERNAME);
+            endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
+            sendEstRequest(true, alias, "simpleenroll", reqmsg, 400, "<html><head><title>Error</title></head><body>Request DN must match end entity DN. Request DN='CN=EstVendorModeTest.vendorcert,O=Vendor,C=ES'</body></html>", null, null);
+                        
+            //We set the correct DN for the end entity and make request without ChangeSubjectName attribute, this should work
+            // given
+            endEntityInfo.setDN(requestDN);
+            endEntityManagementSession.deleteUser(ADMIN, VENDOR_USERNAME); 
+            endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
+            p10 = generateCertReq(requestDN, null, null, null, null, ec256client);
+            reqmsg = Base64.encode(p10.getEncoded());
+            // when
+            byte[] noattributeresp = sendEstRequest(true, alias, "simpleenroll", reqmsg, 200, null, null, null);
+            // then
+            assertNotNull("There must be response data to simpleenroll request", noattributeresp);
+            CMSSignedData noattributerespmsg = new CMSSignedData(Base64.decode(noattributeresp));
+            final Store<X509CertificateHolder> noattributecertstore = noattributerespmsg.getCertificates();
+            Collection<X509CertificateHolder> noattributecerts = noattributecertstore.getMatches(null);
+            assertEquals("EST simpleenroll should return a single certificate", 1, noattributecerts.size());
+            X509Certificate noattributetestcacert = (X509Certificate)serverCertCaInfo.getCertificateChain().get(0);
+            final X509CertificateHolder noattributecertHolder = noattributecerts.iterator().next();
+            X509Certificate noattributecert = CertTools.getCertfromByteArray(noattributecertHolder.getEncoded(), X509Certificate.class);
+            assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(noattributetestcacert), CertTools.getIssuerDN(noattributecert));
+            assertEquals("simpleenroll response subjectDN must be the same DN as the CSR request DN", requestDN, CertTools.getSubjectDN(noattributecert));
             
             // something we can not test here is re-enroll, as the newly issued "operator" certificate is not valid for TLS connections
             // we test re-enroll in both RA and client mode however, and it should work the same
