@@ -1936,7 +1936,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new NoSuchEndEntityException(msg);
         }
         // In the case where this is an individual certificate revocation request, we still send a STATUS_REVOKED notification (since user state wont change)
-        if (endEntityProfileId != -1 && endEntityInformationParam==null) {
+        if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && endEntityInformationParam==null) {
             sendNotification(authenticationToken, endEntityInformation, EndEntityConstants.STATUS_REVOKED, 0, lastApprovingAdmin, cdw);
         }
         if (log.isTraceEnabled()) {
