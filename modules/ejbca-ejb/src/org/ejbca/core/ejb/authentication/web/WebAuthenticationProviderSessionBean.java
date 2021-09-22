@@ -109,17 +109,17 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
     
     /**
-     * OAuth audience ('aud') claim checking was not enforced until 7.7.1.  Allow a blank Audience value in the OAuth configuration to match any Bearer token until 
-     * the database is post-upgraded to 7.7.1.  After that, it is expected that all OAuth provider configurations will have a configured Audience value and that Bearer 
+     * OAuth audience ('aud') claim checking was not enforced until 7.8.0.  Allow a blank Audience value in the OAuth configuration to match any Bearer token until 
+     * the database is post-upgraded to 7.8.0.  After that, it is expected that all OAuth provider configurations will have a configured Audience value and that Bearer 
      * token 'aud' claims will match that value to be considered valid.
      */
     @PostConstruct
     public void initializeAudienceCheck() {
         GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.7.1");
+        allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.8.0");
         if (isAllowBlankAudience()) {
-            LOG.debug("Database not post-upgraded to 7.7.1 yet.  Allowing OAuth logins without checking 'aud' claim.");
+            LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
     }
 
@@ -200,7 +200,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (StringUtils.isBlank(expectedAudience)) {
                 if (isAllowBlankAudience()) {
                     LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
-                            + ".  This is supported for recent upgrades from versions before 7.7.1, but a value should be set IMMEDIATELY.");
+                            + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
                 } else {
                     LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
                     return null;
