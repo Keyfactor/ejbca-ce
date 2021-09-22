@@ -42,6 +42,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_CLIENT_SECRET = "--new-clientsecret";
     private static final String NEW_REALM = "--new-realm";
     private static final String NEW_SCOPE = "--new-scope";
+    private static final String NEW_AUDIENCE = "--new-audience";
 
     {
         registerParameter(new Parameter(LABEL, "Label", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -60,6 +61,8 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "New Realm/Tenant name."));
         registerParameter(new Parameter(NEW_SCOPE, "Scope", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Scope."));
+        registerParameter(new Parameter(NEW_AUDIENCE, "Audience", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Audience."));
         registerParameter(new Parameter(NEW_CLIENT, "Client Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Client Name."));
         registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client Secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -131,6 +134,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         final String newClientSecret = parameters.get(NEW_CLIENT_SECRET);
         final String newRealm = parameters.get(NEW_REALM);
         final String newScope = parameters.get(NEW_SCOPE);
+        final String newAudience = parameters.get(NEW_AUDIENCE);
 
         if (newSkewLimit != null) {
             if (validateSkewLimit(newSkewLimit) >= 0) {
@@ -169,6 +173,9 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         if (newScope != null) {
             keyInfoToBeEdited.setScope(newScope);
+        }
+        if (newAudience != null) {
+            keyInfoToBeEdited.setAudience(newAudience);
         }
             
         return true;
