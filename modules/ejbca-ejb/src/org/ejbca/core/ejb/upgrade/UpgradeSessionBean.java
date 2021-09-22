@@ -346,7 +346,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.7.1");
+                setLastPostUpgradedToVersion("7.8.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -576,13 +576,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
         }
-        if (isLesserThan(oldVersion, "7.7.1")) {
+        if (isLesserThan(oldVersion, "7.8.0")) {
             try {
                 upgradeSession.migrateDatabase771();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-            setLastUpgradedToVersion("7.7.1");
+            setLastUpgradedToVersion("7.8.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -625,11 +625,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.4.0");
         }
-        if (isLesserThan(oldVersion, "7.7.1")) {
+        if (isLesserThan(oldVersion, "7.8.0")) {
             if (!postMigrateDatabase771()) {
                 return false;
             }
-            setLastPostUpgradedToVersion("7.7.1");
+            setLastPostUpgradedToVersion("7.8.0");
         }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
@@ -657,7 +657,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.7.1");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.0");
     }
 
     /**
