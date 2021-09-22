@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -50,6 +51,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -344,7 +346,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.4.0");
+                setLastPostUpgradedToVersion("7.8.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -574,13 +576,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
         }
-        if (isLesserThan(oldVersion, "7.7.1")) {
+        if (isLesserThan(oldVersion, "7.8.0")) {
             try {
-                upgradeSession.migrateDatabase771();
+                upgradeSession.migrateDatabase780();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-            setLastUpgradedToVersion("7.7.1");
+            setLastUpgradedToVersion("7.8.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -623,15 +625,39 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.4.0");
         }
+        if (isLesserThan(oldVersion, "7.8.0")) {
+            if (!postMigrateDatabase780()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.8.0");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
 
+    private boolean postMigrateDatabase780() {
+        // post upgrade is only allowed when all OAuth providers have audience values.
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        boolean missingAudienceFound = false;
+        for (OAuthKeyInfo oAuthKeyInfo : oAuthConfiguration.getOauthKeys().values()) {
+            if (oAuthKeyInfo.getAudience() == null || oAuthKeyInfo.getAudience().trim().isEmpty()) {
+                log.info("OAuth configuration " + oAuthKeyInfo.getLabel()
+                        + " has an empty Audience value.  This is not secure and must be set."
+                        + "  Go to \"System Configuration / Trusted OAuth Providers\" and configure Audience for "
+                        + oAuthKeyInfo.getLabel());
+                missingAudienceFound = true;
+            }
+        }
+
+        return !missingAudienceFound;
+    }
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.4.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.0");
     }
 
     /**
@@ -1923,7 +1949,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if the configuration could not be migrated
      */
     @Override
-    public void migrateDatabase771() throws UpgradeFailedException {
+    public void migrateDatabase780() throws UpgradeFailedException {
         try {
             final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
