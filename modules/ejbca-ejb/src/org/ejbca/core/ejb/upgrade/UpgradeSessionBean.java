@@ -578,7 +578,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         if (isLesserThan(oldVersion, "7.8.0")) {
             try {
-                upgradeSession.migrateDatabase771();
+                upgradeSession.migrateDatabase780();
             } catch (UpgradeFailedException e) {
                 return false;
             }
@@ -626,7 +626,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             setLastPostUpgradedToVersion("7.4.0");
         }
         if (isLesserThan(oldVersion, "7.8.0")) {
-            if (!postMigrateDatabase771()) {
+            if (!postMigrateDatabase780()) {
                 return false;
             }
             setLastPostUpgradedToVersion("7.8.0");
@@ -636,7 +636,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return true;
     }
 
-    private boolean postMigrateDatabase771() {
+    private boolean postMigrateDatabase780() {
         // post upgrade is only allowed when all OAuth providers have audience values.
         OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
                 .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
@@ -1949,7 +1949,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if the configuration could not be migrated
      */
     @Override
-    public void migrateDatabase771() throws UpgradeFailedException {
+    public void migrateDatabase780() throws UpgradeFailedException {
         try {
             final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
