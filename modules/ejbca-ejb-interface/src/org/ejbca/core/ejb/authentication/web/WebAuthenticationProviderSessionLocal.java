@@ -36,7 +36,7 @@ public interface WebAuthenticationProviderSessionLocal extends AuthenticationPro
     /** @return a PublicAccessAuthenticationToken based on the provided info. */
     AuthenticationToken authenticateUsingNothing(String principal, boolean confidentialTransport);
 
-    /** @return an OAuth2AuthenticationToken based on the given encoded token */
+    /** @return an OAuth2AuthenticationToken based on the given encoded token.  Returns null if token not valid. */
     AuthenticationToken authenticateUsingOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken) throws TokenExpiredException;
 
     /** @return new OAuthGrantResponseInfo from oauth provider based on the given refresh token */
