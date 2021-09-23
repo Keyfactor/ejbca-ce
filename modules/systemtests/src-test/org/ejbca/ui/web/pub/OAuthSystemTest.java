@@ -107,6 +107,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public class OAuthSystemTest {
 
+    private static final String AZURE_AUDIENCE = "api://f4b51ae1-77e0-4367-be11-5a43b6b20358";
     private static final String OAUTH_SUB = "OauthSystemTestSub";
     private static final String CA = "OauthSystemTestCA";
     private static final String OAUTH_KEY = "OauthSystemTestKey";
@@ -192,6 +193,9 @@ public class OAuthSystemTest {
         //add oauth key
         OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, 6000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey(OAUTH_KEY, pubKeyBytes);
+        oAuthKeyInfo.setUrl("https://login.microsoftonline.com/");
+        oAuthKeyInfo.setAudience(AZURE_AUDIENCE);
+        oAuthKeyInfo.setScope(AZURE_AUDIENCE + "/ejbca");
         oAuthKeyInfoLabel = oAuthKeyInfo.getLabel();
         oAuthConfiguration.addOauthKey(oAuthKeyInfo);
         globalConfigSession.saveConfiguration(authenticationToken, oAuthConfiguration);
@@ -227,7 +231,7 @@ public class OAuthSystemTest {
         roleMember.setTokenProviderId(oAuthKeyInfo.getInternalId());
         roleMember = roleMemberSession.persist(authenticationToken, roleMember);
 
-        token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\"}", privKey);
+        token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\", \"aud\":\"" + AZURE_AUDIENCE + "\"}", privKey);
         final String timestamp = String.valueOf((System.currentTimeMillis() + -60 * 60 * 1000) / 1000); // 1 hour old
         expiredToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
         defaultSocketFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
