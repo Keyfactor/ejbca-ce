@@ -1352,6 +1352,12 @@ a.button:active {
 	background: #fcfcfc;
 	margin-bottom: 1em;
 }
+.hintBlock {
+	padding: 1em;
+	background: #f4f4f4;
+	border-radius: 0.5em;
+	max-width: 1000px;
+}
 .readablewidth {
     max-width: 1000px;
 }
