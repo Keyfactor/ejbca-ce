@@ -88,6 +88,19 @@ public interface RevocationSessionLocal extends RevocationSession {
      * @throws AuthorizationDeniedException (rollback)
      */
     void revokeCertificateInNewTransaction(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers,
-            Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;        
+            Date revocationDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException;
+
+    /**
+     * Revokes incompletely issued certificates, that have been submitted to CT logs and/or published, but
+     * where a rollback has happened after the submission/publication.
+     * <p>
+     * This method works in batches of 100 certificates, and returns 0 when there are no more certificates to revoke.
+     *
+     * @param admin  Administrator performing the operation
+     * @param maxIssuanceTimeMillis  Time until a certificate issuance is considered to have failed.
+     * @return  Number of revoked certificates, or 0 when there is nothing left to revoke.
+     * @throws AuthorizationDeniedException (rollback)
+     */
+    int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin, long maxIssuanceTimeMillis) throws AuthorizationDeniedException;
 
 }
