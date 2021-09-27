@@ -645,6 +645,14 @@
             <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Transparency.html')}" escape="false"/></h4>
         </div>
 
+        <h:panelGroup id="ctRevocationService" styleClass="block hintBlock" layout="block" rendered="#{not systemConfigMBean.incompleteIssuanceServiceAvailable}">
+               <h3>#{web.text.CTLOGCONFIGURATION_ADDSERVICEHEADER}</h3>
+               <p>#{web.text.CTLOGCONFIGURATION_ADDSERVICETEXT}</p>
+               <div><h:commandButton action="#{systemConfigMBean.addIncompleteIssuanceService}"
+                            value="#{web.text.CTLOGCONFIGURATION_ADDSERVICEBUTTON}"
+                            id="addIncompleteIssuanceServiceButton"/></div>
+        </h:panelGroup>
+
 		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
 		    <h:column>
 				<h3>

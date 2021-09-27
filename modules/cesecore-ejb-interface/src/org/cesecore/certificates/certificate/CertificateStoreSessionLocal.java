@@ -23,6 +23,7 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.crl.RevocationReasons;
 
 /**
  * Local interface for CertificateStoreSession.
@@ -112,7 +113,15 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     CertificateDataWrapper storeCertificateNoAuthNewTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp,
             String certificateRequest, int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag,
             long updateTime, String accountBindingId);
-    
+
+    /**
+     * Stores a certificate in revoked state.
+     * @see #storeCertificateNoAuth
+     */
+    CertificateDataWrapper storeCertificateRevokedNoAuth(AuthenticationToken admin, Certificate incert, String username, String cafp, String certificateRequest,
+            int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime, String accountBindingId,
+            final RevocationReasons revocationReason, final Date revocationDate);
+
     /** 
      * Retrieve the full wrapped CertificateData and Base64CertData objects.
      * @return the sought certificate, or null if no data for the specified fingerprint exists
