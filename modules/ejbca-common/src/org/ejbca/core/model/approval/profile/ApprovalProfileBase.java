@@ -37,11 +37,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.approval.Approval;
 
 /**
- *
  * Implementation of the ProfileBase class, common functionality for all approval type profiles.
- *
- * @version $Id$
- *
  */
 public abstract class ApprovalProfileBase extends ProfileBase implements ApprovalProfile, Cloneable {
 
