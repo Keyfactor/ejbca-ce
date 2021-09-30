@@ -2225,10 +2225,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (log.isDebugEnabled()) {
                     log.debug("nextUpdate is larger than 9999-12-31:23.59.59 GMT, limiting value as specified in RFC5280 4.1.2.5: " + ValidityDate.formatAsUTC(nextUpdate));
                 }
+                return nextUpdate;
             } else if (signerCert != null && signerCert.getNotAfter().before(nextUpdate)) {
                 // Adjust nextUpdate so that it can never exceed the OCSP responder signing certificate validity
                 nextUpdate = signerCert.getNotAfter();
             }
+            // Make validity, notBefore through notAfter, inclusive. ECA-10327.
+            nextUpdate.setTime(nextUpdate.getTime() - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET);
         }
         return nextUpdate;
     }
