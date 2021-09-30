@@ -23,18 +23,24 @@ public final class ConfigdumpExportResult extends ConfigdumpResult {
     
     private static final long serialVersionUID = 1L;
     private byte[] output = null;
+    private boolean nothingExported = false;
     
     public ConfigdumpExportResult(final List<String> reportedErrors, final List<String> reportedWarnings) {
         super(reportedErrors, reportedWarnings);
     }
 
-    public ConfigdumpExportResult(final List<String> reportedErrors, final List<String> reportedWarnings, byte[] output) {
+    public ConfigdumpExportResult(final List<String> reportedErrors, final List<String> reportedWarnings, byte[] output, boolean nothingExported) {
         this(reportedErrors, reportedWarnings);
         this.output = output;
+        this.nothingExported = nothingExported;
     }
 
     public Optional<byte[]> getOutput() {
         return Optional.ofNullable(output);
+    }
+
+    public boolean isNothingExported() {
+        return nothingExported;
     }
     
 }
