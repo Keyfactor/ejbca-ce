@@ -26,8 +26,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.StatusType;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.configdump.ConfigdumpException;
@@ -85,14 +83,6 @@ public class ConfigdumpRestResource extends BaseRestResource {
     public ConfigdumpSessionLocal configDump;
 
     @GET
-    @Path("/status")
-    @ApiOperation(value = "Get the status of this REST Resource", notes = "Returns status, API version and EJBCA version.", response = RestResourceStatusRestResponse.class)
-    @Override
-    public Response status() {
-        return super.status();
-    }
-
-    @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
@@ -143,13 +133,22 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     @GET
-    @Path("{type}")
+    @Path("/status")
+    @ApiOperation(value = "Get the status of this REST Resource", notes = "Returns status, API version and EJBCA version.", response = RestResourceStatusRestResponse.class)
+    @Override
+    public Response status() {
+        return super.status();
+    }
+
+
+    @GET
+    @Path("export/{type}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration for type in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
     public Response getJsonConfigdumpForType(
     //@formatter:off
             @Context final HttpServletRequest requestContext,
-            @PathParam("type") String itemTypeString,
+            @PathParam("type") final String itemTypeString,
             @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults,
             @DefaultValue("false") @QueryParam("externalcas") final boolean exportExternalCas
@@ -164,7 +163,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         ItemType itemType;
         try {
             itemType = fromSubdirectory(itemTypeString).orElseGet(() -> ItemType.valueOf(itemTypeString));
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
@@ -200,14 +199,14 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     @GET
-    @Path("{type}/{setting}")
+    @Path("export/{type}/{setting}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get the configuration for type in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
+    @ApiOperation(value = "Get the configuration for a type and setting in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
     public Response getJsonConfigdumpForTypeAndSetting(
     //@formatter:off
             @Context final HttpServletRequest requestContext,
-            @PathParam("type") String itemTypeString,
-            @PathParam("setting") String settingName,
+            @PathParam("type") final String itemTypeString,
+            @PathParam("setting") final String settingName,
             @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults
             //@formatter:on
@@ -221,7 +220,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         ItemType itemType;
         try {
             itemType = fromSubdirectory(itemTypeString).orElseGet(() -> ItemType.valueOf(itemTypeString));
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
@@ -323,24 +322,18 @@ public class ConfigdumpRestResource extends BaseRestResource {
         }
     }
 
-    static private Set<String> setOf(String s) {
-        HashSet<String> strings = new HashSet<>();
+    static private Set<String> setOf(final String s) {
+        final HashSet<String> strings = new HashSet<>();
         strings.add(s);
         return strings;
     }
 
-    static Optional<ItemType> fromSubdirectory(String s) {
-        for (ItemType itemType : ItemType.values()) {
-            if (s.equals(itemType.getSubdirectory()))
+    private static Optional<ItemType> fromSubdirectory(final String s) {
+        for (final ItemType itemType : ItemType.values()) {
+            if (s.equals(itemType.getSubdirectory())) {
                 return Optional.of(itemType);
+            }
         }
         return Optional.empty();
-    }
-
-    public static void main(String[] args) {
-        Optional<ItemType> fromSubdirectory = fromSubdirectory("admin-roles");
-        System.out.println(fromSubdirectory.orElse(ItemType.ACMECONFIG));
-        System.out.println(fromSubdirectory.orElseGet(() -> ItemType.valueOf("admin-roles")));
-        System.out.println(ItemType.CA.getSubdirectory());
     }
 }
