@@ -13,6 +13,7 @@
 package org.ejbca.configdump;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Holds information about the status of a Configdump export operation.
@@ -21,9 +22,19 @@ import java.util.List;
 public final class ConfigdumpExportResult extends ConfigdumpResult {
     
     private static final long serialVersionUID = 1L;
+    private byte[] output = null;
     
     public ConfigdumpExportResult(final List<String> reportedErrors, final List<String> reportedWarnings) {
         super(reportedErrors, reportedWarnings);
+    }
+
+    public ConfigdumpExportResult(final List<String> reportedErrors, final List<String> reportedWarnings, byte[] output) {
+        this(reportedErrors, reportedWarnings);
+        this.output = output;
+    }
+
+    public Optional<byte[]> getOutput() {
+        return Optional.ofNullable(output);
     }
     
 }
