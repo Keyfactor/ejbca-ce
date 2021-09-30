@@ -1994,7 +1994,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final Date thisUpdate = new Date();
         final Date nextUpdate = new Date();
         // Set standard nextUpdate time
-        long nextUpdateTime = nextUpdate.getTime() + crlPeriod;
+        long nextUpdateTime = nextUpdate.getTime() + crlPeriod - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
         nextUpdate.setTime(nextUpdateTime);
         // Check if the time is too large, then set time to "max/final" time according to RFC5280 section 4.1.2.5, 99991231235959Z
         TimeZone tz = TimeZone.getTimeZone("GMT");
