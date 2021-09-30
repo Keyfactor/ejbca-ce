@@ -79,6 +79,37 @@ public class ConfigdumpRestResource extends BaseRestResource {
     public Response status() {
         return super.status();
     }
+    
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get the configuration in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
+    public Response getJsonConfigdump(@Context HttpServletRequest requestContext) throws AuthorizationDeniedException, RestException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        ConfigdumpSetting settings = new ConfigdumpSetting();
+        settings.setIncluded(new HashMap<>());
+        settings.setExcluded(new HashMap<>());
+        settings.setIncludedAnyType(new ArrayList<>());
+        settings.setExcludedAnyType(new ArrayList<>());
+        settings.setIgnoreErrors(false);
+        settings.setIgnoreWarnings(false);
+        settings.setExportDefaults(true);
+        settings.setExportExternalCas(true);
+        settings.setExportType(ConfigdumpSetting.ExportType.JSON);
+        try {
+            ConfigdumpExportResult results = configDump.performExport(admin, settings);
+            if (results.isSuccessful()) {
+                return Response.ok(results.getOutput().get(), MediaType.APPLICATION_JSON)
+                        .build();
+            } else {
+                return Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.APPLICATION_JSON)
+                        .entity(new ConfigdumpError(results.getReportedErrors(), results.getReportedWarnings())).build();
+            }
+        } catch (ConfigdumpException | IOException e) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.APPLICATION_JSON)
+                    .entity(new ConfigdumpError(Collections.singletonList(e.getLocalizedMessage()), new ArrayList<>())).build();
+        }
+    }
 
     @GET
     @Path("/configdump.zip")
