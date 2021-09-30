@@ -34,6 +34,8 @@ public class ValidityDate {
 	public static final String ISO8601_DATE_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";
 	public static final TimeZone TIMEZONE_UTC = TimeZone.getTimeZone("UTC");
 	public static final TimeZone TIMEZONE_SERVER = TimeZone.getDefault();
+	// Offset for period of time from notBefore through notAfter, inclusive. See ECA-9523, ECA-10327.
+	public static final long NOT_AFTER_INCLUSIVE_OFFSET = 1000;
 
 	private static final Logger log = Logger.getLogger(ValidityDate.class);
 	// Time format for storage where implied timezone is UTC
@@ -216,7 +218,7 @@ public class ValidityDate {
 	    try {
 	        // We think this is the most common, so try this first, it's fail-fast
 	        final long millis = SimpleTime.parseMillies(encodedValidity);
-	        final long endSecond = notAfterIsInclusive ? 1000 : 0;
+	        final long endSecond = notAfterIsInclusive ? NOT_AFTER_INCLUSIVE_OFFSET: 0;
 	        final Date endDate = new Date(firstDate.getTime() + millis - endSecond);
 	        return endDate;
 	    } catch(NumberFormatException nfe) {
