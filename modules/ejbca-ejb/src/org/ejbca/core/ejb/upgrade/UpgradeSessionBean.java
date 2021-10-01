@@ -585,13 +585,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             setLastUpgradedToVersion("7.7.1");
         }
 
-        if (isLesserThan(oldVersion, "7.7.2")) {
+        if (isLesserThan(oldVersion, "7.8.1")) {
             try {
-                upgradeSession.migrateDatabase772();
+                upgradeSession.migrateDatabase781();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-            setLastUpgradedToVersion("7.7.2");
+            setLastUpgradedToVersion("7.8.1");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -2044,7 +2044,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public void migrateDatabase772() throws UpgradeFailedException {
+    public void migrateDatabase781() throws UpgradeFailedException {
         List<Integer> ids;
         try {
             Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
