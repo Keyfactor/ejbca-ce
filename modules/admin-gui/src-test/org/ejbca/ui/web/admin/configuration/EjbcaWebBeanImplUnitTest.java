@@ -82,7 +82,6 @@ public final class EjbcaWebBeanImplUnitTest {
     private static final byte[] TLS_SESSION_3 = { 33, 33 };
     private static final String HTTPS = "https";
     private static final String MOCKED_SERVER_NAME = "example.com";
-    private static final Integer MOCKED_SERVER_PORT = 8443;
     private static final String MOCKED_REMOTE_ADDR = "192.0.2.123"; // RFC 5737 documentation/example IP address
     
     private static final String CERT_DN = "CN=admin";
