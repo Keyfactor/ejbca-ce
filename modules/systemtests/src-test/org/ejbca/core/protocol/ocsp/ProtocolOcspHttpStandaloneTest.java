@@ -83,6 +83,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.cesecore.util.ValidityDate;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -562,7 +563,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
             assertNotNull("thisUpdate was not set.", thisUpdate);
             assertNotNull("nextUpdate was not set. (This test requires ocsp.revoked.untilNextUpdate to be configured.)", nextUpdate);
 
-            long diff = nextUpdate.getTime() - thisUpdate.getTime();
+            long diff = nextUpdate.getTime() - thisUpdate.getTime() + ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
             assertEquals("The nextUpdate value was not taken from ocsp.revoked.untilNextUpdate", 5000L, diff);
             
         } finally {
