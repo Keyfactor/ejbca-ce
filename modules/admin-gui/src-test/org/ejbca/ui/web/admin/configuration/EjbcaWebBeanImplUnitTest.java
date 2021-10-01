@@ -176,7 +176,6 @@ public final class EjbcaWebBeanImplUnitTest {
     private void expectRequestGetters() {
         expect(mockedRequest.getScheme()).andReturn(HTTPS);
         expect(mockedRequest.getServerName()).andReturn(MOCKED_SERVER_NAME);
-        expect(mockedRequest.getServerPort()).andReturn(MOCKED_SERVER_PORT);
         expect(mockedRequest.getRemoteAddr()).andReturn(MOCKED_REMOTE_ADDR);
     }
     
