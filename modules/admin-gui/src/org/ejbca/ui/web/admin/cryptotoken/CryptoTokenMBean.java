@@ -12,29 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
-import java.io.File;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -81,6 +58,28 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
+
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import java.io.File;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -990,9 +989,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
 
                 // Verify that it is allowed
-                SlotList allowedSlots = getP11SlotList();
-                if (allowedSlots != null && !allowedSlots.contains(slotTextValue)) {
-                    throw new IllegalArgumentException("Slot number " + slotTextValue + " is not allowed. Allowed slots are: " + allowedSlots);
+                final SlotList allowedSlots = getP11SlotList();
+                if (allowedSlots != null) {
+                    if (!StringUtils.isNumeric(slotTextValue)) {
+                        log.info("An administrator attempted to create a crypto token with " + slotTextValue + " as slot reference. " +
+                                "This failed because only slot number can be used as slot reference when the setting " +
+                                "'cryptotoken.p11.lib.X.slotlist' is enabled in 'web.properties'.");
+                        throw new IllegalArgumentException("Only slot number is allowed to be used as slot reference on this " +
+                                "installation. Allowed slot numbers are: " + allowedSlots);
+                    }
+                    if (!allowedSlots.contains(slotTextValue)) {
+                        throw new IllegalArgumentException("Slot number " + slotTextValue + " is not allowed. Allowed slots are: " + allowedSlots);
+                    }
                 }
 
                 properties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotTextValue);
