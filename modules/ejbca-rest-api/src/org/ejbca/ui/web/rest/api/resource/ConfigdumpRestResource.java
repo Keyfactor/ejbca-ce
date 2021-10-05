@@ -110,13 +110,14 @@ public class ConfigdumpRestResource extends BaseRestResource {
     @GET
     @Path("/status")
     @ApiOperation(value = "Get the status of this REST Resource", notes = "Returns status, API version and EJBCA version.", response = RestResourceStatusRestResponse.class)
+    @Produces(MediaType.APPLICATION_JSON)
     @Override
     public Response status() {
         return super.status();
     }
 
     @GET
-    @Path("/export")
+    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
     public Response getJsonConfigdump(
@@ -166,7 +167,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     @GET
-    @Path("export/{type}")
+    @Path("{type}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration for type in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
     public Response getJsonConfigdumpForType(
@@ -223,7 +224,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     @GET
-    @Path("export/{type}/{setting}")
+    @Path("{type}/{setting}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration for a type and setting in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
     public Response getJsonConfigdumpForTypeAndSetting(
