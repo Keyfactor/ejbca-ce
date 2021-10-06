@@ -12,10 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.oauth;
 
+import java.util.Optional;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -41,6 +45,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String CLIENT_SECRET = "--clientsecret";
     private static final String REALM = "--realm";
     private static final String SCOPE = "--scope";
+    private static final String KEYBINDING = "--keybinding";
     private static final String AUDIENCE = "--audience";
     private static final String GENERIC = "GENERIC";
     private static final String KEYCLOAK = "KEYCLOAK";
@@ -70,6 +75,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Client name for EJBCA in Trusted OAuth Provider."));
         registerParameter(new Parameter(CLIENT_SECRET, "Client secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Client secret in Trusted OAuth Provider."));
+        registerParameter(new Parameter(KEYBINDING, "Key binding", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Internal key binding name for Azure Trusted OAuth Provider."));
     }
 
     @Override
@@ -95,6 +102,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String realm = parameters.get(REALM);
         String scope = parameters.get(SCOPE);
         String audience = parameters.get(AUDIENCE);
+        String keyBinding = parameters.get(KEYBINDING);
         OAuthProviderType type = null;
         
         if (typeString != null) {
@@ -141,6 +149,14 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         keyInfo.setRealm(realm != null ? realm : "");
         keyInfo.setScope(scope != null ? scope : "");
         keyInfo.setAudience(audience != null ? audience : "");
+        if (keyBinding != null) {
+            final Optional<Integer> maybeKeyBindingId = keyBindingNameToId(keyBinding);
+            if (!maybeKeyBindingId.isPresent()) {
+                log.info("Key binding '" + keyBinding + "' not found");
+                return CommandResult.CLI_FAILURE;
+            }
+            keyInfo.setKeyBinding(maybeKeyBindingId.get());
+        }
 
         if (!canAdd(keyInfo)) {
             log.info("Trusted OAuth Provider with the same label already exists!");

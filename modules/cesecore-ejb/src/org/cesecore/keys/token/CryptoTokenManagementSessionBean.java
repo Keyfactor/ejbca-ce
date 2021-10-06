@@ -60,6 +60,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
