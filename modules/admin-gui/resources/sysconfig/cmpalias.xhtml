@@ -64,7 +64,7 @@
 	            	</h:selectBooleanCheckbox> 
 	            	<h:outputText value="HMAC"/>
 	            	<h:selectOneRadio id="selecthmacsecretmode" value="#{editCmpConfigMBean.hmacSecretMode}" 
-	            			disabled="#{!editCmpConfigMBean.hmacSelected} or editCmpConfigMBean.viewOnly"
+	            			disabled="#{!editCmpConfigMBean.hmacSelected or editCmpConfigMBean.viewOnly}"
 	            			rendered="#{editCmpConfigMBean.raMode}">
 	            		<f:selectItem itemLabel="#{web.text.CMPHMACCASECRET}" itemValue="shared"/>
 	            		<f:selectItem itemLabel="#{web.text.CMPHMACSPECIFYSECRET}" itemValue="specified"/>
