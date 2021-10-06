@@ -53,6 +53,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -95,7 +97,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
-    private boolean allowBlankAudience = false; 
+    private boolean allowBlankAudience = false;
+
+    private OauthRequestHelper oauthRequestHelper; 
 
     public WebAuthenticationProviderSessionBean() { }
 
@@ -296,12 +300,12 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     return null;
                 }
                 String redirectUrl = getBaseUrl();
-                oAuthGrantResponseInfo = OauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+                oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
             }
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;
-        } catch (IOException e) {
+        } catch (IOException | KeyBindingNotFoundException | CryptoTokenOfflineException e) {
             LOG.info("Failed to refresh token: " + e.getMessage(), e);
             return null;
         }
