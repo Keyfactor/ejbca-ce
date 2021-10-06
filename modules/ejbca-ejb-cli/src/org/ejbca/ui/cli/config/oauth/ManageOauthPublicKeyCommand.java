@@ -19,12 +19,10 @@ import java.security.cert.CertificateParsingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.util.CertTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -37,7 +35,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.text.ParseException;
 
 /**
