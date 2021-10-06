@@ -2058,7 +2058,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
             try {
                 EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
-                EeProfileUpdgaderFor772.update(eep);
+                EeProfileUpdgaderFor781.update(eep);
                 endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
             } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
                 log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
@@ -2067,18 +2067,19 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    static class EeProfileUpdgaderFor772 {
-        private static final int OLDFIELDBOUNDRARY  = 10000; // 7.7.1 and earlier
+    static class EeProfileUpdgaderFor781 {
+        private static final int OLDFIELDBOUNDRARY  = 10000; // 7.7.2 and earlier
 
-        // Private Constants in EndEntityProfile in version 7.7.2
-        private static final int FIELDBOUNDRARY  = 1000000; // Changed in 7.7.2
+        // Private Constants in EndEntityProfile in version 7.8.1
+        private static final int FIELDBOUNDRARY  = 1000000; // Changed in 7.8.1
         private static final int NUMBERBOUNDRARY = 100; // Field identifier number boundary
-        private static final int FIELDORDERINGBASE = FIELDBOUNDRARY / NUMBERBOUNDRARY; //Introduced in 7.7.2 as SDN, SAN, SDA and SSH Field ordering base
-        private static final String NUMBERARRAY               = "NUMBERARRAY";
+        private static final int FIELDORDERINGBASE = FIELDBOUNDRARY / NUMBERBOUNDRARY; //Introduced in 7.8.1 as SDN, SAN, SDA and SSH Field ordering base
         private static final String SUBJECTDNFIELDORDER       = "SUBJECTDNFIELDORDER";
         private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
         private static final String SUBJECTDIRATTRFIELDORDER  = "SUBJECTDIRATTRFIELDORDER";
-        public static final String SSH_FIELD_ORDER = "SSH_FIELD_ORDER";
+        private static final String SSH_FIELD_ORDER = "SSH_FIELD_ORDER";
+
+        private EeProfileUpdgaderFor781() {}
 
         static void update(EndEntityProfile eep) {
             LinkedHashMap<Object, Object> data = eep.getRawData();
