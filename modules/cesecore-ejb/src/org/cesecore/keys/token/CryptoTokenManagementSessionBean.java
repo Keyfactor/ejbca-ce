@@ -12,35 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -66,6 +37,34 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 /**
  * @see CryptoTokenManagementSession
@@ -836,24 +835,23 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     private List<String> getKeyPairAliasesInternal(final CryptoToken cryptoToken) throws CryptoTokenOfflineException {
         try {
-            final List<String> aliasEnumeration = cryptoToken.getAliases();
             final List<String> keyPairAliases = new ArrayList<>();
-            for (final String currentAlias : aliasEnumeration) {
+            for (final String currentAlias : cryptoToken.getAliases()) {
                 try {
                     if (cryptoToken.getPublicKey(currentAlias) != null && cryptoToken.doesPrivateKeyExist(currentAlias)) {
-                        // A key pair exists for this alias, so add it
                         keyPairAliases.add(currentAlias);
-                        continue; // next alias, skip debug log
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Ignoring key with alias '" + currentAlias + "'. Reason: No private key exists.");
+                        }
                     }
-                } catch (CryptoTokenOfflineException ignored) {
-                    // Ignored
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Ignored key alias '"+currentAlias+"' in crypto token '"+cryptoToken.getTokenName()+"' since it is missing a public and/or private key. Perhaps it is a symmetric key?");
+                } catch (CryptoTokenOfflineException | RuntimeException e) {
+                    log.debug("Ignoring keypair with alias '" + currentAlias + "'. Reason: " + e.getMessage());
+                    log.trace(e);
                 }
             }
             return keyPairAliases;
-        } catch (KeyStoreException e) {
+        } catch (final KeyStoreException e) {
             throw new CryptoTokenOfflineException(e);
         }
     }
