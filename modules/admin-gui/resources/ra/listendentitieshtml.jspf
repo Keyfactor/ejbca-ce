@@ -331,27 +331,35 @@ function confirmrevocation(){
     <td width="10%"><%  switch(users[i].getStatus()){
                           case EndEntityConstants.STATUS_NEW : %>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSNEW\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
                             <%break;
                           case EndEntityConstants.STATUS_FAILED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSFAILED\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
                             <%break;
                           case EndEntityConstants.STATUS_INITIALIZED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSINITIALIZED\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
                             <%break;
                           case EndEntityConstants.STATUS_INPROCESS :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSINPROCESS\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
                             <%break;
                           case EndEntityConstants.STATUS_GENERATED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSGENERATED\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
                             <%break;
                           case EndEntityConstants.STATUS_REVOKED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSREVOKED\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_REVOKED%>'>
                             <%break;
                           case EndEntityConstants.STATUS_HISTORICAL :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSHISTORICAL\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
                             <%break;
                           case EndEntityConstants.STATUS_KEYRECOVERY :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSKEYRECOVERY\") %>" />
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
                             <%break;
                         }%></td>
       <td width="10%">
