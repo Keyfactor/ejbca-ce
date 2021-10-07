@@ -627,9 +627,10 @@
         <h:commandButton action="#{systemConfigMBean.oauthKeyManager.removeOauthKey(oauthkey)}"
             value="#{web.text.REMOVE}"
             rendered="#{systemConfigMBean.allowedToEditOauthKeys}"
-            id="removeOauthKeyButton"/>
+            id="removeOauthKeyButton" onclick="return confirm('#{web.text.OAUTHKEYTAB_TRUSTED_PROVIDER_CONF_DELETE}: #{oauthkey.label}?')"/>
       </h:column>
 		</h:dataTable>
+    
 		<h:commandButton id="addOauthKey" value="#{web.text.ADD}"
 						 action="#{systemConfigMBean.oauthKeyManager.goToAddOauthKey}"
 						 rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
