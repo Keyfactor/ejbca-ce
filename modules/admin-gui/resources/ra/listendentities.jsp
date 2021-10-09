@@ -123,7 +123,11 @@
 
   static final String HIDDEN_SORTBY             = "hiddensortby";
   static final String HIDDEN_USERNAME           = "hiddenusername";
-  static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber"; 
+  static final String HIDDEN_USER_STATUS        = "hiddenuserstatus";
+  static final String HIDDEN_RECORDNUMBER       = "hiddenrecordnumber";
+  
+  static final String HIDDEN_USER_STATUS_VALUE_REVOKED = "revoked";
+  static final String HIDDEN_USER_STATUS_VALUE_DEFAULT = "default_status";  
 
   static final String VALUE_NONE                = "-1";
   static final int ALL_STATUS                   = -1;
@@ -263,6 +267,8 @@
           String parameter = (String) parameters.nextElement();
            if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
              index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
+             if(request.getParameter(HIDDEN_USER_STATUS+index).contains(HIDDEN_USER_STATUS_VALUE_REVOKED))
+            	 continue;
              indexes.add(Integer.valueOf(index));
            }
          }
