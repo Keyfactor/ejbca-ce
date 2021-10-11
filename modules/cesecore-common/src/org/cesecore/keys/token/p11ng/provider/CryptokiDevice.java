@@ -666,21 +666,36 @@ public class CryptokiDevice {
                         // Always return a public key with OID form of parameters, which means we probably don't support EC keys with fully custom EC parameters using this code
                         {
                             final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(oid.getId());
-                            if (bcspec != null) {
-                                final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
-                                final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
-                                        ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
-                                final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
-                                final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
-                                final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
-                                return keyfact.generatePublic(pubKeySpec);
-                            } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
-                                // It is an EdDSA key
-                                X509EncodedKeySpec edSpec = createEdDSAPublicKeySpec(ckaQ.getValue());
-                                final KeyFactory keyfact = KeyFactory.getInstance(oid.getId(), BouncyCastleProvider.PROVIDER_NAME);
-                                return keyfact.generatePublic(edSpec);
-                            } else {
-                                LOG.warn("Could not find an elliptic curve with the specified OID " + oid.getId() + ", not returning public key with alias '" + alias +"'.");
+                            boolean err = false;
+                            try {
+                                if (bcspec != null) {
+                                    final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
+                                    final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
+                                            ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
+                                    final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
+                                    final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
+                                    final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+                                    return keyfact.generatePublic(pubKeySpec);
+                                } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
+                                    // It is an EdDSA key
+                                    final X509EncodedKeySpec edSpec = createEdDSAPublicKeySpec(ckaQ.getValue());
+                                    final KeyFactory keyfact = KeyFactory.getInstance(oid.getId(), BouncyCastleProvider.PROVIDER_NAME);
+                                    return keyfact.generatePublic(edSpec);
+                                } else {
+                                    // Not a known EC curve, and not a known EdDSA algorithm, it's something we can't handle
+                                    err = true;
+                                }
+                            } catch (IOException e) {
+                                // If a point has some invalid encoding, you may end up with an error like
+                                // java.io.IOException: DER length more than 4 bytes: 110
+                                // Ignore these, this key will not be visible by EJBCA, but the log will show info
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Unable to parse EC point for public key with alias '" + alias +"'.", e);
+                                }
+                                err = true;
+                            }
+                            if (err) {
+                                LOG.warn("Could not find an elliptic curve with the specified OID " + oid.getId() + " and point " + StringTools.hex(ckaQ.getValue()) + ", not returning public key with alias '" + alias +"'.");
                                 return null;
                             }
                         }
