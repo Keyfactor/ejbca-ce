@@ -42,6 +42,8 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -258,6 +260,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	            if (ca.isNewState() && ca.getStatus()==CAConstants.CA_OFFLINE) {
 	                try {
 	                    caAdminSession.activateCAService(authenticationToken, ca.getCaId());
+	                } catch (WaitingForApprovalException|ApprovalException e) {
+	                    super.addInfoMessage(e.getMessage());
 	                } catch (Exception e) {
 	                    super.addNonTranslatedErrorMessage(e);
 	                }
