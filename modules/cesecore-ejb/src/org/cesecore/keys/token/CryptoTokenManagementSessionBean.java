@@ -842,11 +842,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                         keyPairAliases.add(currentAlias);
                     } else {
                         if (log.isDebugEnabled()) {
-                            log.debug("Ignoring key with alias '" + currentAlias + "'. Reason: No private key exists.");
+                            log.debug("Ignoring key with alias '" + currentAlias + "' in crypto token '" + cryptoToken.getTokenName()
+                                    + "'. Reason: No private or public key exists. Is it a secret key?");
                         }
                     }
                 } catch (CryptoTokenOfflineException | RuntimeException e) {
-                    log.debug("Ignoring keypair with alias '" + currentAlias + "'. Reason: " + e.getMessage());
+                    log.debug("Ignoring keypair with alias '" + currentAlias + "' in crypto token '" + cryptoToken.getTokenName()
+                            + "'. Reason: " + e.getMessage());
                     log.trace(e);
                 }
             }
