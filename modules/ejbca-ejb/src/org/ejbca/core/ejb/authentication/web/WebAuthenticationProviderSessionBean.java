@@ -18,6 +18,7 @@ import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -46,6 +47,7 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
+import org.cesecore.authentication.tokens.OAuth2Principal.Builder;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -241,7 +243,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, OAuthKeyInfo keyInfo) {
-        return OAuth2Principal.builder()
+        final Builder oauthBuilder = OAuth2Principal.builder()
                 .setOauthProviderId(keyInfo.getInternalId())
                 .setIssuer(claims.getIssuer())
                 .setSubject(claims.getSubject())
@@ -250,8 +252,25 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 .setPreferredUsername(safeGetClaim(claims, "preferred_username"))
                 .setName(safeGetClaim(claims, "name"))
                 .setEmail(safeGetClaim(claims, "email"))
-                .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"))
-                .build();
+                .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"));
+        
+        // add Roles if they exist in the JWT and are of the expected type.  All this type checking may be overly paranoid,
+        // but this is an external value used in authentication, and there's no schema for JSON
+        if (claims.getClaims().containsKey("roles")) {
+            final Object rolesClaimObject = claims.getClaim("roles");
+            if (rolesClaimObject instanceof Collection<?>) {
+                ((Collection<?>) rolesClaimObject).forEach(r -> {
+                    if (r instanceof String) {
+                        oauthBuilder.addRole((String) r);
+                    }
+                });
+            }
+            else {
+                LOG.debug("unexpected type of 'roles' claim: " + rolesClaimObject.getClass());
+            }
+        }
+        
+        return oauthBuilder.build();
     }
 
     private String safeGetClaim(final JWTClaimsSet claims, final String claimName) {
