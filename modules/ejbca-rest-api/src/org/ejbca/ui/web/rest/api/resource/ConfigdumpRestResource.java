@@ -365,6 +365,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         try {
             zipdata = IOUtils.toByteArray(zipfileItem.getInputStream());
         } catch (final IOException e) {
+            log.info("Unable to read zipfile data.", e);
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "zipfile data not read:" + e.getLocalizedMessage());
         }
 
@@ -386,6 +387,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
                 return new ConfigdumpImportResults(results.getReportedErrors(), results.getReportedWarnings());
             }
         } catch (ConfigdumpException | IOException e) {
+            log.info("Unable to import zipfile .", e);
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Unable to import zipfile:" + e);
         }
 
