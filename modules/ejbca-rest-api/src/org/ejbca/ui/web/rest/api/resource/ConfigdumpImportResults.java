@@ -54,4 +54,9 @@ public class ConfigdumpImportResults {
         this.warnings = warnings;
     }
 
+    @Override
+    public String toString() {
+        return "ConfigdumpImportResults [success=" + success + ", errors=" + errors + ", warnings=" + warnings + "]";
+    }
+
 }
