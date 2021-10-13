@@ -85,6 +85,7 @@ public final class OAuthKeyInfo implements Serializable {
     private String logoutUrl;
 
     private String audience;
+    private boolean enableAudienceCheck = true;
     
     // if null, use client secret
     private Integer keyBinding;
@@ -350,6 +351,7 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("scope=").append(getScope()).append(", ")
                 .append("url=").append(getUrl()).append(", ")
                 .append("audience=").append(getAudience()).append(", ")
+                .append("enableAudienceCheck=").append(isEnableAudienceCheck()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
@@ -390,5 +392,13 @@ public final class OAuthKeyInfo implements Serializable {
         uri += getUrl().endsWith("/") ? "" : "/";
         uri += getRealm() + "/v2.0";
         return uri;
+    }
+
+    public Boolean isEnableAudienceCheck() {
+        return enableAudienceCheck;
+    }
+
+    public void setEnableAudienceCheck(Boolean enableAudienceCheck) {
+        this.enableAudienceCheck = enableAudienceCheck;
     }
 }
