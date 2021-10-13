@@ -98,7 +98,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private String clientSecret;
         private String realm;
         private String audience;
-        private boolean enableAudienceCheck = true;
+        private boolean audienceCheckDisabled = false;
         private String scope;
         private UploadedFile publicKeyFile;
         
@@ -305,7 +305,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.type = oauthKey.getType();
             this.url = oauthKey.getUrl();
             this.audience = oauthKey.getAudience();
-            this.setEnableAudienceCheck(oauthKey.isEnableAudienceCheck());
+            this.setAudienceCheckDisabled(oauthKey.isAudienceCheckDisabled());
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
             this.realm = oauthKey.getRealm();
@@ -337,7 +337,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             client = null;
             clientSecret = null;
             audience = null;
-            enableAudienceCheck = true;
+            setAudienceCheckDisabled(false);
             realm = null;
             scope = null;
             oauthKeyBeingEdited = null;
@@ -392,12 +392,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.keyBinding = keyBinding;
         }
 
-        public boolean isEnableAudienceCheck() {
-            return enableAudienceCheck;
+        public boolean isAudienceCheckDisabled() {
+            return audienceCheckDisabled;
         }
 
-        public void setEnableAudienceCheck(boolean enableAudienceCheck) {
-            this.enableAudienceCheck = enableAudienceCheck;
+        public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
+            this.audienceCheckDisabled = audienceCheckDisabled;
         }
     }
 
@@ -658,7 +658,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setScope(oauthKeyEditor.getScope());
         newOauthKey.setAudience(oauthKeyEditor.getAudience());
-        newOauthKey.setEnableAudienceCheck(oauthKeyEditor.isEnableAudienceCheck());
+        newOauthKey.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
         newOauthKey.setClient(oauthKeyEditor.getClient());
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
@@ -832,7 +832,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
         oauthKeyToUpdate.setAudience(oauthKeyEditor.getAudience());
-        oauthKeyToUpdate.setEnableAudienceCheck(oauthKeyToUpdate.isEnableAudienceCheck());
+        oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyToUpdate.isAudienceCheckDisabled());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
 
