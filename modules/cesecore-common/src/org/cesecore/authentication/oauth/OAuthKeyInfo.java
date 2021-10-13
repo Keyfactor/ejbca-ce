@@ -85,7 +85,7 @@ public final class OAuthKeyInfo implements Serializable {
     private String logoutUrl;
 
     private String audience;
-    private boolean enableAudienceCheck = true;
+    private boolean audienceCheckDisabled = false;
     
     // if null, use client secret
     private Integer keyBinding;
@@ -351,7 +351,7 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("scope=").append(getScope()).append(", ")
                 .append("url=").append(getUrl()).append(", ")
                 .append("audience=").append(getAudience()).append(", ")
-                .append("enableAudienceCheck=").append(isEnableAudienceCheck()).append(", ")
+                .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
@@ -394,11 +394,12 @@ public final class OAuthKeyInfo implements Serializable {
         return uri;
     }
 
-    public Boolean isEnableAudienceCheck() {
-        return enableAudienceCheck;
+    public boolean isAudienceCheckDisabled() {
+        return audienceCheckDisabled;
     }
 
-    public void setEnableAudienceCheck(Boolean enableAudienceCheck) {
-        this.enableAudienceCheck = enableAudienceCheck;
+    public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
+        this.audienceCheckDisabled = audienceCheckDisabled;
     }
+
 }
