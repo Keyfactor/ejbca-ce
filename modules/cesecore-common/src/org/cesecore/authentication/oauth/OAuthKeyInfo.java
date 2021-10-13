@@ -83,6 +83,7 @@ public final class OAuthKeyInfo implements Serializable {
     private String logoutUrl;
 
     private String audience;
+    private boolean enableAudienceCheck = true;
     
     /**
      * Creates a OAuth Key info object
@@ -345,6 +346,7 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("scope=").append(getScope()).append(", ")
                 .append("url=").append(getUrl()).append(", ")
                 .append("audience=").append(getAudience()).append(", ")
+                .append("enableAudienceCheck=").append(isEnableAudienceCheck()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
@@ -364,5 +366,13 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setAudience(String audience) {
         this.audience = audience;
+    }
+
+    public Boolean isEnableAudienceCheck() {
+        return enableAudienceCheck;
+    }
+
+    public void setEnableAudienceCheck(Boolean enableAudienceCheck) {
+        this.enableAudienceCheck = enableAudienceCheck;
     }
 }
