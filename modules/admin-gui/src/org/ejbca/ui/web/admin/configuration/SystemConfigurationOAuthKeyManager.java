@@ -305,7 +305,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.type = oauthKey.getType();
             this.url = oauthKey.getUrl();
             this.audience = oauthKey.getAudience();
-            this.setAudienceCheckDisabled(oauthKey.isAudienceCheckDisabled());
+            this.audienceCheckDisabled = oauthKey.isAudienceCheckDisabled();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
             this.realm = oauthKey.getRealm();
