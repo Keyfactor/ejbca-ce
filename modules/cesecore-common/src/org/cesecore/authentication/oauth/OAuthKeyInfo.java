@@ -268,7 +268,7 @@ public final class OAuthKeyInfo implements Serializable {
         switch (getType()){
             case TYPE_AZURE:
             case TYPE_KEYCLOAK:
-                getTypeSpecificUrl("logout");
+                return getTypeSpecificUrl("logout");
             case TYPE_GENERIC:
             case TYPE_PINGID:
             default:
