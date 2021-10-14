@@ -337,7 +337,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             client = null;
             clientSecret = null;
             audience = null;
-            setAudienceCheckDisabled(false);
+            audienceCheckDisabled = false;
             realm = null;
             scope = null;
             oauthKeyBeingEdited = null;
@@ -832,7 +832,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
         oauthKeyToUpdate.setAudience(oauthKeyEditor.getAudience());
-        oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyToUpdate.isAudienceCheckDisabled());
+        oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
 
