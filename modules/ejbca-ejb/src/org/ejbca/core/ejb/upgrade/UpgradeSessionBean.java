@@ -2068,7 +2068,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     static class EeProfileUpdgaderFor781 {
-        private static final int OLDFIELDBOUNDRARY  = 10000; // 7.7.2 and earlier
+        private static final int OLDFIELDBOUNDRARY  = 10000; // 7.8.0 and earlier
 
         // Private Constants in EndEntityProfile in version 7.8.1
         private static final int FIELDBOUNDRARY  = 1000000; // Changed in 7.8.1
