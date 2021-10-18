@@ -377,7 +377,7 @@ public class X509CAInfo extends CAInfo {
 
   @Override
   public IntRange getAllCrlPartitionIndexes() {
-      if (getUsePartitionedCrl() || isMsCaCompatible()) {
+      if (getUsePartitionedCrl()) {
           return new IntRange(1, getCrlPartitions());
       }
       return null;
