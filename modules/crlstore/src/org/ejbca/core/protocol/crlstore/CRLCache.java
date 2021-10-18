@@ -16,6 +16,7 @@ package org.ejbca.core.protocol.crlstore;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -54,6 +55,24 @@ public class CRLCache {
 			this.crlInfo = crlInfo;
 			this.encoded = encoded;
 		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == this)
+				return true;
+			if (!(o instanceof CRLEntity)) {
+				return false;
+			}
+			CRLEntity crlEntity = (CRLEntity) o;
+			return Objects.equals(crlInfo.getSubjectDN(), crlEntity.crlInfo.getSubjectDN()) && crlInfo.getCrlPartitionIndex() == crlEntity.crlInfo.getCrlPartitionIndex();
+		}
+
+		@Override
+		public int hashCode() {
+			// Ignore CRL number. Always overwrite cache with latest CRL for the partition.
+			return Objects.hash(crlInfo.getSubjectDN(), crlInfo.getCrlPartitionIndex());
+		}
+
 	}
 	/** We need an object to synchronize around when rebuilding and reading the cache. When rebuilding the cache no thread
 	 * can be allowed to read the cache, since the cache will be in an inconsistent state. In the normal case we want to use
@@ -116,7 +135,6 @@ public class CRLCache {
 			}
 			return null;
 		}
-		final HashID id = HashID.getFromSubjectDN(caCert);
 		final String issuerDN = CertTools.getSubjectDN(caCert);
 		this.rebuildlock.lock();
 		try {
@@ -127,10 +145,11 @@ public class CRLCache {
 				}
 				return null;
 			}
+			final Integer cacheId = new CRLEntity(crlInfo, null).hashCode();
             final Map<Integer, CRLEntity> usedCrls = isDelta ? this.deltaCrls : this.crls;
 			// If we have not specified a crlNumber we can try to find the latest CRL in the cache
 			if (crlNumber == -1) {
-			    final CRLEntity cachedCRL = usedCrls.get(id.getKey());
+			    final CRLEntity cachedCRL = usedCrls.get(cacheId);
 			    if ( cachedCRL!=null && !crlInfo.getCreateDate().after(cachedCRL.crlInfo.getCreateDate()) ) {
 			        if (log.isDebugEnabled()) {
 			            log.debug("Retrieved CRL (from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber() + " and partition " + crlInfo.getCrlPartitionIndex());
@@ -147,7 +166,7 @@ public class CRLCache {
 			} else {
 			    entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, crlPartitionIndex, isDelta) );
 			    // Only cache latest CRLs, these should be the ones accessed regularly, and we don't want to fill the cache with old CRLs
-	            usedCrls.put(id.getKey(), entry);
+	            usedCrls.put(cacheId, entry);
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Retrieved CRL (not from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber() + " and partition " + crlInfo.getCrlPartitionIndex());
