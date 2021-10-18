@@ -1383,7 +1383,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
     }
 
-    private void activateNextKeyAndCert(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, CA ca, final Certificate cacert,
+    private void activateNextKeyAndCert(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, final CA ca, final Certificate cacert,
                                         final List<Certificate> chain, PublicKey caCertPublicKey) throws CryptoTokenOfflineException, EjbcaException, InvalidAlgorithmException,
             CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
         final CAToken catoken = ca.getCAToken();
