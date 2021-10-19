@@ -202,21 +202,24 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
             
             // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
-            final String expectedAudience = keyInfo.getAudience();
-            if (StringUtils.isBlank(expectedAudience)) {
-                if (isAllowBlankAudience()) {
-                    LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
-                            + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
-                } else {
-                    LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
+            if (!keyInfo.isAudienceCheckDisabled()) {
+                final String expectedAudience = keyInfo.getAudience();
+                if (StringUtils.isBlank(expectedAudience)) {
+                    if (isAllowBlankAudience()) {
+                        LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
+                                + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
+                    } else {
+                        LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
+                        return null;
+                    }
+                } else if (claims.getAudience() == null) {
+                    LOG.warn("No audience claim in JWT.  Can't confirm validity.");
+                    return null;
+                } else if (!claims.getAudience().contains(expectedAudience)) {
+                    logAuthenticationFailure(
+                            intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
                     return null;
                 }
-            } else if (claims.getAudience() == null) {
-                LOG.warn("No audience claim in JWT.  Can't confirm validity.");
-                return null;
-            } else if (!claims.getAudience().contains(expectedAudience)) {
-                logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
-                return null;
             }
             
             final Date expiry = claims.getExpirationTime();
