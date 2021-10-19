@@ -35,7 +35,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -129,7 +128,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @QueryParam("include") final Set<String> includeStrings,
             @QueryParam("exclude") final Set<String> excludeStrings
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
 
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
@@ -178,7 +177,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults,
             @DefaultValue("false") @QueryParam("externalcas") final boolean exportExternalCas
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
         final Map<ItemType, List<ConfigdumpPattern>> included = new HashMap<>();
@@ -235,7 +234,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
         final Map<ItemType, List<ConfigdumpPattern>> included = new HashMap<>();
@@ -286,14 +285,9 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     private void parseIncludeExclude(final Set<String> patternStrings, final List<ConfigdumpPattern> noTypePatterns,
-            final Map<ItemType, List<ConfigdumpPattern>> typePatterns) {
+            final Map<ItemType, List<ConfigdumpPattern>> typePatterns) throws IllegalWildCardSyntaxException {
         for (final String patternString : patternStrings) {
-            try {
-                ConfigdumpPattern.parseIncludeExcludeString(typePatterns, noTypePatterns, patternString);
-            } catch (final IllegalWildCardSyntaxException e) {
-                final Response response = Response.status(Status.BAD_REQUEST).entity(patternString + "is not a valid include/exclude type").build();
-                throw new WebApplicationException(response);
-            }
+            ConfigdumpPattern.parseIncludeExcludeString(typePatterns, noTypePatterns, patternString);
         }
     }
 
@@ -310,7 +304,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @QueryParam("include") final Set<String> includeStrings,
             @QueryParam("exclude") final Set<String> excludeStrings
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
 
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
@@ -390,7 +384,35 @@ public class ConfigdumpRestResource extends BaseRestResource {
             log.info("Unable to import zipfile .", e);
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Unable to import zipfile:" + e);
         }
+    }
 
+    @POST
+    @Path("/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Put the configuration in JSON.", response = ConfigdumpImportResults.class)
+    public ConfigdumpImportResults postJsonImport(@Context final HttpServletRequest requestContext, String json)
+            throws AuthorizationDeniedException, FileUploadException, RestException {
+
+        final ConfigdumpSetting settings = new ConfigdumpSetting();
+        settings.setIgnoreErrors(false);
+        settings.setIgnoreWarnings(true);
+        settings.setProcessingMode(ProcessingMode.RUN);
+        settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.JSON);
+        settings.setImportData(json.getBytes());
+
+        try {
+            final AuthenticationToken admin = getAdmin(requestContext, false);
+            final ConfigdumpImportResult results = configDump.performImport(admin, settings);
+            if (results.isSuccessful()) {
+                return new ConfigdumpImportResults();
+            } else {
+                return new ConfigdumpImportResults(results.getReportedErrors(), results.getReportedWarnings());
+            }
+        } catch (ConfigdumpException | IOException e) {
+            log.info("Unable to import JSON.", e);
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Unable to import zipfile:" + e);
+        }
     }
 
     static private Set<String> setOf(final String s) {
