@@ -352,7 +352,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Put the configuration as a ZIP file.", response = ConfigdumpImportResults.class)
-    public ConfigdumpImportResults putZipImport(@Context final HttpServletRequest requestContext, @FormParam("zipfile") final File zipfile)
+    public ConfigdumpImportResults postZipImport(@Context final HttpServletRequest requestContext, @FormParam("zipfile") final File zipfile)
             throws AuthorizationDeniedException, FileUploadException, RestException {
 
         // parse the input request as a multi-part json import
