@@ -285,13 +285,13 @@ public class ConfigdumpRestResource extends BaseRestResource {
         }
     }
 
-    private void parseIncludeExclude(final Set<String> includeStrings, final List<ConfigdumpPattern> includeAnyType,
-            final Map<ItemType, List<ConfigdumpPattern>> include) {
-        for (final String includeString : includeStrings) {
+    private void parseIncludeExclude(final Set<String> patternStrings, final List<ConfigdumpPattern> noTypePatterns,
+            final Map<ItemType, List<ConfigdumpPattern>> typePatterns) {
+        for (final String patternString : patternStrings) {
             try {
-                ConfigdumpPattern.parseIncludeExcludeString(include, includeAnyType, includeString);
+                ConfigdumpPattern.parseIncludeExcludeString(typePatterns, noTypePatterns, patternString);
             } catch (final IllegalWildCardSyntaxException e) {
-                final Response response = Response.status(Status.BAD_REQUEST).entity(includeString + "is not a valid include/exclude type").build();
+                final Response response = Response.status(Status.BAD_REQUEST).entity(patternString + "is not a valid include/exclude type").build();
                 throw new WebApplicationException(response);
             }
         }
