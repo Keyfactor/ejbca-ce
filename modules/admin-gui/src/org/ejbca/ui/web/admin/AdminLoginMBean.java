@@ -308,6 +308,9 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
             scope += " offline_access " + oauthKeyInfo.getScope();
         }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
+            scope += " " + oauthKeyInfo.getAudience();
+        }
         uriBuilder
                 .queryParam("scope", scope)
                 .queryParam("client_id", oauthKeyInfo.getClient())
