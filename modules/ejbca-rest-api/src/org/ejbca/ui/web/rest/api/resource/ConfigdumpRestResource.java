@@ -51,16 +51,21 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.configdump.ConfigdumpException;
 import org.ejbca.configdump.ConfigdumpExportResult;
 import org.ejbca.configdump.ConfigdumpImportResult;
+import org.ejbca.configdump.ConfigdumpItem;
 import org.ejbca.configdump.ConfigdumpPattern;
 import org.ejbca.configdump.ConfigdumpPattern.IllegalWildCardSyntaxException;
 import org.ejbca.configdump.ConfigdumpSetting;
+import org.ejbca.configdump.ConfigdumpSetting.ItemProblem;
 import org.ejbca.configdump.ConfigdumpSetting.ItemType;
+import org.ejbca.configdump.ConfigdumpSetting.NonInteractiveMode;
+import org.ejbca.configdump.ConfigdumpSetting.OverwriteMode;
 import org.ejbca.configdump.ConfigdumpSetting.ProcessingMode;
 import org.ejbca.configdump.ejb.ConfigdumpSessionLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * JAX-RS resource handling End Entity related requests.
@@ -69,6 +74,10 @@ import io.swagger.annotations.ApiOperation;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ConfigdumpRestResource extends BaseRestResource {
+
+    public enum Overwrite {
+        yes, skip, abort
+    }
 
     private static final Logger log = Logger.getLogger(ConfigdumpRestResource.class);
 
@@ -365,6 +374,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
 
         log.debug("Input file = " + zipfile);
 
+        // TODO combine this logic with JSON import
         final ConfigdumpSetting settings = new ConfigdumpSetting();
         settings.setIgnoreErrors(false);
         settings.setIgnoreWarnings(true);
@@ -391,19 +401,43 @@ public class ConfigdumpRestResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Put the configuration in JSON.", response = ConfigdumpImportResults.class)
-    public ConfigdumpImportResults postJsonImport(@Context final HttpServletRequest requestContext, String json)
-            throws AuthorizationDeniedException, FileUploadException, RestException {
+    public ConfigdumpImportResults postJsonImport(@Context final HttpServletRequest requestContext,
+            @ApiParam("Add to warnings instead of aborting on errors.") @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
+            @ApiParam("Generate initial certificate for CAs on import") @DefaultValue("false") @QueryParam("initialize") final boolean initializeCas,
+            @ApiParam("Continue on errors. Default is to abort.") @DefaultValue("false") @QueryParam("continue") final boolean continueOnError,
+            @ApiParam("How to handle already existing configuration. Options are abort,skip,yes") @DefaultValue("abort") @QueryParam("overwrite") final Overwrite overwrite,
+            @ApiParam("JSON data in configdump format") String json) throws AuthorizationDeniedException, RestException {
 
         final ConfigdumpSetting settings = new ConfigdumpSetting();
-        settings.setIgnoreErrors(false);
-        settings.setIgnoreWarnings(true);
-        settings.setProcessingMode(ProcessingMode.RUN);
+        settings.setIgnoreErrors(ignoreErrors);
+        settings.setIgnoreWarnings(false);
+        settings.setInitializeCas(initializeCas);
+        settings.setNonInteractiveMode(continueOnError ? NonInteractiveMode.CONTINUE : NonInteractiveMode.ABORT);
         settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.JSON);
         settings.setImportData(json.getBytes());
 
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
+
+            // do a dry run first, to determine if we have problematic items
+            settings.setProcessingMode(ProcessingMode.DRY_RUN);
+            final ConfigdumpImportResult dryRunResults = configDump.performImport(admin, settings);
+
+            // there are problematic items and overwrite mode is abort - return them as errors
+            if (!dryRunResults.getProblematicItems().isEmpty() && overwrite == Overwrite.abort) {
+                ArrayList<String> errors = new ArrayList<>(dryRunResults.getReportedErrors());
+                dryRunResults.getProblematicItems().forEach(i -> errors.add(createErrorMessage(i)));
+                return new ConfigdumpImportResults(errors, dryRunResults.getReportedWarnings());
+            }
+
+            // TODO handle MISSING_REFERENCE
+            // add resolutions per overwrite mode and do it for real
+            dryRunResults.getProblematicItems()
+                    .forEach(i -> settings.addOverwriteResolution(i, overwrite == Overwrite.yes ? OverwriteMode.UPDATE : OverwriteMode.SKIP));
+            settings.setProcessingMode(ProcessingMode.RUN);
             final ConfigdumpImportResult results = configDump.performImport(admin, settings);
+
+            // TODO successful can have warnings?
             if (results.isSuccessful()) {
                 return new ConfigdumpImportResults();
             } else {
@@ -412,6 +446,17 @@ public class ConfigdumpRestResource extends BaseRestResource {
         } catch (ConfigdumpException | IOException e) {
             log.info("Unable to import JSON.", e);
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Unable to import zipfile:" + e);
+        }
+    }
+
+    private String createErrorMessage(ConfigdumpItem<?> i) {
+        ItemProblem problem = i.getProblem();
+        if (problem == ItemProblem.EXISTING) {
+            return i.getName() + " already exists.  Aborting.";
+        } else if (problem == ItemProblem.EXISTING_AND_MISSING_REFERENCE) {
+            return i.getName() + " already exists and has missing references.  Aborting.";
+        } else {
+            return i.getName() + " has missing references.  Aborting.";
         }
     }
 
