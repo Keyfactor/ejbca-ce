@@ -105,11 +105,35 @@ public class ConfigdumpRestResource extends BaseRestResource {
     public Response getJsonConfigdump(
     //@formatter:off
             @Context final HttpServletRequest requestContext,
-            @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
-            @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults,
-            @DefaultValue("false") @QueryParam("externalcas") final boolean exportExternalCas, 
-            @QueryParam("include") final Set<String> includeStrings,
-            @QueryParam("exclude") final Set<String> excludeStrings
+            
+            @ApiParam("Print a warning instead of aborting and throwing an exception on errors.")
+            @DefaultValue("false") @QueryParam("ignoreerrors") 
+            final boolean ignoreErrors,
+            
+            @ApiParam("Also include fields having the default value.")
+            @DefaultValue("false") @QueryParam("defaults")
+            final boolean exportDefaults,
+            
+            @ApiParam("Enables export of external CAs (i.e. CAs where there's only a certificate and"
+                    + " nothing else)")
+            @DefaultValue("false") @QueryParam("externalcas")
+            final boolean exportExternalCas, 
+
+            @ApiParam("Names of items/types to include in the export. The syntax is identical to that"
+                    + " of exclude. For items of types that aren't listed, everything is included.")
+            @QueryParam("include")
+            final Set<String> includeStrings,
+            
+            @ApiParam("Names of items/types to exclude in the export, separated by semicolon. Type and"
+                    + " name is separated by a colon, and wildcards \"*\" are allowed. Both are"
+                    + " case-insensitive. E.g. exclude=\"*:Example CA; cryptotoken:Example*;"
+                    + "systemconfiguration:*\".\n"
+                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
+                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
+                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
+                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
+            @QueryParam("exclude")
+            final Set<String> excludeStrings
             //@formatter:on
     ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
 
@@ -155,9 +179,22 @@ public class ConfigdumpRestResource extends BaseRestResource {
     public Response getJsonConfigdumpForType(
     //@formatter:off
             @Context final HttpServletRequest requestContext,
+            
+            @ApiParam("Configuration type to export. "
+                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
+                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
+                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
+                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
             @PathParam("type") final String itemTypeString,
+            
+            @ApiParam("Print a warning instead of aborting and throwing an exception on errors.")
             @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
+            
+            @ApiParam("Also include fields having the default value.")
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults,
+            
+            @ApiParam("Enables export of external CAs (i.e. CAs where there's only a certificate and"
+                    + " nothing else)")
             @DefaultValue("false") @QueryParam("externalcas") final boolean exportExternalCas
             //@formatter:on
     ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
@@ -212,9 +249,21 @@ public class ConfigdumpRestResource extends BaseRestResource {
     public Response getJsonConfigdumpForTypeAndSetting(
     //@formatter:off
             @Context final HttpServletRequest requestContext,
+
+            @ApiParam("Configuration type to export. "
+                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
+                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
+                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
+                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
             @PathParam("type") final String itemTypeString,
+            
+            @ApiParam("Individual configuration name to export")
             @PathParam("setting") final String settingName,
+            
+            @ApiParam("Print a warning instead of aborting and throwing an exception on errors.")
             @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
+            
+            @ApiParam("Also include fields having the default value.")
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults
             //@formatter:on
     ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
@@ -281,11 +330,34 @@ public class ConfigdumpRestResource extends BaseRestResource {
     public Response getZipExport(
     //@formatter:off
             @Context final HttpServletRequest requestContext,
-            @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
-            @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults,
-            @DefaultValue("false") @QueryParam("externalcas") final boolean exportExternalCas, 
-            @QueryParam("include") final Set<String> includeStrings,
-            @QueryParam("exclude") final Set<String> excludeStrings
+            @ApiParam("Print a warning instead of aborting and throwing an exception on errors.")
+            @DefaultValue("false") @QueryParam("ignoreerrors") 
+            final boolean ignoreErrors,
+            
+            @ApiParam("Also include fields having the default value.")
+            @DefaultValue("false") @QueryParam("defaults")
+            final boolean exportDefaults,
+            
+            @ApiParam("Enables export of external CAs (i.e. CAs where there's only a certificate and"
+                    + " nothing else)")
+            @DefaultValue("false") @QueryParam("externalcas")
+            final boolean exportExternalCas, 
+
+            @ApiParam("Names of items/types to include in the export. The syntax is identical to that"
+                    + " of exclude. For items of types that aren't listed, everything is included.")
+            @QueryParam("include")
+            final Set<String> includeStrings,
+            
+            @ApiParam("Names of items/types to exclude in the export, separated by semicolon. Type and"
+                    + " name is separated by a colon, and wildcards \"*\" are allowed. Both are"
+                    + " case-insensitive. E.g. exclude=\"*:Example CA; cryptotoken:Example*;"
+                    + "systemconfiguration:*\".\n"
+                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
+                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
+                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
+                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
+            @QueryParam("exclude")
+            final Set<String> excludeStrings
             //@formatter:on
     ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
 
