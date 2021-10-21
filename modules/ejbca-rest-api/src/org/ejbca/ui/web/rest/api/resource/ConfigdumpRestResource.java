@@ -125,13 +125,18 @@ public class ConfigdumpRestResource extends BaseRestResource {
             final Set<String> includeStrings,
             
             @ApiParam("Names of items/types to exclude in the export, separated by semicolon. Type and"
-                    + " name is separated by a colon, and wildcards \"*\" are allowed. Both are"
-                    + " case-insensitive. E.g. exclude=\"*:Example CA; cryptotoken:Example*;"
-                    + "systemconfiguration:*\".\n"
-                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
-                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
-                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
-                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
+                    + " name is separated by a colon, and wildcards \"\\*\" are allowed. Both are"
+                    + " case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;"
+                    + "systemconfiguration:\\*\".\n"
+                    + "\n"
+                    + "Supported types are: ACMECONFIG/acme-config, CA/certification-authorities, "
+                    + " CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles,"
+                    + " CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services,"
+                    + " ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences,"
+                    + " OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config,"
+                    + " CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs,"
+                    + " EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions, "
+                    + " OAUTHKEY/trusted-oauth-providers")
             @QueryParam("exclude")
             final Set<String> excludeStrings
             //@formatter:on
@@ -180,11 +185,16 @@ public class ConfigdumpRestResource extends BaseRestResource {
     //@formatter:off
             @Context final HttpServletRequest requestContext,
             
-            @ApiParam("Configuration type to export. "
-                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
-                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
-                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
-                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
+            @ApiParam("Configuration type to export.\n"
+                    + "\n"
+                    + "Supported types are: ACMECONFIG/acme-config, CA/certification-authorities, "
+                    + " CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles,"
+                    + " CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services,"
+                    + " ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences,"
+                    + " OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config,"
+                    + " CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs,"
+                    + " EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions, "
+                    + " OAUTHKEY/trusted-oauth-providers")
             @PathParam("type") final String itemTypeString,
             
             @ApiParam("Print a warning instead of aborting and throwing an exception on errors.")
@@ -250,11 +260,16 @@ public class ConfigdumpRestResource extends BaseRestResource {
     //@formatter:off
             @Context final HttpServletRequest requestContext,
 
-            @ApiParam("Configuration type to export. "
-                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
-                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
-                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
-                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
+            @ApiParam("Configuration type to export.\n"
+                    + "\n"
+                    + "Supported types are: ACMECONFIG/acme-config, CA/certification-authorities, "
+                    + " CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles,"
+                    + " CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services,"
+                    + " ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences,"
+                    + " OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config,"
+                    + " CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs,"
+                    + " EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions, "
+                    + " OAUTHKEY/trusted-oauth-providers")
             @PathParam("type") final String itemTypeString,
             
             @ApiParam("Individual configuration name to export")
@@ -349,13 +364,18 @@ public class ConfigdumpRestResource extends BaseRestResource {
             final Set<String> includeStrings,
             
             @ApiParam("Names of items/types to exclude in the export, separated by semicolon. Type and"
-                    + " name is separated by a colon, and wildcards \"*\" are allowed. Both are"
-                    + " case-insensitive. E.g. exclude=\"*:Example CA; cryptotoken:Example*;"
-                    + "systemconfiguration:*\".\n"
-                    + "Supported types are: ACMECONFIG, CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE,"
-                    + " CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ADMINPREFS, OCSPCONFIG,"
-                    + " PEERCONNECTOR, SCEPCONFIG, CMPCONFIG, ESTCONFIG, VALIDATOR, CTLOG,"
-                    + " EXTENDEDKEYUSAGE, CERTEXTENSION, OAUTHKEY")
+                    + " name is separated by a colon, and wildcards \"\\*\" are allowed. Both are"
+                    + " case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;"
+                    + "systemconfiguration:\\*\".\n"
+                    + "\n"
+                    + "Supported types are: ACMECONFIG/acme-config, CA/certification-authorities, "
+                    + " CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles,"
+                    + " CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services,"
+                    + " ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences,"
+                    + " OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config,"
+                    + " CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs,"
+                    + " EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions, "
+                    + " OAUTHKEY/trusted-oauth-providers")
             @QueryParam("exclude")
             final Set<String> excludeStrings
             //@formatter:on
