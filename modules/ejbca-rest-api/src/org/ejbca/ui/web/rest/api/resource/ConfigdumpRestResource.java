@@ -325,7 +325,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     @POST
-    @Path("/")
+    @Path("/configdump.zip")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Put the configuration as a ZIP file.", response = ConfigdumpResults.class)
