@@ -1388,6 +1388,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
         final CAToken catoken = ca.getCAToken();
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+        final String currentSignKeyAlias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
         boolean activatedNextSignKey = false;
         if (nextKeyAlias != null) {
             try {
@@ -1483,6 +1484,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Set expire time
         ca.setExpireTime(CertTools.getNotAfter(cacert));
+        
+        // Before editing the CA, check if it is MS compatible and set parameters accordingly
+        if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && !nextKeyAlias.equals(currentSignKeyAlias)) {
+            setMsCompatCAParams(ca);
+        }
+        
         // Save CA
         caSession.editCA(authenticationToken, ca, true);
         // Publish CA Certificate
@@ -1490,6 +1497,28 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Create initial CRL
         publishingCrlSession.forceCRL(authenticationToken, caid);
         publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
+    }
+
+    private void setMsCompatCAParams(final CA ca) {
+        X509CA x509Ca = (X509CA) ca;
+        if (!x509Ca.getUsePartitionedCrl() && x509Ca.getCrlPartitions() == 0) {
+            // First time enabling MS Compatibility Mode.
+            log.debug("Enabling CRL partitions for MS Compatibility Mode");
+            ((X509CA)ca).setUsePartitionedCrl(true);
+            ((X509CA)ca).setCrlPartitions(1);
+            ((X509CA)ca).setSuspendedCrlPartitions(0);
+            // Set in CAInfo for immediate effect during CA certificate renewal
+            ((X509CAInfo)ca.getCAInfo()).setUsePartitionedCrl(true);
+            ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(1);
+            ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(0);
+        } else {
+            // Suspend previous partition and open a new one.
+            log.debug("MS Compatible CA re-keyed. Suspending previous CRL partition");
+            ((X509CA)ca).setCrlPartitions(x509Ca.getCrlPartitions() + 1);
+            ((X509CA)ca).setSuspendedCrlPartitions(x509Ca.getSuspendedCrlPartitions() + 1);
+            ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(((X509CAInfo)ca.getCAInfo()).getCrlPartitions() + 1);
+            ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(((X509CAInfo)ca.getCAInfo()).getSuspendedCrlPartitions() + 1);
+        }
     }
 
     @Override
@@ -2101,25 +2130,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && !currentSignKeyAlias.equals(nextSignKeyAlias) && !subjectDNWillBeChanged) {
                 // CA is re-keyed
-                X509CA x509Ca = (X509CA) ca;
-                if (!x509Ca.getUsePartitionedCrl() && x509Ca.getCrlPartitions() == 0) {
-                    // First time enabling MS Compatibility Mode.
-                    log.debug("Enabling CRL partitions for MS Compatibility Mode");
-                    ((X509CA)ca).setUsePartitionedCrl(true);
-                    ((X509CA)ca).setCrlPartitions(1);
-                    ((X509CA)ca).setSuspendedCrlPartitions(0);
-                    // Set in CAInfo for immediate effect during CA certificate renewal
-                    ((X509CAInfo)ca.getCAInfo()).setUsePartitionedCrl(true);
-                    ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(1);
-                    ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(0);
-                } else {
-                    // Suspend previous partition and open a new one.
-                    log.debug("MS Compatible CA re-keyed. Suspending previous CRL partition");
-                    ((X509CA)ca).setCrlPartitions(x509Ca.getCrlPartitions() + 1);
-                    ((X509CA)ca).setSuspendedCrlPartitions(x509Ca.getSuspendedCrlPartitions() + 1);
-                    ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(((X509CAInfo)ca.getCAInfo()).getCrlPartitions() + 1);
-                    ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(((X509CAInfo)ca.getCAInfo()).getSuspendedCrlPartitions() + 1);
-                }
+                setMsCompatCAParams(ca);
                 caSession.editCA(authenticationToken, ca, true);
             }
             
