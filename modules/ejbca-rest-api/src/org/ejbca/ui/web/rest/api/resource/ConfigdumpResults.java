@@ -32,6 +32,11 @@ public class ConfigdumpResults {
         this.success = true;
     }
 
+    public ConfigdumpResults(List<String> reportedWarnings) {
+        this.success = true;
+        this.warnings = reportedWarnings;
+    }
+
     public boolean isSuccess() {
         return success;
     }
