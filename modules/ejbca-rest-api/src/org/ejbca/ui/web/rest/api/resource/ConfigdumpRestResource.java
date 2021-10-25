@@ -11,7 +11,10 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,9 +44,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -429,24 +435,20 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @FormParam("zipfile") final File zipfile,
             
             @ApiParam("Add to warnings instead of aborting on errors.") 
-            @DefaultValue("false") @FormParam("ignoreerrors") 
-            final boolean ignoreErrors,
+            @DefaultValue("false") @FormParam("ignoreerrors") boolean ignoreErrors,
             
             @ApiParam("Generate initial certificate for CAs on import") 
-            @DefaultValue("false") @FormParam("initialize") 
-            final boolean initializeCas,
+            @DefaultValue("false") @FormParam("initialize") boolean initializeCas,
             
             @ApiParam("Continue on errors. Default is to abort.")
-            @DefaultValue("false") @FormParam("continue") 
-            final boolean continueOnError,
+            @DefaultValue("false") @FormParam("continue") boolean continueOnError,
             
             @ApiParam("How to handle already existing configuration. Options are abort,skip,yes") 
             @DefaultValue("abort") @FormParam("overwrite") 
-            final Overwrite overwrite,
+            Overwrite overwrite,
             
             @ApiParam("How to resolve missing references. Options are abort,skip,default") 
-            @DefaultValue("abort") @FormParam("resolve") 
-            final ResolveMissingReferences resolveMissingReferences
+            @DefaultValue("abort") @FormParam("resolve") ResolveMissingReferences resolveMissingReferences
 
             //@formatter:on
     ) throws AuthorizationDeniedException, FileUploadException, RestException {
@@ -455,7 +457,36 @@ public class ConfigdumpRestResource extends BaseRestResource {
         final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
         fileItemFactory.setSizeThreshold(1_000_000);
         final List<FileItem> parseRequest = new ServletFileUpload(fileItemFactory).parseRequest(requestContext);
-        final FileItem zipfileItem = parseRequest.stream().findFirst().orElseThrow(() -> new BadRequestException("No file upload found."));
+        FileItem zipfileItem = null;
+
+        // all those FormParams above are just for Swagger - the default JavaEE rest library has 
+        // no support for multi-part form data parameters, so we need to parse them ourselves here.
+        for (final FileItem item : parseRequest) {
+            if (item.isFormField()) {
+                switch (item.getFieldName()) {
+                case "overwrite":
+                    overwrite = read(item, Overwrite.class);
+                    break;
+                case "resolve":
+                    resolveMissingReferences = read(item, ResolveMissingReferences.class);
+                    break;
+                case "ignoreerrors":
+                    ignoreErrors = readBoolean(item);
+                    break;
+                case "initialize":
+                    initializeCas = readBoolean(item);
+                    break;
+                case "continue":
+                    continueOnError = readBoolean(item);
+                    break;
+                }
+            } else if ("zipfile".equals(item.getFieldName())) {
+                zipfileItem = item;
+            }
+        }
+        if (zipfileItem == null) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "No file upload found.");
+        }
 
         byte[] zipdata;
         try {
@@ -575,9 +606,8 @@ public class ConfigdumpRestResource extends BaseRestResource {
         settings.setProcessingMode(ProcessingMode.RUN);
         final ConfigdumpImportResult results = configDump.performImport(admin, settings);
 
-        // TODO successful can have warnings?
         if (results.isSuccessful()) {
-            return new ConfigdumpResults();
+            return new ConfigdumpResults(results.getReportedWarnings());
         } else {
             return new ConfigdumpResults(results.getReportedErrors(), results.getReportedWarnings());
         }
@@ -607,5 +637,26 @@ public class ConfigdumpRestResource extends BaseRestResource {
             }
         }
         return Optional.empty();
+    }
+
+    static private <T extends Enum<T>> T read(FileItem item, Class<T> clazz) throws RestException {
+        try (InputStream valueStream = item.getInputStream()) {
+            String value = IOUtils.toString(valueStream, StandardCharsets.UTF_8);
+            return Arrays.stream(clazz.getEnumConstants()).filter(v -> v.name().equals(value)).findFirst().orElseThrow(
+                    () -> new RestException(Response.Status.BAD_REQUEST.getStatusCode(), value + " is not a valid value for " + item.getFieldName()));
+        } catch (IOException e) {
+            log.info("unable to read " + item.getFieldName(), e);
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "unable to read " + item.getFieldName());
+        }
+    }
+
+    private static boolean readBoolean(FileItem item) throws RestException {
+        try (InputStream valueStream = item.getInputStream()) {
+            String value = IOUtils.toString(valueStream, StandardCharsets.UTF_8);
+            return Boolean.getBoolean(value);
+        } catch (IOException e) {
+            log.info("unable to read " + item.getFieldName(), e);
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "unable to read " + item.getFieldName());
+        }
     }
 }
