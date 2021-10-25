@@ -28,12 +28,18 @@ public class CertificateRestResponse {
     private String responseFormat;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<byte[]> certificateChain;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String certificateProfile;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String endEntityProfile;
+    
     private CertificateRestResponse(final CertificateRestResponseBuilder builder) {
         this.certificate = builder.certificate;
         this.serialNumber = builder.serialNumber;
         this.responseFormat = builder.responseFormat;
         this.certificateChain = builder.certificateChain;
+        this.certificateProfile = builder.certificateProfile;
+        this.endEntityProfile = builder.endEntityProfile;
     }
 
     /**
@@ -66,7 +72,15 @@ public class CertificateRestResponse {
     public String getResponseFormat() {
         return responseFormat;
     }
+    
+    public String getCertificateProfile() {
+        return certificateProfile;
+    }
 
+    public String getEndEntityProfile() {
+        return endEntityProfile;
+    }
+    
     public List<byte[]> getCertificateChain() { return certificateChain; }
     
     public static class CertificateRestResponseBuilder {
@@ -74,6 +88,9 @@ public class CertificateRestResponse {
         private String serialNumber;
         private String responseFormat;
         private List<byte[]> certificateChain;
+        private String certificateProfile;
+        private String endEntityProfile;
+
         
         private CertificateRestResponseBuilder() {
         }
@@ -92,14 +109,35 @@ public class CertificateRestResponse {
             this.responseFormat = responseFormat;
             return this;
         }
+        
+        public CertificateRestResponseBuilder setCertificateProfile(String certificateProfile) {
+            this.certificateProfile = certificateProfile;
+            return this;
+        }
+        
+        public CertificateRestResponseBuilder setEndEntityProfile(String endEntityProfile) {
+            this.endEntityProfile = endEntityProfile;
+            return this;
+        }
 
         public CertificateRestResponseBuilder setResponseFormat(int keystoreType) {
-            this.responseFormat =
-                    keystoreType == SecConst.TOKEN_SOFT_JKS ? "JKS" :
-                    keystoreType == SecConst.TOKEN_SOFT_PEM ? "PEM" :
-                    keystoreType == SecConst.TOKEN_SOFT_P12 ? "PKCS12" :
-                    keystoreType == SecConst.TOKEN_SOFT_BCFKS ? "BCFKS" :
-                            "UNKNOWN";
+            switch (keystoreType) {
+            case SecConst.TOKEN_SOFT_JKS:
+                this.responseFormat = "JKS";
+                break;
+            case SecConst.TOKEN_SOFT_PEM:
+                this.responseFormat = "PEM";
+                break;
+            case SecConst.TOKEN_SOFT_P12:
+                this.responseFormat = "PKCS12";
+                break;
+            case SecConst.TOKEN_SOFT_BCFKS:
+                this.responseFormat = "BCFKS";
+                break;
+            default:
+                this.responseFormat = "UNKNOWN";
+                break;
+            }
             return this;
         }
 
@@ -128,7 +166,7 @@ public class CertificateRestResponse {
                     .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
                     .setCertificateChain(certificateChain == null ? null : certificateChain
                             .stream()
-                            .map(c -> getEncodedCertificate(c))
+                            .map(CertificateRestResponseConverter::getEncodedCertificate)
                             .collect(Collectors.toList()))
                     .setResponseFormat("DER")
                     .build();
@@ -141,7 +179,7 @@ public class CertificateRestResponse {
                     .build();
         }
 
-        private byte[] getEncodedCertificate(final Certificate certificate) {
+        private static byte[] getEncodedCertificate(final Certificate certificate) {
             try {
                 return certificate.getEncoded();
             } catch (CertificateEncodingException e) {
