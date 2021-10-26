@@ -9,6 +9,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,25 +25,37 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.configdump.ConfigdumpException;
 import org.ejbca.configdump.ConfigdumpExportResult;
+import org.ejbca.configdump.ConfigdumpImportResult;
 import org.ejbca.configdump.ConfigdumpPattern;
 import org.ejbca.configdump.ConfigdumpPattern.IllegalWildCardSyntaxException;
 import org.ejbca.configdump.ConfigdumpSetting;
 import org.ejbca.configdump.ConfigdumpSetting.ItemType;
+import org.ejbca.configdump.ConfigdumpSetting.ProcessingMode;
 import org.ejbca.configdump.ejb.ConfigdumpSessionLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
@@ -56,6 +69,8 @@ import io.swagger.annotations.ApiOperation;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ConfigdumpRestResource extends BaseRestResource {
+
+    private static final Logger log = Logger.getLogger(ConfigdumpRestResource.class);
 
     /** POJO for returning errors from REST api */
     static public class ConfigdumpError {
@@ -92,6 +107,15 @@ public class ConfigdumpRestResource extends BaseRestResource {
     public ConfigdumpSessionLocal configDump;
 
     @GET
+    @Path("/status")
+    @ApiOperation(value = "Get the status of this REST Resource", notes = "Returns status, API version and EJBCA version.", response = RestResourceStatusRestResponse.class)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Override
+    public Response status() {
+        return super.status();
+    }
+
+    @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
@@ -104,7 +128,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @QueryParam("include") final Set<String> includeStrings,
             @QueryParam("exclude") final Set<String> excludeStrings
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
 
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
@@ -124,7 +148,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         settings.setIgnoreWarnings(true);
         settings.setExportDefaults(exportDefaults);
         settings.setExportExternalCas(exportExternalCas);
-        settings.setExportType(ConfigdumpSetting.ExportType.JSON);
+        settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.JSON);
 
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
@@ -142,16 +166,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     @GET
-    @Path("/status")
-    @ApiOperation(value = "Get the status of this REST Resource", notes = "Returns status, API version and EJBCA version.", response = RestResourceStatusRestResponse.class)
-    @Override
-    public Response status() {
-        return super.status();
-    }
-
-
-    @GET
-    @Path("export/{type}")
+    @Path("{type}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration for type in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
     public Response getJsonConfigdumpForType(
@@ -162,7 +177,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults,
             @DefaultValue("false") @QueryParam("externalcas") final boolean exportExternalCas
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
         final Map<ItemType, List<ConfigdumpPattern>> included = new HashMap<>();
@@ -190,7 +205,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         settings.setIgnoreWarnings(true);
         settings.setExportDefaults(exportDefaults);
         settings.setExportExternalCas(exportExternalCas);
-        settings.setExportType(ConfigdumpSetting.ExportType.JSON);
+        settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.JSON);
 
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
@@ -208,7 +223,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
     }
 
     @GET
-    @Path("export/{type}/{setting}")
+    @Path("{type}/{setting}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get the configuration for a type and setting in JSON.", notes = "Returns the configdump data in JSON.", response = byte[].class)
     public Response getJsonConfigdumpForTypeAndSetting(
@@ -219,13 +234,13 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @DefaultValue("false") @QueryParam("ignoreerrors") final boolean ignoreErrors,
             @DefaultValue("false") @QueryParam("defaults") final boolean exportDefaults
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
         final Map<ItemType, List<ConfigdumpPattern>> included = new HashMap<>();
         final List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
         final Map<ItemType, List<ConfigdumpPattern>> excluded = new HashMap<>();
-        
+
         ItemType itemType;
         try {
             itemType = fromSubdirectory(itemTypeString).orElseGet(() -> ItemType.valueOf(itemTypeString));
@@ -250,7 +265,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         // always make this true - otherwise if an external CA were in settingName it wouldn't be returned unless
         // externalcas is also set to true.
         settings.setExportExternalCas(true);
-        settings.setExportType(ConfigdumpSetting.ExportType.JSON);
+        settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.JSON);
 
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
@@ -269,15 +284,10 @@ public class ConfigdumpRestResource extends BaseRestResource {
         }
     }
 
-    private void parseIncludeExclude(final Set<String> includeStrings, final List<ConfigdumpPattern> includeAnyType,
-            final Map<ItemType, List<ConfigdumpPattern>> include) {
-        for (final String includeString : includeStrings) {
-            try {
-                ConfigdumpPattern.parseIncludeExcludeString(include, includeAnyType, includeString);
-            } catch (final IllegalWildCardSyntaxException e) {
-                final Response response = Response.status(Status.BAD_REQUEST).entity(includeString + "is not a valid include/exclude type").build();
-                throw new WebApplicationException(response);
-            }
+    private void parseIncludeExclude(final Set<String> patternStrings, final List<ConfigdumpPattern> noTypePatterns,
+            final Map<ItemType, List<ConfigdumpPattern>> typePatterns) throws IllegalWildCardSyntaxException {
+        for (final String patternString : patternStrings) {
+            ConfigdumpPattern.parseIncludeExcludeString(typePatterns, noTypePatterns, patternString);
         }
     }
 
@@ -294,7 +304,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             @QueryParam("include") final Set<String> includeStrings,
             @QueryParam("exclude") final Set<String> excludeStrings
             //@formatter:on
-    ) throws AuthorizationDeniedException, RestException {
+    ) throws AuthorizationDeniedException, RestException, IllegalWildCardSyntaxException {
 
         // includeStrings and excludeStrings have the same format as the CLI command.
         final List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
@@ -314,7 +324,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         settings.setIgnoreWarnings(true);
         settings.setExportDefaults(exportDefaults);
         settings.setExportExternalCas(exportExternalCas);
-        settings.setExportType(ConfigdumpSetting.ExportType.ZIPFILE);
+        settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.ZIPFILE);
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
             final ConfigdumpExportResult results = configDump.performExport(admin, settings);
@@ -328,6 +338,80 @@ public class ConfigdumpRestResource extends BaseRestResource {
         } catch (ConfigdumpException | IOException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.APPLICATION_JSON)
                     .entity(new ConfigdumpError(Collections.singletonList(e.getLocalizedMessage()), new ArrayList<>())).build();
+        }
+    }
+
+    @POST
+    @Path("/")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Put the configuration as a ZIP file.", response = ConfigdumpImportResults.class)
+    public ConfigdumpImportResults postZipImport(@Context final HttpServletRequest requestContext, @FormParam("zipfile") final File zipfile)
+            throws AuthorizationDeniedException, FileUploadException, RestException {
+
+        // parse the input request as a multi-part json import
+        final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
+        fileItemFactory.setSizeThreshold(1_000_000);
+        final List<FileItem> parseRequest = new ServletFileUpload(fileItemFactory).parseRequest(requestContext);
+        final FileItem zipfileItem = parseRequest.stream().findFirst().orElseThrow(() -> new BadRequestException("No file upload found."));
+
+        byte[] zipdata;
+        try {
+            zipdata = IOUtils.toByteArray(zipfileItem.getInputStream());
+        } catch (final IOException e) {
+            log.info("Unable to read zipfile data.", e);
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "zipfile data not read:" + e.getLocalizedMessage());
+        }
+
+        log.debug("Input file = " + zipfile);
+
+        final ConfigdumpSetting settings = new ConfigdumpSetting();
+        settings.setIgnoreErrors(false);
+        settings.setIgnoreWarnings(true);
+        settings.setProcessingMode(ProcessingMode.RUN);
+        settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.ZIPFILE);
+        settings.setImportData(zipdata);
+
+        try {
+            final AuthenticationToken admin = getAdmin(requestContext, false);
+            final ConfigdumpImportResult results = configDump.performImport(admin, settings);
+            if (results.isSuccessful()) {
+                return new ConfigdumpImportResults();
+            } else {
+                return new ConfigdumpImportResults(results.getReportedErrors(), results.getReportedWarnings());
+            }
+        } catch (ConfigdumpException | IOException e) {
+            log.info("Unable to import zipfile .", e);
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Unable to import zipfile:" + e);
+        }
+    }
+
+    @POST
+    @Path("/")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Put the configuration in JSON.", response = ConfigdumpImportResults.class)
+    public ConfigdumpImportResults postJsonImport(@Context final HttpServletRequest requestContext, String json)
+            throws AuthorizationDeniedException, FileUploadException, RestException {
+
+        final ConfigdumpSetting settings = new ConfigdumpSetting();
+        settings.setIgnoreErrors(false);
+        settings.setIgnoreWarnings(true);
+        settings.setProcessingMode(ProcessingMode.RUN);
+        settings.setConfigdumpType(ConfigdumpSetting.ConfigdumpType.JSON);
+        settings.setImportData(json.getBytes());
+
+        try {
+            final AuthenticationToken admin = getAdmin(requestContext, false);
+            final ConfigdumpImportResult results = configDump.performImport(admin, settings);
+            if (results.isSuccessful()) {
+                return new ConfigdumpImportResults();
+            } else {
+                return new ConfigdumpImportResults(results.getReportedErrors(), results.getReportedWarnings());
+            }
+        } catch (ConfigdumpException | IOException e) {
+            log.info("Unable to import JSON.", e);
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Unable to import zipfile:" + e);
         }
     }
 

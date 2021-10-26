@@ -13,6 +13,7 @@ package org.ejbca.ui.web.rest.api;
 import io.swagger.converter.ModelConverters;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.ui.web.rest.api.resource.IllegalWildCardSyntaxExceptionWrapper;
 import org.ejbca.util.swagger.SnakeCaseConverter;
 
 import javax.ws.rs.ApplicationPath;
@@ -57,6 +58,8 @@ public class RestApiApplication extends Application {
         resources.add(org.ejbca.ui.web.rest.api.resource.swagger.CaManagementRestResourceSwagger.class);
         resources.add(org.ejbca.ui.web.rest.api.resource.swagger.EndEntityRestResourceSwagger.class);
         resources.add(org.ejbca.ui.web.rest.api.resource.swagger.ConfigdumpRestResourceSwagger.class);
+        
+        resources.add(IllegalWildCardSyntaxExceptionWrapper.class);
 
         if (EjbcaConfiguration.getIsInProductionMode()) {
             log.debug("Swagger is not available in distribution.");
