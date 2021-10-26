@@ -28,6 +28,9 @@ public final class GoogleCtPolicy implements Serializable {
     private List<PolicyBreakpoint> breakpoints = new ArrayList<>();
 
     public List<PolicyBreakpoint> getBreakpoints() {
+        if (breakpoints == null) {
+            breakpoints = new ArrayList<>();
+        }
         if (breakpoints.size() == 0) {
             breakpoints.add(new PolicyBreakpoint(0, 15, 2));
             breakpoints.add(new PolicyBreakpoint(15, 27, 3));
