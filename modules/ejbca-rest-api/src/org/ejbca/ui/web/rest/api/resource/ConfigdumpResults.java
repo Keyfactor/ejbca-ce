@@ -12,22 +12,29 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ejbca.configdump.ConfigdumpResult;
+
 /**
- * Rest resource response to a configdump import
+ * Rest resource response to a configdump import or export.  Very similar to a {@link ConfigdumpResult}, which wasn't exactly right for the REST API.
  */
-public class ConfigdumpImportResults {
+public class ConfigdumpResults {
     private boolean success = true;
     private List<String> errors = new ArrayList<>();
     private List<String> warnings = new ArrayList<>();
 
-    public ConfigdumpImportResults(List<String> reportedErrors, List<String> reportedWarnings) {
+    public ConfigdumpResults(List<String> reportedErrors, List<String> reportedWarnings) {
         success = false;
         this.setErrors(reportedErrors);
         this.setWarnings(reportedWarnings);
     }
 
-    public ConfigdumpImportResults() {
+    public ConfigdumpResults() {
         this.success = true;
+    }
+
+    public ConfigdumpResults(List<String> reportedWarnings) {
+        this.success = true;
+        this.warnings = reportedWarnings;
     }
 
     public boolean isSuccess() {
