@@ -27,15 +27,20 @@ public final class GoogleCtPolicy implements Serializable {
 
     private List<PolicyBreakpoint> breakpoints = new ArrayList<>();
 
+    /* Default policy values. Should not be changed unless the policy changes. */
+    /* Need to keep this variable from previous version of this class to retrieve saved SCTs from database.
+    Otherwise, these saved 'Number of SCTs From Distinct Logs' values will be lost at the time of upgrading EJBCA to version 7.8.1 */
+    private final int[] minScts = new int[] { 2, 3, 4, 5, };
+
     public List<PolicyBreakpoint> getBreakpoints() {
         if (breakpoints == null) {
             breakpoints = new ArrayList<>();
         }
         if (breakpoints.size() == 0) {
-            breakpoints.add(new PolicyBreakpoint(0, 15, 2));
-            breakpoints.add(new PolicyBreakpoint(15, 27, 3));
-            breakpoints.add(new PolicyBreakpoint(27, 39, 4));
-            breakpoints.add(new PolicyBreakpoint(39, Integer.MAX_VALUE, 5));
+            breakpoints.add(new PolicyBreakpoint(0, 15, minScts[0]));
+            breakpoints.add(new PolicyBreakpoint(15, 27, minScts[1]));
+            breakpoints.add(new PolicyBreakpoint(27, 39, minScts[2]));
+            breakpoints.add(new PolicyBreakpoint(39, Integer.MAX_VALUE, minScts[3]));
         }
         return breakpoints;
     }
@@ -94,6 +99,9 @@ public final class GoogleCtPolicy implements Serializable {
             return false;
         }
         final GoogleCtPolicy other = (GoogleCtPolicy) obj;
+        if (other.breakpoints == null ^ breakpoints == null) {
+            return false;
+        }
         if (other.breakpoints.size() != breakpoints.size()) {
             return false;
         }
