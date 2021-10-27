@@ -765,7 +765,7 @@
         </div>
 		<h:dataTable styleClass="grid" value="#{systemConfigMBean.googleCtPolicy.breakpoints}" var="breakpoint">
 			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.CERT_VALIDITY}"/></f:facet>
+				<f:facet name="header"><h:outputText value="#{web.text.CT_VALIDITY_MONTHS}"/></f:facet>
 				<h:inputText size="5" value="#{breakpoint.moreThan}"/> to
 				<h:inputText size="5" value="#{breakpoint.lessThan}"/>
 			</h:column>
