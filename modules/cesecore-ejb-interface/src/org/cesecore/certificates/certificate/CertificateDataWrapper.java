@@ -21,9 +21,7 @@ import org.cesecore.util.CertTools;
 
 /**
  * 
- * Wrapper class for returning cloned specific CertificateData and Base64CertData objects. 
- * 
- * @version $Id$
+ * Wrapper class for returning cloned specific CertificateData and Base64CertData objects.
  *
  */
 public class CertificateDataWrapper implements CertificateWrapper, Comparable<CertificateDataWrapper>, Serializable {

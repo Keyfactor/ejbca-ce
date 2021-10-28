@@ -22,15 +22,13 @@ import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
 import org.bouncycastle.asn1.crmf.CRMFObjectIdentifiers;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 
 /**
  * Extracts password from the CMRF request message parameters
- * 
- * @version $Id$
- *
  */
 public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
     
@@ -146,6 +144,11 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
     @Override
     public String getName() {
         return CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD;
+    }
+
+    @Override
+    public AuthenticationToken getAuthenticationToken() {
+        return null;
     }
 
 }

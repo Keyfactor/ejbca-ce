@@ -31,7 +31,6 @@ import static org.junit.Assert.fail;
 /**
  * RA Web helper class for EJBCA Web Tests.
  *
- * @version $Id$
  */
 public class RaWebHelper extends BaseHelper {
 
@@ -62,13 +61,7 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("keyPairForm:certificateRequest");
         static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
-        static final By BUTTON_ENROLL = By.id("enrollment");
-        static final By BUTTON_ENROLL_WITH_USERNAME = By.xpath("//a[@href='enrollwithusername.xhtml']");
-        static final By ENROLL_USERNAME_INPUT = By.id("enrollWithUsernameForm:username");
-        static final By ENROLL_ENROLLMENTCODE_INPUT = By.id("enrollWithUsernameForm:enrollmentCode");
-        static final By BUTTON_ENROLL_DOWNLOAD_PKCS12 = By.id("enrollWithUsernameForm:generatePkcs12");
-        static final By BUTTON_CHECKBOX = By.id("enrollWithUsernameForm:checkButton");
-        
+
         // Manage Requests
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
         static final By BUTTON_TAB_APPROVE_REQUESTS = By.id("manageRequestsForm:tabApproveRequests");
@@ -539,45 +532,5 @@ public class RaWebHelper extends BaseHelper {
      */
     public void assertApproveMessageDoesNotExist() {
         assertElementDoesNotExist(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE, "There was Approve message displayed upon creation of EE");
-    }
-    
-    /**
-     * Helps you hover over 'Enroll' and takes you to 'Use Username'.
-     * 
-     * @param webDriver web driver
-     */
-    public void clickToEnrollUseUsername(final WebDriver webDriver) {
-        Actions action = new Actions(webDriver);
-        action.moveToElement(webDriver.findElement(Page.BUTTON_ENROLL))
-              .moveToElement(webDriver.findElement(Page.BUTTON_ENROLL_WITH_USERNAME))
-              .click().build().perform(); 
-    }
-    
-    /**
-    * Fills the 'Username' and 'Enrollment code' textfields with text.
-    *
-    * @param username username
-    * @param enrollmentCode enrollment code
-    */
-    public void fillEnrollUsernameAndCode(String username,String enrollmentCode) {
-        fillInput(Page.ENROLL_USERNAME_INPUT, username );
-        fillInput(Page.ENROLL_ENROLLMENTCODE_INPUT, enrollmentCode);        
-    }
-    
-    /**
-     * Clicks the 'Download PKCS#12' button.
-     * <p>
-     * This method works in the 'Enroll - Use Username' workflow.
-     * */
-    public void clickEnrollDownloadPKCS12Button() {
-            clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PKCS12);
-    }
-    
-    /**
-     * Clicks the 'Check' next to 'Username' and 'Enrollment code' textfields.
-     * 
-     * */
-    public void clickCheck() {
-        clickLink(Page.BUTTON_CHECKBOX);
     }
 }

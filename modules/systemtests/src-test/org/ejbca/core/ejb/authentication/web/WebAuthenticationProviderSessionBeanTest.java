@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -36,6 +32,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -72,6 +69,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.configuration.GlobalConfigurationData;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -82,9 +82,15 @@ import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the WebAuthenticationProviderSessionBean
@@ -125,7 +131,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         try {
             certificateStoreSession.storeCertificateRemote(internalToken, EJBTools.wrap(certificate), "foo", "1234", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
             AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
             assertNotNull("Authentication was not returned for active (but soon to expire) cert", authenticationToken);
         } finally {
@@ -214,7 +220,7 @@ public class WebAuthenticationProviderSessionBeanTest {
             //We're using CertificateConstants.CERT_REVOKED here, but any status but any status != CertificateConstants.CERT_ACTIVE would suffice.
             certificateStoreSession.storeCertificateRemote(internalToken, EJBTools.wrap(certificate), "foo", "1234", CertificateConstants.CERT_REVOKED,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
             AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
             assertNull("Authentication was returned for inactive cert", authenticationToken);
             final String expectedRegexp = intres.getLocalizedMessage("authentication.revokedormissing", ".*");
@@ -315,4 +321,56 @@ public class WebAuthenticationProviderSessionBeanTest {
         return selfcert;
     }
 
+    
+    @Test
+    public void testBlankAudClaimAllowedUntil780() throws Exception {
+        WebAuthenticationProviderSessionBean bean770 = new WebAuthenticationProviderSessionBean(null, createConfigForVersion("7.7.0"), null);
+        bean770.initializeAudienceCheck();
+        assertTrue(bean770.isAllowBlankAudience());
+
+        WebAuthenticationProviderSessionBean bean780 = new WebAuthenticationProviderSessionBean(null, createConfigForVersion("7.8.0"), null);
+        bean780.initializeAudienceCheck();
+        assertFalse(bean780.isAllowBlankAudience());
+    }
+
+    private GlobalConfigurationSessionLocal createConfigForVersion(String version) {
+        GlobalConfigurationSessionLocal config = new GlobalConfigurationSessionLocal() {
+            @Override
+            public ConfigurationBase getCachedConfiguration(String configID) {
+                GlobalUpgradeConfiguration globalUpgradeConfiguration = new GlobalUpgradeConfiguration();
+                globalUpgradeConfiguration.setPostUpgradedToVersion(version);
+                return globalUpgradeConfiguration;
+            }
+            
+            @Override
+            public void saveConfigurationWithRootAccessCheck(AuthenticationToken authenticationToken, ConfigurationBase conf)
+                    throws AuthorizationDeniedException {
+            }
+            
+            @Override
+            public void saveConfiguration(AuthenticationToken authenticationToken, ConfigurationBase conf) throws AuthorizationDeniedException {
+            }
+            
+            
+            @Override
+            public Properties getAllProperties(AuthenticationToken admin, String configID) throws AuthorizationDeniedException {
+                return null;
+            }
+            
+            @Override
+            public void flushConfigurationCache(String configID) {
+            }
+            
+            @Override
+            public Set<String> getIds() {
+                return null;
+            }
+            
+            @Override
+            public GlobalConfigurationData findByConfigurationId(String configurationId) {
+                return null;
+            }
+        };
+        return config;
+    }
 }

@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -50,6 +51,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -105,6 +107,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
@@ -142,6 +145,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -344,7 +348,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.4.0");
+                setLastPostUpgradedToVersion("7.8.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -574,21 +578,22 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
         }
-        if (isLesserThan(oldVersion, "7.4.0")) {
+        if (isLesserThan(oldVersion, "7.8.0")) {
             try {
-                upgradeSession.migrateDatabase740();
+                upgradeSession.migrateDatabase780();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-            setLastUpgradedToVersion("7.4.0");
+            setLastUpgradedToVersion("7.8.0");
         }
-        if (isLesserThan(oldVersion, "7.6.0")) {
+
+        if (isLesserThan(oldVersion, "7.8.1")) {
             try {
-                upgradeSession.migrateOcspLogging760();
+                upgradeSession.migrateDatabase781();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-            setLastUpgradedToVersion("7.6.0");
+            setLastUpgradedToVersion("7.8.1");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -631,15 +636,39 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.4.0");
         }
+        if (isLesserThan(oldVersion, "7.8.0")) {
+            if (!postMigrateDatabase780()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.8.0");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
 
+    private boolean postMigrateDatabase780() {
+        // post upgrade is only allowed when all OAuth providers have audience values.
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        boolean missingAudienceFound = false;
+        for (OAuthKeyInfo oAuthKeyInfo : oAuthConfiguration.getOauthKeys().values()) {
+            if (!oAuthKeyInfo.isAudienceCheckDisabled() && (oAuthKeyInfo.getAudience() == null || oAuthKeyInfo.getAudience().trim().isEmpty())) {
+                log.info("OAuth configuration " + oAuthKeyInfo.getLabel()
+                        + " has an empty Audience value.  This is less secure and should be set."
+                        + "  Go to \"System Configuration / Trusted OAuth Providers\" and configure Audience for "
+                        + oAuthKeyInfo.getLabel() + " or de-select Enable Audience Check (not recommended).");
+                missingAudienceFound = true;
+            }
+        }
+
+        return !missingAudienceFound;
+    }
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.4.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.0");
     }
 
     /**
@@ -1625,8 +1654,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-        } catch (AuthorizationDeniedException e) {
-           return false;
+            upgradeSession.fixPartitionedCrls();
+            fixPartitionedCrlIndexes();
+        } catch (AuthorizationDeniedException | UpgradeFailedException e) {
+            log.error(e);
+            return false;
         }
         log.info("Post upgrade to 7.4.0 complete.");
         return true;  
@@ -1843,12 +1875,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * <code>(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)</code> and
      * <code>(issuerDN, crlPartitionIndex, cRLNumber)</code>. See ECA-8680 for more details.
      *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     *
      * @return true if migration should be considered complete and the <code>lastPostUpgradedToVersion</code>
      * value in the database should be incremented.
      * @throws UpgradeFailedException if upgrade fails
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public void migrateDatabase740() throws UpgradeFailedException {
+    public void fixPartitionedCrls() throws UpgradeFailedException {
         try {
             final long startDataNormalization = System.currentTimeMillis();
             final Query normalizeData = entityManager.createQuery(
@@ -1863,31 +1898,21 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.error("    UPDATE CRLData SET crlPartitionIndex=-1 WHERE crlPartitionIndex IS NULL OR crlPartitionIndex=0;");
             throw new UpgradeFailedException(e);
         }
-        try {
-            final long startReindex = System.currentTimeMillis();
-            final Query dropCrlDataIndex3 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx3 ON CRLData");
-            final Query dropCrlDataIndex4 = entityManager.createNativeQuery("DROP INDEX IF EXISTS crldata_idx4 ON CRLData");
-            final Query createCrlDataIndex5 = entityManager.createNativeQuery(
-                    "CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
-            final Query createCrlDataIndex6 = entityManager.createNativeQuery(
-                    "CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)");
-            log.debug("Executing SQL query: " + dropCrlDataIndex3);
-            dropCrlDataIndex3.executeUpdate();
-            log.debug("Executing SQL query: " + dropCrlDataIndex4);
-            dropCrlDataIndex4.executeUpdate();
-            log.debug("Executing SQL query: " + createCrlDataIndex5);
-            createCrlDataIndex5.executeUpdate();
-            log.debug("Executing SQL query: " + createCrlDataIndex6);
-            createCrlDataIndex6.executeUpdate();
-            log.info("Successfully updated indexes for database table 'CRLData'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
-        } catch (RuntimeException e) {
-            log.error("An error occurred when adjusting indexes for database table 'CRLData': " + e);
-            log.error("You can update the indexes manually by running the following SQL queries:");
-            log.error("    DROP INDEX IF EXISTS crldata_idx3 ON CRLData;");
-            log.error("    DROP INDEX IF EXISTS crldata_idx4 ON CRLData;");
-            log.error("    CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);");
-            log.error("    CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);");
-            log.error("These changes are only needed if you want to use 'Partitioned CRLs'. See ECA-8680.");
+    }
+
+    private void fixPartitionedCrlIndexes() {
+        final IndexUpgradeResult res3 = upgradeSession.upgradeIndex("crldata_idx3", "CRLData", "CREATE INDEX crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex)");
+        final IndexUpgradeResult res4 = upgradeSession.upgradeIndex("crldata_idx4", "CRLData", "CREATE UNIQUE INDEX crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)");
+        if (res3 != IndexUpgradeResult.OK_UPDATED || res4 != IndexUpgradeResult.OK_UPDATED) {
+            if (res3 == IndexUpgradeResult.NO_EXISTNG_INDEX || res4 == IndexUpgradeResult.NO_EXISTNG_INDEX) {
+                log.warn("Indexes for CRLs could not be dropped. Perhaps they did not exist?");
+            }
+            log.info("You can update the indexes manually by running the following SQL queries:");
+            log.info("    DROP INDEX IF EXISTS crldata_idx3 ON CRLData;");
+            log.info("    DROP INDEX IF EXISTS crldata_idx4 ON CRLData;");
+            log.info("    CREATE INDEX IF NOT EXISTS crldata_idx5 ON CRLData(cRLNumber, issuerDN, crlPartitionIndex);");
+            log.info("    CREATE UNIQUE INDEX IF NOT EXISTS crldata_idx6 ON CRLData(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber);");
+            log.info("These changes are only needed if you want to use 'Partitioned CRLs'. See ECA-8680.");
             log.info("If an index could not be created because duplicates were found you could remove them using something like:" + System.lineSeparator() +
                 "    DELETE t1 FROM CRLData t1, CRLData t2 WHERE t1.fingerprint > t2.fingerprint AND t1.issuerDN = t2.issuerDN " + System.lineSeparator() +
                     "AND t1.deltaCRLIndicator = t2.deltaCRLIndicator AND t1.cRLNumber = t2.cRLNumber AND t1.crlPartitionIndex = t2.crlPartitionIndex;");
@@ -1896,14 +1921,57 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
+     * Replaces a database index. Called by {@link #fixPartitionedCrlIndexes}.
+     * Runs in a new transaction because the queries will fail if the index does not exist.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery) {
+        try {
+            final long startReindex = System.currentTimeMillis();
+            // Unfortunately, "IF EXISTS" and "IF NOT EXISTS" are not supported in index
+            // operations in mariadb-connector (tested with version 2.7.3)
+            final Query dropCrlDataIndex = entityManager.createNativeQuery("DROP INDEX " + oldIndexName + " ON " + tableName);
+            final Query createCrlDataIndex = entityManager.createNativeQuery(createIndexQuery);
+            try {
+                log.debug("Executing SQL query: " + dropCrlDataIndex);
+                dropCrlDataIndex.executeUpdate();
+            } catch (RuntimeException e) {
+                log.warn("Index '" + oldIndexName + "' could not be dropped.");
+                log.debug("Error stack trace for index removal: " + e, e);
+                // Since the old indexes don't exist, we assume the user does not want the new indexes either
+                return IndexUpgradeResult.NO_EXISTNG_INDEX;
+            }
+            log.debug("Executing SQL query: " + createCrlDataIndex);
+            createCrlDataIndex.executeUpdate();
+            log.info("Successfully updated index '" + oldIndexName + "' for database table '" + tableName + "'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
+            return IndexUpgradeResult.OK_UPDATED;
+        } catch (RuntimeException e) {
+            log.error("An error occurred when adjusting index '" + oldIndexName + "' for database table '" + tableName + "': " + e);
+            if (log.isDebugEnabled()) {
+                log.debug("Error stack trace for index creation", e);
+            }
+            return IndexUpgradeResult.ERROR;
+        }
+    }
+
+    /**
      * Migrate the OCSP logging configuration in ocsp.properties to {@link GlobalOcspConfiguration}.
      * @throws UpgradeFailedException if the configuration could not be migrated
      */
     @Override
-    public void migrateOcspLogging760() throws UpgradeFailedException {
+    public void migrateDatabase780() throws UpgradeFailedException {
         try {
             final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            if (globalOcspConfiguration.getRawData().get("isOcspTransactionLoggingEnabled") != null) {
+                log.info("Skipping migration of OCSP logging settings from ocsp.properties to the database " +
+                        "as it looks like data has been migrated already.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Existing data found in the database: " + System.lineSeparator() + globalOcspConfiguration.getRawData());
+                }
+                return;
+            }
             String value = ConfigurationHolder.getString("ocsp.audit-log");
             final boolean isOcspAuditLoggingEnabled = "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
             globalOcspConfiguration.setIsOcspAuditLoggingEnabled(isOcspAuditLoggingEnabled);
@@ -1918,7 +1986,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
             value = ConfigurationHolder.getString("ocsp.audit-log-pattern");
             globalOcspConfiguration.setOcspAuditLogPattern(value);
-            log.info("Migrated ocsp.log-date => " + value);
+            log.info("Migrated ocsp.audit-log-pattern => " + value);
 
             value = ConfigurationHolder.getString("ocsp.audit-log-order");
             value = value.replace("\\\"", "\"");
@@ -1990,6 +2058,98 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException e) {
             log.error(e.getMessage());
             throw new UpgradeFailedException(e);
+        }
+    }
+
+    /**
+     * Update all EndEntityProfiles to make them compatible with the changes in 7.7.2 EndEntityProfile class.
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     *
+     * @throws UpgradeFailedException if upgrade fails
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase781() throws UpgradeFailedException {
+        List<Integer> ids;
+        try {
+            Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
+            ids = query.getResultList();
+        } catch (Exception e) {
+            log.error("An error occurred when updating data in database table 'EndEntityProfileData': " + e);
+            throw new UpgradeFailedException(e);
+        }
+
+        for(Integer id: ids) {
+            final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
+            try {
+                EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
+                EeProfileUpdgaderFor781.update(eep);
+                endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
+            } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
+                log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
+                throw new UpgradeFailedException(e);
+            }
+        }
+    }
+
+    static class EeProfileUpdgaderFor781 {
+        private static final int OLDFIELDBOUNDRARY  = 10000; // 7.8.0 and earlier
+
+        // Private Constants in EndEntityProfile in version 7.8.1
+        private static final int FIELDBOUNDRARY  = 1000000; // Changed in 7.8.1
+        private static final int NUMBERBOUNDRARY = 100; // Field identifier number boundary
+        private static final int FIELDORDERINGBASE = FIELDBOUNDRARY / NUMBERBOUNDRARY; //Introduced in 7.8.1 as SDN, SAN, SDA and SSH Field ordering base
+        private static final String SUBJECTDNFIELDORDER       = "SUBJECTDNFIELDORDER";
+        private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
+        private static final String SUBJECTDIRATTRFIELDORDER  = "SUBJECTDIRATTRFIELDORDER";
+        private static final String SSH_FIELD_ORDER = "SSH_FIELD_ORDER";
+
+        private EeProfileUpdgaderFor781() {}
+
+        static void update(EndEntityProfile eep) {
+            LinkedHashMap<Object, Object> data = eep.getRawData();
+            LinkedHashMap<Object, Object> upgradedData = new LinkedHashMap<>();
+            ArrayList<Integer> upgradedSdnFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSanFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSdaFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSshFieldOrder = new ArrayList<>();
+
+            data.forEach((key, value) -> {
+                if (key instanceof Integer) {
+                    final Integer oldKey = (Integer) key;
+                    final Integer fieldType = oldKey / OLDFIELDBOUNDRARY;
+                    final Integer newKey = fieldType * FIELDBOUNDRARY + (oldKey % OLDFIELDBOUNDRARY);
+
+                    upgradedData.put(newKey, value);
+                } else if (SUBJECTDNFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSdnFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SUBJECTALTNAMEFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSanFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SUBJECTDIRATTRFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSdaFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SSH_FIELD_ORDER.contains(String.valueOf(key))) {
+                    upgradedSshFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else {
+                    upgradedData.put(key, value);
+                }
+            });
+            data.clear();
+            data.put(SUBJECTDNFIELDORDER, upgradedSdnFieldOrder);
+            data.put(SUBJECTALTNAMEFIELDORDER, upgradedSanFieldOrder);
+            data.put(SUBJECTDIRATTRFIELDORDER, upgradedSdaFieldOrder);
+            data.put(SSH_FIELD_ORDER, upgradedSshFieldOrder);
+            data.putAll(upgradedData);
+
+        }
+
+        private static List<Integer> getFieldOrderWithUpgradedValues(List<Integer> fieldOrder) {
+            return fieldOrder.stream()
+                .map(value -> {
+                    final Integer fieldNumber = value / NUMBERBOUNDRARY;
+                    final Integer index = value % NUMBERBOUNDRARY;
+                    return FIELDORDERINGBASE * fieldNumber + index;
+                }).collect(Collectors.toList());
         }
     }
 

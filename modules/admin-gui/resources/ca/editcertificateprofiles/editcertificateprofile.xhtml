@@ -1609,7 +1609,7 @@
                         value="#{certProfileBean.certificateProfile.useQCEtsiValueLimit}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax  execute="@form" render=":content:qcetsivaluelimitgroup" />
+                        <f:ajax render=":content:qcetsivaluelimitgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsivaluelimit"
                         value="#{web.text.ADD}…"
@@ -1661,7 +1661,7 @@
                         value="#{certProfileBean.certificateProfile.useQCEtsiRetentionPeriod}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax  execute="@form" render=":content:qcetsiretentionperiodgroup" />
+                        <f:ajax render=":content:qcetsiretentionperiodgroup" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkqcetsiretentionperiod"
                         value="#{web.text.ADD}…"
@@ -2586,7 +2586,17 @@
                     </h:panelGrid>
                 </h:panelGrid>
                 <h:panelGroup>
-					&nbsp;
+                    <h:outputLabel for="eabNamespaces"
+                                   value="#{web.text.ACCOUNT_BINDING_NAMESPACE}" />
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectManyListbox styleClass="select-list"   id="eabNamespaces"
+                             value="#{certProfileBean.certificateProfile.eabNamespaces}"
+                             size="#{certProfileBean.EABNamespacesListAvailableSize}" disabled="#{certProfileBean.viewOnly}">
+                        <f:selectItems value="#{certProfileBean.availableEABNamespaces}" />
+                    </h:selectManyListbox>
+                </h:panelGroup>
+                <h:panelGroup>
 				</h:panelGroup>
                 <h:panelGroup>
                     <h:commandButton id="saveProfileButton"
