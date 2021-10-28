@@ -107,6 +107,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
@@ -144,6 +145,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -583,6 +585,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("7.8.0");
+        }
+
+        if (isLesserThan(oldVersion, "7.8.1")) {
+            try {
+                upgradeSession.migrateDatabase781();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("7.8.1");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -2047,6 +2058,98 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException e) {
             log.error(e.getMessage());
             throw new UpgradeFailedException(e);
+        }
+    }
+
+    /**
+     * Update all EndEntityProfiles to make them compatible with the changes in 7.7.2 EndEntityProfile class.
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     *
+     * @throws UpgradeFailedException if upgrade fails
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase781() throws UpgradeFailedException {
+        List<Integer> ids;
+        try {
+            Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
+            ids = query.getResultList();
+        } catch (Exception e) {
+            log.error("An error occurred when updating data in database table 'EndEntityProfileData': " + e);
+            throw new UpgradeFailedException(e);
+        }
+
+        for(Integer id: ids) {
+            final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
+            try {
+                EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
+                EeProfileUpdgaderFor781.update(eep);
+                endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
+            } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
+                log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
+                throw new UpgradeFailedException(e);
+            }
+        }
+    }
+
+    static class EeProfileUpdgaderFor781 {
+        private static final int OLDFIELDBOUNDRARY  = 10000; // 7.8.0 and earlier
+
+        // Private Constants in EndEntityProfile in version 7.8.1
+        private static final int FIELDBOUNDRARY  = 1000000; // Changed in 7.8.1
+        private static final int NUMBERBOUNDRARY = 100; // Field identifier number boundary
+        private static final int FIELDORDERINGBASE = FIELDBOUNDRARY / NUMBERBOUNDRARY; //Introduced in 7.8.1 as SDN, SAN, SDA and SSH Field ordering base
+        private static final String SUBJECTDNFIELDORDER       = "SUBJECTDNFIELDORDER";
+        private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
+        private static final String SUBJECTDIRATTRFIELDORDER  = "SUBJECTDIRATTRFIELDORDER";
+        private static final String SSH_FIELD_ORDER = "SSH_FIELD_ORDER";
+
+        private EeProfileUpdgaderFor781() {}
+
+        static void update(EndEntityProfile eep) {
+            LinkedHashMap<Object, Object> data = eep.getRawData();
+            LinkedHashMap<Object, Object> upgradedData = new LinkedHashMap<>();
+            ArrayList<Integer> upgradedSdnFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSanFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSdaFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSshFieldOrder = new ArrayList<>();
+
+            data.forEach((key, value) -> {
+                if (key instanceof Integer) {
+                    final Integer oldKey = (Integer) key;
+                    final Integer fieldType = oldKey / OLDFIELDBOUNDRARY;
+                    final Integer newKey = fieldType * FIELDBOUNDRARY + (oldKey % OLDFIELDBOUNDRARY);
+
+                    upgradedData.put(newKey, value);
+                } else if (SUBJECTDNFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSdnFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SUBJECTALTNAMEFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSanFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SUBJECTDIRATTRFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSdaFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SSH_FIELD_ORDER.contains(String.valueOf(key))) {
+                    upgradedSshFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else {
+                    upgradedData.put(key, value);
+                }
+            });
+            data.clear();
+            data.put(SUBJECTDNFIELDORDER, upgradedSdnFieldOrder);
+            data.put(SUBJECTALTNAMEFIELDORDER, upgradedSanFieldOrder);
+            data.put(SUBJECTDIRATTRFIELDORDER, upgradedSdaFieldOrder);
+            data.put(SSH_FIELD_ORDER, upgradedSshFieldOrder);
+            data.putAll(upgradedData);
+
+        }
+
+        private static List<Integer> getFieldOrderWithUpgradedValues(List<Integer> fieldOrder) {
+            return fieldOrder.stream()
+                .map(value -> {
+                    final Integer fieldNumber = value / NUMBERBOUNDRARY;
+                    final Integer index = value % NUMBERBOUNDRARY;
+                    return FIELDORDERINGBASE * fieldNumber + index;
+                }).collect(Collectors.toList());
         }
     }
 
