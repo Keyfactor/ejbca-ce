@@ -87,6 +87,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String CERTIFICATEPROFILEID = "certificateprofileid";
     protected static final String DEFAULTCERTIFICATEPROFILEID = "defaultcertificateprofileid";
 
+    protected static final String MSCACOMPATIBLE = "msCaCompatible";
     protected static final String CRLISSUEINTERVAL = "crlIssueInterval";
     protected static final String CRLOVERLAPTIME = "crlOverlapTime";
     protected static final String CRLPUBLISHERS = "crlpublishers";

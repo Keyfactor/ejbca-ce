@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
@@ -88,8 +90,14 @@ import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.services.actions.NoAction;
+import org.ejbca.core.model.services.intervals.PeriodicalInterval;
+import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
@@ -350,7 +358,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private boolean statedumpLockdownAfterImport = false;
     private SystemConfigurationOAuthKeyManager oauthKeyManager;
     private SystemConfigurationCtLogManager ctLogManager;
+    private EABConfigManager eabConfigManager;
     private GoogleCtPolicy googleCtPolicy;
+    private boolean incompleteIssuanceServiceCheckDone = false;
+    private boolean incompleteIssuanceServiceAvailable;
 
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
@@ -361,6 +372,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
@@ -572,6 +584,49 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             googleCtPolicy = getGlobalConfiguration().getGoogleCtPolicy();
         }
         return googleCtPolicy;
+    }
+
+    public boolean isIncompleteIssuanceServiceAvailable() {
+        if (!incompleteIssuanceServiceCheckDone) {
+            incompleteIssuanceServiceCheckDone = true;
+            final HashMap<Integer,String> services = serviceSession.getServiceIdToNameMap();
+            incompleteIssuanceServiceAvailable = false;
+            for (final int serviceId : services.keySet()) {
+                final ServiceConfiguration service = serviceSession.getServiceConfiguration(serviceId);
+                if (PreCertificateRevocationWorkerConstants.WORKER_CLASS.equals(service.getWorkerClassPath())) {
+                    incompleteIssuanceServiceAvailable = true;
+                }
+            }
+        }
+        return incompleteIssuanceServiceAvailable;
+    }
+
+    public void addIncompleteIssuanceService() {
+        final ServiceConfiguration serviceConf = new ServiceConfiguration();
+        serviceConf.setActive(true);
+        serviceConf.setDescription("This service revokes certificates where issuance has failed, but pre-certificates have been submitted to CT logs.");
+        serviceConf.setActionClassPath(NoAction.class.getName());
+        serviceConf.setIntervalClassPath(PeriodicalInterval.class.getName());
+        final Properties intervalProperties = new Properties();
+        intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, "5");
+        intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
+        serviceConf.setIntervalProperties(intervalProperties);
+        serviceConf.setWorkerClassPath(PreCertificateRevocationWorkerConstants.WORKER_CLASS);
+        final Properties workerProperties = new Properties();
+        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIME);
+        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
+        serviceConf.setWorkerProperties(workerProperties);
+        serviceConf.setPinToNodes(new String[0]);
+        try {
+            final String serviceName = "Pre-Certificate Revocation Service";
+            serviceSession.addService(getAdmin(), serviceName, serviceConf);
+            addInfoMessage("CTLOGCONFIGURATION_SERVICEADDED", serviceName);
+        } catch (ServiceExistsException e) {
+            final String msg = "Service already exists.";
+            log.info(msg + e.getLocalizedMessage());
+            addNonTranslatedErrorMessage(msg);
+        }
+        incompleteIssuanceServiceCheckDone = false; // trigger a new check
     }
 
     public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
@@ -1071,6 +1126,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         currentConfig = null;
         nodesInCluster = null;
         oauthKeyManager = null;
+        eabConfigManager = null;
         oauthKeys = null;
         ctLogManager = null;
         raStyleInfos = null;
@@ -1082,6 +1138,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         selectedCustomCertExtensionID = 0;
         googleCtPolicy = null;
         validatorSettings = null;
+        incompleteIssuanceServiceCheckDone = false;
     }
 
     public void toggleUseAutoEnrollment() { getCurrentConfig().setUseAutoEnrollment(!getCurrentConfig().getUseAutoEnrollment()); }
@@ -1308,6 +1365,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRestAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRestAvailable()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) && !isRestAvailable()) {
@@ -1988,13 +2048,57 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    /**
+     * Get an object which can be used to manage the EAB configuration.
+     * @return the EAB configuration manager for this bean
+     */
+    public EABConfigManager getEABConfigManager() {
+        if (eabConfigManager == null) {
+            eabConfigManager = new EABConfigManager(new EABConfigManager.SystemConfigurationHelper() {
+                @Override
+                public void addErrorMessage(String languageKey) {
+                    SystemConfigMBean.this.addErrorMessage(languageKey);
+                }
+
+                @Override
+                public void addErrorMessage(String languageKey, Object... params) {
+                    SystemConfigMBean.this.addErrorMessage(languageKey, params);
+                }
+
+                @Override
+                public void addInfoMessage(String languageKey) {
+                    SystemConfigMBean.this.addInfoMessage(languageKey);
+                }
+
+                @Override
+                public void saveEabConfig(Map<String, Set<String>> eabConfigMap, String eabConfigFileHash) {
+                    final EABConfiguration eabConfiguration = getEjbcaWebBean().getEABConfiguration();
+                    eabConfiguration.setEabConfigMap(eabConfigMap);
+                    eabConfiguration.setFileHash(eabConfigFileHash);
+                    try {
+                        getEjbcaWebBean().saveEABConfiguration(eabConfiguration);
+                    } catch (AuthorizationDeniedException e) {
+                        String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+                        log.info(msg);
+                        addNonTranslatedErrorMessage(msg);
+                    }
+                }
+
+                @Override
+                public Map<String, Set<String>> getEabConfig() {
+                    final EABConfiguration eabConfiguration = getEjbcaWebBean().getEABConfiguration();
+                    return eabConfiguration.getEABMap();
+                }
+            });
+        }
+        return eabConfigManager;
+    }
+
     public List<String> getAvailableTabs() {
         final List<String> availableTabs = new ArrayList<>();
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Basic Configurations");
             availableTabs.add("Administrator Preferences");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Protocol Configuration");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
@@ -2019,9 +2123,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("External Scripts");
-        }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Configuration Checker");
+            availableTabs.add("External Account Bindings");
         }
 
         return availableTabs;
