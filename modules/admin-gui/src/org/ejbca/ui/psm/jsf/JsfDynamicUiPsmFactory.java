@@ -174,6 +174,10 @@ public class JsfDynamicUiPsmFactory {
         if (component == null) {
             throw new DynamicUiModelException("DynamicUiRendering component could not be found: " + property);
         }
+        if (property.getValidator() != null && property.getValidator().getName() != null) {
+            // Replace logical name with i18n label for user message.
+            property.getValidator().setName(getText(i18nPrefix, property.getValidator().getName()));
+        }
         return component;
     }
 
