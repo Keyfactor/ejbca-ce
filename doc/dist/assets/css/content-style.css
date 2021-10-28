@@ -4,6 +4,10 @@
     background-color: #FFCCCC;
 }
 
+.jira-macro-table .icon {
+    max-width: none !important;
+}
+
 
 /* Paragraphs ************************************************************************************/
 
@@ -198,6 +202,11 @@
 
 /* Section / Column Tables ***********************************************************************/
 
+.wiki-content table.sectionMacro .confluenceTd,
+.wiki-content table.sectionMacro .confluenceTh {
+    border: 1px solid #DDDDDD;
+}
+
 .wiki-content table.sectionMacro,
 .wiki-content table.sectionMacroWithBorder {
     margin-bottom: 1em;
@@ -375,6 +384,10 @@ cite:before {
     border-radius: 5px;
 }
 
+.wiki-content div.panel {
+    overflow: hidden;
+}
+
 .wiki-content div.confbox .title {
     font-weight: bold;
 }
@@ -476,6 +489,7 @@ cite:before {
 /* Program Listings ******************************************************************************/
 
 .wiki-content div.programlisting {
+    counter-reset: scroll-code-numbering 1;
     padding: 0;
     border-style: solid;
     background-color: transparent;
@@ -490,14 +504,7 @@ cite:before {
     border-top-right-radius: 5px;
 }
 
-.wiki-content div.programlisting > div {
-    padding: 1em;
-    background-color: transparent;
-}
-
-.wiki-content .syntaxhighlighter {
-    font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
-}
+.wiki-content .syntaxhighlighter {font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;}
 
 .wiki-content .syntaxhighlighter div.line {
     padding: 0;
@@ -511,6 +518,37 @@ cite:before {
     tab-size: 4;
 }
 
+.wiki-content .syntaxhighlighter[data-linenumbers="true"] div.line:nth-child(n+2) {
+    counter-increment: scroll-code-numbering;
+}
+
+.syntaxhighlighter[data-linenumbers="true"] div.line {
+    position: relative;
+    padding-left: calc(5em + 10px + 10px + 0.1em) !important; /* ::before width + padding + margin + border */
+}
+
+.wiki-content .syntaxhighlighter[data-linenumbers="true"] div.line::before {
+    content: counter(scroll-code-numbering);
+    padding-right:10px;
+    margin-right: 10px;
+    width: 5em;
+    text-align: right;
+    border-right: 0.1em solid #BBBBBB;
+    border-top: none;
+    border-bottom: none;
+    background-color: #F5F5F5;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.wiki-content .syntaxhighlighter[data-linenumbers="true"] div.line:first-child,
+.wiki-content .syntaxhighlighter[data-linenumbers="true"] div.line:first-child::before {padding-top:1em;}
+.wiki-content .syntaxhighlighter[data-linenumbers="true"] div.line:last-child,
+.wiki-content .syntaxhighlighter[data-linenumbers="true"] div.line:last-child::before {padding-bottom:1em;}
+.wiki-content div.programlisting > div.syntaxhighlighter[data-linenumbers="false"] {padding: 1em;}
+.wiki-content div.programlisting > div.syntaxhighlighter[data-linenumbers="true"] {padding: 0 1em 0 0;}
 
 /* Default Syntax Highlighting Theme *************************************************************/
 
@@ -575,4 +613,17 @@ cite:before {
 .wiki-content .syntaxhighlighter .color3,
 .wiki-content .syntaxhighlighter .color3 a {
     color: red;
+}
+
+/* Drawio macro ************************/
+
+img.drawio-image-border {
+    border: 1px solid rgb(208, 208, 208);
+}
+
+/* Latex Math Block macro **************/
+
+.wiki-content table.latexmath-mathblock td {
+    background-color: transparent;
+    border-color: transparent;
 }

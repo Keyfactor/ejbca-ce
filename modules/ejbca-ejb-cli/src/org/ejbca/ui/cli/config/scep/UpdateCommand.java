@@ -106,7 +106,7 @@ public class UpdateCommand extends BaseScepConfigCommand {
         
         sb.append("    " + ScepConfiguration.SCEP_OPERATIONMODE + " - possible values: ca " + divider + " ra" + "\n");
         sb.append("    " + ScepConfiguration.SCEP_INCLUDE_CA + " - possible values: true " + divider + " false" + "\n");
-        
+        sb.append("    " + ScepConfiguration.SCEP_RETURN_CA_CHAIN_IN_GETCACERT + " - possible values: true " + divider + " false" + "\n");
 
         Map<Integer, String> endentityprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
                 .getEndEntityProfileIdToNameMap();

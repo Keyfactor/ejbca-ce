@@ -12,29 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
-import java.io.File;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -78,10 +55,31 @@ import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.protocol.acme.eab.AcmeEabWithHMac;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
+
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import java.io.File;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -915,17 +913,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final List<String> result = new ArrayList<>();
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
                 globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
-        AcmeConfiguration acmeAlias;
-        AcmeEabWithHMac eab; 
+        AcmeConfiguration acmeAlias; 
         for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
             acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId); 
             try {
                 if (acmeAlias != null && acmeAlias.isRequireExternalAccountBinding() 
-                        && acmeAlias.getExternalAccountBinding() instanceof AcmeEabWithHMac) {
-                   eab = (AcmeEabWithHMac) acmeAlias.getExternalAccountBinding();
-                   if (eab.getEncryptKey() && Integer.toString(cryptoTokenId).equals(eab.getEncryptionKeyId())) {
-                       result.add(acmeAlias.getConfigurationId());
-                   }
+                        && acmeAlias.getExternalAccountBinding().getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
+                        && (Boolean) acmeAlias.getExternalAccountBinding().getDataMap().get("encryptKey")
+                        && Integer.toString(cryptoTokenId).equals(acmeAlias.getExternalAccountBinding().getDataMap().get("encryptionKeyId"))) {
+                    result.add(acmeAlias.getConfigurationId());
                 }
             } catch (AccountBindingException e) {
                 log.warn("Could not load ACME EAB '" + acmeAliasId 
@@ -993,9 +989,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
 
                 // Verify that it is allowed
-                SlotList allowedSlots = getP11SlotList();
-                if (allowedSlots != null && !allowedSlots.contains(slotTextValue)) {
-                    throw new IllegalArgumentException("Slot number " + slotTextValue + " is not allowed. Allowed slots are: " + allowedSlots);
+                final SlotList allowedSlots = getP11SlotList();
+                if (allowedSlots != null) {
+                    if (!StringUtils.isNumeric(slotTextValue)) {
+                        log.info("An administrator attempted to create a crypto token with " + slotTextValue + " as slot reference. " +
+                                "This failed because only slot number can be used as slot reference when the setting " +
+                                "'cryptotoken.p11.lib.X.slotlist' is enabled in 'web.properties'.");
+                        throw new IllegalArgumentException("Only slot number is allowed to be used as slot reference on this " +
+                                "installation. Allowed slot numbers are: " + allowedSlots);
+                    }
+                    if (!allowedSlots.contains(slotTextValue)) {
+                        throw new IllegalArgumentException("Slot number " + slotTextValue + " is not allowed. Allowed slots are: " + allowedSlots);
+                    }
                 }
 
                 properties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotTextValue);
