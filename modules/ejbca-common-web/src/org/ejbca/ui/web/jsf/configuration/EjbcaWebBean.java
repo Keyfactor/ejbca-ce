@@ -17,6 +17,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
@@ -595,6 +596,16 @@ public interface EjbcaWebBean extends Serializable {
     void reloadOAuthConfiguration();
 
     void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException;
+
+    //*************************************************
+    //      External Account Binding  configurations
+    //*************************************************
+
+    EABConfiguration getEABConfiguration();
+
+    void reloadEABConfiguration();
+
+    void saveEABConfiguration(final EABConfiguration eabConfiguration) throws AuthorizationDeniedException;
 
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration

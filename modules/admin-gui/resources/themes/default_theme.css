@@ -574,6 +574,7 @@ table.edit tr td {
 }
 .fixEditColumn1 {
 	width: 360px;
+	min-width: 360px;
 	text-align: left
 }
 .fixEditColumn2 {
@@ -1421,6 +1422,12 @@ a.button:active {
 	border-radius: 0.3em;
 	background: #fcfcfc;
 	margin-bottom: 1em;
+}
+.hintBlock {
+	padding: 1em;
+	background: #eee;
+	border-radius: 0.5em;
+	max-width: 1000px;
 }
 .readablewidth {
     max-width: 1000px;

@@ -760,7 +760,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
             final OutputStream outputStream = response.getOutputStream();
             response.setContentType("application/octet-stream");
-            response.addHeader("Content-Disposition", "attachment; filename=\"" + guiInfo.getName() + ".pkcs10.pem" + "\"");
+            response.addHeader("Content-Disposition", "attachment; filename=\"" + StringTools.stripFilename(guiInfo.getName()) + ".pkcs10.pem" + "\"");
             outputStream.flush();
             outputStream.write(pemEncodedPkcs10);
             outputStream.close();

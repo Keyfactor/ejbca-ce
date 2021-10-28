@@ -12,6 +12,36 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.AuditRecordStorageException;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.internal.InternalResources;
+import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.util.PublicKeyWrapper;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,36 +65,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.enums.EventTypes;
-import org.cesecore.audit.enums.ModuleTypes;
-import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.AuditRecordStorageException;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.CryptoTokenRules;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.util.PublicKeyWrapper;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.StringTools;
 
 /**
  * @see CryptoTokenManagementSession
@@ -835,24 +835,25 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     private List<String> getKeyPairAliasesInternal(final CryptoToken cryptoToken) throws CryptoTokenOfflineException {
         try {
-            final List<String> aliasEnumeration = cryptoToken.getAliases();
             final List<String> keyPairAliases = new ArrayList<>();
-            for (final String currentAlias : aliasEnumeration) {
+            for (final String currentAlias : cryptoToken.getAliases()) {
                 try {
                     if (cryptoToken.getPublicKey(currentAlias) != null && cryptoToken.doesPrivateKeyExist(currentAlias)) {
-                        // A key pair exists for this alias, so add it
                         keyPairAliases.add(currentAlias);
-                        continue; // next alias, skip debug log
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Ignoring key with alias '" + currentAlias + "' in crypto token '" + cryptoToken.getTokenName()
+                                    + "'. Reason: No private or public key exists. Is it a secret key?");
+                        }
                     }
-                } catch (CryptoTokenOfflineException ignored) {
-                    // Ignored
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Ignored key alias '"+currentAlias+"' in crypto token '"+cryptoToken.getTokenName()+"' since it is missing a public and/or private key. Perhaps it is a symmetric key?");
+                } catch (CryptoTokenOfflineException | RuntimeException e) {
+                    log.debug("Ignoring keypair with alias '" + currentAlias + "' in crypto token '" + cryptoToken.getTokenName()
+                            + "'. Reason: " + e.getMessage());
+                    log.trace(e);
                 }
             }
             return keyPairAliases;
-        } catch (KeyStoreException e) {
+        } catch (final KeyStoreException e) {
             throw new CryptoTokenOfflineException(e);
         }
     }

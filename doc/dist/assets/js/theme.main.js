@@ -1,22 +1,64 @@
 (function($) {
-    /**
+    /*
      *
      * K15t Help Theme
      * Main Javascript
      *
-     **/
+     */
+
+    // This object holds all i18n messages used in the Scroll WebHelp Theme. See https://github.com/musterknabe/translate.js
+    // The first level members correspond to locale keys as used in Java, for example 'en', 'en_US' and so on.
+    // The country specific locales override the generic ones, and fallbacks to the generic messages are implemented.
+    // Example: If this object contained entries for 'en', 'en_US' and 'de' the following would happen:
+    // - 'en_US' documents would use the 'en_US' messages
+    // - 'en_GB' documents would use the 'en' messages
+    // - documents from all 'de' variations such as 'de_DE' would fall back to 'de' messages
+    // - all other documents would use 'en' because that's the global default
+    var allI18nMessages = {
+        en: {
+            searchInputPlaceholder: 'Search',
+            searchLabel: 'Search for: {query}',
+            searchResultsTitle: {
+                0: 'Search for <em>{query}</em> returned no results.',
+                1: 'Search for <em>{query}</em> returned one result.',
+                n: 'Search for <em>{query}</em> returned {n} results.'
+            }
+        },
+        de: {
+            searchInputPlaceholder: 'Suche',
+            searchLabel: 'Suche nach: {query}',
+            searchResultsTitle: {
+                0: 'Suche nach <em>{query}</em> ergab keine Treffer.',
+                1: 'Suche nach <em>{query}</em> ergab einen Treffer.',
+                n: 'Suche nach <em>{query}</em> ergab {n} Treffer.'
+            }
+        },
+        fr: {
+            searchInputPlaceholder: 'recherche',
+            searchLabel: 'Recherchez: {query}',
+            searchResultsTitle: {
+                0: 'Recherchez <em>{query}</em> aucun résultat trouvé.',
+                1: 'Recherchez <em>{query}</em> un résultat trouvé.',
+                n: 'Recherchez <em>{query}</em> {n} résultats trouvés.'
+            }
+        }
+    };
+
+    window.SCROLL_WEBHELP = window.SCROLL_WEBHELP || {};
+
+    window.SCROLL_WEBHELP.escapeHtml = function(text) {
+        return $('<div />').text(text).html()
+    };
 
     var searchURL = 'search.json';
     var viewport = 'desktop';
     var svdropdown = false;
     //var pageId;
 
-    // firefox detection
-    var isFirefox = typeof InstallTrigger !== 'undefined'; // Firefox 1.0+
-    var isIE = (navigator.userAgent.indexOf("MSIE") > 0) || (navigator.userAgent.indexOf("Trident") > 0);
     var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0; // At least Safari 3+: "[object HTMLElementConstructor]"
 
     $(document).ready(function() {
+        initI18n();
 
         //pageId = $('body').attr('pageid');
         /* Set Type of Device */
@@ -52,6 +94,23 @@
         $('#ht-loader').hide();
     });
 
+    function initI18n() {
+        var currentMessages = allI18nMessages.en; // Default language is English
+
+        var localeSegments = ($('meta[name=scroll-content-language-key]').attr('content') || '').split('_');
+        while (localeSegments.length > 0) {
+            var locale = localeSegments.join('_');
+            if (allI18nMessages[locale]) {
+                currentMessages = allI18nMessages[locale];
+                break;
+            } else {
+                localeSegments.pop();
+            }
+        }
+
+        window.SCROLL_WEBHELP.i18n = libTranslate.getTranslationFunction(currentMessages);
+    }
+
     /*======================================
      =            Resize Sidebar            =
      ======================================*/
@@ -74,10 +133,15 @@
                 setCookie('sidebar-width', mousex);
 
                 checkGrid();
+            });
 
-                $(document).mouseup(function (e) {
-                    $(document).unbind('mousemove');
-                });
+            // Disable mouse events for navigation bar iframe
+            $('#ht-nav').css('pointer-events', 'none');
+
+            $(document).mouseup(function (e) {
+                $(document).unbind('mousemove');
+                // Re-enable mouse events for navigation bar iframe
+                $('#ht-nav').css('pointer-events', 'auto');
             });
         });
 
@@ -114,10 +178,6 @@
      =========================================*/
 
     function initSidebar() {
-        if (window.SCROLL && window.SCROLL.initPageTree) {
-            window.SCROLL.initPageTree();
-        }
-
         $('#ht-menu-toggle').bind('click', function (e) {
             e.preventDefault();
             setTimeout(toggleSidebar(), 0.05);
@@ -207,6 +267,8 @@
      =========================================*/
 
     function initSearch() {
+        $('input.search-input').attr('placeholder', SCROLL_WEBHELP.i18n('searchInputPlaceholder'));
+
         var debounce = function(func, wait) {
             var timeout;
             var result;
@@ -242,11 +304,6 @@
             if (str.length == 0) {
                 $('.ht-search-dropdown').removeClass('open');
             }
-        });
-
-
-        $('form#search').on('submit', function() {
-            return false;
         });
     }
 
@@ -294,12 +351,12 @@
             $(document).unbind('keydown');
 
             $.each(searchResults, function (index, searchResult) {
-                resultsList.append('<li n="' + index + '" class="search-result"><a href="' + searchResult.link + '">' + searchResult.title + '</a></li>');
+                resultsList.append('<li n="' + index + '" class="search-result"><a href="' + searchResult.link + '">' + SCROLL_WEBHELP.escapeHtml(searchResult.title) + '</a></li>');
             });
 
-            var keybutton = $('<li class="search-key" n="' + searchResults.length + '"><a class="search-key-button" href="#">Search: <b>' + query + '</b></a></li>');
+            var keybutton = $('<li class="search-key" n="' + searchResults.length + '"><a class="search-key-button" href="#">' + SCROLL_WEBHELP.i18n('searchLabel', {query: '<b>' + SCROLL_WEBHELP.escapeHtml(query) + '</b>'}) + '</a></li>');
             keybutton.bind('click', function(e) {
-                navigateToSearchResultsPage(query);
+                navigateToSearchResultsPage($('.search-input').val());
                 e.preventDefault();
             });
             resultsList.append(keybutton);
@@ -318,12 +375,12 @@
                         var selected = $('.ht-search-dropdown a.hover');
                         if (selected.length != 0) {
                             if (selected.is('.search-key-button')) {
-                                navigateToSearchResultsPage(query);
+                                navigateToSearchResultsPage($('.search-input').val());
                             } else {
                                 window.location.href = selected.attr('href');
                             }
                         } else {
-                            navigateToSearchResultsPage(query);
+                            navigateToSearchResultsPage($('.search-input').val());
                         }
                         break;
 
@@ -409,7 +466,7 @@
 
         var allAccessible = allEntriesAccessible(select);
         $.each(select.find('option'), function (index, val) {
-            var item = $('<li n="' + index + '"><a data-scroll-integration-name="' + select.attr('name') + '" data-scroll-integration-title="' + $(this).text() + '" data-scroll-integration-value="' + $(this).attr('value') + '">' + createOptionText($(this), !allAccessible) + '</a></li>');
+            var item = $('<li n="' + index + '"><a data-scroll-integration-name="' + select.attr('name') + '" data-scroll-integration-title="' + $(this).text() + '" data-scroll-integration-value="' + $(this).attr('value') + '">' + createOptionText($(this), !allAccessible) + '</li>');
             dropdown.find('ul').append(item);
         });
 
@@ -421,11 +478,6 @@
         toggle.bind('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-
-            if (viewport == 'mobile' && !(isFirefox || isIE)) {
-                openSelect(select);
-                return false;
-            }
 
 
             if ($(this).hasClass('active')) {
@@ -446,10 +498,10 @@
         });
     }
 
-    /** Check if all of the entries in the given select are runtime accessible (currently only relevant for versions). */
+    /** Check if all of the entries in the given select are runtime accessible (currently relevant for versions and variants). */
     function allEntriesAccessible(select) {
         var allAccessible = true;
-        if (select.attr('name') === 'scroll-versions:version-name') {
+        if (select.attr('name') === 'scroll-versions:version-name' || select.attr('name') === 'scroll-versions:variant-name') {
             $.each(select.find('option'), function () {
                 allAccessible &= ($(this).attr('data-version-accessible') === 'true');
             });
@@ -463,11 +515,14 @@
         if (showVersionAccessibility) {
             var versionAccessible = option.attr('data-version-accessible');
             if (versionAccessible) {
-                optionText += ' <span style="float: right; margin-left: 0.8em; color: #dddddd;';
+                optionText += '</a><span';
                 if (versionAccessible === 'true') {
-                    optionText += 'visibility: hidden;';
+                    optionText += ' style="visibility: hidden;"';
                 }
-                optionText += '" class="k15t-icon-viewport"></span>';
+                optionText += ' class="versions-select-item-restriction">Authors only</span>';
+            }
+            else {
+                optionText += '</a>';
             }
         }
         return optionText;
@@ -487,28 +542,45 @@
 
         var toggle = container.find('.ht-select-button');
         var dropdown = container.find('.ht-dropdown');
+        var togglePosition = toggle.position();
+        togglePosition.top += toggle.height() + $(document).scrollTop();
+        dropdown.offset(togglePosition);
 
         if (open) {
             toggle.addClass('active');
             dropdown.addClass('open');
 
             $.each(dropdown.find('li'), function (index, val) {
-                $(this).bind('mouseover', function () {
-                    dropdown.find('li a').removeClass('hover');
-                    $(this).find('a').addClass('hover');
-                });
-
-                $(this).find('a').bind('click', function (e) {
+                $(this).bind('click', function (e) {
                     e.preventDefault();
 
-                    var name = $(e.target).closest('a').attr('data-scroll-integration-name');
-                    var value = $(e.target).closest('a').attr('data-scroll-integration-value');
-                    var title = $(e.target).closest('a').attr('data-scroll-integration-title');
+                    var name = $(e.target).closest('li').children('a').attr('data-scroll-integration-name');
+                    var value = $(e.target).closest('li').children('a').attr('data-scroll-integration-value');
+                    var title = $(e.target).closest('li').children('a').attr('data-scroll-integration-title');
 
                     toggle.find('span').text(title);
 
-                    var target = window.location.pathname + '?' + name + '=' + value;
+                    var isSearch = $('meta[name=isSearch]').attr('content') === 'true';
 
+                    var target;
+                    if (isSearch){
+                        var query = window.location.search.split('&');
+                        var index = -1;
+                        query.some(function(el, i) {
+                            if (el.indexOf(encodeURI(name)) !== -1) {
+                                index = i;
+                                return true;
+                            }
+                        });
+                        if (index !== -1) {
+                            query[index] = encodeURI(name + '=' + value);
+                        } else {
+                            query.push(encodeURI(name + '=' + value));
+                        }
+                        target = window.location.pathname + query.join('&');
+                    } else {
+                        target = window.location.pathname + '?' + encodeURI(name + '=' + value);
+                    }
                     var context = toggle.closest('form').find('input[name=context]').val();
                     if (context) {
                         target += '&context=' + context;
@@ -607,34 +679,22 @@
         }
     }
 
-    function openSelect(selector) {
-        var element = $(selector)[0], worked = false;
-
-        if (document.createEvent) { // all browsers
-            var e = document.createEvent("MouseEvents");
-            e.initMouseEvent("mousedown", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-            worked = element.dispatchEvent(e);
-
-        } else if (element.fireEvent) { // ie
-            worked = element.fireEvent("onmousedown");
-        }
-        if (!worked) { // unknown browser / error
-
-        }
-    }
-
 
     /*=====================================
      =             Keyboard              =
      =====================================*/
     var searchFieldActive;
     var lastKey;
+    var activeElement;
 
     function initKeyboard() {
         searchFieldActive = false;
 
         $('body').bind('keyup', function (e) {
-            if (searchFieldActive && e.which != 27) {
+            activeElement = document.activeElement;
+
+            if ((searchFieldActive && e.which != 27)
+                || (activeElement && (activeElement.type === 'text' || activeElement.type === 'textarea'))) {
                 return;
             }
 

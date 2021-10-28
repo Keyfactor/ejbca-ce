@@ -101,6 +101,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private boolean authenticated;
 
     private AuthenticationToken admin;
+    /** authentication token representing the admin/user signing this CMP message */
+    private AuthenticationToken reqAuthToken;
     private CaSession caSession;
     private CertificateStoreSession certSession;
     private AuthorizationSession authSession;
@@ -585,6 +587,15 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
     /**
+     * Returns an AuthenticationToken representing an admin that authenticates the message
+     * @return AuthenticationToken or null of there was no admin AuthenticationToken extracted from this module
+     */
+    @Override
+    public AuthenticationToken getAuthenticationToken() {
+        return reqAuthToken;
+    }
+
+    /**
      * Checks if cert belongs to an administrator who is authorized to process the request.
      *
      * @param certInfo
@@ -600,7 +611,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         credentials.add(x509cert);
 
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-        AuthenticationToken reqAuthToken = authenticationProviderSession.authenticate(subject);
+        reqAuthToken = authenticationProviderSession.authenticate(subject);
 
         final int tagnr = msg.getBody().getType();
         if( (tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) ) {
@@ -616,11 +627,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     eeprofid = Integer.parseInt(configuredId);
                     eepname = eeProfileSession.getEndEntityProfileName(eeprofid);
                 }
-                if(eepname == null) {
+                if (eepname == null) {
                     log.error("End Entity Profile with ID " + configuredId + " was not found");
                     return false;
                 }
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 log.error("End Entity Profile ID " + this.cmpConfiguration.getRAEEProfile(this.confAlias) +
                         " in CMP alias " + this.confAlias + " was not an integer");
                 return false;

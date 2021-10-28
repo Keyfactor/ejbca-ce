@@ -14,7 +14,6 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 /**
  * A class representing the input for certificate enrollment REST method.
  *
- * @version $Id: EnrollCertificateRestRequest.java 29081 2018-05-31 07:19:36Z andrey_s_helmes $
  */
 public class EnrollCertificateRestRequest {
     private String certificateRequest;
@@ -23,6 +22,7 @@ public class EnrollCertificateRestRequest {
     private String certificateAuthorityName;
     private String username;
     private String password;
+    private String accountBindingId;
     private boolean includeChain;
     
     public EnrollCertificateRestRequest() {
@@ -75,6 +75,14 @@ public class EnrollCertificateRestRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+    
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
+    public void setAccountBindingId(String accountBindingId) {
+        this.accountBindingId = accountBindingId;
+    }
 
     public boolean getIncludeChain() { return includeChain; }
 
@@ -111,6 +119,7 @@ public class EnrollCertificateRestRequest {
                     .certificateAuthorityName(enrollCertificateRestRequest.getCertificateAuthorityName())
                     .username(enrollCertificateRestRequest.getUsername())
                     .password(enrollCertificateRestRequest.getPassword())
+                    .accountBindingId(enrollCertificateRestRequest.getAccountBindingId())
                     .includeChain(enrollCertificateRestRequest.getIncludeChain())
                     .build();
         }
