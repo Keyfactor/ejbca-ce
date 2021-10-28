@@ -114,58 +114,64 @@ appserver.home         : ${appserver.home}
     	<ejbca:cli-hideargs arg="ca init &quot;${ca.name}&quot; &quot;${ca.dn}&quot; ${ca.tokentype} &quot;${ca.tokenpassword}&quot; ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${install.catoken.command} ${install.certprofile.command} -superadmincn &quot;${superadmin.cn}&quot;"/>
      </target>
 
-	<target name="ejbca:adminweb">
-		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost, otherwise add and altname with the same dnsName as hostname. -->
-	    <condition property="httpsserver.an" value="dnsName=localhost,IPAddress=127.0.0.1" else="dnsName=${httpsserver.hostname}">
-	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
-	    </condition>		
-		<ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;${httpsserver.dn}&quot; --altname &quot;${httpsserver.an}&quot; &quot;${ca.name}&quot; 1 JKS --certprofile SERVER"/>
-		<ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
-		<ejbca:cli arg="batch tomcat"/>
-        <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
-           	<istrue value="${superadmin.batch}" />
-        </condition>
-        <condition property="sa.validity" value="${superadmin.validity}" else="">
-           	<isset property="superadmin.validity" />
-        </condition>
-        <condition property="sa.validity.flag" value="--validity" else="">
-           	<isset property="superadmin.validity" />
-        </condition>
-		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;${superadmin.dn}&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype} ${sa.validity.flag} ${sa.validity}"/>
-		<ejbca:cli-hideargs arg="ra setclearpwd superadmin ${superadmin.password}" />
-		
-		<!--
-		this does not work for some reason, if I'm not forking the VM, I'm wondering
-		if it is not an issue with the Ant classloader
-		For in ejbca.home in order to have the p12 directory as a child of it.
-		-->
-		<delete file="${ejbca.home}/p12/superadmin.p12" quiet="true"/>
-        <condition property="superadmin.batch.true" value="set">
-           	<istrue value="${superadmin.batch}" />
-        </condition>
-		<antcall target="ejbca:batchsuperadmin"/>
-		<fail message="Batch generation failed!">
-			<condition>
-				<or>
-					<not><available filepath="${ejbca.home}/p12" file="tomcat.jks"/></not>
-                	<and>
-		            	<not><available filepath="${ejbca.home}/p12" file="superadmin.p12"/></not>
-           				<istrue value="${superadmin.batch}" />
-                	</and>
-				</or>
-			</condition>
-		</fail>
-	</target>
-	
         <target name="ejbca:renew-keystore" description="Renews the keystore used by the application server for https access.">
                 <ejbca:cli-hideargs arg="ra setendentitystatus tomcat 10"/>
                 <ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
                 <ejbca:cli arg="batch tomcat"/>
         </target>
 
-	<!-- Only try to batch generate superadmin if if keystoretyp is P12 -->
 	<target name="ejbca:batchsuperadmin" if="superadmin.batch.true">
 		<ejbca:cli arg="batch superadmin"/>
+	</target>
+
+	<!-- Only try to batch generate superadmin if if keystoretyp is P12 -->
+    <target name="ejbca:adminweb">
+        <!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost, otherwise add and altname with the same dnsName as hostname. -->
+        <condition property="httpsserver.an" value="dnsName=localhost,IPAddress=127.0.0.1" else="dnsName=${httpsserver.hostname}">
+            <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
+        </condition>
+        <ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;${httpsserver.dn}&quot; --altname &quot;${httpsserver.an}&quot; &quot;${ca.name}&quot; 1 JKS --certprofile SERVER"/>
+        <ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
+        <ejbca:cli arg="batch tomcat"/>
+        <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
+            <istrue value="${superadmin.batch}" />
+        </condition>
+        <condition property="sa.validity" value="${superadmin.validity}" else="">
+            <isset property="superadmin.validity" />
+        </condition>
+        <condition property="sa.validity.flag" value="--validity" else="">
+            <isset property="superadmin.validity" />
+        </condition>
+        <ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;${superadmin.dn}&quot; &quot;${ca.name}&quot; 1 ${superadmin.keystoretype} ${sa.validity.flag} ${sa.validity}"/>
+
+        <condition property="superadmin.batch.true" value="set">
+            <istrue value="${superadmin.batch}" />
+        </condition>
+        <!--	 save superadmin clear password only if superadmin.batch is true-->
+        <antcall target="ejbca:setclearpwd"/>
+
+        <!--
+        this does not work for some reason, if I'm not forking the VM, I'm wondering
+        if it is not an issue with the Ant classloader
+        For in ejbca.home in order to have the p12 directory as a child of it.
+        -->
+        <delete file="${ejbca.home}/p12/superadmin.p12" quiet="true"/>
+        <antcall target="ejbca:batchsuperadmin"/>
+        <fail message="Batch generation failed!">
+            <condition>
+                <or>
+                    <not><available filepath="${ejbca.home}/p12" file="tomcat.jks"/></not>
+                    <and>
+                        <not><available filepath="${ejbca.home}/p12" file="superadmin.p12"/></not>
+                        <istrue value="${superadmin.batch}" />
+                    </and>
+                </or>
+            </condition>
+        </fail>
+    </target>
+    <!-- Only set clearpwd if batch superadmin is true -->
+	<target name="ejbca:setclearpwd" if="superadmin.batch.true">
+        <ejbca:cli-hideargs arg="ra setclearpwd superadmin ${superadmin.password}" />
 	</target>
     
 	<target name="ejbca:cli" description="Handy hook to run a command">

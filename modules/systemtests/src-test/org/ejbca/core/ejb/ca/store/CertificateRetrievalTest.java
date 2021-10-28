@@ -146,7 +146,7 @@ public class CertificateRetrievalTest {
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ROOTCA,
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                                                         CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                                                         CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             }
             cert = CertTools.getCertfromByteArray(testcacert, Certificate.class);
             m_certfps.add(CertTools.getFingerprintAsString(cert));
@@ -157,7 +157,7 @@ public class CertificateRetrievalTest {
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_SUBCA,
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                                                         CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                                                         CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             }
             cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
             m_certfps.add(CertTools.getFingerprintAsString(cert));
@@ -168,7 +168,7 @@ public class CertificateRetrievalTest {
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ENDENTITY,
                                                          CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                                                         CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                                                         CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             }
         } catch (Exception e) {
             log.error("Error: ", e);

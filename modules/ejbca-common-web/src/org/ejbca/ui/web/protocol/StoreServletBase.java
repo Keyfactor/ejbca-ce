@@ -36,8 +36,6 @@ import org.ejbca.util.HTMLTools;
 
 /**
  * Base class for servlets (CRL or Certificate) implementing rfc4378
- * 
- * @version  $Id$
  */
 public abstract class StoreServletBase extends HttpServlet {
 
@@ -188,7 +186,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 		final String sKIDHash = VAConfiguration.sKIDHashFromName(alias);
 		if ( sKIDHash==null || sKIDHash.length()<1 ) {
-			final String m = "No '"+alias+"' alias defined in va.properties .";
+			final String m = "No '" + HTMLTools.htmlescape(alias) + "' alias defined in va.properties .";
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND, m);
 			log.debug(m);
 			return true;

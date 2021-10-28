@@ -172,7 +172,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     }
 
     public String getOcspLoggingDateFormat() {
-        if (data.get("yyyy-MM-dd HH:mm:ss.SSSZ") == null) {
+        if (data.get(PROPERTY_OCSP_LOGGING_DATE_FORMAT) == null) {
             return "yyyy-MM-dd HH:mm:ss.SSSZ";
         }
         return (String) data.get(PROPERTY_OCSP_LOGGING_DATE_FORMAT);

@@ -229,7 +229,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException {
+    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
         if (cainfo != null) {
         	if (log.isTraceEnabled()) {
         		log.trace(">editCA (CAInfo): "+cainfo.getName());
@@ -243,6 +243,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     			    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
     			}
                 assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
+
+                if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
+                    throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
+
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
                 AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
