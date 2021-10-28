@@ -49,7 +49,7 @@
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/msae" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -96,6 +96,10 @@
     </target>
     <target name="optionaltestacme-system" if="${acme.exists}">
         <ant antfile="build.xml" dir="modules/acme" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
+    <condition property="ejbca-msae.exists"><available file="modules/msae"/></condition>
+    <target name="optionaltestmsae-unit" if="${ejbca-msae.exists}">
+        <ant antfile="build.xml" dir="modules/msae" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ejbca-rest-api.exists"><available file="modules/ejbca-rest-api"/></condition>
     <target name="optionaltestrest-unit" if="${ejbca-rest-api.exists}">
@@ -262,8 +266,8 @@
             <matches string="${test-fullname}" pattern="^modules/ejbca-ejb-cli/.*$"/>
         </condition>
         <condition property="module" value="modules/msae">
-                    <matches string="${test-fullname}" pattern="^modules/msae/.*$"/>
-                </condition>
+            <matches string="${test-fullname}" pattern="^modules/msae/.*$"/>
+        </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
 		<antcall target="createreport" inheritall="true" inheritrefs="true"/>

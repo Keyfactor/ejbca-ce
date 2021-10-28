@@ -16,6 +16,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -35,6 +37,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.SecureZipUnpacker;
@@ -96,6 +100,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private RoleSessionLocal roleSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -185,7 +191,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                                         EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                                         caSession.determineCrlPartitionIndex(issuer.get().getCAId(), EJBTools.wrap(certificate)),
                                         null,
-                                        System.currentTimeMillis());
+                                        System.currentTimeMillis(), null);
                                 log.info("Imported certificate for '" + CertTools.getSubjectDN(certificate)
                                         + "' from zip entry " + unpackedFile.getFileName() + ".");
                                 certificatesImported.incrementAndGet();
@@ -383,8 +389,9 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             }
             final Map<String, Integer> casInProfile = endEntityProfileSession.getAvailableCasInProfile(getAdmin(),
                     endEntityProfileSession.getEndEntityProfileId(entry.getValue()));
-            if (casInProfile.isEmpty() || casInProfile.entrySet().stream().anyMatch(e -> (e.getValue() == selectedCaId))) {
+            if (casInProfile.entrySet().stream().anyMatch(e -> (e.getValue() == selectedCaId))) {
                 endEntityProfileList.add(endEntityProfileSession.getEndEntityProfileName(entry.getKey()));
+                continue;
             }
         }
         return endEntityProfileList;
@@ -396,26 +403,35 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         final List<Role> roles = roleSession.getAuthorizedRoles(getAdmin());
 
         for (final Role role : roles) {
-            rolesList.addAll(getRolesUsedByCa(role, StandardRules.CAACCESS.resource(), selectedCaId));
+            rolesList.addAll(getRolesUsedByCa(role, selectedCaId));
             Collections.sort(rolesList);
         }
 
         return rolesList;
     }
 
-    private List<String> getRolesUsedByCa(final Role role, final String baseResource, final Integer selectedCaId) {
-        final LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
+    private List<String> getRolesUsedByCa(final Role role,  final Integer selectedCaId) {
         final List<String> result = new ArrayList<>();
-        final String superAdmin = "Super Administrator Role";
 
-        final String resource = AccessRulesHelper.normalizeResource(baseResource + selectedCaId);
-
-
-        if (AccessRulesHelper.hasAccessToResource(accessRules, baseResource) && !role.getName().equals(superAdmin) ){
+        final String resource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + selectedCaId);
+        if (role.getAccessRules().containsKey(resource)) {
             result.add(role.getName());
         } else {
-            if (AccessRulesHelper.hasAccessToResource(accessRules, resource) && !role.getName().equals(superAdmin))  {
-                result.add(role.getName());
+            try {
+                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
+                for (RoleMember roleMember : roleMembers) {
+                    if (roleMember.getTokenIssuerId() == selectedCaId) {
+                        // Do more expensive checks if it is a potential match
+                        final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
+                                roleMember.getTokenType()).getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                        if (accessMatchValue.isIssuedByCa()) {
+                            result.add(role.getName());
+                            break;
+                        }
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                log.error("Failed to check roles depended on CA", e);
             }
         }
 
@@ -426,15 +442,20 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         try {
             if (!cadatahandler.removeCA(selectedCaId)) {
                 addErrorMessage("COULDNTDELETECA");
-                if (!certificateProfilesUsedByCa(selectedCaId).isEmpty()) {
+                final List<String> certificateProfilesUsedByCa = certificateProfilesUsedByCa(selectedCaId);
+                if (!certificateProfilesUsedByCa.isEmpty()) {
                     addErrorMessage("CA_INCERTIFICATEPROFILES");
-                    addNonTranslatedErrorMessage(StringUtils.join(certificateProfilesUsedByCa(selectedCaId), ", "));
-                }if(!endEntityProfilesUsedByCa(selectedCaId).isEmpty()){
+                    addNonTranslatedErrorMessage(StringUtils.join(certificateProfilesUsedByCa, ", "));
+                }
+                final List<String> endEntityProfilesUsedByCa = endEntityProfilesUsedByCa(selectedCaId);
+                if (!endEntityProfilesUsedByCa.isEmpty()) {
                     addErrorMessage("CA_INENDENTITYPROFILES");
-                    addNonTranslatedErrorMessage(StringUtils.join(endEntityProfilesUsedByCa(selectedCaId), ", "));
-                }if(!rolesUsedByCa(selectedCaId).isEmpty()) {
+                    addNonTranslatedErrorMessage(StringUtils.join(endEntityProfilesUsedByCa, ", "));
+                }
+                final List<String> rolesUsedByCa = rolesUsedByCa(selectedCaId);
+                if (!rolesUsedByCa.isEmpty()) {
                     addErrorMessage("CA_INROLES");
-                    addNonTranslatedErrorMessage(StringUtils.join(rolesUsedByCa(selectedCaId), ", "));
+                    addNonTranslatedErrorMessage(StringUtils.join(rolesUsedByCa, ", "));
                 }
             }
         } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {

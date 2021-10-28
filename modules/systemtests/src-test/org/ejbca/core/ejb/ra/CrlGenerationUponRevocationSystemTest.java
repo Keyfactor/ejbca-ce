@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -538,7 +539,7 @@ public class CrlGenerationUponRevocationSystemTest extends CaTestCase {
         caInfo2.setGenerateCrlUponRevocation(enabled);
         try {
             caSession.editCA(admin, caInfo);
-        } catch (CADoesntExistsException | InternalKeyBindingNonceConflictException | AuthorizationDeniedException e) {
+        } catch (CADoesntExistsException | InternalKeyBindingNonceConflictException | AuthorizationDeniedException | CaMsCompatibilityIrreversibleException e) {
             log.error(e);
             fail("Failed to updae CA '" + caInfo.getName() + "': " + e.getMessage());
         }

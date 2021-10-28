@@ -14,57 +14,51 @@ package org.ejbca.webtest.scenario;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
-import org.ejbca.webtest.helper.RaWebHelper;
+import org.ejbca.webtest.helper.RaWebUseUsernameRequestHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * This test checks the Certificate Details page in RA Web.
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-244">ECAQA-244</a>
  *
- * @version $Id: EcaQa244_CertificateLifeCycle.java 31450 2019-02-08 15:46:45Z samuellb $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa244_CertificateLifeCycle extends WebTestBase {
+public class EcaQa224_CertificateLifeCycle extends WebTestBase {
 
     // Classes used.
     private static WebDriver webDriver;
     private static AddEndEntityHelper addEndEntityHelper;
-    private static RaWebHelper raWebHelper;
+    private static RaWebUseUsernameRequestHelper raWebUseUsernameRequestHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper; 
     private static AuditLogHelper auditLogHelper;
-    
-    private static final String END_ENTITY_NAME = "TestUser";
-    private static final String END_ENTITY_PASSWORD = "foo123";
-    private static final String END_ENTITY_COMMON_NAME = "TestUser";
-    private static final String END_ENTITY_TOKEN = "JKS file";
-    private static final String CERTIFICATE_PROFILE_NAME = "ENDUSER";
-    private static final By REACTIVE_BTN_XPATH = By.xpath("//input[@value=\"Reactivate\"]");
-    private static final By AUDITLOG_DETAILS_ADDED_XPATH = By.xpath("//span[contains(text(),'Added end entity " + END_ENTITY_NAME + "')]");
-    private static final By AUDITLOG_DETAILS_REVOKED_XPATH = By.xpath("//td[contains(text(),'Revoked end entity " + END_ENTITY_NAME + ".')]");
-    private static final By AUDITLOG_DETAILS_CERTIFICATEHOLD_XPATH = By.xpath("//span[contains(@title,\"Activated certificate on hold for username '" + END_ENTITY_NAME + "'\")]");
 
+    // Test Data
+    public static class TestData {
+        static final String END_ENTITY_NAME = "EcaQa224TestUser";
+        static final String END_ENTITY_PASSWORD = "foo123";
+        static final String END_ENTITY_COMMON_NAME = "EcaQa224TestUser";
+        static final String END_ENTITY_TOKEN = "JKS file";
+        static final String CERTIFICATE_PROFILE_NAME = "ENDUSER";
+        static final String CA_NAME = "ManagementCA";
+        static final String KEY_ALGORITHM = "RSA 2048 bits";
+    }
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
         webDriver = getWebDriver();
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
-        raWebHelper = new RaWebHelper(webDriver);
+        raWebUseUsernameRequestHelper = new RaWebUseUsernameRequestHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
         auditLogHelper = new AuditLogHelper(webDriver);
         auditLogHelper.initFilterTime();
@@ -82,19 +76,20 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile("EMPTY");
         HashMap<String, String> fields = new HashMap<>();
-        fields.put("Username", END_ENTITY_NAME);
-        fields.put("Password (or Enrollment Code)", END_ENTITY_PASSWORD);
-        fields.put("Confirm Password", END_ENTITY_PASSWORD);
-        fields.put("CN, Common name", END_ENTITY_COMMON_NAME);
+        fields.put("Username", TestData.END_ENTITY_NAME);
+        fields.put("Password (or Enrollment Code)", TestData.END_ENTITY_PASSWORD);
+        fields.put("Confirm Password", TestData.END_ENTITY_PASSWORD);
+        fields.put("CN, Common name", TestData.END_ENTITY_COMMON_NAME);
         addEndEntityHelper.fillFields(fields);
-        addEndEntityHelper.setToken(END_ENTITY_TOKEN);
-        addEndEntityHelper.setCertificateProfile(CERTIFICATE_PROFILE_NAME);
+        addEndEntityHelper.setToken(TestData.END_ENTITY_TOKEN);
+        addEndEntityHelper.setCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
+        addEndEntityHelper.setCa(TestData.CA_NAME);
         addEndEntityHelper.addEndEntity();
     }
     
     @Test
     public void testB_RaWeb() {
-        raWebHelper.openPage(getRaWebUrl());
+        raWebUseUsernameRequestHelper.openPage(getRaWebUrl());
         // Use sleep to find next element.
         try {
             Thread.sleep(200);
@@ -102,17 +97,19 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase {
         } catch (InterruptedException e) {
               // NOPMD
         }
-        raWebHelper.clickToEnrollUseUsername(webDriver);
-        raWebHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
-        raWebHelper.clickCheck();
-        raWebHelper.clickEnrollDownloadPKCS12Button();
+        raWebUseUsernameRequestHelper.clickToEnrollUseUsername();
+        raWebUseUsernameRequestHelper.fillEnrollUsernameAndCode(TestData.END_ENTITY_NAME, TestData.END_ENTITY_PASSWORD);
+        raWebUseUsernameRequestHelper.clickCheckButton();
+        raWebUseUsernameRequestHelper.selectKeyAlgorithm(TestData.KEY_ALGORITHM);
+        raWebUseUsernameRequestHelper.clickEnrollDownloadPKCS12Button();
     }
     
     @Test
     public void testC_SearchEndEntities() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
-        searchEndEntitiesHelper.fillSearchCriteria(END_ENTITY_NAME, null, null, null);
+        searchEndEntitiesHelper.fillSearchCriteria(TestData.END_ENTITY_NAME, null, null, null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
+        searchEndEntitiesHelper.assertNumberOfSearchResults(1);
     }
     
     @Test
@@ -120,27 +117,26 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase {
         searchEndEntitiesHelper.chooseFromRevocationReason("Certificate hold");
         searchEndEntitiesHelper.triggerSearchResultFirstRowSelect();
         searchEndEntitiesHelper.clickRevokeSelected();
-        acceptAlert();
+        searchEndEntitiesHelper.acceptAlert();
     }
     
     @Test
     public void testE_ReactivateCertificate() {
-        searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
+        searchEndEntitiesHelper.clickViewCertificateForRow(TestData.END_ENTITY_COMMON_NAME);
         String mainWindow = webDriver.getWindowHandle();
-        switchToCertificateViewPopup();
+        searchEndEntitiesHelper.switchToPopup();
         searchEndEntitiesHelper.clickReactive();
-        acceptAlert();
+        searchEndEntitiesHelper.acceptAlert();
         webDriver.close();
         webDriver.switchTo().window(mainWindow);
     }
     
     @Test
     public void testF_CheckReactiveBtnIsAvailible() {
-        searchEndEntitiesHelper.clickViewCertificateForRow(END_ENTITY_COMMON_NAME);
+        searchEndEntitiesHelper.clickViewCertificateForRow(TestData.END_ENTITY_COMMON_NAME);
         String mainWindow = webDriver.getWindowHandle();
-        switchToCertificateViewPopup();
-        List<WebElement> elements = webDriver.findElements(REACTIVE_BTN_XPATH); 
-        Assert.assertFalse(elements.size() > 0);
+        searchEndEntitiesHelper.switchToPopup();
+        searchEndEntitiesHelper.assertReactiveButtonNotPresent();
         webDriver.close();
         webDriver.switchTo().window(mainWindow);
     }
@@ -149,45 +145,31 @@ public class EcaQa244_CertificateLifeCycle extends WebTestBase {
     public void testG_AuditLogEndEntityAddedInDetails() {
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.reloadView();
-        WebElement addedElement = webDriver.findElement(AUDITLOG_DETAILS_ADDED_XPATH);
-        auditLogHelper.assertLogEntryByEventText("End Entity Add", "Success", null,
-                Collections.singletonList(addedElement.getText()));
+        auditLogHelper.assertAddEndEntityLogExists(TestData.END_ENTITY_NAME);
     }
     
     @Test
     public void testH_AuditLogEndEntityRevokeInDetails() {
-        WebElement revokedElement = webDriver.findElement(AUDITLOG_DETAILS_REVOKED_XPATH);
-        auditLogHelper.assertLogEntryByEventText("End Entity Revoke", "Success", null,
-                Collections.singletonList(revokedElement.getText()));
+        auditLogHelper.assertRevokeEndEntityLogExists(TestData.END_ENTITY_NAME);
     }
     
     @Test
     public void testI_AuditLogEndEntityCertHoldInDetails() {
-        WebElement certificateHoldElement = webDriver.findElement(AUDITLOG_DETAILS_CERTIFICATEHOLD_XPATH);
+        String certificateHoldTextt = auditLogHelper.getCertificateOnHoldRecordText(TestData.END_ENTITY_NAME);
         auditLogHelper.assertLogEntryByEventText("Certificate Revoke", "Success", null,
-                Collections.singletonList(certificateHoldElement.getText()));
+                Collections.singletonList(certificateHoldTextt));
     }
     
     @Test
     public void testJ_AuditLogEndEntityRevokeCertInDetails() {
         // Only checking 'Event' log by username.
-        auditLogHelper.setViewFilteringCondition("Username", "Equals", END_ENTITY_NAME);
+        auditLogHelper.setViewFilteringCondition("Username", "Equals", TestData.END_ENTITY_NAME);
         auditLogHelper.assertLogEntryByEventText("Certificate Revoke", "Success", null,null);
     }
     
     private static void cleanup() {
-        removeEndEntityByUsername(END_ENTITY_NAME);
-        removeCertificateProfileByName(CERTIFICATE_PROFILE_NAME);
+        removeEndEntityByUsername(TestData.END_ENTITY_NAME);
+        removeCertificateByUsername(TestData.END_ENTITY_NAME);
     }
-    
-    private static void switchToCertificateViewPopup() {
-        for (String windowHandle : webDriver.getWindowHandles()) {
-            webDriver.switchTo().window(windowHandle);
-        }
-    }
-    
-    private static void acceptAlert() {
-        Alert alert = webDriver.switchTo().alert();
-        alert.accept();
-    }
+
 }

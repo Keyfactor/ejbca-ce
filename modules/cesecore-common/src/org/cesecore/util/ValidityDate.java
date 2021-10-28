@@ -28,13 +28,14 @@ import org.apache.log4j.Logger;
 /**
  * Class for encoding and decoding certificate validity and end date.
  * 
- * @version $Id$
  */
 public class ValidityDate {
 	/** The date and time format defined in ISO8601. The 'T' can be omitted (and we do to save some parsing cycles). */
 	public static final String ISO8601_DATE_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";
 	public static final TimeZone TIMEZONE_UTC = TimeZone.getTimeZone("UTC");
 	public static final TimeZone TIMEZONE_SERVER = TimeZone.getDefault();
+	// Offset for period of time from notBefore through notAfter, inclusive. See ECA-9523, ECA-10327.
+	public static final long NOT_AFTER_INCLUSIVE_OFFSET = 1000;
 
 	private static final Logger log = Logger.getLogger(ValidityDate.class);
 	// Time format for storage where implied timezone is UTC
@@ -107,6 +108,11 @@ public class ValidityDate {
 	public static String formatAsUTC(final long millis) {
 		return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[0], TIMEZONE_UTC).format(millis);
 	}
+	
+	/** Convert a absolute number of milliseconds to the format "yyyy-MM-dd HH:mm:ss" with implied TimeZone UTC. */
+    public static String formatAsUTCSecondsGranularity(final long millis) {
+        return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[1], TIMEZONE_UTC).format(millis);
+    }
 	
 	/** Convert a Date to the format "yyyy-MM-dd HH:mm:ssZZ" (the T is not required). The server's time zone is used. */
 	public static String formatAsISO8601(final Date date, final TimeZone timeZone) {
@@ -212,7 +218,7 @@ public class ValidityDate {
 	    try {
 	        // We think this is the most common, so try this first, it's fail-fast
 	        final long millis = SimpleTime.parseMillies(encodedValidity);
-	        final long endSecond = notAfterIsInclusive ? 1000 : 0;
+	        final long endSecond = notAfterIsInclusive ? NOT_AFTER_INCLUSIVE_OFFSET: 0;
 	        final Date endDate = new Date(firstDate.getTime() + millis - endSecond);
 	        return endDate;
 	    } catch(NumberFormatException nfe) {

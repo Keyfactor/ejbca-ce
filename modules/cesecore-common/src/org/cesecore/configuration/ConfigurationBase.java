@@ -14,6 +14,7 @@
 package org.cesecore.configuration;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -69,6 +70,10 @@ public abstract class ConfigurationBase extends UpgradeableDataHashMap {
      */
     public String getDecryptedValue(String value) {
         return StringTools.passwordDecryption(value, this.getClass().getSimpleName());
+    }
+
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        // Do nothing
     }
 
 }

@@ -33,6 +33,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -40,6 +41,8 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.EABConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
@@ -134,12 +137,30 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             final Map<Object, Object> newmap = (Map<Object, Object>) conf.saveData();
             // Get the diff of what changed
             final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
-            // Make security audit log record
+            // Make security audit log record, but first have the object itself filter out any sensitive information
+            conf.filterDiffMapForLogging(diff);
             final String msg = intres.getLocalizedMessage("globalconfig.savedconf", gcdata.getConfigurationId());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                details.put(entry.getKey().toString(), entry.getValue().toString());
+                // Skip this because it can be too long in the case of a long EAB ID file.
+                if (!"changed:eabmap".equals(entry.getKey().toString())
+                    && !"changed:oauthkeys".equals(entry.getKey().toString())
+                ){
+                    details.put(entry.getKey().toString(), entry.getValue().toString());
+                }
+            }
+            // If applicable log all of the EAB namespaces and the number of IDs in each of them
+            if (conf != null && conf.getClass().equals(EABConfiguration.class)) {
+                for (Map.Entry<String,Set<String>> entry : ((EABConfiguration) conf).getEABMap().entrySet()) {
+                    details.put("eabnamespace:" + entry.getKey(), entry.getValue().size());
+                }
+            }
+            // If applicable log all of the OAuth providers
+            if (conf != null && conf.getClass().equals(OAuthConfiguration.class)) {
+                for (Map.Entry<String,OAuthKeyInfo> entry : ((OAuthConfiguration) conf).getOauthKeys().entrySet()) {
+                    details.put("oauthkey_" + entry.getKey(), entry.getValue().createLogString());
+                }
             }
             auditSession.log(EventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);

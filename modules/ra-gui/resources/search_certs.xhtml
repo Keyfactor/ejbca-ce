@@ -20,7 +20,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
      -->
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -304,6 +303,19 @@
 	                            </h:panelGrid>
 	                        </h:column>
 	                        <h:column>
+	                            <f:facet name="header">
+	                                <h:outputLabel for="sortEAId" value="#{msg.search_certs_page_colhead_external_account} #{raSearchCertsBean.sortedByExternalAccount}"/>
+	                                <h:commandButton id="sortEAId" action="#{raSearchCertsBean.sortByExternalAccount}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
+	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+	                                </h:commandButton>
+	                            </f:facet>
+	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+	                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.accountBindingId}"/>
+	                            </h:panelGrid>
+	                        </h:column>
+	                        <h:column rendered="#{raAccessBean.authorizedToSearchEndEntities}">
 	                            <f:facet name="header">
 	                                <h:outputLabel for="sortUsername" value="#{msg.search_certs_page_colhead_username} #{raSearchCertsBean.sortedByUsername}"/>
 	                                <h:commandButton id="sortUsername" action="#{raSearchCertsBean.sortByUsername}" value="#{msg.search_certs_page_sort_command}" style="display: none;">

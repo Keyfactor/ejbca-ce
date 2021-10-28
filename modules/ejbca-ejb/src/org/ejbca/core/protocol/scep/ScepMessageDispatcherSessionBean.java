@@ -47,6 +47,7 @@ import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -91,6 +92,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -114,10 +116,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
-/**
- * 
- * @version $Id$
- *
+/** Implements processing of SCEP requests.
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ScepMessageDispatcherSessionRemote")
 public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSessionLocal, ScepMessageDispatcherSessionRemote {
@@ -238,13 +237,33 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (cainfo != null) {
                 certs = cainfo.getCertificateChain();
             }
-            if ((certs != null) && (certs.size() > 0)) {
+            if ((certs != null) && (certs.size() == 1) || (!scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias) && certs.size() > 1)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Returning X.509 certificate as response for GetCACert for single CA: " + caname);
+                }
                 // CAs certificate is in the first position in the Collection
                 X509Certificate cert = (X509Certificate) certs.iterator().next();
                 if (log.isDebugEnabled()) {
                     log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
                 }
                 return ScepResponseInfo.onlyResponseBytes(cert.getEncoded());
+            } else if ((certs != null) && (certs.size() > 1 && scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias))) {
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Creating certs-only CMS message as response for GetCACert for CA chain: " + caname);
+                    }
+                    List<X509Certificate> certList = CertTools.convertCertificateChainToX509Chain(certs);
+                    // TODO: test workaround for certificate order, MS likes it reverse?
+                    Collections.reverse(certList);
+                    final byte[] resp = CertTools.createCertsOnlyCMS(certList);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Sent certificates-only CMS for CA '" + caname + "' to SCEP client.");
+                    }
+                    return ScepResponseInfo.onlyResponseBytes(resp);
+                } catch (ClassCastException | CMSException e) {
+                    log.info("Error creating certs-only CMS message as response for GetCACert for CA: " + caname);
+                    return null;
+                }
             } else {
                 return null;
             }
@@ -1011,6 +1030,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             else {
                 // use java.util to ensure there are no crlfs
                 final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
+                log.debug("Logging SCEP success for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
                 log.debug("scep id = " + transactionId);
                 log.debug("scep base64Message = " + base64Message);
                 final String thumbprint = toMicrosoftHex(response.getThumbprint());
@@ -1022,7 +1042,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 intuneScepServiceClient.SendSuccessNotification(transactionId, base64Message, thumbprint, hexSerialNumber, response.getNotAfter().toString(),
                         issuer, issuer, issuer);
             }
-            log.info("MS Intune validation succeed for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
+            log.info("MS Intune status update succeeded for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
         } catch (IntuneScepServiceException e) {
             final String msg = "MS Intune status update failed for alias " + alias + "' and transaction ID '" + transactionId + "'. ";
             log.info(msg, e);

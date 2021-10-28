@@ -147,21 +147,24 @@
 				<br />
 				<!-- Full CRLs -->
 				<h:outputText value="#{web.text.NOCRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.isCrlInfoEmpty()}"/>
-				<h:panelGroup rendered="#{!caGuiInfo.isCrlInfoEmpty()}">
-					<h:outputText value="#{web.text.LATESTCRL}: #{web.text.CREATED} #{caGuiInfo.getCrlCreateDate()}"/>
-					<h:panelGroup rendered="#{caGuiInfo.isCrlExpired()}">
-						<span id="alert"><h:outputText value="#{web.text.EXPIRED} #{caGuiInfo.getCrlExpireDate()}" /></span>
+				<ui:repeat value="#{caGuiInfo.getCrlinfo()}" var="crlInfo">
+					<h:outputText value="#{web.text.LATESTCRL}: #{web.text.CREATED} #{crlInfo.crlCreateDate}"/>
+					<h:panelGroup rendered="#{crlInfo.crlExpired}">
+						<span id="alert"><h:outputText value="#{web.text.EXPIRED} #{crlInfo.crlExpireDate}" /></span>
 					</h:panelGroup>
-					<h:panelGroup rendered="#{!caGuiInfo.isCrlExpired()}">
-					<span id="alert2"><h:outputText value="#{web.text.EXPIRES} #{caGuiInfo.getCrlExpireDate()}" /></span>
-					<h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.crlinfo.getLastCRLNumber()} " />
-					<h:outputLink
-							value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{caGuiInfo.subjectdn}">
-						<h:outputText value="#{web.text.GETCRL}"/>
-					</h:outputLink>
+					<h:panelGroup rendered="#{!crlInfo.crlExpired}">
+						<span id="alert2"><h:outputText value="#{web.text.EXPIRES} #{crlInfo.crlExpireDate}" /></span>
+						<h:outputText value=" #{web.text.PARTITION} #{crlInfo.partitionIndex}" />
+						<h:outputText value=" #{web.text.NUMBER} #{crlInfo.lastCrlNumber}" />
+						<h:outputLink rendered="#{!caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.subjectDn}">
+							<h:outputText value=" #{web.text.GETCRL}"/>
+						</h:outputLink>
+						<h:outputLink rendered="#{caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.subjectDn}&amp;partition=#{crlInfo.partitionIndex}">
+							<h:outputText value=" #{web.text.GETCRL}"/>
+						</h:outputLink>
 					</h:panelGroup>
-				</h:panelGroup>
-				<br />
+					<br />
+				</ui:repeat>
 				<!-- Delta CRLs-->
 				<h:panelGroup rendered="#{caGuiInfo.isDeltaCrlInfoEmpty()}">
 					<h:outputText value="#{web.text.NODELTACRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.getDeltaPeriodEnabled()}"/>

@@ -242,6 +242,47 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
     
     @Test
+    public void certificateRequestExpectCsrSubjectIgnored() throws Exception {
+        // Add End Entity
+        EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "O=PrimeKey,CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, 
+            null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+            SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
+        userdata.setPassword("foo123");
+        userdata.setStatus(EndEntityConstants.STATUS_NEW);
+        userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+        userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");        
+        endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+        // Create CSR REST request
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+                certificateAuthorityName(TEST_CA_NAME).
+                username(TEST_USERNAME).
+                password("foo123").
+                certificateRequest(csr).build();
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+        
+        // Send request
+        try {
+            final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
+            final String actualJsonString = actualResponse.readEntity(String.class);
+            // Verify response
+            assertJsonContentType(actualResponse);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            final String base64cert = (String) actualJsonObject.get("certificate");
+            assertNotNull(base64cert);
+            byte [] certBytes = Base64.decode(base64cert.getBytes());
+            X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+            // Assert End Entity DN is used. CSR subject should be ignored.
+            assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + TEST_USERNAME, cert.getSubjectDN().getName());
+        } finally {
+            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
+            internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
+        }
+    }
+
+    @Test
     public void enrollPkcs10WithUnidFnr() throws Exception {
 
         final String username = "enrollPkcs10WithUnidFnr";

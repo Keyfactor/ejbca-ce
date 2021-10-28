@@ -54,9 +54,26 @@
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
 
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_URL}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_URL}"
+            	rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls}"/>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_AUTHORIZEURL}"
+            	rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.url}" size="46" id="keyUrl"
                          disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_TOKENURL}"
+            	rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls}"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.tokenUrl}" size="46" id="keyTokenUrl"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
+                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_LOGOUTURL}"
+            	rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls}"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.logoutUrl}" size="46" id="keyLogoutUrl"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
+                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
 
@@ -71,9 +88,29 @@
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_TENANT}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.realm}" size="46" id="realm"
                          disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
-                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeGeneric}">
+                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeGeneric and 
+                         			 !systemConfigMBean.oauthKeyManager.oauthKeyEditor.typePingId}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
+            
+            <!-- Audience -->
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_AUDIENCE}"/>
+            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.audience}" size="46" id="audience"
+                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode
+									 or systemConfigMBean.oauthKeyManager.oauthKeyEditor.audienceCheckDisabled}">
+                <f:converter converterId="trimConverter"/>
+            </h:inputText>
+            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_DISABLEAUDIENCECHECK}"/>
+        	<h:panelGroup>
+	            <h:selectBooleanCheckbox id="audienceCheckDisabled" 
+	            						 value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.audienceCheckDisabled}"
+	                                     disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
+					<f:ajax render="editOAuthKeyForm:audience"/>
+	            </h:selectBooleanCheckbox>
+	            <h:outputLabel for="audienceCheckDisabled" value="#{web.text.OAUTHKEYCONFIGURATION_DISABLEAUDIENCECHECKWARNING}" />
+        	</h:panelGroup>
+
+			<!--  Scope -->            
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SCOPE}" rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.scope}" size="46" id="scope"
                          disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
@@ -85,12 +122,32 @@
                          disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENTSECRET}" rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"/>
-            <h:inputSecret value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.clientSecret}" size="46" id="clientSecret"
-                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}" autocomplete="off"
-                           redisplay="true">
-                <f:converter converterId="trimConverter"/>
-            </h:inputSecret>
+            
+            <!-- Secret or Key Binding - only show this for Azure -->
+            <h:outputLabel for="selectOneMenuKeyBinding" value="#{web.text.OAUTHKEYCONFIGURATION_KEY_BINDING}" 
+            	rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}"/>
+            <h:selectOneMenu id="selectOneMenuKeyBinding" value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyBinding}"
+                 disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
+                 rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.typeAzure}">
+                <f:selectItem itemValue="#{null}" itemLabel="#{web.text.OAUTHKEYCONFIGURATION_USE_CLIENT_SECRET}"/>
+                <f:selectItems value="#{systemConfigMBean.oauthKeyManager.keyBindings}" var="keyBinding" 
+                				itemValue="#{keyBinding.value}" itemLabel="#{keyBinding.key}"/>
+                <f:ajax render="clientSecretLabelPanelGroup clientSecretPanelGroup" />
+            </h:selectOneMenu>
+            
+            <h:panelGroup id="clientSecretLabelPanelGroup">
+            	<h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_CLIENTSECRET}" 
+            		rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode
+            						and systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyBinding == null}"/>
+            </h:panelGroup>
+            <h:panelGroup id="clientSecretPanelGroup">
+	            <h:inputSecret value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.clientSecret}" size="46" id="clientSecret"
+	                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode
+	                         		and systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyBinding == null}" 
+	                         autocomplete="off" redisplay="true">
+	                <f:converter converterId="trimConverter"/>
+	            </h:inputSecret>
+            </h:panelGroup>
 
         </h:panelGrid>
         <h:dataTable value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.publicKeys}"

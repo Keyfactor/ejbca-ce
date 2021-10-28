@@ -51,6 +51,7 @@ public abstract class BaseWorker implements IWorker {
     
     protected AuthenticationToken admin = null;
 
+    // Cached data
 	private transient Collection<Integer> cAIdsToCheck = null;
 	private transient long timeBeforeExpire = -1;
 

@@ -201,7 +201,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, reqId, PKIFailureInfo.incorrectData);
         log.trace("<test01CrmfHttpUnknowUser");
     }
 
@@ -221,7 +221,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_INIT_REP, reqId, PKIFailureInfo.incorrectData);
     }
 
     @Test
@@ -261,7 +261,7 @@ public class CrmfRequestTest extends CmpTestCase {
         resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId,
-                                PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                                PKIFailureInfo.badRequest);
 
         //
         // Try again, this time setting implicitConfirm in the header, expecting the server to reply with implicitConfirm as well
@@ -327,7 +327,7 @@ public class CrmfRequestTest extends CmpTestCase {
         /* Before EJBCA 6.8.0 we responded with HTTP 400, but now we send a PKIFailureInfo.badRequest instead. */
         byte[] resp = sendCmpHttp(msg, 200, cmpAlias);
         assertNotNull(resp);
-        checkCmpFailMessage(resp, "Not a valid CMP message.", PKIBody.TYPE_ERROR, 123, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Not a valid CMP message.", PKIBody.TYPE_ERROR, 123, PKIFailureInfo.badRequest);
         log.trace("<test05BadBytes");
     }
 

@@ -57,6 +57,10 @@
 
 		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" />
 		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
+		
+		<h:outputLabel for="cachain" value="#{web.text.SCEP_CA_CHAIN}" />
+		<h:selectBooleanCheckbox id="cachain" value="#{scepConfigMBean.currentAlias.returnCaChainInGetCaCert}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
+		
 		<h:panelGroup id="legacydigestalgorithm">
 		    <h:outputLabel for="allowlegacydigestalgorithm" value="#{web.text.SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM}" />
 		    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/SCEP_Operations_Guide.html#Properties')}" escape="false"/>
@@ -114,7 +118,6 @@
 		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 	    	<h:inputSecret redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}"
 	    		disabled="#{scepConfigMBean.currentAlias.useIntune}">
-	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="**********" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
@@ -196,9 +199,7 @@
 			
 		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}"/>
 		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}">
-	    	<h:inputSecret  redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}">
-	    		<f:validator validatorId="legalCharsValidator"/>
-	    	</h:inputSecret>
+	    	<h:inputSecret  redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				

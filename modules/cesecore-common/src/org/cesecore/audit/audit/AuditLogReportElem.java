@@ -18,8 +18,6 @@ import java.util.List;
 
 /**
  * A sub-element of a AuditLogValidationReport representing an error or warning.
- * 
- * @version $Id$
  */
 public class AuditLogReportElem implements Serializable {
 
@@ -28,15 +26,6 @@ public class AuditLogReportElem implements Serializable {
     private Long first;
     private Long second;
     private final List<String> reasons = new ArrayList<>();
-    
-    public AuditLogReportElem() {
-    }
-    
-    public AuditLogReportElem(final Long first, final Long second, final List<String> reasons) {
-    	this.first = first;
-    	this.second = second;
-    	this.reasons.addAll(reasons);
-    }
     
     public AuditLogReportElem(final Long first, final Long second, final String reason) {
     	this.first = first;
@@ -52,6 +41,7 @@ public class AuditLogReportElem implements Serializable {
     public Long getFirst() {
         return this.first;
     }
+
     /**
      * Sets the first for this instance.
      *
@@ -60,6 +50,7 @@ public class AuditLogReportElem implements Serializable {
     public void setFirst(Long first) {
         this.first = first;
     }
+
     /**
      * Gets the second for this instance.
      *
@@ -68,6 +59,7 @@ public class AuditLogReportElem implements Serializable {
     public Long getSecond() {
         return this.second;
     }
+
     /**
      * Sets the second for this instance.
      *
@@ -76,6 +68,7 @@ public class AuditLogReportElem implements Serializable {
     public void setSecond(Long second) {
         this.second = second;
     }
+
     /**
      * Gets the reasons for this instance.
      *
@@ -84,10 +77,9 @@ public class AuditLogReportElem implements Serializable {
     public List<String> getReasons() {
         return this.reasons;
     }
+
     /**
      * Sets the reasons for this instance.
-     *
-     * @param reasons The reasons.
      */
     public void setReason(String reason) {
         this.reasons.add(reason);

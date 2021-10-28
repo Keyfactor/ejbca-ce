@@ -40,9 +40,10 @@ public enum AcmeProblem {
     PROBLEM_INCORRECT_RESPONSE("incorrectResponse", "Response received didn't match the challenge's requirements"),
     PROBLEM_ACCOUNT_DOES_NOT_EXIST("accountDoesNotExist", "The request specified an account that does not exist"),
     PROBLEM_ORDER_NOT_READY("orderNotReady", "Order is not ready yet."),
-    PROBLEM_EXTERNAL_ACCOUNT_REQUIRED("externalAccountRequired", "External account binding required.");
-    
-    
+    PROBLEM_EXTERNAL_ACCOUNT_REQUIRED("externalAccountRequired", "External account binding required."),
+    PROBLEM_APPROVAL_REQUIRED_FOR_ACCOUNT_REGISTRATION("approvalRequiredForAccountRegistration", "Account registration requires the approval of one or more administrators."),
+    PROBLEM_APPROVAL_REQUIRED_FOR_ACCOUNT_KEY_CHANGE("approvalRequiredForKeyChange", "Key change requires the approval of one or more administrators.");
+        
     private final String type;
     private final String detail;
 

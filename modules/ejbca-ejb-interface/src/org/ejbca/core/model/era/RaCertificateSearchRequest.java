@@ -22,7 +22,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 /**
  * Search request for certificates from RA UI.
  *
- * @version $Id$
  */
 public class RaCertificateSearchRequest implements Serializable, Comparable<RaCertificateSearchRequest> {
 
@@ -41,6 +40,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private boolean subjectAnSearchExact = false;
     private String usernameSearchString = "";
     private boolean usernameSearchExact = false;
+    private String externalAccountIdSearchString = "";
+    private boolean externalAccountIdSearchExact = false;
     private String serialNumberSearchStringFromDec = "";
     private String serialNumberSearchStringFromHex = "";
     private long issuedAfter = 0L;
@@ -68,6 +69,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         subjectAnSearchExact = request.subjectAnSearchExact;
         usernameSearchString = request.usernameSearchString;
         usernameSearchExact = request.usernameSearchExact;
+        externalAccountIdSearchString = request.externalAccountIdSearchString;
+        externalAccountIdSearchExact = request.externalAccountIdSearchExact;
         serialNumberSearchStringFromDec = request.serialNumberSearchStringFromDec;
         serialNumberSearchStringFromHex = request.serialNumberSearchStringFromHex;
         issuedAfter = request.issuedAfter;
@@ -111,15 +114,19 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public void setUsernameSearchString(final String usernameSearchString) { this.usernameSearchString = usernameSearchString; }
     public boolean isUsernameSearchExact() { return usernameSearchExact; }
     public void setUsernameSearchExact(final boolean usernameSearchExact) { this.usernameSearchExact = usernameSearchExact; }
+    public String getExternalAccountIdSearchString() { return externalAccountIdSearchString; }
+    public void setExternalAccountIdSearchString(String externalAccountIdSearchString) { this.externalAccountIdSearchString = externalAccountIdSearchString; }
+    public boolean isExternalAccountIdSearchExact() { return externalAccountIdSearchExact; }
+    public void setExternalAccountIdSearchExact(boolean externalAccountIdSearchExact) { this.externalAccountIdSearchExact = externalAccountIdSearchExact; }
     public String getSerialNumberSearchStringFromDec() { return serialNumberSearchStringFromDec; }
     /** Set the serialNumber search string as a decimal String if it has potential to be a decimal certificate serial number. */
     public void setSerialNumberSearchStringFromDec(final String serialNumberSearchStringFromDec) {
-        // Assuming 8 octets and some leading zeroes
+        // Assuming 4 octets and some leading zeroes
         String value = "";
-        if (serialNumberSearchStringFromDec.length()>=16) {
+        if (serialNumberSearchStringFromDec.length()>=10) {
             try {
                 value = new BigInteger(serialNumberSearchStringFromDec, 10).toString(10);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ignored) {
             }
         }
         this.serialNumberSearchStringFromDec = value;
@@ -128,17 +135,16 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public String getSerialNumberSearchStringFromHex() { return serialNumberSearchStringFromHex; }
     /** Set the serialNumber search string as a decimal String if it has potential to be a hex certificate serial number. */
     public void setSerialNumberSearchStringFromHex(final String serialNumberSearchStringFromHex) {
-        // Assuming 8 octets and some leading zeroes
+        // Assuming 4 octets and some leading zeroes
         String value = "";
-        if (serialNumberSearchStringFromHex.length()>=14) {
+        if (serialNumberSearchStringFromHex.length()>=8) {
             try {
                 value = new BigInteger(serialNumberSearchStringFromHex, 16).toString(10);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ignored) {
             }
         }
         this.serialNumberSearchStringFromHex = value;
     }
-
     public long getIssuedAfter() { return issuedAfter; }
     public void setIssuedAfter(final long issuedAfter) { this.issuedAfter = issuedAfter; }
     public boolean isIssuedAfterUsed() { return issuedAfter>0L; }
@@ -208,6 +214,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
                 isWider(subjectAnSearchExact, other.subjectAnSearchExact) ||
                 isWider(usernameSearchString, other.usernameSearchString) ||
                 isWider(usernameSearchExact, other.usernameSearchExact) ||
+                isWider(externalAccountIdSearchString, other.externalAccountIdSearchString) ||
+                isWider(externalAccountIdSearchExact, other.externalAccountIdSearchExact) ||
                 isWider(serialNumberSearchStringFromDec, other.serialNumberSearchStringFromDec) ||
                 isWider(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
                 isWider(statuses, other.statuses) || isWider(revocationReasons, other.revocationReasons)) {
@@ -226,6 +234,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
                 isMoreNarrow(subjectAnSearchExact, other.subjectAnSearchExact) ||
                 isMoreNarrow(usernameSearchString, other.usernameSearchString) ||
                 isMoreNarrow(usernameSearchExact, other.usernameSearchExact) ||
+                isMoreNarrow(externalAccountIdSearchString, other.externalAccountIdSearchString) ||
+                isMoreNarrow(externalAccountIdSearchExact, other.externalAccountIdSearchExact) ||
                 isMoreNarrow(serialNumberSearchStringFromDec, other.serialNumberSearchStringFromDec) ||
                 isMoreNarrow(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
                 isMoreNarrow(statuses, other.statuses) || isMoreNarrow(revocationReasons, other.revocationReasons)) {
@@ -304,12 +314,20 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public boolean matchSerialNumber(final String serialNumber) {
         return serialNumber.equals(getSerialNumberSearchStringFromDec()) || serialNumber.equals(getSerialNumberSearchStringFromHex());
     }
-
+    
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
         return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) ||
                                     (usernameSearchExact && username.equalsIgnoreCase(usernameSearchString)));
     }
+
+    /** @return true if the external account id is matched by this search. */
+    public boolean matchExternalAccountId(final String externalAccountId) {
+        return externalAccountId != null && (externalAccountIdSearchExact ?
+                externalAccountId.equalsIgnoreCase(usernameSearchString) :
+                externalAccountId.toUpperCase().contains(usernameSearchString.toUpperCase()));
+    }
+
     /** @return true if the subjectDn is matched by this search. */
     public boolean matchSubjectDn(final String subjectDn) {
         return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) ||

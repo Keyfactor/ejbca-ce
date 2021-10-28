@@ -17,7 +17,7 @@ import java.util.HashMap;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CaHelper;
-import org.ejbca.webtest.helper.RaWebHelper;
+import org.ejbca.webtest.helper.RaWebUseUsernameRequestHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,8 +48,8 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     private static AddEndEntityHelper addEndEntityHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
     private static CaHelper caHelper;
-    private static RaWebHelper raWebHelper;
-    
+    private static RaWebUseUsernameRequestHelper raWebUseUsernameRequestHelper;
+
     // String variables.
     private static final String END_ENTITY_NAME = "ECAQA71EE";
     private static final String END_ENTITY_PASSWORD = "foo123";
@@ -62,6 +62,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
     private static void cleanup() {
         // Remove generated artifacts
         removeEndEntityByUsername(END_ENTITY_NAME);
+        removeCertificateByUsername(END_ENTITY_NAME);
         removeCertificateProfileByName(CERTIFICATE_PROFILE_NAME);
         removeCaByName(CA_NAME);
         removeCryptoTokenByCaName(CA_NAME);
@@ -74,7 +75,7 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
         caHelper = new CaHelper(webDriver);
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
-        raWebHelper = new RaWebHelper(webDriver);
+        raWebUseUsernameRequestHelper = new RaWebUseUsernameRequestHelper(webDriver);
     }
 
     @AfterClass
@@ -111,13 +112,13 @@ public class EcaQa219_RevokeEndEntityCertificate extends WebTestBase {
 
     @Test
     public void testC_RaWebSaveP12() {
-        raWebHelper.openPage(getRaWebUrl());
+        raWebUseUsernameRequestHelper.openPage(getRaWebUrl());
         // Use sleep to find element.
         waitToAvoidStaleElement(200);
-        raWebHelper.clickToEnrollUseUsername(webDriver);
-        raWebHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
-        raWebHelper.clickCheck();
-        raWebHelper.clickEnrollDownloadPKCS12Button();
+        raWebUseUsernameRequestHelper.clickToEnrollUseUsername();
+        raWebUseUsernameRequestHelper.fillEnrollUsernameAndCode(END_ENTITY_NAME, END_ENTITY_PASSWORD);
+        raWebUseUsernameRequestHelper.clickCheckButton();
+        raWebUseUsernameRequestHelper.clickEnrollDownloadPKCS12Button();
     }
 
     @Test

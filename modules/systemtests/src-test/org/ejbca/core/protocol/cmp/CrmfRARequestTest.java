@@ -219,7 +219,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                             .getSerialNumber().equals(customCertSerno));
                 }
             } else {
-                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest);
             }
         }
         {
@@ -504,8 +504,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
                 // do not check signing if we expect a failure (sFailMessage==null)
                 checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-                checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, 
-                        PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, PKIFailureInfo.incorrectData);
 
 
                 // Create a new user that fulfills the end entity profile
@@ -566,7 +565,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 // do not check signing if we expect a failure (sFailMessage==null)
                 checkCmpResponseGeneral(resp3, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
                 checkCmpFailMessage(resp3, "End Entity Profile of name \"CMPKEYIDTESTPROFILEFAIL\" was not found", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId3, 
-                        PKIFailureInfo.systemUnavail, PKIFailureInfo.systemUnavail);
+                        PKIFailureInfo.systemUnavail);
 
             } finally {
                 try {
@@ -709,7 +708,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             checkCmpFailMessage(resp, "Error: SubjectDN serial number already exists.", CmpPKIBodyConstants.ERRORMESSAGE, reqId,
-                    PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                    PKIFailureInfo.badRequest);
 
             // Revoke the created certificate
             final PKIMessage con = genRevReq(ISSUER_DN, userDN, serialnumber, cacert, nonce, transid, false, null, null);

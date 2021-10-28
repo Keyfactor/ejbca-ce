@@ -27,6 +27,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.Base64;
 import org.cesecore.util.StringTools;
@@ -127,7 +128,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String AUTOGENPASSWORDLENGTH = "AUTOGENPASSWORDLENGTH";
 
     public static final String EMAIL              = "EMAIL";
-    private static final String DESCRIPTION        = "DESCRIPTION";
+    private static final String PROFILEDESCRIPTION        = "PROFILEDESCRIPTION";
     public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
     public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
     /** A list of available certificate profile names can be retrieved with getAvailableCertificateProfileNames() */
@@ -173,6 +174,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(CLEARTEXTPASSWORD, 2);
     	DATA_CONSTANTS.put(AUTOGENPASSWORDTYPE, 95);
     	DATA_CONSTANTS.put(AUTOGENPASSWORDLENGTH, 96);
+    	DATA_CONSTANTS.put(PROFILEDESCRIPTION, 110);
         // DN components
 
     	DATA_CONSTANTS.put(EMAIL, 26);
@@ -227,8 +229,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int COPY       = 5;
 
     // Private Constants.
-    private static final int FIELDBOUNDRARY  = 10000;
+    private static final int FIELDBOUNDRARY  = 1000000;
     private static final int NUMBERBOUNDRARY = 100;
+    private static final int FIELDORDERINGBASE = FIELDBOUNDRARY / NUMBERBOUNDRARY;
 
     // Pre-calculated constants
     private static final int FIELDBOUNDRARY_VALUE  = FIELDBOUNDRARY * VALUE;
@@ -447,22 +450,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (DnComponents.isDnProfileField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
-    		final int val = (NUMBERBOUNDRARY*parameter) + size;
+    		final int val = (FIELDORDERINGBASE*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isAltNameField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
-    		final int val = (NUMBERBOUNDRARY*parameter) + size;
+    		final int val = (FIELDORDERINGBASE*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isDirAttrField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
-    		final int val = (NUMBERBOUNDRARY*parameter) + size;
+    		final int val = (FIELDORDERINGBASE*parameter) + size;
     		fieldorder.add(val);
     	} else if(SshEndEntityProfileFields.isSshField(parameterName)) {
     	    @SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SSH_FIELD_ORDER);
-            final int val = (NUMBERBOUNDRARY*parameter) + size;
+            final int val = (FIELDORDERINGBASE*parameter) + size;
             fieldorder.add(val);
     	}
     	incrementFieldnumber(parameter);
@@ -493,27 +496,27 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		if (DnComponents.isDnProfileField(param)) {
     			@SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
-    			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+    			final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
     			fieldOrder.remove(value); // must use Integer type to avoid calling remove(index) method
     		}
     		// Remove last element from Subject AltName order list.
     		if (DnComponents.isAltNameField(param)) {
     			@SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
-    			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+    			final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
     			fieldOrder.remove(value);
     		}
     		// Remove last element from Subject DirAttr order list.
     		if (DnComponents.isDirAttrField(param)) {
     			@SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
-    			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+    			final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
     			fieldOrder.remove(value);
     		}
     		if(SshEndEntityProfileFields.isSshField(param)) {
     		    @SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SSH_FIELD_ORDER);
-                final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+                final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
                 fieldOrder.remove(value);
     		}
     		// Remove last element of the type from hashmap
@@ -745,8 +748,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     	final int i = fieldOrder.get(index);
-    	returnval[NUMBER] = i % NUMBERBOUNDRARY;
-    	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+    	returnval[NUMBER] = i % FIELDORDERINGBASE;
+    	returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
     	return returnval;
     }
 
@@ -755,8 +758,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     	final int i = fieldOrder.get(index);
-    	returnval[NUMBER] = i % NUMBERBOUNDRARY;
-    	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+    	returnval[NUMBER] = i % FIELDORDERINGBASE;
+    	returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
     	return returnval;
     }
 
@@ -765,8 +768,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     	final int i = fieldOrder.get(index);
-    	returnval[NUMBER] = i % NUMBERBOUNDRARY;
-    	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+    	returnval[NUMBER] = i % FIELDORDERINGBASE;
+    	returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
     	return returnval;
     }
 
@@ -775,8 +778,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         @SuppressWarnings("unchecked")
         final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SSH_FIELD_ORDER);
         final int i = fieldOrder.get(index);
-        returnval[NUMBER] = i % NUMBERBOUNDRARY;
-        returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+        returnval[NUMBER] = i % FIELDORDERINGBASE;
+        returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
         return returnval;
     }
 
@@ -910,7 +913,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	int ret = -1;
     	final String str = getValue(DEFAULTCA,0);
     	if (str != null && !StringUtils.isEmpty(str)) {
-    		ret = Integer.valueOf(str);
+    		ret = Integer.parseInt(str);
     		if (ret == CAConstants.ALLCAS) {
     		    return -1;
     		}
@@ -1188,11 +1191,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public String getDescription() {
-        return getValue(DESCRIPTION, 0);
+        return getValue(PROFILEDESCRIPTION, 0);
     }
 
     public void setDescription(final String description) {
-        setValue(DESCRIPTION, 0, description);
+        setValue(PROFILEDESCRIPTION, 0, description);
     }
 
     public boolean isAllowedRequestsUsed() {
@@ -1211,7 +1214,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (StringUtils.isEmpty(value)) {
             return 1;
         }
-        return Integer.valueOf(value);
+        return Integer.parseInt(value);
     }
 
     public void setAllowedRequests(final int allowedRequests) {
@@ -1239,7 +1242,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             return -1;
         }
         final String value = getValue(MAXFAILEDLOGINS, 0);
-        return (StringUtils.isEmpty(value) ? -1 : Integer.valueOf(value));
+        return (StringUtils.isEmpty(value) ? -1 : Integer.parseInt(value));
     }
 
     public void setMaxFailedLogins(final int maxFailedLogins) {
@@ -1588,7 +1591,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return (String) data.get(key);
     }
 
-    public void doesUserFulfillEndEntityProfile(final EndEntityInformation userData, final CertificateProfile certProfile, final boolean clearPwd) throws EndEntityProfileValidationException {
+    public void doesUserFulfillEndEntityProfile(final EndEntityInformation userData, final CertificateProfile certProfile, final boolean clearPwd, EABConfiguration eabConfiguration) throws EndEntityProfileValidationException {
         String subjectDirAttr = "";
         final ExtendedInformation ei = userData.getExtendedInformation();
         if (ei != null) {
@@ -1597,7 +1600,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
         doesUserFulfillEndEntityProfile(userData.getUsername(), userData.getPassword(), userData.getDN(), userData.getSubjectAltName(), subjectDirAttr, userData.getEmail(),
     											userData.getCertificateProfileId(), clearPwd, userData.getKeyRecoverable(), userData.getSendNotification(),
-    											userData.getTokenType(), userData.getCAId(), userData.getExtendedInformation(), certProfile);
+    											userData.getTokenType(), userData.getCAId(), userData.getExtendedInformation(), certProfile, eabConfiguration);
         //Checking if the cardnumber is required and set
         if (isRequired(CARDNUMBER, 0) && (userData.getCardNumber() == null || userData.getCardNumber().isEmpty())) {
             throw new EndEntityProfileValidationException("Cardnumber is not set");
@@ -1606,7 +1609,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void doesUserFulfillEndEntityProfile(final String username, final String password, final String dn, final String subjectAltName, final String subjectDirAttr,
     		final String email, final int certificateProfileId, final boolean clearPwd, final boolean keyRecoverable, final boolean sendNotification, final int tokenType,
-    		final int caId, final ExtendedInformation ei, final CertificateProfile certProfile) throws EndEntityProfileValidationException {
+    		final int caId, final ExtendedInformation ei, final CertificateProfile certProfile, EABConfiguration eabConfiguration) throws EndEntityProfileValidationException {
     	if (useAutoGeneratedPasswd()) {
         	// Checks related to the use of auto generated passwords
     		if (password != null) {
@@ -1649,12 +1652,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		}
     	}
     	doesUserFulfillEndEntityProfileWithoutPassword(username, dn, subjectAltName, subjectDirAttr, email,
-    			certificateProfileId, keyRecoverable, sendNotification, tokenType, caId, ei, certProfile);
+    			certificateProfileId, keyRecoverable, sendNotification, tokenType, caId, ei, certProfile, eabConfiguration);
     }
 
     public void doesUserFulfillEndEntityProfileWithoutPassword(final String username, final String dn, final String subjectAltName, final String subjectDirAttr,
-    		String email, final int certificateProfileId, final boolean keyRecoverable, final boolean sendNotification, final int tokenType,
-    		final int caId, final ExtendedInformation ei, final CertificateProfile certProfile) throws EndEntityProfileValidationException {
+                                                               String email, final int certificateProfileId, final boolean keyRecoverable, final boolean sendNotification, final int tokenType,
+                                                               final int caId, final ExtendedInformation ei, final CertificateProfile certProfile, final EABConfiguration eabConfiguration) throws EndEntityProfileValidationException {
     	if (log.isTraceEnabled()) {
     		log.trace(">doesUserFulfillEndEntityProfileWithoutPassword()");
     	}
@@ -1909,7 +1912,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (getUse(MAXFAILEDLOGINS, 0) && !isModifyable(MAXFAILEDLOGINS,0)) {
     		// If we MUST have MAXFAILEDLOGINS, ei can not be null
     		if ((ei == null) || !getValue(MAXFAILEDLOGINS, 0).equals(Integer.toString(ei.getMaxLoginAttempts()))) {
-    			throw new EndEntityProfileValidationException("Max failed logins is not modifyable.");
+    			throw new EndEntityProfileValidationException("Max failed logins is not modifiable.");
     		}
     	}
     	// Check if PSD2 QC Statement is allowed when requested
@@ -1918,7 +1921,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
 
     	// Check for certificate extensions that are requested but not enable in the Certificate Profile
-    	checkUnusableExtensionsByCertificateProfile(certProfile, ei);
+    	checkUnusableExtensionsByCertificateProfile(certProfile, ei, eabConfiguration);
 
         // Requirement from customer. See ECA-8779.
         if (!isCabfOrganizationIdentifierUsed() && ei != null && !StringUtils.isBlank(ei.getCabfOrganizationIdentifier())) {
@@ -1941,7 +1944,24 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @param ei ExtendedInformation from End Entity
      * @throws EndEntityProfileValidationException If there are extensions in the request that are not in the Certificate Profile
      */
-    private void checkUnusableExtensionsByCertificateProfile(final CertificateProfile certProf, final ExtendedInformation ei) throws EndEntityProfileValidationException {
+    private void checkUnusableExtensionsByCertificateProfile(final CertificateProfile certProf, final ExtendedInformation ei, EABConfiguration eabConfiguration) throws EndEntityProfileValidationException {
+        if (certProf.getEabNamespaces() != null && !certProf.getEabNamespaces().isEmpty()) {
+            if (ei == null || StringUtils.isEmpty(ei.getAccountBindingId())) {
+                throw new EndEntityProfileValidationException("Certificate profile requires an External account ID");
+            } else {
+                final Set<String> allowedAccountIds = new HashSet<>();
+                for (String namespace : certProf.getEabNamespaces()) {
+                    final Set<String> idList = eabConfiguration.getEABMap().get(namespace);
+                    if (idList != null && !idList.isEmpty())
+                        allowedAccountIds.addAll(idList);
+                }
+                if (allowedAccountIds.isEmpty()) {
+                    throw new EndEntityProfileValidationException("Account bindings namespace in Certificate profile is outdated (not present in System Configurations)");
+                } else if (!allowedAccountIds.contains(ei.getAccountBindingId())) {
+                    throw new EndEntityProfileValidationException("External account ID is not in the list of allowed account ids");
+                }
+            }
+        }
         if (ei == null) {
             return; // nothing to check
         }
