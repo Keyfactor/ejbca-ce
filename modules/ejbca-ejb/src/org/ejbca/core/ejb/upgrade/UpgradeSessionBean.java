@@ -43,6 +43,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
@@ -2090,6 +2091,19 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
                 throw new UpgradeFailedException(e);
             }
+        }
+
+        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GoogleCtPolicy ctPolicy = globalConfig.getGoogleCtPolicy();
+        ctPolicy.setBreakpoints(ctPolicy.getBreakpoints());
+        for (int i = 0; i < 4; i++) {
+            ctPolicy.getBreakpoints().get(i).setMinSct(ctPolicy.getMinScts()[i]);
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
+        } catch (AuthorizationDeniedException e) {
+            log.error("An error occurred when updating GoogleCtPolicy: " + e);
+            throw new UpgradeFailedException(e);
         }
     }
 

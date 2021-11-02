@@ -49,6 +49,10 @@ public final class GoogleCtPolicy implements Serializable {
         this.breakpoints = breakpoints;
     }
 
+    public int[] getMinScts() {
+        return minScts;
+    }
+
     /**
      * Validate the CT policy stored in this object. Currently checking the following:
      * <ul>
