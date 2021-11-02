@@ -31,6 +31,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 import javax.ejb.EJB;
@@ -39,11 +40,15 @@ import javax.faces.bean.ViewScoped;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Backing bean for the "Inspect Publisher Queue" page.
@@ -260,11 +265,12 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
 
     public String republish() {
         log.info("Attempting to republish items in the queue with publisher ID " + getPublisherId() + ".");
-        final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
-        if (!idOfPublisherQueueProcessService.isPresent()) {
-            log.error("No PublishQueueProcessWorker available on this system.");
+        final String reasonWhy = getReasonWhyPublisherQueueProcessQueueCannotRun();
+        if (reasonWhy != null) {
+            log.error(reasonWhy);
             return "";
         }
+        final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
         log.info("Scheduling timer for PublishQueueProcessWorker with ID " + idOfPublisherQueueProcessService.get() + ".");
         serviceSession.runService(idOfPublisherQueueProcessService.get());
         addInfoMessage("INSPECT_PUBLISHER_QUEUE_STARTED_SERVICE", serviceSession.getServiceName(idOfPublisherQueueProcessService.get()));
@@ -278,9 +284,14 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 .stream()
                 .map(idToName -> new AbstractMap.SimpleEntry<>(idToName.getKey(), serviceSession.getService(idToName.getValue())))
                 .filter(entry -> entry.getValue().getWorkerClassPath().endsWith("PublishQueueProcessWorker"))
-                .filter(entry -> entry.getValue().isActive())
+                .filter(entry -> getSelectedPublisherIdsFor(entry.getValue()).contains(getPublisherId()))
                 .map(entry -> entry.getKey())
                 .findFirst();
+    }
+
+    private Set<String> getSelectedPublisherIdsFor(final ServiceConfiguration serviceConfiguration) {
+        final String selectedPublishersString = (String) serviceConfiguration.getWorkerProperties().get(PublishQueueProcessWorker.PROP_PUBLISHER_IDS);
+        return Arrays.stream(selectedPublishersString.split(";")).collect(toSet());
     }
 
     public boolean isFirstPage() {
