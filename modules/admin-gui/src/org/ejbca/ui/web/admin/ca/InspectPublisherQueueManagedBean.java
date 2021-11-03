@@ -220,11 +220,10 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
      * @return an error message or null if the service can run.
      */
     public String getReasonWhyPublisherQueueProcessQueueCannotRun() {
-        final Stream<AbstractMap.SimpleEntry<Integer, ServiceConfiguration>> streamOfPublishers = getStreamOfPublishers();
-        if (!streamOfPublishers.findFirst().isPresent()) {
+        if (!getStreamOfPublishers().findFirst().isPresent()) {
             return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NO_SERVICE");
         }
-        if (!streamOfPublishers.filter(x -> x.getValue().isActive()).findFirst().isPresent()) {
+        if (!getStreamOfPublishers().filter(x -> x.getValue().isActive()).findFirst().isPresent()) {
             return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_SERVICE_DISABLED");
         }
         return null;
