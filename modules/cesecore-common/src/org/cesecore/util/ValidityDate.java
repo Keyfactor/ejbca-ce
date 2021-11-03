@@ -322,4 +322,35 @@ public class ValidityDate {
 	public static boolean isAbsoluteTimeOrDaysHoursMinutes(final String dateString) {
 	    return VALIDITY_TIME_PATTERN.matcher(dateString).matches();
 	}
+	
+	/**
+	 * Parse date from relative time format of days:hours:minutes. Follows same convention as getDate(String, Date, boolean).
+	 * 
+	 * @param encodedValidity a relative time string(days:hours:minutes).
+     * @param firstDate date to be used if encoded validity is a relative time.
+     * @param notAfterIsInclusive whether the date is inclusive. Set to true for X.509/CVC and false for SSH.
+     * @return the end date or null if a date or relative time could not be read.
+	 * 
+	 * @see org.cesecore.util.ValidityDate#getDate(String, Date, boolean)
+	 */
+	public static Date getDateFromRelativeTime(final String encodedValidity, final Date firstDate, final boolean notAfterIsInclusive) {
+	    if(!encodedValidity.matches(RELATIVE_TIME_REGEX)) {
+	        log.error("Invalid format for relative time, expected days:hours:minutes(9999:23:59).");
+	        return null;
+	    }
+	    
+	    final String[] endTimeArray = encodedValidity.split(":");
+        if (Long.parseLong(endTimeArray[1]) > 23 || Long.parseLong(endTimeArray[2]) > 59) {
+            log.error("Invalid hours or minutes in relative time.");
+            return null;
+        }
+        final long relative = (Long.parseLong(endTimeArray[0]) * 24 * 60 + Long.parseLong(endTimeArray[1]) * 60 +
+                Long.parseLong(endTimeArray[2])) * 60 * 1000;
+        long endSecond = notAfterIsInclusive ? NOT_AFTER_INCLUSIVE_OFFSET: 0;
+        // If we haven't set a startTime, use "now"
+        final Date startDate = (firstDate == null) ? new Date(): firstDate;
+        final Date endTimeDate = new Date(startDate.getTime() + relative - endSecond);
+	    log.debug("Parsed and concluded end date: " + endTimeDate);
+	    return endTimeDate;
+	}
 }
