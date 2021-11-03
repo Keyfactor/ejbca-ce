@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -219,13 +220,11 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
      * @return an error message or null if the service can run.
      */
     public String getReasonWhyPublisherQueueProcessQueueCannotRun() {
-        final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
-        if (!idOfPublisherQueueProcessService.isPresent()) {
+        final Stream<AbstractMap.SimpleEntry<Integer, ServiceConfiguration>> streamOfPublishers = getStreamOfPublishers();
+        if (!streamOfPublishers.findFirst().isPresent()) {
             return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NO_SERVICE");
         }
-        final String serviceName = serviceDataSession.findNameById(idOfPublisherQueueProcessService.get());
-        final ServiceConfiguration serviceConfiguration = serviceSession.getService(serviceName);
-        if (!serviceConfiguration.isActive()) {
+        if (!streamOfPublishers.filter(x -> x.getValue().isActive()).findFirst().isPresent()) {
             return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_SERVICE_DISABLED");
         }
         return null;
@@ -265,28 +264,28 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
 
     public String republish() {
         log.info("Attempting to republish items in the queue with publisher ID " + getPublisherId() + ".");
-        final String reasonWhy = getReasonWhyPublisherQueueProcessQueueCannotRun();
-        if (reasonWhy != null) {
-            log.error(reasonWhy);
+        final Optional<Integer> idOfPublisherQueueProcessService = getStreamOfPublishers()
+                .filter(entry -> entry.getValue().isActive())
+                .map(entry -> entry.getKey())
+                .findFirst();
+        if (!idOfPublisherQueueProcessService.isPresent()) {
+            log.error(getReasonWhyPublisherQueueProcessQueueCannotRun());
             return "";
         }
-        final Optional<Integer> idOfPublisherQueueProcessService = getIdOfPublisherQueueProcessService();
         log.info("Scheduling timer for PublishQueueProcessWorker with ID " + idOfPublisherQueueProcessService.get() + ".");
         serviceSession.runService(idOfPublisherQueueProcessService.get());
         addInfoMessage("INSPECT_PUBLISHER_QUEUE_STARTED_SERVICE", serviceSession.getServiceName(idOfPublisherQueueProcessService.get()));
         return "";
     }
 
-    private Optional<Integer> getIdOfPublisherQueueProcessService() {
+    private Stream<AbstractMap.SimpleEntry<Integer, ServiceConfiguration>> getStreamOfPublishers() {
         return serviceSession
-                .getServiceIdToNameMap()
-                .entrySet()
-                .stream()
-                .map(idToName -> new AbstractMap.SimpleEntry<>(idToName.getKey(), serviceSession.getService(idToName.getValue())))
-                .filter(entry -> entry.getValue().getWorkerClassPath().endsWith("PublishQueueProcessWorker"))
-                .filter(entry -> getSelectedPublisherIdsFor(entry.getValue()).contains(getPublisherId()))
-                .map(entry -> entry.getKey())
-                .findFirst();
+            .getServiceIdToNameMap()
+            .entrySet()
+            .stream()
+            .map(idToName -> new AbstractMap.SimpleEntry<>(idToName.getKey(), serviceSession.getService(idToName.getValue())))
+            .filter(entry -> entry.getValue().getWorkerClassPath().endsWith("PublishQueueProcessWorker"))
+            .filter(entry -> getSelectedPublisherIdsFor(entry.getValue()).contains(getPublisherId()));
     }
 
     private Set<String> getSelectedPublisherIdsFor(final ServiceConfiguration serviceConfiguration) {
