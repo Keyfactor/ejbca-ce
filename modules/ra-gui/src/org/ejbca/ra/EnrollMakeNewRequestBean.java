@@ -490,17 +490,38 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (validity == null || validity.isEmpty()) {
             return raLocaleBean.getMessage("enroll_validity_help_empty");
         }
-        final Date now = new Date();
-        final Date validityDate = ValidityDate.getDate(validity, now, true);
+        
+        final Date validityDate = parseValidity();
         if (validityDate == null) {
             return raLocaleBean.getMessage("enroll_validity_help_unparsable");
         }
+        
+        final Date now = new Date();
         final Date maxDate = ValidityDate.getDate(getCertificateProfile().getEncodedValidity(), now, true);
         if (validityDate.after(maxDate)) {
             return raLocaleBean.getMessage("enroll_validity_help_too_long");
         }
+        
         // No help needed
         return StringUtils.EMPTY;
+    }
+    
+    private Date parseValidity() {
+        
+        if(!ValidityDate.isAbsoluteTimeOrDaysHoursMinutes(validity))
+            return null;
+        
+        final Date now = new Date();
+        Date validityDate = ValidityDate.getDateFromRelativeTime(validity, now, true);
+        if (validityDate == null) {
+            try {
+                validityDate = ValidityDate.parseAsIso8601(validity);
+            } catch (ParseException e) {
+                log.error("Validity date parsing failed " + validity);
+                return null;
+            }
+        }
+        return validityDate;
     }
 
     /**
@@ -588,7 +609,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * <li>The validity exceeds the maximum validity as specified by the certificate profile</li>
      * <ul>
      *
-     * @return The validity as a string or null
+     * @return The validity as a UTC date formatted string(yyyy-MM-dd HH:mm:ss) or null
      */
     private String getUserDefinedValidityIfSpecified() {
         if (!isValidityOverrideEnabled()) {
@@ -598,8 +619,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return null;
         }
         final Date anchorDate = new Date();
-        final String validityToCheck = validity;
-        final Date userDate = ValidityDate.getDate(validityToCheck, anchorDate, true);
+        final Date userDate = parseValidity();
         if (userDate == null) {
             return null;
         }
@@ -607,7 +627,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (userDate.after(maxDate)) {
             return null;
         }
-        return validityToCheck;
+        
+        return ValidityDate.formatAsUTCSecondsGranularity(userDate);
     }
 
     /**
