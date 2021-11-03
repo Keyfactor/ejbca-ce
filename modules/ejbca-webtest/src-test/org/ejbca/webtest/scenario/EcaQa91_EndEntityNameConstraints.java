@@ -49,6 +49,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -246,8 +247,24 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             Assert.assertTrue("Excluded name constraint area not visible when disabled at end entity profile.", 
                         badELementFound);
         }
-                
+        
         addEndEntityHelper.addEndEntity();
+        try {
+            Alert alert = webDriver.switchTo().alert();
+            String alertText = alert.getText();
+            alert.accept();
+            
+            if(requiredPermittedNC)
+                Assert.assertTrue("Required permitted name constraint is not validated.", alertText.contains("permitted"));
+            
+            if(requiredExcludedNC)
+                Assert.assertTrue("Required excluded name constraint is not validated.", alertText.contains("excluded"));
+            
+            return;
+        } catch (Exception e) {
+            if(expectionOnEECreation)
+                Assert.fail("End entity created without required name constraints.");
+        }
         createdUsers.add(endEntityName);
         
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
@@ -359,8 +376,8 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     }
     
     @Test
-    public void testM_AddEndEntityWONameConstraintNegative() {
-        // no functionality for required except checkbox being rendered
+    public void testM_AddEndEntityWONameConstraintNegative() throws Exception {
+        addAndVerifyEndEntity(true, true, false, false, true, false, true);
     }
     
     @Test
@@ -374,8 +391,8 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     }
     
     @Test
-    public void testP_AddEndEntityWONameConstraintNegative() {
-        
+    public void testP_AddEndEntityWONameConstraintNegative() throws Exception {
+        addAndVerifyEndEntity(true, true, false, false, false, true, true);
     }
     
     
