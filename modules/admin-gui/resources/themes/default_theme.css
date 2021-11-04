@@ -572,6 +572,20 @@ table.edit tr td {
 	width: 50%;
 	text-align: left;
 }
+.column1-cafunctions {
+	width: 15%;
+	text-align: center;
+	vertical-align: middle;
+} 
+.column2-cafunctions {
+	width: 30%;
+	text-align: center;
+	vertical-align: middle;
+}
+.column3-cafunctions {
+	width: 55%;
+	text-align: left;
+}
 .fixEditColumn1 {
 	width: 360px;
 	min-width: 360px;
@@ -961,6 +975,18 @@ div#code input[type="submit"] {
 	margin-left: 1em;
 }
 
+/* --- Page: CA > CA Structure & CRLs */
+.actCaStructsCRLsHeader {
+	padding-left: 4px;
+	padding-right: 8px;
+	text-align: center;
+	background-color: #EEE;
+	color: #284E81;
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+}
+
 /* --- Page: CA > Certificate Profiles */
 select option.cvcoption_header {
     background: #ffc;
@@ -1148,6 +1174,9 @@ table#config tr td:first-child {
 
 .Row0, #Row0 { color: black; font-size: 9pt; background-color: #F7F9FF; }
 .Row1, #Row1 { color: black; font-size: 9pt; background-color: #E5ECFF; }
+
+.RowAlt0, #RowAlt0 { color: black; font-size: 9pt; background-color: #F8F0FA; }
+.RowAlt1, #RowAlt1 { color: black; font-size: 9pt; background-color: #E6E6FA; }
 
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
