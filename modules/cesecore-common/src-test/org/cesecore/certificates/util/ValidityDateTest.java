@@ -214,14 +214,21 @@ public class ValidityDateTest {
     @Test
     public void testgetDateFromRelativeTime() throws Exception {
         
-        String string = "2021-10-20 14:30:21";
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Date startDate = format.parse(string);
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssXXX");
+
+        String startDateStr = "2021-10-20 14:30:21+04:30";
+        Date startDate = format.parse(startDateStr);
+        
+        String expectedDateStr1 = "2022-01-29 00:40:20+04:30"; 
+        Date expectedDate1 = format.parse(expectedDateStr1);
+        
+        String expectedDateStr2 = "2022-01-29 00:40:21+04:30"; 
+        Date expectedDate2 = format.parse(expectedDateStr2);
                 
-        Assert.assertEquals("", "Fri Jan 28 23:40:20 CET 2022", 
-                ValidityDate.getDateFromRelativeTime("100:10:10", startDate, true).toString());
-        Assert.assertEquals("", "Fri Jan 28 23:40:21 CET 2022", 
-                ValidityDate.getDateFromRelativeTime("100:10:10", startDate, false).toString());
+        Assert.assertEquals("", expectedDate1, 
+                ValidityDate.getDateFromRelativeTime("100:10:10", startDate, true));
+        Assert.assertEquals("", expectedDate2, 
+                ValidityDate.getDateFromRelativeTime("100:10:10", startDate, false));
         
         Assert.assertNull("Invalid relative time format accepted.", 
                 ValidityDate.getDateFromRelativeTime("100:10:-10", startDate, true));
