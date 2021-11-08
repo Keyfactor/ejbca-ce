@@ -2084,8 +2084,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
             try {
                 EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
-                EeProfileUpdgaderFor781.update(eep);
-                endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
+                if (EeProfileUpdgaderFor781.shouldUpdate(eep)) {
+                    EeProfileUpdgaderFor781.update(eep);
+                    endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
+                }
             } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
                 log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
                 throw new UpgradeFailedException(e);
@@ -2106,6 +2108,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         private static final String SSH_FIELD_ORDER = "SSH_FIELD_ORDER";
 
         private EeProfileUpdgaderFor781() {}
+
+        static boolean shouldUpdate(EndEntityProfile eep) {
+            LinkedHashMap<Object, Object> data = eep.getRawData();
+            // check if the EEP already upgraded by checking existence of the key 1000000, in older EEP, username was saved with key 10000
+            return !data.keySet().contains(FIELDBOUNDRARY);
+        }
 
         static void update(EndEntityProfile eep) {
             LinkedHashMap<Object, Object> data = eep.getRawData();
