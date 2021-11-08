@@ -22,8 +22,6 @@ import java.util.Set;
 
 /**
  * EJBCA rest api application based on RESTEasy
- *
- * @version $Id$
  */
 @ApplicationPath("/")
 public class RestApiApplication extends Application {
@@ -49,6 +47,7 @@ public class RestApiApplication extends Application {
     public Set<Class<?>> getClasses() {
         final Set<Class<?>> resources = new HashSet<>();
         resources.add(org.ejbca.ui.web.rest.api.resource.CertificateRestResource.class);
+        resources.add(org.ejbca.ui.web.rest.api.resource.CertificateRestResourceV2.class);
         resources.add(org.ejbca.ui.web.rest.api.resource.CaRestResource.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver.class);
         resources.add(org.ejbca.ui.web.rest.api.config.ExceptionHandler.class);
