@@ -701,6 +701,21 @@ function fillCAField(){
 function checkallfields(){
     var illegalfields = 0;
  <%    
+ 
+ if(profile.isNameConstraintsPermittedRequired()) { %>
+	 	if (document.edituser.<%= TEXTAREA_NC_PERMITTED %>.value == "") { 
+	      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTPERMITTED", true) + "" %>");
+	      illegalfields++;
+	    }
+	<%}
+	
+	if(profile.isNameConstraintsExcludedRequired()) { %>
+	    if (document.edituser.<%= TEXTAREA_NC_EXCLUDED %>.value == "") { 
+	      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTEXCLUDED", true) + "" %>");
+	      illegalfields++;
+	    }
+	<%}
+
      for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
          fielddata = profile.getSubjectDNFieldsInOrder(i);
          if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)) {
