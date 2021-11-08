@@ -41,6 +41,7 @@ import org.cesecore.certificates.certificate.certextensions.BasicCertificateExte
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
+import org.cesecore.certificates.certificatetransparency.PolicyBreakpoint;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.config.RaStyleInfo;
@@ -72,6 +73,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             CertificateExtension.class,
             CTLogInfo.class,
             Enum.class,
+            PolicyBreakpoint.class,
             GoogleCtPolicy.class,
             HashMap.class,
             HashSet.class,
