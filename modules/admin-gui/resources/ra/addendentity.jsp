@@ -946,7 +946,20 @@ function checkallfields(){
      <%    }
          } 
        }
-
+       
+       if(profile.isNameConstraintsPermittedRequired()) { %>
+		 	if (document.adduser.<%= TEXTAREA_NC_PERMITTED %>.value == "") { 
+		      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTPERMITTED", true) + "" %>");
+		      illegalfields++;
+		    }
+		<%}
+		
+		if(profile.isNameConstraintsExcludedRequired()) { %>
+		    if (document.adduser.<%= TEXTAREA_NC_EXCLUDED %>.value == "") { 
+		      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTEXCLUDED", true) + "" %>");
+		      illegalfields++;
+		    }
+		<%}
 
        
        for(int i=0; i<profile.getSubjectDirAttrFieldOrderLength(); i++){
