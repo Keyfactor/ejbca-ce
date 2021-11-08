@@ -1077,13 +1077,185 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorizedEepIds.add(EndEntityConstants.NO_END_ENTITY_PROFILE);
             authorizedCpIds.add(CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         }
+
+        final Query query = createQuery(authenticationToken, request, false, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);;
+        int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
+        int offset = request.getPageNumber() * maxResults;
+        query.setMaxResults(maxResults);
+        query.setFirstResult(offset);
+
+        /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
+         * - The hint is ignored
+         * - A QueryTimeoutException is thrown
+         * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
+         */
+        final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
+        if (queryTimeout>0L) {
+            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
+        }
+        final List<String> fingerprints;
+        try {
+        	fingerprints = query.getResultList();
+            for (final String fingerprint : fingerprints) {
+                response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+            }
+            response.setMightHaveMoreResults(fingerprints.size()==maxResults);
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate search query: page " + request.getPageNumber() + ", page size " + maxResults + ", count " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
+            }
+        } catch (QueryTimeoutException e) {
+            // Query.toString() does not return the SQL query executed just a java object hash. If Hibernate is being used we can get it using:
+            // query.unwrap(org.hibernate.Query.class).getQueryString()
+            // We don't have access to hibernate when building this class though, all querying should be moved to the ejbca-entity package.
+            // See ECA-5341
+            final Query q = e.getQuery();
+            String queryString = null;
+            if (q != null) {
+                queryString = q.toString();
+            }
+//            try {
+//                queryString = e.getQuery().unwrap(org.hibernate.Query.class).getQueryString();
+//            } catch (PersistenceException pe) {
+//                log.debug("Query.unwrap(org.hibernate.Query.class) is not supported by JPA provider");
+//            }
+            log.info("Requested search query by " + authenticationToken +  " took too long. Query was '" + queryString + "'. " + e.getMessage());
+            response.setMightHaveMoreResults(true);
+        } catch (PersistenceException e) {
+            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
+            response.setMightHaveMoreResults(true);
+        }
+        return response;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
+        final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
+        final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
+        // Only search a subset of the requested CAs if requested
+        if (!request.getCaIds().isEmpty()) {
+            authorizedLocalCaIds.retainAll(request.getCaIds());
+        }
+        final List<String> issuerDns = new ArrayList<>();
+        for (final int caId : authorizedLocalCaIds) {
+            final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
+            issuerDns.add(issuerDn);
+        }
+        if (issuerDns.isEmpty()) {
+            // Empty response since there were no authorized CAs
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CAs and the search request will be dropped.");
+            }
+            return response;
+        }
+        // Check Certificate Profile authorization
+        final List<Integer> authorizedCpIds = new ArrayList<>(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0));
+        final boolean accessAnyCpAvailable = authorizedCpIds.containsAll(certificateProfileSession.getCertificateProfileIdToNameMap().keySet());
+        if (!request.getCpIds().isEmpty()) {
+            authorizedCpIds.retainAll(request.getCpIds());
+        }
+        if (authorizedCpIds.isEmpty()) {
+            // Empty response since there were no authorized Certificate Profiles
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CPs and the search request will be dropped.");
+            }
+            return response;
+        }
+        // Check End Entity Profile authorization
+        final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
+        final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
+        if (!request.getEepIds().isEmpty()) {
+            authorizedEepIds.retainAll(request.getEepIds());
+        }
+        if (authorizedEepIds.isEmpty()) {
+            // Empty response since there were no authorized End Entity Profiles
+            if (log.isDebugEnabled()) {
+                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested EEPs and the search request will be dropped.");
+            }
+            return response;
+        }
+        // If we have access to the EMPTY profile, then allow viewing certificates with zero/null profile IDs, so they can at least be revoked
+        if (authorizedEepIds.contains(EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
+            authorizedEepIds.add(EndEntityConstants.NO_END_ENTITY_PROFILE);
+            authorizedCpIds.add(CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
+        }
+
+        final boolean countOnly = request.getPageNumber() == -1;
+        final Query query = createQuery(authenticationToken, request, countOnly, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);;
+        int maxResults = -1;
+        int offset = -1;
+        if (!countOnly) {
+            maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
+            offset = (request.getPageNumber() - 1) * maxResults;
+            query.setMaxResults(maxResults);
+            query.setFirstResult(offset);
+        }
+
+        /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
+         * - The hint is ignored
+         * - A QueryTimeoutException is thrown
+         * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
+         */
+        final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
+        if (queryTimeout>0L) {
+            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
+        }
+        final List<String> fingerprints;
+        try {
+            if (request.getPageNumber() == -1) {
+                final long count = (long) query.getSingleResult();
+                response.setTotalCount(count);
+                if (log.isDebugEnabled()) {
+                    log.debug("Certificate search count: " + count + ". queryTimeout=" + queryTimeout + "ms");
+                }
+            } else {
+                fingerprints = query.getResultList();
+                for (final String fingerprint : fingerprints) {
+                    response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Certificate search query: page " + request.getPageNumber() + ", page size " + maxResults + ", count " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
+                }
+            }
+        } catch (QueryTimeoutException e) {
+            // Query.toString() does not return the SQL query executed just a java object hash. If Hibernate is being used we can get it using:
+            // query.unwrap(org.hibernate.Query.class).getQueryString()
+            // We don't have access to hibernate when building this class though, all querying should be moved to the ejbca-entity package.
+            // See ECA-5341
+            final Query q = e.getQuery();
+            String queryString = null;
+            if (q != null) {
+                queryString = q.toString();
+            }
+//            try {
+//                queryString = e.getQuery().unwrap(org.hibernate.Query.class).getQueryString();
+//            } catch (PersistenceException pe) {
+//                log.debug("Query.unwrap(org.hibernate.Query.class) is not supported by JPA provider");
+//            }
+            log.info("Requested search query by " + authenticationToken +  " took too long. Query was '" + queryString + "'. " + e.getMessage());
+        } catch (PersistenceException e) {
+            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
+        }
+        return response;
+    }
+    
+    private Query createQuery(final AuthenticationToken authenticationToken, final RaCertificateSearchRequest request, final boolean countOnly, 
+            final List<String> issuerDns, final List<Integer> authorizedLocalCaIds, 
+            final List<Integer> authorizedCpIds, final boolean accessAnyCpAvailable, 
+            final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final String subjectDnSearchString = request.getSubjectDnSearchString();
         final String subjectAnSearchString = request.getSubjectAnSearchString();
         final String usernameSearchString = request.getUsernameSearchString();
         final String externalAccountIdSearchString = request.getExternalAccountIdSearchString();
         final String serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
         final String serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
-        final StringBuilder sb = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
+        final StringBuilder sb = new StringBuilder("SELECT ");
+        if (countOnly) {
+            sb.append("count(*)");
+        } else {
+            sb.append("a.fingerprint");
+        }
+        sb.append(" FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
         if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
                 !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()
                 || !StringUtils.isEmpty(externalAccountIdSearchString)) {
@@ -1254,54 +1426,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 query.setParameter("revocationReason", request.getRevocationReasons());
             }
         }
-        final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
-        final int offset = request.getPageNumber() * maxResults;
-        query.setMaxResults(maxResults);
-        query.setFirstResult(offset);
-
-        /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
-         * - The hint is ignored
-         * - A QueryTimeoutException is thrown
-         * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
-         */
-        final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
-        if (queryTimeout>0L) {
-            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
-        }
-        final List<String> fingerprints;
-        try {
-            fingerprints = query.getResultList();
-            for (final String fingerprint : fingerprints) {
-                response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
-            }
-            response.setMightHaveMoreResults(fingerprints.size()==maxResults);
-            if (log.isDebugEnabled()) {
-                log.debug("Certificate search query: " + sb.toString() + " LIMIT " + maxResults + " \u2192 " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
-            }
-        } catch (QueryTimeoutException e) {
-            // Query.toString() does not return the SQL query executed just a java object hash. If Hibernate is being used we can get it using:
-            // query.unwrap(org.hibernate.Query.class).getQueryString()
-            // We don't have access to hibernate when building this class though, all querying should be moved to the ejbca-entity package.
-            // See ECA-5341
-            final Query q = e.getQuery();
-            String queryString = null;
-            if (q != null) {
-                queryString = q.toString();
-            }
-//            try {
-//                queryString = e.getQuery().unwrap(org.hibernate.Query.class).getQueryString();
-//            } catch (PersistenceException pe) {
-//                log.debug("Query.unwrap(org.hibernate.Query.class) is not supported by JPA provider");
-//            }
-            log.info("Requested search query by " + authenticationToken +  " took too long. Query was '" + queryString + "'. " + e.getMessage());
-            response.setMightHaveMoreResults(true);
-        } catch (PersistenceException e) {
-            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
-            response.setMightHaveMoreResults(true);
-        }
-        return response;
+        return query;
     }
-
+    
     @SuppressWarnings("unchecked")
     @Override
     public RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request) {

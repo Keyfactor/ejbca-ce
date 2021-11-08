@@ -13,6 +13,8 @@
         }, {
             "name": "v1/certificate"
         }, {
+            "name": "v2/certificate"
+        }, {
             "name": "v1/cryptotoken"
         }, {
             "name": "v1/endentity"
@@ -365,6 +367,34 @@
                         "description": "successful operation",
                         "schema": {
                             "$ref": "#/definitions/SearchCertificatesRestResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/certificate/search": {
+            "post": {
+                "tags": ["v2/certificate"],
+                "summary": "Searches for certificates confirming given criteria and pagination.",
+                "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model.",
+                "operationId": "searchCertificates2",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "description": "Search criteria and pagination.",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/SearchCertificatesRestRequestV2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/SearchCertificatesRestResponseV2"
                         }
                     }
                 }
@@ -782,6 +812,24 @@
                 }
             }
         },
+        "CertificateRestResponseV2": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "byte"
+                    }
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "response_format": {
+                    "type": "string"
+                }
+            }
+        },
         "EndEntityRestResponse": {
             "type": "object",
             "properties": {
@@ -909,6 +957,20 @@
                 }
             }
         },
+        "SearchCertificatesRestResponseV2": {
+            "type": "object",
+            "properties": {
+                "certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CertificateRestResponseV2"
+                    }
+                },
+                "more_results": {
+                    "type": "boolean"
+                }
+            }
+        },
         "SearchCertificateCriteriaRestRequest": {
             "type": "object",
             "properties": {
@@ -930,6 +992,57 @@
             },
             "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n"
         },
+        "SearchCertificateCriteriaRestRequestV2": {
+            "type": "object",
+            "properties": {
+                "property": {
+                    "type": "string",
+                    "description": "A search property",
+                    "enum": ["QUERY", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "CA", "STATUS", "ISSUED_DATE", "EXPIRE_DATE", "REVOCATION_DATE"]
+                },
+                "value": {
+                    "type": "string",
+                    "example": "'SuperCA', '2018-06-15T14:07:09Z', 'MyEndEntityProfile'",
+                    "description": "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA"
+                },
+                "operation": {
+                    "type": "string",
+                    "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
+                    "enum": ["EQUAL", "LIKE", "BEFORE", "AFTER"]
+                }
+            },
+            "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n"
+        },
+        "Pagination": {
+            "type": "object",
+            "properties": {
+            	"pageSize": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Max. number of items returned. Number of pages = (certificates / pageSize) + 1.",
+                    "required": false
+                },
+                "currentPage": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The current page from 1 to n.",
+                    "required": false
+                },
+                "totalCerts": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Total number of certificates for the given criteria.",
+                    "required": false
+                },
+                "morePages": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The current page from 1 to n.",
+                    "required": false
+                },
+            },
+            "description": "Pagination with limit and offset.\n"
+        },
         "SearchCertificatesRestRequest": {
             "type": "object",
             "properties": {
@@ -942,6 +1055,26 @@
                     "description": "A List of search criteria.",
                     "items": {
                         "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
+                    }
+                }
+            }
+        },
+        "SearchCertificatesRestRequestV2": {
+            "type": "object",
+            "properties": {
+                "criteria": {
+                    "type": "array",
+                    "description": "A List of search criteria.",
+                    "items": {
+                        "$ref": "#/definitions/SearchCertificateCriteriaRestRequestV2"
+                    }
+                },
+                "pagination": {
+                    "type": "object",
+                    "required": false,
+                    "description": "Pagination with limit and offset.",
+                    "items": {
+                        "$ref": "#/definitions/Pagination"
                     }
                 }
             }
