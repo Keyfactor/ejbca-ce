@@ -763,18 +763,17 @@
         <div class="section-label">
             <h4><h:outputText value="#{web.text.CONFIGURE_GOOGLES_CT_POLICY}"/></h4>
         </div>
-        <h:panelGrid columns="2" styleClass="grid">
-            <h:outputText value="#{web.text.CERT_VALIDITY}"/>
-            <h:outputText value="#{web.text.CT_NUMBER_OF_SCTS}"/>
-            <h:outputText value="#{web.text.LESS_THAN_15_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.lessThan15Months}" size="26"/>
-            <h:outputText value="#{web.text.BETWEEN_15_AND_27_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between15And27Months}" size="26"/>
-            <h:outputText value="#{web.text.BETWEEN_27_AND_39_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between27And39Months}" size="26"/>
-            <h:outputText value="#{web.text.MORE_THAN_39_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.moreThan39Months}" size="26"/>
-        </h:panelGrid>
+		<h:dataTable styleClass="grid" value="#{systemConfigMBean.googleCtPolicy.breakpoints}" var="breakpoint">
+			<h:column>
+				<f:facet name="header"><h:outputText value="#{web.text.CT_VALIDITY_MONTHS}"/></f:facet>
+				<h:inputText size="5" value="#{breakpoint.moreThan}"/> to
+				<h:inputText size="5" value="#{breakpoint.lessThan}"/>
+			</h:column>
+			<h:column>
+				<f:facet name="header"><h:outputText value="#{web.text.CT_NUMBER_OF_SCTS}"/></f:facet>
+				<h:inputText size="5" value="#{breakpoint.minSct}"/>
+			</h:column>
+		</h:dataTable>
         <div style="margin-top:1em;">
             <h:commandButton id="saveCtPolicy" action="#{systemConfigMBean.saveCurrentConfig}"
                 value="#{web.text.SAVE_CT_POLICY}"
