@@ -347,6 +347,13 @@
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:caa" description="run JUnit CAA test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/caa" inheritall="true" inheritrefs="true">
+            <target name="test" />
+        </ant>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="test:clientToolBox" description="run JUnit ClientToolBox tests." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/clientToolBox" inheritall="true" inheritrefs="true">
             <target name="test:stress" />
