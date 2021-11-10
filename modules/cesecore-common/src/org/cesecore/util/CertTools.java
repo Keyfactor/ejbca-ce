@@ -4625,8 +4625,8 @@ public abstract class CertTools {
      */
     public static void checkNameConstraints(X509Certificate issuer, X500Name subjectDNName, GeneralNames subjectAltName) throws IllegalNameException {
         final byte[] ncbytes = issuer.getExtensionValue(Extension.nameConstraints.getId());
-        final ASN1OctetString ncstr = (ncbytes != null ? DEROctetString.getInstance(ncbytes) : null);
-        final ASN1Sequence ncseq = (ncbytes != null ? DERSequence.getInstance(ncstr.getOctets()) : null);
+        final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
+        final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
         final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
         
         if (nc != null) {
@@ -4687,8 +4687,15 @@ public abstract class CertTools {
             if (subjectAltName != null) {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
-                        validator.checkPermitted(sangn);
-                        validator.checkExcluded(sangn);
+                        
+                        if(sangn.getTagNo() == GeneralName.dNSName && !(sangn.getName().toString()).equals(".")) {
+                            GeneralName updatedGn = new GeneralName(GeneralName.dNSName, sangn.getName() + ".");
+                            validator.checkPermitted(updatedGn);
+                            validator.checkExcluded(updatedGn);
+                        } else {
+                            validator.checkPermitted(sangn);
+                            validator.checkExcluded(sangn);
+                        }
                     } catch (PKIXNameConstraintValidatorException e) {
                         final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
                         throw new IllegalNameException(msg, e);
