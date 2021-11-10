@@ -2345,7 +2345,7 @@ public class CertToolsUnitTest {
         final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com");
         
         // Disallowed SAN
-        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "amin.email.com"), "Disallowed SAN (excluded amin.email.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "test.email.com"), "Disallowed SAN (excluded test.email.com DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "example.com"), "Disallowed SAN (excluded example.com DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "com"), "Disallowed SAN (excluded com DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "."), "Disallowed SAN (excluded . DNS name) was accepted");
