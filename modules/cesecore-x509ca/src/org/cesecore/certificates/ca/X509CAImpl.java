@@ -12,6 +12,40 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -123,40 +157,6 @@ import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.
@@ -2077,15 +2077,20 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
         boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
         if(keepexpiredcertsoncrl) {
-            SimpleDateFormat sdf = new SimpleDateFormat();
-            final String GMTdatePattern = "yyyyMMddHHmmss";
-            sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
-            sdf.applyPattern(GMTdatePattern);
             // For now force parameter with date equals NotBefore of CA certificate, or now
-            final Date keepDate = cacert != null ? cacert.getNotBefore() : new Date();
-            crlgen.addExtension(ExpiredCertsOnCRL, false, new DERGeneralizedTime(keepDate));
+            final DERGeneralizedTime keepDate;
+            if (cacert != null) {
+                keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+            } else {
+                // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)
+                SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
+                dateF.setTimeZone(new SimpleTimeZone(0, "Z"));
+                String d = dateF.format(new Date()) + "Z";
+                keepDate = new DERGeneralizedTime(d);
+            }
+            crlgen.addExtension(ExpiredCertsOnCRL, false, keepDate);
             if (log.isDebugEnabled()) {
-                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: "+keepDate);
+                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: " + keepDate.getTime());
             }
         }
 
