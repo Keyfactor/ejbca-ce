@@ -190,7 +190,7 @@ public class JackNJI11Provider extends Provider {
             super();
             this.algorithm = algorithm;
             if (log.isTraceEnabled()) {
-                log.info("Creating Signature provider for algorithm: " + algorithm + ", and provider: " + provider);
+                log.trace("Creating Signature provider for algorithm: " + algorithm + ", and provider: " + provider);
             }
             if (algorithm.equals("NONEwithRSA") || algorithm.startsWith("Ed")) {
                 type = T_RAW;
