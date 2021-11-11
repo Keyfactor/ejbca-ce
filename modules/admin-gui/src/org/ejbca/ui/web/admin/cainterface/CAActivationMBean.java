@@ -234,7 +234,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                            cryptoTokenManagementSession.activate(authenticationToken, tokenAndCa.getCryptoTokenId(), authenticationcode.toCharArray());
 	                            log.info(authenticationToken.toString() + " activated CryptoToken " + tokenAndCa.getCryptoTokenId());
 	                        } catch (CryptoTokenAuthenticationFailedException e) {
-	                            super.addNonTranslatedErrorMessage("Bad authentication code.");
+	                            super.addNonTranslatedErrorMessage("Unable to log in to the token. Either the authentication code " +
+                                        "was wrong or you forgot to provide a smart card or PED key.");
 	                        } catch (CryptoTokenOfflineException e) {
 	                            super.addNonTranslatedErrorMessage("Crypto Token is offline and cannot be activated.");
 	                        } catch (AuthorizationDeniedException e) {
