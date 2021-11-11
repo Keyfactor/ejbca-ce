@@ -4646,23 +4646,42 @@ public abstract class CertTools {
             GeneralSubtree[] permitted = nc.getPermittedSubtrees();
             GeneralSubtree[] excluded = nc.getExcludedSubtrees();
             
+            GeneralSubtree[] permittedFormatted = new GeneralSubtree[permitted.length];
+            
             if (permitted != null) {
-                if (log.isTraceEnabled()) {
-                    for (GeneralSubtree subtree : permitted) {
-                        log.trace("Permitted subtree: " + subtree.getBase());
-                        log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
-
+                
+                for (int i = 0; i < permitted.length; i++) {
+                    GeneralSubtree subtree = permitted[i];
+                    log.trace("Permitted subtree: " + subtree.getBase());
+                    log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+                    
+                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                        permittedFormatted[i] = subtree;
+                    } else {
+                        String uri = subtree.getBase().getName().toString();
+                        String host = extractHostFromURL(uri);
+                        permittedFormatted[i] = new GeneralSubtree(
+                                    new GeneralName(GeneralName.uniformResourceIdentifier, host));
                     }
                 }
-                validator.intersectPermittedSubtree(permitted);
+            
+                validator.intersectPermittedSubtree(permittedFormatted);
             }
+        
             if (excluded != null) {
                 for (GeneralSubtree subtree : excluded) {
                     if (log.isTraceEnabled()) {
                         log.trace("Excluded subtree: " + subtree.getBase());
                         log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
                     }
-                    validator.addExcludedSubtree(subtree);
+                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                        validator.addExcludedSubtree(subtree);
+                    } else {
+                        String uri = subtree.getBase().getName().toString();
+                        String host = extractHostFromURL(uri);
+                        validator.addExcludedSubtree(new GeneralSubtree(
+                                    new GeneralName(GeneralName.uniformResourceIdentifier, host)));
+                    }
                 }
             }
 
@@ -4683,7 +4702,7 @@ public abstract class CertTools {
                     }
                 }
             }
-            
+
             if (subjectAltName != null) {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
@@ -4696,6 +4715,38 @@ public abstract class CertTools {
                 }
             }
         }
+    }
+    
+    /**
+     * Refers private method from org.bouncycastle.asn1.x509.PKIXNameConstraintValidator
+     * 
+     * @param url
+     * @return
+     */
+    private static String extractHostFromURL(String url)
+    {
+        // see RFC 1738
+        // remove ':' after protocol, e.g. https:
+        String sub = url.substring(url.indexOf(':') + 1);
+        // extract host from Common Internet Scheme Syntax, e.g. https://
+        if (sub.indexOf("//") != -1)
+        {
+            sub = sub.substring(sub.indexOf("//") + 2);
+        }
+        // first remove port, e.g. https://test.com:21
+        if (sub.lastIndexOf(':') != -1)
+        {
+            sub = sub.substring(0, sub.lastIndexOf(':'));
+        }
+        // remove user and password, e.g. https://john:password@test.com
+        sub = sub.substring(sub.indexOf(':') + 1);
+        sub = sub.substring(sub.indexOf('@') + 1);
+        // remove local parts, e.g. https://test.com/bla
+        if (sub.indexOf('/') != -1)
+        {
+            sub = sub.substring(0, sub.indexOf('/'));
+        }
+        return sub;
     }
     
     /**
