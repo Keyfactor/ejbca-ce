@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -49,6 +50,9 @@ import org.cesecore.util.CeSecoreNameStyle;
 public class NameConstraint extends StandardCertificateExtension {
 
     private static final long serialVersionUID = 1L;
+    
+    private static final String URI_TEMPLATE_REGEX = "^[a-zA-Z]+:\\/\\/[[a-zA-Z0-9]+:[a-zA-Z0-9]+@]?[.a-zA-Z0-9]+.*$";
+    private static Logger log = Logger.getLogger(NameConstraint.class);
 
     @Override
     public void init(CertificateProfile certProf) {
@@ -101,6 +105,7 @@ public class NameConstraint extends StandardCertificateExtension {
             switch (type) {
             case GeneralName.dNSName:
             case GeneralName.rfc822Name:
+            case GeneralName.uniformResourceIdentifier:
                 genname = new GeneralName(type, (String)data);
                 break;
             case GeneralName.directoryName:
@@ -134,6 +139,9 @@ public class NameConstraint extends StandardCertificateExtension {
         if ("rfc822Name".equals(typeString)) {
             return GeneralName.rfc822Name;
         }
+        if ("uniformResourceIdentifier".equals(typeString)) {
+            return GeneralName.uniformResourceIdentifier;
+        }
         throw new UnsupportedOperationException("Unsupported name constraint type "+typeString);
     }
 
@@ -148,6 +156,7 @@ public class NameConstraint extends StandardCertificateExtension {
         case GeneralName.dNSName:
         case GeneralName.directoryName:
         case GeneralName.rfc822Name:
+        case GeneralName.uniformResourceIdentifier:
             return data;
         case GeneralName.iPAddress:
             try {
@@ -199,6 +208,11 @@ public class NameConstraint extends StandardCertificateExtension {
         } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)$")) {
             // IP address without netmask. This is not a valid DNS name, so catch it here.
             throw new CertificateExtensionException("Name constraint entry with IP address is missing a netmask: "+str+". Use /32 to match only this address.");
+        } else if(str.matches(URI_TEMPLATE_REGEX)) {
+            // protocol://{username:password@}authority{:port}/{path:optional}
+            // protocol e.g. ftp, http, ldap
+            // authority: domain or server_ip:port
+            return "uniformResourceIdentifier:" + str; 
         } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
             // DNS name (it can start with a ".", this means "all subdomains")
             return "dNSName:"+str;
@@ -251,6 +265,7 @@ public class NameConstraint extends StandardCertificateExtension {
         switch (type) {
         case GeneralName.dNSName:
         case GeneralName.directoryName:
+        case GeneralName.uniformResourceIdentifier:
             return (String)data; // not changed during encoding
         case GeneralName.iPAddress:
             byte[] bytes = (byte[])data;
