@@ -51,7 +51,7 @@ public class NameConstraint extends StandardCertificateExtension {
 
     private static final long serialVersionUID = 1L;
     
-    private static final String URI_TEMPLATE_REGEX = "^[a-zA-Z]+:\\/\\/[[a-zA-Z0-9]+:[a-zA-Z0-9]+@]?[.a-zA-Z0-9]+.*$";
+    private static final String URI_TEMPLATE_REGEX = "^[a-zA-Z]+:(\\/\\/)?[[a-zA-Z0-9]+:[a-zA-Z0-9]+@]?[.a-zA-Z0-9:\\[\\]]+.*$";
     private static Logger log = Logger.getLogger(NameConstraint.class);
 
     @Override

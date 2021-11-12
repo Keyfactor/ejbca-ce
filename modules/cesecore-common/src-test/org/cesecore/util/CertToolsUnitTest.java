@@ -2264,12 +2264,15 @@ public class CertToolsUnitTest {
                                  "http://.abc.test.com:8080\n" +
                                  "http://abc.test.com:8080\n" +
                                  "http://abc123.test.com:8080/path/subpath/\n" +
+                                 "urn:oasis:names:specification:docbook:dtd:xml:4.1.2\n" +
                                  "10.0.0.0/8\n" +
                                  "www.example.com\n" +
                                  "   C=SE,  CN=spacing    \n";
         final String excluded = "forbidden.example.com\n" +
                                 "postmaster@mail.example\n" +
                                 "ldap://def123.test.com:8080/path/subpath/\n" +
+                                "ldap://[2001:db8::7]/c=GB?objectClass?one\n" +
+                                "news:comp.infosystems.www.servers.unix\n" +
                                 "10.1.0.0/16\n" +
                                 "::/0"; // IPv6
         
@@ -2283,7 +2286,8 @@ public class CertToolsUnitTest {
         X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null,
                 testkeys.getPrivate(), testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true,
                 X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
-        
+        log.info(CertTools.getPemFromCertificate(cacert));
+
         // Allowed subject DNs
         final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com"); // re-used below
         CertTools.checkNameConstraints(cacert, validDN, null);
