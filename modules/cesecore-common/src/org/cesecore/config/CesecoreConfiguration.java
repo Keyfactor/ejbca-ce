@@ -22,8 +22,6 @@ import java.util.regex.Pattern;
 
 /**
  * This file handles configuration from cesecore.properties
- *
- * @version $Id$
  */
 public final class CesecoreConfiguration {
 
@@ -424,7 +422,8 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * @return true if sign mechanisms that uses pkcs#11 for hashing should be disabled.
+     * @return true if sign mechanisms that uses PKCS#11 for hashing should be disabled, 
+     * if no value is defined for pkcs11.disableHashingSignMechanisms default value is true.
      */
     public static boolean p11disableHashingSignMechanisms() {
         final String value = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
