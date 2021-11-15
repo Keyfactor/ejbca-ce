@@ -4725,7 +4725,9 @@ public abstract class CertTools {
     }
     
     /**
-     * Refers private method from org.bouncycastle.asn1.x509.PKIXNameConstraintValidator
+     * Refers private method from org.bouncycastle.asn1.x509.PKIXNameConstraintValidator.
+     * It is used here to extract host from name constraint in CA. Bouncy Castle extracts host
+     * from the URIs in subjectDN or subjectAlternativeName.
      * 
      * @param url
      * @return
