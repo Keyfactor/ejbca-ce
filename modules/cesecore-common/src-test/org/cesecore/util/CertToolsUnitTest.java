@@ -2344,6 +2344,34 @@ public class CertToolsUnitTest {
 
     }
     
+    @Test
+    public void testNameConstraintsEmptyDNS() throws Exception {
+        final String excluded = ".";
+                                
+        final List<Extension> extensions = new ArrayList<>();
+        
+        List<String> ncList = NameConstraint.parseNameConstraintsList(excluded);
+        
+        GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(ncList);
+        byte[] extdata = new NameConstraints(null, excludedSubtrees).toASN1Primitive().getEncoded();
+        extensions.add(new Extension(Extension.nameConstraints, false, extdata));
+        
+        final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null,
+                testkeys.getPrivate(), testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true,
+                X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
+        
+        // Allowed subject DNs
+        final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com");
+        
+        // Disallowed SAN
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "test.email.com"), "Disallowed SAN (excluded test.email.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "example.com"), "Disallowed SAN (excluded example.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "com"), "Disallowed SAN (excluded com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "."), "Disallowed SAN (excluded . DNS name) was accepted");
+
+    }
+    
     /** Check Name Constraints that are expected to fail NC validation, and fail the JUnit test of the NC validation 
      * does not fail with am IllegalNameException
      */
