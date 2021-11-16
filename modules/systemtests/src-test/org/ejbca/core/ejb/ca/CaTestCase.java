@@ -287,6 +287,16 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
+        return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, null);
+    }   
+        
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
+            int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, String subjectAltName)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -334,6 +344,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         cainfo.setDefaultCertificateProfileId(certificateProfileId);
         cainfo.setDoEnforceUniqueDistinguishedName(!relaxUniquenessSubjectDN);
         cainfo.setDoEnforceUniquePublicKeys(!relaxUniquenessPublicKey);
+        cainfo.setSubjectAltName(subjectAltName);
         
         try {
             caAdminSession.createCA(internalAdmin, cainfo);
