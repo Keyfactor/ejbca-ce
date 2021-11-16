@@ -1270,5 +1270,33 @@ public class CertificateNameConstraintTest extends CaTestCase {
             
         }
         
+        // create Sub CA signed by another Sub CA with forbidden URI in SAN - negative
+        subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
+        subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
+        
+        try {
+            String subjectAltName = URI_MARKER + "=http://www.forbid.this.com/xyz"; 
+            CaTestCase.createTestCA(subCAName, 4096, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+                    formatedNCExcludedUpdated, true, true, subjectAltName);
+            createdSubCas.add(subCAName);
+            Assert.fail("Sub CA created with SAN in forbidden URI name constraints.");
+        } catch (Exception e) {
+            
+        }
+        
+        // create Sub CA signed by another Sub CA with not in permitted URI in SAN - negative
+        subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
+        subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
+        
+        try {
+            String subjectAltName = URI_MARKER + "=http://www.random.com/xyz"; 
+            CaTestCase.createTestCA(subCAName, 4096, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+                    formatedNCExcludedUpdated, true, true, subjectAltName);
+            createdSubCas.add(subCAName);
+            Assert.fail("Sub CA created with SAN not in permitted URI name constraints.");
+        } catch (Exception e) {
+            
+        }
+        
     }
 }
