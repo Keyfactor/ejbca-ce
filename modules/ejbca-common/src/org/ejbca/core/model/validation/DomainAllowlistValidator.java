@@ -45,7 +45,7 @@ import org.cesecore.util.ui.PropertyValidationException;
 public class DomainAllowlistValidator extends ValidatorBase implements DnsNameValidator {
     
     private static final long serialVersionUID = 5317012621081331592L;
-    protected static final Pattern allowedDomainCharacters = Pattern.compile("^[a-zA-Z0-9._\\-\\*]+$");
+    private static final Pattern allowedDomainCharacters = Pattern.compile("^[a-zA-Z0-9._\\-\\*]+$");
 
     private static final Logger log = Logger.getLogger(DomainAllowlistValidator.class);
 
