@@ -92,6 +92,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
@@ -398,15 +399,46 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
-
-
         final OCSPResp response = sendRequest(ocspRequest);
         assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
         BasicOCSPResp basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
         validateSuccessfulResponse(basicOCSPResp, ocspSigningCertificate.getPublicKey());
         SingleResp[] responses = basicOCSPResp.getResponses();
+
         Date nextUpdate = responses[0].getNextUpdate();
-        assertEquals("NextUpdate shuould be replaced to final.", ocspSigningCertificate.getNotAfter(), nextUpdate);
+        Date signerCertNotAfter = ocspSigningCertificate.getNotAfter();
+        long expectedNextUpdate = signerCertNotAfter.getTime() - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
+        assertEquals("NextUpdate shuould be replaced with signer cert validity.", new Date(expectedNextUpdate), nextUpdate);
+    }
+
+    /**
+     * Test OCSP response validity is calculated as the period of time from notBefore through notAfter, inclusive. 
+     * ECA-10327
+     */
+    @Test
+    public void testStandAloneOcspResponseValidityInclusive() throws Exception {
+        // Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        // Configure the OcspKeyBinding nextUpdateTime (1 hour)
+        final long responseValidity = 3600; 
+        final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        ocspKeyBinding.setUntilNextUpdate(responseValidity);
+        internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+
+        // Do the OCSP request
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+        final OCSPResp response = sendRequest(ocspRequest);
+        BasicOCSPResp basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
+        SingleResp[] responses = basicOCSPResp.getResponses();
+        Date producedAt = basicOCSPResp.getProducedAt();
+        Date nextUpdate = responses[0].getNextUpdate();
+
+        // Response should be valid period of time from producedAt through nextUpdate, inclusive. I.e. 59 miniutes, 59 seconds for 1 hour validity.
+        long expectedNextUpdate = producedAt.getTime() + (responseValidity*1000) - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET ; 
+        assertEquals("Unexpected nextUpdate date. Response was producedAt: " + producedAt + " with a validity of " + responseValidity + " seconds.", 
+            new Date(expectedNextUpdate), nextUpdate);
     }
 
     /** 
