@@ -34,7 +34,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * 
  * @version $Id$
  */
-public class ValidityDateValidator implements Validator {
+public class ValidityDateValidator implements Validator<Object> {
 
     private static final Logger log = Logger.getLogger(ValidityDateValidator.class);
 

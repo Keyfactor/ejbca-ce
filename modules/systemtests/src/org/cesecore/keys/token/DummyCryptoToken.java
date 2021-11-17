@@ -13,7 +13,6 @@
 package org.cesecore.keys.token;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
