@@ -24,6 +24,8 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.StringTools;
 
@@ -83,6 +85,10 @@ public final class OAuthKeyInfo implements Serializable {
     private String logoutUrl;
 
     private String audience;
+    private boolean audienceCheckDisabled = false;
+    
+    // if null, use client secret
+    private Integer keyBinding;
     
     /**
      * Creates a OAuth Key info object
@@ -262,7 +268,7 @@ public final class OAuthKeyInfo implements Serializable {
         switch (getType()){
             case TYPE_AZURE:
             case TYPE_KEYCLOAK:
-                getTypeSpecificUrl("logout");
+                return getTypeSpecificUrl("logout");
             case TYPE_GENERIC:
             case TYPE_PINGID:
             default:
@@ -345,6 +351,7 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("scope=").append(getScope()).append(", ")
                 .append("url=").append(getUrl()).append(", ")
                 .append("audience=").append(getAudience()).append(", ")
+                .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
@@ -365,4 +372,34 @@ public final class OAuthKeyInfo implements Serializable {
     public void setAudience(String audience) {
         this.audience = audience;
     }
+
+    public Integer getKeyBinding() {
+        return keyBinding;
+    }
+
+    public void setKeyBinding(Integer keyBinding) {
+        this.keyBinding = keyBinding;
+    }
+    
+    /**
+     * If this is an Azure key info, return the login server's URL, which should be the base 
+     * URL for logout/token/auth endpoints.
+     */
+    public String getLoginServerUrl() {
+        Preconditions.checkState(getType() == OAuthProviderType.TYPE_AZURE);
+        
+        String uri = getUrl();
+        uri += getUrl().endsWith("/") ? "" : "/";
+        uri += getRealm() + "/v2.0";
+        return uri;
+    }
+
+    public boolean isAudienceCheckDisabled() {
+        return audienceCheckDisabled;
+    }
+
+    public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
+        this.audienceCheckDisabled = audienceCheckDisabled;
+    }
+
 }
