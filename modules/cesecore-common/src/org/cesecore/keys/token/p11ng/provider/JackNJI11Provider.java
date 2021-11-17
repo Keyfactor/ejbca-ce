@@ -30,6 +30,7 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -72,10 +73,10 @@ public class JackNJI11Provider extends Provider {
     public static final String NAME = "JackNJI11";
 
     public JackNJI11Provider() {
-        super(NAME, 1.2, "JackNJI11 Provider");
+        super(NAME, 1.3, "JackNJI11 Provider");
  
-        putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "MD5withRSA", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA1withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA224withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA256withRSA", MySignature.class.getName()));
@@ -83,10 +84,16 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", "SHA512withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "NONEwithDSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA1withDSA", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "NONEwithRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA1withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA256withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA384withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA512withRSAandMGF1", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "NONEwithRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA1withRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA256withRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA384withRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA512withRSASSA-PSS", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, MySignature.class.getName()));
@@ -181,9 +188,10 @@ public class JackNJI11Provider extends Provider {
         private long session;
         private ByteArrayOutputStream buffer;
         private final int type;
+        private AlgorithmParameterSpec params;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
-
+        
         /** A static HashMap that is used to cache how large byte buffer we need to allocate 
          * to hold the signature created by a specific key for a specific signature algorithm
          */
@@ -247,7 +255,14 @@ public class JackNJI11Provider extends Provider {
                     final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
                     mechanism = LUNA_CKM_EDDSA;
                 }
-                byte[] param = MechanismNames.CKM_PARAMS.get(this.algorithm);
+                final byte[] param;
+                if (params == null) {
+                    param = MechanismNames.CKM_PARAMS.get(this.algorithm);
+                } else if (params instanceof PSSParameterSpec) {
+                    param = MechanismNames.encodePssParameters((PSSParameterSpec) params);
+                } else {
+                    throw new InvalidKeyException("Unsupported algorithm parameter: " + params);
+                }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineInitSign: session: " + session + ", object: " +
                             myKey.getObject() + ", sigAlgoValue: 0x" + Long.toHexString(mechanism) + ", param: " + StringTools.hex(param));
@@ -435,6 +450,7 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected void engineSetParameter(AlgorithmParameterSpec params) throws InvalidAlgorithmParameterException {
+            this.params = params;
         }
         
         @Override
