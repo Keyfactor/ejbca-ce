@@ -38,6 +38,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -117,6 +118,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_DN = "CN=TDVEC-D,C=SE";
     public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME = "TESTDVECC-D";
     public static final String TEST_DSA_CA_NAME = "TESTDSA";
+    
+    private static final int CA_CREATION_FAIL = -1;
 
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
@@ -230,7 +233,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         return createTestCA(caName, keyStrength, "CN=" + caName, CAInfo.SELFSIGNED, null);
     }
-
+    
     /**
      * Make sure testCA exist.
      * 
@@ -252,14 +255,47 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
+        if(dn.hashCode()==-CA_CREATION_FAIL)
+            throw new IllegalArgumentException("subjectDN hash code calculates to " 
+                    + CA_CREATION_FAIL + ". Please use alternate subjectDN.");
+        int result = createTestCA(caName, keyStrength, dn, signedBy, certificateChain, 
+                signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA 
+                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, null, false, false);
+        return result != CA_CREATION_FAIL;
+    }
+
+    /**
+     * Make sure testCA exist.
+     * 
+     * @param caName
+     *            The CA name
+     * @param keyStrength
+     * @param dn
+     *            DN of the CA
+     * @param signedBy
+     *            id of the signing CA
+     * @return caId of created CA
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenOfflineException
+     * @throws CAExistsException
+     */
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
+            int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         final CaSessionRemote caSession = getCaSession();
         final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        if(caSession.existsCa(caName)) {
+        CAInfo retrievedCaInfo = caSession.getCAInfo(internalAdmin, caName);
+        if(retrievedCaInfo!=null) {
             log.debug("CA with name " + caName+" already exists, returning true from createTestCA.");
-            return true;
+            return retrievedCaInfo.getCAId();
         }
                 
         try {
@@ -267,7 +303,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             if (cainfo != null) {
                 caSession.renameCA(internalAdmin, cainfo.getName(), caName);
                 log.debug("CA with name " + cainfo.getName() + " was renamed to " + caName + "', returning true from createTestCA.");
-                return true;
+                return cainfo.getCAId();
             }
         } catch (CADoesntExistsException e) {
             log.debug("CA with id " + dn.hashCode() + " can not be renamed to '" + caName
@@ -291,6 +327,14 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
         cainfo.setIncludeInHealthCheck(true);
         cainfo.setDeltaCRLPeriod(10 * SimpleTime.MILLISECONDS_PER_HOUR); // In order to be able to create deltaCRLs
+        
+        cainfo.setNameConstraintsPermitted(nameConstraintPermitted);
+        cainfo.setNameConstraintsExcluded(nameConstraintExcluded);
+        cainfo.setCertificateProfileId(certificateProfileId);
+        cainfo.setDefaultCertificateProfileId(certificateProfileId);
+        cainfo.setDoEnforceUniqueDistinguishedName(!relaxUniquenessSubjectDN);
+        cainfo.setDoEnforceUniquePublicKeys(!relaxUniquenessPublicKey);
+        
         try {
             caAdminSession.createCA(internalAdmin, cainfo);
         } catch (InvalidAlgorithmException e) {
@@ -302,19 +346,19 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
         if (!normalizedCertDN.equals(normalizedDN)) {
             log.error("CA certificate DN is not what it should. Is '" + normalizedDN + "'. Should be '" + normalizedCertDN + "'.");
-            return false;
+            return CA_CREATION_FAIL;
         }
         if (!info.getSubjectDN().equals(normalizedCertDN)) {
             log.error("Creating CA failed!");
-            return false;
+            return CA_CREATION_FAIL;
         }
         if (certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
             log.error("CA certificate not available in database!!");
-            return false;
+            return CA_CREATION_FAIL;
         }
         assertEquals("Test CA was not active after creation.", CAConstants.CA_ACTIVE, info.getStatus());
         log.trace("<createTestCA: " + info.getCAId());
-        return true;
+        return info.getCAId();
     }
 
     /** @return the caid of the test CA */

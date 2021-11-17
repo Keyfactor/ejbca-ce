@@ -52,6 +52,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/ca<br/>/ejbca/ejbca-rest-api/v1/certificate"),
         REST_CRYPTOTOKEN_MANAGEMENT("REST Crypto Token Management", "/ejbca/ejbca-rest-api/v1/cryptotoken"),
         REST_ENDENTITY_MANAGEMENT("REST End Entity Management", "/ejbca/ejbca-rest-api/v1/endentity"),
+        REST_CONFIGDUMP("REST Configdump", "/ejbca/ejbca-rest-api/v1/configdump"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws");
 
@@ -107,6 +108,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.EST.getName())   || 
                 protocol.equals(AvailableProtocols.MSAE.getName())   ||
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
+                protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()))) {
