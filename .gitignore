@@ -8,3 +8,4 @@ velocity.log
 src/java/jndi.properties
 validationtool.log
 reports/
+modules/ra-gui/resources/js/jquery.min.js
