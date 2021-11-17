@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.util.encoders.Base64;
@@ -36,6 +37,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -61,6 +63,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     private final OAuthKeyEditor oauthKeyEditor;
     private AuthenticationToken adminToken;
     private OAuthConfiguration oAuthConfiguration;
+    private List<Pair<String, Integer>> keyBindings = new ArrayList<>();
     
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
@@ -95,8 +98,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private String clientSecret;
         private String realm;
         private String audience;
+        private boolean audienceCheckDisabled = false;
         private String scope;
         private UploadedFile publicKeyFile;
+        
+        // if null, use client secret
+        private Integer keyBinding = null;
         private List<OAuthPublicKey> publicKeys;
         private int skewLimit = 60000;
         private OAuthKeyInfo oauthKeyBeingEdited;
@@ -298,10 +305,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.type = oauthKey.getType();
             this.url = oauthKey.getUrl();
             this.audience = oauthKey.getAudience();
+            this.audienceCheckDisabled = oauthKey.isAudienceCheckDisabled();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
             this.realm = oauthKey.getRealm();
             this.clientSecret = SystemConfigurationOAuthKeyManager.HIDDEN_PWD;
+            this.keyBinding = oauthKey.getKeyBinding();
             this.scope = oauthKey.getScope();
             this.skewLimit = oauthKey.getSkewLimit();
             this.oauthKeyBeingEdited = oauthKey;
@@ -323,10 +332,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             url = null;
             logoutUrl = null;
             tokenUrl = null;
+            keyBinding = null;
             label = null;
             client = null;
             clientSecret = null;
             audience = null;
+            audienceCheckDisabled = false;
             realm = null;
             scope = null;
             oauthKeyBeingEdited = null;
@@ -372,6 +383,22 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public final void setAudience(String audience) {
             this.audience = audience;
         }
+
+        public Integer getKeyBinding() {
+            return keyBinding;
+        }
+
+        public void setKeyBinding(Integer keyBinding) {
+            this.keyBinding = keyBinding;
+        }
+
+        public boolean isAudienceCheckDisabled() {
+            return audienceCheckDisabled;
+        }
+
+        public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
+            this.audienceCheckDisabled = audienceCheckDisabled;
+        }
     }
 
     public interface SystemConfigurationHelper {
@@ -411,6 +438,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         super(oAuthKeys);
         this.systemConfigurationHelper = systemConfigurationHelper;
         this.oauthKeyEditor = new OAuthKeyEditor();
+
+        // get the names of all the key bindings
+        log.trace("Loading key bindings");
+        ejbLocalHelper.getInternalKeyBindingMgmtSession().getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream()
+                .sorted((b1, b2) -> b1.getName().compareTo(b2.getName())).forEach(b -> {
+                    log.info("Adding key binding:" + b.getName() + ":" + b.getId());
+                    keyBindings.add(Pair.of(b.getName(), b.getId()));
+                });
     }
     
     public AuthenticationToken getAdminToken() {
@@ -623,10 +658,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setRealm(oauthKeyEditor.getRealm());
         newOauthKey.setScope(oauthKeyEditor.getScope());
         newOauthKey.setAudience(oauthKeyEditor.getAudience());
+        newOauthKey.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
         newOauthKey.setClient(oauthKeyEditor.getClient());
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
+        if (oauthKeyEditor.getKeyBinding() != null) {
+            newOauthKey.setKeyBinding(oauthKeyEditor.getKeyBinding());
+        }
 
         if (oauthKeyEditor.getPublicKeys().isEmpty()) {
             newOauthKey.setKeys(null);
@@ -788,15 +827,21 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setUrl(oauthKeyToUpdate.fixUrl(oauthKeyEditor.getUrl()));
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
+        oauthKeyToUpdate.setKeyBinding(oauthKeyEditor.getKeyBinding());
         oauthKeyToUpdate.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         oauthKeyToUpdate.setRealm(oauthKeyEditor.getRealm());
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
         oauthKeyToUpdate.setAudience(oauthKeyEditor.getAudience());
+        oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
 
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
         oauthKeyEditor.stopEditing();
         return OAUTH_KEY_SAVED;
+    }
+
+    public List<Pair<String, Integer>> getKeyBindings() {
+        return keyBindings;
     }
 }

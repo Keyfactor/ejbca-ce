@@ -377,10 +377,10 @@ public class X509CAInfo extends CAInfo {
 
   @Override
   public IntRange getAllCrlPartitionIndexes() {
-      if (!getUsePartitionedCrl()) {
-          return null;
+      if (getUsePartitionedCrl()) {
+          return new IntRange(1, getCrlPartitions());
       }
-      return new IntRange(1, getCrlPartitions());
+      return null;
   }
 
   public String getDefaultCRLIssuer(){ return defaultcrlissuer; }

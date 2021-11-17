@@ -229,8 +229,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int COPY       = 5;
 
     // Private Constants.
-    private static final int FIELDBOUNDRARY  = 10000;
+    private static final int FIELDBOUNDRARY  = 1000000;
     private static final int NUMBERBOUNDRARY = 100;
+    private static final int FIELDORDERINGBASE = FIELDBOUNDRARY / NUMBERBOUNDRARY;
 
     // Pre-calculated constants
     private static final int FIELDBOUNDRARY_VALUE  = FIELDBOUNDRARY * VALUE;
@@ -449,22 +450,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (DnComponents.isDnProfileField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
-    		final int val = (NUMBERBOUNDRARY*parameter) + size;
+    		final int val = (FIELDORDERINGBASE*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isAltNameField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
-    		final int val = (NUMBERBOUNDRARY*parameter) + size;
+    		final int val = (FIELDORDERINGBASE*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isDirAttrField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
-    		final int val = (NUMBERBOUNDRARY*parameter) + size;
+    		final int val = (FIELDORDERINGBASE*parameter) + size;
     		fieldorder.add(val);
     	} else if(SshEndEntityProfileFields.isSshField(parameterName)) {
     	    @SuppressWarnings("unchecked")
             final List<Integer> fieldorder = (ArrayList<Integer>) data.get(SSH_FIELD_ORDER);
-            final int val = (NUMBERBOUNDRARY*parameter) + size;
+            final int val = (FIELDORDERINGBASE*parameter) + size;
             fieldorder.add(val);
     	}
     	incrementFieldnumber(parameter);
@@ -495,27 +496,27 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		if (DnComponents.isDnProfileField(param)) {
     			@SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
-    			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+    			final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
     			fieldOrder.remove(value); // must use Integer type to avoid calling remove(index) method
     		}
     		// Remove last element from Subject AltName order list.
     		if (DnComponents.isAltNameField(param)) {
     			@SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
-    			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+    			final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
     			fieldOrder.remove(value);
     		}
     		// Remove last element from Subject DirAttr order list.
     		if (DnComponents.isDirAttrField(param)) {
     			@SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
-    			final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+    			final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
     			fieldOrder.remove(value);
     		}
     		if(SshEndEntityProfileFields.isSshField(param)) {
     		    @SuppressWarnings("unchecked")
                 final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SSH_FIELD_ORDER);
-                final Integer value = (NUMBERBOUNDRARY * parameter) + size - 1;
+                final Integer value = (FIELDORDERINGBASE * parameter) + size - 1;
                 fieldOrder.remove(value);
     		}
     		// Remove last element of the type from hashmap
@@ -747,8 +748,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     	final int i = fieldOrder.get(index);
-    	returnval[NUMBER] = i % NUMBERBOUNDRARY;
-    	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+    	returnval[NUMBER] = i % FIELDORDERINGBASE;
+    	returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
     	return returnval;
     }
 
@@ -757,8 +758,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     	final int i = fieldOrder.get(index);
-    	returnval[NUMBER] = i % NUMBERBOUNDRARY;
-    	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+    	returnval[NUMBER] = i % FIELDORDERINGBASE;
+    	returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
     	return returnval;
     }
 
@@ -767,8 +768,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldOrder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     	final int i = fieldOrder.get(index);
-    	returnval[NUMBER] = i % NUMBERBOUNDRARY;
-    	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+    	returnval[NUMBER] = i % FIELDORDERINGBASE;
+    	returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
     	return returnval;
     }
 
@@ -777,8 +778,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         @SuppressWarnings("unchecked")
         final List<Integer> fieldOrder = (ArrayList<Integer>) data.get(SSH_FIELD_ORDER);
         final int i = fieldOrder.get(index);
-        returnval[NUMBER] = i % NUMBERBOUNDRARY;
-        returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
+        returnval[NUMBER] = i % FIELDORDERINGBASE;
+        returnval[FIELDTYPE] = i / FIELDORDERINGBASE;
         return returnval;
     }
 

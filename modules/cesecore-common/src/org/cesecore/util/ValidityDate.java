@@ -34,6 +34,8 @@ public class ValidityDate {
 	public static final String ISO8601_DATE_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";
 	public static final TimeZone TIMEZONE_UTC = TimeZone.getTimeZone("UTC");
 	public static final TimeZone TIMEZONE_SERVER = TimeZone.getDefault();
+	// Offset for period of time from notBefore through notAfter, inclusive. See ECA-9523, ECA-10327.
+	public static final long NOT_AFTER_INCLUSIVE_OFFSET = 1000;
 
 	private static final Logger log = Logger.getLogger(ValidityDate.class);
 	// Time format for storage where implied timezone is UTC
@@ -216,7 +218,7 @@ public class ValidityDate {
 	    try {
 	        // We think this is the most common, so try this first, it's fail-fast
 	        final long millis = SimpleTime.parseMillies(encodedValidity);
-	        final long endSecond = notAfterIsInclusive ? 1000 : 0;
+	        final long endSecond = notAfterIsInclusive ? NOT_AFTER_INCLUSIVE_OFFSET: 0;
 	        final Date endDate = new Date(firstDate.getTime() + millis - endSecond);
 	        return endDate;
 	    } catch(NumberFormatException nfe) {
@@ -319,5 +321,36 @@ public class ValidityDate {
 	/** Returns true if the date is on the form yyyy-MM-dd hh:mm:ss (or abbreviated) or in relative format, d:h:m */
 	public static boolean isAbsoluteTimeOrDaysHoursMinutes(final String dateString) {
 	    return VALIDITY_TIME_PATTERN.matcher(dateString).matches();
+	}
+	
+	/**
+	 * Parse date from relative time format of days:hours:minutes. Follows same convention as getDate(String, Date, boolean).
+	 * 
+	 * @param encodedValidity a relative time string(days:hours:minutes).
+     * @param firstDate date to be used if encoded validity is a relative time.
+     * @param notAfterIsInclusive whether the date is inclusive. Set to true for X.509/CVC and false for SSH.
+     * @return the end date or null if a date or relative time could not be read.
+	 * 
+	 * @see org.cesecore.util.ValidityDate#getDate(String, Date, boolean)
+	 */
+	public static Date getDateFromRelativeTime(final String encodedValidity, final Date firstDate, final boolean notAfterIsInclusive) {
+	    if(!encodedValidity.matches(RELATIVE_TIME_REGEX)) {
+	        log.error("Invalid format for relative time, expected days:hours:minutes(9999:23:59).");
+	        return null;
+	    }
+	    
+	    final String[] endTimeArray = encodedValidity.split(":");
+        if (Long.parseLong(endTimeArray[1]) > 23 || Long.parseLong(endTimeArray[2]) > 59) {
+            log.error("Invalid hours or minutes in relative time.");
+            return null;
+        }
+        final long relative = (Long.parseLong(endTimeArray[0]) * 24 * 60 + Long.parseLong(endTimeArray[1]) * 60 +
+                Long.parseLong(endTimeArray[2])) * 60 * 1000;
+        long endSecond = notAfterIsInclusive ? NOT_AFTER_INCLUSIVE_OFFSET: 0;
+        // If we haven't set a startTime, use "now"
+        final Date startDate = (firstDate == null) ? new Date(): firstDate;
+        final Date endTimeDate = new Date(startDate.getTime() + relative - endSecond);
+	    log.debug("Parsed and concluded end date: " + endTimeDate);
+	    return endTimeDate;
 	}
 }

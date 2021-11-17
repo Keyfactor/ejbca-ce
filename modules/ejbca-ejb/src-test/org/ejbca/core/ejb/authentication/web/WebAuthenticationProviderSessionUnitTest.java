@@ -238,6 +238,53 @@ public class WebAuthenticationProviderSessionUnitTest {
         assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
         log.trace("<malformedSignature");
     }
+    
+    @Test
+    public void audienceMatchSucceeds() throws TokenExpiredException {
+        final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"unittest\"}", privKey);
+        assertNotNull("Authentication should succeed", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
+    }
+
+    @Test
+    public void audienceMisMatchFails() throws TokenExpiredException {
+        final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"INVALIDAUD\"}", privKey);
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
+    }
+
+    @Test
+    public void audienceMissingFails() throws TokenExpiredException {
+        final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
+        assertNull("Authentication should fail", webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfiguration, token));
+    }
+
+    @Test
+    public void audienceMissingSucceedsIfAudienceCheckIsDisabled() throws TokenExpiredException {
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
+        oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
+        oAuthKeyInfo.setAudience("unittest");
+        oAuthKeyInfo.setAudienceCheckDisabled(true);
+        OAuthConfiguration oauthConfigurationWithAudienceCheckDisabled = new OAuthConfiguration();
+        oauthConfigurationWithAudienceCheckDisabled.setDefaultOauthKey(oAuthKeyInfo);
+        oauthConfigurationWithAudienceCheckDisabled.addOauthKey(oAuthKeyInfo);
+
+        final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\"}", privKey);
+        assertNotNull("Authentication should succeed",
+                webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfigurationWithAudienceCheckDisabled, token));
+    }
+
+    @Test
+    public void audienceMisMatchSucceedsIfAudienceCheckIsDisabled() throws TokenExpiredException {
+        final String token = encodeToken("{\"alg\":\"RS256\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\", \"aud\": \"INVALIDAUD\"}", privKey);
+        final OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo("key1", 1000, OAuthProviderType.TYPE_KEYCLOAK);
+        oAuthKeyInfo.addPublicKey("key1", pubKeyBytes);
+        oAuthKeyInfo.setAudience("unittest");
+        oAuthKeyInfo.setAudienceCheckDisabled(true);
+        final OAuthConfiguration oauthConfigurationWithAudienceCheckDisabled = new OAuthConfiguration();
+        oauthConfigurationWithAudienceCheckDisabled.setDefaultOauthKey(oAuthKeyInfo);
+        oauthConfigurationWithAudienceCheckDisabled.addOauthKey(oAuthKeyInfo);
+        assertNotNull("Authentication should succeed",
+                webAuthenticationProviderSession.authenticateUsingOAuthBearerToken(oauthConfigurationWithAudienceCheckDisabled, token));
+    }
 
     @Test
     public void unknownSignatureAlgorithm() throws TokenExpiredException {

@@ -33,6 +33,10 @@ import org.apache.commons.lang.StringUtils;
 public class ConfigdumpSetting implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    public enum ConfigdumpType {
+        FILESYSTEM, JSON, ZIPFILE
+    }
 
     public enum ItemType {
 
@@ -197,6 +201,8 @@ public class ConfigdumpSetting implements Serializable {
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas = true; // needs to be true in import mode, or overwrite detection will not work
+    private ConfigdumpType configdumpType = ConfigdumpType.FILESYSTEM;
+    private byte[] importData;  // will be null if configdumpType == FILESYSTEM
 
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
@@ -378,5 +384,21 @@ public class ConfigdumpSetting implements Serializable {
 
     public Optional<String> getPasswordFor(final ConfigdumpItem configdumpItem) {
         return Optional.ofNullable(passwords.get(configdumpItem));
+    }
+
+    public ConfigdumpType getConfigdumpType() {
+        return configdumpType;
+    }
+
+    public void setConfigdumpType(ConfigdumpType exportType) {
+        this.configdumpType = exportType;
+    }
+
+    public byte[] getImportData() {
+        return importData;
+    }
+
+    public void setImportData(byte[] importData) {
+        this.importData = importData;
     }
 }

@@ -70,7 +70,7 @@ public class SunP11SlotListWrapperFactory implements PKCS11SlotListWrapperFactor
             }
             // no other thread has created the instance and no other will since this thread is locking.
             // CK_C_INITIALIZE_ARGS pInitArgs should include CKF_OS_LOCKING_OK
-            // We utilize the SunP11 provider for this, a liytle way around, especially if we are using P11NG, but it works
+            // We utilize the SunP11 provider for this, a little way around, especially if we are using P11NG, but it works
             Pkcs11SlotLabel.doC_Initialize(file);
             final SunP11SlotListWrapper newP11 = new SunP11SlotListWrapper(canonicalFileName);
             instances.put(canonicalFileName, newP11);
