@@ -29,7 +29,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * 
  * @version $Id$
  */
-public class SimpleTimeValidator implements Validator {
+public class SimpleTimeValidator implements Validator<Object> {
 
     private static final Logger log = Logger.getLogger(SimpleTimeValidator.class);
 

@@ -874,7 +874,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
                     true,
                     BouncyCastleProvider.PROVIDER_NAME);
-            final byte[] requestBytes = new OCSPReqBuilder()
+            new OCSPReqBuilder()
                     .addRequest(
                         new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),
                                 dummyCertificate,

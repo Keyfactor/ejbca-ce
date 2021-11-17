@@ -20,7 +20,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -30,7 +29,6 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 public class InitPkiMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(InitPkiMBean.class);
     
     private static final String NEW_PKI_MODE = "newPkiMode";
     private static final String EXISTING_PKI_MODE = "existingPkiMode";

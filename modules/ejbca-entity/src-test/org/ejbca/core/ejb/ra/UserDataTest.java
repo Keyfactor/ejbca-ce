@@ -12,18 +12,17 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Date;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /** Tests JUnit testable things from UserData entity bean.
