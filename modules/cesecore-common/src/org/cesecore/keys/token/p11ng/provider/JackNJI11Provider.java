@@ -52,7 +52,6 @@ import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PS
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.token.AzureProvider.AzureCipher;
 import org.cesecore.keys.token.p11ng.MechanismNames;
 import org.cesecore.util.StringTools;
 import org.pkcs11.jacknji11.CKM;
@@ -507,7 +506,7 @@ public class JackNJI11Provider extends Provider {
      */
     public static class MyCipher extends CipherSpi {
 
-        private static final Logger log = Logger.getLogger(AzureCipher.class);
+        private static final Logger log = Logger.getLogger(MyCipher.class);
 
         private int opmode;
         private String algorithm;
