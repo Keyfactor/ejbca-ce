@@ -1949,7 +1949,7 @@ public class CryptokiDevice {
         * Same as CESeCoreUtils#securityInfo.
         * Writes info about security related attributes.
         * @param alias The alias of the private key to get info about.
-        * @param sb Buffer to write to, or 'No PKCS#11 private key found' if no key with the specified alias can be found
+        * @param sb Buffer to write to, or 'No private key object with alias' if no key with the specified alias can be found
         */
         public void securityInfo(String alias, final StringBuilder sb) {
             Long session = null;
@@ -1958,7 +1958,7 @@ public class CryptokiDevice {
 
                 final Long privateKeyRef = getPrivateKeyRefByLabel(session, alias);
                 if (privateKeyRef == null ) {
-                    sb.append("No PKCS#11 private key found.");
+                    sb.append("No private key object with alias '" + alias + "'");
                 } else {
                     final CKA attrs[] = c.GetAttributeValue(session, privateKeyRef, 
                             CKA.SENSITIVE, 
