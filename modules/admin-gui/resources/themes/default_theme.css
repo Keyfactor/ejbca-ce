@@ -1364,7 +1364,7 @@ body.popup {
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
-.commandButton { font-size: 9pt; margin-top: 2em; margin-bottom: 2em; vertical-align: bottom; }
+.commandButton { font-size: 9pt; margin-top: 2em; margin-bottom: 2em; vertical-align: bottom;}
 
 .commandLinkAudit { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-top: 1em; margin-right: 1em; margin-bottom: 0.5em; }
 
@@ -1514,5 +1514,9 @@ a.button:active {
 .preformatted {
     white-space: pre-wrap;
 }
+
+/*----Page CA > Certificate Profiles---------------*/
+.commandButtonExport {margin-left: 10px;}
+
 /*--------------------------------------------------------------------------*/
 /* EOF */
