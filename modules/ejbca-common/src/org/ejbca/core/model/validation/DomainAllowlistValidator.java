@@ -123,7 +123,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         
     }
     
-    protected void changeWhitelist(final byte[] bytes) throws DomainListFileException {
+    public void changeWhitelist(final byte[] bytes) throws DomainListFileException {
         final Set<String> domainSet = new TreeSet<>(); // store entries sorted in database
         try {
             try (final InputStream domainWhitelistInputStream = new ByteArrayInputStream(bytes);
