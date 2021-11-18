@@ -10,6 +10,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -75,7 +76,6 @@ public class DomainValidatorTest extends CaTestCase {
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private static final CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private static final KeyStoreCreateSessionRemote keyStoreCreateSessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyStoreCreateSessionRemote.class);
-    private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private static final KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
 
@@ -149,8 +149,9 @@ public class DomainValidatorTest extends CaTestCase {
         domainBlockValidatorName = getRandomizedName(TEST_EEV_DOMAIN_BLOCK_VALIDATOR);
         domainBlockValidator.setProfileName(domainBlockValidatorName);
         domainBlockValidator.setAllCertificateProfileIds(true);
-        domainBlockValidator.setChecks(
-                Arrays.asList("org.ejbca.core.model.validation.domainblacklist.DomainBlacklistExactMatchChecker"));
+        List<String> checks = new ArrayList<String>();
+        checks.add("org.ejbca.core.model.validation.domainblacklist.DomainBlacklistExactMatchChecker");
+        domainBlockValidator.setChecks(checks);
         domainBlockValidator.setPhase(IssuancePhase.DATA_VALIDATION.getIndex());
         domainBlockValidator.changeBlacklist(BLACKLIST.getBytes(StandardCharsets.UTF_8));
         domainBlockValidatorId = keyValidatorSession.addKeyValidator(admin, domainBlockValidator);
@@ -160,7 +161,7 @@ public class DomainValidatorTest extends CaTestCase {
         log.info("adding root CA: " + TEST_EEV_ROOT_CA_NAME);
         List<Integer> validators = new ArrayList<Integer>();
         validators.add(domainAllowValidatorId);
-        validators.add(domainBlockValidatorId);
+        // validators.add(domainBlockValidatorId);
         rootCaId = CaTestCase.createTestCA(TEST_EEV_ROOT_CA_NAME, 4096, "CN=" + TEST_EEV_ROOT_CA_NAME, 
                 CAInfo.SELFSIGNED, rootCertificateProfileId, 
                 validators);
@@ -198,7 +199,7 @@ public class DomainValidatorTest extends CaTestCase {
     }
     
     private boolean createUserWithDomains(int rootCaId, String... domains) throws Exception {
-        // EE with same CN only
+
         String endEntityName = getRandomizedName(TEST_EEV_END_ENTITY_NAME);
         String endEntityDomain = "";
         
@@ -229,11 +230,27 @@ public class DomainValidatorTest extends CaTestCase {
         return true;
     }
     
+    private void updateRootCaValidators(int... validatorIds) throws Exception {
+        
+        X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfo(admin, TEST_EEV_ROOT_CA_NAME);
+        List<Integer> validators = new ArrayList<Integer>();
+        for(int v: validatorIds)
+            validators.add(v);
+
+        cainfo.setValidators(validators);
+        caAdminSession.editCA(admin, cainfo);
+        
+    }
+    
     @Test
-    public void testCreateUserInPermittedDomain() throws Exception {
+    public void testCreateUserInPermittedDomainWithOnlyAllowedValidator() throws Exception {
+        
+        updateRootCaValidators(domainAllowValidatorId);
+        
         String[] domainList = new String[] {"permit.com", "permit.example.com", "permit2.example.com", 
                 "permit3.example.com", "permit4.example.com", 
-                "permit5.abc.example.com", "abc.permit6.def.example.com", "permit7.example.de"};
+                "permit5.abc.example.com", "abc.permit6.def.example.com", "permit7.example.de",
+                "common.in.bothlist.com"};
         List<String> failedDomains = new ArrayList<String>();
         boolean result;
         for(String domain: domainList) {
@@ -247,9 +264,13 @@ public class DomainValidatorTest extends CaTestCase {
     }
     
     @Test
-    public void testCreateUserInForbiddenDomain() throws Exception {
+    public void testCreateUserInForbiddenDomainWithOnlyBlockValidator() throws Exception {
+        
+        updateRootCaValidators(domainBlockValidatorId);
+        
         String[] domainList = new String[] {"forbidden.example.com", "forbidden2.example.com",
                 "forbidden4.example.com", "common.in.bothlist.com"};
+        // possible to issue certificate for invalid domains: "hiIAmInvalid**.com" 
         List<String> failedDomains = new ArrayList<String>();
         boolean result;
         for(String domain: domainList) {
@@ -263,10 +284,33 @@ public class DomainValidatorTest extends CaTestCase {
     }
     
     @Test
-    public void testCreateUserNotInPermittedDomain() throws Exception {
+    public void testCreateUserNotInForbiddenDomainWithOnlyBlockValidator() throws Exception {
+        
+        updateRootCaValidators(domainBlockValidatorId);
+        
+        String[] domainList = new String[] {"forbid.example.com", "forbidden21.example.com",
+                "forbidden4.com", "common.xx.bothlist.com"};
+        List<String> failedDomains = new ArrayList<String>();
+        boolean result;
+        for(String domain: domainList) {
+            result = createUserWithDomains(domain);
+            if(!result)
+                failedDomains.add(domain);
+            log.debug("tested not forbidden domain: " + domain);
+        }
+        Assert.assertTrue("User with domains not forbidden domains were not issued certificate: " + 
+                                                    failedDomains.toString(), failedDomains.isEmpty());
+    }
+    
+    @Test
+    public void testCreateUserNotInPermittedDomainWithOnlyAllowedValidator() throws Exception {
+        
+        updateRootCaValidators(domainAllowValidatorId);
+        
         String[] domainList = new String[] {"permit1.com", "permit.example1.com", ".permit2.example.com", 
                 "permit3..example.com", "permit4.example.com1", 
-                "permit5.example.com", "permit6.def.example.com", "permit6.example.com", "permit7.example"};
+                "permit5.example.com", "permit6.def.example.com", "permit6.example.com", "permit7.example",
+                "hiIAmInvalid**.com"};
         List<String> failedDomains = new ArrayList<String>();
         boolean result;
         for(String domain: domainList) {
@@ -281,20 +325,30 @@ public class DomainValidatorTest extends CaTestCase {
     
     @Test
     public void testCreateUserMultiplePermittedDomains() throws Exception {
+        updateRootCaValidators(domainAllowValidatorId, domainBlockValidatorId);
         boolean result = createUserWithDomains("abc.permit6.def.example.com", "permit7.example.de");
         Assert.assertTrue("User with multiple permitted domains were not issed certificate.", result);
     }
     
     @Test
     public void testCreateUserPermittedAndNonPermittedDomains() throws Exception {
+        updateRootCaValidators(domainAllowValidatorId, domainBlockValidatorId);
         boolean result = createUserWithDomains("abc.permit6.def.example.com", "permit6.example.com");
         Assert.assertFalse("User with permitted and not permitted domains were issued certificate.", result);
     }
     
     @Test
     public void testCreateUserPermittedAndForbiddenDomains() throws Exception {
+        updateRootCaValidators(domainAllowValidatorId, domainBlockValidatorId);
         boolean result = createUserWithDomains("abc.permit6.def.example.com", "forbidden.example.com");
         Assert.assertFalse("User with permitted and not permitted domains were issued certificate.", result);
+    }
+    
+    @Test
+    public void testCreateUserDomainOnNothPermittedAndForbiddenDomains() throws Exception {
+        updateRootCaValidators(domainAllowValidatorId, domainBlockValidatorId);
+        boolean result = createUserWithDomains("common.in.bothlist.com");
+        Assert.assertFalse("User with domain on both blocked and allowed list were issued certificate.", result);
     }
     
     @Test
@@ -336,6 +390,7 @@ public class DomainValidatorTest extends CaTestCase {
     
     @Test
     public void testY_createUserInPermittedDomain() throws Exception {
+        updateRootCaValidators(domainAllowValidatorId);
         String[] domainList = new String[] {"permit.example.com", "permit.another.com", "permit.also.xx.com"};
         List<String> failedDomains = new ArrayList<String>();
         boolean result;
@@ -351,12 +406,14 @@ public class DomainValidatorTest extends CaTestCase {
     
     @Test
     public void testY_createUserInForbiddenDomain() throws Exception {
+        updateRootCaValidators(domainBlockValidatorId);
         boolean result = createUserWithDomains("forbid.onlyme.com");
         Assert.assertFalse("User with forbidden domains were issued certificate.", result);
     }
     
     @Test
     public void testY_createUserNotInPermittedDomain() throws Exception {
+        updateRootCaValidators(domainAllowValidatorId);
         String[] domainList = new String[] {"permit.com", "permit.also.com"};
         List<String> failedDomains = new ArrayList<String>();
         boolean result;
@@ -372,7 +429,7 @@ public class DomainValidatorTest extends CaTestCase {
     
     @Test
     public void testEmptyAllowValidatorList() throws Exception {
-        // create domain allowed list
+        // create empty domain allowed list
         DomainAllowlistValidator domainAllowValidator = new DomainAllowlistValidator();
         String domainAllowValidatorName = getRandomizedName(TEST_EEV_DOMAIN_ALLOW_VALIDATOR);
         domainAllowValidator.setProfileName(domainAllowValidatorName);
@@ -400,7 +457,7 @@ public class DomainValidatorTest extends CaTestCase {
     
     @Test
     public void testEmptyBlockValidatorList() throws Exception {
-        // create domain blocked list
+        // create empty domain blocked list
         DomainBlacklistValidator domainBlockValidator = new DomainBlacklistValidator();
         String domainBlockValidatorName = getRandomizedName(TEST_EEV_DOMAIN_BLOCK_VALIDATOR);
         domainBlockValidator.setProfileName(domainBlockValidatorName);
