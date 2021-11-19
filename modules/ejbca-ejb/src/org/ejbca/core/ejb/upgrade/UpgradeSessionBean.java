@@ -55,6 +55,7 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
@@ -349,7 +350,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.8.0");
+                setLastPostUpgradedToVersion("7.8.1");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -643,8 +644,48 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.8.0");
         }
+        if (isLesserThan(oldVersion, "7.8.1")) {
+            if (!postMigrateDatabase781()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.8.1");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
+        return true;
+    }
+
+    /**
+     * Update all EndEntityProfiles.
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    private boolean postMigrateDatabase781() {
+        log.info("Starting post upgrade to 7.8.1");
+        List<Integer> ids;
+        try {
+            Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
+            ids = query.getResultList();
+        } catch (Exception e) {
+            log.error("An error occurred when updating data in database table 'EndEntityProfileData': " + e);
+            return false;
+        }
+
+        for(Integer id: ids) {
+            final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
+            try {
+                EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
+                if (EeProfileUpdgaderFor781.shouldUpdate(eep)) {
+                    EeProfileUpdgaderFor781.update(eep);
+                    endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
+                }
+            } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
+                log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
+                return false;
+            }
+        }
+        log.info("Post upgrade to 7.8.1 complete.");
         return true;
     }
 
@@ -669,7 +710,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.1");
     }
 
     /**
@@ -2063,7 +2104,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
-     * Update all EndEntityProfiles to make them compatible with the changes in 7.7.2 EndEntityProfile class.
+     * Update GoogleCtPolicy.
      *
      * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
      *
@@ -2072,29 +2113,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase781() throws UpgradeFailedException {
-        List<Integer> ids;
-        try {
-            Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
-            ids = query.getResultList();
-        } catch (Exception e) {
-            log.error("An error occurred when updating data in database table 'EndEntityProfileData': " + e);
-            throw new UpgradeFailedException(e);
-        }
-
-        for(Integer id: ids) {
-            final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
-            try {
-                EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
-                if (EeProfileUpdgaderFor781.shouldUpdate(eep)) {
-                    EeProfileUpdgaderFor781.update(eep);
-                    endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
-                }
-            } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
-                log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
-                throw new UpgradeFailedException(e);
-            }
-        }
-
         final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         GoogleCtPolicy ctPolicy = globalConfig.getGoogleCtPolicy();
         ctPolicy.setBreakpoints(ctPolicy.getBreakpoints());
