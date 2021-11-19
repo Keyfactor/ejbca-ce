@@ -995,6 +995,11 @@ select option.cvcoption_header {
     padding: 3px;
     color: #000;
 }
+.commandButtonExport  {margin-left: 10px;}
+
+/*---------Page CA > Publishers -------------------*/
+.cloneButton {margin-right: 10px;}
+.renameButton {margin-right: 10px;}
 
 /* --- Page: RA > End-Entity profile */
 table#endentityprofile.edit tr td:first-child {
@@ -1213,8 +1218,8 @@ table#config tr td:first-child {
 .listColumn1 { text-align: left; width: 40%; }
 .listColumn2 { text-align: left; width: 60%; }
 
-.subTableColumn1 { text-align: left; width: 50%; }
-.subTableColumn2 { text-align: right; width: 50%; }
+.subTableColumn1 { text-align: left; width: 40%; }
+.subTableColumn2 { text-align: right; width: 60%; }
 
 
 .ldapPublisherHeader {
@@ -1364,7 +1369,7 @@ body.popup {
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
-.commandButton { font-size: 9pt; margin-top: 2em; margin-bottom: 2em; vertical-align: bottom; }
+.commandButton { font-size: 9pt; margin-top: 2em; margin-bottom: 2em; vertical-align: bottom;}
 
 .commandLinkAudit { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-top: 1em; margin-right: 1em; margin-bottom: 0.5em; }
 
@@ -1514,5 +1519,6 @@ a.button:active {
 .preformatted {
     white-space: pre-wrap;
 }
+
 /*--------------------------------------------------------------------------*/
 /* EOF */
