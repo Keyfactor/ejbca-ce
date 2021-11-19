@@ -9,62 +9,6 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11ng.provider;
 
-import com.sun.jna.Memory;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.LongByReference;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSAPublicKey;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.DigestInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.ECPointUtil;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.KeyGenParams;
-import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
-import org.cesecore.keys.token.p11ng.CK_CP5_AUTH_DATA;
-import org.cesecore.keys.token.p11ng.CK_CP5_CHANGEAUTHDATA_PARAMS;
-import org.cesecore.keys.token.p11ng.CK_CP5_INITIALIZE_PARAMS;
-import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
-import org.cesecore.keys.token.p11ng.PToPBackupObj;
-import org.cesecore.keys.token.p11ng.TokenEntry;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.StringTools;
-import org.pkcs11.jacknji11.CEi;
-import org.pkcs11.jacknji11.CKA;
-import org.pkcs11.jacknji11.CKC;
-import org.pkcs11.jacknji11.CKK;
-import org.pkcs11.jacknji11.CKM;
-import org.pkcs11.jacknji11.CKO;
-import org.pkcs11.jacknji11.CKR;
-import org.pkcs11.jacknji11.CKRException;
-import org.pkcs11.jacknji11.CKU;
-import org.pkcs11.jacknji11.CK_SESSION_INFO;
-import org.pkcs11.jacknji11.CK_TOKEN_INFO;
-import org.pkcs11.jacknji11.LongRef;
-
-import javax.crypto.SecretKey;
-import javax.ejb.EJBException;
-import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,6 +59,64 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.crypto.SecretKey;
+import javax.ejb.EJBException;
+import javax.security.auth.x500.X500Principal;
+
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.LongByReference;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAPublicKey;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.DigestInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.ECPointUtil;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyGenParams;
+import org.cesecore.keys.token.p11ng.CK_CP5_AUTHORIZE_PARAMS;
+import org.cesecore.keys.token.p11ng.CK_CP5_AUTH_DATA;
+import org.cesecore.keys.token.p11ng.CK_CP5_CHANGEAUTHDATA_PARAMS;
+import org.cesecore.keys.token.p11ng.CK_CP5_INITIALIZE_PARAMS;
+import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
+import org.cesecore.keys.token.p11ng.PToPBackupObj;
+import org.cesecore.keys.token.p11ng.TokenEntry;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.StringTools;
+import org.pkcs11.jacknji11.CEi;
+import org.pkcs11.jacknji11.CKA;
+import org.pkcs11.jacknji11.CKC;
+import org.pkcs11.jacknji11.CKK;
+import org.pkcs11.jacknji11.CKM;
+import org.pkcs11.jacknji11.CKO;
+import org.pkcs11.jacknji11.CKR;
+import org.pkcs11.jacknji11.CKRException;
+import org.pkcs11.jacknji11.CKU;
+import org.pkcs11.jacknji11.CK_SESSION_INFO;
+import org.pkcs11.jacknji11.CK_TOKEN_INFO;
+import org.pkcs11.jacknji11.LongRef;
 
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
@@ -354,7 +356,7 @@ public class CryptokiDevice {
         }
         
         /** Finds a PrivateKey object by either certificate label or by private key label 
-         * @return the PKCS#11 reference pointer to the private key object 
+         * @return the PKCS#11 reference pointer to the private key object, or null if it does not exist 
          */
         // TODO: Support alias that is hexadecimal or label or Id
         private Long getPrivateKeyRefByLabel(final Long session, final String alias) {
@@ -1945,9 +1947,9 @@ public class CryptokiDevice {
         
        /**
         * Same as CESeCoreUtils#securityInfo.
-        *
-        * @param alias
-        * @param sb 
+        * Writes info about security related attributes.
+        * @param alias The alias of the private key to get info about.
+        * @param sb Buffer to write to, or 'No private key object with alias' if no key with the specified alias can be found
         */
         public void securityInfo(String alias, final StringBuilder sb) {
             Long session = null;
@@ -1955,23 +1957,27 @@ public class CryptokiDevice {
                 session = aquireSession();
 
                 final Long privateKeyRef = getPrivateKeyRefByLabel(session, alias);
-                final CKA attrs[] = c.GetAttributeValue(session, privateKeyRef, 
-                    CKA.SENSITIVE, 
-                    CKA.ALWAYS_SENSITIVE,
-                    CKA.EXTRACTABLE,
-                    CKA.NEVER_EXTRACTABLE,
-                    CKA.PRIVATE,
-                    CKA.DERIVE,
-                    CKA.MODIFIABLE);
+                if (privateKeyRef == null ) {
+                    sb.append("No private key object with alias '" + alias + "'");
+                } else {
+                    final CKA attrs[] = c.GetAttributeValue(session, privateKeyRef, 
+                            CKA.SENSITIVE, 
+                            CKA.ALWAYS_SENSITIVE,
+                            CKA.EXTRACTABLE,
+                            CKA.NEVER_EXTRACTABLE,
+                            CKA.PRIVATE,
+                            CKA.DERIVE,
+                            CKA.MODIFIABLE);
 
-                for ( final CKA attr : attrs ) {
-                    sb.append("  ");
-                    sb.append(CKA.L2S(attr.type));
-                    sb.append("=");
-                    try {
-                        sb.append(attr.getValueBool());
-                    } catch (IllegalStateException ignored) { // NOPMD
-                        sb.append("0x").append(Hex.toHexString(attr.getValue()));
+                    for ( final CKA attr : attrs ) {
+                        sb.append("  ");
+                        sb.append(CKA.L2S(attr.type));
+                        sb.append("=");
+                        try {
+                            sb.append(attr.getValueBool());
+                        } catch (IllegalStateException ignored) { // NOPMD
+                            sb.append("0x").append(Hex.toHexString(attr.getValue()));
+                        }
                     }
                 }
             } finally {
