@@ -995,6 +995,11 @@ select option.cvcoption_header {
     padding: 3px;
     color: #000;
 }
+.commandButtonExport  {margin-left: 10px;}
+
+/*---------Page CA > Publishers -------------------*/
+.cloneButton {margin-right: 10px;}
+.renameButton {margin-right: 10px;}
 
 /* --- Page: RA > End-Entity profile */
 table#endentityprofile.edit tr td:first-child {
@@ -1213,8 +1218,8 @@ table#config tr td:first-child {
 .listColumn1 { text-align: left; width: 40%; }
 .listColumn2 { text-align: left; width: 60%; }
 
-.subTableColumn1 { text-align: left; width: 50%; }
-.subTableColumn2 { text-align: right; width: 50%; }
+.subTableColumn1 { text-align: left; width: 40%; }
+.subTableColumn2 { text-align: right; width: 60%; }
 
 
 .ldapPublisherHeader {
@@ -1514,9 +1519,6 @@ a.button:active {
 .preformatted {
     white-space: pre-wrap;
 }
-
-/*----Page CA > Certificate Profiles---------------*/
-.commandButtonExport {margin-left: 10px;}
 
 /*--------------------------------------------------------------------------*/
 /* EOF */
