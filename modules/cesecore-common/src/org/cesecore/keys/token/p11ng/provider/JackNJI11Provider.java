@@ -261,7 +261,7 @@ public class JackNJI11Provider extends Provider {
                     myKey.getSlot().releaseSession(session);
                     hasActiveSession = false;
                 }
-                throw e;
+                throw new InvalidKeyException(e);
             }
         }
 
