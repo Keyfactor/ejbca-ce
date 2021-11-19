@@ -3592,9 +3592,9 @@ public abstract class CertTools {
     public static byte[] generateSHA1Fingerprint(byte[] ba) {
         // log.trace(">generateSHA1Fingerprint");
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
+            MessageDigest md = MessageDigest.getInstance("SHA1", BouncyCastleProvider.PROVIDER_NAME);
             return md.digest(ba);
-        } catch (NoSuchAlgorithmException nsae) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException nsae) {
             log.error("SHA1 algorithm not supported", nsae);
         }
         // log.trace("<generateSHA1Fingerprint");
@@ -3610,9 +3610,9 @@ public abstract class CertTools {
      */
     public static byte[] generateSHA256Fingerprint(byte[] ba) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("SHA-256", BouncyCastleProvider.PROVIDER_NAME);
             return md.digest(ba);
-        } catch (NoSuchAlgorithmException nsae) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException nsae) {
             log.error("SHA-256 algorithm not supported", nsae);
         }
         return null;
@@ -3627,9 +3627,9 @@ public abstract class CertTools {
      */
     public static byte[] generateMD5Fingerprint(byte[] ba) {
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("MD5", BouncyCastleProvider.PROVIDER_NAME);
             return md.digest(ba);
-        } catch (NoSuchAlgorithmException nsae) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException nsae) {
             log.error("MD5 algorithm not supported", nsae);
         }
 
@@ -4707,7 +4707,7 @@ public abstract class CertTools {
      */
     public static final String createPublicKeyFingerprint(final PublicKey publicKey, final String algorithm) {
         try {
-            final MessageDigest digest = MessageDigest.getInstance(algorithm);
+            final MessageDigest digest = MessageDigest.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
             digest.reset();
             digest.update(publicKey.getEncoded());
             final String result = Hex.toHexString(digest.digest());
@@ -4715,7 +4715,7 @@ public abstract class CertTools {
                 log.debug("Fingerprint " + result + " created for public key: " + new String(Base64.encode(publicKey.getEncoded())));
             }
             return result;
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             log.warn("Could not create fingerprint for public key ", e);
             return null;
         }
@@ -4763,14 +4763,12 @@ public abstract class CertTools {
     }
 
     public static byte[] getPKCS7Certificate(InputStream is) throws CertificateException, IOException, CMSException {
-
         final InputStreamReader isr = new InputStreamReader(is);
-        final PEMParser parser = new PEMParser(isr);
-
-        final ContentInfo info = (ContentInfo) parser.readObject();
-        final CMSSignedData csd = new CMSSignedData(info);
-
-        return csd.getEncoded();
+        try (final PEMParser parser = new PEMParser(isr)) {
+            final ContentInfo info = (ContentInfo) parser.readObject();
+            final CMSSignedData csd = new CMSSignedData(info);
+            return csd.getEncoded();
+        }
     }
 
     public static String getPEMCertificate(Collection<X509CertificateHolder> collection) throws CertificateException {
