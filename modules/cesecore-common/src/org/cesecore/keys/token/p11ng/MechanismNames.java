@@ -9,6 +9,9 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11ng;
 
+import java.security.InvalidKeyException;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -37,8 +40,10 @@ public class MechanismNames {
     private static final Map<String, Long> S2L;
     private static final Map<String, Pair<Long, Integer>> SIGALGOS2L;
     public static final Map<String, byte[]> CKM_PARAMS;
+    private final static Map<String, Long> DIGEST_NAME_TO_CKM_MAP = new HashMap<>();
+    private final static Map<String, Long> DIGEST_NAME_TO_CKG_MAP = new HashMap<>();
     private static final Map<String, Long> ENCALGOS2L;
-    
+
     static {
         S2L = new HashMap<>(L2S.size());
         for (Map.Entry<Long, String> entry : L2S.entrySet()) {
@@ -57,6 +62,10 @@ public class MechanismNames {
             SIGALGOS2L.put("SHA256withRSAandMGF1", Pair.of(CKM.RSA_PKCS_PSS, T_DIGEST));
             SIGALGOS2L.put("SHA384withRSAandMGF1", Pair.of(CKM.RSA_PKCS_PSS, T_DIGEST));
             SIGALGOS2L.put("SHA512withRSAandMGF1", Pair.of(CKM.RSA_PKCS_PSS, T_DIGEST));            
+            SIGALGOS2L.put("SHA1withRSASSA-PSS", Pair.of(CKM.RSA_PKCS_PSS, T_DIGEST));
+            SIGALGOS2L.put("SHA256withRSASSA-PSS", Pair.of(CKM.RSA_PKCS_PSS, T_DIGEST));
+            SIGALGOS2L.put("SHA384withRSASSA-PSS", Pair.of(CKM.RSA_PKCS_PSS, T_DIGEST));
+            SIGALGOS2L.put("SHA512withRSASSA-PSS", Pair.of(CKM.RSA_PKCS_PSS, T_DIGEST));
         } else {
             SIGALGOS2L.put("SHA1withRSA", Pair.of(CKM.SHA1_RSA_PKCS, T_UPDATE));
             SIGALGOS2L.put("SHA224withRSA", Pair.of(CKM.SHA224_RSA_PKCS, T_UPDATE));
@@ -67,8 +76,14 @@ public class MechanismNames {
             SIGALGOS2L.put("SHA256withRSAandMGF1", Pair.of(CKM.SHA256_RSA_PKCS_PSS, T_UPDATE));
             SIGALGOS2L.put("SHA384withRSAandMGF1", Pair.of(CKM.SHA384_RSA_PKCS_PSS, T_UPDATE));
             SIGALGOS2L.put("SHA512withRSAandMGF1", Pair.of(CKM.SHA512_RSA_PKCS_PSS, T_UPDATE));
+            SIGALGOS2L.put("SHA1withRSASSA-PSS", Pair.of(CKM.SHA1_RSA_PKCS_PSS, T_UPDATE));
+            SIGALGOS2L.put("SHA256withRSASSA-PSS", Pair.of(CKM.SHA256_RSA_PKCS_PSS, T_UPDATE));
+            SIGALGOS2L.put("SHA384withRSASSA-PSS", Pair.of(CKM.SHA384_RSA_PKCS_PSS, T_UPDATE));
+            SIGALGOS2L.put("SHA512withRSASSA-PSS", Pair.of(CKM.SHA512_RSA_PKCS_PSS, T_UPDATE));
         }
         SIGALGOS2L.put("MD5withRSA", Pair.of(CKM.MD5_RSA_PKCS, T_UPDATE));
+        SIGALGOS2L.put("NONEwithRSAandMGF1", Pair.of(CKM.RSA_PKCS_PSS, T_RAW));
+        SIGALGOS2L.put("NONEwithRSASSA-PSS", Pair.of(CKM.RSA_PKCS_PSS, T_RAW));
         SIGALGOS2L.put("NONEwithDSA", Pair.of(CKM.DSA, T_UPDATE));
         SIGALGOS2L.put("SHA1withDSA", Pair.of(CKM.DSA_SHA1, T_UPDATE));
         SIGALGOS2L.put("SHA224withECDSA", Pair.of(CKM.ECDSA, T_DIGEST));
@@ -84,6 +99,30 @@ public class MechanismNames {
         CKM_PARAMS.put("SHA256withRSAandMGF1", ULong.ulong2b(new long[]{CKM.SHA256, CKG.MGF1_SHA256, 32}));
         CKM_PARAMS.put("SHA384withRSAandMGF1", ULong.ulong2b(new long[]{CKM.SHA384, CKG.MGF1_SHA384, 48}));
         CKM_PARAMS.put("SHA512withRSAandMGF1", ULong.ulong2b(new long[]{CKM.SHA512, CKG.MGF1_SHA512, 64}));
+        CKM_PARAMS.put("SHA1withRSASSA-PSS", ULong.ulong2b(new long[]{CKM.SHA_1, CKG.MGF1_SHA1, 20}));
+        CKM_PARAMS.put("SHA256withRSASSA-PSS", ULong.ulong2b(new long[]{CKM.SHA256, CKG.MGF1_SHA256, 32}));
+        CKM_PARAMS.put("SHA384withRSASSA-PSS", ULong.ulong2b(new long[]{CKM.SHA384, CKG.MGF1_SHA384, 48}));
+        CKM_PARAMS.put("SHA512withRSASSA-PSS", ULong.ulong2b(new long[]{CKM.SHA512, CKG.MGF1_SHA512, 64}));
+
+        // Maps to be able to encode RSA-PSS parameters from a parameter spec
+        // Map betwen Java digest algorithm name and mechanism
+        DIGEST_NAME_TO_CKM_MAP.put("SHA1", CKM.SHA_1);
+        DIGEST_NAME_TO_CKM_MAP.put("SHA-1", CKM.SHA_1);
+        DIGEST_NAME_TO_CKM_MAP.put("SHA256", CKM.SHA256);
+        DIGEST_NAME_TO_CKM_MAP.put("SHA-256", CKM.SHA256);
+        DIGEST_NAME_TO_CKM_MAP.put("SHA384", CKM.SHA384);
+        DIGEST_NAME_TO_CKM_MAP.put("SHA-384", CKM.SHA384);
+        DIGEST_NAME_TO_CKM_MAP.put("SHA512", CKM.SHA512);
+        DIGEST_NAME_TO_CKM_MAP.put("SHA-512", CKM.SHA512);
+        // Map between Java digest algorithm name and mask generation mechanism
+        DIGEST_NAME_TO_CKG_MAP.put("SHA1", CKG.MGF1_SHA1);
+        DIGEST_NAME_TO_CKG_MAP.put("SHA-1", CKG.MGF1_SHA1);
+        DIGEST_NAME_TO_CKG_MAP.put("SHA256", CKG.MGF1_SHA256);
+        DIGEST_NAME_TO_CKG_MAP.put("SHA-256", CKG.MGF1_SHA256);
+        DIGEST_NAME_TO_CKG_MAP.put("SHA384", CKG.MGF1_SHA384);
+        DIGEST_NAME_TO_CKG_MAP.put("SHA-384", CKG.MGF1_SHA384);
+        DIGEST_NAME_TO_CKG_MAP.put("SHA512", CKG.MGF1_SHA512);
+        DIGEST_NAME_TO_CKG_MAP.put("SHA-512", CKG.MGF1_SHA512);
 
         ENCALGOS2L = new HashMap<>();
         ENCALGOS2L.put(PKCSObjectIdentifiers.rsaEncryption.getId(), CKM.RSA_PKCS);
@@ -154,5 +193,21 @@ public class MechanismNames {
             return Optional.empty();
         }
     }
+
+    public static byte[] encodePssParameters(final PSSParameterSpec spec) throws InvalidKeyException {
+        MGF1ParameterSpec mgfSpec = (MGF1ParameterSpec) spec.getMGFParameters();
+        final Long digestMechanism = DIGEST_NAME_TO_CKM_MAP.get(spec.getDigestAlgorithm());
+        final Long maskGenMechanism = DIGEST_NAME_TO_CKG_MAP.get(mgfSpec.getDigestAlgorithm());
+        final long saltLength = spec.getSaltLength();
+        if (digestMechanism == null) {
+            throw new InvalidKeyException("Unsupported digest in PSS parameters: " + spec.getDigestAlgorithm());
+        }
+
+        if (maskGenMechanism == null) {
+            throw new InvalidKeyException("Unsupported digest in MGF1 parameters: " + mgfSpec.getDigestAlgorithm());
+        }
+        return ULong.ulong2b(new long[] {digestMechanism, maskGenMechanism, saltLength});
+    }
+
 
 }
