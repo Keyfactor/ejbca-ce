@@ -13,25 +13,19 @@
 
 package org.ejbca.webtest.scenario;
 
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -41,7 +35,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
-import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.junit.AfterClass;
 import org.junit.Assert;

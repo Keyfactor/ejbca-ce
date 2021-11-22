@@ -68,6 +68,7 @@ public class EABConfigurationCache implements ConfigurationCache {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public ConfigurationBase getConfiguration(HashMap data) {
         ConfigurationBase returnval = new EABConfiguration();
         returnval.loadData(data);
