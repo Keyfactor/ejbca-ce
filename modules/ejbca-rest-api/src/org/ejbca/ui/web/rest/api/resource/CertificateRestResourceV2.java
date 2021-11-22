@@ -18,6 +18,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -32,6 +33,7 @@ import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
+import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 
 import io.swagger.annotations.Api;
@@ -50,6 +52,17 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
 
+    @GET
+    @Path("/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get the status of this REST Resource", 
+                  notes = "Returns status, API version and EJBCA version.",  
+                  response = RestResourceStatusRestResponse.class)
+    @Override
+    public Response status() {
+        return super.status();
+    }
+    
     @POST
     @Path("/search")
     @Consumes(MediaType.APPLICATION_JSON)
