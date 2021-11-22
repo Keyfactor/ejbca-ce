@@ -28,7 +28,8 @@ import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.era.RaCertificateSearchRequest;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -49,6 +50,9 @@ import io.swagger.annotations.ApiParam;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateRestResourceV2 extends BaseRestResource {
     
+    private static final String RESOURCE_STATUS = "OK";
+    protected static final String RESOURCE_VERSION = "2.0";
+    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
 
@@ -60,7 +64,12 @@ public class CertificateRestResourceV2 extends BaseRestResource {
                   response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
-        return super.status();
+        return Response.ok(RestResourceStatusRestResponse.builder()
+                .status(RESOURCE_STATUS)
+                .version(RESOURCE_VERSION)
+                .revision(GlobalConfiguration.EJBCA_VERSION)
+                .build()
+        ).build();
     }
     
     @POST
@@ -97,7 +106,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
             final AuthenticationToken authenticationToken,
             final SearchCertificatesRestRequestV2 restRequest
     ) throws RestException, CertificateEncodingException, CertificateParsingException {
-        final RaCertificateSearchRequest raRequest = SearchCertificatesRestRequestV2.converter().toEntity(restRequest);
+        final RaCertificateSearchRequestV2 raRequest = SearchCertificatesRestRequestV2.converter().toEntity(restRequest);
         final RaCertificateSearchResponseV2 raResponse = (RaCertificateSearchResponseV2) raMasterApi.searchForCertificatesV2(authenticationToken, raRequest);
         return SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, restRequest.getPagination());
     }
