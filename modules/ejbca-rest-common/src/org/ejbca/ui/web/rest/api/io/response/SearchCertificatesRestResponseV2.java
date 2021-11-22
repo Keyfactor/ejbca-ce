@@ -12,9 +12,12 @@ package org.ejbca.ui.web.rest.api.io.response;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.util.Base64;
@@ -28,6 +31,8 @@ import org.ejbca.ui.web.rest.api.io.request.PaginationSummary;
  */
 public class SearchCertificatesRestResponseV2 {
 
+    private static final Logger log = Logger.getLogger(SearchCertificatesRestResponseV2.class);
+    
     private List<CertificateRestResponseV2> certificates = new ArrayList<>();
     
     private PaginationSummary paginationSummary;
@@ -98,19 +103,38 @@ public class SearchCertificatesRestResponseV2 {
 
     public static class SearchCertificatesRestResponseConverterV2 {
 
-        public SearchCertificatesRestResponseV2 toRestResponse(final RaCertificateSearchResponseV2 raCertificateSearchResponse, final Pagination pagination) throws CertificateEncodingException {
+        public SearchCertificatesRestResponseV2 toRestResponse(final RaCertificateSearchResponseV2 raCertificateSearchResponse, final Pagination pagination) throws CertificateEncodingException, CertificateParsingException {
             final SearchCertificatesRestResponseV2 result = new SearchCertificatesRestResponseV2();
+            final int count = raCertificateSearchResponse.getCdws().size();
+            
             final PaginationSummary summary;
             if (pagination != null) {
-                summary = new PaginationSummary(pagination.getPageSize(), pagination.getCurrentPage());
+                final int pageSize = pagination.getPageSize();
+                final int currentPage = pagination.getCurrentPage();
+                summary = new PaginationSummary(pageSize, currentPage);
+                // Sets the totalCount if possible. totalCount == null means former hasMoreResults == true.
+                if (count < pageSize) {
+                    summary.setTotalCerts((long) pageSize * (currentPage - 1) + count);
+                }
             } else {
                 summary = new PaginationSummary(raCertificateSearchResponse.getTotalCount());
             }
             result.setPaginationSummary(summary);
             for(final CertificateDataWrapper cdw : raCertificateSearchResponse.getCdws()) {
-                final Certificate certificate = cdw.getCertificate();
+                Certificate certificate = cdw.getCertificate();
                 final CertificateData cd = cdw.getCertificateData();
-                // We have to check for null as we can issue certificates without storing the certificate data in the database
+                final Base64CertData base64CertData = cdw.getBase64CertData();
+                
+                if (certificate == null && base64CertData != null && base64CertData.getBase64Cert() != null) {
+                    try {
+                        certificate = CertTools.getCertfromByteArray(Base64.decode(base64CertData.getBase64Cert().getBytes()), Certificate.class);
+                    } catch (CertificateParsingException e) {
+                        // Should not happen.
+                        log.warn("Failed to parse certificate stored in the Base64CertData with issuer '" + cd.getIssuerDN() + "' and SN '" + cd.getSerialNumberHex() + "'.");
+                        throw e;
+                    }
+                }
+                
                 if (certificate != null && cd != null) {
                     final byte[] certificateBytes = certificate.getEncoded();
                     final CertificateRestResponseV2 response = CertificateRestResponseV2.builder()

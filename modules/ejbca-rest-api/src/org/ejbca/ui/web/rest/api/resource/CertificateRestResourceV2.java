@@ -10,6 +10,7 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -61,7 +62,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     public Response searchCertificates(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Collection of search criterias and pagination information.") final SearchCertificatesRestRequestV2 searchCertificatesRestRequest
-    ) throws AuthorizationDeniedException, RestException, CertificateEncodingException {
+    ) throws AuthorizationDeniedException, RestException, CertificateEncodingException, CertificateParsingException {
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         validateObject(searchCertificatesRestRequest);
         CertificateRestResourceUtil.authorizeSearchCertificatesRestRequestReferences(authenticationToken, raMasterApi, searchCertificatesRestRequest);
@@ -77,11 +78,12 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      * @return Search results.
      * @throws RestException In case of malformed criteria.
      * @throws CertificateEncodingException In case of failure in certificate reading.
+     * @throws CertificateParsingException if the certificate from Base64CertData cannot be parsed.
      */
     private SearchCertificatesRestResponseV2 searchCertificates(
             final AuthenticationToken authenticationToken,
             final SearchCertificatesRestRequestV2 restRequest
-    ) throws RestException, CertificateEncodingException {
+    ) throws RestException, CertificateEncodingException, CertificateParsingException {
         final RaCertificateSearchRequest raRequest = SearchCertificatesRestRequestV2.converter().toEntity(restRequest);
         final RaCertificateSearchResponseV2 raResponse = (RaCertificateSearchResponseV2) raMasterApi.searchForCertificatesV2(authenticationToken, raRequest);
         return SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, restRequest.getPagination());
