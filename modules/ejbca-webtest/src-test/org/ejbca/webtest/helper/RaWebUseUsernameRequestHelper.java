@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
@@ -22,8 +21,6 @@ import org.openqa.selenium.interactions.Actions;
  *
  */
 public class RaWebUseUsernameRequestHelper extends BaseHelper {
-    private static final Logger log = Logger.getLogger(RaWebUseUsernameRequestHelper.class);
-
     public RaWebUseUsernameRequestHelper(WebDriver webDriver) {
         super(webDriver);
     }
