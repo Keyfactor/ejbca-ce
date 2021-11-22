@@ -27,6 +27,8 @@ public class DomainAllowlistValidatorUnitTest {
             "permit5.*.example.com\n" +
             "*.permit6.*.example.com\n" +
             "permit7.example.*\n" +
+            "permit8.partial*.com\n" +
+            "*.*.permit9.example.com\n" +
             "\n").getBytes(StandardCharsets.UTF_8);
 
     private static final byte[] MALFORMED_WHITELIST = ("# some line\n" + 
@@ -42,12 +44,12 @@ public class DomainAllowlistValidatorUnitTest {
         String[] allowedDomains = new String[] {"permit.com", "permit.example.com", "permit2.example.com", 
                                          "permit3.example.com", "permit4.example.com", 
                                          "permit5\\..*\\.example\\.com", ".*\\.permit6\\..*\\.example\\.com",
-                                         "permit7\\.example\\..*"};
-        assertEquals("Wrong number of entries in parsed blacklist.", 8, whitelist.size());
+                                         "permit7\\.example\\..*", "permit8\\.partial.*\\.com"};
+        assertEquals("Wrong number of entries in parsed blacklist.", 10, whitelist.size());
         for(String domain: allowedDomains)
             assertTrue("Should contain " + domain, whitelist.contains(domain));
         
-        final String WHITELIST_SHA256 = "662a4de8997c34a9fbc8558c9a33b59f2e135b17120ed27032f5feb0a985c6f2";
+        final String WHITELIST_SHA256 = "757a9393b71d52daac6b645cbb47575e6266c5c360c8589acaf4f3daa3bd9732";
         assertEquals("Wrong SHA-256 hash.", WHITELIST_SHA256, validator.getWhitelistSha256());
         assertNotNull("Upload date should be set", validator.getWhitelistDate());
     }
@@ -69,7 +71,11 @@ public class DomainAllowlistValidatorUnitTest {
         validator.changeWhitelist(WHITELIST);
         String[] expectedAllowedDomains = new String[] {"permit.com", "permit.example.com", "permit2.example.com", 
                 "permit3.example.com", "permit4.example.com", 
-                "permit5.abc.example.com", "abc.permit6.def.example.com", "permit7.example.de"};
+                "permit5.abc.example.com", "abc.permit6.def.example.com", "permit7.example.de",
+                "permit8.partialxyz.com", "permit5.*.example.com", "*.permit6.*.example.com",
+                "permit7.example.*", "permit8.partial*.com", "abc.permit6.*.example.com", "*.permit6.def.example.com",
+                "xx.yy.permit9.example.com"
+                };
         List<String> failures = new ArrayList<String>();
         Entry<Boolean,List<String>> result = null;
         for(String domain: expectedAllowedDomains) {
@@ -86,7 +92,8 @@ public class DomainAllowlistValidatorUnitTest {
         validator.changeWhitelist(WHITELIST);
         String[] expectedDisallowedDomains = new String[] {"permit1.com", "permit.example1.com", ".permit2.example.com", 
                 "permit3..example.com", "permit4.example.com1", 
-                "permit5.example.com", "permit6.def.example.com", "permit6.example.com", "permit7.example"};
+                "permit5.example.com", "permit6.def.example.com", "permit6.example.com", "permit7.example",
+                "xx.permit9.example.com"};
         List<String> failures = new ArrayList<String>();
         Entry<Boolean,List<String>> result = null;
         for(String domain: expectedDisallowedDomains) {
