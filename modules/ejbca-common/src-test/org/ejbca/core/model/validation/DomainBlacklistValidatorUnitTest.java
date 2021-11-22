@@ -26,14 +26,14 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistAsciiLookalikeNormalizer;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistBaseDomainChecker;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Unit test of DomainBlacklistValidator
- *
- * @version $Id$
  */
 public class DomainBlacklistValidatorUnitTest {
 
@@ -51,6 +51,11 @@ public class DomainBlacklistValidatorUnitTest {
     private static final byte[] MALFORMED_BLACKLIST = ("# some line\n" + 
             "detta-behöver-punycodas\n" + // line that is not punycoded
             "\n").getBytes(StandardCharsets.UTF_8);
+
+    @Before
+    public void setUp() throws Exception {
+        CryptoProviderTools.installBCProvider();
+    }
 
     @Test
     public void parseBlacklistFile() throws DomainBlacklistFileException {
