@@ -65,11 +65,11 @@ public class CertificateRestResponseV2 {
     
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("revocationDate")
-    private Long revocationDate;
+    private Long revocationDate = -1L;
     
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("revocationReason")
-    private Integer revocationReason;
+    private Integer revocationReason = -1;
     
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("serialNumber")
