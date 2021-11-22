@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,6 +47,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     
     private static final long serialVersionUID = 5317012621081331592L;
     private static final Pattern allowedDomainCharacters = Pattern.compile("^[a-zA-Z0-9._\\-\\*]+$");
+    private static final String WILDCARD = "*";
 
     private static final Logger log = Logger.getLogger(DomainAllowlistValidator.class);
 
@@ -124,7 +126,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     }
     
     public void changeWhitelist(final byte[] bytes) throws DomainListFileException {
-        final Set<String> domainSet = new TreeSet<>(); // store entries sorted in database
+        final Set<String> domainSet = new HashSet<>(); // store entries sorted in database
         try {
             try (final InputStream domainWhitelistInputStream = new ByteArrayInputStream(bytes);
                  final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(domainWhitelistInputStream, StandardCharsets.UTF_8))) {
@@ -142,10 +144,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
                     }
                     validateDomain(line, lineNumber);
                     line = line.toLowerCase(Locale.ROOT);
-                    if(line.contains("*")) {
-                        line = line.replace(".", "\\.");
-                        line = line.replace("*", ".*");
-                    }
+                    line = formatRegexDomainIfNecessary(line);
                     domainSet.add(line);
                 }
                 if (log.isDebugEnabled()) {
@@ -159,6 +158,14 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         } catch (IOException e) {
             throw new DomainListFileException("Unable to parse domain allow list. " + e.getMessage());
         }
+    }
+    
+    private String formatRegexDomainIfNecessary(String str) {
+        if(str.contains(WILDCARD)) {
+            str = str.replace(".", "\\.");
+            str = str.replace("*", ".*");
+        }
+        return str;
     }
     
     /**
@@ -245,37 +252,31 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
 
     @Override
     public Entry<Boolean, List<String>> validate(ExecutorService executorService, String... domainNames) {        
-        final List<String> whiteList = getWhitelist();
+        final Set<String> whiteList = getWhitelist();
         if(whiteList==null || whiteList.isEmpty()) {
             return new AbstractMap.SimpleEntry<>(false, Arrays.asList("Allowed domain list is not initialized."));
         }
         
-        boolean result=true, matched;
+        boolean result=true, match;
         final List<String> messages = new ArrayList<>();
-
+        
         outer: 
         for (final String domainName : domainNames) {
-            if(!StringTools.isValidSanDnsName(domainName)) {
-                messages.add("Domain name: '" + domainName + "' is invalid.");
-                result = false;
+
+            String formattedDomainName = formatRegexDomainIfNecessary(domainName);
+            if(whiteList.contains(formattedDomainName))
                 continue;
-            }
-            matched = false;
+            
             for(String allowedDomain: whiteList) {
-                if(!allowedDomain.contains("*")) {
-                    matched = allowedDomain.equals(domainName);
-                } else {
-                    // validate regex only when necessary
-                    matched = domainName.matches(allowedDomain);
-                }
-                if(matched) {
-                    continue outer;
+                // validate regex only when necessary
+                if(allowedDomain.contains(WILDCARD) && domainName.matches(allowedDomain)) {
+                        continue outer;
                 }
             }
-            if (!matched) {
-                messages.add("Domain '" + domainName + "' is not allowed.");
-                result = false;
-            }
+            
+            messages.add("Domain '" + domainName + "' is not allowed.");
+            result = false;
+            
         }
         return new AbstractMap.SimpleEntry<>(result, messages);
     }
@@ -321,12 +322,12 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         return DomainAllowlistValidator.class;
     }
     
-    public List<String> getWhitelist() {
-        return getData(WHITELISTS_KEY, Collections.emptyList());
+    public Set<String> getWhitelist() {
+        return getData(WHITELISTS_KEY, Collections.emptySet());
     }
 
-    public void setWhitelist(final Collection<String> domainMap) {
-        putData(WHITELISTS_KEY, new ArrayList<>(domainMap));
+    public void setWhitelist(final Collection<String> domainSet) {
+        putData(WHITELISTS_KEY, new HashSet<>(domainSet));
     }
 
     public Date getWhitelistDate() {
