@@ -26,7 +26,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -88,6 +87,7 @@ public class DomainValidatorTest extends CaTestCase {
             "permit5.*.example.com\n" +
             "*.permit6.*.example.com\n" +
             "permit7.example.*\n" +
+            "permit8.partial*.com\n" +
             "common.in.bothlist.com\n" +
             "\n";
     
@@ -250,7 +250,8 @@ public class DomainValidatorTest extends CaTestCase {
         String[] domainList = new String[] {"permit.com", "permit.example.com", "permit2.example.com", 
                 "permit3.example.com", "permit4.example.com", 
                 "permit5.abc.example.com", "abc.permit6.def.example.com", "permit7.example.de",
-                "common.in.bothlist.com"};
+                "common.in.bothlist.com", "permit8.partialxyz.com", "permit5.*.example.com", "*.permit6.*.example.com",
+                "permit7.example.*", "permit8.partial*.com" };
         List<String> failedDomains = new ArrayList<String>();
         boolean result;
         for(String domain: domainList) {
