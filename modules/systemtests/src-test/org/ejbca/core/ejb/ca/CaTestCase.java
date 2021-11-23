@@ -92,6 +92,7 @@ import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.Assert;
 
+import static org.ejbca.core.ejb.ca.CaTestCase.REPLACABLE_TAG;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -120,6 +121,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_DSA_CA_NAME = "TESTDSA";
     
     private static final int CA_CREATION_FAIL = -1;
+    
+    public static final String REPLACABLE_TAG = "$TAG$";
 
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
@@ -260,10 +263,27 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                     + CA_CREATION_FAIL + ". Please use alternate subjectDN.");
         int result = createTestCA(caName, keyStrength, dn, signedBy, certificateChain, 
                 signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA 
-                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, null, false, false);
+                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, null, false, false, null);
         return result != CA_CREATION_FAIL;
     }
 
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, 
+            int certificateProfileId, List<Integer> validators)
+        throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+        CryptoTokenAuthenticationFailedException {
+        return createTestCA(caName, keyStrength, dn, signedBy, null, certificateProfileId, null, null,
+                true, true, validators);
+    }
+    
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
+            int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
+        return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                 certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, null);
+    }
     /**
      * Make sure testCA exist.
      * 
@@ -284,7 +304,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      */
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
             int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
-            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey)
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
@@ -334,7 +354,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         cainfo.setDefaultCertificateProfileId(certificateProfileId);
         cainfo.setDoEnforceUniqueDistinguishedName(!relaxUniquenessSubjectDN);
         cainfo.setDoEnforceUniquePublicKeys(!relaxUniquenessPublicKey);
-        
+        log.info("setting validators: " + validators);
+        cainfo.setValidators(validators);
+
         try {
             caAdminSession.createCA(internalAdmin, cainfo);
         } catch (InvalidAlgorithmException e) {
@@ -463,8 +485,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             int randint = rand.nextInt(9);
             username += (Integer.valueOf(randint)).toString();
         }
-        log.debug("Generated random username: username =" + username);
+        // log.debug("Generated random username: username =" + username);
         return username;
+    }
+    
+    /** Generate random name based on given template */
+    public static String getRandomizedName(String nameTemplate) {
+        return nameTemplate.replace(REPLACABLE_TAG, genRandomUserName());
     }
 
     /**
