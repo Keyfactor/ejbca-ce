@@ -807,7 +807,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
     @Override
     public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken,
-            RaCertificateSearchRequest raCertificateSearchRequest) {
+            RaCertificateSearchRequestV2 raCertificateSearchRequest) {
         final RaCertificateSearchResponseV2 ret = new RaCertificateSearchResponseV2();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
