@@ -14,9 +14,8 @@ package org.ejbca.core.model.era;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 
@@ -37,7 +36,7 @@ public class RaCertificateSearchResponseV2 implements Serializable {
     public void setTotalCount(long count) { totalCount = count; }
     
     public void merge(final RaCertificateSearchResponseV2 other) {
-        final Map<String,CertificateDataWrapper> cdwMap = new HashMap<>();
+        final LinkedHashMap<String,CertificateDataWrapper> cdwMap = new LinkedHashMap<>();
         for (final CertificateDataWrapper cdw : cdws) {
             cdwMap.put(cdw.getCertificateData().getFingerprint(), cdw);
         }

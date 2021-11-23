@@ -1078,7 +1078,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorizedCpIds.add(CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         }
 
-        final Query query = createQuery(authenticationToken, request, false, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);;
+        // Copies the search certificates V1 request type to V2.
+        final Query query = createQuery(authenticationToken, new RaCertificateSearchRequestV2(request), false, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
         int offset = request.getPageNumber() * maxResults;
         query.setMaxResults(maxResults);
@@ -1129,7 +1130,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @SuppressWarnings("unchecked")
     @Override
-    public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
+    public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequestV2 request) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
         // Only search a subset of the requested CAs if requested
@@ -1202,7 +1203,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final List<String> fingerprints;
         try {
-            if (request.getPageNumber() == -1) {
+            if (countOnly) {
                 final long count = (long) query.getSingleResult();
                 response.setTotalCount(count);
                 if (log.isDebugEnabled()) {
@@ -1239,7 +1240,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return response;
     }
     
-    private Query createQuery(final AuthenticationToken authenticationToken, final RaCertificateSearchRequest request, final boolean countOnly, 
+    private Query createQuery(final AuthenticationToken authenticationToken, final RaCertificateSearchRequestV2 request, final boolean countOnly, 
             final List<String> issuerDns, final List<Integer> authorizedLocalCaIds, 
             final List<Integer> authorizedCpIds, final boolean accessAnyCpAvailable, 
             final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
@@ -1340,6 +1341,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
             sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
         }
+        
+        String orderProperty = request.getOrderProperty();
+        String orderOperation = request.getOrderOperation();
+        if (!countOnly && StringUtils.isNotBlank(orderProperty) && StringUtils.isNotBlank(orderOperation)) {
+            orderOperation = orderOperation.trim();
+            if("ASC".equalsIgnoreCase(orderOperation) || "DESC".equalsIgnoreCase(orderOperation)) {
+                orderProperty = mapOrderColumn(orderProperty);
+                if (orderProperty != null) { 
+                    sb.append(" ORDER BY a.").append(orderProperty).append(" ").append(orderOperation);
+                }
+            } else {
+                log.warn("Invalid order JPQL order operation '" + orderOperation + "'.");
+            }
+        } 
+        
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("issuerDN", issuerDns);
         if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
@@ -1427,6 +1443,28 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return query;
+    }
+    
+    private final String mapOrderColumn(final String property) {
+        if (property != null) {
+            switch (property.trim()) {
+                case "USERNAME": return "username";
+                case "ISSUER_DN": return "issuerDN";
+                case "SUBJECT_DN": return "subjectDN";
+                case "EXTERNAL_ACCOUNT_BINDING_ID": return "accountBindingId";
+                case "END_ENTITY_PROFILE": return "endEntityProfileId";
+                case "CERTIFICATE_PROFILE": return "certificateProfileId";
+                case "STATUS": return "status";
+                case "TAG": return "tag";
+                case "TYPE": return "type";
+                case "UPDATE_TIME": return "updateTime";
+                case "ISSUED_DATE": return "notBefore";
+                case "EXPIRE_DATE": return "expireDate";
+                case "REVOCATION_DATE": return "revocationDate";
+            }
+        }
+        log.warn("Invalid query order property '" + property + "'.");
+        return null;
     }
     
     @SuppressWarnings("unchecked")

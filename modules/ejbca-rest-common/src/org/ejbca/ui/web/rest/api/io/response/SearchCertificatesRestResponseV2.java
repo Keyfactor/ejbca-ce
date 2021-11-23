@@ -9,7 +9,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -124,7 +124,7 @@ public class SearchCertificatesRestResponseV2 {
                 Certificate certificate = cdw.getCertificate();
                 final CertificateData cd = cdw.getCertificateData();
                 final Base64CertData base64CertData = cdw.getBase64CertData();
-                
+
                 if (certificate == null && base64CertData != null && base64CertData.getBase64Cert() != null) {
                     try {
                         certificate = CertTools.getCertfromByteArray(Base64.decode(base64CertData.getBase64Cert().getBytes()), Certificate.class);
@@ -151,7 +151,7 @@ public class SearchCertificatesRestResponseV2 {
                         .setStatus(cd.getStatus())
                         .setSubjectAltName(cd.getSubjectAltName())
                         .setSubjectDN(cd.getSubjectDN())
-                        .setSubjectKeyId(new String(CertTools.getSubjectKeyId(certificate), StandardCharsets.UTF_8))
+                        .setSubjectKeyId(new String(Hex.encode(CertTools.getSubjectKeyId(certificate))))
                         .setTag(cd.getTag())
                         .setType(cd.getType())
                         .setUpdateTime(cd.getUpdateTime())

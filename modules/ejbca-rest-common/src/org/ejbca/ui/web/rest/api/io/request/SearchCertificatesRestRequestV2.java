@@ -16,10 +16,11 @@ import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.ejbca.core.model.era.RaCertificateSearchRequest;
+import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificatePagination;
+import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateSortRestRequest;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -34,6 +35,7 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest
  *
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest
+ * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateSortRestRequest
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificatePagination
  */
 public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteriaRequest {
@@ -41,6 +43,10 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
     @ApiModelProperty(value = "Pagination." )
     @ValidSearchCertificatePagination
     private Pagination pagination;
+    
+    @ApiModelProperty(value = "Sort." )
+    @ValidSearchCertificateSortRestRequest
+    private SearchCertificateSortRestRequest sort = null;
     
     @ApiModelProperty(value = "A List of search criteria." )
     @ValidSearchCertificateCriteriaRestRequestList
@@ -53,6 +59,14 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
 
     public void setPagination(Pagination pagination) {
         this.pagination = pagination;
+    }
+    
+    public SearchCertificateSortRestRequest getSort() {
+        return sort;
+    }
+
+    public void setSort(SearchCertificateSortRestRequest sort) {
+        this.sort = sort;
     }
 
     @Override
@@ -75,6 +89,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
 
     public static class SearchCertificatesRestRequestBuilderV2 {
         private Pagination pagination;
+        private SearchCertificateSortRestRequest orderBy; 
         private List<SearchCertificateCriteriaRestRequest> criteria;
 
         private SearchCertificatesRestRequestBuilderV2() {
@@ -82,6 +97,11 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
 
         public SearchCertificatesRestRequestBuilderV2 pagination(final Pagination pagination) {
             this.pagination = pagination;
+            return this;
+        }
+        
+        public SearchCertificatesRestRequestBuilderV2 orderBy(final SearchCertificateSortRestRequest request) {
+            this.orderBy = request;
             return this;
         }
 
@@ -93,6 +113,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
         public SearchCertificateCriteriaRequest build() {
             final SearchCertificatesRestRequestV2 result = new SearchCertificatesRestRequestV2();
             result.setPagination(pagination);
+            result.setSort(orderBy);
             result.setCriteria(criteria);
             return result;
         }
@@ -109,11 +130,11 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
 
     public static class SearchCertificatesRestRequestConverterV2 {
 
-        public RaCertificateSearchRequest toEntity(final SearchCertificatesRestRequestV2 restRequest) throws RestException {
+        public RaCertificateSearchRequestV2 toEntity(final SearchCertificatesRestRequestV2 restRequest) throws RestException {
             if(restRequest.getCriteria() == null || restRequest.getCriteria().isEmpty()) {
                 throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
             }
-            final RaCertificateSearchRequest raRequest = new RaCertificateSearchRequest();
+            final RaCertificateSearchRequestV2 raRequest = new RaCertificateSearchRequestV2();
             if(restRequest.getPagination() == null) {
                 // Enables count rows only.
                 raRequest.setPageNumber(-1);
@@ -122,6 +143,11 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
             if (pagination != null) {
                 raRequest.setMaxResults(pagination.getPageSize());
                 raRequest.setPageNumber(pagination.getCurrentPage());
+            }
+            final SearchCertificateSortRestRequest orderBy = restRequest.getSort();
+            if (orderBy != null) {
+                raRequest.setOrderProperty(orderBy.getProperty());
+                raRequest.setOrderOperation(orderBy.getOperation());
             }
             raRequest.setEepIds(new ArrayList<Integer>());
             raRequest.setCpIds(new ArrayList<Integer>());
