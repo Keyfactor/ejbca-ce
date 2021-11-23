@@ -13,7 +13,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -60,7 +60,7 @@ public class SearchCertificatesRestResponseV2UnitTest {
     // Test with other certificate.
     final String subjectAn = null; 
     final String subjectDn = certificate.getSubjectDN().getName();
-    final String subjectKeyId = new String(CertTools.getSubjectKeyId(certificate), StandardCharsets.UTF_8);
+    final String subjectKeyId = new String(Hex.encode(CertTools.getSubjectKeyId(certificate)));
     final String tag = "tag";
     final Integer type = CertificateConstants.CERTTYPE_ENDENTITY;
     final Long updateTime = System.currentTimeMillis();
