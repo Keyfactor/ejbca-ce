@@ -20,13 +20,13 @@ import org.cesecore.ErrorCode;
  * An exception thrown when trying to parse a malformed blacklist file.
  * @version $Id:$
  */
-public class DomainBlacklistFileException extends CesecoreException {
+public class DomainListFileException extends CesecoreException {
     private static final long serialVersionUID = 1L;
     
     /**
      * Creates a new instance without detail message.
      */
-    public DomainBlacklistFileException() {
+    public DomainListFileException() {
         super(ErrorCode.DOMAIN_BLACKLIST_FILE_PARSING_FAILED);
     }
         
@@ -34,7 +34,7 @@ public class DomainBlacklistFileException extends CesecoreException {
      * Constructs an instance of with the specified detail message.
      * @param msg the detail message.
      */
-    public DomainBlacklistFileException(String msg) {
+    public DomainListFileException(String msg) {
         super(ErrorCode.DOMAIN_BLACKLIST_FILE_PARSING_FAILED, msg);
     }
 
@@ -42,7 +42,7 @@ public class DomainBlacklistFileException extends CesecoreException {
      * Constructs an instance of with the specified cause.
      * @param e the specified cause.
      */
-    public DomainBlacklistFileException(Exception e) {
+    public DomainListFileException(Exception e) {
         super(ErrorCode.DOMAIN_BLACKLIST_FILE_PARSING_FAILED, e);
     }
 
