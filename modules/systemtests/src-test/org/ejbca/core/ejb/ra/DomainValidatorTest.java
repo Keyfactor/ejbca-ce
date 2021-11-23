@@ -23,6 +23,7 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -65,7 +66,7 @@ public class DomainValidatorTest extends CaTestCase {
     private static EndEntityProfile endEntityProfile;
     private static int endEntityProfileId;
     
-    private static List<String> createdUsers;
+    private static List<String> createdUsers = new ArrayList<String>();
     
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EndEntityValidatorTest"));
     
@@ -107,7 +108,8 @@ public class DomainValidatorTest extends CaTestCase {
     
     @BeforeClass
     public static void setUpEndEntityValidatorTest() throws Exception {
-        
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+
         // create root cert profile
         rootCertProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
         rootCertificateProfileId = certProfileSession.addCertificateProfile(admin, 
@@ -166,8 +168,6 @@ public class DomainValidatorTest extends CaTestCase {
                 CAInfo.SELFSIGNED, rootCertificateProfileId, 
                 validators);
         log.info("Root CA id: " + rootCaId);
-         
-        createdUsers = new ArrayList<String>();
         
     }
     
