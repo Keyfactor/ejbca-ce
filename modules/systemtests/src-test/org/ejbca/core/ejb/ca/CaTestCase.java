@@ -38,7 +38,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -71,6 +70,7 @@ import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthentication
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
@@ -92,7 +92,6 @@ import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.Assert;
 
-import static org.ejbca.core.ejb.ca.CaTestCase.REPLACABLE_TAG;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -141,6 +140,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     protected void setUp() throws Exception { // NOPMD: this is a base class
         log.trace(">CaTestCase.setUp()");
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         super.setUpAuthTokenAndRole(getRoleName()+"Base");
         removeTestCA(); // We can't be sure this CA was not left over from
         createTestCA();

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DomainAllowlistValidatorUnitTest {
@@ -34,6 +36,11 @@ public class DomainAllowlistValidatorUnitTest {
     private static final byte[] MALFORMED_WHITELIST = ("# some line\n" + 
             "detta-behöver-punycodas\n" + // line that is not punycoded
             "\n").getBytes(StandardCharsets.UTF_8);
+    
+    @BeforeClass
+    public static void beforeClass() {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
     
     @Test
     public void parseAllowlistFile() throws DomainListFileException {
