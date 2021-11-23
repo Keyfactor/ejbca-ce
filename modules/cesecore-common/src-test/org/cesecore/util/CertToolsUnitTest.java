@@ -2368,6 +2368,8 @@ public class CertToolsUnitTest {
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "test.email.com"), "Disallowed SAN (excluded test.email.com DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "example.com"), "Disallowed SAN (excluded example.com DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "com"), "Disallowed SAN (excluded com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, ".com"), "Disallowed SAN (excluded .com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, ".example.com"), "Disallowed SAN (excluded .example.com DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "."), "Disallowed SAN (excluded . DNS name) was accepted");
 
     }

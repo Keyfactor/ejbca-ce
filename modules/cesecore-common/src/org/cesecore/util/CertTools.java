@@ -4708,9 +4708,19 @@ public abstract class CertTools {
                     try {
                         
                         if(sangn.getTagNo() == GeneralName.dNSName && !(sangn.getName().toString()).equals(".")) {
-                            GeneralName updatedGn = new GeneralName(GeneralName.dNSName, sangn.getName() + ".");
+                            GeneralName updatedGn = null;
+                            // This is to make sure that BC gets proper dns names to compare against the list.
+                            if((sangn.getName().toString()).startsWith(".")) {
+                                updatedGn = new GeneralName(GeneralName.dNSName, sangn.getName().toString().substring(1) + ".");
+                            } else {
+                                updatedGn = new GeneralName(GeneralName.dNSName, sangn.getName() + ".");
+                            }
                             validator.checkPermitted(updatedGn);
                             validator.checkExcluded(updatedGn);
+                            
+                        } else if (sangn.getTagNo() == GeneralName.dNSName && (sangn.getName().toString()).equals(".")) {
+                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
+                            throw new IllegalNameException(msg); 
                         } else {
                             validator.checkPermitted(sangn);
                             validator.checkExcluded(sangn);
