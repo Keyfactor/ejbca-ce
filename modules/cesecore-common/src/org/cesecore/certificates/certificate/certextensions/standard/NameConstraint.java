@@ -181,7 +181,7 @@ public class NameConstraint extends StandardCertificateExtension {
      */
     public static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
         if (str.equals(".")) { // Root DNS 
-            return "dNSName:" + ".";
+            return "dNSName:";
         } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
             str.matches("^[0-9a-fA-F]{0,4}:[0-9a-fA-F]{0,4}:[0-9a-fA-F:]*/[0-9]+$")) {
             // IPv4 or IPv6 address
