@@ -69,8 +69,6 @@ import org.junit.runners.MethodSorters;
 public class CertificateNameConstraintTest extends CaTestCase {
     
     private static final Logger log = Logger.getLogger(CertificateNameConstraintTest.class);
-        
-    private static final String REPLACABLE_TAG = "$TAG$";
     
     private static final String TEST_NC_ROOT_CA_NAME = "testNCRootCa";
     private static final String TEST_NC_SUB_CA_NAME = "testNCSubCa" + REPLACABLE_TAG;
@@ -219,10 +217,6 @@ public class CertificateNameConstraintTest extends CaTestCase {
         // root cert profile
         certProfileSession.removeCertificateProfile(admin, TEST_NC_CERT_PROFILE_ROOT);      
         
-    }
-    
-    private String getRandomizedName(String nameTemplate) {
-        return nameTemplate.replace(REPLACABLE_TAG, genRandomUserName());
     }
     
     private static List<String> formatAllNameConstraints(List<String> nameConstraints) throws CertificateExtensionException {
