@@ -2174,6 +2174,34 @@ public class CryptokiDevice {
         }
 
         /**
+         * <p>Fetches the requested attribute of a private key object with the specified alias.
+         *
+         * @param alias the <code>CKA_LABEL</code> of certificate or private key. If a certificate is found the private
+         *              key is matched from <code>CKA_ID</code> of the certificate.
+         * @param cka the ID of the attribute to fetch, for example <code>CKA.ALLOWED_MECHANISMS</code>
+         *            or <code>CKA.MODULUS</code> (288/0x120).
+         * @return an attribute value, which can be an empty value (<code>CKA.getValue() == null</code>) if the attribute
+         * does not exist, or <code>null</code> if no private key exists with the specified alias.
+         */
+        public CKA getPrivateKeyAttribute(final String alias, final long cka) {
+            Long session = null;
+            try {
+                session = aquireSession();
+                final Long privateKeyRef = getPrivateKeyRefByLabel(session, alias);
+                if (privateKeyRef == null ) {
+                    LOG.warn("No private key object with label: " + label);
+                } else {
+                    return cryptoki.getAttributeValue(session, privateKeyRef, cka);
+                }
+                return null;
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+        
+        /**
         * fetches private key object in unwrapped form.
         *
         * @param session session in HSM slot used to fetch attribute value 
