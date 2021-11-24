@@ -89,6 +89,7 @@ public class CertificateNameConstraintTest extends CaTestCase {
     private static final String TEST_NC_EE_DUMMY_PROFILE_NAME = TEST_NC_EE_PROFILE_NAME + REPLACABLE_TAG;
 
     private static final String TEST_NC_EE_PASSWORD = "foo123";
+    private static final String URI_MARKER = "uniformResourceIdentifier";
 
     private static int rootCaId;
     private static int rootCertificateProfileId;
@@ -99,6 +100,8 @@ public class CertificateNameConstraintTest extends CaTestCase {
     private static CertificateProfile rootCertProfile;
     private static CertificateProfile subCaCertprofile;
     private static CertificateProfile endEntityCertprofile;
+    private static EndEntityProfile endEntityProfile;
+
     private EndEntityInformation lastCreatedUser;
 
     private static List<String> formatedNCPermitted;
@@ -237,11 +240,12 @@ public class CertificateNameConstraintTest extends CaTestCase {
         endEntityCertprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         endEntityCertprofile.setUseNameConstraints(true);
         endEntityCertprofile.setUseLdapDnOrder(false);
+        endEntityCertprofile.setSubjectAlternativeNameCritical(true);
         endEntityCertificateProfileId = certProfileSession.addCertificateProfile(admin, TEST_NC_CERT_PROFILE_EE, endEntityCertprofile);
         log.info("created end entity certificate profile id: " + endEntityCertificateProfileId);
 
         // end entity profile (updated multiple times)
-        final EndEntityProfile endEntityProfile = new EndEntityProfile();
+        endEntityProfile = new EndEntityProfile();
         endEntityProfile.setNameConstraintsPermittedUsed(true);
         endEntityProfile.setNameConstraintsPermittedRequired(false);
         endEntityProfile.setNameConstraintsExcludedUsed(true);
@@ -1077,7 +1081,6 @@ public class CertificateNameConstraintTest extends CaTestCase {
         List<String> nameConstExcluded = new ArrayList<>();
         nameConstExcluded.add(".");
 
-        
         EndEntityInformation user = createEndEntityWithNameConstraintNoDNSAndUserGeneratedToken();
         
         RequestMessage req = prepareRequestMessage(CSR_NO_DNS_ALLOWED_NC, user);
@@ -1087,5 +1090,208 @@ public class CertificateNameConstraintTest extends CaTestCase {
         assertNameConstraint("", null, formatedNCDNSExcluded, cert, false);
 
         endEntityManagementSession.deleteUser(admin, user.getUsername());
+    }
+    
+    @Test
+    public void testZ_URISupportInNameConstraint() throws Exception {
+                
+        // create sub CA with name constraints, same sub CA profile
+        String subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
+        String subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
+        createdSubCas.add(subCAName);
+
+        List<String> formatedNCPermittedUpdated = new ArrayList<>();
+        List<String> formatedNCExcludedUpdated = new ArrayList<>();
+        
+        List<String> nameConstPermitted = new ArrayList<>();
+        nameConstPermitted.add("http://www.permit.this.com/abc");
+        nameConstPermitted.add("http://www.allowthis.this.com/abc");
+
+        List<String> nameConstExcluded = new ArrayList<>();
+        nameConstExcluded.add("http://www.forbid.this.com/pqr");
+        
+        formatedNCPermittedUpdated.addAll(formatAllNameConstraints(nameConstPermitted));
+        formatedNCExcludedUpdated.addAll(formatAllNameConstraints(nameConstExcluded));
+        
+        log.info("adding sub CA: " + subCAName);
+        int subCaId = CaTestCase.createTestCA(subCAName, 4096, subCADomain, rootCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+                formatedNCExcludedUpdated, true, true);
+        log.info("sub CA id: " + subCaId);
+                
+        // modify EE profile, add URI + mark required, mark CN as optional
+        endEntityProfile.setRequired(DnComponents.COMMONNAME,0,false); 
+
+        endEntityProfile.addField(DnComponents.UNIFORMRESOURCEID);
+        endEntityProfile.setRequired(DnComponents.UNIFORMRESOURCEID, 0, true);
+        
+        endEntityProfileSession.changeEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME, endEntityProfile);
+        log.info("updated end entity profile id: " + endEntityProfileId);
+        
+        // create EE with URI in permitted NC list - no need to generate certificate
+        String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+        String endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
+        EndEntityInformation createdUser = null;
+
+        EndEntityInformation user = new EndEntityInformation(endEntityName, endEntityDomain, subCaId, null, null,
+                new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
+                null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword(TEST_NC_EE_PASSWORD);
+        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/abc");
+        
+        ExtendedInformation extendedInfo = new ExtendedInformation();
+        extendedInfo.setNameConstraintsPermitted(formatedNCPermittedUpdated);
+        extendedInfo.setNameConstraintsExcluded(formatedNCExcludedUpdated);
+        extendedInfo.setCertificateEndTime("2y");
+        user.setExtendedInformation(extendedInfo);
+
+        try {
+            createdUser = endEntityManagementSession.addUser(admin, user, false);
+            log.info("Check end entity " + endEntityName + " exists: " + endEntityManagementSession.existsUser(endEntityName));
+        } catch (Exception e) {
+            log.error("End entity with valid URI as SAN creation failed.", e);
+            Assert.fail("End entity with valid URI as SAN creation failed.");
+        }
+        
+        byte[] encodedKeyStore = null;
+        try {
+            encodedKeyStore = keyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray(admin, createdUser.getUsername(),
+                    createdUser.getPassword(), createdUser.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_JKS, false,
+                    false, false, endEntityProfileId);
+        } catch (Exception e) {
+
+        }
+        endEntityManagementSession.deleteUser(admin, endEntityName);
+        Assert.assertNotNull("Key store creation failed with user with valid URI", encodedKeyStore);
+
+        
+        // create EE with URI in permitted NC list with different subpath
+        endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+        endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
+
+        user = new EndEntityInformation(endEntityName, endEntityDomain, subCaId, null, null,
+                new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
+                null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword(TEST_NC_EE_PASSWORD);
+        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz");
+        user.setExtendedInformation(extendedInfo);
+        
+        try {
+            createdUser = endEntityManagementSession.addUser(admin, user, false);
+            Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
+            endEntityManagementSession.deleteUser(admin, endEntityName);
+        } catch (Exception e) {
+            log.error("End entity with valid URI as SAN creation failed.", e);
+            Assert.fail("End entity with valid URI as SAN creation failed.");
+        }
+        
+        // create EE with URI in excluded NC list - Negative
+        endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+        endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
+        
+        user = new EndEntityInformation(endEntityName, endEntityDomain, subCaId, null, null,
+                new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
+                null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword(TEST_NC_EE_PASSWORD);
+        user.setSubjectAltName(URI_MARKER + "=http://www.forbid.this.com/xyz");
+        user.setExtendedInformation(extendedInfo);
+        
+        try {
+            createdUser = endEntityManagementSession.addUser(admin, user, false);
+            Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
+            Assert.fail("End entity with excluded URI as SAN creation failed.");
+        } catch (Exception e) {
+
+        }
+        
+        // create EE with URI not in any NC list - Negative
+        user.setSubjectAltName(URI_MARKER + "=http://www.random.com/xyz");
+        
+        try {
+            createdUser = endEntityManagementSession.addUser(admin, user, false);
+            Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
+            Assert.fail("End entity with SAN not in permitted NC list creation failed.");
+        } catch (Exception e) {
+
+        }
+        
+        // modify EE profile, add URI + not required
+        endEntityProfile.addField(DnComponents.UNIFORMRESOURCEID);
+        endEntityProfile.setRequired(DnComponents.UNIFORMRESOURCEID, 1, false);
+        
+        endEntityProfileSession.changeEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME, endEntityProfile);
+        log.info("updated end entity profile id: " + endEntityProfileId);
+        
+        // create EE with URI in permitted NC list with different subpath for multiple URIs in permitted
+        endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+        endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
+
+        user = new EndEntityInformation(endEntityName, endEntityDomain, subCaId, null, null,
+                new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
+                null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword(TEST_NC_EE_PASSWORD);
+        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz," + 
+                                        URI_MARKER + "=http://www.allowthis.this.com/xyz");
+        user.setExtendedInformation(extendedInfo);
+        
+        try {
+            createdUser = endEntityManagementSession.addUser(admin, user, false);
+            Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
+            endEntityManagementSession.deleteUser(admin, endEntityName);
+        } catch (Exception e) {
+            log.error("End entity with valid URI as SAN creation failed.", e);
+            Assert.fail("End entity with valid URI as SAN creation failed.");
+        }
+        
+        // create EE with URI in permitted NC list with different subpath for multiple URIs with one random URI
+        endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+        endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
+
+        user = new EndEntityInformation(endEntityName, endEntityDomain, subCaId, null, null,
+                new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
+                null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword(TEST_NC_EE_PASSWORD);
+        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz," + 
+                                        URI_MARKER + "=http://www.random.com/xyz");
+        user.setExtendedInformation(extendedInfo);
+        
+        try {
+            createdUser = endEntityManagementSession.addUser(admin, user, false);
+            Assert.fail("End entity with non-permitted URI as SAN creation failed.");
+        } catch (Exception e) {
+            
+        }
+        
+        // create Sub CA signed by another Sub CA with forbidden URI in SAN - negative
+        subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
+        subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
+        
+        try {
+            String subjectAltName = URI_MARKER + "=http://www.forbid.this.com/xyz"; 
+            CaTestCase.createTestCA(subCAName, 4096, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+                    formatedNCExcludedUpdated, true, true, null, subjectAltName);
+            createdSubCas.add(subCAName);
+            Assert.fail("Sub CA created with SAN in forbidden URI name constraints.");
+        } catch (Exception e) {
+            
+        }
+        
+        // create Sub CA signed by another Sub CA with not in permitted URI in SAN - negative
+        subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
+        subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
+        
+        try {
+            String subjectAltName = URI_MARKER + "=http://www.random.com/xyz"; 
+            CaTestCase.createTestCA(subCAName, 4096, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+                    formatedNCExcludedUpdated, true, true, null, subjectAltName);
+            createdSubCas.add(subCAName);
+            Assert.fail("Sub CA created with SAN not in permitted URI name constraints.");
+        } catch (Exception e) {
+            
+        }
     }
 }
