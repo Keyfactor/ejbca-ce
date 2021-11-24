@@ -2174,6 +2174,31 @@ public class CryptokiDevice {
         }
 
         /**
+         * Helper method (used in SignServer) that fetches the requested attribute of a private key object with the given object, returning cached attribute if cache is enabled and object is present in the cache, going out to fetch it otherwise.
+         *
+         * @param label the label of certificate/or private key, if a certificate is found the private key is matched from CKA_ID of the certificate
+         * @param cka the ID of the attribute to fetch, for example CKA.ALLOWED_MECHANISMS or CKA.MODULUS (288/0x120)
+         * @return attribute value, which can be an empty value (CKA.getValue() == null) if attribute does not exist, or null if no private key for the alias exists
+         */
+        public CKA getPrivateKeyAttribute(String alias, long cka) {
+            Long session = null;
+            try {
+                session = aquireSession();
+                final Long privateKeyRef = getPrivateKeyRefByLabel(session, alias);
+                if (privateKeyRef == null ) {
+                    LOG.warn("No private key object with label: " + label);
+                } else {
+                    return cryptoki.getAttributeValue(session, privateKeyRef, cka);
+                }
+                return null;
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+        
+        /**
         * fetches private key object in unwrapped form.
         *
         * @param session session in HSM slot used to fetch attribute value 
