@@ -113,7 +113,7 @@ public class SearchCertificatesRestResponseV2 {
                 final int currentPage = pagination.getCurrentPage();
                 summary = new PaginationSummary(pageSize, currentPage);
                 // Sets the totalCount if possible. totalCount == null means former hasMoreResults == true.
-                if (count < pageSize) {
+                if (count > 0 && count < pageSize) {
                     summary.setTotalCerts((long) pageSize * (currentPage - 1) + count);
                 }
             } else {
