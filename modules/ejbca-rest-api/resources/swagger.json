@@ -985,7 +985,12 @@
                     }
                 },
                 "pagination_summary": {
-                    "type": "boolean"
+                	"type": "object",
+                    "required": true,
+                    "description": "Pagination summary.",
+                    "items": {
+                        "$ref": "#/definitions/PaginationSummary"
+                    }
                 }
             }
         },
@@ -1071,7 +1076,7 @@
                 "total_certs": {
                     "type": "integer",
                     "format": "int64",
-                    "description": "Total number of certificates for the given criteria or null. Null means that this page is not the last page.",
+                    "description": "Total number of certificates for the given criteria or null. Null means that this page might not be the last page.",
                     "required": false
                 }
             },
@@ -1086,7 +1091,7 @@
                     "description": "The sort property.",
                     "required": true
                 },
-                "currentPage": {
+                "operation": {
                     "type": "string",
                     "enum": ["ASC", "DESC"],
                     "description": "The sort operation.",
