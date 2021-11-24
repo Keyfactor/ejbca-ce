@@ -372,34 +372,6 @@
                 }
             }
         },
-        "/v2/certificate/search": {
-            "post": {
-                "tags": ["v2/certificate"],
-                "summary": "Searches for certificates confirming given criteria and pagination.",
-                "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model.",
-                "operationId": "searchCertificates2",
-                "consumes": ["application/json"],
-                "produces": ["application/json"],
-                "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "description": "Search criteria and pagination.",
-                        "required": false,
-                        "schema": {
-                            "$ref": "#/definitions/SearchCertificatesRestRequestV2"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "successful operation",
-                        "schema": {
-                            "$ref": "#/definitions/SearchCertificatesRestResponseV2"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revocationstatus": {
             "get": {
                 "tags": ["v1/certificate"],
@@ -705,6 +677,52 @@
                     }
                 }
             }
+        },
+        "/v2/certificate/search": {
+            "post": {
+                "tags": ["v2/certificate"],
+                "summary": "Searches for certificates confirming given criteria and pagination.",
+                "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model.",
+                "operationId": "searchCertificates2",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "description": "Search criteria and pagination.",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/SearchCertificatesRestRequestV2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/SearchCertificatesRestResponseV2"
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/certificate/status": {
+            "get": {
+                "tags": ["v2/certificate"],
+                "summary": "Get the status of this REST Resource",
+                "description": "Returns status, API version and EJBCA version.",
+                "operationId": "status_4",
+                "produces": ["application/json"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/RestResourceStatusRestResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -966,7 +984,7 @@
                         "$ref": "#/definitions/CertificateRestResponseV2"
                     }
                 },
-                "more_results": {
+                "pagination_summary": {
                     "type": "boolean"
                 }
             }
@@ -1016,30 +1034,64 @@
         "Pagination": {
             "type": "object",
             "properties": {
-            	"pageSize": {
+            	"page_size": {
                     "type": "integer",
                     "format": "int32",
-                    "description": "Max. number of items returned. Number of pages = (certificates / pageSize) + 1.",
-                    "required": false
+                    "description": "Page size or max. number of certificates returned.",
+                    "required": false,
+                    "minimum": 1
                 },
-                "currentPage": {
+                "current_page": {
                     "type": "integer",
                     "format": "int32",
                     "description": "The current page from 1 to n.",
-                    "required": false
+                    "required": false,
+                    "minimum": 1
+                }
+            },
+            "description": "Pagination."
+        },
+        "PaginationSummary": {
+            "type": "object",
+            "properties": {
+            	"page_size": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Page size or max. number of certificates returned.",
+                    "required": false,
+                    "minimum": 1
                 },
-                "totalCerts": {
+                "current_page": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The current page from 1 to n.",
+                    "required": false,
+                    "minimum": 1
+                },
+                "total_certs": {
                     "type": "integer",
                     "format": "int64",
-                    "description": "Total number of certificates for the given criteria.",
+                    "description": "Total number of certificates for the given criteria or null. Null means that this page is not the last page.",
                     "required": false
+                }
+            },
+            "description": "Pagination summary."
+        },
+        "SearchCertificateCriteriaSortRequest": {
+            "type": "object",
+            "properties": {
+            	"property": {
+                    "type": "string",
+                    "enum": ["USERNAME", "ISSUER_DN", "SUBJECT_DN", "EXTERNAL_ACCOUNT_BINDING_ID", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "STATUS", "TAG", "TYPE", "UPDATE_TIME", "ISSUED_DATE", "EXPIRE_DATE", "REVOCATION_DATE"],
+                    "description": "The sort property.",
+                    "required": true
                 },
-                "morePages": {
-                    "type": "integer",
-                    "format": "int32",
-                    "description": "The current page from 1 to n.",
-                    "required": false
-                },
+                "currentPage": {
+                    "type": "string",
+                    "enum": ["ASC", "DESC"],
+                    "description": "The sort operation.",
+                    "required": true
+                }
             },
             "description": "Pagination with limit and offset.\n"
         },
@@ -1075,6 +1127,14 @@
                     "description": "Pagination with limit and offset.",
                     "items": {
                         "$ref": "#/definitions/Pagination"
+                    }
+                },
+                "sort": {
+                    "type": "object",
+                    "required": false,
+                    "description": "Sorting ascending or descending.",
+                    "items": {
+                        "$ref": "#/definitions/SearchCertificateCriteriaSortRequest"
                     }
                 }
             }
