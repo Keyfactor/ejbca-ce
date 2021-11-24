@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca;
 
+import static org.junit.Assert.assertEquals;
+
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.cert.Certificate;
@@ -92,8 +94,6 @@ import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.Assert;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * This class represents an abstract class for all tests which require testing
  * CAs.
@@ -130,7 +130,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final static Logger log = Logger.getLogger(CaTestCase.class);
+    private static final Logger log = Logger.getLogger(CaTestCase.class);
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
 
@@ -307,6 +307,16 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
+        return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, null);
+    }   
+        
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
+            int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -335,7 +345,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         log.debug("Creating CryptoToken with ID " + cryptoTokenId + " to be used by CA " + caName);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         // Set the CMS service non-active by default
         extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + dn, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
@@ -356,6 +366,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         cainfo.setDoEnforceUniquePublicKeys(!relaxUniquenessPublicKey);
         log.info("setting validators: " + validators);
         cainfo.setValidators(validators);
+        cainfo.setSubjectAltName(subjectAltName);
 
         try {
             caAdminSession.createCA(internalAdmin, cainfo);
@@ -405,7 +416,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         CAInfo cainfo = CaTestCase.getCaSession().getCAInfo(admin, caName);
         Collection<Certificate> certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
+        if (!certs.isEmpty()) {
             Iterator<Certificate> certiter = certs.iterator();
             cacert = certiter.next();
         } else {
@@ -559,9 +570,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     /** @return an AuthenticationToken which matches the default test CA */
     public AuthenticationToken createCaAuthenticatedToken() throws CADoesntExistsException, AuthorizationDeniedException {
         String subjectDn = CertTools.getSubjectDN(getTestCACert());
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal(subjectDn));
-        Set<Certificate> credentials = new HashSet<Certificate>();
+        Set<Certificate> credentials = new HashSet<>();
         credentials.add(getTestCACert());
         AuthenticationSubject subject = new AuthenticationSubject(principals, credentials);
         final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = getAuthenticationProviderSession();
@@ -573,7 +584,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_SHA256_WITH_MFG1_CA_NAME, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit RSA CA");
@@ -588,9 +599,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECDSA_IMPLICIT_CA_NAME, "implicitlyCA");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        final List<CertificatePolicy> policies = new ArrayList<>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
         final X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECDSA_IMPLICIT_CA_NAME, TEST_ECDSA_IMPLICIT_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d",
@@ -621,9 +632,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, name, keySpec);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        final List<CertificatePolicy> policies = new ArrayList<>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + name, name, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
@@ -641,9 +652,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECGOST3410_CA_NAME, keyspec);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        final List<CertificatePolicy> policies = new ArrayList<>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
@@ -661,9 +672,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSTU4145_CA_NAME, keyspec);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        final List<CertificatePolicy> policies = new ArrayList<>(1);
         policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
@@ -702,7 +713,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSA_CA_NAME, "DSA1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTDSA", TEST_DSA_CA_NAME, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit DSA CA");
@@ -766,10 +777,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         
-        final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, internalAdmin, null, caId,
+        return new AddEndEntityApprovalRequest(userdata, false, internalAdmin, null, caId,
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileLongExpirationPeriod, null);
         
-        return eeApprovalRequest;
     }
     
 }
