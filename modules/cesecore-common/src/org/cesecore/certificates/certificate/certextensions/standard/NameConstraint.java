@@ -44,7 +44,6 @@ import org.cesecore.util.CeSecoreNameStyle;
  * where data is either a regular string or hex-encoded data, depending on the type.
  * Use parseNameConstraintList to convert human-readable strings into encoded strings.
  *
- * @version $Id$
  */
 public class NameConstraint extends StandardCertificateExtension {
 
@@ -171,27 +170,13 @@ public class NameConstraint extends StandardCertificateExtension {
      * @throws CertificateExtensionException if the string can not be parsed.
      */
     public static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
-        if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
+        if (str.equals(".")) { // Empty DNS 
+            return "dNSName:";
+        } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
             str.matches("^[0-9a-fA-F]{0,4}:[0-9a-fA-F]{0,4}:[0-9a-fA-F:]*/[0-9]+$")) {
             // IPv4 or IPv6 address
             try {
-                String[] pieces = str.split("/", 2);
-                byte[] addr = InetAddress.getByName(pieces[0]).getAddress();
-                byte[] encoded = new byte[2*addr.length]; // will hold address and netmask
-                System.arraycopy(addr, 0, encoded, 0, addr.length);
-
-                // The second half in the encoded form is the netmask
-                int netmask = Integer.parseInt(pieces[1]);
-                if (netmask > 8*addr.length) {
-                    throw new CertificateExtensionException("Netmask is too large: "+str);
-                }
-                for (int i = 0; i < netmask; i++) {
-                    encoded[addr.length + i/8] |= 1 << (7 - i%8);
-                }
-                // Clear host part from IP address
-                for (int i = netmask; i < 8*addr.length; i++) {
-                    encoded[i/8] &= ~(1 << (7 - i%8));
-                }
+                byte[] encoded = extractIPAddress(str);
                 return "iPAddress:"+Hex.encodeHexString(encoded);
             } catch (UnknownHostException e) {
                 throw new CertificateExtensionException("Failed to parse IP address in name constraint: "+str, e);
@@ -201,7 +186,7 @@ public class NameConstraint extends StandardCertificateExtension {
             throw new CertificateExtensionException("Name constraint entry with IP address is missing a netmask: "+str+". Use /32 to match only this address.");
         } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
             // DNS name (it can start with a ".", this means "all subdomains")
-            return "dNSName:"+str;
+            return "dNSName:"+str+"."; // Adding extra dot in the end to help BC when comparing the domains!
         } else if (str.matches("^[^=,]*@[a-zA-Z0-9_.\\[\\]:-]+$")) {
             String email = str;
             // RFC 822 Name (i.e. e-mail)
@@ -217,6 +202,27 @@ public class NameConstraint extends StandardCertificateExtension {
         } else {
             throw new CertificateExtensionException("Cannot parse name constraint entry (only DNS Name, RFC 822 Name, Directory Name, IPv4/Netmask and IPv6/Netmask are supported): "+str);
         }
+    }
+
+    private static byte[] extractIPAddress(String str) throws UnknownHostException, CertificateExtensionException {
+        String[] pieces = str.split("/", 2);
+        byte[] addr = InetAddress.getByName(pieces[0]).getAddress();
+        byte[] encoded = new byte[2*addr.length]; // will hold address and netmask
+        System.arraycopy(addr, 0, encoded, 0, addr.length);
+
+        // The second half in the encoded form is the netmask
+        int netmask = Integer.parseInt(pieces[1]);
+        if (netmask > 8*addr.length) {
+            throw new CertificateExtensionException("Netmask is too large: "+str);
+        }
+        for (int i = 0; i < netmask; i++) {
+            encoded[addr.length + i/8] |= 1 << (7 - i%8);
+        }
+        // Clear host part from IP address
+        for (int i = netmask; i < 8*addr.length; i++) {
+            encoded[i/8] &= ~(1 << (7 - i%8));
+        }
+        return encoded;
     }
 
     /**
