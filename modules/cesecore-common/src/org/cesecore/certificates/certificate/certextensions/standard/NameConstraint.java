@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -52,7 +51,6 @@ public class NameConstraint extends StandardCertificateExtension {
     private static final long serialVersionUID = 1L;
     
     private static final String URI_TEMPLATE_REGEX = "^[a-zA-Z]+:(\\/\\/)?[[a-zA-Z0-9]+:[a-zA-Z0-9]+@]?[.a-zA-Z0-9:\\[\\]]+.*$";
-    private static Logger log = Logger.getLogger(NameConstraint.class);
 
     @Override
     public void init(CertificateProfile certProf) {
