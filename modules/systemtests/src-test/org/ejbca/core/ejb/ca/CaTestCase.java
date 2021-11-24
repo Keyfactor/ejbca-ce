@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca;
 
+import static org.junit.Assert.assertEquals;
+
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.cert.Certificate;
@@ -38,7 +40,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -91,8 +92,6 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.Assert;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * This class represents an abstract class for all tests which require testing
