@@ -9,13 +9,22 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 /**
  * A class representing pagination parameters with a page size and a current page.
  */
+@JsonPropertyOrder({ "page_size", "current_page" })
 public class Pagination {
     
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    @JsonProperty("page_size")
     private int pageSize;
     
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    @JsonProperty("current_page")
     private int currentPage;
 
     public Pagination() {
