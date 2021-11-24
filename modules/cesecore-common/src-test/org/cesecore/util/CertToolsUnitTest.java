@@ -13,6 +13,13 @@
 
 package org.cesecore.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,8 +44,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-
-import com.novell.ldap.LDAPDN;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -94,12 +99,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.novell.ldap.LDAPDN;
 
 /**
  * Tests the CertTools class
@@ -2323,14 +2323,47 @@ public class CertToolsUnitTest {
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("2001:DB8::").getAddress())), "Disallowed SAN (IPv6 address) was accepted");
     }
     
+    
+    @Test
+    public void testNameConstraintsEmptyDNS() throws Exception {
+        final String excluded = ".";
+                                
+        final List<Extension> extensions = new ArrayList<>();
+        
+        List<String> ncList = NameConstraint.parseNameConstraintsList(excluded);
+        
+        GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(ncList);
+        byte[] extdata = new NameConstraints(null, excludedSubtrees).toASN1Primitive().getEncoded();
+        extensions.add(new Extension(Extension.nameConstraints, false, extdata));
+        
+        final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null,
+                testkeys.getPrivate(), testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true,
+                X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
+        
+        // Allowed subject DNs
+        final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com");
+        
+        // Disallowed SAN
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "test.email.com"), "Disallowed SAN (excluded test.email.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "example.com"), "Disallowed SAN (excluded example.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "com"), "Disallowed SAN (excluded com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, ".com"), "Disallowed SAN (excluded .com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, ".example.com"), "Disallowed SAN (excluded .example.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "."), "Disallowed SAN (excluded . DNS name) was accepted");
+
+    }
+    
     /** Check Name Constraints that are expected to fail NC validation, and fail the JUnit test of the NC validation 
-     * does not fail with am IllegalNameException
+     * does not fail with an IllegalNameException
      */
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
         try {
             CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName != null ? new GeneralNames(subjectAltName) : null);
             fail(message);
-        } catch (IllegalNameException e) { /* NOPMD expected */ }
+        } catch (IllegalNameException e) { 
+            /* NOPMD expected */ 
+        }
     }    
 
     @Test
@@ -2453,25 +2486,18 @@ public class CertToolsUnitTest {
     @Test
     public void testPreventingHeapOverflowDuringGetCertsFromByteArray() throws Exception {
         log.trace(">testPreventingHeapOverflowDuringgetCertsFromByteArray()");
-        
-        ByteArrayOutputStream byteArrayOutputStream = null;
-        try {
-            byteArrayOutputStream = new ByteArrayOutputStream();
-            SecurityFilterInputStreamTest.prepareExploitStream(byteArrayOutputStream, 0x1FFFFF);  // 0x1FFFFF just simulates exploit stream
+
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            SecurityFilterInputStreamTest.prepareExploitStream(byteArrayOutputStream, 0x1FFFFF); // 0x1FFFFF just simulates exploit stream
 
             CertTools.getCertfromByteArray(byteArrayOutputStream.toByteArray(), X509Certificate.class);
-            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB) and"
+            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory() / (1024 * 1024) + "MB) and"
                     + " SecurityFilterInputStream hasn't limited the size of input stream during testPreventingHeapOverflowDuringgetCertsFromByteArray");
         } catch (CertificateParsingException e) { //It seems that BC provider while generating certificate wraps RuntimeException into CertificateException (which CertTools wraps into CertificateParsingException...)
             //Good
-        } catch (Exception e){
+        } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testPreventingHeapOverflowDuringgetCertsFromByteArray");
-        }finally {
-            if (byteArrayOutputStream != null) {
-                byteArrayOutputStream.close();
-            }
         }
-        
         log.trace("<testPreventingHeapOverflowDuringgetCertsFromByteArray()");
     }
 
