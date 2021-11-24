@@ -2258,10 +2258,19 @@ public class CertToolsUnitTest {
                                  "example.com\n" +
                                  "@mail.example\n" +
                                  "user@host.com\n" +
+                                 "http://karsten:password@abc.test.com:8080\n" +
+                                 "http://.abc.test.com:8080\n" +
+                                 "http://abc.test.com:8080\n" +
+                                 "http://abc123.test.com:8080/path/subpath/\n" +
+                                 "urn:oasis:names:specification:docbook:dtd:xml:4.1.2\n" +
                                  "10.0.0.0/8\n" +
+                                 "www.example.com\n" +
                                  "   C=SE,  CN=spacing    \n";
         final String excluded = "forbidden.example.com\n" +
                                 "postmaster@mail.example\n" +
+                                "ldap://def123.test.com:8080/path/subpath/\n" +
+                                "ldap://[2001:db8::7]/c=GB?objectClass?one\n" +
+                                "news:comp.infosystems.www.servers.unix\n" +
                                 "10.1.0.0/16\n" +
                                 "::/0"; // IPv6
         
@@ -2270,12 +2279,13 @@ public class CertToolsUnitTest {
         GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(NameConstraint.parseNameConstraintsList(excluded));
         byte[] extdata = new NameConstraints(permittedSubtrees, excludedSubtrees).toASN1Primitive().getEncoded();
         extensions.add(new Extension(Extension.nameConstraints, false, extdata));
-        
+               
         final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null,
                 testkeys.getPrivate(), testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true,
                 X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
-        
+        log.info(CertTools.getPemFromCertificate(cacert));
+
         // Allowed subject DNs
         final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com"); // re-used below
         CertTools.checkNameConstraints(cacert, validDN, null);
@@ -2309,6 +2319,12 @@ public class CertToolsUnitTest {
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.0.0.1").getAddress()))));
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.255.255.255").getAddress()))));
         
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "https://abc.test.com/")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "http://karsten:password@abc.test.com:8080")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "https://xyz.abc.test.com/")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "http://abc123.test.com:8080/path/subpath/")));
+
+
         // Disallowed subject DN
         checkNCException(cacert, new X500Name("C=DK,CN=example.com"), null, "Disallowed DN (wrong field value) was accepted");
         checkNCException(cacert, new X500Name("C=SE,O=Company,CN=example.com"), null, "Disallowed DN (extra field) was accepted");
@@ -2321,8 +2337,10 @@ public class CertToolsUnitTest {
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.1.0.1").getAddress())), "Disallowed SAN (excluded IPv4 address) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("192.0.2.1").getAddress())), "Disallowed SAN (wrong IPv4 address) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("2001:DB8::").getAddress())), "Disallowed SAN (IPv6 address) was accepted");
+        
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.uniformResourceIdentifier, "ldap://def123.test.com:8080"), "Disallowed SAN (wrong URI) was accepted");
+
     }
-    
     
     @Test
     public void testNameConstraintsEmptyDNS() throws Exception {
