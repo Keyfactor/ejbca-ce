@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -269,6 +270,13 @@ public class NameConstraint extends StandardCertificateExtension {
 
         switch (type) {
         case GeneralName.dNSName:
+            if(StringUtils.isBlank((String)data)) {
+                return "."; // All dns names excluded
+            } else if (StringUtils.endsWith(((String)data), ".")){
+                return StringUtils.chop((String)data);
+            } else {
+                return (String)data;
+            }
         case GeneralName.directoryName:
         case GeneralName.uniformResourceIdentifier:
             return (String)data; // not changed during encoding
