@@ -22,6 +22,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1GeneralString;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -30,6 +32,7 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
@@ -2182,7 +2185,7 @@ public abstract class CertTools {
                 if (obj instanceof ASN1TaggedObject) {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
-                DERUTF8String str = DERUTF8String.getInstance(obj);
+                ASN1UTF8String str = ASN1UTF8String.getInstance(obj);
                 return str.getString();
             }
         }
@@ -2206,7 +2209,7 @@ public abstract class CertTools {
                 if (obj instanceof ASN1TaggedObject) {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
-                DERIA5String str = DERIA5String.getInstance(obj);
+                ASN1IA5String str = ASN1IA5String.getInstance(obj);
                 return str.getString();
             }
         }
@@ -2426,7 +2429,7 @@ public abstract class CertTools {
                 ASN1Sequence krb5Seq = ASN1Sequence.getInstance(obj);
                 // Get the Realm tagged as 0
                 ASN1TaggedObject robj = ASN1TaggedObject.getInstance(krb5Seq.getObjectAt(0));
-                DERGeneralString realmObj = DERGeneralString.getInstance(robj.getObject());
+                ASN1GeneralString realmObj = ASN1GeneralString.getInstance(robj.getObject());
                 String realm = realmObj.getString();
                 // Get the PrincipalName tagged as 1
                 ASN1TaggedObject pobj = ASN1TaggedObject.getInstance(krb5Seq.getObjectAt(1));
@@ -2439,7 +2442,7 @@ public abstract class CertTools {
                 @SuppressWarnings("unchecked")
                 Enumeration<ASN1Object> en = sseq.getObjects();
                 while (en.hasMoreElements()) {
-                    DERGeneralString str = DERGeneralString.getInstance(en.nextElement());
+                    ASN1GeneralString str = ASN1GeneralString.getInstance(en.nextElement());
                     if (ret != null) {
                         ret += "/" + str.getString();
                     } else {
@@ -2965,10 +2968,10 @@ public abstract class CertTools {
             break;
         }
         case 1:
-            ret = CertTools.EMAIL + "=" + DERIA5String.getInstance(value).getString();
+            ret = CertTools.EMAIL + "=" + ASN1IA5String.getInstance(value).getString();
             break;
         case 2:
-            ret = CertTools.DNS + "=" + DERIA5String.getInstance(value).getString();
+            ret = CertTools.DNS + "=" + ASN1IA5String.getInstance(value).getString();
             break;
         case 3: // SubjectAltName of type x400Address not supported
             break;
@@ -2979,7 +2982,7 @@ public abstract class CertTools {
         case 5: // SubjectAltName of type ediPartyName not supported
             break;
         case 6:
-            ret = CertTools.URI + "=" + DERIA5String.getInstance(value).getString();
+            ret = CertTools.URI + "=" + ASN1IA5String.getInstance(value).getString();
             break;
         case 7:
             ASN1OctetString oct = ASN1OctetString.getInstance(value);
@@ -3273,7 +3276,7 @@ public abstract class CertTools {
             final GeneralNames generalNames = GeneralNames.getInstance(dpName.getName());
             for (final GeneralName generalName : generalNames.getNames()) {
                 if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {
-                    final DERIA5String asn1Value = DERIA5String.getInstance(generalName.getName());
+                    final ASN1IA5String asn1Value = ASN1IA5String.getInstance(generalName.getName());
                     uris.add(asn1Value.getString());
                 }
             }
@@ -3310,7 +3313,7 @@ public abstract class CertTools {
                                 if (obj instanceof ASN1TaggedObject) {
                                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                                 }
-                                final DERIA5String deria5String = DERIA5String.getInstance(obj);
+                                final ASN1IA5String deria5String = ASN1IA5String.getInstance(obj);
                                 result.add(deria5String.getString());
                             }
                         }
@@ -3371,7 +3374,7 @@ public abstract class CertTools {
                                 if (gnobj instanceof ASN1TaggedObject) {
                                     gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
                                 }
-                                final DERIA5String str = DERIA5String.getInstance(gnobj);
+                                final ASN1IA5String str = ASN1IA5String.getInstance(gnobj);
                                 if(str != null) {
                                     urls.add(str.getString());
                                 }
@@ -3409,7 +3412,7 @@ public abstract class CertTools {
                                 if (gnobj instanceof ASN1TaggedObject) {
                                     gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
                                 }
-                                final DERIA5String str = DERIA5String.getInstance(gnobj);
+                                final ASN1IA5String str = ASN1IA5String.getInstance(gnobj);
                                 if(str != null) {
                                     urls.add(str.getString());
                                 }
