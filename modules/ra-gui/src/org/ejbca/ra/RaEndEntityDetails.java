@@ -31,6 +31,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -82,7 +84,7 @@ public class RaEndEntityDetails {
 
     private RaEndEntityDetails next = null;
     private RaEndEntityDetails previous = null;
-
+    
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<Integer,String> caIdToNameMap) {
         this(endEntity, callbacks, cpIdToNameMap.get(Integer.valueOf(endEntity.getCertificateProfileId())),
@@ -362,24 +364,33 @@ public class RaEndEntityDetails {
     public String getNameConstraintsPermitted() {
         final List<String> value = extendedInformation.getNameConstraintsPermitted();
         if (value!=null) {
-            return Arrays.toString(extendedInformation.getNameConstraintsPermitted().toArray());
+            return NameConstraint.formatNameConstraintsList(value);
         }
         return "";
     }
+    public String getNameConstraintsPermittedViewOnly() {
+        return getNameConstraintsPermitted().replace("\n", "; ");
+    }
+    
     public boolean isNameConstraintsExcludedEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedUsed() : false;
-    }
-    /** @return true if CSR exists in EEI*/
-    public boolean isCsrSet() {
-        return extendedInformation.getCertificateRequest() != null;
     }
     public String getNameConstraintsExcluded() {
         final List<String> value = extendedInformation.getNameConstraintsExcluded();
         if (value!=null) {
-            return Arrays.toString(extendedInformation.getNameConstraintsExcluded().toArray());
+            return NameConstraint.formatNameConstraintsList(value);
         }
         return "";
     }
+    public String getNameConstraintsExcludedViewOnly() {
+        return getNameConstraintsExcluded().replace("\n", "; ");
+    }
+    
+    /** @return true if CSR exists in EEI*/
+    public boolean isCsrSet() {
+        return extendedInformation.getCertificateRequest() != null;
+    }
+    
 
     public boolean isAllowedRequestsEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isAllowedRequestsUsed() : false;
