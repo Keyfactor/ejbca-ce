@@ -487,8 +487,9 @@
                             </h:panelGroup>
                             </ui:fragment>
 							</ui:repeat>
+                           
 							</h:panelGroup>
-							
+														
 							<fieldset>
 							 <h:commandButton id="showFullOptionalSANFieldToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSanFieldsToggle}"
                                 rendered="#{enrollMakeNewRequestBean.renderOptionalSanFieldToggler}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
@@ -498,8 +499,62 @@
 									render=":requestInfoForm:sanSection" />
 							</h:commandButton>
 							</fieldset>
-							
 						</h:panelGroup>
+						
+						<h:panelGroup id="nameConstraintSection" layout="block" styleClass="pure-control-group" 
+									rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() or 
+													enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}">
+							
+							<h3>
+								<h:outputText value="#{msg.enroll_name_constraint_attributes}" rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}"/>
+							</h3>
+							<h:panelGroup layout="block" styleClass="pure-control-group" 
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}">
+							
+							<h:panelGroup rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}" >
+									<h:outputLabel for="nameConstraintPermitted"
+										value="#{msg.enroll_name_constraint_permitted}"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() and 
+														!enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}" />
+									<h:outputLabel for="nameConstraintPermitted"
+										value="#{msg.enroll_name_constraint_permitted} *"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() and 
+														enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}" />
+									<h:inputTextarea id="nameConstraintPermitted" rows="4" cols="38"
+											value="#{enrollMakeNewRequestBean.nameConstraintPermitted}"
+                                        rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}" 
+                                        required="#{enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}"
+                                        requiredMessage="#{msg.enroll_name_constraint_permitted_required}">
+                                   </h:inputTextarea>
+                                   <h:message for="nameConstraintPermitted" id="nameConstraintPermittedMessage" styleClass="validationErrorMessage showErrorMessage"/>
+                            </h:panelGroup>
+                            
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" styleClass="pure-control-group" 
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}">
+                            
+                            <h:panelGroup rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}" >
+									<h:outputLabel for="nameConstraintExcluded"
+										value="#{msg.enroll_name_constraint_excluded}"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered() and 
+														!enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}" />
+									<h:outputLabel for="nameConstraintExcluded"
+										value="#{msg.enroll_name_constraint_excluded} *"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered() and 
+														enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}" />
+									<h:inputTextarea id="nameConstraintExcluded" rows="4" cols="38"
+											value="#{enrollMakeNewRequestBean.nameConstraintExcluded}"
+                                        rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}" 
+                                        required="#{enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}"
+                                        requiredMessage="#{msg.enroll_name_constraint_excluded_required}">
+                                   </h:inputTextarea>
+                                   <h:message for="nameConstraintExcluded" id="nameConstraintExcludedMessage" styleClass="validationErrorMessage showErrorMessage"/>
+                            </h:panelGroup>
+                            
+                            </h:panelGroup>
+                       	</h:panelGroup>
+							
 						<h:panelGroup id="subjectDirectoryAttributeSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributesRendered}">
 							<h3>
 								<h:outputText value="#{msg.enroll_required_subject_directory_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.requiredFieldInstances.size() gt 0}" />
