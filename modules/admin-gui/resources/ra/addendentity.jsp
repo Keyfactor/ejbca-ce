@@ -988,9 +988,9 @@ function checkallfields(){
                     if(!checkfieldforgender("document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>", "<%= ejbcawebbean.getText("ONLYMORFINGENDERFIELD") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
                         illegalfields++;
                 <%  if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
-                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value="") {
+                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value=="") {
                             alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
-                            illegalfield++;
+                            illegalfields++;
                         }
             <%      }
                 } else { %>
