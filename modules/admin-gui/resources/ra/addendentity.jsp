@@ -990,7 +990,7 @@ function checkallfields(){
                 <%  if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
                         if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value=="") {
                             alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
-                            illegalfield++;
+                            illegalfields++;
                         }
             <%      }
                 } else { %>
