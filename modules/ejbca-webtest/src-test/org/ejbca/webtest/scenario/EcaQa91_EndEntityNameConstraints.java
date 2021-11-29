@@ -42,7 +42,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
+import org.ejbca.webtest.scenario.EcaQa125_RaCpRestrictions.TestData;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -51,6 +53,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -66,6 +69,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     private static WebDriver webDriver;
     private static AddEndEntityHelper addEndEntityHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
+    private static RaWebHelper raWebHelper;
     
     private static final String REPLACABLE_TAG = "$TAG$";
     
@@ -81,6 +85,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     
     private static List<String> nameConstPermitted, nameConstExcluded;
     private static String nameConstPermittedStr, nameConstExcludedStr;
+    private static String nameConstPermittedEditedStr, nameConstExcludedEditedStr;
     
     private static int endEntityCertificateProfileId;
     private static int endEntityProfileId;
@@ -99,6 +104,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         webDriver = getWebDriver();
         addEndEntityHelper = new AddEndEntityHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
+        raWebHelper = new RaWebHelper(webDriver);
         
         CryptoProviderTools.installBCProvider();
         
@@ -113,6 +119,10 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         nameConstPermittedStr = nameConstPermitted.toString().replace(", ", "\n").substring(1);
         nameConstPermittedStr = nameConstPermittedStr.substring(0, nameConstPermittedStr.length()-1);
         nameConstPermittedStr = nameConstPermittedStr.replace("::/32", ":0:0:0:0:0:0/32");
+        nameConstPermitted.remove(3);
+        nameConstPermitted.add("permit.this.com");
+        nameConstPermittedEditedStr = nameConstPermitted.toString().replace(", ", "\n").substring(1);
+        nameConstPermittedEditedStr = nameConstPermittedEditedStr.substring(0, nameConstPermittedEditedStr.length()-1);
         
         nameConstExcluded = new ArrayList<String>();
         nameConstExcluded.add("forbidden.example.com");
@@ -123,6 +133,10 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         nameConstExcludedStr = nameConstExcluded.toString().replace(", ", "\n").substring(1);
         nameConstExcludedStr = nameConstExcludedStr.substring(0, nameConstExcludedStr.length()-1);
         nameConstExcludedStr = nameConstExcludedStr.replace("::/64", ":0:0:0:0:0:0/64");
+        nameConstExcluded.remove(3);
+        nameConstExcluded.add("forbidit.this.com");
+        nameConstExcludedEditedStr = nameConstExcluded.toString().replace(", ", "\n").substring(1);
+        nameConstExcludedEditedStr = nameConstExcludedEditedStr.substring(0, nameConstExcludedEditedStr.length()-1);
         
         createdUsers = new ArrayList<String>();
         
@@ -315,82 +329,135 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         
     }
     
+    private void addAndVerifyEndEntityRA(boolean enablePermittedNC, boolean enableExcludedNC, 
+            boolean populatePermittedNC, boolean populateExcludedNC, 
+            boolean requirePermittedNC, boolean requireExcludedNC) throws Exception {
+        addAndVerifyEndEntityRA(enablePermittedNC, enableExcludedNC, populatePermittedNC, populateExcludedNC,
+                        requirePermittedNC, requireExcludedNC, false);
+    }
+    
+    private void addAndVerifyEndEntityRA(boolean enabledPermittedNC, boolean enabledExcludedNC, 
+            boolean populatePermittedNC, boolean populateExcludedNC, 
+            boolean requiredPermittedNC, boolean requiredExcludedNC, boolean expectionOnEECreation
+            ) throws Exception {
+        
+        String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+        
+        raWebHelper.openPage(getRaWebUrl());
+        Thread.sleep(2000);
+        raWebHelper.makeNewCertificateRequest();
+        raWebHelper.selectCertificateTypeByEndEntityName(TEST_NC_EE_PROFILE_NAME);
+        raWebHelper.selectCertificateSubType(TEST_NC_CERT_PROFILE_EE);
+        raWebHelper.selectCertificationAuthorityByName("ManagementCA");
+        raWebHelper.selectKeyPairGenerationOnServer();
+        raWebHelper.selectKeyAlgorithm("RSA 2048 bits");
+        raWebHelper.fillMakeRequestEditCommonName(endEntityName);
+        raWebHelper.fillCredentials(endEntityName, endEntityName);
+        raWebHelper.fillNameConstraintPermitted(nameConstPermittedStr);
+        raWebHelper.fillNameConstraintExcluded(nameConstExcludedStr);
+        raWebHelper.clickDownloadKeystorePem();
+        
+        createdUsers.add(endEntityName);
+        
+        raWebHelper.clickSearchEndEntities(getRaWebUrl());
+        raWebHelper.fillSearchEndEntity(endEntityName);
+        raWebHelper.clickViewEndEntity();
+        
+        log.info(raWebHelper.getPermittedNameConstraint());
+        log.info(raWebHelper.getExcludedNameConstraint());
+        
+        raWebHelper.clickEditInViewEndEntity();
+        raWebHelper.editNameConstraintPermitted(nameConstPermittedEditedStr);
+        raWebHelper.editNameConstraintExcluded(nameConstExcludedEditedStr);
+        Thread.sleep(2000);
+        raWebHelper.clickSaveInEditEndEntity();
+        
+        log.info(raWebHelper.getPermittedNameConstraint());
+        log.info(raWebHelper.getExcludedNameConstraint());
+   
+    }
+    
     @Test
+    public void testRA_A_AddEndEntityPermittedAndExcluded() throws Exception { 
+        addAndVerifyEndEntityRA(true, true, true, true, false, false);
+    }
+    
+    //@Test
     public void testA_AddEndEntityPermittedAndExcluded() throws Exception { 
         addAndVerifyEndEntity(true, true, true, true, false, false);
     }
     
-    @Test
+    //@Test
     public void testB_AddEndEntityPermittedOnly() throws Exception {
         addAndVerifyEndEntity(true, true, true, false, false, false);
     }
     
-    @Test
+    //@Test
     public void testC_AddEndEntityExcludededOnly() throws Exception {
         addAndVerifyEndEntity(true, true, false, true, false, false);
     }
     
-    @Test
+    //@Test
     public void testD_AddEndEntityWithoutNameConstraint() throws Exception {
         addAndVerifyEndEntity(true, true, false, false, false, false);
     }
     
-    @Test
+    //@Test
     public void testE_UpdateEEProfileToOnlyPermitted() throws Exception {
         editEndEntityProfile(true, false, false, false);
     }
     
-    @Test
+    //@Test
     public void testF_AddEndEntityPermittedOnly() throws Exception {
         addAndVerifyEndEntity(true, false, true, false, false, false);
     }
     
-    @Test
+    //@Test
     public void testG_UpdateEEProfileToOnlyExcluded() throws Exception {
         editEndEntityProfile(false, true, false, false);
     }
     
-    @Test
+    //@Test
     public void testH_AddEndEntityExcludedOnly() throws Exception {
         addAndVerifyEndEntity(false, true, false, true, false, false);
     }
     
-    @Test
+    //@Test
     public void testI_UpdateEEProfileToNoNameConstraint() throws Exception {
         editEndEntityProfile(false, false, false, false);
     }
     
-    @Test
+    //@Test
     public void testJ_AddEndEntityWONameConstraint() throws Exception {
         addAndVerifyEndEntity(false, false, false, false, false, false);
     }
     
-    @Test
+    //@Test
     public void testK_UpdateEEProfileToPermittedNCRequirred() throws Exception {
         editEndEntityProfile(true, true, true, false);
     }
     
-    @Test
+    //@Test
     public void testL_AddEndEntityPermittedOnly() throws Exception {
         addAndVerifyEndEntity(true, true, true, false, true, false);
     }
     
-    @Test
+    //@Test
     public void testM_AddEndEntityWONameConstraintNegative() throws Exception {
         addAndVerifyEndEntity(true, true, false, false, true, false, true);
     }
     
-    @Test
+    //@Test
     public void testN_UpdateEEProfileToExcludedNCRequirred() throws Exception {
         editEndEntityProfile(true, true, false, true);
     }
     
-    @Test
+    //@Test
     public void testO_AddEndEntityExcludedOnly() throws Exception {
         addAndVerifyEndEntity(true, true, false, true, false, true);
     }
     
-    @Test
+    //@Test
     public void testP_AddEndEntityWONameConstraintNegative() throws Exception {
         addAndVerifyEndEntity(true, true, false, false, false, true, true);
     }
