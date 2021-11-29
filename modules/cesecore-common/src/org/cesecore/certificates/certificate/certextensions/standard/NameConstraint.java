@@ -200,7 +200,7 @@ public class NameConstraint extends StandardCertificateExtension {
             return "uniformResourceIdentifier:" + str; 
         } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
             // DNS name (it can start with a ".", this means "all subdomains")
-            return "dNSName:"+str+"."; // Adding extra dot in the end to help BC when comparing the domains!
+            return "dNSName:"+str; 
         } else if (str.matches("^[^=,]*@[a-zA-Z0-9_.\\[\\]:-]+$")) {
             String email = str;
             // RFC 822 Name (i.e. e-mail)
@@ -272,8 +272,6 @@ public class NameConstraint extends StandardCertificateExtension {
         case GeneralName.dNSName:
             if(StringUtils.isBlank((String)data)) {
                 return "."; // All dns names excluded
-            } else if (StringUtils.endsWith(((String)data), ".")){
-                return StringUtils.chop((String)data);
             } else {
                 return (String)data;
             }
