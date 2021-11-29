@@ -804,6 +804,29 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
+    
+    @Override
+    public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken,
+            RaCertificateSearchRequestV2 raCertificateSearchRequest) {
+        final RaCertificateSearchResponseV2 ret = new RaCertificateSearchResponseV2();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret.merge(raMasterApi.searchForCertificatesV2(authenticationToken, raCertificateSearchRequest));
+                } catch (UnsupportedOperationException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
+                    }
+                    // Just try next implementation
+                } catch (RaMasterBackendUnavailableException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Timeout during back end invocation.", e);
+                    }
+                }
+            }
+        }
+        return ret;
+    }
 
     @Override
     public RaCertificateSearchResponse searchForCertificatesByUsername(

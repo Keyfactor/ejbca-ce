@@ -9,47 +9,64 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
-
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.ejbca.core.model.era.RaCertificateSearchRequest;
-import org.ejbca.ui.web.rest.api.exception.RestException;
-import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
-import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
+
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
+import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
+import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificatePagination;
+import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateSortRestRequest;
+
+import io.swagger.annotations.ApiModelProperty;
 
 import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestUtil.parseDateFromStringValue;
 
 /**
- * JSON input for a certificate search containing multiple search criteria and output limitation.
- * <br/>
+ * JSON input for a certificate search V2 containing multiple search criteria and pagination.
+ * 
+ * @see org.ejbca.ui.web.rest.api.io.request.Pagination
+ *
  * The properties of this class has to be valid.
  *
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest
- * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults
- *
- * @version $Id: SearchCertificatesRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
+ * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateSortRestRequest
+ * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificatePagination
  */
-public class SearchCertificatesRestRequest implements SearchCertificateCriteriaRequest {
+public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteriaRequest {
 
-    @ValidSearchCertificateMaxNumberOfResults
-    private Integer maxNumberOfResults;
+    @ApiModelProperty(value = "Pagination." )
+    @ValidSearchCertificatePagination
+    private Pagination pagination;
+    
+    @ApiModelProperty(value = "Sort." )
+    @ValidSearchCertificateSortRestRequest
+    private SearchCertificateSortRestRequest sort = null;
+    
     @ApiModelProperty(value = "A List of search criteria." )
     @ValidSearchCertificateCriteriaRestRequestList
     @Valid
     private List<SearchCertificateCriteriaRestRequest> criteria = new ArrayList<>();
 
-    public Integer getMaxNumberOfResults() {
-        return maxNumberOfResults;
+    public Pagination getPagination() {
+        return pagination;
     }
 
-    public void setMaxNumberOfResults(Integer maxNumberOfResults) {
-        this.maxNumberOfResults = maxNumberOfResults;
+    public void setPagination(Pagination pagination) {
+        this.pagination = pagination;
+    }
+    
+    public SearchCertificateSortRestRequest getSort() {
+        return sort;
+    }
+
+    public void setSort(SearchCertificateSortRestRequest sort) {
+        this.sort = sort;
     }
 
     @Override
@@ -66,32 +83,39 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
      *
      * @return builder instance for this class.
      */
-    public static SearchCertificatesRestRequestBuilder builder() {
-        return new SearchCertificatesRestRequestBuilder();
+    public static SearchCertificatesRestRequestBuilderV2 builder() {
+        return new SearchCertificatesRestRequestBuilderV2();
     }
 
-    public static class SearchCertificatesRestRequestBuilder {
-        private Integer maxNumberOfResults;
+    public static class SearchCertificatesRestRequestBuilderV2 {
+        private Pagination pagination;
+        private SearchCertificateSortRestRequest orderBy; 
         private List<SearchCertificateCriteriaRestRequest> criteria;
 
-        private SearchCertificatesRestRequestBuilder() {
+        private SearchCertificatesRestRequestBuilderV2() {
         }
 
-        public SearchCertificatesRestRequestBuilder maxNumberOfResults(final Integer maxNumberOfResults) {
-            this.maxNumberOfResults = maxNumberOfResults;
+        public SearchCertificatesRestRequestBuilderV2 pagination(final Pagination pagination) {
+            this.pagination = pagination;
+            return this;
+        }
+        
+        public SearchCertificatesRestRequestBuilderV2 orderBy(final SearchCertificateSortRestRequest request) {
+            this.orderBy = request;
             return this;
         }
 
-        public SearchCertificatesRestRequestBuilder criteria(final List<SearchCertificateCriteriaRestRequest> criteria) {
+        public SearchCertificatesRestRequestBuilderV2 criteria(final List<SearchCertificateCriteriaRestRequest> criteria) {
             this.criteria = criteria;
             return this;
         }
 
-        public SearchCertificatesRestRequest build() {
-            final SearchCertificatesRestRequest searchCertificatesRestRequest = new SearchCertificatesRestRequest();
-            searchCertificatesRestRequest.setMaxNumberOfResults(maxNumberOfResults);
-            searchCertificatesRestRequest.setCriteria(criteria);
-            return searchCertificatesRestRequest;
+        public SearchCertificateCriteriaRequest build() {
+            final SearchCertificatesRestRequestV2 result = new SearchCertificatesRestRequestV2();
+            result.setPagination(pagination);
+            result.setSort(orderBy);
+            result.setCriteria(criteria);
+            return result;
         }
     }
 
@@ -100,24 +124,37 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
      *
      * @return instance of converter for this class.
      */
-    public static SearchCertificatesRestRequestConverter converter() {
-        return new SearchCertificatesRestRequestConverter();
+    public static SearchCertificatesRestRequestConverterV2 converter() {
+        return new SearchCertificatesRestRequestConverterV2();
     }
 
-    public static class SearchCertificatesRestRequestConverter {
+    public static class SearchCertificatesRestRequestConverterV2 {
 
-        public RaCertificateSearchRequest toEntity(final SearchCertificatesRestRequest searchCertificatesRestRequest) throws RestException {
-            if(searchCertificatesRestRequest.getMaxNumberOfResults() == null || searchCertificatesRestRequest.getCriteria() == null || searchCertificatesRestRequest.getCriteria().isEmpty()) {
+        public RaCertificateSearchRequestV2 toEntity(final SearchCertificatesRestRequestV2 restRequest) throws RestException {
+            if(restRequest.getCriteria() == null || restRequest.getCriteria().isEmpty()) {
                 throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
             }
-            final RaCertificateSearchRequest raCertificateSearchRequest = new RaCertificateSearchRequest();
-            raCertificateSearchRequest.setMaxResults(searchCertificatesRestRequest.getMaxNumberOfResults());
-            raCertificateSearchRequest.setEepIds(new ArrayList<Integer>());
-            raCertificateSearchRequest.setCpIds(new ArrayList<Integer>());
-            raCertificateSearchRequest.setCaIds(new ArrayList<Integer>());
-            raCertificateSearchRequest.setStatuses(new ArrayList<Integer>());
-            raCertificateSearchRequest.setRevocationReasons(new ArrayList<Integer>());
-            for(final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest : searchCertificatesRestRequest.getCriteria()) {
+            final RaCertificateSearchRequestV2 raRequest = new RaCertificateSearchRequestV2();
+            if(restRequest.getPagination() == null) {
+                // Enables count rows only.
+                raRequest.setPageNumber(-1);
+            }
+            final Pagination pagination = restRequest.getPagination();
+            if (pagination != null) {
+                raRequest.setMaxResults(pagination.getPageSize());
+                raRequest.setPageNumber(pagination.getCurrentPage());
+            }
+            final SearchCertificateSortRestRequest orderBy = restRequest.getSort();
+            if (orderBy != null) {
+                raRequest.setOrderProperty(orderBy.getProperty());
+                raRequest.setOrderOperation(orderBy.getOperation());
+            }
+            raRequest.setEepIds(new ArrayList<Integer>());
+            raRequest.setCpIds(new ArrayList<Integer>());
+            raRequest.setCaIds(new ArrayList<Integer>());
+            raRequest.setStatuses(new ArrayList<Integer>());
+            raRequest.setRevocationReasons(new ArrayList<Integer>());
+            for(final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest : restRequest.getCriteria()) {
                 final SearchCertificateCriteriaRestRequest.CriteriaProperty criteriaProperty = SearchCertificateCriteriaRestRequest.CriteriaProperty.resolveCriteriaProperty(searchCertificateCriteriaRestRequest.getProperty());
                 if(criteriaProperty == null) {
                     throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
@@ -127,36 +164,36 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                 switch (criteriaProperty) {
                     case QUERY: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
-                            raCertificateSearchRequest.setSubjectDnSearchExact(true);
-                            raCertificateSearchRequest.setSubjectAnSearchExact(true);
-                            raCertificateSearchRequest.setUsernameSearchExact(true);
-                            raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
+                            raRequest.setSubjectDnSearchExact(true);
+                            raRequest.setSubjectAnSearchExact(true);
+                            raRequest.setUsernameSearchExact(true);
+                            raRequest.setExternalAccountIdSearchExact(true);
                         }
-                        raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
-                        raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
-                        raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
-                        raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
-                        raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
-                        raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
+                        raRequest.setSubjectDnSearchString(criteriaValue);
+                        raRequest.setSubjectAnSearchString(criteriaValue);
+                        raRequest.setUsernameSearchString(criteriaValue);
+                        raRequest.setSerialNumberSearchStringFromDec(criteriaValue);
+                        raRequest.setSerialNumberSearchStringFromHex(criteriaValue);
+                        raRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }
                     case END_ENTITY_PROFILE: {
-                        raCertificateSearchRequest.getEepIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
+                        raRequest.getEepIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
                         break;
                     }
                     case EXTERNAL_ACCOUNT_BINDING_ID: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
-                            raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
+                            raRequest.setExternalAccountIdSearchExact(true);
                         }
-                        raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
+                        raRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }
                     case CERTIFICATE_PROFILE: {
-                        raCertificateSearchRequest.getCpIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
+                        raRequest.getCpIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
                         break;
                     }
                     case CA: {
-                        raCertificateSearchRequest.getCaIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
+                        raRequest.getCaIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
                         break;
                     }
                     case STATUS: {
@@ -165,52 +202,52 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
                         }
                         if (certificateStatus == SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_ACTIVE) {
-                            raCertificateSearchRequest.getStatuses().add(certificateStatus.getStatusValue());
+                            raRequest.getStatuses().add(certificateStatus.getStatusValue());
                             // ECA-8578: when searching for active certificates we need to include certificates that are notified about expiration.
                             // Add this automatically to the search conditions.
-                            raCertificateSearchRequest.getStatuses().add(CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+                            raRequest.getStatuses().add(CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
                         }
                         if (certificateStatus == SearchCertificateCriteriaRestRequest.CertificateStatus.CERT_REVOKED) {
-                            raCertificateSearchRequest.getStatuses().add(certificateStatus.getStatusValue());
+                            raRequest.getStatuses().add(certificateStatus.getStatusValue());
                         }
                         if (SearchCertificateCriteriaRestRequest.CertificateStatus.REVOCATION_REASONS().contains(certificateStatus)) {
-                            raCertificateSearchRequest.getRevocationReasons().add(certificateStatus.getStatusValue());
+                            raRequest.getRevocationReasons().add(certificateStatus.getStatusValue());
                         }
                         break;
                     }
                     case ISSUED_DATE: {
                         final long issuedDateLong = parseDateFromStringValue(criteriaValue).getTime();
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER) {
-                            raCertificateSearchRequest.setIssuedAfter(issuedDateLong);
+                            raRequest.setIssuedAfter(issuedDateLong);
                         }
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE) {
-                            raCertificateSearchRequest.setIssuedBefore(issuedDateLong);
+                            raRequest.setIssuedBefore(issuedDateLong);
                         }
                         break;
                     }
                     case EXPIRE_DATE: {
                         final long expireDateLong = parseDateFromStringValue(criteriaValue).getTime();
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER) {
-                            raCertificateSearchRequest.setExpiresAfter(expireDateLong);
+                            raRequest.setExpiresAfter(expireDateLong);
                         }
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE) {
-                            raCertificateSearchRequest.setExpiresBefore(expireDateLong);
+                            raRequest.setExpiresBefore(expireDateLong);
                         }
                         break;
                     }
                     case REVOCATION_DATE: {
                         final long revocationDateLong = parseDateFromStringValue(criteriaValue).getTime();
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER) {
-                            raCertificateSearchRequest.setRevokedAfter(revocationDateLong);
+                            raRequest.setRevokedAfter(revocationDateLong);
                         }
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE) {
-                            raCertificateSearchRequest.setRevokedBefore(revocationDateLong);
+                            raRequest.setRevokedBefore(revocationDateLong);
                         }
                         break;
                     }
                 }
             }
-            return raCertificateSearchRequest;
+            return raRequest;
         }
     }
 
