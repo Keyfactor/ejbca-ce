@@ -158,8 +158,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             }
         }
         
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+        boolean isClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
-        addOrEditUser(admin, userdata, false, true);
+        addOrEditUser(admin, userdata, isClearPwd, true);
         // Process request
         try {
             
