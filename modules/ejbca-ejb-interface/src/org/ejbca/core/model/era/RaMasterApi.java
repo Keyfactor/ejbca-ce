@@ -378,6 +378,13 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
+    
+    /**
+     * Searches for certificates V2. Data (e.g. revocation status) of remote certificates take precedence over local ones.
+     * @return list of certificates from the specified search criteria and order plus pagination summary.
+     * @since Initial RA Master API version (EJBCA 7.8.0)
+     */
+    RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequestV2 raCertificateSearchRequest);
 
     /**
      * Searches for end entities. Remote end entities take precedence over local ones.
