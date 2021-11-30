@@ -25,6 +25,8 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.OtherName;
 import org.bouncycastle.tsp.TSPAlgorithms;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -186,12 +188,12 @@ public class RFC4683ToolsTest {
     }
 
     private ASN1Primitive testCreateSimGeneralName(final String[] simParameters, final String[] simTokens) throws IOException {
+        // Create the value (OtherName altName extension)
         final ASN1Primitive generalName = RFC4683Tools.createSimGeneralName(simTokens[0], simTokens[1], simTokens[2]);
-        final ASN1Sequence simSequence = ASN1Sequence.getInstance(
-                ASN1TaggedObject.getInstance(
-                        ASN1Sequence.getInstance(
-                                ASN1TaggedObject.getInstance(
-                                        generalName.toASN1Primitive()).getObjectParser(0, true)).getObjectAt(1)).getObjectParser(0, true));
+        // Parse the value and check that it's ok
+        final GeneralName gn = GeneralName.getInstance(generalName);
+        final OtherName on = OtherName.getInstance(gn.getName());
+        final ASN1Sequence simSequence = ASN1Sequence.getInstance(on.getValue());
         final String algorithmIdentifier = (AlgorithmIdentifier.getInstance(simSequence.getObjectAt(0)).getAlgorithm().getId());
         final ASN1OctetString authorityRandom = ASN1OctetString.getInstance(simSequence.getObjectAt(1));
         final ASN1OctetString sim = ASN1OctetString.getInstance(simSequence.getObjectAt(2));
