@@ -462,10 +462,12 @@
 	<path id="lib.bouncycastle-provonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcprov-jdk15on-*.jar"/></fileset></path>
 	<path id="lib.bouncycastle-mailonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcpkix-jdk15on-*.jar"/></fileset></path>
 	<path id="lib.bouncycastle-tlsonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bctls-jdk15on-*.jar"/></fileset></path>
+	<path id="lib.bouncycastle-util.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcutil-jdk15on-*.jar"/></fileset></path>
 	<path id="lib.bouncycastle.classpath">
 		<path refid="lib.bouncycastle-provonly.classpath"/>
 		<path refid="lib.bouncycastle-mailonly.classpath"/>
         <path refid="lib.bouncycastle-tlsonly.classpath"/>
+		<path refid="lib.bouncycastle-util.classpath"/>
 	</path>
 
 	<path id="lib.jpa.classpath">
