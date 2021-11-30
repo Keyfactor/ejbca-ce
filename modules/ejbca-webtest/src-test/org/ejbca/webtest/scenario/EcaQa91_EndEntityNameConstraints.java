@@ -175,6 +175,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             try {
                 endEntityManagementSession.deleteUser(admin, username);
             } catch(Exception e) {
+                log.error("failed to delete user:" + username);
                 // continue with next user
             }
         }
@@ -444,6 +445,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             raWebHelper.fillNameConstraintExcluded("");
         }
         
+        Thread.sleep(waitTime);
         raWebHelper.clickDownloadKeystorePem();
         
         createdUsers.add(endEntityName);
@@ -474,10 +476,6 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             assertElementNotDisplayed("//*[text()=\"Name constraints, excluded\"]");
     
         if(populateExcludedNC) {
-            String testVector = "" + enabledPermittedNC + ", " + enabledExcludedNC + ", " + 
-                    populatePermittedNC + ", " + populateExcludedNC + ", " + 
-                    requiredPermittedNC+ ", " + requiredExcludedNC;
-            log.info(testVector + ":" + raWebHelper.getExcludedNameConstraint());
             Assert.assertEquals("excluded name constraints does not match", 
                     nameConstExcludedStr.replace("\n", "; "), raWebHelper.getExcludedNameConstraint());
         } else if(enabledExcludedNC) {
@@ -601,24 +599,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     
     @FixMethodOrder(MethodSorters.NAME_ASCENDING)
     public static class CaGuiTests{
-        
-        private static final Logger log = Logger.getLogger(EcaQa91_EndEntityNameConstraints.CaGuiTests.class);
-        
-        @Test
-        public void testCaGuiNameConstraintsC() throws Exception {
-            log.info("XXXXXXXXXXXXXXXXXXXX: ran C");
-        }
-        
-        @Test
-        public void testCaGuiNameConstraintsA() throws Exception {
-            log.info("XXXXXXXXXXXXXXXXXXXX: ran A");
-        }
-        
-        @Test
-        public void testCaGuiNameConstraintsB() throws Exception {
-            log.info("XXXXXXXXXXXXXXXXXXXX: ran B");
-        }
-        
+                
         @Test
         public void testA_AddEndEntityPermittedAndExcluded() throws Exception { 
             addAndVerifyEndEntity(true, true, true, true, false, false);
