@@ -595,4 +595,8 @@ public class RaWebHelper extends BaseHelper {
         return getElementText(Page.SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY);
     }
     
+    public String getErrorMessage() {
+        return getElementText(Page.TEXT_ERROR_MESSAGE);
+    }
+    
 }
