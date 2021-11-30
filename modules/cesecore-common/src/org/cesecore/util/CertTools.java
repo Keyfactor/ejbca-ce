@@ -4706,24 +4706,12 @@ public abstract class CertTools {
             if (subjectAltName != null) {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
-                        if(sangn.getTagNo() == GeneralName.dNSName && !(sangn.getName().toString()).equals(".")) {
-                            GeneralName updatedGn = null;
-                            // This is to make sure that BC gets proper dns names to compare against the list.
-                            if((sangn.getName().toString()).startsWith(".")) {
-                                updatedGn = new GeneralName(GeneralName.dNSName, sangn.getName().toString().substring(1) + ".");
-                            } else {
-                                updatedGn = new GeneralName(GeneralName.dNSName, sangn.getName() + ".");
-                            }
-                            validator.checkPermitted(updatedGn);
-                            validator.checkExcluded(updatedGn);
-                            
-                        } else if (sangn.getTagNo() == GeneralName.dNSName && (sangn.getName().toString()).equals(".")) {
+                        validator.checkPermitted(sangn);
+                        if (isAllDNSNamesExcluded(excluded)) {
                             final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
-                            throw new IllegalNameException(msg); 
-                        } else {
-                            validator.checkPermitted(sangn);
-                            validator.checkExcluded(sangn);
+                            throw new IllegalNameException(msg);
                         }
+                        validator.checkExcluded(sangn);
                     } catch (PKIXNameConstraintValidatorException e) {
                         final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
                         throw new IllegalNameException(msg, e);
@@ -4732,7 +4720,17 @@ public abstract class CertTools {
             }
         }
     }
-    
+
+    // Check if we should exclude all dns names
+    private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
+        for (int i = 0; i < excluded.length; i++) {
+            if (excluded[i].getBase().toString().equals("2: ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Refers private method from org.bouncycastle.asn1.x509.PKIXNameConstraintValidator.
      * It is used here to extract host from name constraint in CA. Bouncy Castle extracts host
