@@ -986,7 +986,6 @@
                 },
                 "pagination_summary": {
                 	"type": "object",
-                    "required": true,
                     "description": "Pagination summary.",
                     "items": {
                         "$ref": "#/definitions/PaginationSummary"
@@ -1043,14 +1042,12 @@
                     "type": "integer",
                     "format": "int32",
                     "description": "Page size or max. number of certificates returned.",
-                    "required": false,
                     "minimum": 1
                 },
                 "current_page": {
                     "type": "integer",
                     "format": "int32",
                     "description": "The current page from 1 to n.",
-                    "required": false,
                     "minimum": 1
                 }
             },
@@ -1063,21 +1060,18 @@
                     "type": "integer",
                     "format": "int32",
                     "description": "Page size or max. number of certificates returned.",
-                    "required": false,
                     "minimum": 1
                 },
                 "current_page": {
                     "type": "integer",
                     "format": "int32",
                     "description": "The current page from 1 to n.",
-                    "required": false,
                     "minimum": 1
                 },
                 "total_certs": {
                     "type": "integer",
                     "format": "int64",
-                    "description": "Total number of certificates for the given criteria or null. Null means that this page might not be the last page.",
-                    "required": false
+                    "description": "Total number of certificates for the given criteria or null. Null means that this page might not be the last page."
                 }
             },
             "description": "Pagination summary."
@@ -1088,14 +1082,12 @@
             	"property": {
                     "type": "string",
                     "enum": ["USERNAME", "ISSUER_DN", "SUBJECT_DN", "EXTERNAL_ACCOUNT_BINDING_ID", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "STATUS", "TAG", "TYPE", "UPDATE_TIME", "ISSUED_DATE", "EXPIRE_DATE", "REVOCATION_DATE"],
-                    "description": "The sort property.",
-                    "required": true
+                    "description": "The sort property."
                 },
                 "operation": {
                     "type": "string",
                     "enum": ["ASC", "DESC"],
-                    "description": "The sort operation.",
-                    "required": true
+                    "description": "The sort operation."
                 }
             },
             "description": "Pagination with limit and offset.\n"
@@ -1128,7 +1120,6 @@
                 },
                 "pagination": {
                     "type": "object",
-                    "required": false,
                     "description": "Pagination with limit and offset.",
                     "items": {
                         "$ref": "#/definitions/Pagination"
@@ -1136,7 +1127,6 @@
                 },
                 "sort": {
                     "type": "object",
-                    "required": false,
                     "description": "Sorting ascending or descending.",
                     "items": {
                         "$ref": "#/definitions/SearchCertificateCriteriaSortRequest"
