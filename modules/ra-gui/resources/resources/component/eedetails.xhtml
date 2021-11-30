@@ -315,15 +315,20 @@
                 rendered="#{cc.attrs.raEndEntityDetails.cardNumberEnabled and not empty cc.attrs.raEndEntityDetails.cardNumber}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
-            <h:outputLabel for="nameconstraintspermitted" value="#{msg.component_eedetails_field_nameconstraintspermitted}"
-                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled}"
+            <h:outputLabel for="nameConstraintsPermitted" value="#{msg.component_eedetails_field_nameconstraintspermitted}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and 
+                					not cc.attrs.raEndEntityDetails.nameConstraintsPermittedRequired}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="nameconstraintspermitted" value="#{cc.attrs.raEndEntityDetails.getNameConstraintsPermittedViewOnly()}"
+            <h:outputLabel for="nameConstraintsPermitted" value="#{msg.component_eedetails_field_nameconstraintspermitted} *"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled and 
+                					cc.attrs.raEndEntityDetails.nameConstraintsPermittedRequired}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="nameConstraintsPermitted" value="#{cc.attrs.raEndEntityDetails.getNameConstraintsPermittedViewOnly()}"
                 rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
                 						cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled 
                 						and not empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="nameconstraintspermittedNone" value="None"
+            <h:outputText id="nameConstraintsPermittedNone" value="None"
                 rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
                 						cc.attrs.raEndEntityDetails.nameConstraintsPermittedEnabled 
                 						and empty cc.attrs.raEndEntityDetails.nameConstraintsPermitted}"
@@ -335,15 +340,20 @@
              	<f:ajax event="change" />
              </h:inputTextarea>
              
-            <h:outputLabel for="nameconstraintsExcluded" value="#{msg.component_eedetails_field_nameconstraintsexcluded}"
-                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and not empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
+            <h:outputLabel for="nameConstraintsExcluded" value="#{msg.component_eedetails_field_nameconstraintsexcluded}"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and 
+                						not cc.attrs.raEndEntityDetails.nameConstraintsExcludedRequired}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="nameconstraintsExcluded" value="#{cc.attrs.raEndEntityDetails.getNameConstraintsExcludedViewOnly()}"
+            <h:outputLabel for="nameConstraintsExcluded" value="#{msg.component_eedetails_field_nameconstraintsexcluded} *"
+                rendered="#{cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled and 
+                						cc.attrs.raEndEntityDetails.nameConstraintsExcludedRequired}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="nameConstraintsExcluded" value="#{cc.attrs.raEndEntityDetails.getNameConstraintsExcludedViewOnly()}"
                 rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
                 						cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled 
                 						and not empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="nameconstraintsExcludedNone" value="None"
+            <h:outputText id="nameConstraintsExcludedNone" value="None"
                 rendered="#{(cc.attrs.approvalRequestMode or !cc.attrs.editMode) and 
                 						cc.attrs.raEndEntityDetails.nameConstraintsExcludedEnabled 
                 						and empty cc.attrs.raEndEntityDetails.nameConstraintsExcluded}"
