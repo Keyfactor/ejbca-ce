@@ -96,8 +96,8 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_EDIT_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:editButton");
         
         // View End Entity
-        static final By SECTION_PERMITTED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameconstraintspermitted')]");
-        static final By SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameconstraintsExcluded')]");
+        static final By SECTION_PERMITTED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsPermitted')]");
+        static final By SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsExcluded')]");
         static final By EDIT_BUTTON_VIEW_ENTITY = By.xpath("//*[contains(@value, 'Edit')]");
         
         // Edit End Entity
@@ -594,4 +594,5 @@ public class RaWebHelper extends BaseHelper {
     public String getExcludedNameConstraint() {
         return getElementText(Page.SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY);
     }
+    
 }
