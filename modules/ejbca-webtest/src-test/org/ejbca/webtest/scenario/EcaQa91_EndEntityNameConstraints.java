@@ -13,25 +13,22 @@
 
 package org.ejbca.webtest.scenario;
 
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -41,23 +38,25 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
-import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
-import org.ejbca.webtest.scenario.EcaQa125_RaCpRestrictions.TestData;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@RunWith(value = Enclosed.class)
 public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     
     private static final Logger log = Logger.getLogger(EcaQa91_EndEntityNameConstraints.class);
@@ -131,6 +130,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         nameConstExcluded.add("10.1.0.0/16");
         nameConstExcluded.add("2005:ac7::/64");
         nameConstExcluded.add("C=SE,O=PrimeKey,CN=example.com");
+        nameConstExcluded.add("forbid.this2.example.com");
         nameConstExcludedStr = nameConstExcluded.toString().replace(", ", "\n").substring(1);
         nameConstExcludedStr = nameConstExcludedStr.substring(0, nameConstExcludedStr.length()-1);
         nameConstExcludedStr = nameConstExcludedStr.replace("::/64", ":0:0:0:0:0:0/64");
@@ -146,6 +146,8 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         CertificateProfile endEntityCertprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         endEntityCertprofile.setUseNameConstraints(true);
         endEntityCertprofile.setUseLdapDnOrder(false);
+        endEntityCertprofile.setAvailableKeyAlgorithms(new String[]{"RSA"});
+        endEntityCertprofile.setAvailableBitLengths(new int[]{2048});
         endEntityCertificateProfileId = certProfileSession.addCertificateProfile(admin, TEST_NC_CERT_PROFILE_EE, endEntityCertprofile);
         log.info("created end entity certificate profile id: " + endEntityCertificateProfileId);
         
@@ -169,20 +171,25 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     public static void exit() throws Exception {
         
         // remove all created users
-        for(String username : createdUsers)
-            endEntityManagementSession.deleteUser(admin, username);
+        for(String username : createdUsers) {
+            try {
+                endEntityManagementSession.deleteUser(admin, username);
+            } catch(Exception e) {
+                // continue with next user
+            }
+        }
         
         certProfileSession.removeCertificateProfile(admin, TEST_NC_CERT_PROFILE_EE);
         endEntityProfileSession.removeEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME);
         afterClass();
     }
     
-    private String getRandomizedName(String nameTemplate) {
+    private static String getRandomizedName(String nameTemplate) {
         Random r = new Random();
         return nameTemplate.replace(REPLACABLE_TAG, 1000_0000 + r.nextInt(8999_9999) + "");
     }
     
-    private void editEndEntityProfile(boolean enablePermittedNC, boolean enableExcludedNC, 
+    private static void editEndEntityProfile(boolean enablePermittedNC, boolean enableExcludedNC, 
             boolean requirePermittedNC, boolean requireExcludedNC) throws Exception {
         
         endEntityProfile.setNameConstraintsPermittedUsed(enablePermittedNC);
@@ -198,14 +205,14 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         Assert.assertEquals(requireExcludedNC, eeProfile.isNameConstraintsExcludedRequired());
     }
     
-    private void addAndVerifyEndEntity(boolean enablePermittedNC, boolean enableExcludedNC, 
+    private static void addAndVerifyEndEntity(boolean enablePermittedNC, boolean enableExcludedNC, 
             boolean populatePermittedNC, boolean populateExcludedNC, 
             boolean requirePermittedNC, boolean requireExcludedNC) throws Exception {
         addAndVerifyEndEntity(enablePermittedNC, enableExcludedNC, populatePermittedNC, populateExcludedNC,
                         requirePermittedNC, requireExcludedNC, false);
     }
     
-    private void addAndVerifyEndEntity(boolean enabledPermittedNC, boolean enabledExcludedNC, 
+    private static void addAndVerifyEndEntity(boolean enabledPermittedNC, boolean enabledExcludedNC, 
             boolean populatePermittedNC, boolean populateExcludedNC, 
             boolean requiredPermittedNC, boolean requiredExcludedNC, boolean expectionOnEECreation
             ) throws Exception {
@@ -331,41 +338,98 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         
     }
     
-    private void addAndVerifyEndEntityRA(boolean enablePermittedNC, boolean enableExcludedNC, 
+    private static void addAndVerifyEndEntityRA(boolean enablePermittedNC, boolean enableExcludedNC, 
             boolean populatePermittedNC, boolean populateExcludedNC, 
             boolean requirePermittedNC, boolean requireExcludedNC) throws Exception {
         addAndVerifyEndEntityRA(enablePermittedNC, enableExcludedNC, populatePermittedNC, populateExcludedNC,
                         requirePermittedNC, requireExcludedNC, false);
     }
     
-    public void assertELementDisplayed(String xpath) {
+    public static void assertElementDisplayed(String xpath) {
         Assert.assertTrue("Following element is not displayed: " + xpath, 
                 webDriver.findElement(By.xpath(xpath)).isDisplayed());
     }
     
-    private void addAndVerifyEndEntityRA(boolean enabledPermittedNC, boolean enabledExcludedNC, 
+    public static void assertElementNotDisplayed(String xpath) {
+        try {
+            webDriver.findElement(By.xpath(xpath));
+            Assert.fail("Following element is displayed: " + xpath);
+        } catch(Exception e) {
+            
+        }
+    }
+    
+    private static void addAndVerifyEndEntityRA(boolean enabledPermittedNC, boolean enabledExcludedNC, 
             boolean populatePermittedNC, boolean populateExcludedNC, 
             boolean requiredPermittedNC, boolean requiredExcludedNC, boolean expectionOnEECreation
             ) throws Exception {
         
+        editEndEntityProfile(enabledPermittedNC, enabledExcludedNC, requiredPermittedNC, requiredExcludedNC);
+        int waitTime = 2000;
+        
         String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
         
         raWebHelper.openPage(getRaWebUrl());
-        Thread.sleep(2000);
+        Thread.sleep(waitTime);
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(TEST_NC_EE_PROFILE_NAME);
         raWebHelper.selectCertificateSubType(TEST_NC_CERT_PROFILE_EE);
         if(webDriver.findElement(By.xpath("//*[text()=\"CA\"]")).isDisplayed())
             raWebHelper.selectCertificationAuthorityByName("ManagementCA");
         raWebHelper.selectKeyPairGenerationOnServer();
-        raWebHelper.selectKeyAlgorithm("RSA 2048 bits");
+        //raWebHelper.selectKeyAlgorithm("RSA 2048 bits");
         raWebHelper.fillMakeRequestEditCommonName(endEntityName);
         raWebHelper.fillCredentials(endEntityName, endEntityName);
         
         if(requiredPermittedNC)
-            assertELementDisplayed("//*[text()=\"Permitted Name Constraints *\"]");
-        else
-            assertELementDisplayed("//*[text()=\"Permitted Name Constraints\"]");
+            assertElementDisplayed("//*[text()=\"Permitted Name Constraints *\"]");
+        else if(enabledPermittedNC)
+            assertElementDisplayed("//*[text()=\"Permitted Name Constraints\"]");
+        
+        if(requiredExcludedNC)
+            assertElementDisplayed("//*[text()=\"Excluded Name Constraints *\"]");
+        else if(enabledExcludedNC)
+            assertElementDisplayed("//*[text()=\"Excluded Name Constraints\"]");
+        
+        if(populatePermittedNC && requiredPermittedNC && populateExcludedNC && requiredExcludedNC) {
+            // use one scenario to test error messages
+            raWebHelper.fillNameConstraintPermitted(nameConstPermittedStr + "....");
+            raWebHelper.fillNameConstraintExcluded(nameConstExcludedStr);
+            Thread.sleep(waitTime);
+            raWebHelper.clickDownloadKeystorePem();
+            Assert.assertTrue("Permitted name constraints are not validated.", 
+                    raWebHelper.getErrorMessage().contains("Cannot parse name constraint entry"));
+            Thread.sleep(waitTime);
+            raWebHelper.fillCredentials(endEntityName, endEntityName);
+            
+            raWebHelper.fillNameConstraintPermitted(nameConstPermittedStr); // reset
+            raWebHelper.fillNameConstraintExcluded(nameConstExcludedStr + "????");
+            Thread.sleep(waitTime);
+            raWebHelper.clickDownloadKeystorePem();
+            Assert.assertTrue("Excluded name constraints are not validated.", 
+                    raWebHelper.getErrorMessage().contains("Cannot parse name constraint entry"));
+            Thread.sleep(waitTime);
+            raWebHelper.fillCredentials(endEntityName, endEntityName);
+            raWebHelper.fillNameConstraintExcluded(nameConstExcludedStr); // reset
+        }
+        
+        if(requiredPermittedNC && populatePermittedNC && !requiredExcludedNC) {
+            raWebHelper.fillNameConstraintPermitted("");    
+            Thread.sleep(waitTime);
+            raWebHelper.clickDownloadKeystorePem();
+            assertElementDisplayed("//*[text()=\"Permitted name constraints are required.\"]");
+            Thread.sleep(waitTime);
+            raWebHelper.fillCredentials(endEntityName, endEntityName);
+        }
+        
+        if(!requiredPermittedNC && requiredExcludedNC && populateExcludedNC) {
+            raWebHelper.fillNameConstraintExcluded("");
+            Thread.sleep(waitTime);
+            raWebHelper.clickDownloadKeystorePem();
+            assertElementDisplayed("//*[text()=\"Excluded name constraints are required.\"]");
+            Thread.sleep(waitTime);
+            raWebHelper.fillCredentials(endEntityName, endEntityName);
+        }
         
         if(populatePermittedNC) {
             raWebHelper.fillNameConstraintPermitted(nameConstPermittedStr);
@@ -374,11 +438,6 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             raWebHelper.fillNameConstraintPermitted("");
         }
         
-        if(requiredExcludedNC)
-            assertELementDisplayed("//*[text()=\"Excluded Name Constraints *\"]");
-        else
-            assertELementDisplayed("//*[text()=\"Excluded Name Constraints\"]");
-        
         if(populateExcludedNC) {
             raWebHelper.fillNameConstraintExcluded(nameConstExcludedStr);
         } else if(enabledExcludedNC) {
@@ -386,14 +445,6 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         }
         
         raWebHelper.clickDownloadKeystorePem();
-        // validations run alphabetically
-        if(requiredExcludedNC && !populateExcludedNC) {
-            
-        }
-        
-        if(requiredPermittedNC && !populatePermittedNC) {
-            
-        }
         
         createdUsers.add(endEntityName);
         
@@ -402,125 +453,251 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         raWebHelper.clickViewEndEntity();
         
         if(requiredPermittedNC)
-            assertELementDisplayed("//*[text()=\"Name constraints, permitted *\"]");
+            assertElementDisplayed("//*[text()=\"Name constraints, permitted *\"]");
+        else if(enabledPermittedNC)
+            assertElementDisplayed("//*[text()=\"Name constraints, permitted\"]");
         else
-            assertELementDisplayed("//*[text()=\"Name constraints, permitted\"]");
+            assertElementNotDisplayed("//*[text()=\"Name constraints, permitted\"]");
     
         if(populatePermittedNC) {
             Assert.assertEquals("permitted name constraints does not match", 
                     nameConstPermittedStr.replace("\n", "; "), raWebHelper.getPermittedNameConstraint());
         } else if(enabledPermittedNC) {
-            assertELementDisplayed("//*[contains(@id, 'nameConstraintsPermittedNone')]");
+            assertElementDisplayed("//*[contains(@id, 'nameConstraintsPermittedNone')]");
         }
         
         if(requiredExcludedNC)
-            assertELementDisplayed("//*[text()=\"Name constraints, excluded *\"]");
+            assertElementDisplayed("//*[text()=\"Name constraints, excluded *\"]");
+        else if(enabledExcludedNC)
+            assertElementDisplayed("//*[text()=\"Name constraints, excluded\"]");
         else
-            assertELementDisplayed("//*[text()=\"Name constraints, excluded\"]");
+            assertElementNotDisplayed("//*[text()=\"Name constraints, excluded\"]");
     
         if(populateExcludedNC) {
+            String testVector = "" + enabledPermittedNC + ", " + enabledExcludedNC + ", " + 
+                    populatePermittedNC + ", " + populateExcludedNC + ", " + 
+                    requiredPermittedNC+ ", " + requiredExcludedNC;
+            log.info(testVector + ":" + raWebHelper.getExcludedNameConstraint());
             Assert.assertEquals("excluded name constraints does not match", 
                     nameConstExcludedStr.replace("\n", "; "), raWebHelper.getExcludedNameConstraint());
         } else if(enabledExcludedNC) {
-            assertELementDisplayed("//*[contains(@id, 'nameConstraintsExcludedNone')]");
+            assertElementDisplayed("//*[contains(@id, 'nameConstraintsExcludedNone')]");
         }
         
         raWebHelper.clickEditInViewEndEntity();
-        raWebHelper.editNameConstraintPermitted(nameConstPermittedEditedStr);
-        raWebHelper.editNameConstraintExcluded(nameConstExcludedEditedStr);
-        Thread.sleep(2000);
+        if(populatePermittedNC && requiredPermittedNC && populateExcludedNC && requiredExcludedNC) {
+            // use one scenario to test error messages
+            raWebHelper.editNameConstraintPermitted(nameConstPermittedEditedStr + "\n....");
+            Thread.sleep(waitTime);
+            raWebHelper.clickSaveInEditEndEntity();
+            raWebHelper.assertErrorMessageAppears("Invalid permitted name constraints .....",  
+                    "Permitted name constraints are not validated.", "Invalid error emssage");
+            Thread.sleep(waitTime);
+            
+            raWebHelper.editNameConstraintPermitted(nameConstPermittedEditedStr); // reset
+            raWebHelper.editNameConstraintExcluded(nameConstExcludedEditedStr + "\n????");
+            Thread.sleep(waitTime);
+            raWebHelper.clickSaveInEditEndEntity();
+            raWebHelper.assertErrorMessageAppears("Invalid excluded name constraints ????.",  
+                    "Permitted name constraints are not validated.", "Invalid error emssage");
+            Thread.sleep(waitTime);
+        }
+        
+        if(requiredPermittedNC && populatePermittedNC && !requiredExcludedNC) {
+            raWebHelper.editNameConstraintPermitted("");
+            Thread.sleep(waitTime);
+            raWebHelper.clickSaveInEditEndEntity();
+            raWebHelper.assertErrorMessageAppears("Permitted name constraints are required.",  
+                    "Requirred permitted name constraints is not validated.", "Invalid error emssage");
+            Thread.sleep(waitTime);
+        }
+        
+        if(!requiredPermittedNC && requiredExcludedNC && populateExcludedNC) {
+            raWebHelper.editNameConstraintExcluded("");
+            Thread.sleep(waitTime);
+            raWebHelper.clickSaveInEditEndEntity();
+            raWebHelper.assertErrorMessageAppears("Excluded name constraints are required.",  
+                    "Requirred excluded name constraints is not validated.", "Invalid error emssage");
+            Thread.sleep(waitTime);
+        }
+        
+        if(populatePermittedNC)
+            raWebHelper.editNameConstraintPermitted(nameConstPermittedEditedStr);
+        if(populateExcludedNC)
+            raWebHelper.editNameConstraintExcluded(nameConstExcludedEditedStr);
+        Thread.sleep(waitTime);
         raWebHelper.clickSaveInEditEndEntity();
         
-        Assert.assertEquals("permitted name constraints does not match after edit", 
+        if(populatePermittedNC)
+            Assert.assertEquals("permitted name constraints does not match after edit", 
                 nameConstPermittedEditedStr.replace("\n", "; "), raWebHelper.getPermittedNameConstraint());
-        Assert.assertEquals("excluded name constraints does not match after edit", 
+        
+        if(populateExcludedNC)
+            Assert.assertEquals("excluded name constraints does not match after edit", 
                 nameConstExcludedEditedStr.replace("\n", "; "), raWebHelper.getExcludedNameConstraint());
    
     }
     
-    @Test
-    public void testRA_A_AddEndEntityPermittedAndExcluded() throws Exception { 
-        addAndVerifyEndEntityRA(true, true, true, true, false, false);
+    @RunWith(value = Parameterized.class)
+    public static class RaGuiTestParams {
+                
+        boolean enabledPermittedNC, enabledExcludedNC, 
+         populatePermittedNC, populateExcludedNC, 
+         requiredPermittedNC, requiredExcludedNC;        
+        
+        public RaGuiTestParams(boolean enabledPermittedNC, boolean enabledExcludedNC, 
+                boolean populatePermittedNC, boolean populateExcludedNC,
+                boolean requiredPermittedNC, boolean requiredExcludedNC) {
+            this.enabledPermittedNC = enabledPermittedNC;
+            this.enabledExcludedNC = enabledExcludedNC;
+            this.populatePermittedNC = populatePermittedNC;
+            this.populateExcludedNC = populateExcludedNC;
+            this.requiredPermittedNC = requiredPermittedNC;
+            this.requiredExcludedNC = requiredExcludedNC;
+        }
+
+        @Parameters(name = "{index}: use::require::populated, permitted: {0},{4},{2}, excluded: {1},{5},{3}")
+        public static Collection<Object[]> data() {
+            boolean enabledPermittedNC, enabledExcludedNC, 
+            populatePermittedNC, populateExcludedNC, 
+            requiredPermittedNC, requiredExcludedNC;  
+            String testVector;
+            Collection<Object[]> uniqueTestData = new HashSet<Object[]>();
+            Set<String> uniqueTestStr = new HashSet<String>();
+            for(int i=0; i<64; i++) {
+                enabledPermittedNC = i > 32;
+                enabledExcludedNC = (i&16) > 0;
+                requiredPermittedNC = ((i&8) > 0) && enabledPermittedNC;
+                requiredExcludedNC = ((i&4) > 0) && enabledExcludedNC;
+                if(enabledPermittedNC)
+                    populatePermittedNC = ((i&2) > 0) || requiredPermittedNC;
+                else
+                    populatePermittedNC = false;
+                if(enabledExcludedNC)
+                    populateExcludedNC = (i%2 == 1) || requiredExcludedNC;
+                else
+                    populateExcludedNC = false;
+                testVector = "" + enabledPermittedNC + ", " + enabledExcludedNC + ", " + 
+                        populatePermittedNC + ", " + populateExcludedNC + ", " + 
+                        requiredPermittedNC+ ", " + requiredExcludedNC;
+                if(!uniqueTestStr.contains(testVector)) {
+                    uniqueTestData.add(new Boolean[] {enabledPermittedNC, enabledExcludedNC, 
+                            populatePermittedNC, populateExcludedNC, 
+                            requiredPermittedNC, requiredExcludedNC});
+                    uniqueTestStr.add(testVector);
+                }
+            }
+            return uniqueTestData;
+        }
+        
+        @Test
+        public void testRaGuiNameConstraints() throws Exception {
+            addAndVerifyEndEntityRA(enabledPermittedNC, enabledExcludedNC, 
+                    populatePermittedNC, populateExcludedNC, 
+                    requiredPermittedNC, requiredExcludedNC);
+        }
+        
     }
     
-    //@Test
-    public void testA_AddEndEntityPermittedAndExcluded() throws Exception { 
-        addAndVerifyEndEntity(true, true, true, true, false, false);
-    }
-    
-    //@Test
-    public void testB_AddEndEntityPermittedOnly() throws Exception {
-        addAndVerifyEndEntity(true, true, true, false, false, false);
-    }
-    
-    //@Test
-    public void testC_AddEndEntityExcludededOnly() throws Exception {
-        addAndVerifyEndEntity(true, true, false, true, false, false);
-    }
-    
-    //@Test
-    public void testD_AddEndEntityWithoutNameConstraint() throws Exception {
-        addAndVerifyEndEntity(true, true, false, false, false, false);
-    }
-    
-    //@Test
-    public void testE_UpdateEEProfileToOnlyPermitted() throws Exception {
-        editEndEntityProfile(true, false, false, false);
-    }
-    
-    //@Test
-    public void testF_AddEndEntityPermittedOnly() throws Exception {
-        addAndVerifyEndEntity(true, false, true, false, false, false);
-    }
-    
-    //@Test
-    public void testG_UpdateEEProfileToOnlyExcluded() throws Exception {
-        editEndEntityProfile(false, true, false, false);
-    }
-    
-    //@Test
-    public void testH_AddEndEntityExcludedOnly() throws Exception {
-        addAndVerifyEndEntity(false, true, false, true, false, false);
-    }
-    
-    //@Test
-    public void testI_UpdateEEProfileToNoNameConstraint() throws Exception {
-        editEndEntityProfile(false, false, false, false);
-    }
-    
-    //@Test
-    public void testJ_AddEndEntityWONameConstraint() throws Exception {
-        addAndVerifyEndEntity(false, false, false, false, false, false);
-    }
-    
-    //@Test
-    public void testK_UpdateEEProfileToPermittedNCRequirred() throws Exception {
-        editEndEntityProfile(true, true, true, false);
-    }
-    
-    //@Test
-    public void testL_AddEndEntityPermittedOnly() throws Exception {
-        addAndVerifyEndEntity(true, true, true, false, true, false);
-    }
-    
-    //@Test
-    public void testM_AddEndEntityWONameConstraintNegative() throws Exception {
-        addAndVerifyEndEntity(true, true, false, false, true, false, true);
-    }
-    
-    //@Test
-    public void testN_UpdateEEProfileToExcludedNCRequirred() throws Exception {
-        editEndEntityProfile(true, true, false, true);
-    }
-    
-    //@Test
-    public void testO_AddEndEntityExcludedOnly() throws Exception {
-        addAndVerifyEndEntity(true, true, false, true, false, true);
-    }
-    
-    //@Test
-    public void testP_AddEndEntityWONameConstraintNegative() throws Exception {
-        addAndVerifyEndEntity(true, true, false, false, false, true, true);
+    @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+    public static class CaGuiTests{
+        
+        private static final Logger log = Logger.getLogger(EcaQa91_EndEntityNameConstraints.CaGuiTests.class);
+        
+        @Test
+        public void testCaGuiNameConstraintsC() throws Exception {
+            log.info("XXXXXXXXXXXXXXXXXXXX: ran C");
+        }
+        
+        @Test
+        public void testCaGuiNameConstraintsA() throws Exception {
+            log.info("XXXXXXXXXXXXXXXXXXXX: ran A");
+        }
+        
+        @Test
+        public void testCaGuiNameConstraintsB() throws Exception {
+            log.info("XXXXXXXXXXXXXXXXXXXX: ran B");
+        }
+        
+        @Test
+        public void testA_AddEndEntityPermittedAndExcluded() throws Exception { 
+            addAndVerifyEndEntity(true, true, true, true, false, false);
+        }
+        
+        @Test
+        public void testB_AddEndEntityPermittedOnly() throws Exception {
+            addAndVerifyEndEntity(true, true, true, false, false, false);
+        }
+        
+        @Test
+        public void testC_AddEndEntityExcludededOnly() throws Exception {
+            addAndVerifyEndEntity(true, true, false, true, false, false);
+        }
+        
+        @Test
+        public void testD_AddEndEntityWithoutNameConstraint() throws Exception {
+            addAndVerifyEndEntity(true, true, false, false, false, false);
+        }
+        
+        @Test
+        public void testE_UpdateEEProfileToOnlyPermitted() throws Exception {
+            editEndEntityProfile(true, false, false, false);
+        }
+        
+        @Test
+        public void testF_AddEndEntityPermittedOnly() throws Exception {
+            addAndVerifyEndEntity(true, false, true, false, false, false);
+        }
+        
+        @Test
+        public void testG_UpdateEEProfileToOnlyExcluded() throws Exception {
+            editEndEntityProfile(false, true, false, false);
+        }
+        
+        @Test
+        public void testH_AddEndEntityExcludedOnly() throws Exception {
+            addAndVerifyEndEntity(false, true, false, true, false, false);
+        }
+        
+        @Test
+        public void testI_UpdateEEProfileToNoNameConstraint() throws Exception {
+            editEndEntityProfile(false, false, false, false);
+        }
+        
+        @Test
+        public void testJ_AddEndEntityWONameConstraint() throws Exception {
+            addAndVerifyEndEntity(false, false, false, false, false, false);
+        }
+        
+        @Test
+        public void testK_UpdateEEProfileToPermittedNCRequirred() throws Exception {
+            editEndEntityProfile(true, true, true, false);
+        }
+        
+        @Test
+        public void testL_AddEndEntityPermittedOnly() throws Exception {
+            addAndVerifyEndEntity(true, true, true, false, true, false);
+        }
+        
+        @Test
+        public void testM_AddEndEntityWONameConstraintNegative() throws Exception {
+            addAndVerifyEndEntity(true, true, false, false, true, false, true);
+        }
+        
+        @Test
+        public void testN_UpdateEEProfileToExcludedNCRequirred() throws Exception {
+            editEndEntityProfile(true, true, false, true);
+        }
+        
+        @Test
+        public void testO_AddEndEntityExcludedOnly() throws Exception {
+            addAndVerifyEndEntity(true, true, false, true, false, true);
+        }
+        
+        @Test
+        public void testP_AddEndEntityWONameConstraintNegative() throws Exception {
+            addAndVerifyEndEntity(true, true, false, false, false, true, true);
+        }
     }
     
     

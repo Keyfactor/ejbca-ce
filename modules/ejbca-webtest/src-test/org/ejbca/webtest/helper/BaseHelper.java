@@ -927,7 +927,7 @@ public class BaseHelper {
      * @param noElementMessage message if element doesn't exist.
      * @param assertMessage message text.
      */
-    void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
+    public void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
         assertAllErrorMessagesAppear(new String[]{expectedErrorMessage}, noElementMessage, assertMessage);
     }
 
