@@ -361,6 +361,9 @@ public class RaEndEntityDetails {
     public boolean isNameConstraintsPermittedEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedUsed() : false;
     }
+    public boolean isNameConstraintsPermittedRequired() {
+        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedRequired() : false;
+    }
     public String getNameConstraintsPermitted() {
         final List<String> value = extendedInformation.getNameConstraintsPermitted();
         if (value!=null) {
@@ -374,6 +377,9 @@ public class RaEndEntityDetails {
     
     public boolean isNameConstraintsExcludedEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedUsed() : false;
+    }
+    public boolean isNameConstraintsExcludedRequired() {
+        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedRequired() : false;
     }
     public String getNameConstraintsExcluded() {
         final List<String> value = extendedInformation.getNameConstraintsExcluded();

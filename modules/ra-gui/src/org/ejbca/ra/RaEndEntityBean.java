@@ -1041,9 +1041,12 @@ public class RaEndEntityBean implements Serializable {
         return nameConstraintsPermittedString;
     }
     
+    public boolean isNameConstraintsPermittedRequired() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsPermittedRequired();
+    }
+    
     public void setNameConstraintsPermitted(String nameConstraintPermitted) {
-        if(raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsPermittedRequired() && 
-                nameConstraintPermitted.isBlank()) {
+        if(isNameConstraintsPermittedRequired() && nameConstraintPermitted.isBlank()) {
             raLocaleBean.addMessageError(MISSING_PERMITTED_NAME_CONSTRAINTS);
             nameConstraintsPermittedUpdateStatus = -1;
             return;
@@ -1065,9 +1068,12 @@ public class RaEndEntityBean implements Serializable {
         return nameConstraintsExcludedString;
     }
     
+    public boolean isNameConstraintsExcludedRequired() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsExcludedRequired();
+    }
+    
     public void setNameConstraintsExcluded(String nameConstraintExcluded) {
-        if(raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsExcludedRequired() && 
-                nameConstraintExcluded.isBlank()) {
+        if(isNameConstraintsExcludedRequired() && nameConstraintExcluded.isBlank()) {
             nameConstraintsExcludedUpdateStatus = -1;
             raLocaleBean.addMessageError(MISSING_EXCLUDED_NAME_CONSTRAINTS);
             return;
