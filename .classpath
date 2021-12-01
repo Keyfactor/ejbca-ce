@@ -164,7 +164,7 @@
 	<classpathentry kind="lib" path="lib/dnsjava-2.1.8.jar"/>
 	<classpathentry kind="lib" path="lib/dnssecjava-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
-	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.17.jar"/>
+	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.18.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="lib/intune/csr-validation-20210507.jar"/>
 	<classpathentry kind="lib" path="lib/intune/json-20201115.jar"/>
@@ -249,13 +249,13 @@
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
 	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-9.4.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-3.3.10.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-3.3.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/istack-commons-runtime-3.0.11.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jakarta.xml.bind-api-2.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jaxb-runtime-2.3.3.jar"/>
