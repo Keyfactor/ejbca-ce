@@ -278,8 +278,15 @@
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required and instance.modifiable}" />
+
+										<h:selectBooleanCheckbox value="#{instance.useDataFromEmailField}"
+											id="#{'subject_dn_email_required'}"
+											onclick="return false;"
+											rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+										<h:outputLabel for="#{'subject_dn_email_required'}" value="#{msg.subject_dn_USESEMAILFIELDDATA}" rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+
 										<h:inputText id="subjectDnField" value="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-											 rendered="#{instance.modifiable and !instance.selectable}">
+											 rendered="#{instance.modifiable and !instance.selectable and !enrollMakeNewRequestBean.isDnEmail(instance)}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
 											<f:validator validatorId="extendedRequiredValidator"/>
@@ -317,9 +324,14 @@
 										<h:outputLabel for="subjectDnFieldOptional"
 											value="#{msg['subject_dn_'.concat(instance.name)]}"
 											rendered="#{!instance.required}" />
-										
+
+											<h:selectBooleanCheckbox value="#{instance.useDataFromEmailField}"
+												id="#{'subjectDnEmailOptional'}"
+												rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+											<h:outputLabel for="#{'subjectDnEmailOptional'}" value="#{msg.subject_dn_USESEMAILFIELDDATA}" rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+
 										<h:inputText id="subjectDnFieldOptional" value="#{enrollMakeNewRequestBean.subjectDn.optionalFieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-											rendered="#{!instance.required and !instance.selectable}" >
+											rendered="#{!instance.required and !instance.selectable and !enrollMakeNewRequestBean.isDnEmail(instance)}" >
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
 											<f:validator validatorId="extendedRequiredValidator"/>
