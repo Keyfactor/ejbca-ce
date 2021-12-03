@@ -207,7 +207,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private UIComponent userCredentialsMessagesComponent;
     private UIComponent confirmPasswordComponent;
     private UIComponent validityInputComponent;
-    private String nameConstraintPermitted, nameConstraintExcluded;
+    private String nameConstraintPermitted;
+    private String nameConstraintExcluded;
 
     private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
     private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
