@@ -1049,6 +1049,12 @@ public class RaEndEntityBean implements Serializable {
         return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsPermittedRequired();
     }
     
+    /**
+     * Validates and sets permitted name constraints. Additionally, it check if end entity profile mandates
+     * permitted name constraints and shows appropriate error messages.
+     * 
+     * @param nameConstraintPermitted
+     */
     public void setNameConstraintsPermitted(String nameConstraintPermitted) {
         if(isNameConstraintsPermittedRequired() && nameConstraintPermitted.trim().isEmpty()) {
             raLocaleBean.addMessageError(MISSING_PERMITTED_NAME_CONSTRAINTS);
@@ -1077,6 +1083,12 @@ public class RaEndEntityBean implements Serializable {
         return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsExcludedRequired();
     }
     
+    /**
+     * Validates and sets excluded name constraints. Additionally, it check if end entity profile mandates
+     * permitted name constraints and shows appropriate error messages.
+     * 
+     * @param nameConstraintExcluded
+     */
     public void setNameConstraintsExcluded(String nameConstraintExcluded) {
         if(isNameConstraintsExcludedRequired() && nameConstraintExcluded.trim().isEmpty()) {
             nameConstraintsExcludedUpdateStatus = -1;
