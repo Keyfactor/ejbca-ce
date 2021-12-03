@@ -82,9 +82,12 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     private static final String HTML_NAME_CHECKBOX_NC_PERMITTED = "checkboxrequiredncpermitted";
     private static final String HTML_NAME_CHECKBOX_NC_EXCLUDED = "checkboxrequiredncexcluded";
     
-    private static List<String> nameConstPermitted, nameConstExcluded;
-    private static String nameConstPermittedStr, nameConstExcludedStr;
-    private static String nameConstPermittedEditedStr, nameConstExcludedEditedStr;
+    private static List<String> nameConstPermitted;
+    private static List<String> nameConstExcluded;
+    private static String nameConstPermittedStr;
+    private static String nameConstExcludedStr;
+    private static String nameConstPermittedEditedStr;
+    private static String nameConstExcludedEditedStr;
     
     private static int endEntityCertificateProfileId;
     private static int endEntityProfileId;

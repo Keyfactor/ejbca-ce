@@ -123,9 +123,12 @@ public class RaEndEntityBean implements Serializable {
     private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
     private Map<Integer, String> endEntityProfiles;
     private boolean deleted = false;
-    private List<String> nameConstraintsPermitted, nameConstraintsExcluded;
-    private int nameConstraintsPermittedUpdateStatus = 0, nameConstraintsExcludedUpdateStatus = 0;
-    private String nameConstraintsPermittedString, nameConstraintsExcludedString;
+    private List<String> nameConstraintsPermitted;
+    private List<String> nameConstraintsExcluded;
+    private int nameConstraintsPermittedUpdateStatus = 0;
+    private int nameConstraintsExcludedUpdateStatus = 0;
+    private String nameConstraintsPermittedString;
+    private String nameConstraintsExcludedString;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -1046,7 +1049,7 @@ public class RaEndEntityBean implements Serializable {
     }
     
     public void setNameConstraintsPermitted(String nameConstraintPermitted) {
-        if(isNameConstraintsPermittedRequired() && nameConstraintPermitted.isBlank()) {
+        if(isNameConstraintsPermittedRequired() && nameConstraintPermitted.trim().isEmpty()) {
             raLocaleBean.addMessageError(MISSING_PERMITTED_NAME_CONSTRAINTS);
             nameConstraintsPermittedUpdateStatus = -1;
             return;
@@ -1057,7 +1060,7 @@ public class RaEndEntityBean implements Serializable {
             nameConstraintsPermittedUpdateStatus = 1;
         } catch(CertificateExtensionException e) {
             raLocaleBean.addMessageError(INVALID_PERMITTED_NAME_CONSTRAINTS, e.getMessage().split(":")[1]);
-            nameConstraintsPermittedUpdateStatus = -2;
+            nameConstraintsPermittedUpdateStatus = -1;
             return;
         }
     }
@@ -1073,7 +1076,7 @@ public class RaEndEntityBean implements Serializable {
     }
     
     public void setNameConstraintsExcluded(String nameConstraintExcluded) {
-        if(isNameConstraintsExcludedRequired() && nameConstraintExcluded.isBlank()) {
+        if(isNameConstraintsExcludedRequired() && nameConstraintExcluded.trim().isEmpty()) {
             nameConstraintsExcludedUpdateStatus = -1;
             raLocaleBean.addMessageError(MISSING_EXCLUDED_NAME_CONSTRAINTS);
             return;
@@ -1084,7 +1087,7 @@ public class RaEndEntityBean implements Serializable {
             nameConstraintsExcludedUpdateStatus = 1;
         } catch(CertificateExtensionException e) {
             raLocaleBean.addMessageError(INVALID_EXCLUDED_NAME_CONSTRAINTS, e.getMessage().split(":")[1]);
-            nameConstraintsExcludedUpdateStatus = -2;
+            nameConstraintsExcludedUpdateStatus = -1;
             return;
         }
     }
