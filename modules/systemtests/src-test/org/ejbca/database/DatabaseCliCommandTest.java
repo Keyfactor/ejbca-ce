@@ -75,8 +75,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.thoughtworks.xstream.XStream;
-
 /**
  * Unit tests for the class DatabaseCliCommand
  *
@@ -280,7 +278,7 @@ public class DatabaseCliCommandTest {
         //Use some magick to get at the method.
         Method getNextBatch = DatabaseCliCommand.class.getDeclaredMethod("getNextBatch", ObjectInputStream.class, int.class);
         getNextBatch.setAccessible(true);
-        ObjectInputStream objectInputStream = new XStream().createObjectInputStream(new FileInputStream(exportFile));
+        ObjectInputStream objectInputStream = DatabaseCliCommand.createXstream().createObjectInputStream(new FileInputStream(exportFile));
         return (List<T>) getNextBatch.invoke(command, objectInputStream, 10);
     }
 
