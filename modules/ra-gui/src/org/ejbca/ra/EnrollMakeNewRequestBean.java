@@ -1072,12 +1072,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         
 
-        if(nameConstraintPermitted!=null && !nameConstraintPermitted.isBlank()) {
+        if(nameConstraintPermitted!=null && !StringUtils.isBlank(nameConstraintPermitted)) {
             extendedInformation.setNameConstraintsPermitted(
                     NameConstraint.parseNameConstraintsList(nameConstraintPermitted));
         }
         
-        if(nameConstraintExcluded!=null && !nameConstraintExcluded.isBlank()) {
+        if(nameConstraintExcluded!=null && !StringUtils.isBlank(nameConstraintExcluded)) {
             extendedInformation.setNameConstraintsExcluded(
                     NameConstraint.parseNameConstraintsList(nameConstraintExcluded));
         }
