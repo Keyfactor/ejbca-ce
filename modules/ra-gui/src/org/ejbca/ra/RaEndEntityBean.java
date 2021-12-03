@@ -1039,8 +1039,9 @@ public class RaEndEntityBean implements Serializable {
     }
     
     public String getNameConstraintsPermitted() {
-        if(nameConstraintsPermitted==null)
+        if(nameConstraintsPermitted==null) {
             nameConstraintsPermittedString = raEndEntityDetails.getNameConstraintsPermitted();
+        }
         return nameConstraintsPermittedString;
     }
     
@@ -1066,8 +1067,9 @@ public class RaEndEntityBean implements Serializable {
     }
     
     public String getNameConstraintsExcluded() {
-        if(nameConstraintsExcluded==null)
+        if(nameConstraintsExcluded==null) {
             nameConstraintsExcludedString = raEndEntityDetails.getNameConstraintsExcluded();
+        }
         return nameConstraintsExcludedString;
     }
     
