@@ -385,15 +385,17 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         raWebHelper.fillMakeRequestEditCommonName(endEntityName);
         raWebHelper.fillCredentials(endEntityName, endEntityName);
         
-        if(requiredPermittedNC)
+        if(requiredPermittedNC) {
             assertElementDisplayed("//*[text()=\"Permitted Name Constraints *\"]");
-        else if(enabledPermittedNC)
+        } else if(enabledPermittedNC) {
             assertElementDisplayed("//*[text()=\"Permitted Name Constraints\"]");
+        }
         
-        if(requiredExcludedNC)
+        if(requiredExcludedNC) {
             assertElementDisplayed("//*[text()=\"Excluded Name Constraints *\"]");
-        else if(enabledExcludedNC)
+        } else if(enabledExcludedNC) {
             assertElementDisplayed("//*[text()=\"Excluded Name Constraints\"]");
+        }
         
         if(populatePermittedNC && requiredPermittedNC && populateExcludedNC && requiredExcludedNC) {
             // use one scenario to test error messages
@@ -457,12 +459,13 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         raWebHelper.fillSearchEndEntity(endEntityName);
         raWebHelper.clickViewEndEntity();
         
-        if(requiredPermittedNC)
+        if(requiredPermittedNC) {
             assertElementDisplayed("//*[text()=\"Name constraints, permitted *\"]");
-        else if(enabledPermittedNC)
+        } else if(enabledPermittedNC) {
             assertElementDisplayed("//*[text()=\"Name constraints, permitted\"]");
-        else
+        } else {
             assertElementNotDisplayed("//*[text()=\"Name constraints, permitted\"]");
+        }
     
         if(populatePermittedNC) {
             Assert.assertEquals("permitted name constraints does not match", 
@@ -471,12 +474,13 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             assertElementDisplayed("//*[contains(@id, 'nameConstraintsPermittedNone')]");
         }
         
-        if(requiredExcludedNC)
+        if(requiredExcludedNC) {
             assertElementDisplayed("//*[text()=\"Name constraints, excluded *\"]");
-        else if(enabledExcludedNC)
+        } else if(enabledExcludedNC) {
             assertElementDisplayed("//*[text()=\"Name constraints, excluded\"]");
-        else
+        } else {
             assertElementNotDisplayed("//*[text()=\"Name constraints, excluded\"]");
+        }
     
         if(populateExcludedNC) {
             Assert.assertEquals("excluded name constraints does not match", 
@@ -522,20 +526,26 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             Thread.sleep(waitTime);
         }
         
-        if(populatePermittedNC)
+        if(populatePermittedNC) {
             raWebHelper.editNameConstraintPermitted(nameConstPermittedEditedStr);
-        if(populateExcludedNC)
+        }
+        
+        if(populateExcludedNC) {
             raWebHelper.editNameConstraintExcluded(nameConstExcludedEditedStr);
+        }
+        
         Thread.sleep(waitTime);
         raWebHelper.clickSaveInEditEndEntity();
         
-        if(populatePermittedNC)
+        if(populatePermittedNC) {
             Assert.assertEquals("permitted name constraints does not match after edit", 
                 nameConstPermittedEditedStr.replace("\n", "; "), raWebHelper.getPermittedNameConstraint());
+        }
         
-        if(populateExcludedNC)
+        if(populateExcludedNC) {
             Assert.assertEquals("excluded name constraints does not match after edit", 
                 nameConstExcludedEditedStr.replace("\n", "; "), raWebHelper.getExcludedNameConstraint());
+        }
    
     }
     
