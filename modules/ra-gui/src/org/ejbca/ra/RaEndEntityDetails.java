@@ -364,6 +364,12 @@ public class RaEndEntityDetails {
     public boolean isNameConstraintsPermittedRequired() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedRequired() : false;
     }
+    /**
+     * Format permitted name constraints as user has entered earlier to create end 
+     * entity. This is shown in edit end entity page.
+     * 
+     * @return string
+     */
     public String getNameConstraintsPermitted() {
         final List<String> value = extendedInformation.getNameConstraintsPermitted();
         if (value!=null) {
@@ -371,6 +377,12 @@ public class RaEndEntityDetails {
         }
         return "";
     }
+    /**
+     * Format permitted name constraints as a user friendly semicolon separated list for
+     * view end entity page accessible in RA web from search results.
+     *  
+     * @return semicolon separated string
+     */
     public String getNameConstraintsPermittedViewOnly() {
         return getNameConstraintsPermitted().replace("\n", "; ");
     }
@@ -388,6 +400,12 @@ public class RaEndEntityDetails {
         }
         return "";
     }
+    /**
+     * Format excluded name constraints as a semicolon separated list for
+     * view end entity page accessible in RA web from search results.
+     *  
+     * @return semicolon separated string
+     */
     public String getNameConstraintsExcludedViewOnly() {
         return getNameConstraintsExcluded().replace("\n", "; ");
     }
