@@ -319,6 +319,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 getEndEntityProfile().isRequired(EndEntityProfile.EMAIL, 0);
     }
 
+    public boolean isDnEmail(EndEntityProfile.FieldInstance instance) {
+        return instance.getName().equals(DnComponents.DNEMAILADDRESS);
+    }
+
     /**
      * @return true if 'Add End Entity' button should be rendered
      */
@@ -1077,6 +1081,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return generated token as byte array or null if token could not be generated
      */
     private byte[] addEndEntityAndGenerateToken(int tokenType, TokenDownloadType tokenDownloadType) {
+        // Fill subjectDn email fields
+        for(EndEntityProfile.FieldInstance instance: getSubjectDn().getFieldInstances()) {
+            if (instance.isUseDataFromEmailField()) {
+                instance.setValue(getEndEntityInformation().getEmail());
+            }
+        }
+
         //Update the EndEntityInformation data
         getSubjectDn().update();
         getSubjectAlternativeName().update();
@@ -2234,6 +2245,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 subjectDn = new SubjectDn(endEntityProfile);
                 subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
                 subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
+                for (EndEntityProfile.FieldInstance instance: subjectDn.getRequiredFieldInstances()) {
+                    if (isDnEmail(instance)) {
+                        instance.setUseDataFromEmailField(true);
+                    }
+                }
             }
         }
         return subjectDn;
