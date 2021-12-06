@@ -87,9 +87,6 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
     private static String nameConstPermittedEditedStr;
     private static String nameConstExcludedEditedStr;
     
-    private static int endEntityCertificateProfileId;
-    private static int endEntityProfileId;
-    
     private static EndEntityProfile endEntityProfile;
     private static List<String> createdUsers;
     
@@ -151,7 +148,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         endEntityCertprofile.setUseLdapDnOrder(false);
         endEntityCertprofile.setAvailableKeyAlgorithms(new String[]{"RSA"});
         endEntityCertprofile.setAvailableBitLengths(new int[]{2048});
-        endEntityCertificateProfileId = certProfileSession.addCertificateProfile(admin, TEST_NC_CERT_PROFILE_EE, endEntityCertprofile);
+        final int endEntityCertificateProfileId = certProfileSession.addCertificateProfile(admin, TEST_NC_CERT_PROFILE_EE, endEntityCertprofile);
         log.info("created end entity certificate profile id: " + endEntityCertificateProfileId);
         
         // end entity profile 
@@ -165,7 +162,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         endEntityProfile.setAvailableCertificateProfileIds(availableCertProfiles);
         endEntityProfile.setAvailableCAs(Arrays.asList(new Integer[]{SecConst.ALLCAS}));
         
-        endEntityProfileId = endEntityProfileSession.addEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME, endEntityProfile);
+        final int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME, endEntityProfile);
         log.info("Created end entity profile id: " + endEntityProfileId);
         
     }
