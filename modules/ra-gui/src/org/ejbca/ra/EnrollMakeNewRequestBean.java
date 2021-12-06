@@ -1564,16 +1564,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isNameConstraintPermittedRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null)
+        if(endEntityProfile == null) {
             return false;
+        }
         
         return endEntityProfile.isNameConstraintsPermittedUsed();
     }
     
     public boolean isNameConstraintPermittedRequired() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null)
+        if(endEntityProfile == null) {
             return false;
+        }
         
         return endEntityProfile.isNameConstraintsPermittedRequired();
     }    
@@ -1588,16 +1590,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
     
     public boolean isNameConstraintExcludedRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null)
+        if(endEntityProfile == null) {
             return false;
+        }
         
         return endEntityProfile.isNameConstraintsExcludedUsed();
     }
     
     public boolean isNameConstraintExcludedRequired() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null)
+        if(endEntityProfile == null) {
             return false;
+        }
         
         return endEntityProfile.isNameConstraintsExcludedRequired();
     }    

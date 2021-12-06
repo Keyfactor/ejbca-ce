@@ -1068,7 +1068,6 @@ public class RaEndEntityBean implements Serializable {
         } catch(CertificateExtensionException e) {
             raLocaleBean.addMessageError(INVALID_PERMITTED_NAME_CONSTRAINTS, e.getMessage().split(":")[1]);
             nameConstraintsPermittedUpdateStatus = -1;
-            return;
         }
     }
     
@@ -1102,7 +1101,6 @@ public class RaEndEntityBean implements Serializable {
         } catch(CertificateExtensionException e) {
             raLocaleBean.addMessageError(INVALID_EXCLUDED_NAME_CONSTRAINTS, e.getMessage().split(":")[1]);
             nameConstraintsExcludedUpdateStatus = -1;
-            return;
         }
     }
 }
