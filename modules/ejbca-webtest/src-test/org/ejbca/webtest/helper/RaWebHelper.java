@@ -150,7 +150,6 @@ public class RaWebHelper extends BaseHelper {
     
     public void clickSearchEndEntities(String webUrl) {
         webDriver.get(webUrl + "search_ees.xhtml");
-        //clickLink(Page.BUTTON_MENU_SEARCH_END_ENTITIES);
     }
 
     public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) throws InterruptedException {
@@ -597,6 +596,10 @@ public class RaWebHelper extends BaseHelper {
     
     public String getErrorMessage() {
         return getElementText(Page.TEXT_ERROR_MESSAGE);
+    }
+    
+    public void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
+        assertAllErrorMessagesAppear(new String[]{expectedErrorMessage}, noElementMessage, assertMessage);
     }
     
 }
