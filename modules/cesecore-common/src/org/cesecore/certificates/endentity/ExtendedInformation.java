@@ -99,6 +99,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
     public static final int DEFAULT_REMAININGLOGINATTEMPTS = -1;
+    
+    /** Indicates UTC time-stamp for latest DN merge operation with End Entity Profile*/
+    private static final String LATEST_DN_MERGE = "LATESTDNMERGE";
+    
+    /** DN merge will be repeated if last DN merge wis more than 5 minutes old. This accounts for end entity profile updates older than specified period.*/
+    private static final Long MAX_AGE_DN_MERGE_MILLIS = 300_0000L;
 
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
@@ -804,6 +810,20 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         List<Integer> ids = obj==null? new ArrayList<>() : obj;
         ids.add(requestId);
         data.put(REVOKE_EE_APPROVAL_REQUEST_IDS, ids);
+    }
+    
+    public void updateLatestDnMerge() {
+        data.put(LATEST_DN_MERGE, System.currentTimeMillis());
+    }
+    
+    public boolean isStaleDnMerge() {
+        if(data.get(LATEST_DN_MERGE)==null) {
+            return true;
+        } else if(System.currentTimeMillis() - (Long)data.get(LATEST_DN_MERGE) > MAX_AGE_DN_MERGE_MILLIS) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }
