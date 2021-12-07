@@ -266,7 +266,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.addField(DnComponents.COMMONNAME);
             profile.addField(DnComponents.COUNTRY);
             profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
-            profile.setAllowMergeDnWebServices(true);
+            profile.setAllowMergeDn(true);
             // Profile will be removed in finally clause
             endEntityProfileSession.addEndEntityProfile(admin, eeprofileName, profile);
             int profileId = endEntityProfileSession.getEndEntityProfileId(eeprofileName);
@@ -665,7 +665,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.addField(DnComponents.ORGANIZATION);
             profile.addField(DnComponents.COUNTRY);
             profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
-            profile.setAllowMergeDnWebServices(true);
+            profile.setAllowMergeDn(true);
 
             endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
             int profileId = endEntityProfileSession.getEndEntityProfileId("TESTMERGEWITHWS");

@@ -235,7 +235,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
         final int profileId = userdata.getEndEntityProfileId();
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-        if (profile.getAllowMergeDnWebServices()) {
+        if (profile.getAllowMergeDn()) {
             userdata = EndEntityInformationFiller.fillUserDataWithDefaultValues(userdata, profile);
         }
         addUser(authenticationToken, userdata, clearPwd);
@@ -309,7 +309,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         EndEntityInformation unCanonicalized = endEntity;
         endEntity = canonicalizeUser(endEntity);
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
-                endEntity.setSubjectAltName(getAddDnsFromCnToAltName(endEntity.getDN(), endEntity.getSubjectAltName(), profile));
+        endEntity.setSubjectAltName(getAddDnsFromCnToAltName(endEntity.getDN(), endEntity.getSubjectAltName(), profile));
+
+        // Merge DNs which are marked as enforced.
+        if( profile.getAllowMergeDn() &&  endEntity.getExtendedInformation().isStaleDnMerge()) {
+            endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile, true);
+        }
+        
         if (log.isTraceEnabled()) {
             log.trace(">addUser(" + endEntity.getUsername() + ", password, " + endEntity.getDN() + ", " + originalDN + ", " + endEntity.getSubjectAltName()
                     + ", " + endEntity.getEmail() + ", profileId: " + endEntityProfileId + ")");
@@ -765,7 +771,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @throws CustomFieldException if the changes invalidae the EEP 
      */
     private void changeUser(
-            final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation,
+            final AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation,
             final boolean clearPwd, final boolean fromWebService, final int approvalRequestId,
             final AuthenticationToken lastApprovingAdmin, final String newUsername, final boolean force
     ) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException,
@@ -786,6 +792,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new EndEntityProfileValidationException("End Entity profile " + endEntityProfileId + " does not exist trying to change user: " + username);
         }
         FieldValidator.validate(endEntityInformation, endEntityProfileId, eeProfileName);
+        
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
+        // Merge all enforced DN and SAN values, if merge DN is allowed
+        if( profile.getAllowMergeDn() &&  endEntityInformation.getExtendedInformation().isStaleDnMerge()) {
+            endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntityInformation, profile, true);
+        }
 
         String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
         String altName = endEntityInformation.getSubjectAltName();
@@ -809,11 +821,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         final EndEntityInformation originalCopy = userData.toEndEntityInformation();
 
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         // if required, we merge the existing user dn into the dn provided by the web service.
-        if (fromWebService && profile.getAllowMergeDnWebServices()) {
+        // merges email address in DN or SAN, only if they are not enforced i.e. not merge already.
+        if (fromWebService && profile.getAllowMergeDn()) {
             final Map<String, String> sdnMap = new HashMap<>();
-            if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+            if (profile.getUse(DnComponents.DNEMAILADDRESS, 0) && !profile.isEnforced(DnComponents.DNEMAILADDRESS, 0)) {
                 sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
             }
             try {
@@ -829,7 +841,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 dn = "";
             }
             final Map<String, String> sanMap = new HashMap<>();
-            if (profile.getUse(DnComponents.RFC822NAME, 0)) {
+            if (profile.getUse(DnComponents.RFC822NAME, 0) && !profile.isEnforced(DnComponents.RFC822NAME, 0)) {
                 sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
             }
             try {
@@ -845,6 +857,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 altName = "";
             }
         }
+        
         altName = getAddDnsFromCnToAltName(dn, altName, profile);
         String newPassword = endEntityInformation.getPassword();
         if (profile.useAutoGeneratedPasswd() && newPassword != null) {
