@@ -302,8 +302,10 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             raWebHelper.makeNewCertificateRequest();
             raWebHelper.selectCertificateTypeByEndEntityName(TEST_NC_EE_PROFILE_NAME);
             raWebHelper.selectCertificateSubType(TEST_NC_CERT_PROFILE_EE);
-            if(webDriver.findElement(By.xpath("//*[text()=\"CA\"]")).isDisplayed())
+            try {
                 raWebHelper.selectCertificationAuthorityByName("ManagementCA");
+            } catch(Exception e) {
+            }
             raWebHelper.selectKeyPairGenerationOnServer();
             //raWebHelper.selectKeyAlgorithm("RSA 2048 bits");
             raWebHelper.fillMakeRequestEditCommonName(endEntityName);
