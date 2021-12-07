@@ -1863,7 +1863,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS);
         final int profileId = endEntityInformation.getEndEntityProfileId();
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-        if (profile.getAllowMergeDnWebServices()) {
+        if (profile.getAllowMergeDn()) {
             endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntityInformation, profile);
         }
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, isClearPwd);
