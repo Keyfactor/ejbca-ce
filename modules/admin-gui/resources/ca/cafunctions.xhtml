@@ -207,10 +207,10 @@
 							<h:outputText value=" #{crlInfo.lastCrlNumber}" />
 						</h:column>
 						<h:column>
-							<h:outputLink rendered="#{!caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.subjectDn}">
+							<h:outputLink rendered="#{!caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}">
 								<h:outputText value=" #{web.text.GETCRL}"/>
 							</h:outputLink>
-							<h:outputLink rendered="#{caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.subjectDn}&amp;partition=#{crlInfo.partitionIndex}">
+							<h:outputLink rendered="#{caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}&amp;partition=#{crlInfo.partitionIndex}">
 								<h:outputText value=" #{web.text.GETCRL}"/>
 							</h:outputLink>
 						</h:column>
