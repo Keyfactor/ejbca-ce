@@ -40,18 +40,6 @@ public class EndEntityInformationFiller {
 
     /** For log purpose. */
     private static final Logger log = Logger.getLogger(EndEntityInformationFiller.class.getName());
-    
-    /** This method fill user data with the default values from the specified profile.
-    *
-    * @param userData user data.
-    * @param profile user associated profile.
-    * @return update user.
-    */
-   public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, 
-           final EndEntityProfile profile) {
-       return fillUserDataWithDefaultValues(userData, profile, false);
-   }
-
 
     /** This method fill user data with the default values from the specified profile.
      *
@@ -61,8 +49,12 @@ public class EndEntityInformationFiller {
      * @return update user.
      */
     public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, 
-            final EndEntityProfile profile, final boolean onlyEnforcedFields) {
-
+            final EndEntityProfile profile) {
+        
+        // Do not repeat DN Merge operation!!
+        if(!userData.isStaleDnMerge()) {
+            return userData;
+        }
 
     	if (StringUtils.isEmpty(userData.getUsername())) {
         	userData.setUsername(profile.getUsernameDefault());
@@ -90,11 +82,11 @@ public class EndEntityInformationFiller {
 
         // Processing Subject DN values
         String subjectDn = userData.getDN();
-        subjectDn = mergeSubjectDnWithDefaultValues(subjectDn, profile, userData.getEmail(), onlyEnforcedFields);
+        subjectDn = mergeSubjectDnWithDefaultValues(subjectDn, profile, userData.getEmail());
         userData.setDN(subjectDn);
         String subjectAltName = userData.getSubjectAltName();
         // Processing Subject Altname values
-        subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail(), onlyEnforcedFields);
+        subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
         userData.setSubjectAltName(subjectAltName);
         if (userData.getType().getHexValue() == EndEntityTypes.INVALID.hexValue()) {
         	if (StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))) {
@@ -114,7 +106,7 @@ public class EndEntityInformationFiller {
             }
         }
         
-        userData.getExtendedInformation().updateLatestDnMerge();
+        userData.updateLatestDnMerge();
         return userData;
     }
 
@@ -127,7 +119,7 @@ public class EndEntityInformationFiller {
      * @return updated DN.
      */
     private static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile,
-                                                          String entityEmail, final boolean onlyEnforcedFields) {
+                                                          String entityEmail) {
         DistinguishedName profiledn;
         DistinguishedName userdn;
         if (StringUtils.isNotEmpty(subjectDN)) {
@@ -144,15 +136,10 @@ public class EndEntityInformationFiller {
         final List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectdnfields);
         int[] fielddata = null;
         String value;
-        boolean currentFieldEnforced;
         //Build profile's DN
         for (int i = 0; i < numberofsubjectdnfields; i++) {
             fielddata = profile.getSubjectDNFieldsInOrder(i);
             value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-            currentFieldEnforced = profile.isEnforced(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-            if(onlyEnforcedFields && !currentFieldEnforced) {
-                continue;
-            }
             if (!StringUtils.isEmpty(value) && !StringUtils.isWhitespace(value)) {
                 value = value.trim();
                 addFieldValueToRdnList(rdnList, fielddata, value, DNFieldExtractor.TYPE_SUBJECTDN);
@@ -185,7 +172,7 @@ public class EndEntityInformationFiller {
      * @return updated subject alt name
      */
     private static String mergeSubjectAltNameWithDefaultValues(String subjectAltName, EndEntityProfile profile, 
-                                    String entityEmail, final boolean onlyEnforcedFields) {
+                                    String entityEmail) {
         DistinguishedName profileAltName;
         DistinguishedName userAltName;
         try {
@@ -201,15 +188,10 @@ public class EndEntityInformationFiller {
         List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectAltNamefields);
         int[] fielddata = null;
         String value;
-        boolean currentFieldEnforced;
         //Build profile's Alt Name
         for (int i = 0; i < numberofsubjectAltNamefields; i++) {
             fielddata = profile.getSubjectAltNameFieldsInOrder(i);
             value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-            currentFieldEnforced = profile.isEnforced(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-            if(onlyEnforcedFields && !currentFieldEnforced) {
-                continue;
-            }
             if (value != null) {
                 value = value.trim();
                 if (!value.equals("")) {

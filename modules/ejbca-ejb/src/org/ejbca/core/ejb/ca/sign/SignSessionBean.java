@@ -488,10 +488,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfileNoClone(
                                                     endEntityInformation.getEndEntityProfileId());
                     // Merge DNs which are marked as enforced.
-                    if( endEntityProfile.getAllowMergeDn() && 
-                            endEntityInformation.getExtendedInformation().isStaleDnMerge()) {
+                    if( endEntityProfile.getAllowMergeDn()) {
                         endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(
-                                                                endEntityInformation, endEntityProfile, true);
+                                                                endEntityInformation, endEntityProfile);
                     }
                     // We need to make sure we use the users registered CA here
                     if (endEntityInformation.getCAId() != ca.getCAId()) {
