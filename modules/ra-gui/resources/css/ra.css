@@ -293,6 +293,8 @@ img.menu_logo {
 	background-color: transparent;
 }
 
+textarea.row-even,
+textarea.row-odd,
 .row-odd {
 	background-color: #f2f2f2;
 }
@@ -314,6 +316,11 @@ img.menu_logo {
 	{
 	color: #000000;
 	margin-right: 5px;
+}
+
+.editNameConstraints {
+	width: 50%;
+	margin: 5px;
 }
 
 #detailsForm .ra-editEndEntity table {

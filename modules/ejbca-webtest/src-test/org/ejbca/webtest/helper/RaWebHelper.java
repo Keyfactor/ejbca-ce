@@ -61,6 +61,8 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("keyPairForm:certificateRequest");
         static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
+        static final By INPUT_NAME_CONSTRAINT_PERMITTED = By.id("requestInfoForm:nameConstraintPermitted");
+        static final By INPUT_NAME_CONSTRAINT_EXCLUDED = By.id("requestInfoForm:nameConstraintExcluded");
 
         // Manage Requests
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
@@ -86,7 +88,23 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
-
+        
+        // Search End Entities
+        static final By BUTTON_MENU_SEARCH_END_ENTITIES = By.xpath(".//a[@href=\"search_ees.xhtml\"]");
+        static final By INPUT_SEARCH_END_ENTITES = By.id("contentForm:genericSearchString");
+        static final By BUTTON_VIEW_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:viewButton");
+        static final By BUTTON_EDIT_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:editButton");
+        
+        // View End Entity
+        static final By SECTION_PERMITTED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsPermitted')]");
+        static final By SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsExcluded')]");
+        static final By EDIT_BUTTON_VIEW_ENTITY = By.xpath("//*[contains(@value, 'Edit')]");
+        
+        // Edit End Entity
+        static final By INPUT_PERMITTED_NAME_CONSTRAINT_EDIT_ENTITY = By.xpath("//*[contains(@id, 'newNameConstraintPermitted')]");
+        static final By INPUT_EXCLUDED_NAME_CONSTRAINT_EDIT_ENTITY = By.xpath("//*[contains(@id, 'newNameConstraintExcluded')]");
+        static final By SAVE_BUTTON_EDIT_ENTITY = By.xpath("//*[contains(@value, 'Save')]");
+        
         // Containers
         static final By CONTAINER_ENROLL_BUTTONS = By.id("requestInfoForm:enrollButtons");
 
@@ -128,6 +146,10 @@ public class RaWebHelper extends BaseHelper {
      */
     public void clickTabPendingRequests() {
         clickLink(Page.BUTTON_TAB_PENDING_REQUESTS);
+    }
+    
+    public void clickSearchEndEntities(String webUrl) {
+        webDriver.get(webUrl + "search_ees.xhtml");
     }
 
     public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) throws InterruptedException {
@@ -242,7 +264,8 @@ public class RaWebHelper extends BaseHelper {
     /**
      * Click to "Download PEM" button in requestInfoForm form.
      */
-    public void clickDownloadKeystorePem() { clickLink(Page.BUTTON_DOWNLOAD_KEYSTORE_PEM);
+    public void clickDownloadKeystorePem() { 
+        clickLink(Page.BUTTON_DOWNLOAD_KEYSTORE_PEM);
     }
 
     /**
@@ -272,8 +295,18 @@ public class RaWebHelper extends BaseHelper {
     public void clickMakeRequestReset() {
         clickLink(Page.BUTTON_RESET);
     }
-
-
+    
+    public void clickViewEndEntity() {
+        clickLink(Page.BUTTON_VIEW_END_ENTITY_SINGLE_RESULT);
+    }
+    
+    public void clickEditInViewEndEntity() {
+        clickLink(Page.EDIT_BUTTON_VIEW_ENTITY);
+    }
+    
+    public void clickSaveInEditEndEntity() {
+        clickLink(Page.SAVE_BUTTON_EDIT_ENTITY);
+    }
 
     public void assertCsrUploadError() {
         final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
@@ -493,6 +526,25 @@ public class RaWebHelper extends BaseHelper {
         fillInput(Page.INPUT_USERNAME, username);
     }
     
+    public void fillNameConstraintPermitted(final String nameConstraintPermitted) {
+        fillInput(Page.INPUT_NAME_CONSTRAINT_PERMITTED, nameConstraintPermitted);
+    }
+    
+    public void fillNameConstraintExcluded(final String nameConstraintExcluded) {
+        fillInput(Page.INPUT_NAME_CONSTRAINT_EXCLUDED, nameConstraintExcluded);
+    }
+    
+    public void fillSearchEndEntity(final String endEntityName) {
+        fillInput(Page.INPUT_SEARCH_END_ENTITES, endEntityName);
+    }
+    
+    public void editNameConstraintPermitted(final String nameConstraintPermitted) {
+        fillInput(Page.INPUT_PERMITTED_NAME_CONSTRAINT_EDIT_ENTITY, nameConstraintPermitted);
+    }
+    
+    public void editNameConstraintExcluded(final String nameConstraintExcluded) {
+        fillInput(Page.INPUT_EXCLUDED_NAME_CONSTRAINT_EDIT_ENTITY, nameConstraintExcluded);
+    }
     
     /**
      * Triggers the link 'Save data' in request review form.
@@ -533,4 +585,21 @@ public class RaWebHelper extends BaseHelper {
     public void assertApproveMessageDoesNotExist() {
         assertElementDoesNotExist(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE, "There was Approve message displayed upon creation of EE");
     }
+    
+    public String getPermittedNameConstraint() {
+        return getElementText(Page.SECTION_PERMITTED_NAME_CONSTRAINT_VIEW_ENTITY);
+    }
+    
+    public String getExcludedNameConstraint() {
+        return getElementText(Page.SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY);
+    }
+    
+    public String getErrorMessage() {
+        return getElementText(Page.TEXT_ERROR_MESSAGE);
+    }
+    
+    public void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
+        assertAllErrorMessagesAppear(new String[]{expectedErrorMessage}, noElementMessage, assertMessage);
+    }
+    
 }
