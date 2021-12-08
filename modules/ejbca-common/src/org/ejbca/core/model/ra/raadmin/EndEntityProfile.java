@@ -225,7 +225,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int MODIFYABLE = 3;
     private static final int VALIDATION = 4;
     private static final int COPY       = 5;
-    private static final int ENFORCED = 6;
 
     // Private Constants.
     private static final int FIELDBOUNDRARY  = 1000000;
@@ -414,22 +413,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	addField(parameter, getParameter(parameter));
     }
 
-    /** Add a field with value="", required=false, use=true, modifyable=true, copy =false, enforced=false  */
+    /** Add a field with value="", required=false, use=true, modifyable=true, copy =false  */
     private void addField(final int parameter, final String parameterName) {
-    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
+    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, null);
     }
 
     private void addFieldWithDefaults(final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
-        addFieldWithDefaults(parameterName, value, required, use, modifyable, Boolean.FALSE);
-    }
-    
-    private void addFieldWithDefaults(final String parameterName, final String value, final Boolean required, 
-                        final Boolean use, final Boolean modifyable, final Boolean enforced) {
-        addFieldWithDefaults(getParameterNumber(parameterName), parameterName, value, required, use, modifyable, Boolean.FALSE, enforced, null);
+        addFieldWithDefaults(getParameterNumber(parameterName), parameterName, value, required, use, modifyable, Boolean.FALSE, null);
     }
 
     private void addFieldWithDefaults(final int parameter, final String parameterName, final String value, final Boolean required, final Boolean use,
-            final Boolean modifyable, boolean copy, final Boolean enforced, final LinkedHashMap<String,Object> validation) {
+            final Boolean modifyable, boolean copy, final LinkedHashMap<String,Object> validation) {
     	final int size = getNumberOfField(parameter);
     	// Perform operations directly on "data" to save some cycles..
     	final int offset = (NUMBERBOUNDRARY*size) + parameter;
@@ -438,7 +432,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(getFieldTypeBoundary(USE) + offset, use);
     	data.put(getFieldTypeBoundary(MODIFYABLE) + offset, modifyable);
     	data.put(getFieldTypeBoundary(COPY) + offset, copy);
-    	data.put(getFieldTypeBoundary(ENFORCED) + offset, enforced);
     	
     	if (validation != null) {
     	    // validation should be a map of a validator class name (excluding package name) and a validator-specific object.
@@ -592,8 +585,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setRequired(final int parameter, final int number, final boolean required) {
     	data.put(getFieldTypeBoundary(ISREQUIRED) + (NUMBERBOUNDRARY * number) + parameter, required);
-    	if(isEnforced(parameter, number) && required)
-            setEnforced(parameter, number, false);
     }
 
     public void setRequired(final String parameter, final int number, final boolean required) {
@@ -602,24 +593,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setModifyable(final int parameter, final int number, final boolean changeable) {
     	data.put(getFieldTypeBoundary(MODIFYABLE) + (NUMBERBOUNDRARY * number) + parameter, changeable);
-    	if(isEnforced(parameter, number) && changeable)
-    	    setEnforced(parameter, number, false);
     }
 
     public void setModifyable(final String parameter, final int number, final boolean changeable) {
     	setModifyable(getParameterNumber(parameter), number, changeable);
-    }
-    
-    public void setEnforced(final int parameter, final int number, final boolean enforced) {
-        if(isModifyable(parameter, number) && enforced)
-            setModifyable(parameter, number, false);
-        if(isRequired(parameter, number) && enforced)
-            setRequired(parameter, number, false);
-        data.put(getFieldTypeBoundary(ENFORCED) + (NUMBERBOUNDRARY * number) + parameter, enforced);
-    }
-
-    public void setEnforced(final String parameter, final int number, final boolean enforced) {
-        setEnforced(getParameterNumber(parameter), number, enforced);
     }
 
     public void setValidation(final int parameter, final int number, final Map<String,Serializable> validation){
@@ -711,20 +688,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      */
     public boolean isModifyable(final String parameter, final int number) {
     	return isModifyable(getParameterNumber(parameter), number);
-    }
-    
-    public boolean isEnforced(final int parameter, final int number) {
-        return getValueDefaultFalse(getFieldTypeBoundary(ENFORCED) + (NUMBERBOUNDRARY * number) + parameter);
-    }
-
-    /**
-     * Semi-internal method to get the "is enforced" state of a parameter.
-     *
-     * <p><b>Note:</b> Consider calling the appropriate getters instead of this method.
-     * For example <code>getEmailDomainEnforced()</code> instead of calling <code>isEnforced(EMAIL, 0)</code>
-     */
-    public boolean isEnforced(final String parameter, final int number) {
-        return isEnforced(getParameterNumber(parameter), number);
     }
 
     @SuppressWarnings("unchecked")

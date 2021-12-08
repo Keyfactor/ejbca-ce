@@ -375,10 +375,14 @@
                         id="mergeDnCheckBox"
                         value="#{endEntityProfileMBean.allowMergeDn}"
                         disabled="#{endEntityProfileMBean.viewOnly}">
-                        <f:ajax render="eeProfiles:subjectDnComponents eeProfiles:subjectAltNameComponents" />
                     </h:selectBooleanCheckbox>
-                    <h:outputLabel for="mergeDnCheckBox"
-                        value="#{web.text.ALLOW}" />
+                    <h:panelGroup>
+                        <h:outputLabel for="mergeDnCheckBox"
+                            value="#{web.text.ALLOW}" />
+                            &nbsp;
+                            <h:outputText styleClass="help"
+                            value="#{web.text.ALLOWMERGEDN_HELP}" />
+                    </h:panelGroup>
                 </h:panelGrid>
                 <h:panelGroup>
 						&nbsp;
@@ -480,20 +484,11 @@
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid id="subjectDNCheckBoxesGrid"
-                            columns="10">
-                            <h:selectBooleanCheckbox
-                                id="dnEnforcedCheckBox"
-                                value="#{dnComponent.enforced}"
-                                disabled="#{endEntityProfileMBean.viewOnly or 
-                                			not endEntityProfileMBean.profiledata.allowMergeDn}">
-                                <f:ajax render="subjectDNCheckBoxesGrid" />
-                            </h:selectBooleanCheckbox>
-                            <h:outputLabel for="dnEnforcedCheckBox"
-                                value="#{web.text.ENFORCED}"/>
+                            columns="7">
                             <h:selectBooleanCheckbox
                                 id="dnAttributeRequiredCheckBox"
                                 value="#{dnComponent.required}"
-                                disabled="#{endEntityProfileMBean.viewOnly or dnComponent.enforced}">
+                                disabled="#{endEntityProfileMBean.viewOnly}">
                                 <f:ajax />
                             </h:selectBooleanCheckbox>
                             <h:outputLabel
@@ -503,7 +498,7 @@
                                 id="dnModifiableCheckBox"
                                 value="#{dnComponent.modifiable}"
                                 rendered="#{not dnComponent.emailField}"
-                                disabled="#{endEntityProfileMBean.viewOnly or dnComponent.enforced}">
+                                disabled="#{endEntityProfileMBean.viewOnly}">
                                 <f:ajax render="subjectDNCheckBoxesGrid" />
                             </h:selectBooleanCheckbox>
                             <h:outputText class="help"
@@ -660,21 +655,11 @@
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid id="subjectAltNameCheckBoxesGrid"
-                            columns="10">
-                            <h:selectBooleanCheckbox
-                                id="altNameEnforcedCheckBox"
-                                value="#{subjectAltNameComponent.enforced}"
-                                disabled="#{endEntityProfileMBean.viewOnly or 
-                                				not endEntityProfileMBean.profiledata.allowMergeDn}">
-                                <f:ajax render="subjectAltNameCheckBoxesGrid"/>
-                            </h:selectBooleanCheckbox>
-                            <h:outputLabel for="altNameRequiredCheckBox"
-                                value="#{web.text.ENFORCED}" />
+                            columns="7">
                             <h:selectBooleanCheckbox
                                 id="altNameRequiredCheckBox"
                                 value="#{subjectAltNameComponent.required}"
-                                disabled="#{endEntityProfileMBean.viewOnly
-                                				or subjectAltNameComponent.enforced}">
+                                disabled="#{endEntityProfileMBean.viewOnly}">
                                 <f:ajax />
                             </h:selectBooleanCheckbox>
                             <h:outputLabel for="altNameRequiredCheckBox"
@@ -682,8 +667,7 @@
                             <h:selectBooleanCheckbox
                                 id="altNameModifiableCheckBox"
                                 value="#{subjectAltNameComponent.modifiable}"
-                                disabled="#{subjectAltNameComponent.subjectAltComponentPropertyDisabled 
-                                					or subjectAltNameComponent.enforced}">
+                                disabled="#{subjectAltNameComponent.subjectAltComponentPropertyDisabled}">
                                 <f:ajax
                                     render="subjectAltNameCheckBoxesGrid" />
                             </h:selectBooleanCheckbox>

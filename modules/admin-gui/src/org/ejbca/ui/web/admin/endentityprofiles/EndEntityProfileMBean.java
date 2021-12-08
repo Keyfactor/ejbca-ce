@@ -211,14 +211,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             profiledata.setRequired(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], required);
         }
 
-        public boolean isEnforced() {
-            return profiledata.isEnforced(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
-        }
-
-        public void setEnforced(final boolean enforced) {
-            profiledata.setEnforced(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], enforced);
-        }
-        
         public boolean isModifiable() {
             return profiledata.isModifyable(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
         }
@@ -954,14 +946,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     
     public void setAllowMergeDn(boolean allowMergeDn) {
         profiledata.setAllowMergeDn(allowMergeDn);
-        if(!allowMergeDn) {
-            for(NameComponentGuiWrapper component: subjectDnComponentList) {
-                component.setEnforced(false);
-            }
-            for(NameComponentGuiWrapper component: subjectAltNameComponentList) {
-                component.setEnforced(false);
-            }
-        }
     }
 
     public boolean isUseCardNumber() {

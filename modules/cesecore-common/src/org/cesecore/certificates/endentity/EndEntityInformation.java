@@ -71,6 +71,11 @@ public class EndEntityInformation implements Serializable {
     private int tokentype;
     /** ExtendedInformation holding extra data of the End entity */
     private ExtendedInformation extendedinformation;
+    /** Indicates UTC milliseconds for latest DN merge operation with End Entity Profile*/
+    transient private long latestDnMerge;
+    
+    /** DN merge will be repeated if last DN merge is more than 5 minutes old. This accounts for end entity profile updates older than specified period.*/
+    private static final Long MAX_AGE_DN_MERGE_MILLIS = 300_0000L;
 
     /** Creates new empty EndEntityInformation */
     public EndEntityInformation() {
@@ -433,5 +438,17 @@ public class EndEntityInformation implements Serializable {
             changedValues.put(otherKey, new String[] { "<null>", otherValues.get(otherKey) });
         }
         return changedValues;
+    }
+    
+    public void updateLatestDnMerge() {
+        latestDnMerge = System.currentTimeMillis();
+    }
+    
+    public boolean isStaleDnMerge() {
+        if(System.currentTimeMillis() - latestDnMerge > MAX_AGE_DN_MERGE_MILLIS) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
