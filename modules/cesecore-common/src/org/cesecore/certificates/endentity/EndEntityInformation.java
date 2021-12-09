@@ -179,6 +179,7 @@ public class EndEntityInformation implements Serializable {
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.stripUsername(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
+        invalidateLatestDnMerge();
         if (dn==null) {
             dn = "";
         }
@@ -442,6 +443,10 @@ public class EndEntityInformation implements Serializable {
     
     public void updateLatestDnMerge() {
         latestDnMerge = System.currentTimeMillis();
+    }
+    
+    private void invalidateLatestDnMerge() {
+        latestDnMerge = 0L;
     }
     
     public boolean isStaleDnMerge() {
