@@ -45,8 +45,6 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      */
 	private static final long serialVersionUID = -1766329888474901945L;
 	
-	private static final Logger log = Logger.getLogger(UpgradeableDataHashMap.class);
-
     // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
     protected LinkedHashMap<Object, Object> data;
     private boolean upgraded = false;
@@ -140,7 +138,6 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
 	 * @return Map<Object, Object> with difference
 	 */
 	public static Map<Object, Object> diffMaps(Map<Object, Object> oldmap, Map<Object, Object> newmap) {
-        log.info("ZZZZ:::: oldval:" + oldmap.keySet() + ", newval:" + newmap.keySet());
 		Map<Object, Object> result = new LinkedHashMap<>();
     	for (Object key : oldmap.keySet()) {
 			if (newmap.containsKey(key)) {
