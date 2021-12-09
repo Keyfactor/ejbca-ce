@@ -51,8 +51,7 @@ public class EndEntityInformationFiller {
     public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, 
             final EndEntityProfile profile) {
         
-        // Do not repeat DN Merge operation!!
-        if(!userData.isStaleDnMerge()) {
+        if(userData.isDnMerged() && userData.isSanMerged()) {
             return userData;
         }
 
@@ -82,12 +81,18 @@ public class EndEntityInformationFiller {
 
         // Processing Subject DN values
         String subjectDn = userData.getDN();
-        subjectDn = mergeSubjectDnWithDefaultValues(subjectDn, profile, userData.getEmail());
-        userData.setDN(subjectDn);
+        if(!userData.isDnMerged()) {
+            subjectDn = mergeSubjectDnWithDefaultValues(subjectDn, profile, userData.getEmail());
+            userData.setDN(subjectDn);
+            userData.setDnMerged();
+        }
         String subjectAltName = userData.getSubjectAltName();
         // Processing Subject Altname values
-        subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
-        userData.setSubjectAltName(subjectAltName);
+        if(!userData.isDnMerged()) {
+            subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
+            userData.setSubjectAltName(subjectAltName);
+            userData.setSanMerged();
+        }
         if (userData.getType().getHexValue() == EndEntityTypes.INVALID.hexValue()) {
         	if (StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))) {
         	    final int type = Integer.parseInt(profile.getValue(EndEntityProfile.FIELDTYPE, 0));
@@ -105,8 +110,7 @@ public class EndEntityInformationFiller {
                 extInfo.setCabfOrganizationIdentifier(profile.getCabfOrganizationIdentifier());
             }
         }
-        
-        userData.updateLatestDnMerge();
+                
         return userData;
     }
 
@@ -118,7 +122,7 @@ public class EndEntityInformationFiller {
      * @param entityEmail entity email.
      * @return updated DN.
      */
-    private static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile,
+    public static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile,
                                                           String entityEmail) {
         DistinguishedName profiledn;
         DistinguishedName userdn;
@@ -171,7 +175,7 @@ public class EndEntityInformationFiller {
      * @param entityEmail    entity email field
      * @return updated subject alt name
      */
-    private static String mergeSubjectAltNameWithDefaultValues(String subjectAltName, EndEntityProfile profile, 
+    public static String mergeSubjectAltNameWithDefaultValues(String subjectAltName, EndEntityProfile profile, 
                                     String entityEmail) {
         DistinguishedName profileAltName;
         DistinguishedName userAltName;

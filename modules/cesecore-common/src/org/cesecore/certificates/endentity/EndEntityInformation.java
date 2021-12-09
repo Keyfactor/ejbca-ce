@@ -71,12 +71,11 @@ public class EndEntityInformation implements Serializable {
     private int tokentype;
     /** ExtendedInformation holding extra data of the End entity */
     private ExtendedInformation extendedinformation;
-    /** Indicates UTC milliseconds for latest DN merge operation with End Entity Profile*/
-    transient private long latestDnMerge;
+    /** Indicates Subject DN merge with End Entity Profile*/
+    transient private boolean dnMerged = false;
+    /** Indicates Subject Alternate Names merge with End Entity Profile*/
+    transient private boolean sanMerged = false;
     
-    /** DN merge will be repeated if last DN merge is more than 5 minutes old. This accounts for end entity profile updates older than specified period.*/
-    private static final Long MAX_AGE_DN_MERGE_MILLIS = 300_0000L;
-
     /** Creates new empty EndEntityInformation */
     public EndEntityInformation() {
     }
@@ -103,6 +102,8 @@ public class EndEntityInformation implements Serializable {
         this.timemodified = endEntityInformation.getTimeModified();
         this.tokentype = endEntityInformation.getTokenType();
         this.extendedinformation = (endEntityInformation.getExtendedInformation() != null ? new ExtendedInformation(endEntityInformation.getExtendedInformation()) : null);
+        this.dnMerged = endEntityInformation.isDnMerged();
+        this.sanMerged = endEntityInformation.isSanMerged();
     }
 
     /**
@@ -179,7 +180,6 @@ public class EndEntityInformation implements Serializable {
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.stripUsername(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
-        invalidateLatestDnMerge();
         if (dn==null) {
             dn = "";
         }
@@ -440,20 +440,21 @@ public class EndEntityInformation implements Serializable {
         }
         return changedValues;
     }
-    
-    public void updateLatestDnMerge() {
-        latestDnMerge = System.currentTimeMillis();
+
+    public boolean isDnMerged() {
+        return dnMerged;
+    }
+
+    public void setDnMerged() {
+        this.dnMerged = true;
+    }
+
+    public boolean isSanMerged() {
+        return sanMerged;
+    }
+
+    public void setSanMerged() {
+        this.sanMerged = true;
     }
     
-    private void invalidateLatestDnMerge() {
-        latestDnMerge = 0L;
-    }
-    
-    public boolean isStaleDnMerge() {
-        if(System.currentTimeMillis() - latestDnMerge > MAX_AGE_DN_MERGE_MILLIS) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

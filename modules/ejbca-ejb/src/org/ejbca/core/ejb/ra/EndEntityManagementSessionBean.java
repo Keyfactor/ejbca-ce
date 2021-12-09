@@ -794,11 +794,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         FieldValidator.validate(endEntityInformation, endEntityProfileId, eeProfileName);
         
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
-        // Merge all enforced DN and SAN values, if merge DN is allowed
-        if( profile.getAllowMergeDn()) {
-            endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntityInformation, profile);
-        }
-
         String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
         String altName = endEntityInformation.getSubjectAltName();
         if (log.isTraceEnabled()) {
@@ -820,6 +815,47 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new NoSuchEndEntityException(msg);
         }
         final EndEntityInformation originalCopy = userData.toEndEntityInformation();
+        
+        // Merge all DN and SAN values from previously saved end entity
+        if( profile.getAllowMergeDn()) {
+            try {
+                // SubjectDN is not mandatory so
+                if (dn == null) {
+                    dn = "";
+                }
+                final Map<String, String> sdnMap = new HashMap<>();
+                if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+                    sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
+                }
+                dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
+                dn = EndEntityInformationFiller.mergeSubjectDnWithDefaultValues(dn, profile, null);
+                endEntityInformation.setDnMerged();
+            } catch (InvalidNameException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
+                }
+                dn = "";
+            }
+            try {
+                // SubjectAltName is not mandatory so
+                if (altName == null) {
+                    altName = "";
+                }
+                final Map<String, String> sanMap = new HashMap<>();
+                if (profile.getUse(DnComponents.RFC822NAME, 0)) {
+                    sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
+                }
+                altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
+                altName = EndEntityInformationFiller.mergeSubjectAltNameWithDefaultValues(altName, profile, null);
+                endEntityInformation.setSanMerged();
+            } catch (InvalidNameException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
+                }
+                altName = "";
+            }
+
+        }
         
         altName = getAddDnsFromCnToAltName(dn, altName, profile);
         String newPassword = endEntityInformation.getPassword();

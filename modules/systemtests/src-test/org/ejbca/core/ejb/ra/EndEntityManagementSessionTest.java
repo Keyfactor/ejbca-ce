@@ -732,7 +732,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             // CN=" + username + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=OrgUnit2,OU=hoho1,O=AnaTom,C=SE", dataMulti.getDN());
             
             //Skip this test on Community
             if (DnComponents.enterpriseMappingsExist()) {
