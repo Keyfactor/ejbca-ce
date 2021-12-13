@@ -26,7 +26,7 @@ import javax.faces.convert.FacesConverter;
  *
  */
 @FacesConverter("localeConverter")
-public class LocaleConverter implements Converter {
+public class LocaleConverter implements Converter<Object> {
 
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

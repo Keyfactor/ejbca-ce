@@ -15,6 +15,7 @@ package org.ejbca.webtest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -22,9 +23,11 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.common.exception.ReferencesToItemExistException;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -64,8 +67,7 @@ import java.util.logging.Level;
 
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
- *
- * @version $Id$
+ * 
  */
 public abstract class WebTestBase extends ExtentReportCreator {
 
@@ -324,6 +326,16 @@ public abstract class WebTestBase extends ExtentReportCreator {
     }
 
     /**
+     * Removes the Certificate using EJB instance.
+     *
+     * @param username Certificate profile name.
+     */
+    protected static void removeCertificateByUsername(final String username) {
+        final InternalCertificateStoreSessionRemote certificateStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+         certificateStoreSessionRemote.removeCertificatesByUsername(username);
+    }
+
+    /**
      * Removes the EndEntityProfile using EJB instance.
      *
      * @param endEntityProfileName End entity profile name.
@@ -507,4 +519,25 @@ public abstract class WebTestBase extends ExtentReportCreator {
         }
     }
 
+    /**
+     * Removes OAuth Providers
+     * @param oauthKeyIdentifiers an array of OAuth Provider Key Identifiers.
+     */
+    protected static void removeOauthProviders(String... oauthKeyIdentifiers) {
+        final GlobalConfigurationSessionRemote globalConfigurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        final OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSessionRemote
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        final Map<String, OAuthKeyInfo> oauthKeys = oAuthConfiguration.getOauthKeys();
+        oauthKeys.forEach((key, oauthKeyInfo) -> {
+            if (Arrays.asList(oauthKeyIdentifiers).contains(oauthKeyInfo.getLabel())) {
+                oAuthConfiguration.removeOauthKey(oauthKeyInfo.getLabel());
+            }
+        });
+        try {
+            globalConfigurationSessionRemote.saveConfiguration(ADMIN_TOKEN, oAuthConfiguration);
+        }
+        catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
+    }
 }

@@ -21,13 +21,13 @@ import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.ca.publisher.FullEntityPublisher;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
- * @version $Id$
  */
 public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, FullEntityPublisher {
 
@@ -110,6 +110,16 @@ public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, Ful
     public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
         // Method not applicable for this publisher type!
         return false;
+    }
+
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+    
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
     }
 
 }

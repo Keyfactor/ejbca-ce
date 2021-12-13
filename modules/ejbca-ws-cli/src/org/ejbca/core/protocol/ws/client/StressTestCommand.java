@@ -23,6 +23,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -72,19 +73,35 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		final private TestType testType;
 		final private int maxCertificateSN;
 		final private String subjectDN;
+		final private String keyAlgorithm;
+        final private int keySize;
+        final private String curve;
+        
 		MyCommandFactory( String _caName, String _endEntityProfileName, String _certificateProfileName,
-						  TestType _testType, int _maxCertificateSN, String _subjectDN ) {
+						  TestType _testType, int _maxCertificateSN, String _subjectDN, 
+						  String keyAlgorithm, int keySize, String curve ) {
 			this.testType = _testType;
 			this.caName = _caName;
 			this.endEntityProfileName = _endEntityProfileName;
 			this.certificateProfileName = _certificateProfileName;
 			this.maxCertificateSN = _maxCertificateSN;
 			this.subjectDN = _subjectDN;
+			this.keyAlgorithm = keyAlgorithm;
+            this.keySize = keySize;
+            this.curve = curve;
 		}
+		
 		@Override
 		public Command[] getCommands() throws Exception {
-			final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-			kpg.initialize(1024);
+		    // create the key pair generator for P10 requests
+			final KeyPairGenerator kpg = KeyPairGenerator.getInstance(keyAlgorithm);
+			if (keyAlgorithm.equals("EC")) {
+			    kpg.initialize(new ECGenParameterSpec(curve));
+			}
+			else {
+			    kpg.initialize(keySize);
+			}
+			
 			final EjbcaWS ejbcaWS = getEjbcaRAWSFNewReference();
 			final JobData jobData = new JobData(this.subjectDN);
 			switch (this.testType) {
@@ -150,8 +167,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		final private PKCS10CertificationRequest pkcs10;
 		Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
 			super(_jobData);
-			this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
-	                keys.getPrivate(), null);
+			this.pkcs10 = CertTools.genPKCS10CertificationRequest(
+			         keys.getPublic().getAlgorithm().equals("RSA") ? "SHA1WithRSA" : "SHA256withECDSA",
+			         CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
 			this.ejbcaWS = _ejbcaWS;
 		}
 		@Override
@@ -424,7 +442,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setCertificateProfileName(certificateProfileName);
 			this.bitsInCertificateSN = _bitsInCertificateSN;
 			try {
-                this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+                this.pkcs10 = CertTools.genPKCS10CertificationRequest(
+                        keys.getPublic().getAlgorithm().equals("RSA") ? "SHA1WithRSA" : "SHA256withECDSA", 
+                        CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
             } catch (OperatorCreationException e) {
                 getPrintStream().println(e.getLocalizedMessage());
                 e.printStackTrace(getPrintStream());
@@ -484,6 +504,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println("To define a template for the subject DN of each new user use the java system property 'subjectDN'.");
 		getPrintStream().println("If the property value contains one or several '<userName>' string these strings will be substituted with the user name.");
 		getPrintStream().println("Example: JAVA_OPT=\"-DsubjectDN=CN=<userName>,O=Acme,UID=hej<userName>,OU=,OU=First Fixed,OU=sfsdf,OU=Middle Fixed,OU=fsfsd,OU=Last Fixed\" ../../PWE/ejbca_3_11/dist/clientToolBox/ejbcaClientToolBox.sh EjbcaWsRaCli stress ldapDirect 1 1000 ldapClientOUTest ldapClientDirect");
+        getPrintStream().println();
+        getPrintStream().println("To specify a key size, use the java system property 'keySize'.");
+        getPrintStream().println("To specify a key algorithm, use the java system property 'keyAlgorithm'.  'RSA' and 'EC' are supported.");
+        getPrintStream().println("To specify an EC curve, use the java system property 'curve'.  `keyAlgorithm` should be set to 'EC' when specifying a curve.");
+        getPrintStream().println("Example: JAVA_OPT=\"-DkeyAlgorithm=EC -Dcurve=secp384r1\" ./ejbcaClientToolBox.sh EjbcaWsRaCli stress \"ManagementCA\" 50 10 EMPTY ENDUSER BASICSINGLETRANS");
+        getPrintStream().println("         JAVA_OPT=\"-DkeySize=4096\" ./ejbcaClientToolBox.sh EjbcaWsRaCli stress \"ManagementCA\" 50 10 EMPTY ENDUSER BASICSINGLETRANS");
+        getPrintStream().println();
 		getPrintStream().print("Types of stress tests:");
 		TestType testTypes[] = TestType.values();
 		for ( TestType testType : testTypes ) {
@@ -518,8 +545,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				}
 				maxCertificateSN = iTmp;
 			}
+			final String keyAlgorithm = System.getProperty("keyAlgorithm", "RSA");
+			final String curve = System.getProperty("curve", "secp192r1");
+            final int keySize = Integer.parseInt(System.getProperty("keySize", 
+                    keyAlgorithm.equals("RSA") ? "1024" : "571"));
+			
 			this.performanceTest.execute(new MyCommandFactory(
-			        caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN, subjectDN),
+			        caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN, subjectDN,
+			        keyAlgorithm, keySize, curve),
 			        notanot.getThreads(), notanot.getTests(), waitTime, getPrintStream());
 			getPrintStream().println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
 			synchronized(this) {

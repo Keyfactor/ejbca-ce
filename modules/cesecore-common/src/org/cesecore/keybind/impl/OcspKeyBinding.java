@@ -12,16 +12,6 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
-import java.io.IOException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -47,6 +37,16 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 
+import java.io.IOException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Holder of "external" (e.g. non-CA signing key) OCSP InternalKeyBinding properties.
  * 
@@ -56,7 +56,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
   
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(OcspKeyBinding.class);
-    
+
     public enum ResponderIdType {
         KEYHASH(2, "KeyHash"), NAME(1, "Name");
         

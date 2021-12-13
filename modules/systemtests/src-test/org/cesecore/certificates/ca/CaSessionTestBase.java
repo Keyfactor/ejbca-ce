@@ -66,8 +66,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Tests the CA session bean.
- * 
- * @version $Id$
  */
 public class CaSessionTestBase extends RoleUsingTestCase {
     
@@ -220,6 +218,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 .setCrlIssueInterval(cainfo.getCRLIssueInterval())
                 .setCrlOverlapTime(cainfo.getCRLOverlapTime())
                 .setDeltaCrlPeriod(cainfo.getDeltaCRLPeriod())
+                .setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation())
                 .setCrlPublishers(cainfo.getCRLPublishers())
                 .setValidators(new ArrayList<Integer>())
                 .setUseAuthorityKeyIdentifier(true)

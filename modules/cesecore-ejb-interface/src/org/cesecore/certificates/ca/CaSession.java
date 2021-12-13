@@ -12,15 +12,17 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.security.cert.Certificate;
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeMap;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.TreeMap;
 
 /*! \mainpage The CESeCore project
 *
@@ -53,8 +55,6 @@ signature
 
 /**
  * CRUD bean for creating, removing and retrieving CAs.
- * 
- * @version $Id$
  */
 public interface CaSession {
 
@@ -78,8 +78,9 @@ public interface CaSession {
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
      * @throws InternalKeyBindingNonceConflictException 
+     * @throws CaMsCompatibilityIrreversibleException
      */
-    void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException;
+    void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
     /**
      * Method returning id's of all CA's in system.
@@ -264,4 +265,15 @@ public interface CaSession {
      * @return Partition index, or zero if not using partitioning.
      */
     int determineCrlPartitionIndex(int caId, CertificateWrapper cert);
+
+    /**
+     * Find the CA on the this instance who issued the given certificate, using the
+     * <code>authorityKeyIdentifier</code> in the certificate.
+     *
+     * @param authenticationToken an authentication token.
+     * @param certificate The certificate whose issuer should be retrieved.
+     * @return an optional containing the CA or an empty optional if
+     * the CA could not be found or if the authentication token is not authorised to read it.
+     */
+    Optional<CAInfo> getIssuerFor(AuthenticationToken authenticationToken, X509Certificate certificate);
 }

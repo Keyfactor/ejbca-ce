@@ -136,6 +136,7 @@
 							rendered="#{!cryptoTokenGuiInfo.active &amp;&amp; cryptoTokenGuiInfo.allowedActivation}">
 							<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}"
 								value="#{cryptoTokenGuiInfo.authenticationCode}"
+								rendered="#{cryptoTokenGuiInfo.requiresSecretToActivate}"
 								autocomplete="off" onkeypress="preventSubmitOnEnter(this,event)" />
 							<h:commandButton value="#{web.text.CRYPTOTOKEN_ACTIVATE}"
 								action="#{cryptoTokenMBean.activateCryptoToken}" />
