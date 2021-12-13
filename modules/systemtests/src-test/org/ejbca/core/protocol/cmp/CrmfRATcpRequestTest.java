@@ -64,8 +64,6 @@ import static org.junit.Assert.assertTrue;
  * (cmp.tcp.enabled=true, cmp.tcp.portno=5587)
  * 
  * 'ant clean; ant bootstrap' to deploy configuration changes.
- * 
- * @version $Id$
  */
 public class CrmfRATcpRequestTest extends CmpTestCase {
 	
@@ -172,7 +170,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, dn, this.cacert, nonce, transid, true, null,PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        checkCmpCertRepMessage(dn, this.cacert, resp, reqId);
+        checkCmpCertRepMessage(cmpConfiguration, cmpAlias, dn, this.cacert, resp, reqId);
     }
 
     @Test
@@ -198,7 +196,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpTcp(ba, 5);
             checkCmpResponseGeneral(resp, issuerDN, dn, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-            checkCmpCertRepMessage(dn, this.cacert, resp, reqId);
+            checkCmpCertRepMessage(cmpConfiguration, cmpAlias, dn, this.cacert, resp, reqId);
 
             // Send a confirm message to the CA
             String hash = "foo123";
@@ -291,7 +289,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        checkCmpCertRepMessage(subjectDN, this.cacert, resp, reqId);
+        checkCmpCertRepMessage(cmpConfiguration, cmpAlias, subjectDN, this.cacert, resp, reqId);
 
         // Send a confirm message to the CA
         String hash = "foo123";

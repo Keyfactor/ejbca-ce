@@ -18,6 +18,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.nimbus-jose-jwt.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>

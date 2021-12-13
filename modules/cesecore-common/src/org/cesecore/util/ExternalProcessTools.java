@@ -112,12 +112,13 @@ public final class ExternalProcessTools {
      * @param arguments the command arguments (optional), may contain the placeholder '%cert' to
      * retrieve data from stdin. 
      * @param filePrefix a prefix to prepend to the temporary filename, typically the name of the caller.
+     * @param allowList an ExternalScriptsAllowlist controlling of the external process is allowed to be executed or not
      * @return the output of the command (stdout, any stderr and the exit code).
      * @throws ExternalProcessException if the temporary file could not be written or the external process fails.
      */
     public static final List<String> launchExternalCommand(final String cmd, final byte[] bytes, final boolean failOnCode, final boolean failOnOutput,
-            final List<String> arguments, final String filePrefix) throws ExternalProcessException {
-        return launchExternalCommand(cmd, bytes, failOnCode, failOnOutput, false, false, arguments, filePrefix);
+            final List<String> arguments, final String filePrefix, final ExternalScriptsAllowlist allowList) throws ExternalProcessException {
+        return launchExternalCommand(cmd, bytes, failOnCode, failOnOutput, false, false, arguments, filePrefix, allowList);
     }
 
     /**
@@ -137,11 +138,12 @@ public final class ExternalProcessTools {
      * @param arguments the command arguments (optional), may contain the placeholder '%cert' to
      * retrieve data from stdin.
      * @param filePrefix a prefix to prepend to the temporary filename, typically the name of the caller.
+     * @param allowList an ExternalScriptsAllowlist controlling of the external process is allowed to be executed or not
      * @return the output of the command (stdout, any stderr and the exit code).
      * @throws ExternalProcessException if the temporary file could not be written or the external process fails.
      */
     public static final List<String> launchExternalCommand(final String cmd, final byte[] bytes, final boolean failOnCode, final boolean failOnOutput,
-            final boolean logStdOut, final boolean logErrOut, final List<String> arguments, final String filePrefix) throws ExternalProcessException {
+            final boolean logStdOut, final boolean logErrOut, final List<String> arguments, final String filePrefix, final ExternalScriptsAllowlist allowList) throws ExternalProcessException {
         final long startTime = System.currentTimeMillis();
         int exitStatus = -1;
         final List<String> result = new ArrayList<>();
@@ -154,7 +156,16 @@ public final class ExternalProcessTools {
         // Execute external script or command with PEM in STDIN or full path of temporary file as first argument.
         String filename = null;
         try {
+            // Split the command and arguments into tokens
             final List<String> cmdTokens = Arrays.asList(cmd.split("\\s"));
+            // The first token is the actual command we should execute, verify that we're allowed to execute this command from the allowList
+            if (cmdTokens.size() < 1) {
+                throw new ExternalProcessException(intres.getLocalizedMessage("process.nocommand", cmd));
+            }
+            if (!allowList.isPermitted(cmdTokens.get(0))) {
+                throw new ExternalProcessException(intres.getLocalizedMessage("process.whitelist.error.notlisted", cmdTokens.get(0)));
+            }
+
             // Write file to disk or process place holder with PEM certificates and build shell command.
             if (writeFileToDisk) {
                 filename = file.getCanonicalPath();

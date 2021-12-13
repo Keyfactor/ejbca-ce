@@ -22,7 +22,7 @@ import javax.faces.convert.Converter;
  * One way converter from Map<Object,Object> to String.
  * @version $Id$
  */
-public class MapToStringConverter implements Converter {
+public class MapToStringConverter implements Converter<Object> {
 
 	@Override
 	public Object getAsObject(final FacesContext facesContext, final UIComponent uiComponent, final String value) {

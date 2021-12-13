@@ -53,7 +53,7 @@ public class RaCasPageBean implements Serializable {
         private final String name;
         private final String subjectDn;
         private final int caId;
-        private String crlLink;
+        private List<CrlLinkInfo> crlLinks;
         private String deltaCrlLink;
         private final int position;
         private final List<String> chainNames;
@@ -65,15 +65,19 @@ public class RaCasPageBean implements Serializable {
             this.caId = caId;
             this.position = position;
             this.chainNames = chainNames;
+            crlLinks = new ArrayList<>();
         }
 
         public String getName() { return name; }
         public String getSubjectDn() { return subjectDn; }
         public int getCaId() { return caId; }
-        public String getCrlLink() { return crlLink; }
+        public List<CrlLinkInfo> getCrlLinks() { return crlLinks; }
         public String getDeltaCrlLink() { return deltaCrlLink; }
         public int getPosition() { return position; }
         public boolean isX509() { return x509; }
+        public boolean isPartitionedCrl() { 
+            return crlLinks.size() > 1;
+        }
 
         @Override
         public int hashCode() { return subjectDn.hashCode(); }
@@ -87,6 +91,24 @@ public class RaCasPageBean implements Serializable {
             } else {
                 return subjectDn;
             }
+        }
+    }
+
+    public class CrlLinkInfo {
+        private final String link;
+        private final int partitionIndex;
+
+        public CrlLinkInfo(String link, int partitionIndex) {
+            this.link = link;
+            this.partitionIndex = partitionIndex;
+        }
+
+        public String getLink() {
+            return link;
+        }
+
+        public int getPartitionIndex() {
+            return partitionIndex;
         }
     }
 
@@ -143,15 +165,22 @@ public class RaCasPageBean implements Serializable {
                     // Construct links to RFC4387 CRL Download Servlet
                     if (caCertificate instanceof X509Certificate) {
                         caAndCrl.x509 = true;
-                        // TODO Add support for Partitioned CRLs (ECA-7961)
-                        final CRLInfo crlInfoFull = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, false);
-                        if (crlInfoFull!=null) {
-                            atLeastOneCrlLinkPresent = true;
-                            caAndCrl.crlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate);
-                            final CRLInfo crlInfoDelta = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
-                            if (crlInfoDelta!=null) {
-                                caAndCrl.deltaCrlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate) + "&delta=";
+                        final int numberOfPartitions = caInfo.getAllCrlPartitionIndexes() == null ? 1 : caInfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                        for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
+                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfo(subjectDn, currentPartitionIndex, false);
+                            if (currentCrlInfo != null) {
+                                atLeastOneCrlLinkPresent = true;
+                                String crlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64(((X509Certificate)caCertificate)); 
+                                if ( numberOfPartitions > 1) {
+                                    crlLink += "&partition=" + currentPartitionIndex;
+                                }
+                                caAndCrl.crlLinks.add(new CrlLinkInfo(crlLink, currentPartitionIndex));
                             }
+                        }
+
+                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
+                        if (crlInfoDelta!=null) {
+                            caAndCrl.deltaCrlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate) + "&delta=";
                         }
                     }
                     // Add missing items and replace items when we know the CAId

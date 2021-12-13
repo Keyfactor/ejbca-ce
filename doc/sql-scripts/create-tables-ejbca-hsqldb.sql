@@ -219,7 +219,7 @@ CREATE TABLE InternalKeyBindingData (
 CREATE TABLE KeyRecoveryData (
     certSN VARCHAR(256) NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
-    cryptoTokenId INTEGER DEFUALT 0 NOT NULL,
+    cryptoTokenId INTEGER DEFAULT 0 NOT NULL,
     keyAlias VARCHAR(256),
     keyData VARCHAR NOT NULL,
     markedAsRecoverable BOOLEAN NOT NULL,
@@ -302,6 +302,7 @@ CREATE TABLE RoleMemberData (
     primaryKey INTEGER NOT NULL,
     tokenType VARCHAR(256) NOT NULL,
     tokenIssuerId INTEGER NOT NULL,
+    tokenProviderId INTEGER DEFAULT 0 NOT NULL,
     tokenMatchKey INTEGER NOT NULL,
     tokenMatchOperator INTEGER NOT NULL,
     tokenMatchValue VARCHAR(2000),
@@ -460,3 +461,11 @@ CREATE TABLE OcspResponseData (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(256) NOT NULL,
+    startTime BIGINT NOT NULL,
+    rawData VARCHAR,
+    rowProtection VARCHAR,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
+);

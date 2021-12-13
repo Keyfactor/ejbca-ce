@@ -463,6 +463,21 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    public int getEABNamespacesListAvailableSize() { return Math.max(1, Math.min(5, getEjbcaWebBean().getEABConfiguration().getEABMap().size())); }
+
+    public List<SelectItem> getAvailableEABNamespaces() {
+        List<SelectItem> ret = new ArrayList<>();
+        final Map<String, Set<String>> eabMap = getEjbcaWebBean().getEABConfiguration().getEABMap();
+
+        final Set<String> namespaces = eabMap.keySet();
+        for(String namespace : namespaces) {
+            ret.add(new SelectItem(namespace, namespace));
+        }
+        // Sort list by name
+        ret.sort((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
+        return ret;
+    }
+
     // SelectItem<String, String>
     public List<SelectItem> getSignatureAlgorithmAvailable() {
         final List<SelectItem> ret = new ArrayList<>();
@@ -1341,6 +1356,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             Map<ApprovalRequestType, Integer> approvals = certificateProfile.getApprovals();
             for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 int approvalProfileId = approvals.getOrDefault(approvalRequestType, -1);
+                // Hide ACME approval types.
+                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType) 
+                 || ApprovalRequestType.ACMEACCOUNTKEYCHANGE.equals(approvalRequestType)) {
+                    continue;
+                }
                 // In certificate profiles we don't want to display the "CA Service Activation" approval type,
                 // because it is not relevant for certificate profiles But if we have a configuration here, we'll display it
                 if (!approvalRequestType.equals(ApprovalRequestType.ACTIVATECA) || approvalProfileId != -1) {

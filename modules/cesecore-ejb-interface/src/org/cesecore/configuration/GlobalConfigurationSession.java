@@ -12,27 +12,27 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import java.util.Properties;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.configuration.ConfigurationBase;
+import java.util.Properties;
 
 /** 
  * Session bean to handle global configuration and such.
- * 
- * @version $Id$
  */
 public interface GlobalConfigurationSession {
-    
+
     /**
-     * Retrieves the cached GlobalConfiguration. This cache is updated from
-     * persistence either by the time specified by
-     * {@link #MIN_TIME_BETWEEN_GLOBCONF_UPDATES} or when {@link #flushCache()}
-     * is executed. This method should be used in all cases where a quick
-     * response isn't necessary, otherwise use {@link #flushCache()}.
-     * 
-     * @return the cached GlobalConfiguration value.
+     * Retrieves a copy of the {@link ConfigurationBase} object from the cache with the specified configuration ID. If
+     * there is no such object in the cache, or if the object in the cache has expired, it is fetched from
+     * the database and the cache is updated.
+     *
+     * <p>If no such object with the specified configuration ID could be found, <code>null</code> is returned.
+     *
+     * <p>To make sure the object is loaded from the database, you may invoke {@link #flushConfigurationCache(String)}
+     * before calling this method.
+     * @param configID the configuration ID of the object to return,
+     *                        e.g. {@link org.ejbca.config.GlobalConfiguration#GLOBAL_CONFIGURATION_ID}.
+     * @return a copy from the cache, or a copy from the database, if the copy in the cache was stale or missing.
      */
     ConfigurationBase getCachedConfiguration(String configID);
 
