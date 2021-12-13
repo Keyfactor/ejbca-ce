@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * Contains information from {@link org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry}
- * @version $Id$
+ *
  */
 public final class RaRoleMemberTokenTypeInfo implements Serializable {
 
@@ -27,14 +27,16 @@ public final class RaRoleMemberTokenTypeInfo implements Serializable {
     private final Map<String,Integer> matchKeys;
     private final String defaultMatchKey;
     private final boolean issuedByCA;
+    private final boolean issuedByOauthProvider;
     private final boolean hasMatchValue;
     private final int matchOperator;
     
-    public RaRoleMemberTokenTypeInfo(final Map<String,Integer> matchKeys, final String defaultMatchKey, final boolean issuedByCA, final boolean hasMatchValue,
-            final int matchOperator) {
+    public RaRoleMemberTokenTypeInfo(final Map<String,Integer> matchKeys, final String defaultMatchKey, final boolean issuedByCA,
+                                     final boolean issuedByOauthProvider, final boolean hasMatchValue, final int matchOperator) {
         this.matchKeys = matchKeys;
         this.defaultMatchKey = defaultMatchKey;
         this.issuedByCA = issuedByCA;
+        this.issuedByOauthProvider = issuedByOauthProvider;
         this.hasMatchValue = hasMatchValue;
         this.matchOperator = matchOperator;
     }
@@ -50,7 +52,11 @@ public final class RaRoleMemberTokenTypeInfo implements Serializable {
     public boolean isIssuedByCA() {
         return issuedByCA;
     }
-    
+
+    public boolean isIssuedByOauthProvider() {
+        return issuedByOauthProvider;
+    }
+
     public boolean getHasMatchValue() {
         return hasMatchValue;
     }

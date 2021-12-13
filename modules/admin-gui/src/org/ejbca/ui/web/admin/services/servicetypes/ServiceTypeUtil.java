@@ -28,6 +28,7 @@ public final class ServiceTypeUtil {
     public static final String NOACTION_SUB_PAGE = "noaction.xhtml";
     public static final String MAILACTION_SUB_PAGE = "mailaction.xhtml";
     public static final String HSMKEEPALIVEWORKER_SUB_PAGE = "hsmkeepaliveworker.xhtml";
+    public static final String PRECERTIFICATEREVOCATIONWORKER_SUB_PAGE = "precertificaterevocationworker.xhtml";
     public static final String CUSTOMWORKER_SUB_PAGE = "customworker.xhtml";
     public static final String CUSTOMINTERVAL_SUB_PAGE = "custominterval.xhtml";
     public static final String CUSTOMACTION_SUB_PAGE = "customaction.xhtml";

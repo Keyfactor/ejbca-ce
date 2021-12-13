@@ -14,12 +14,10 @@
 package org.ejbca.core.protocol.cmp.authentication;
 
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * Interface for authentication modules of CMP Messages
- * 
- * @version $Id$
- *
  */
 public interface ICMPAuthenticationModule {
 
@@ -56,4 +54,11 @@ public interface ICMPAuthenticationModule {
      * @return The error message as String. Null if no error had occurred
      */
     String getErrorMessage();
+    
+    /**
+     * If the authentication module authenticates an administrator in verifyOrExtract, this an AuthenticationToken representing the admin 
+     * @return AuthenticationToken or null of there was no administrator AuthenticationToken extracted from this module
+     */
+    AuthenticationToken getAuthenticationToken();
+
 }

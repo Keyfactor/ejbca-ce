@@ -76,7 +76,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
  * This session bean provides a bridge between EJBCA and CESecore by incorporating CRL creation (CESeCore) with publishing (EJBCA)
  * into a single atomic action.
  *
- * @version $Id$
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlSessionRemote")

@@ -35,9 +35,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 
 /**
  * PartitionedApprovalProfile represents an approval archetype where each approval is partitioned into several subtasks, assigned to one or more roles.
- *
- * @version $Id$
- *
  */
 public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
@@ -59,7 +56,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     /**
      * Note: do not change, may cause problems in deployed installations.
      */
-    private static final String TYPE_IDENTIFIER = "PARTITIONED_APPROVAL";
+    public static final String TYPE_IDENTIFIER = "PARTITIONED_APPROVAL";
 
     public PartitionedApprovalProfile() {
         //Public constructor needed deserialization

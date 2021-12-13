@@ -208,9 +208,9 @@ public final class ConfigurationHolder {
      */
     public static Properties getAsProperties() {
         final Properties properties = new Properties();
-        final Iterator<String> i = instance().getKeys();
+        final Iterator<?> i = instance().getKeys();
         while (i.hasNext()) {
-            final String key = i.next();
+            final String key = (String) i.next();
             properties.setProperty(key, instance().getString(key));
         }
         return properties;
@@ -322,9 +322,9 @@ public final class ConfigurationHolder {
     public static List<String> getPrefixedPropertyNames(String prefix) {
         Set<String> algs = new HashSet<>();
         // Just get the keys from configuration that starts with prefix, we assume below that it has a . following the prefix
-        Iterator<String> iterator = config.getKeys(prefix);
+        Iterator<?> iterator = config.getKeys(prefix);
         while (iterator.hasNext()) {
-            final String key = iterator.next();
+            final String key = (String) iterator.next();
             final int dot = key.indexOf(".", prefix.length()+1); // +1 to skip the . directly following prefix
             algs.add(key.substring(prefix.length()+1, dot));
         }

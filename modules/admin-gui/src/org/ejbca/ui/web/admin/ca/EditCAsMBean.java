@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,6 +62,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
@@ -119,6 +122,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(EditCAsMBean.class);
 
     private String CRYPTO_TOKEN_LINK = StringUtils.EMPTY;
+    
+    private static final String INVALID_KEK_ERROR_MESSAGE = "Key encryption key must be set to RSA key to allow key export.";
+    private static final HashSet<String> ALLOWED_KEK_TYPES = new HashSet<String>(Arrays.asList(new String[] {"RSA"}));
 
     @EJB
     private CaSessionLocal caSession;
@@ -209,7 +215,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private Date rolloverNotAfter = null;
     private Date caCertNotAfter = null;
 
-
     public UploadedFile getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
     }
@@ -282,6 +287,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         // Is this CA is a root CA? Then create link certificate on renewal by default
         createLinkCertificate = cainfo != null && CAInfo.SELFSIGNED == cainfo.getSignedBy();
+        
     }
 
 
@@ -626,6 +632,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlNumber() || isCaexternal);
     }
 
+    public boolean isCheckboxMsCaCompatibilityDisabled() {
+        // ECA-10086: A CA that is already using Partitions shouldn't be able made MS Ca Compatible.
+        return !caInfoDto.isMsCaCompatible() && caInfoDto.isUsePartitionedCrl();
+    }
+
     public boolean isCheckboxCrlDistributionPointOnCrlCriticalDisabled() {
         return isEditCaAndCaTypeX509() && (!caInfoDto.isUseCrlDistributiOnPointOnCrl() || isCaexternal);
     }
@@ -684,7 +695,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             sb.append(encode(cainfo.getSubjectDN()));
         }
-        if (isUsePartitionedCrlChecked()) {
+        if (isUsePartitionedCrlChecked() || caInfoDto.isMsCaCompatible()) {
             sb.append("&partition=*");
         }
         caInfoDto.setDefaultCRLDistPoint(sb.toString());
@@ -715,7 +726,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             sb.append(encode(cainfo.getSubjectDN()));
         }
-        if (isUsePartitionedCrlChecked()) {
+        if (isUsePartitionedCrlChecked() || caInfoDto.isMsCaCompatible()) {
             sb.append("&partition=*");
         }
         caInfoDto.setCaDefinedFreshestCRL(sb.toString());
@@ -731,6 +742,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final Map<ApprovalRequestType, Integer> approvals = getApprovals();
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 int approvalProfileId;
+                // Hide ACME approval types (initial CA creation).
+                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType) 
+                 || ApprovalRequestType.ACMEACCOUNTKEYCHANGE.equals(approvalRequestType)) {
+                    continue;
+                }
                 approvalProfileId = approvals.getOrDefault(approvalRequestType, -1);
                 approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));
             }
@@ -1207,6 +1223,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCA && !isCaUninitialized && isHasEditRight();
     }
 
+    public  boolean isAuthorityKeyIdentifierValidated(){
+        return caInfoDto.isMsCaCompatible();
+    }
+
+    public boolean isIssuingDistributionPointValidated() {
+        return caInfoDto.isUsePartitionedCrl() || caInfoDto.isMsCaCompatible();
+    }
+
+    public boolean isDefaultCRLDistributionPointValidated() {
+        return caInfoDto.isUsePartitionedCrl() || caInfoDto.isMsCaCompatible();
+    }
+
     public boolean isCheckboxAcceptRevocationsNonExistingEntryDisabled() {
         return (!isHasEditRight() || caInfoDto.isUseCertificateStorage());
     }
@@ -1391,6 +1419,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return "";
             }
             if (cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()) {
+                // TODO handle MS Compatible here too.
                 cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, newSubjectDn);
             } else {
                 cadatahandler.renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
@@ -1449,8 +1478,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             cainfo.setName(oldinfo.getName());
             caAdminSession.initializeCa(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (CryptoTokenOfflineException | InvalidAlgorithmException |
-                NumberFormatException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException e) {
+        } catch (CryptoTokenOfflineException | InvalidAlgorithmException | NumberFormatException | AuthorizationDeniedException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1567,12 +1595,23 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             CAToken caToken = caSession.getCAInfoInternal(getCaid()).getCAToken();
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
             try {
+                PrivateKey privKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+                if(!ALLOWED_KEK_TYPES.contains(privKey.getAlgorithm())) {
+                    log.error("Key encryption key of type: " + privKey.getAlgorithm() + " is not supported.");
+                    addNonTranslatedErrorMessage(INVALID_KEK_ERROR_MESSAGE);
+                    return;
+                }
+            } catch (CryptoTokenOfflineException e) {
+                addNonTranslatedErrorMessage(e.getLocalizedMessage());
+                return;
+            }
+            try {
                  ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
             } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | PrivateKeyNotExtractableException e) {
                 addNonTranslatedErrorMessage(e.getLocalizedMessage());
                 return;
             }
-
+            
             HttpServletResponse response = (HttpServletResponse) ectx.getResponse();
             RequestDispatcher dispatcher = request.getRequestDispatcher(EditCaUtil.CA_EXPORT_PATH);
             request.setAttribute(REQUEST.AUTHENTICATION_TOKEN, getAdmin());
@@ -1636,7 +1675,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             caAdminSession.editCA(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException e) {
+        } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -1850,7 +1889,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
-
+        caInfoDto.setSignKeySpec(extendedServicesKeySpecParam != null ? extendedServicesKeySpecParam : EditCaUtil.DEFAULT_KEY_SIZE);
         caInfoDto.setDescription(cainfo.getDescription());
         caInfoDto.setDoEnforceUniquePublickeys(cainfo.isDoEnforceUniquePublicKeys());
         caInfoDto.setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
@@ -1904,6 +1943,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setCaSerialNumberOctetSize(String.valueOf(x509cainfo.getCaSerialNumberOctetSize()));
             caInfoDto.setDoPreProduceOcspResponses(x509cainfo.isDoPreProduceOcspResponses());
             caInfoDto.setDoStoreOcspResponsesOnDemand(x509cainfo.isDoStoreOcspResponsesOnDemand());
+            caInfoDto.setMsCaCompatible(x509cainfo.isMsCaCompatible());
 
             if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().isEmpty())) {
                 caInfoDto.setPolicyId(getEjbcaWebBean().getText("NONE"));
@@ -1943,19 +1983,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setUsePartitionedCrl(x509cainfo.getUsePartitionedCrl());
             caInfoDto.setCrlPartitions(x509cainfo.getCrlPartitions());
             caInfoDto.setSuspendedCrlPartitions(x509cainfo.getSuspendedCrlPartitions());
-
-            if (isCaexternal) {
-                caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-
-              } else {
-                caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
-                caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-              }
+            caInfoDto.setCrlCaCrlPeriod(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaIssueInterval(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaOverlapTime(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setCrlCaDeltaCrlPeriod(SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+            caInfoDto.setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
         }
 
         if (caInfoDto.isCaTypeX509() && cmscainfo != null) {
@@ -2206,6 +2238,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (cainfo != null && cainfo.getApprovals() != null) {
             final LinkedHashMap<ApprovalRequestType, Integer> approvals = (LinkedHashMap<ApprovalRequestType, Integer>) cainfo.getApprovals();
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                // Hide ACME approval types.
+                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType) 
+                 || ApprovalRequestType.ACMEACCOUNTKEYCHANGE.equals(approvalRequestType)) {
+                    continue;
+                }
                 approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvals.getOrDefault(approvalRequestType, -1)));
             }
         }

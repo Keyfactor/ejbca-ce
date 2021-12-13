@@ -29,6 +29,7 @@ public class RaRoleMemberSearchRequest implements Serializable {
 
     private List<Integer> roleIds = new ArrayList<>();
     private List<Integer> caIds = new ArrayList<>();
+    private List<Integer> providerIds = new ArrayList<>();
     private List<String> tokenTypes = new ArrayList<>();
     private String genericSearchString = "";
     //private boolean genericSearchExact = false;
@@ -40,6 +41,7 @@ public class RaRoleMemberSearchRequest implements Serializable {
     public RaRoleMemberSearchRequest(final RaRoleMemberSearchRequest request) {
         roleIds.addAll(request.roleIds);
         caIds.addAll(request.caIds);
+        providerIds.addAll(request.providerIds);
         genericSearchString = request.genericSearchString;
         //genericSearchExact = request.genericSearchExact;
     }
@@ -48,6 +50,15 @@ public class RaRoleMemberSearchRequest implements Serializable {
     public void setRoleIds(final List<Integer> roleIds) { this.roleIds = roleIds; }
     public List<Integer> getCaIds() { return caIds; }
     public void setCaIds(final List<Integer> caIds) { this.caIds = caIds; }
+
+    public List<Integer> getProviderIds() {
+        return providerIds;
+    }
+
+    public void setProviderIds(List<Integer> providerIds) {
+        this.providerIds = providerIds;
+    }
+
     public List<String> getTokenTypes() { return tokenTypes; }
     public void setTokenTypes(final List<String> tokenTypes) { this.tokenTypes = tokenTypes; }
     public String getGenericSearchString() { return genericSearchString; }
