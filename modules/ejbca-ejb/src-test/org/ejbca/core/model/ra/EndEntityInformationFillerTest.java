@@ -12,16 +12,20 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
 
 /** Tests DN merging
  * 
@@ -30,6 +34,8 @@ import static org.junit.Assert.assertTrue;
 public class EndEntityInformationFillerTest {
 	EndEntityProfile profile;
 	EndEntityInformation userData = new EndEntityInformation();
+    private static final Logger log = Logger.getLogger(EndEntityInformationFillerTest.class);
+
 
 	@Before
     public void setUp() throws Exception {
@@ -49,6 +55,51 @@ public class EndEntityInformationFillerTest {
         profile.setValue(DnComponents.ORGANIZATION, 0, "linagora");
         profile.setCabfOrganizationIdentifierUsed(true);
         profile.setCabfOrganizationIdentifier("VATSE-556677123401");
+    }
+	
+	@Test
+    public void testMergeDN2() {
+        
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.DNEMAILADDRESS);
+        profile.addField(DnComponents.ORGANIZATIONALUNIT);
+        profile.setUse(DnComponents.ORGANIZATIONALUNIT, 0, true);
+        profile.setValue(DnComponents.ORGANIZATIONALUNIT, 0, "FooOrgUnit");
+        // The merge handles several default values for each DN component, i.e. OU=OrgU1,OU=OrgU2,O=Org etc.
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COUNTRY);
+        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAllowMergeDn(true);
+        
+        profile.addField(DnComponents.JURISDICTIONCOUNTRY);
+        profile.setUse(DnComponents.JURISDICTIONCOUNTRY, 0, true);
+        profile.setValue(DnComponents.JURISDICTIONCOUNTRY, 0, "NO");
+        profile.addField(DnComponents.JURISDICTIONSTATE);
+        profile.setUse(DnComponents.JURISDICTIONSTATE, 0, true);
+        profile.setValue(DnComponents.JURISDICTIONSTATE, 0, "California");
+        profile.addField(DnComponents.JURISDICTIONLOCALITY);
+        profile.setUse(DnComponents.JURISDICTIONLOCALITY, 0, true);
+        profile.setValue(DnComponents.JURISDICTIONLOCALITY, 0, "Stockholm");
+        
+        // Add the required end entity profile fields
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.RFC822NAME);
+        profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
+        profile.setValue(DnComponents.DNSNAME, 1, "server.superbad.com");
+        profile.addField(DnComponents.DNSNAME);
+        
+        final String subjectDN = "CN=foo subject,O=Bar";
+        EndEntityInformation addUser = new EndEntityInformation();
+        addUser.setDN(subjectDN);
+        addUser.setSubjectAltName("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com");
+        
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(addUser, profile);
+        log.info(addUser.getDN());
+        log.info(addUser.getSubjectAltName());
+        
     }
 
     /**
@@ -70,46 +121,56 @@ public class EndEntityInformationFillerTest {
         p.setValue(DnComponents.ORGANIZATIONALUNIT, 2, "Unit3");
         p.setValue(DnComponents.COUNTRY, 0, "SE");
         p.setValue(DnComponents.ORGANIZATION, 0, "Org1");
-        
+                
         EndEntityInformation user = new EndEntityInformation();
         // No DN in end entity to start with
     	EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
         // Null should be the same as empty to start with
         user.setDN(null);
+        user.setProfileMerged(false);
+        
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
         // or empty string
         user.setDN("");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
         
+        user.setDN("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE");
+        user.setProfileMerged(false);
         // Run it again, now everything is the same as default, and should turn out the same again
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // and again...
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Set a simple DN, only CN, same as default
     	user.setDN("CN=User Usersson");
+    	user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Change to something else than default, this should override the default
         user.setDN("CN=Name2");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Change default
         p.setValue(DnComponents.COMMONNAME, 0, "Name2");
         user.setDN("CN=Name2");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Add some new fields
         user.setDN("CN=Name2,O=MyOrg");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=Unit1,OU=Unit2,OU=Unit3,O=MyOrg,C=SE", user.getDN());
 
@@ -117,42 +178,50 @@ public class EndEntityInformationFillerTest {
         // the first "default" value in the profile, will instead use the field from user, and the default values merged in where 
         // such items are missing from the user DN
         user.setDN("CN=Name2,O=MyOrg,OU=MyOrgU");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrgU,OU=Unit2,OU=Unit3,O=MyOrg,C=SE", user.getDN());
 
         // Change order in request
         user.setDN("O=MyOrg,OU=MyOrgU,CN=Name2");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrgU,OU=Unit2,OU=Unit3,O=MyOrg,C=SE", user.getDN());
 
         // Change order in request, and some values
         user.setDN("C=NO,O=MyOrg,OU=MyOrgU,CN=Name3");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit2,OU=Unit3,O=MyOrg,C=NO", user.getDN());
 
         // Remove the last (third) OU, we should now override the second
         p.setValue(DnComponents.ORGANIZATIONALUNIT, 2, null);
         user.setDN("C=NO,O=MyOrg,OU=MyOrgU,CN=Name3");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit2,O=MyOrg,C=NO", user.getDN());
 
         // Trim it down a little again
         user.setDN("CN=Name3,OU=MyOrgU");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Try the same again, just to be sure
         user.setDN("CN=Name3,OU=MyOrgU");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Add serialnumber
         user.setDN("SERIALNUMBER=123456789,OU=MyOrgU");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,SN=123456789,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Add serial number
         user.setDN("SERIALNUMBER=12345,OU=MyOrgU");
+        user.setProfileMerged(false);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,SN=12345,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
         
@@ -160,6 +229,7 @@ public class EndEntityInformationFillerTest {
         // This is the case where things get confused, because serial number makes CertTools.stringToBCDNString think that the DN is reversed 
         // making the OUs re-ordered.
         user.setDN("SERIALNUMBER=12345,OU=MyOrgU");
+        user.setProfileMerged(false);
         p.setValue(DnComponents.COMMONNAME, 0, null);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("SN=12345,OU=Unit2,OU=MyOrgU,O=Org1,C=SE", user.getDN());

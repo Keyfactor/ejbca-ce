@@ -229,6 +229,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             )
     };
 
+    @Deprecated
     @Override
     public void addUserFromWS(final AuthenticationToken authenticationToken, EndEntityInformation userdata, final boolean clearPwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
@@ -827,9 +828,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
                     sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
                 }
+                              
                 dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
                 dn = EndEntityInformationFiller.mergeSubjectDnWithDefaultValues(dn, profile, null);
-                endEntityInformation.setDnMerged();
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
@@ -846,15 +847,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
                 }
                 altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
-                altName = EndEntityInformationFiller.mergeSubjectAltNameWithDefaultValues(altName, profile, null);
-                endEntityInformation.setSanMerged();
+                altName = EndEntityInformationFiller.mergeSubjectAltNameWithDefaultValues(altName, profile, null);                
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
                 }
                 altName = "";
             }
-
+            
         }
         
         altName = getAddDnsFromCnToAltName(dn, altName, profile);

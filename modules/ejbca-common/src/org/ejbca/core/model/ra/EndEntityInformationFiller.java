@@ -29,6 +29,8 @@ import javax.naming.ldap.Rdn;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +53,7 @@ public class EndEntityInformationFiller {
     public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, 
             final EndEntityProfile profile) {
         
-        if(userData.isDnMerged() && userData.isSanMerged()) {
+        if(userData.isProfileMerged()) {
             return userData;
         }
 
@@ -81,18 +83,12 @@ public class EndEntityInformationFiller {
 
         // Processing Subject DN values
         String subjectDn = userData.getDN();
-        if(!userData.isDnMerged()) {
-            subjectDn = mergeSubjectDnWithDefaultValues(subjectDn, profile, userData.getEmail());
-            userData.setDN(subjectDn);
-            userData.setDnMerged();
-        }
+        subjectDn = mergeSubjectDnWithDefaultValues(subjectDn, profile, userData.getEmail());
+        userData.setDN(subjectDn);
         String subjectAltName = userData.getSubjectAltName();
         // Processing Subject Altname values
-        if(!userData.isDnMerged()) {
-            subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
-            userData.setSubjectAltName(subjectAltName);
-            userData.setSanMerged();
-        }
+        subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
+        userData.setSubjectAltName(subjectAltName);
         if (userData.getType().getHexValue() == EndEntityTypes.INVALID.hexValue()) {
         	if (StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))) {
         	    final int type = Integer.parseInt(profile.getValue(EndEntityProfile.FIELDTYPE, 0));
@@ -110,7 +106,8 @@ public class EndEntityInformationFiller {
                 extInfo.setCabfOrganizationIdentifier(profile.getCabfOrganizationIdentifier());
             }
         }
-                
+        
+        userData.setProfileMerged(true);
         return userData;
     }
 
@@ -209,6 +206,11 @@ public class EndEntityInformationFiller {
         if (profile.getUse(DnComponents.RFC822NAME, 0)) {
             dnMap.put(DnComponents.RFC822NAME, entityEmail);
         }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("user SAN: " + subjectAltName);
+            log.debug("Profile SAN to merge with subject SAN: " + profileAltName.toString());
+        }
 
         return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
     }
@@ -266,4 +268,5 @@ public class EndEntityInformationFiller {
         }
         return dnses.toString();
     }
+    
 }
