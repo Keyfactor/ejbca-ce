@@ -18,13 +18,16 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionProxyRemote;
+import org.ejbca.core.protocol.acme.AcmeAccountDataSessionRemote;
 
 /**
- * @version $Id$
- *
+ * @see AcmeAccountDataSessionRemote
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAccountDataSessionProxyRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -34,7 +37,7 @@ public class AcmeAccountDataSessionProxyBean implements AcmeAccountDataSessionPr
     private AcmeAccountDataSessionLocal acmeAccountDataSession;
 
     @Override
-    public String createOrUpdate(AcmeAccount acmeAccount) {
+    public String createOrUpdate(AcmeAccount acmeAccount) throws ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException {
         return acmeAccountDataSession.createOrUpdate(acmeAccount);
     }
 

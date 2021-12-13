@@ -23,9 +23,6 @@ import org.cesecore.configuration.ConfigurationBase;
 
 /**
  * Handles configuration of protocols supporting enable / disable
- *
- * @version $Id$
- *
  */
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -43,6 +40,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         CMP("CMP", "/ejbca/publicweb/cmp"),
         CRL_STORE("CRLstore", WebConfiguration.DEFAULT_CRLSTORE_CONTEXTROOT),
         EST("EST", "/.well-known/est"),
+        MSAE("MSAE", "/ejbca/msae"),
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
         PUBLIC_WEB("Public Web", "/ejbca"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
@@ -51,6 +49,8 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/ca<br/>/ejbca/ejbca-rest-api/v1/certificate"),
         REST_CRYPTOTOKEN_MANAGEMENT("REST Crypto Token Management", "/ejbca/ejbca-rest-api/v1/cryptotoken"),
         REST_ENDENTITY_MANAGEMENT("REST End Entity Management", "/ejbca/ejbca-rest-api/v1/endentity"),
+        REST_CONFIGDUMP("REST Configdump", "/ejbca/ejbca-rest-api/v1/configdump"),
+        REST_CERTIFICATE_MANAGEMENT_V2("REST Certificate Management V2", "/ejbca/ejbca-rest-api/v2/certificate"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws");
 
@@ -104,10 +104,13 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         if (ret == null && (
                 protocol.equals(AvailableProtocols.ACME.getName())  ||
                 protocol.equals(AvailableProtocols.EST.getName())   || 
-                protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) || 
+                protocol.equals(AvailableProtocols.MSAE.getName())   ||
+                protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
+                protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
-                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT))) {
+                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) || 
+                protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName()))) {
             setProtocolStatus(protocol, false);
             return false;
         }

@@ -40,6 +40,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.LdapNameStyle;
@@ -59,8 +60,6 @@ import com.novell.ldap.LDAPSearchConstraints;
 
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalogs.  
- *
- * @version $Id$
  */
 public class LdapPublisher extends BasePublisher {
 
@@ -1800,4 +1799,14 @@ public class LdapPublisher extends BasePublisher {
         // Method not applicable for this publisher type!
         return false;
     }
+    
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
+    }
+
 }

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -33,6 +32,7 @@ import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.cesecore.util.StringTools;
 
 
@@ -40,8 +40,6 @@ import org.cesecore.util.StringTools;
  * CustomPublisherContainer is a class handling a custom publisher. It is used 
  * to store and retrieve custom publisher configuration to database.
  * 
- *
- * @version $Id$
  */
 public class CustomPublisherContainer extends BasePublisher {
 	private static final long serialVersionUID = -7060678968358301488L;
@@ -352,6 +350,17 @@ public class CustomPublisherContainer extends BasePublisher {
     @Override
     public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
         return this.getCustomPublisher().storeOcspResponseData(ocspResponseData);
+    }
+
+    @Override
+    public boolean isCallingExternalScript() {
+        // Must be overridden, or we may get a loop
+        return getCustomPublisher().isCallingExternalScript();
+    }
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Must be overridden, or we may get a loop
+        getCustomPublisher().setExternalScriptsAllowlist(allowList);
     }
 
 }

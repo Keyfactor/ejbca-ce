@@ -36,6 +36,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,10 +44,6 @@ import org.junit.Test;
 
 /**
  * This is a system test, due to it being OS dependent.
- * 
- * 
- * @version $Id$
- * 
  */
 public class GeneralPurposeCustomPublisherTest {
     
@@ -122,6 +119,7 @@ public class GeneralPurposeCustomPublisherTest {
         try {
             props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, command);
             gpcPublisher.init(props);
+            gpcPublisher.setExternalScriptsAllowlist(ExternalScriptsAllowlist.permitAll());
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);
         } catch (PublisherException e) {
             e.printStackTrace();
@@ -139,9 +137,10 @@ public class GeneralPurposeCustomPublisherTest {
         boolean ret = false;
         props.setProperty(GeneralPurposeCustomPublisher.CERT_EXTERNAL_COMMAND_PROPERTY_NAME, commandFailsafe);
         gpcPublisher.init(props);
-        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        gpcPublisher.setExternalScriptsAllowlist(ExternalScriptsAllowlist.permitAll());
+        KeyPair keys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         String certificateDn = "CN=Foo Bar, OU=Xyz Abc";
-        X509Certificate cert = CertTools.genSelfCert(certificateDn, 10L, "1.1.1.1", keys.getPrivate(), keys.getPublic(), "SHA256WithRSA", true);
+        X509Certificate cert = CertTools.genSelfCert(certificateDn, 10L, "1.1.1.1", keys.getPrivate(), keys.getPublic(), "SHA256WithECDSA", true);
 
         ret = gpcPublisher.storeCertificate(admin, cert, "foo", "foo123", certificateDn, "foo", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, 0, 0, null, 0, 0, null);
@@ -155,6 +154,7 @@ public class GeneralPurposeCustomPublisherTest {
         props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, commandFailsafe);
         props.setProperty(GeneralPurposeCustomPublisher.CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME, "true");
         gpcPublisher.init(props);
+        gpcPublisher.setExternalScriptsAllowlist(ExternalScriptsAllowlist.permitAll());
         boolean ret = false;
         try {
             ret = gpcPublisher.storeCRL(admin, TEST_DELTA_CRL, null, 1, null);
@@ -170,6 +170,7 @@ public class GeneralPurposeCustomPublisherTest {
         props.setProperty(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME, commandFailsafe);
         props.setProperty(GeneralPurposeCustomPublisher.CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME, "true");
         gpcPublisher.init(props);
+        gpcPublisher.setExternalScriptsAllowlist(ExternalScriptsAllowlist.permitAll());
         boolean ret = false;
         try {
             ret = gpcPublisher.storeCRL(admin, TEST_CRL, null, 1, null);

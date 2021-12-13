@@ -91,6 +91,7 @@
        <!--@peerconnector.war@-->
        <!--@ra-gui.war@-->
        <!--@acme.war@-->
+       <!--@msae.war@-->
        <!--@est.war@-->
        <!--@ssh.war@-->
        <!--@unidfnr-ejb.jar@-->

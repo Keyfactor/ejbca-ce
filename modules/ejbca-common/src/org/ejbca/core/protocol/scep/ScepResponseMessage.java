@@ -14,6 +14,9 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
@@ -23,10 +26,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -111,6 +117,18 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     /** recipient key identifier, usually IssuerAndSerialno in X509 world. */
     private byte[] recipientKeyInfo = null;
 
+    /** expiration date of returned certificate */
+    private Instant notAfter = null;
+    
+    /** sha1 hash of returned certificate */
+    private byte[] thumbprint = null;
+    
+    /** issuer of returned certificate */
+    private X500Principal issuer = null;
+    
+    /** issuer of returned certificate */
+    private BigInteger serialNumber = null;
+    
     /** Certificate to be in response message, not serialized */
     private transient Certificate cert = null;
     private transient CRL crl = null;
@@ -257,6 +275,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 List<X509Certificate> certList = new ArrayList<X509Certificate>();
                 if (cert != null) {
                     log.debug("Adding certificates to response message");
+                    addIntuneFields((X509Certificate) cert);
                     certList.add((X509Certificate) cert);
                     // Add the CA cert, it's optional but Cisco VPN client complains if it isn't there
                     if (includeCACert) {
@@ -396,6 +415,17 @@ public class ScepResponseMessage implements CertificateResponseMessage {
         return ret;
     }
 
+    private void addIntuneFields(X509Certificate cert2) {
+        this.notAfter = cert2.getNotAfter().toInstant();
+        this.issuer = cert2.getIssuerX500Principal();
+        this.serialNumber = cert2.getSerialNumber();
+        try {
+            this.thumbprint = MessageDigest.getInstance("SHA-1").digest(cert2.getEncoded());
+        } catch (CertificateEncodingException | NoSuchAlgorithmException e) {
+            log.error("Unexpected error hashing certificate", e);
+        }
+    }
+
     @Override
     public boolean requireSignKeyInfo() {
         return true;
@@ -463,5 +493,21 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     @Override
     public void addAdditionalResponseExtraCertsCertificates(List<Certificate> certificates) {
         // NOOP. Only for CMP.
+    }
+
+    public Instant getNotAfter() {
+        return notAfter;
+    }
+
+    public final byte[] getThumbprint() {
+        return thumbprint;
+    }
+
+    public final X500Principal getIssuer() {
+        return issuer;
+    }
+
+    public final BigInteger getSerialNumber() {
+        return serialNumber;
     }
 }

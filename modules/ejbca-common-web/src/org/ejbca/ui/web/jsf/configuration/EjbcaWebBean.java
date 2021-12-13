@@ -17,11 +17,14 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.MSAutoEnrollmentConfiguration;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
 import org.ejbca.ui.web.configuration.exception.AdminExistsException;
@@ -201,6 +204,14 @@ public interface EjbcaWebBean extends Serializable {
     void saveCmpConfiguration(final CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException;
 
     /**
+     * Save the given MSAutoEnrollmentConfiguration configuration.
+     *
+     * @param msAutoenrollmentConfig A MSAutoEnrollmentConfiguration
+     * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
+     */
+    void saveMSAutoenrollmentConfiguration(MSAutoEnrollmentConfiguration autoenrollmentConfig) throws AuthorizationDeniedException;
+    
+    /**
      * Save the given EST configuration.
      *
      * @param estconfiguration A EstConfiguration
@@ -213,6 +224,8 @@ public interface EjbcaWebBean extends Serializable {
      */
     void reloadCmpConfiguration();
 
+    void reloadAutoenrollmentConfiguration();
+    
     void reloadEstConfiguration();
     
     // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
@@ -330,7 +343,7 @@ public interface EjbcaWebBean extends Serializable {
 
     void clearClusterCache(final boolean excludeActiveCryptoTokens) throws CacheClearException;
 
-    EjbLocalHelper getEjb();
+    EjbBridgeSessionLocal getEjb();
 
     Object getEnterpriseEjb();
 
@@ -464,6 +477,48 @@ public interface EjbcaWebBean extends Serializable {
      * */
     boolean isRunningBuildWithRAWeb();
     
+    /**
+     * Renames a MSAutoEnrollmentConfiguration alias
+     *
+     * @param oldName the old alias name
+     * @param newName the new alias name
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    void renameAutoenrollAlias(String oldName, String newName) throws AuthorizationDeniedException;
+
+    /**
+     * Deletes a MSAutoEnrollmentConfiguration alias from the database.
+     *
+     * @param alias the name of the alias to delete.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    void removeAutoenrollAlias(String alias) throws AuthorizationDeniedException;
+
+    /**
+     * Makes a copy of a given alias
+     *
+     * @param oldName the name of the alias to copy
+     * @param newName the name of the new alias
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    void cloneAutoenrollAlias(String oldName, String newName) throws AuthorizationDeniedException;
+
+    /**
+     * Adds an alias to the database.
+     *
+     * @param alias the name of a MSAutoEnrollmentConfiguration alias.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    void addAutoenrollAlias(String alias) throws AuthorizationDeniedException;
+
+    /**
+     * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
+     *
+     * @param alias a MSAutoEnrollmentConfiguration config alias.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    void updateAutoenrollConfigFromClone(String alias) throws AuthorizationDeniedException;
+
     EstConfiguration getEstConfiguration();
 
     /**
@@ -531,6 +586,27 @@ public interface EjbcaWebBean extends Serializable {
 
     void saveAvailableExtendedKeyUsagesConfiguration(final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException;
 
+    //*************************************************
+    //      OAuth trusted provider configurations
+    //*************************************************
+
+
+    OAuthConfiguration getOAuthConfiguration();
+
+    void reloadOAuthConfiguration();
+
+    void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException;
+
+    //*************************************************
+    //      External Account Binding  configurations
+    //*************************************************
+
+    EABConfiguration getEABConfiguration();
+
+    void reloadEABConfiguration();
+
+    void saveEABConfiguration(final EABConfiguration eabConfiguration) throws AuthorizationDeniedException;
+
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************
@@ -547,5 +623,11 @@ public interface EjbcaWebBean extends Serializable {
 
     /** @return true if the PeerConnectors GUI implementation is present. */
     boolean isPeerConnectorPresent();
+
+    MSAutoEnrollmentConfiguration getAutoenrollConfiguration();
+
+    void clearAutoenrollCache();
+
+    void clearAutoenrollConfigClone();
 
 }

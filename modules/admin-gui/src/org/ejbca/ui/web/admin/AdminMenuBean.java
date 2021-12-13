@@ -179,6 +179,12 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
                 && isAuthorizedToViewSystemConfiguration();
     }
     
+    public boolean isAuthorizedToViewAutoenrollConfiguration() {
+        return getEjbcaWebBean().isRunningEnterprise()
+                && (getEjbcaErrorWebBean().isRunningBuildWithCA() || getEjbcaErrorWebBean().isRunningBuildWithRA())
+                && isAuthorizedToViewSystemConfiguration();
+    }
+    
     public boolean isAuthorizedToViewCmpConfiguration() {
         return getEjbcaErrorWebBean().isRunningBuildWithCA()
                 && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
