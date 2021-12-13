@@ -23,14 +23,16 @@ public final class RaRoleMemberGUIInfo {
     
     public final RoleMember roleMember;
     public final String caName;
+    public final String providerLabel;
     public final String roleName;
     public final String roleNamespace;
     public final String tokenTypeText;
     public final boolean tokenMatchValueIsLink;
     
-    public RaRoleMemberGUIInfo(final RoleMember roleMember, final String caName, final String roleName, final String roleNamespace, final String tokenTypeText) {
+    public RaRoleMemberGUIInfo(final RoleMember roleMember, final String caName, final String providerLabel, final String roleName, final String roleNamespace, final String tokenTypeText) {
         this.roleMember = roleMember;
         this.caName = caName;
+        this.providerLabel = providerLabel;
         this.roleName = roleName;
         this.roleNamespace = roleNamespace;
         this.tokenTypeText = tokenTypeText;
@@ -45,7 +47,11 @@ public final class RaRoleMemberGUIInfo {
     public String getCaName() {
         return caName;
     }
-    
+
+    public String getProviderLabel() {
+        return providerLabel;
+    }
+
     public String getRoleName() {
         return roleName;
     }

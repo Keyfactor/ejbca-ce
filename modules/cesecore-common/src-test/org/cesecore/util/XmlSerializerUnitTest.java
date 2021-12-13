@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -47,8 +46,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Test that XML serialization works as expected.
- * 
- * @version $Id$
  */
 public class XmlSerializerUnitTest {
 	
@@ -161,6 +158,7 @@ public class XmlSerializerUnitTest {
         extendedinformation.setSubjectDirectoryAttributes(subjectDirectoryAttributes);
         extendedinformation.cacheApprovalType(TestApprovalRequest.class);
         extendedinformation.addEditEndEntityApprovalRequestId(editEndEntityApprovalRequestId);
+        extendedinformation.setCertificateRequest("foo123".getBytes());
         // PKIDisclosureStatement
         PKIDisclosureStatement pds = new PKIDisclosureStatement();
         pds.setLanguage("SE");
@@ -220,7 +218,7 @@ public class XmlSerializerUnitTest {
         final String handledByXMLEncoder = os1.toString("UTF-8");
         assertTrue("Fall back encodeSimpleMapFast vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(handledByXMLEncoder.getBytes(StandardCharsets.UTF_8), unhandled.getBytes(StandardCharsets.UTF_8)));
 	}
-	
+    
     // Test adding something that fails with IllegalArgumentException
     @Test
     public void encodeSimpleMapFastWithIllegalArgumentException() {
@@ -250,6 +248,7 @@ public class XmlSerializerUnitTest {
         assertEquals("decoded subject directory attributes was not the one we encoded", subjectDirectoryAttributes, extendedInformation.getSubjectDirectoryAttributes());
         assertEquals("decoded approval type was not the one we encoded", TestApprovalRequest.class, extendedInformation.getCachedApprovalType());
         assertEquals("decoded approval request ID was not the one we encoded", Integer.valueOf(editEndEntityApprovalRequestId), extendedInformation.getEditEndEntityApprovalRequestIds().get(0));
+        assertEquals("decoded certificate request was not the one we encoded", String.valueOf("foo123"), new String(extendedInformation.getCertificateRequest()));
     }
 
 	/** Make a round trip using a xml enc and dec. */

@@ -12,6 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -38,14 +46,6 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
 
 /**
  * Utility class to gather a few functions
@@ -159,20 +159,6 @@ public abstract class RequestMessageUtils {
 		}
 		return buffer;
 	}
-
-	public static RequestMessage updateUsername(final String username, final RequestMessage rm) {
-	    if (rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_PKCS10) {
-            ((PKCS10RequestMessage) rm).setUsername(username);
-        } else if (rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_SPKAC ||
-                   rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CRMF ||
-                   rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_PUBLICKEY) {
-            ((SimpleRequestMessage) rm).setUsername(username);
-        } else if (rm.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CVC) {
-            ((CVCRequestMessage) rm).setUsername(username);
-        }
-
-	    return rm;
-    }
 
     public static RequestMessage getRequestMessageFromType(final String username, final String password, final String req, final int reqType)
             throws SignRequestSignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException,

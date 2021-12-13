@@ -48,8 +48,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * Implementation of operations common for all CA types
- * @version $Id$
- *
  */
 public abstract class CABaseCommon extends UpgradeableDataHashMap implements CACommon {
     
@@ -73,6 +71,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String REVOCATIONDATE = "revokationdate";
     protected static final String CRLPERIOD = "crlperiod";
     protected static final String DELTACRLPERIOD = "deltacrlperiod";
+    protected static final String GENERATECRLUPONREVOCATION = "generatecrluponrevocation";
     protected static final String NAMECHANGED = "namechanged";
     
     // protected fields.
@@ -88,6 +87,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String CERTIFICATEPROFILEID = "certificateprofileid";
     protected static final String DEFAULTCERTIFICATEPROFILEID = "defaultcertificateprofileid";
 
+    protected static final String MSCACOMPATIBLE = "msCaCompatible";
     protected static final String CRLISSUEINTERVAL = "crlIssueInterval";
     protected static final String CRLOVERLAPTIME = "crlOverlapTime";
     protected static final String CRLPUBLISHERS = "crlpublishers";

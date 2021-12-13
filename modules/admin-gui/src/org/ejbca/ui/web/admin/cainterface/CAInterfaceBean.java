@@ -110,14 +110,14 @@ import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
+import org.ejbca.ui.web.admin.ca.EditCaUtil;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.util.cert.OID;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * <p>
  * Semi-deprecated, we should try to move the methods here into session beans or managed beans.
- *
- * @version $Id$
  */
 public class CAInterfaceBean implements Serializable {
 
@@ -337,7 +337,7 @@ public class CAInterfaceBean implements Serializable {
             byte[] fileBuffer) throws Exception {
         // This will occur if administrator has insufficient access to crypto tokens, which won't provide any
         // selectable items for Crypto Token when creating a CA.
-        if (caInfoDto.getCryptoTokenIdParam().isEmpty()) {
+        if (StringUtils.isEmpty(caInfoDto.getCryptoTokenIdParam())) {
             log.info("No selected crypto token. Check crypto token access rules for administrator " + authenticationToken);
             throw new CryptoTokenAuthenticationFailedException("Crypto token authentication failed for administrator " + authenticationToken);
         }
@@ -367,20 +367,15 @@ public class CAInterfaceBean implements Serializable {
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), AlgorithmConstants.KEYALGORITHM_RSA + "1024");
                 // Next, create a CA signing key
                 final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(caInfoDto.getSignatureAlgorithmParam());
-                String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + "2048";
-                caInfoDto.setSignKeySpec("2048");
+                String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + EditCaUtil.DEFAULT_KEY_SIZE;
                 if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
                     caSignKeySpec = "prime256v1";
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-                    caInfoDto.setSignKeySpec(caSignKeySpec);
                 }
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), caSignKeySpec);
             }
@@ -440,7 +435,7 @@ public class CAInterfaceBean implements Serializable {
         caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam()));
 
         if (caInfoDto.getSignKeySpec() == null || caInfoDto.getSignKeySpec().length() == 0) {
-            throw new Exception("No key specification supplied.");
+            throw new Exception("No extended CA service key specification supplied.");
         }
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -494,6 +489,11 @@ public class CAInterfaceBean implements Serializable {
 
 	            /* Process certificate policies. */
 	            final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
+	            for (CertificatePolicy certificatePolicy : policies) {
+	                if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
+	                    throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));                                              
+	                }
+	            }
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
 	            final List<Integer> crlPublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
 	            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
@@ -544,6 +544,7 @@ public class CAInterfaceBean implements Serializable {
                             .setCrlIssueInterval(caInfoDto.getCrlIssueInterval())
                             .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                             .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
+                            .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
                             .setCrlPublishers(crlPublishers)
                             .setValidators(keyValidators)
                             .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -580,6 +581,7 @@ public class CAInterfaceBean implements Serializable {
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
                             .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
+                            .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                             .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                     if (buttonCreateCa) {
                         X509CAInfo x509cainfo =  x509CAInfoBuilder
@@ -830,7 +832,7 @@ public class CAInterfaceBean implements Serializable {
 
     public List<CertificatePolicy> parsePolicies(String policyid) {
         final ArrayList<CertificatePolicy> policies = new ArrayList<>();
-        if (!(policyid == null || policyid.trim().equals(""))) {
+        if (!(policyid == null || policyid.trim().isEmpty() || policyid.trim().equals(ejbcawebbean.getText("NONE")))) {
             final String[] str = policyid.split("\\s+");
             if (str.length > 1) {
                 policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
@@ -886,7 +888,6 @@ public class CAInterfaceBean implements Serializable {
         }
         if (caid != 0 && caInfoDto.getCaType() != 0) {
             // First common info for both X509 CAs and CVC CAs
-           CAInfo cainfo = null;
 //           final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //           final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
            final List<Integer> crlpublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
@@ -906,14 +907,19 @@ public class CAInterfaceBean implements Serializable {
                if (caInfoDto.isUsePartitionedCrl() && (caInfoDto.getSuspendedCrlPartitions() >= caInfoDto.getCrlPartitions())) {
                    throw new ParameterException(ejbcawebbean.getText("CRLPARTITIONNUMBERINVALID"));
                }
-               // Create extended CA Service updatedata.
-               final int cmsactive = caInfoDto.isServiceCmsActive() ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
-               final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-               extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false));
+               // Update extended CA Service data.
+               final String signkeyspec = caInfoDto.getSignKeySpec() != null ? caInfoDto.getSignKeySpec() : EditCaUtil.DEFAULT_KEY_SIZE;
+               List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(signkeyspec, subjectDn, caInfoDto.isServiceCmsActive());
 
                final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
                        ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
 
+               final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
+               for (CertificatePolicy certificatePolicy : policies) {
+                   if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
+                       throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));                                              
+                   }
+               }
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -922,10 +928,13 @@ public class CAInterfaceBean implements Serializable {
                        .setCaToken(catoken)
                        .setDescription(caInfoDto.getDescription())
                        .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
+                       .setSubjectAltName(caInfoDto.getCaSubjectAltName())
+                       .setPolicies(policies)
                        .setCrlPeriod(caInfoDto.getCrlPeriod())
                        .setCrlIssueInterval(caInfoDto.getCrlIssueInterval())
                        .setCrlOverlapTime(caInfoDto.getcrlOverlapTime())
                        .setDeltaCrlPeriod(caInfoDto.getDeltaCrlPeriod())
+                       .setGenerateCrlUponRevocation(caInfoDto.isGenerateCrlUponRevocation())
                        .setCrlPublishers(crlpublishers)
                        .setValidators(keyValidators)
                        .setUseAuthorityKeyIdentifier(caInfoDto.isUseAuthorityKeyIdentifier())
@@ -965,6 +974,7 @@ public class CAInterfaceBean implements Serializable {
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                        .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                        .setCrlPartitions(caInfoDto.getCrlPartitions())
+                       .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                        .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                cainfo = x509CAInfoBuilder.buildForUpdate();
@@ -978,7 +988,8 @@ public class CAInterfaceBean implements Serializable {
                // Create the CAInfo to be used for either generating the whole CA or making a request
                cainfo = new CVCCAInfo(caid, caInfoDto.getCaEncodedValidity(),
                        catoken, caInfoDto.getDescription(),
-                       caInfoDto.getCrlPeriod(), caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(), crlpublishers, keyValidators,
+                       caInfoDto.getCrlPeriod(), caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(), 
+                       caInfoDto.isGenerateCrlUponRevocation(), crlpublishers, keyValidators,
                        caInfoDto.isFinishUser(), extendedcaservices,
                        approvals,
                        caInfoDto.isIncludeInHealthCheck(),

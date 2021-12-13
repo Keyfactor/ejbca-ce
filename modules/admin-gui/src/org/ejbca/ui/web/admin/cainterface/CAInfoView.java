@@ -32,8 +32,6 @@ import org.ejbca.util.HTMLTools;
 
 /**
  * A class representing a view of a CA Information view..
- *
- * @version $Id$
  */
 public class CAInfoView implements Serializable, Cloneable {
 
@@ -59,18 +57,19 @@ public class CAInfoView implements Serializable, Cloneable {
    public static final int CRLISSUEINTERVAL        = 11;
    public static final int CRLOVERLAPTIME          = 12;
    public static final int DELTACRLPERIOD          = 13;
-   public static final int CRLPUBLISHERS           = 14;
-   public static final int VALIDATORS              = 15;
+   public static final int GENERATECRLUPONREVOCATION = 14;
+   public static final int CRLPUBLISHERS           = 15;
+   public static final int VALIDATORS              = 16;
 
-   private static final int SECTION_SERVICE        = 16;
+   private static final int SECTION_SERVICE        = 17;
 
-   public static final int OCSP                    = 17;
+   public static final int OCSP                    = 18;
 
    /** A info text strings must contain:
-    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD, PUBLISHERS, VALIDATORS
+    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD, GENERATECRLUPONREVOCATION, PUBLISHERS, VALIDATORS
     * It must also have CADATA in position n° 4 (CA data)
     * It must also have CRLSPECIFICDATA in position n° 9 (CRL Specific Data)
-    * It must also have SERVICES in position n° 15 (Services), if exists
+    * It must also have SERVICES in position n° 16 (Services), if exists
     */
    public static String[] X509CA_CAINFODATATEXTS = {
            "CANAME",
@@ -87,6 +86,7 @@ public class CAInfoView implements Serializable, Cloneable {
            "CRL_CA_ISSUEINTERVAL",
            "CRL_CA_OVERLAPTIME",
            "CRL_CA_DELTACRLPERIOD",
+           "CRL_CA_GENERATECRLUPONREVOCATION",
            "PUBLISHERS",
            "VALIDATORS",
            "SERVICES",             /* Services */
@@ -107,7 +107,8 @@ public class CAInfoView implements Serializable, Cloneable {
         "CRL_CA_CRLPERIOD",
         "CRL_CA_ISSUEINTERVAL",
         "CRL_CA_OVERLAPTIME",
-        "CRL_CA_DELTACRLPERIOD"
+        "CRL_CA_DELTACRLPERIOD",
+        "CRL_CA_GENERATECRLUPONREVOCATION"
    };
 
    private String[] caInfoData = null;
@@ -195,6 +196,7 @@ public class CAInfoView implements Serializable, Cloneable {
         caInfoData[CRLISSUEINTERVAL] = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
         caInfoData[CRLOVERLAPTIME] = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
         caInfoData[DELTACRLPERIOD] = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+        caInfoData[GENERATECRLUPONREVOCATION] = Boolean.toString(cainfo.isGenerateCrlUponRevocation());
 	}
 
     private void buildCaInformation(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean) {
@@ -254,6 +256,10 @@ public class CAInfoView implements Serializable, Cloneable {
         final String deltaCrlPeriodText = ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD");
         final String deltaCrlPeriod = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
         caGuiInfo.setDeltaCrlPeriod(new CaInfoProperty(deltaCrlPeriodText, deltaCrlPeriod));
+        
+        final String generateCrlUponRevocationTest = ejbcawebbean.getText("CRL_CA_GENERATEUPONREVOCATION");
+        final boolean generateCrlUponRevocation = cainfo.isGenerateCrlUponRevocation();
+        caGuiInfo.setGenerateCrlUponRevocation(new CaInfoProperty(generateCrlUponRevocationTest, Boolean.toString(generateCrlUponRevocation)));
     }
 
     private void addX509CAInformation(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean,

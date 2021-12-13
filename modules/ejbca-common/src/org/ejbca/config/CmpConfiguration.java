@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,8 +31,6 @@ import org.cesecore.configuration.ConfigurationBase;
 
 /**
  * This is a  class containing CMP configuration parameters.
- *
- * @version $Id$
  */
 public class CmpConfiguration extends ConfigurationBase implements Serializable {
 
@@ -68,6 +67,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
     public static final String CONFIG_VENDORCA                = "vendorca";
     public static final String CONFIG_RESPONSE_CAPUBS_CA       = "response.capubsca";
+    public static final String CONFIG_RESPONSE_CAPUBS_ISSUING_CA = "response.capubsissuingca";
     public static final String CONFIG_RESPONSE_EXTRACERTS_CA   = "response.extracertsca";
     public static final String CONFIG_RA_OMITVERIFICATIONSINEEC = "ra.endentitycertificate.omitverifications";
     public static final String CONFIG_RACERT_PATH             = "racertificatepath";
@@ -92,7 +92,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CMP_CONFIGURATION_ID = "1";
 
     // Default Values
-    public static final float LATEST_VERSION = 8f;
+    public static final float LATEST_VERSION = 9f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     // Default values
@@ -103,6 +103,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_VENDOR_MODE = "false";
     private static final String DEFAULT_VENDOR_CA = "";
     private static final String DEFAULT_RESPONSE_CAPUBS_CA = "";
+    private static final String DEFAULT_RESPONSE_CAPUBS_ISSUING_CA = "true";
     private static final String DEFAULT_RESPONSE_EXTRACERTS_CA = "";
     private static final String DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE = "false";
     private static final String DEFAULT_ALLOW_SERVERGENERATED_KEYS = "false";
@@ -165,6 +166,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_MODE);
             data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
             data.put(alias + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
+            data.put(alias + CONFIG_RESPONSE_CAPUBS_ISSUING_CA, DEFAULT_RESPONSE_CAPUBS_ISSUING_CA);
             data.put(alias + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
             data.put(alias + CONFIG_ALLOWRAVERIFYPOPO, DEFAULT_ALLOW_RA_VERIFY_POPO);
             data.put(alias + CONFIG_RA_NAMEGENERATIONSCHEME, DEFAULT_RA_USERNAME_GENERATION_SCHEME);
@@ -201,6 +203,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_RESPONSE_CAPUBS_CA);
         keys.add(alias + CONFIG_RESPONSE_EXTRACERTS_CA);
         keys.add(alias + CONFIG_ALLOWRAVERIFYPOPO);
+        keys.add(alias + CONFIG_RESPONSE_CAPUBS_ISSUING_CA);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONSCHEME);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPARAMS);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPREFIX);
@@ -298,15 +301,16 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setAuthenticationParameters(alias, authparams);
     }
     
-    
     public String getAuthenticationParameters(String alias) {
         String key = alias + "." + CONFIG_AUTHENTICATIONPARAMETERS;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
+    
     public void setAuthenticationParameters(String alias, String authParams) {
         String key = alias + "." + CONFIG_AUTHENTICATIONPARAMETERS;
-        setValue(key, authParams, alias);
+        setValue(key, getEncryptedValue(authParams), alias);
     }
+    
     public void setAuthenticationParameters(String alias, ArrayList<String> authparameters) {
         String authparam = "";
         for (String p : authparameters) {
@@ -406,6 +410,29 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public void setResponseCaPubsCA(String alias, String caIdString) {
         String key = alias + "." + CONFIG_RESPONSE_CAPUBS_CA;
         setValue(key, caIdString, alias);
+    }
+    
+    /**
+     * Adds the issuing CA certificate at index 0 of the caPubs field by default.
+     * 
+     * @param alias the CMP configuration alias.
+     * @return true if the issuing CA certificate is added.
+     */
+    public boolean getResponseCaPubsIssuingCA(String alias) {
+        String key = alias + "." + CONFIG_RESPONSE_CAPUBS_ISSUING_CA;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    
+    /**
+     * Adds the issuing CA certificate at index 0 of the caPubs field by default.
+     * 
+     * @param alias the CMP configuration alias.
+     * @param add true if the issuing CA certificate has to be added.
+     */
+    public void setResponseCaPubsIssuingCA(String alias, boolean add) {
+        String key = alias + "." + CONFIG_RESPONSE_CAPUBS_ISSUING_CA;
+        setValue(key, Boolean.toString(add), alias);
     }
     
     /**
@@ -841,9 +868,13 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public void upgrade(){
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            log.info("Upgrading CMP Configuration with version "+ getVersion());
-            // v4
+            log.info("Upgrading CMP Configuration with version " + getVersion());
             Set<String> aliases = getAliasList();
+            // v9
+            for (String alias : aliases) {
+                data.putIfAbsent(alias + "." + CONFIG_RESPONSE_CAPUBS_ISSUING_CA, DEFAULT_RESPONSE_CAPUBS_ISSUING_CA);
+            }
+            // v4
             for (String alias : aliases) {
                 data.put(alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);
 
@@ -859,10 +890,15 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         return CMP_CONFIGURATION_ID;
     }
 
+    @Override
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        Set<String> aliases = getAliasList();
+        for (String alias : aliases) {
+            filterDiffMapForLogging(diff, alias + "." + CONFIG_AUTHENTICATIONPARAMETERS);
+        }
+    } 
+
 }
-
-
-
 
 
 

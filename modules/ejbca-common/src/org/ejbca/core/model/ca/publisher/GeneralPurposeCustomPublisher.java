@@ -31,12 +31,11 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * This class is used for publishing to user defined script or command.
- * 
- * @version $Id$
  */
 public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase implements ICustomPublisher {
     private static final long serialVersionUID = 1L;
@@ -65,6 +64,8 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
     private boolean certFailOnStandardError = true;
     private boolean revokeFailOnStandardError = true;
 
+    private transient ExternalScriptsAllowlist scriptAllowList = ExternalScriptsAllowlist.forbidAll();
+    
     /**
      * Creates a new instance of DummyCustomPublisher
      */
@@ -152,7 +153,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
                 arguments.add(CertTools.getIssuerDN(incert));
                 arguments.add(CertTools.getSerialNumberAsString(incert));
                 ExternalProcessTools.launchExternalCommand(certExternalCommandFileName, incert.getEncoded(), 
-                        certFailOnErrorCode, certFailOnStandardError, arguments, this.getClass().getSimpleName());
+                        certFailOnErrorCode, certFailOnStandardError, arguments, this.getClass().getSimpleName(), scriptAllowList);
             } catch (CertificateEncodingException e) {
                 String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
                 log.error(msg);
@@ -203,7 +204,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
         // Write temporary file and run the external script / command.
         try {
             ExternalProcessTools.launchExternalCommand(crlExternalCommandFileName, incrl, 
-                    crlFailOnErrorCode, crlFailOnStandardError, additionalArguments, this.getClass().getSimpleName());
+                    crlFailOnErrorCode, crlFailOnStandardError, additionalArguments, this.getClass().getSimpleName(), scriptAllowList);
         } catch (ExternalProcessException e) {
             throw new PublisherException(e.getMessage());
         }
@@ -219,11 +220,9 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
      * file is the encoded form of the certificate e.g. X.509 certificates would
      * be encoded as ASN.1 DER. All parameters but cert are ignored.
      * 
-     * @param cert
-     *            The certificate
-     * 
+     * @param cert The certificate to revoke
      */
-    public void revokeCertificate(AuthenticationToken admin, Certificate cert, int reason) throws PublisherException {
+    private void revokeCertificate(AuthenticationToken admin, Certificate cert, int reason) throws PublisherException {
         if (log.isTraceEnabled()) {
         	log.trace(">revokeCertificate, Rekoving Certificate");
         }
@@ -241,7 +240,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
             arguments.add(CertTools.getIssuerDN(cert));
             arguments.add(CertTools.getSerialNumberAsString(cert));
             ExternalProcessTools.launchExternalCommand(revokeExternalCommandFileName, cert.getEncoded(), 
-                    revokeFailOnErrorCode, revokeFailOnStandardError, arguments, this.getClass().getSimpleName());
+                    revokeFailOnErrorCode, revokeFailOnStandardError, arguments, this.getClass().getSimpleName(), scriptAllowList);
         } catch (CertificateEncodingException e) {
             String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
             log.error(msg);
@@ -307,6 +306,16 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
     @Override
     public boolean isReadOnly() {
         return false;
+    }
+
+    @Override
+    public boolean isCallingExternalScript() {
+        return true;
+    }
+    
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        this.scriptAllowList = allowList;
     }
 
 } 

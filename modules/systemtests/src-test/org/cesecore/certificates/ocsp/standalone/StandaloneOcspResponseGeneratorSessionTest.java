@@ -12,32 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.standalone;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.TimeZone;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -97,7 +71,6 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -119,6 +92,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
@@ -131,6 +105,32 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.TimeZone;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Functional tests for StandaloneOcspResponseGeneratorSessionBean
@@ -399,15 +399,46 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
-
-
         final OCSPResp response = sendRequest(ocspRequest);
         assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
         BasicOCSPResp basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
         validateSuccessfulResponse(basicOCSPResp, ocspSigningCertificate.getPublicKey());
         SingleResp[] responses = basicOCSPResp.getResponses();
+
         Date nextUpdate = responses[0].getNextUpdate();
-        assertEquals("NextUpdate shuould be replaced to final.", ocspSigningCertificate.getNotAfter(), nextUpdate);
+        Date signerCertNotAfter = ocspSigningCertificate.getNotAfter();
+        long expectedNextUpdate = signerCertNotAfter.getTime() - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
+        assertEquals("NextUpdate shuould be replaced with signer cert validity.", new Date(expectedNextUpdate), nextUpdate);
+    }
+
+    /**
+     * Test OCSP response validity is calculated as the period of time from notBefore through notAfter, inclusive. 
+     * ECA-10327
+     */
+    @Test
+    public void testStandAloneOcspResponseValidityInclusive() throws Exception {
+        // Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        // Configure the OcspKeyBinding nextUpdateTime (1 hour)
+        final long responseValidity = 3600; 
+        final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        ocspKeyBinding.setUntilNextUpdate(responseValidity);
+        internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+
+        // Do the OCSP request
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+        final OCSPResp response = sendRequest(ocspRequest);
+        BasicOCSPResp basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
+        SingleResp[] responses = basicOCSPResp.getResponses();
+        Date producedAt = basicOCSPResp.getProducedAt();
+        Date nextUpdate = responses[0].getNextUpdate();
+
+        // Response should be valid period of time from producedAt through nextUpdate, inclusive. I.e. 59 miniutes, 59 seconds for 1 hour validity.
+        long expectedNextUpdate = producedAt.getTime() + (responseValidity*1000) - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET ; 
+        assertEquals("Unexpected nextUpdate date. Response was producedAt: " + producedAt + " with a validity of " + responseValidity + " seconds.", 
+            new Date(expectedNextUpdate), nextUpdate);
     }
 
     /** 
@@ -605,7 +636,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(externalCaCertificate), externalCaName, "1234",
                 CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         try {
             final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -630,7 +661,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             try {
                 //Now everything is in place. Perform a request, make sure that the default responder signed it. 
                 final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
@@ -682,7 +713,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(externalCaCertificate), externalCaName, "1234",
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
                 final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -707,7 +738,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                        CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                        CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
                 try {
                     //Now everything is in place. Perform a request, make sure that the default responder signed it. 
                     final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
@@ -756,7 +787,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(externalCaCertificate), externalCaName, "1234",
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ROOTCA,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
                 final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -781,7 +812,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_REVOKED, CertificateConstants.CERTTYPE_ENDENTITY,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                        CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                        CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
                 try {
                     //Now everything is in place. Perform a request, make sure that the default responder signed it. 
                     final OCSPReq ocspRequest = buildOcspRequest(null, null, (X509Certificate) externalCaCertificate,
@@ -1145,7 +1176,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Store the CA Certificate.
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(signerIssuerCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
         final String signatureRequired = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED);
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
 
@@ -1330,10 +1361,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         
         try {
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-            // Create the transaction logger for this transaction.
-            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            // Create the audit logger for this transaction.
-            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
+            final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
             byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false)
                     .getOcspResponse();
             //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
@@ -1503,10 +1534,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     /** Perform OCSP requests over remote EJB interface and assert the the response is not null. */
     private OCSPResp sendRequest(final OCSPReq ocspRequest) throws MalformedRequestException, IOException, OCSPException {
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
-        // Create the transaction and audit logger for this transaction.
-        ConfigurationHolder.updateConfiguration("ocsp.trx-log", "true");
-        final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-        final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
+        final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
         final OcspResponseInformation responseInformation = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null,
                 auditLogger, transactionLogger, false, false);
         byte[] responseBytes = responseInformation.getOcspResponse();

@@ -81,7 +81,6 @@ import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 /**
  * Helper methods to get EJB session interfaces.
  * 
- * @version $Id$
  */
 public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	

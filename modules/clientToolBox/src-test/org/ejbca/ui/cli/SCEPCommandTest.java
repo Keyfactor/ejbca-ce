@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import java.util.Collections;
+
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,9 +42,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.runners.MethodSorters;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Run stress tests with ClientToolBax command SCEPTest
@@ -103,9 +102,9 @@ public class SCEPCommandTest {
 
         scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         scepConfiguration.addAlias(SCEP_ALIAS);
-
         scepConfiguration.setRAMode(SCEP_ALIAS, true);
         scepConfiguration.setIncludeCA(SCEP_ALIAS, false);
+        scepConfiguration.setAllowLegacyDigestAlgorithm(SCEP_ALIAS, true);
         scepConfiguration.setRACertProfile(SCEP_ALIAS, CERTIFICATE_PROFILE_NAME);
         scepConfiguration.setRAEndEntityProfile(SCEP_ALIAS, END_ENTITY_PROFILE_NAME);
         scepConfiguration.setRADefaultCA(SCEP_ALIAS, x509ca.getName());
