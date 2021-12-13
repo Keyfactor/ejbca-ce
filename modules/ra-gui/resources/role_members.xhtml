@@ -19,7 +19,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -88,6 +87,14 @@
                                 onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
+                    <h:panelGroup id="parentCriteriaProviderId" styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:selectOneMenu id="criteriaProviderId" value="#{raRoleMembersBean.criteriaProviderId}" styleClass="pure-input-1" >
+                            <f:selectItems value="#{raRoleMembersBean.availableOauthProviders}"/>
+                            <f:ajax event="change" execute="@this" render=":roleMembersForm:filteredResults" listener="#{raRoleMembersBean.searchAndFilterAjaxListener}"
+                                onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
+                                onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
 
                     <h:panelGroup id="parentCriteriaTokenType" styleClass="pure-u-1 pure-u-lg-1-5">
                         <h:selectOneMenu id="criteriaTokenType" value="#{raRoleMembersBean.criteriaTokenType}" styleClass="pure-input-1" rendered="#{!raRoleMembersBean.onlyOneTokenTypeAvailable}">
@@ -147,6 +154,17 @@
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{raRoleMember.caName}" style="white-space: nowrap"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortProvider" value="#{msg.role_members_page_colhead_provider} #{raRoleMembersBean.sortedByProvider}"/>
+                                <h:commandButton id="sortProvider" action="#{raRoleMembersBean.sortByProvider}" value="#{msg.generic_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":roleMembersForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRoleMember.providerLabel}" style="white-space: nowrap"/>
                         </h:column>
                         <h:column rendered="#{raRoleMembersBean.hasMultipleTokenTypes}">
                             <f:facet name="header">

@@ -19,7 +19,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
- * @version $Id$
  *
  */
 public enum CliUserAccessMatchValue implements AccessMatchValue {
@@ -48,6 +47,11 @@ public enum CliUserAccessMatchValue implements AccessMatchValue {
 
     @Override
     public boolean isIssuedByCa() {
+        return false;
+    }
+
+    @Override
+    public boolean isIssuedByOauthProvider() {
         return false;
     }
 

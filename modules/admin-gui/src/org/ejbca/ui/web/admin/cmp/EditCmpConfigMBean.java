@@ -49,6 +49,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class EditCmpConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private static final String HIDDEN_PWD = "**********";
+
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
             "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF");
@@ -257,7 +259,13 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
             authParams.add("-");
         } else if (hmacSelected && !hmacSharedSecret) {
             authModules.add(CmpConfiguration.AUTHMODULE_HMAC);
-            authParams.add(hmacParam);
+            // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+            String currentHmacAuthParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, getSelectedCmpAlias());
+            if (!hmacParam.equals(EditCmpConfigMBean.HIDDEN_PWD)) {
+                authParams.add(hmacParam);
+            } else {
+                authParams.add(currentHmacAuthParam);
+            }
         }
 
         if (!isRaMode() && eeCertSelected) {
@@ -291,7 +299,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         regTokenPwdSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD);
         dnPartPwdSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_DN_PART_PWD);
         
-        hmacParam = hmacAuthParam;
+        hmacParam = EditCmpConfigMBean.HIDDEN_PWD;
         if (hmacAuthParam.isEmpty() || hmacAuthParam.equals("-")) {
             hmacSharedSecret = true;
             hmacParam = "";
@@ -607,6 +615,14 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         }
     }
 
+    public boolean getCmpIssuerCaChainAtIndex0() {
+        return cmpConfiguration.getResponseCaPubsIssuingCA(getSelectedCmpAlias());
+    }
+    
+    public void setCmpIssuerCaChainAtIndex0(final boolean cmpIssuerCaChainAtIndex0) {
+        cmpConfiguration.setResponseCaPubsIssuingCA(getSelectedCmpAlias(), cmpIssuerCaChainAtIndex0);
+    }
+    
     public void setSelectedPkiResponseAdditionalCaCert(final String selectedPkiResponseAdditionalCaCert) {
         this.selectedPkiResponseAdditionalCaCert = selectedPkiResponseAdditionalCaCert;
     }

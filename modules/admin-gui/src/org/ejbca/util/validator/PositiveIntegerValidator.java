@@ -22,17 +22,14 @@ import org.cesecore.util.ui.PropertyValidationException;
 
 /**
  * Validator which will validate an integer to greater or equal to 0, mirrors {@link org.cesecore.util.ui.IntegerValidator}
- * 
- * @version $Id$
- *
  */
 // ECA-9474 Remove. Seems not to be referenced at all...
-public class PositiveIntegerValidator implements Validator {
+public class PositiveIntegerValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object object) throws ValidatorException {
         try {
-            org.cesecore.util.ui.IntegerValidator.validateInteger((Integer) object, 0, Integer.MAX_VALUE);
+            org.cesecore.util.ui.IntegerValidator.validateInteger((Integer) object, "", 0, Integer.MAX_VALUE);
         } catch (PropertyValidationException e) {
             throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }

@@ -24,8 +24,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.ConfigurationBase;
@@ -35,8 +37,10 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 /**
  * Proxy for identifying all calls that are needed in the RaMasterApi to fully support ACME.
  *
@@ -59,6 +63,9 @@ public interface AcmeRaMasterApiSessionLocal {
 
     /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAcmeAccountByPublicKeyStorageId(String)  */
     AcmeAccount getAcmeAccountByPublicKeyStorageId(String publicKeyStorageId);
+    
+    /** @see org.ejbca.core.protocol.acme.AcmeConfigurationSessionBean#parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk, String eabRequestJsonString) */
+    String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk, String eabRequestJsonString) throws AcmeProblemException;
 
     /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#createOrUpdate(AcmeAccount) */
     String persistAcmeAccountData(AcmeAccount acmeAccount);
@@ -130,6 +137,12 @@ public interface AcmeRaMasterApiSessionLocal {
     void addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean clearpwd)
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;
 
+    /** @see org.ejbca.core.model.era.RaMasterApi#addUser(AuthenticationToken, EndEntityInformation, boolean, String) */
+    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd, String newUsername)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
+    
     /** @see org.ejbca.core.model.era.RaMasterApi#createCertificate(AuthenticationToken, EndEntityInformation) */
     byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;

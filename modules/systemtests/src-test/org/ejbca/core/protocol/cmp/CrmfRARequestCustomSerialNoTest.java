@@ -52,7 +52,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @version $Id$
+ * System tests for handling CRMF messages requests with custom certificate 
+ * serial number.
  */
 public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
 
@@ -177,13 +178,13 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             if (sFailMessage == null) {
-            	ret = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            	ret = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
                 // verify if custom cert serial number was used
                 if (customCertSerno != null) {
                 	assertTrue(ret.getSerialNumber().toString(16)+" is not same as expected "+customCertSerno.toString(16), ret.getSerialNumber().equals(customCertSerno));
                 }
             } else {
-                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest);
             }
         }
         {

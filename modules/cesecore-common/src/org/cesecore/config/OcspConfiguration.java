@@ -13,18 +13,18 @@
 
 package org.cesecore.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.util.CertTools;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
@@ -383,52 +383,6 @@ public class OcspConfiguration {
         }
         return false;
     }
-    
-    /**
-     * When true, an audit log will be created.
-     */
-    public static boolean getAuditLog() {
-        String value = ConfigurationHolder.getString("ocsp.audit-log");
-        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-    }
-
-    /**
-     * A format string for logging of dates in auditLog and accountLog.
-     */
-    public static String getLogDateFormat() {
-        return ConfigurationHolder.getString("ocsp.log-date");
-    }
-
-    /**
-     * A format string for TimeZone auditLog and accountLog.
-     */
-    public static String getLogTimeZone() {
-        return ConfigurationHolder.getString("ocsp.log-timezone");
-    }
-
-    /**
-     * Set to true if you want transactions to be aborted when logging fails.
-     */
-    public static boolean getLogSafer() {
-        String value = ConfigurationHolder.getString("ocsp.log-safer");
-        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-    }
-
-    /**
-     * A String to create a java Pattern to format the audit Log
-     */
-    public static String getAuditLogPattern() {
-        return ConfigurationHolder.getString("ocsp.audit-log-pattern");
-    }
-
-    /**
-     * A String which combined with auditLogPattern determines how auditLog output is formatted.
-     */
-    public static String getAuditLogOrder() {
-        String value = ConfigurationHolder.getString("ocsp.audit-log-order");
-        value = value.replace("\\\"", "\""); // From EJBCA 3.9 the "-char does not need to be escaped, but we want to be backward compatible
-        return value;
-    }
 
     /**
      * All available signing keys should be tested.
@@ -444,28 +398,9 @@ public class OcspConfiguration {
         return !ConfigurationHolder.getString("ocsphealthcheck.checkSigningCertificateValidity").toLowerCase().contains("false");
     }
 
-    /**
-     * When true, a transaction log will be created.
-     */
-    public static boolean getTransactionLog() {
-        String value = ConfigurationHolder.getString("ocsp.trx-log");
+    public static boolean getLogSafer() {
+        final String value = ConfigurationHolder.getString("ocsp.log-safer");
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-    }
-
-    /**
-     * A String to create a java Pattern to format the transaction Log.
-     */
-    public static String getTransactionLogPattern() {
-        return ConfigurationHolder.getString("ocsp.trx-log-pattern");
-    }
-
-    /**
-     * A String which combined with transactionLogPattern determines how transaction Log output is formatted.
-     */
-    public static String getTransactionLogOrder() {
-        String value = ConfigurationHolder.getString("ocsp.trx-log-order");
-        value = value.replace("\\\"", "\""); // From EJBCA 3.9 the "-char does not need to be escaped, but we want to be backward compatible
-        return value;
     }
     
     /**

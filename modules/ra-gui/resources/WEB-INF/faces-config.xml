@@ -28,6 +28,7 @@
             <supported-locale>sv_SE</supported-locale>
             <supported-locale>ar_AE</supported-locale>
             <supported-locale>vi_VE</supported-locale>
+            <supported-locale>de_DE</supported-locale>
         </locale-config>
         <resource-bundle>
             <base-name>org.ejbca.ra.jsfext.Utf8ResourceBundleMessages</base-name>

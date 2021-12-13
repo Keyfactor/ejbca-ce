@@ -13,6 +13,113 @@
 
 package org.cesecore.util;
 
+import com.novell.ldap.LDAPDN;
+import org.apache.commons.lang.CharUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1GeneralString;
+import org.bouncycastle.asn1.ASN1IA5String;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.ASN1UTF8String;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERGeneralString;
+import org.bouncycastle.asn1.DERGeneralizedTime;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.pkcs.Attribute;
+import org.bouncycastle.asn1.pkcs.CertificationRequest;
+import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.X500NameStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralSubtree;
+import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.NameConstraints;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
+import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.cms.CMSAbsentContent;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
+import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.util.Store;
+import org.bouncycastle.util.encoders.DecoderException;
+import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.ssh.SshCertificate;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.internal.InternalResources;
+import org.ejbca.cvc.AuthorizationRole;
+import org.ejbca.cvc.CVCAuthorizationTemplate;
+import org.ejbca.cvc.CVCObject;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.ReferenceField;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -76,109 +183,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.novell.ldap.LDAPDN;
-
-import org.apache.commons.lang.CharUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Encoding;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1Object;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERGeneralString;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.pkcs.Attribute;
-import org.bouncycastle.asn1.pkcs.CertificationRequest;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.util.ASN1Dump;
-import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
-import org.bouncycastle.asn1.x500.RDN;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.bouncycastle.asn1.x500.X500NameStyle;
-import org.bouncycastle.asn1.x500.style.IETFUtils;
-import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.DistributionPointName;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.GeneralSubtree;
-import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.NameConstraints;
-import org.bouncycastle.asn1.x509.PolicyInformation;
-import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
-import org.bouncycastle.asn1.x509.ReasonFlags;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
-import org.bouncycastle.cert.CertIOException;
-import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.cms.CMSAbsentContent;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
-import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.operator.BufferingContentSigner;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.ContentVerifierProvider;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.util.CollectionStore;
-import org.bouncycastle.util.encoders.DecoderException;
-import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.certificate.CertificateWrapper;
-import org.cesecore.certificates.certificate.ssh.SshCertificate;
-import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.config.OcspConfiguration;
-import org.cesecore.internal.InternalResources;
-import org.ejbca.cvc.AuthorizationRole;
-import org.ejbca.cvc.CVCAuthorizationTemplate;
-import org.ejbca.cvc.CVCObject;
-import org.ejbca.cvc.CVCertificate;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.CertificateParser;
-import org.ejbca.cvc.ReferenceField;
-import org.ejbca.cvc.exception.ConstructionException;
-import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Tools to handle common certificate operations.
@@ -875,7 +879,7 @@ public abstract class CertTools {
      * @return String containing the issuers DN, or null if cert is null.
      */
     public static String getIssuerDN(final Certificate cert) {
-        if (StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
+        if (cert != null && StringUtils.equals(cert.getType(), SshCertificate.CERTIFICATE_TYPE)) {
             SshCertificate sshCertificate = (SshCertificate) cert;
             return sshCertificate.getIssuerIdentifier();
         } else {
@@ -2030,6 +2034,20 @@ public abstract class CertTools {
     }
 
     /**
+     * Get the Authority Key Identifier from CRL extensions
+     * 
+     * @param crl CRL containing the extension
+     * @return byte[] containing the Authority key identifier, or null if it does not exist
+     */
+    public static byte[] getAuthorityKeyId(final X509CRL crl) {
+        final ASN1Primitive asn1Sequence = getDerObjectFromByteArray(crl.getExtensionValue(Extension.authorityKeyIdentifier.getId()));
+        if (asn1Sequence != null) {
+            return AuthorityKeyIdentifier.getInstance(asn1Sequence).getKeyIdentifier();
+        }
+        return null;
+    }
+    
+    /**
      * Get a certificate policy ID from a certificate policies extension
      * 
      * @param certificate certificate containing the extension
@@ -2167,7 +2185,7 @@ public abstract class CertTools {
                 if (obj instanceof ASN1TaggedObject) {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
-                DERUTF8String str = DERUTF8String.getInstance(obj);
+                ASN1UTF8String str = ASN1UTF8String.getInstance(obj);
                 return str.getString();
             }
         }
@@ -2191,7 +2209,7 @@ public abstract class CertTools {
                 if (obj instanceof ASN1TaggedObject) {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
-                DERIA5String str = DERIA5String.getInstance(obj);
+                ASN1IA5String str = ASN1IA5String.getInstance(obj);
                 return str.getString();
             }
         }
@@ -2411,7 +2429,7 @@ public abstract class CertTools {
                 ASN1Sequence krb5Seq = ASN1Sequence.getInstance(obj);
                 // Get the Realm tagged as 0
                 ASN1TaggedObject robj = ASN1TaggedObject.getInstance(krb5Seq.getObjectAt(0));
-                DERGeneralString realmObj = DERGeneralString.getInstance(robj.getObject());
+                ASN1GeneralString realmObj = ASN1GeneralString.getInstance(robj.getObject());
                 String realm = realmObj.getString();
                 // Get the PrincipalName tagged as 1
                 ASN1TaggedObject pobj = ASN1TaggedObject.getInstance(krb5Seq.getObjectAt(1));
@@ -2424,7 +2442,7 @@ public abstract class CertTools {
                 @SuppressWarnings("unchecked")
                 Enumeration<ASN1Object> en = sseq.getObjects();
                 while (en.hasMoreElements()) {
-                    DERGeneralString str = DERGeneralString.getInstance(en.nextElement());
+                    ASN1GeneralString str = ASN1GeneralString.getInstance(en.nextElement());
                     if (ret != null) {
                         ret += "/" + str.getString();
                     } else {
@@ -2806,7 +2824,8 @@ public abstract class CertTools {
 
         for (final String guid : CertTools.getPartsFromDN(altName, CertTools.GUID)) {
             final ASN1EncodableVector v = new ASN1EncodableVector();
-            byte[] guidbytes = Hex.decode(guid);
+            final String dashRemovedGuid = guid.replace("-", "");
+            byte[] guidbytes = Hex.decode(dashRemovedGuid);
             if (guidbytes != null) {
                 v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
                 v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
@@ -2949,10 +2968,10 @@ public abstract class CertTools {
             break;
         }
         case 1:
-            ret = CertTools.EMAIL + "=" + DERIA5String.getInstance(value).getString();
+            ret = CertTools.EMAIL + "=" + ASN1IA5String.getInstance(value).getString();
             break;
         case 2:
-            ret = CertTools.DNS + "=" + DERIA5String.getInstance(value).getString();
+            ret = CertTools.DNS + "=" + ASN1IA5String.getInstance(value).getString();
             break;
         case 3: // SubjectAltName of type x400Address not supported
             break;
@@ -2963,7 +2982,7 @@ public abstract class CertTools {
         case 5: // SubjectAltName of type ediPartyName not supported
             break;
         case 6:
-            ret = CertTools.URI + "=" + DERIA5String.getInstance(value).getString();
+            ret = CertTools.URI + "=" + ASN1IA5String.getInstance(value).getString();
             break;
         case 7:
             ASN1OctetString oct = ASN1OctetString.getInstance(value);
@@ -3257,7 +3276,7 @@ public abstract class CertTools {
             final GeneralNames generalNames = GeneralNames.getInstance(dpName.getName());
             for (final GeneralName generalName : generalNames.getNames()) {
                 if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {
-                    final DERIA5String asn1Value = DERIA5String.getInstance(generalName.getName());
+                    final ASN1IA5String asn1Value = ASN1IA5String.getInstance(generalName.getName());
                     uris.add(asn1Value.getString());
                 }
             }
@@ -3294,7 +3313,7 @@ public abstract class CertTools {
                                 if (obj instanceof ASN1TaggedObject) {
                                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                                 }
-                                final DERIA5String deria5String = DERIA5String.getInstance(obj);
+                                final ASN1IA5String deria5String = ASN1IA5String.getInstance(obj);
                                 result.add(deria5String.getString());
                             }
                         }
@@ -3355,7 +3374,7 @@ public abstract class CertTools {
                                 if (gnobj instanceof ASN1TaggedObject) {
                                     gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
                                 }
-                                final DERIA5String str = DERIA5String.getInstance(gnobj);
+                                final ASN1IA5String str = ASN1IA5String.getInstance(gnobj);
                                 if(str != null) {
                                     urls.add(str.getString());
                                 }
@@ -3393,7 +3412,7 @@ public abstract class CertTools {
                                 if (gnobj instanceof ASN1TaggedObject) {
                                     gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
                                 }
-                                final DERIA5String str = DERIA5String.getInstance(gnobj);
+                                final ASN1IA5String str = ASN1IA5String.getInstance(gnobj);
                                 if(str != null) {
                                     urls.add(str.getString());
                                 }
@@ -4609,8 +4628,8 @@ public abstract class CertTools {
      */
     public static void checkNameConstraints(X509Certificate issuer, X500Name subjectDNName, GeneralNames subjectAltName) throws IllegalNameException {
         final byte[] ncbytes = issuer.getExtensionValue(Extension.nameConstraints.getId());
-        final ASN1OctetString ncstr = (ncbytes != null ? DEROctetString.getInstance(ncbytes) : null);
-        final ASN1Sequence ncseq = (ncbytes != null ? DERSequence.getInstance(ncstr.getOctets()) : null);
+        final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
+        final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
         final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
         
         if (nc != null) {
@@ -4629,24 +4648,43 @@ public abstract class CertTools {
             
             GeneralSubtree[] permitted = nc.getPermittedSubtrees();
             GeneralSubtree[] excluded = nc.getExcludedSubtrees();
-            
+                        
             if (permitted != null) {
-                if (log.isTraceEnabled()) {
-                    for (GeneralSubtree subtree : permitted) {
-                        log.trace("Permitted subtree: " + subtree.getBase());
-                        log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
-
+                
+                GeneralSubtree[] permittedFormatted = new GeneralSubtree[permitted.length];
+                
+                for (int i = 0; i < permitted.length; i++) {
+                    GeneralSubtree subtree = permitted[i];
+                    log.trace("Permitted subtree: " + subtree.getBase());
+                    log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+                    
+                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                        permittedFormatted[i] = subtree;
+                    } else {
+                        String uri = subtree.getBase().getName().toString();
+                        String host = extractHostFromURL(uri);
+                        permittedFormatted[i] = new GeneralSubtree(
+                                    new GeneralName(GeneralName.uniformResourceIdentifier, host));
                     }
                 }
-                validator.intersectPermittedSubtree(permitted);
+            
+                validator.intersectPermittedSubtree(permittedFormatted);
             }
+        
             if (excluded != null) {
                 for (GeneralSubtree subtree : excluded) {
                     if (log.isTraceEnabled()) {
                         log.trace("Excluded subtree: " + subtree.getBase());
                         log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
                     }
-                    validator.addExcludedSubtree(subtree);
+                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                        validator.addExcludedSubtree(subtree);
+                    } else {
+                        String uri = subtree.getBase().getName().toString();
+                        String host = extractHostFromURL(uri);
+                        validator.addExcludedSubtree(new GeneralSubtree(
+                                    new GeneralName(GeneralName.uniformResourceIdentifier, host)));
+                    }
                 }
             }
 
@@ -4667,11 +4705,15 @@ public abstract class CertTools {
                     }
                 }
             }
-            
+
             if (subjectAltName != null) {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
                         validator.checkPermitted(sangn);
+                        if (isAllDNSNamesExcluded(excluded)) {
+                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
+                            throw new IllegalNameException(msg);
+                        }
                         validator.checkExcluded(sangn);
                     } catch (PKIXNameConstraintValidatorException e) {
                         final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
@@ -4680,6 +4722,50 @@ public abstract class CertTools {
                 }
             }
         }
+    }
+
+    // Check if we should exclude all dns names
+    private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
+        for (int i = 0; i < excluded.length; i++) {
+            if (excluded[i].getBase().toString().equals("2: ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Refers private method from org.bouncycastle.asn1.x509.PKIXNameConstraintValidator.
+     * It is used here to extract host from name constraint in CA. Bouncy Castle extracts host
+     * from the URIs in subjectDN or subjectAlternativeName.
+     * 
+     * @param url
+     * @return
+     */
+    private static String extractHostFromURL(String url)
+    {
+        // see RFC 1738
+        // remove ':' after protocol, e.g. https:
+        String sub = url.substring(url.indexOf(':') + 1);
+        // extract host from Common Internet Scheme Syntax, e.g. https://
+        if (sub.indexOf("//") != -1)
+        {
+            sub = sub.substring(sub.indexOf("//") + 2);
+        }
+        // first remove port, e.g. https://test.com:21
+        if (sub.lastIndexOf(':') != -1)
+        {
+            sub = sub.substring(0, sub.lastIndexOf(':'));
+        }
+        // remove user and password, e.g. https://john:password@test.com
+        sub = sub.substring(sub.indexOf(':') + 1);
+        sub = sub.substring(sub.indexOf('@') + 1);
+        // remove local parts, e.g. https://test.com/bla
+        if (sub.indexOf('/') != -1)
+        {
+            sub = sub.substring(0, sub.indexOf('/'));
+        }
+        return sub;
     }
     
     /**
@@ -4719,5 +4805,69 @@ public abstract class CertTools {
             }
         }
         return commonName;
+    }
+
+    public static Collection<X509CertificateHolder> parseP7B(InputStream is) throws CMSException, IOException {
+
+        final InputStreamReader isr = new InputStreamReader(is);
+        final PEMParser parser = new PEMParser(isr);
+
+        final ContentInfo info = (ContentInfo) parser.readObject();
+        final CMSSignedData csd = new CMSSignedData(info);
+        final Store<X509CertificateHolder> certstore = csd.getCertificates();
+        final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
+
+        parser.close();
+        return collection;
+    }
+
+    private static byte[] getFirstCertificate(Collection<X509CertificateHolder> collection) throws CertificateException {
+
+        if (null != collection) {
+            final X509CertificateHolder certholder = collection.iterator().next();
+            final X509Certificate x509cert = new JcaX509CertificateConverter().getCertificate(certholder);
+            return Base64.encode(x509cert.getEncoded());
+        }
+
+        return null;
+    }
+
+    public static byte[] getPKCS7Certificate(InputStream is) throws CertificateException, IOException, CMSException {
+        final InputStreamReader isr = new InputStreamReader(is);
+        try (final PEMParser parser = new PEMParser(isr)) {
+            final ContentInfo info = (ContentInfo) parser.readObject();
+            final CMSSignedData csd = new CMSSignedData(info);
+            return csd.getEncoded();
+        }
+    }
+
+    public static String getPEMCertificate(Collection<X509CertificateHolder> collection) throws CertificateException {
+        final byte[] b64 = CertTools.getFirstCertificate(collection);
+        return BEGIN_CERTIFICATE + "\n" + new String(b64) + "\n" + END_CERTIFICATE;
+    }
+
+    public static String getPEMCertificate(byte[] bytes) {
+        final byte[] b64 = Base64.encode(bytes);
+        return BEGIN_CERTIFICATE + "\n" + new String(b64) + "\n" + END_CERTIFICATE;
+    }
+
+    public static String getPKCS7PEMCertificate(byte[] bytes) {
+        final byte[] b64 = Base64.encode(bytes);
+        return BEGIN_PKCS7 + "\n" + new String(b64) + "\n" + END_PKCS7;
+    }
+
+    public static byte[] getFirstCertificateFromPKCS7(byte[] pkcs7) throws CMSException, IOException {
+        byte[] firstCertificate = null;
+
+        final CMSSignedData csd = new CMSSignedData(pkcs7);
+        final Store<X509CertificateHolder> certstore = csd.getCertificates();
+        final Collection<X509CertificateHolder> collection = certstore.getMatches(null);
+
+        final Iterator<X509CertificateHolder> ci = collection.iterator();
+        if (ci.hasNext()) {
+            firstCertificate = ci.next().getEncoded();
+        }
+
+        return firstCertificate;
     }
 }

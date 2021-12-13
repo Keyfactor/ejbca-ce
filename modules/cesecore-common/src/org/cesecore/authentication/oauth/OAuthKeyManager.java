@@ -14,13 +14,14 @@
 package org.cesecore.authentication.oauth;
 
 import java.util.List;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 
 
 /**
  * This class is responsible for managing a list of OAuth Keys.
  *
- * @version $Id$
  */
 public class OAuthKeyManager {
     private final List<OAuthKeyInfo> oauthKeys;
@@ -76,9 +77,9 @@ public class OAuthKeyManager {
      */
     public boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existing : oauthKeys) {
-            final boolean hasSameInternalId = existing.getInternalId() == oauthKey.getInternalId();
-            final boolean hasSameKeyIdentifier = StringUtils.equals(existing.getKeyIdentifier(), oauthKey.getKeyIdentifier());
-            if (hasSameInternalId || hasSameKeyIdentifier) {
+            final boolean hasSameInternalId = ObjectUtils.equals(existing.getInternalId(), oauthKey.getInternalId());
+            final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), oauthKey.getLabel());
+            if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
         }
@@ -89,17 +90,17 @@ public class OAuthKeyManager {
      * Determine whether the OAuth Key given as input can be edited.
      * This just checks whether the new key identifier of the entry being edited is unique.
      * <ul>
-     *   <li>The other key has a key identifier identical to the OAuth Key being edited</li>
+     *   <li>The other key has a key label identical to the OAuth Key being edited</li>
      * </ul>
-     * @param oauthKey the OAuth Key to check, but it doesn't yet have the new key identifier
-     * @param newKeyIdentifier the new key identifier
+     * @param oauthKey the OAuth label to check, but it doesn't yet have the new key identifier
+     * @param newLabel the new provider label
      * @return true if the OAuth Key given as input can be edited, false otherwise
      */
-     public boolean canEdit(final OAuthKeyInfo oauthKey, final String newKeyIdentifier) {
+     public boolean canEdit(final OAuthKeyInfo oauthKey, final String newLabel) {
          for (OAuthKeyInfo existing : oauthKeys) {
-             final boolean hasSameKeyIdentifier = StringUtils.equals(existing.getKeyIdentifier(), newKeyIdentifier);
-             final boolean hasSameInternalId = existing.getInternalId() == oauthKey.getInternalId();
-             if (hasSameKeyIdentifier && !hasSameInternalId) {
+             final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), newLabel);
+             final boolean hasSameInternalId = ObjectUtils.equals(existing.getInternalId(), oauthKey.getInternalId());
+             if (hasSameLabel && !hasSameInternalId) {
                  return false;
              }
          }

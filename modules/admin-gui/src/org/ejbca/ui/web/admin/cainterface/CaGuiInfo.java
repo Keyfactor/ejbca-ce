@@ -14,9 +14,7 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 /**
- * 
- * @version $Id$
- *
+ * Certification authority POJO for view purposes.
  */
 public class CaGuiInfo {
         
@@ -31,6 +29,7 @@ public class CaGuiInfo {
         private CaInfoProperty crlIssueInterval;
         private CaInfoProperty crlOverlapTime;
         private CaInfoProperty deltaCrlPeriod;
+        private CaInfoProperty generateCrlUponRevocation;
         private CaInfoProperty crlPublishers;
         private CaInfoProperty validators;
         private CaInfoProperty ocsp;
@@ -100,6 +99,12 @@ public class CaGuiInfo {
         }
         public void setDeltaCrlPeriod(final CaInfoProperty deltaCrlPeriod) {
             this.deltaCrlPeriod = deltaCrlPeriod;
+        }
+        public CaInfoProperty getGenerateCrlUponRevocation() {
+            return generateCrlUponRevocation;
+        }
+        public void setGenerateCrlUponRevocation(final CaInfoProperty generateCrlUponRevocation) {
+            this.generateCrlUponRevocation = generateCrlUponRevocation;
         }
         public CaInfoProperty getCrlPublishers() {
             return crlPublishers;

@@ -21,9 +21,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 
 /**
  * Match with constants. Observe that these constants are also used as a priority indicator for access rules. The higher values the higher priority.
- * 
- * @version $Id$
- * 
+ *
  */
 public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     @Deprecated // Will never match anything which makes it rather useless keep around long term. (Deprecated in 6.8.0.) 
@@ -68,6 +66,11 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     @Override
     public boolean isIssuedByCa() {
         return true;
+    }
+
+    @Override
+    public boolean isIssuedByOauthProvider() {
+        return false;
     }
 
     @Override

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -32,7 +33,6 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
@@ -59,8 +59,6 @@ import org.json.simple.parser.ParseException;
 
 /**
  * Provider for signing and decrypting with Azure Key Vault REST API.
- *
- * @version $Id$
  */
 public class AzureProvider extends Provider {
 
@@ -92,10 +90,10 @@ public class AzureProvider extends Provider {
         private KeyVaultPrivateKey privateKey;
         /** the hash algorithm to use to hash the toBeSigned data, hashing is done in SW before signing */
         protected String hashAlg;
-        /** data to be signed */
-        private byte[] toBeSigned;
         /** the signature algorithm as named by the Azure Key Vault REST API, to be used for signing the hashed toBeSigned data */
         protected String azureSignAlg;
+        /** data to be signed */
+        private ByteArrayOutputStream tbs;
 
         @Override
         protected void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {
@@ -112,7 +110,10 @@ public class AzureProvider extends Provider {
 
         @Override
         protected void engineUpdate(byte[] b, int off, int len) throws SignatureException {
-            this.toBeSigned = Arrays.copyOfRange(b, off, len);
+            if (this.tbs == null) {
+                this.tbs = new ByteArrayOutputStream();
+            }
+            this.tbs.write(b, off, len);
         }
 
         @Override
@@ -122,14 +123,14 @@ public class AzureProvider extends Provider {
                     log.debug("engineSign: " + this.getClass().getName());
                 }
                 // Key Vault REST API for signing: https://docs.microsoft.com/en-us/rest/api/keyvault/sign/sign
-                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/sign?api-version=7.0");
+                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/sign?api-version=7.2");
                 request.setHeader("Content-Type", "application/json");
 
                 // Create hash value of the data to be signed
                 final byte[] signInput;
                 try {
                     final MessageDigest digest = MessageDigest.getInstance(hashAlg, BouncyCastleProvider.PROVIDER_NAME);
-                    signInput = digest.digest(toBeSigned);
+                    signInput = digest.digest(tbs.toByteArray());
                 } catch (NoSuchAlgorithmException e) {
                     throw new SignatureException("Hash algorithm " + hashAlg + " can not be found in the BC provider: ", e);
                 } catch (NoSuchProviderException e) {
@@ -150,13 +151,15 @@ public class AzureProvider extends Provider {
                 // PS512 is SHA512WithRSAAndMGF1 (RSA-PSS)
                 // ES256K is SHA256WithECDSA with curve P-256K from NIST
                 map.put("alg", azureSignAlg);
-                map.put("value", java.util.Base64.getEncoder().encodeToString(signInput));
+                map.put("value", Base64.encodeBase64URLSafeString(signInput));
                 final JSONObject jsonObject = new JSONObject(map);
                 final StringWriter out = new StringWriter();
                 jsonObject.writeJSONString(out);
-                request.setEntity(new StringEntity(out.toString()));
+                final String reqJson = out.toString();
+                request.setEntity(new StringEntity(reqJson));
                 if (log.isDebugEnabled()) {
                     log.debug("engineSign Request: " + request.toString()+", "+privateKey.toString());
+                    log.debug("engineSign Request JSON: " + reqJson+", "+privateKey.toString());
                 }
                 try (final CloseableHttpResponse response = privateKey.getCryptoToken().azureHttpRequest(request)) {
                     final int statusCode = response.getStatusLine().getStatusCode();
@@ -329,19 +332,21 @@ public class AzureProvider extends Provider {
 
             try {
                 // Key Vault decrypt REST API: https://docs.microsoft.com/en-us/rest/api/keyvault/decrypt/decrypt
-                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/decrypt?api-version=7.0");
+                final HttpPost request = new HttpPost(privateKey.getKeyURL() + "/decrypt?api-version=7.2");
                 request.setHeader("Content-Type", "application/json");
 
                 final HashMap<String, String> map = new HashMap<>();
                 // RsaEncryption algorithm, https://docs.microsoft.com/en-us/rest/api/keyvault/decrypt/decrypt#jsonwebkeyencryptionalgorithm
                 map.put("alg", "RSA1_5");
-                map.put("value", java.util.Base64.getEncoder().encodeToString(arg0));
+                map.put("value", Base64.encodeBase64URLSafeString(arg0));
                 final JSONObject jsonObject = new JSONObject(map);
                 final StringWriter out = new StringWriter();
                 jsonObject.writeJSONString(out);
-                request.setEntity(new StringEntity(out.toString()));
+                final String reqJson = out.toString();
+                request.setEntity(new StringEntity(reqJson));
                 if (log.isDebugEnabled()) {
                     log.debug("engineDoFinal Request: " + request.toString()+", "+privateKey.toString());
+                    log.debug("engineDoFinal Request JSON: " + reqJson+", "+privateKey.toString());
                 }
                 try (final CloseableHttpResponse response = privateKey.getCryptoToken().azureHttpRequest(request)) {
                     final InputStream is = response.getEntity().getContent();

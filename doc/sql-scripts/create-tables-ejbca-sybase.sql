@@ -302,6 +302,7 @@ CREATE TABLE RoleMemberData (
     primaryKey INTEGER NOT NULL,
     tokenType VARCHAR(255) NOT NULL,
     tokenIssuerId INTEGER NOT NULL,
+    tokenProviderId INTEGER DEFAULT 0 NOT NULL,
     tokenMatchKey INTEGER NOT NULL,
     tokenMatchOperator INTEGER NOT NULL,
     tokenMatchValue VARCHAR(2000),
@@ -458,4 +459,13 @@ CREATE TABLE OcspResponseData (
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
+);
+
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(255) NOT NULL,
+    startTime DECIMAL(20,0) NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
 );

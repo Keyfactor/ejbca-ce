@@ -102,8 +102,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
  * and these requests are handled by EJBCA without further authentication, end entities are created automatically in EJBCA.
- * 
- * @version $Id: CrmfRAPbeRequestTest.java 9435 2010-07-14 15:18:39Z mikekushner$
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 
@@ -308,7 +306,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         assertNotNull(resp);
         assertTrue(resp.length > 0);
         // We expect a response that is rejected
-        checkCmpCertRepMessage(userDN, cacert, resp, reqId, ResponseStatus.FAILURE.getValue());
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, cacert, resp, reqId, ResponseStatus.FAILURE.getValue());
         PKIMessage pkiMessage = PKIMessage.getInstance(resp);
         PKIBody pkiBody = pkiMessage.getBody();
         CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
@@ -325,7 +323,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         assertNotNull(resp);
         assertTrue(resp.length > 0);
         // We expect a response that is rejected
-        checkCmpCertRepMessage(userDN, cacert, resp, reqId, ResponseStatus.FAILURE.getValue());
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, cacert, resp, reqId, ResponseStatus.FAILURE.getValue());
         pkiMessage = PKIMessage.getInstance(resp);
         pkiBody = pkiMessage.getBody();
         certRepMessage = (CertRepMessage) pkiBody.getContent();
@@ -344,7 +342,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         // Should be an OK response
         checkCmpResponseGeneral(resp, issuerDN, user, this.cacert, nonce, transid, false, PBEPASSWORD,
                 PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(user, this.cacert, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, user, this.cacert, resp, reqId);
         // Get the returned certificate and verify that it is multi-value
         assertEquals("DN should be with multi-value RDN", mvdn, cert.getSubjectDN().toString());
     }
@@ -371,7 +369,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             String altNames = CertTools.getSubjectAlternativeName(cert);
             assertContains("Subject Alt Name", altNames, "upn=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
@@ -482,7 +480,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             String altNames = CertTools.getSubjectAlternativeName(cert);
             assertContains("Subject Alt Name", altNames, "upn=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
@@ -507,7 +505,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             altNames = CertTools.getSubjectAlternativeName(cert);
             assertNull(altNames);
             final String cdpfromcert2 = CertTools.getCrlDistributionPoint(cert);
@@ -542,7 +540,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         assertNotNull(resp);
         assertTrue(resp.length > 0);
         // We expect a FailInfo.BAD_MESSAGE_CHECK
-        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", PKIBody.TYPE_ERROR, reqId, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", PKIBody.TYPE_ERROR, reqId, PKIFailureInfo.badRequest);
         log.trace("<test03CrmfHttpTooManyIterations");
     }
 
@@ -609,8 +607,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), new X500Name(userdata.getDN()), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0,
-                    ResponseStatus.FAILURE.getValue(), PKIFailureInfo.badRequest);
+            checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, PKIFailureInfo.badRequest);
             reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
             // Approve revocation and verify success
@@ -632,8 +629,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), new X500Name(userdata.getDN()), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue(), 
-                                                                    PKIFailureInfo.certRevoked);
+            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, PKIFailureInfo.certRevoked);
         } finally {
             approvalProfileSession.removeApprovalProfile(ADMIN, approvalProfileId);           
             // Delete user
@@ -671,7 +667,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
@@ -743,7 +739,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             // Check that validity override works
             assertEquals("'Not Before' should be limited by the CA not before date.", cacert.getNotBefore(), cert.getNotBefore());
             assertEquals("Wrong 'Not After' date.", notAfter, cert.getNotAfter());

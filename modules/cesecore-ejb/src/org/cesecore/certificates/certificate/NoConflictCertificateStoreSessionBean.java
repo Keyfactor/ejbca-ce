@@ -46,6 +46,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -60,8 +61,6 @@ import org.cesecore.util.ValidityDate;
  * <p>For NoConflictCertificateData the methods perform additional logic to check that it gets the most recent
  * entry if there's more than one (taking permanent revocations into account), and for updates it
  * appends new entries instead of updating existing ones. 
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "NoConflictCertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -260,6 +259,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         return mostRecentData;
     }
 
+    // Only invoked for testing.
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)
@@ -349,7 +349,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
         certificateData.setRevocationDate(-1L);
         certificateData.setCaFingerprint(CertTools.getFingerprintAsString(cainfo.getCertificateChain().get(0)));
-        certificateData.setEndEntityProfileId(-1);
+        certificateData.setEndEntityProfileId(EndEntityConstants.NO_END_ENTITY_PROFILE);
         // Set expire date to the maximum possible expire date this certificate could have (now + cert profile validity) 
         final CertificateProfile certProf = certificateProfileSession.getCertificateProfile(certProfId);
         if (certProf == null) {

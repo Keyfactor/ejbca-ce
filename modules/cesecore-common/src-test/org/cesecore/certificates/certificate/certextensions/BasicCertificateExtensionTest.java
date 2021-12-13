@@ -51,8 +51,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.InternalResources;
 import org.junit.Test;
 
-/**
- * @version $Id$
+/** 
+ * Tests encoding of the various encoding input/output formats of BasicCertificateExtension 
  */
 public class BasicCertificateExtensionTest {
     private static Logger log = Logger.getLogger(BasicCertificateExtensionTest.class);
@@ -116,12 +116,65 @@ public class BasicCertificateExtensionTest {
 		byte[] result = {15};
 		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
-		assertEquals(((DERBitString)value).getBytes()[0],result[0]);
+		System.out.println(Hex.toHexString(((DERBitString)value).getBytes()));
+        assertEquals(((DERBitString)value).getBytes().length, 1);
+		assertEquals(((DERBitString)value).getBytes()[0], result[0]);
 		assertEquals(((DERBitString)value).getPadBits(), 0);
 		assertTrue(baseExt.getOID().equals("1.2.3"));
 		assertTrue(baseExt.getId() == 1);
 		assertFalse(baseExt.isCriticalFlag());	
-		
+
+		props.put("value", "1"); // this is 1 decimal
+		baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, true, props);      
+		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
+		assertTrue(value.getClass().toString(),value instanceof DERBitString);
+		System.out.println(Hex.toHexString(((DERBitString)value).getBytes()));
+        assertEquals(((DERBitString)value).getBytes().length, 1);
+		assertEquals(((DERBitString)value).getBytes()[0], 1);
+		assertEquals(((DERBitString)value).getPadBits(), 0);
+
+		props.put("value", "00000001"); // this is 1 decimal
+		baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, true, props);      
+		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
+		assertTrue(value.getClass().toString(),value instanceof DERBitString);
+		System.out.println(Hex.toHexString(((DERBitString)value).getBytes()));
+        assertEquals(((DERBitString)value).getBytes().length, 1);
+		assertEquals(((DERBitString)value).getBytes()[0], 1);
+		assertEquals(((DERBitString)value).getPadBits(), 0);
+
+		props.put("value", "10000000"); // this is -128 decimal
+		baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, true, props);      
+		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
+		assertTrue(value.getClass().toString(),value instanceof DERBitString);
+		System.out.println(Hex.toHexString(((DERBitString)value).getBytes()));
+        assertEquals(((DERBitString)value).getBytes().length, 1);
+		assertEquals(((DERBitString)value).getBytes()[0], -128);
+		assertEquals(((DERBitString)value).getPadBits(), 7);
+
+		props.put("value", "01000000"); // this is -64 decimal
+		baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, true, props);      
+		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
+		assertTrue(value.getClass().toString(),value instanceof DERBitString);
+		System.out.println(Hex.toHexString(((DERBitString)value).getBytes()));
+		assertEquals(((DERBitString)value).getBytes().length, 1);
+		assertEquals(((DERBitString)value).getBytes()[0], 64);
+		assertEquals(((DERBitString)value).getPadBits(), 6);
+
+		props.put("value", "1000000010000000"); // this is -128 followed by -128 decimal
+		baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, true, props);      
+		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
+		assertTrue(value.getClass().toString(),value instanceof DERBitString);
+		System.out.println(Hex.toHexString(((DERBitString)value).getBytes()));
+        assertEquals(((DERBitString)value).getBytes().length, 2);
+		assertEquals(((DERBitString)value).getBytes()[0],-128);
+        assertEquals(((DERBitString)value).getBytes()[1],-128);
+		assertEquals(((DERBitString)value).getPadBits(), 7);
+
 		props = new Properties();
 		props.put("encoding", "DERBITSTRING");
 		// SSL Client and S/MIME in NetscapeCertType
@@ -136,7 +189,9 @@ public class BasicCertificateExtensionTest {
 		//log.debug(bi.toString(2));
 		//log.debug(bi.toString());
 		//log.debug(((DERBitString)value).getBytes()[0]);
-		assertEquals(((DERBitString)value).getBytes()[0],-96);
+        System.out.println(Hex.toHexString(((DERBitString)value).getBytes()));
+        assertEquals(((DERBitString)value).getBytes().length, 1);
+		assertEquals(((DERBitString)value).getBytes()[0], -96);
 		assertEquals(((DERBitString)value).getPadBits(), 5);
 		assertTrue(baseExt.getOID().equals("1.2.3"));
 		assertTrue(baseExt.getId() == 1);
@@ -342,6 +397,7 @@ public class BasicCertificateExtensionTest {
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
 		DLSequence seq = (DLSequence)value;
 		assertEquals(3, seq.size());
+        @SuppressWarnings("unchecked")
         Enumeration<ASN1Encodable> e = seq.getObjects();
 		int i = 1;
 		while(e.hasMoreElements()) {
@@ -517,6 +573,7 @@ public class BasicCertificateExtensionTest {
 	 * The values from ExtendedInformation should be used if present.
 	 */
     @Test
+    @SuppressWarnings("unchecked")
 	public void test15DynamicTrueStaticNvalues() throws Exception {
 		Properties props = new Properties();
 		props.put("encoding", "DERPRINTABLESTRING");

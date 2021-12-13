@@ -19,7 +19,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -27,12 +26,14 @@
         <f:viewParam name="roleMemberId" value="#{raRoleMemberBean.roleMemberId}"/>
         <f:viewParam name="roleId" value="#{raRoleMemberBean.roleId}"/>
         <f:viewParam name="caId" value="#{raRoleMemberBean.caId}"/>
+        <f:viewParam name="providerId" value="#{raRoleMemberBean.providerId}"/>
         <f:viewParam name="tokenType" value="#{raRoleMemberBean.tokenType}"/>
 
         <!-- These parameters must be duplicated in several places. See role_members.xhtml for a complete list. When we drop support for JBoss GA 7.1.1 we can put them in a separate file and use ui:include -->
         <f:viewParam name="genericSearchString" value="#{raRoleMembersBean.genericSearchString}"/>
         <f:viewParam name="criteriaRoleId" value="#{raRoleMembersBean.criteriaRoleId}"/>
         <f:viewParam name="criteriaCaId" value="#{raRoleMembersBean.criteriaCaId}"/>
+        <f:viewParam name="criteriaProviderId" value="#{raRoleMembersBean.criteriaProviderId}"/>
         <f:viewParam name="criteriaTokenType" value="#{raRoleMembersBean.criteriaTokenType}"/>
         <f:viewParam name="membersSortAsc" value="#{raRoleMembersBean.sortAscending}"/>
         <f:viewParam name="membersSortCol" value="#{raRoleMembersBean.sortColumn}"/>
@@ -78,6 +79,13 @@
                             <h:outputLabel for="caId" value="#{msg.role_member_page_ca_label}" styleClass="pure-u-lg-1-5"/>
                             <h:selectOneMenu id="caId" value="#{raRoleMemberBean.caId}" styleClass=" pure-input pure-u-lg-3-5">
                                 <f:selectItems value="#{raRoleMemberBean.availableCAs}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="parentProvider" layout="block" styleClass="pure-u-1" rendered="#{raRoleMemberBean.tokenTypeIssuedByOauthProvider}">
+                            <h:outputLabel for="providerId" value="#{msg.role_member_page_provider_label}" styleClass="pure-u-lg-1-5"/>
+                            <h:selectOneMenu id="providerId" value="#{raRoleMemberBean.providerId}" styleClass=" pure-input pure-u-lg-3-5">
+                                <f:selectItems value="#{raRoleMemberBean.availableOauthProviders}"/>
                             </h:selectOneMenu>
                         </h:panelGroup>
                         

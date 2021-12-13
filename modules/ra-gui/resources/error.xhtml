@@ -25,7 +25,7 @@
      -->
     </ui:remove>
     <f:metadata>
-        <f:event type="preRenderView" listener="#{raErrorBean.onErrorPageLoad}"/>
+        <f:viewAction action="#{raErrorBean.onErrorPageLoad}" onPostback="true"/>/>
     </f:metadata>
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">

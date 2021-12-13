@@ -48,8 +48,6 @@ import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
  * 
  * In client mode, the authenticity is checked through the clear-text-password of the 
  * pre-registered end entity from the database. 
- * 
- * @version $Id$
  */
 public class HMACAuthenticationModule implements ICMPAuthenticationModule {
 
@@ -326,4 +324,10 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         }    
         return null;
     }
+    
+    @Override
+    public AuthenticationToken getAuthenticationToken() {
+        return null;
+    }
+
 }

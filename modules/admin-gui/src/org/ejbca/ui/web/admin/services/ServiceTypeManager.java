@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.ejbca.ui.web.admin.services.servicetypes.CRLDownloadWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CRLUpdateWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
@@ -24,6 +25,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateRevocationWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
@@ -47,6 +49,8 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  */
 public class ServiceTypeManager implements Serializable {
 
+    private static final Logger log = Logger.getLogger(ServiceTypeManager.class);
+
 	private static final long serialVersionUID = -7328709803784066077L;
 
 	private final HashMap<String, ServiceType> availableTypesByName = new HashMap<>();
@@ -68,6 +72,19 @@ public class ServiceTypeManager implements Serializable {
         registerServiceType(new RolloverWorkerType());
         registerServiceType(new PublishQueueWorkerType());
         registerServiceType(new HsmKeepAliveWorkerType());
+        // Enterprise Edition workers that don't use the custom worker framework
+        final ServiceType[] eeWorkerTypes = { new PreCertificateRevocationWorkerType() };
+        for (final ServiceType eeWorkerType : eeWorkerTypes) {
+            final String classpath = eeWorkerType.getClassPath();
+            try {
+                Class.forName(classpath, false, getClass().getClassLoader()); // ensure class is available
+                registerServiceType(eeWorkerType);
+            } catch (ClassNotFoundException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Class " +  classpath + " is not available");
+                }
+            }
+        }
 	}
 	
 	/**

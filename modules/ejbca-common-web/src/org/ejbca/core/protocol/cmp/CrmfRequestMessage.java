@@ -32,6 +32,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -550,7 +551,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                         final Signature sig = Signature.getInstance(algId.getAlgorithm().getId(), "BC");
                         sig.initVerify(getRequestPublicKey());
                         sig.update(protBytes);
-                        final DERBitString bs = sk.getSignature();
+                        final ASN1BitString bs = sk.getSignature();
                         ret = sig.verify(bs.getBytes());
                         if (log.isDebugEnabled()) {
                             log.debug("POP verify returns: " + ret);
@@ -623,7 +624,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     
     @Override
     public boolean includeCACert() {
-        return false;
+        // Adapter from interface RequestMessage.includeCACert() 
+        // to BaseCmpMessage.isIncludeCaCert()
+        return super.isIncludeCaCert();
     }
 
     @Override

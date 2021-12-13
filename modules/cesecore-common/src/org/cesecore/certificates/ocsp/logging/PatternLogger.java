@@ -13,6 +13,11 @@
 
 package org.cesecore.certificates.ocsp.logging;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
+
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -22,11 +27,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Hex;
 
 /**
  * This class can be extended to create highly configurable log classes. Values that are to be logged are stored in a Hashmap and the output is
@@ -160,7 +160,7 @@ public abstract class PatternLogger implements Serializable {
      * 
      * @return output to be logged
      */
-    private String interpolate() {
+    public String interpolate() {
         final StringBuffer sb = new StringBuffer(this.orderString.length());
         final Matcher matcher = getMatcher();
         matcher.reset();

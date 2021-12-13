@@ -56,6 +56,12 @@ public interface AccessMatchValue {
      */
     boolean isIssuedByCa();
 
+    /**
+     *
+     * @return true of this AccessMatchValue is issued by a CA
+     */
+    boolean isIssuedByOauthProvider();
+
     /** @return a list of valid match operators for this match */
     List<AccessMatchType> getAvailableAccessMatchTypes();
     

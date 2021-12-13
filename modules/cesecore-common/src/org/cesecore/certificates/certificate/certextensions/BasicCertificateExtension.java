@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -359,8 +360,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
             byte[] byteArray = bigInteger.toByteArray();
             if (byteArray[0] == 0) {
                 // Remove empty extra byte
-                // System.arraycopy handles creating of temporary array when destinatio is the same
-                System.arraycopy(byteArray, 1, byteArray, 0, byteArray.length-1);
+                byteArray = ArrayUtils.remove(byteArray, 0);
             }
             retval = new DERBitString(byteArray, padBits);
         } catch (NumberFormatException e) {

@@ -42,6 +42,7 @@
 	<path id="compile.classpath">
 		<path refid="common-compile.classpath"/>
 		<path refid="lib.ejbca-common.classpath"/>
+        <path refid="lib.xstream.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
@@ -83,10 +84,16 @@
 	</path>
 
 	<path id="cli.classpath">
+		<!-- Additional classes needed when running DB CLI to import data -->
+        <path refid="compile.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
 		<path location="${mod.cli-util.lib}"/>
-		<path refid="compile.classpath"/>
+        <path refid="lib.ejbca-common-web.classpath"/>
+        <path refid="lib.jacknji.classpath"/>
+        <path refid="lib.nimbus-jose-jwt.classpath"/>
+        <path refid="lib.javaxejb.classpath"/>
+	    <path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
 	<path id="generate.classpath">

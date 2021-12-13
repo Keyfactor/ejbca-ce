@@ -52,6 +52,7 @@ org.ejbca.util.HTMLTools
        final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() + "/roles.xhtml";
        
        final String ACMECONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/acmeconfiguration.xhtml";
+       final String AUTOENROLLCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/autoenrollconfiguration.xhtml";
        final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/scepconfiguration.xhtml";
        
        final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfigurations.xhtml";
@@ -327,6 +328,16 @@ org.ejbca.util.HTMLTools
           } %>
  			<li><a href="<%= ACMECONFIGURATION_LINK %>"><%=ejbcawebbean.getText("NAV_ACMECONFIGURATION") %></a></li>
  <% } %>
+<%
+
+    // If authorized to edit Autoenrollment Configuration then display related links.
+      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE) && ejbcawebbean.isRunningEnterprise()){
+          if(!configheaderprinted){
+        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
+        configheaderprinted = true;
+          } %>
+                <li><a href="<%= AUTOENROLLCONFIGURATION_LINK %>"><%=ejbcawebbean.getText("NAV_AUTOENROLLCONFIGURATION") %></a></li>
+<% } %>
 <%
 
     // If authorized to edit CMP Configuration then display related links.

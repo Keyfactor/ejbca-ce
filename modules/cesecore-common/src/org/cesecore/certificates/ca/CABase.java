@@ -50,8 +50,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * CA is a base class that should be inherited by all CA types
- *
- * @version $Id$
  */
 public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
@@ -112,6 +110,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setCRLIssueInterval(cainfo.getCRLIssueInterval());
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
+        setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
         
         List<Integer> extendedservicetypes = new ArrayList<>();
         for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
@@ -136,6 +135,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         super.updateCA(cryptoToken, cainfo, cceConfig);
         data.put(CRLPERIOD, cainfo.getCRLPeriod());
         data.put(DELTACRLPERIOD, cainfo.getDeltaCRLPeriod());
+        data.put(GENERATECRLUPONREVOCATION, cainfo.isGenerateCrlUponRevocation());
         data.put(CRLISSUEINTERVAL, cainfo.getCRLIssueInterval());
         data.put(CRLOVERLAPTIME, cainfo.getCRLOverlapTime());
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
@@ -209,6 +209,16 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     @Override
     public void setDeltaCRLPeriod(long deltacrlperiod) {
         data.put(DELTACRLPERIOD, deltacrlperiod);
+    }
+    
+    @Override
+    public boolean getGenerateCrlUponRevocation() {
+        return getBoolean(GENERATECRLUPONREVOCATION, false);
+    }
+
+    @Override
+    public void setGenerateCrlUponRevocation(boolean generate) {
+        data.put(GENERATECRLUPONREVOCATION, generate);
     }
 
     @Override

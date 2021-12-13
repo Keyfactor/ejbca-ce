@@ -330,6 +330,7 @@ CREATE TABLE RoleMemberData (
     primaryKey INTEGER NOT NULL,
     tokenType VARCHAR(254) NOT NULL,
     tokenIssuerId INTEGER NOT NULL,
+    tokenProviderId INTEGER DEFAULT 0 NOT NULL,
     tokenMatchKey INTEGER NOT NULL,
     tokenMatchOperator INTEGER NOT NULL,
     tokenMatchValue VARCHAR(2000),
@@ -455,6 +456,14 @@ CREATE TABLE OcspResponseData (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(254) NOT NULL,
+    startTime BIGINT NOT NULL,
+    rawData CLOB,
+    rowProtection CLOB(10K),
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
+);
 
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
 

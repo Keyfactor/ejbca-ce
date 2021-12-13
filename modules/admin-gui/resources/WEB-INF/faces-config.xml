@@ -276,6 +276,28 @@
   </navigation-rule>
 
     <navigation-rule>
+        <from-view-id>/sysconfig/autoenrollconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>edit</from-outcome>
+            <to-view-id>/sysconfig/editautoenrollmentconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/sysconfig/autoenrollconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>view</from-outcome>
+            <to-view-id>/sysconfig/editautoenrollmentconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/sysconfig/editautoenrollmentconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/autoenrollconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
         <from-view-id>/sysconfig/estconfigurations.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>edit</from-outcome>
@@ -296,7 +318,6 @@
             <to-view-id>/sysconfig/estconfigurations.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
-
 
   <navigation-rule>
     <from-view-id>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</from-view-id>

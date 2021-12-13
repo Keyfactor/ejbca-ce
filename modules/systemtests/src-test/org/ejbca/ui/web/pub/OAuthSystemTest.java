@@ -13,60 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import com.nimbusds.jose.util.Base64URL;
-import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.cesecore.CaTestUtils;
-import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
-import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.roles.member.RoleMember;
-import org.cesecore.roles.member.RoleMemberSessionRemote;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.AvailableProtocolsConfiguration;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-import org.ejbca.core.protocol.ws.client.gen.NameAndId;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.MessageContext;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -95,8 +41,69 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.*;
-import static org.junit.Assert.*;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.MessageContext;
+
+import com.nimbusds.jose.util.Base64URL;
+
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.CaTestUtils;
+import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.NameAndId;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
+
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.RA_WEB;
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT;
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.WS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 
@@ -105,6 +112,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public class OAuthSystemTest {
 
+    private static final String AZURE_AUDIENCE = "api://f4b51ae1-77e0-4367-be11-5a43b6b20358";
     private static final String OAUTH_SUB = "OauthSystemTestSub";
     private static final String CA = "OauthSystemTestCA";
     private static final String OAUTH_KEY = "OauthSystemTestKey";
@@ -160,7 +168,7 @@ public class OAuthSystemTest {
     private static final String HTTP_HOST = SystemTestsConfiguration.getRemoteHost(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
     private static final String HTTP_PORT = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTPS));
     private static final String HTTP_REQ_PATH = "https://" + HTTP_HOST + ":" + HTTP_PORT + "/ejbca";
-    private static int oAuthKeyInfoInternalId;
+    private static String oAuthKeyInfoLabel;
     private static CA adminca;
     private static RoleMember roleMember;
     private static String token;
@@ -185,13 +193,17 @@ public class OAuthSystemTest {
         final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey privKey = keyFactory.generatePrivate(pkKeySpec);
 
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        globalConfiguration.getOauthKeys();
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        oAuthConfiguration.getOauthKeys();
         //add oauth key
-        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, pubKeyBytes, 6000);
-        oAuthKeyInfoInternalId = oAuthKeyInfo.getInternalId();
-        globalConfiguration.addOauthKey(oAuthKeyInfo);
-        globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
+        OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, 6000, OAuthProviderType.TYPE_AZURE);
+        oAuthKeyInfo.addPublicKey(OAUTH_KEY, pubKeyBytes);
+        oAuthKeyInfo.setUrl("https://login.microsoftonline.com/");
+        oAuthKeyInfo.setAudience(AZURE_AUDIENCE);
+        oAuthKeyInfo.setScope(AZURE_AUDIENCE + "/ejbca");
+        oAuthKeyInfoLabel = oAuthKeyInfo.getLabel();
+        oAuthConfiguration.addOauthKey(oAuthKeyInfo);
+        globalConfigSession.saveConfiguration(authenticationToken, oAuthConfiguration);
 
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
@@ -218,11 +230,13 @@ public class OAuthSystemTest {
                 AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY
         ), null));
         // Add the second RA role
-        roleMember = roleMemberSession.persist(authenticationToken, new RoleMember(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMember = new RoleMember(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), OAuth2AccessMatchValue.CLAIM_SUBJECT.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                OAUTH_SUB, role1.getRoleId(), null));
+                OAUTH_SUB, role1.getRoleId(), null);
+        roleMember.setTokenProviderId(oAuthKeyInfo.getInternalId());
+        roleMember = roleMemberSession.persist(authenticationToken, roleMember);
 
-        token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\"}", privKey);
+        token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\", \"aud\":\"" + AZURE_AUDIENCE + "\"}", privKey);
         final String timestamp = String.valueOf((System.currentTimeMillis() + -60 * 60 * 1000) / 1000); // 1 hour old
         expiredToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
         defaultSocketFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
@@ -234,15 +248,16 @@ public class OAuthSystemTest {
         if (adminca != null) {
             CaTestUtils.removeCa(authenticationToken, adminca.getCAInfo());
         }
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (globalConfiguration.getOauthKeys().get(oAuthKeyInfoInternalId) != null) {
-            globalConfiguration.removeOauthKey(oAuthKeyInfoInternalId);
-            globalConfigSession.saveConfiguration(authenticationToken, globalConfiguration);
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        if (oAuthConfiguration.getOauthKeys().get(oAuthKeyInfoLabel) != null) {
+            oAuthConfiguration.removeOauthKey(oAuthKeyInfoLabel);
+            globalConfigSession.saveConfiguration(authenticationToken, oAuthConfiguration);
         }
         if (roleMember != null) {
             roleMemberSession.remove(authenticationToken, roleMember.getId());
             roleSession.deleteRoleIdempotent(authenticationToken, roleMember.getRoleId());
         }
+        roleSession.deleteRoleIdempotent(authenticationToken, null,  ROLENAME);
         HttpsURLConnection.setDefaultSSLSocketFactory(defaultSocketFactory);
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
@@ -299,7 +314,9 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("EJBCA Administration should be accessible. Actual response was: " + response, response.contains("Logged in as " + OAUTH_SUB));
+        //Log out OauthSystemTestSub
+        final String expectedString = "Log out " + OAUTH_SUB;
+        assertTrue("EJBCA Administration should be accessible and contain '" + expectedString + "'. Actual response was: " + response, response.contains(expectedString));
     }
 
     @Test
@@ -308,7 +325,7 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Not logged in"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Log in"));
     }
 
     @Test
@@ -362,7 +379,7 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, expiredToken);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authentication failed using OAuth Bearer Token"));
+        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authorization Denied"));
 
     }
 

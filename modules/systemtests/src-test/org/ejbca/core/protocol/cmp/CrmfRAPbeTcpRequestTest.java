@@ -52,8 +52,6 @@ import static org.junit.Assert.assertNotNull;
  * You need a CMP TCP listener configured on port 5587 to run this test. (cmp.tcp.enabled=true, cmp.tcp.portno=5587)
  * 
  * 'ant clean; ant bootstrap' to deploy configuration changes.
- * 
- * @version $Id$
  */
 public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 
@@ -163,7 +161,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
         assertNotNull(cert);
 
         // Send a confirm message to the CA

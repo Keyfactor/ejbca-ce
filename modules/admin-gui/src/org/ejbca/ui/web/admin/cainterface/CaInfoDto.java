@@ -21,8 +21,6 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
 /**
  * Wrapper class for holding CaInfo properties.
- *
- * @version $Id$
  */
 public class CaInfoDto {
 
@@ -50,6 +48,7 @@ public class CaInfoDto {
     private String caSubjectAltName;
     private String policyId;
     private boolean useAuthorityKeyIdentifier = true; // Default in create ca page
+    private boolean msCaCompatible;
     private boolean authorityKeyIdentifierCritical;
     private boolean useCrlNumber = true; // Default
     private boolean crlNumberCritical;
@@ -86,6 +85,7 @@ public class CaInfoDto {
     private String crlCaIssueInterval;
     private String crlCaOverlapTime;
     private String crlCaDeltaCrlPeriod;
+    private boolean generateCrlUponRevocation = false;
     private String requestPreProcessor;
 
     long getDeltaCrlPeriod() {
@@ -145,10 +145,16 @@ public class CaInfoDto {
         this.signatureAlgorithmParam = signatureAlgorithmParam;
     }
 
+    /** Key specification for extended CA services, used to generate the soft key used for i.e. the CMS Service 
+     * @return a key specification, for example 2048.
+     */
     public String getSignKeySpec() {
         return signKeySpec;
     }
 
+    /** Key specification for extended CA services, used to generate the soft key used for i.e. the CMS Service 
+     * @param signKeySpec a key specification, for example 2048.
+     */
     public void setSignKeySpec(String signKeySpec) {
         this.signKeySpec = signKeySpec;
     }
@@ -319,6 +325,19 @@ public class CaInfoDto {
 
     public void setUseAuthorityKeyIdentifier(boolean useAuthorityKeyIdentifier) {
         this.useAuthorityKeyIdentifier = useAuthorityKeyIdentifier;
+    }
+
+    public boolean isMsCaCompatible() {
+        return msCaCompatible;
+    }
+
+    public void setMsCaCompatible(boolean msCaCompatible) {
+        if (msCaCompatible) {
+            // CRL Partitions for MS Compatible CA's are handled differently.
+            resetUseCrlPartitionsSettings();
+        }
+
+        this.msCaCompatible = msCaCompatible;
     }
 
     public boolean isAuthorityKeyIdentifierCritical() {
@@ -608,6 +627,14 @@ public class CaInfoDto {
     public void setCrlCaDeltaCrlPeriod(String crlCaDeltaCrlPeriod) {
         this.crlCaDeltaCrlPeriod = crlCaDeltaCrlPeriod;
     }
+    
+    public boolean isGenerateCrlUponRevocation() {
+        return generateCrlUponRevocation;
+    }
+    
+    public void setGenerateCrlUponRevocation(boolean generate) {
+        generateCrlUponRevocation = generate;
+    }
 
     public String getRequestPreProcessor() {
         return requestPreProcessor;
@@ -615,6 +642,12 @@ public class CaInfoDto {
 
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
+    }
+
+    private void resetUseCrlPartitionsSettings() {
+        this.usePartitionedCrl = false;
+        this.crlPartitions = 0;
+        this.suspendedCrlPartitions = 0;
     }
 }
 

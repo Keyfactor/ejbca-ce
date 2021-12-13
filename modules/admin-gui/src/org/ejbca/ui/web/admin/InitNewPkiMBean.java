@@ -79,6 +79,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -87,6 +88,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.CertificateSignatureException;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -466,7 +468,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date(), caInfo.isExpirationInclusive());
         KeyStore keyStore = null;
         keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
-                caId, "2048", "RSA", new Date(), notAfter, false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+                caId, "2048", "RSA", new Date(), notAfter, SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             keyStore.store(outputStream, getAdminKeyStorePassword().toCharArray());
@@ -652,7 +654,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             return "certificatetoken";
         }
         if (StringUtils.isAsciiPrintable(commonName)) {
-            return commonName;
+            return StringTools.stripFilename(commonName);
         }
         return Base64.encodeBase64String(commonName.getBytes());
     }

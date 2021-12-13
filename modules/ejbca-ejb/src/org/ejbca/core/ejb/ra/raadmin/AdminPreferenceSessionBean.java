@@ -31,14 +31,11 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -50,7 +47,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AdminPreferenceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
+public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
 
     private static final String DEFAULTUSERPREFERENCE = "default";
 
@@ -67,16 +64,6 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private RaStyleCacheBean raStyleCacheBean;
-    
-    private String makeAdminPreferenceId(final AuthenticationToken admin) {
-        if (admin instanceof X509CertificateAuthenticationToken) {
-            return CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
-        } else if (admin instanceof PublicAccessAuthenticationToken) {
-            return null;
-        } else {
-            return admin.getClass().getSimpleName() + ":" + admin.getPreferredMatchValue();
-        }
-    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -342,17 +329,23 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Locale getCurrentRaLocale(final AuthenticationToken admin) {
-        final AdminPreference adminPreference = getAdminPreference(admin);
-        if (adminPreference == null) {
+        try {
+            final AdminPreference adminPreference = getAdminPreference(admin);
+            if (adminPreference == null) {
+                return getDefaultAdminPreference().getPreferedRaLanguage();
+            }
+
+            final Locale currentLocale = adminPreference.getPreferedRaLanguage();
+            if (currentLocale != null) {
+                return currentLocale;
+            }
+
             return getDefaultAdminPreference().getPreferedRaLanguage();
+        } catch (RuntimeException e) {
+            // This method is called in the error handler, so we don't want to throw any exceptions.
+            log.warn("Failed to get locale: " + e.getMessage(), e);
+            return null;
         }
-
-        final Locale currentLocale = adminPreference.getPreferedRaLanguage();
-        if (currentLocale != null) {
-            return currentLocale;
-        }
-
-        return getDefaultAdminPreference().getPreferedRaLanguage();
     }
 
     @Override

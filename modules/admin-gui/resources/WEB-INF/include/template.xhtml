@@ -111,6 +111,7 @@
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_SYSTEMCONFIGURATION}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink id="sysConfigAcme" value="#{adminMenuBean.adminWebUrl}sysconfig/acmeconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewAcmeConfiguration}"><h:outputText value="#{web.text.NAV_ACMECONFIGURATION}"/></h:outputLink> 
+          <h:outputLink id="sysConfigAutoenroll" value="#{adminMenuBean.adminWebUrl}sysconfig/autoenrollconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewAutoenrollConfiguration}"><h:outputText value="#{web.text.NAV_AUTOENROLLCONFIGURATION}"/></h:outputLink> 
           <h:outputLink id="sysConfigCmp" value="#{adminMenuBean.adminWebUrl}sysconfig/cmpaliases.xhtml" rendered="#{adminMenuBean.authorizedToViewCmpConfiguration}"><h:outputText value="#{web.text.NAV_CMPCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigEst" value="#{adminMenuBean.adminWebUrl}sysconfig/estconfigurations.xhtml" rendered="#{adminMenuBean.authorizedToViewEstConfiguration}"><h:outputText value="#{web.text.NAV_ESTCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigScep" value="#{adminMenuBean.adminWebUrl}sysconfig/scepconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewScepConfiguration}"><h:outputText value="#{web.text.NAV_SCEPCONFIGURATION}"/></h:outputLink>
@@ -149,7 +150,7 @@
         <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
             <ui:insert name="footer">
                 <h:panelGroup layout="block" id="footerInner" styleClass="footerInner">
-                    <h:outputText value="© 2002–2020 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB."/>
+                    <h:outputText value="© 2002–2021 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB."/>
                 </h:panelGroup>
             </ui:insert>
         </h:panelGroup>

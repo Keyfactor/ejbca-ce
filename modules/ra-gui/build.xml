@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ra-gui" default="build">
     <description>
-            Build file for the Resgistration Authority GUI
+            Build file for the Registration Authority GUI
     </description>
 
 	<dirname property="ra-gui.dir" file="${ant.file.ra-gui}"/>
@@ -16,6 +16,7 @@
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
+		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
