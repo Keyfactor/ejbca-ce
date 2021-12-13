@@ -1861,11 +1861,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EjbcaException {
         EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS);
-        final int profileId = endEntityInformation.getEndEntityProfileId();
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-        if (profile.getAllowMergeDn()) {
-            endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntityInformation, profile);
-        }
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, isClearPwd);
         return endEntityAccessSession.findUser(endEntityInformation.getUsername()) != null;
     }
