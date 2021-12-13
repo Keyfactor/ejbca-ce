@@ -56,51 +56,6 @@ public class EndEntityInformationFillerTest {
         profile.setCabfOrganizationIdentifierUsed(true);
         profile.setCabfOrganizationIdentifier("VATSE-556677123401");
     }
-	
-	@Test
-    public void testMergeDN2() {
-        
-        EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(DnComponents.COMMONNAME);
-        profile.addField(DnComponents.DNEMAILADDRESS);
-        profile.addField(DnComponents.ORGANIZATIONALUNIT);
-        profile.setUse(DnComponents.ORGANIZATIONALUNIT, 0, true);
-        profile.setValue(DnComponents.ORGANIZATIONALUNIT, 0, "FooOrgUnit");
-        // The merge handles several default values for each DN component, i.e. OU=OrgU1,OU=OrgU2,O=Org etc.
-        profile.addField(DnComponents.ORGANIZATION);
-        profile.addField(DnComponents.COUNTRY);
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
-        profile.setAllowMergeDn(true);
-        
-        profile.addField(DnComponents.JURISDICTIONCOUNTRY);
-        profile.setUse(DnComponents.JURISDICTIONCOUNTRY, 0, true);
-        profile.setValue(DnComponents.JURISDICTIONCOUNTRY, 0, "NO");
-        profile.addField(DnComponents.JURISDICTIONSTATE);
-        profile.setUse(DnComponents.JURISDICTIONSTATE, 0, true);
-        profile.setValue(DnComponents.JURISDICTIONSTATE, 0, "California");
-        profile.addField(DnComponents.JURISDICTIONLOCALITY);
-        profile.setUse(DnComponents.JURISDICTIONLOCALITY, 0, true);
-        profile.setValue(DnComponents.JURISDICTIONLOCALITY, 0, "Stockholm");
-        
-        // Add the required end entity profile fields
-        profile.addField(DnComponents.DNSNAME);
-        profile.addField(DnComponents.DNSNAME);
-        profile.addField(DnComponents.DNSNAME);
-        profile.addField(DnComponents.RFC822NAME);
-        profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
-        profile.setValue(DnComponents.DNSNAME, 1, "server.superbad.com");
-        profile.addField(DnComponents.DNSNAME);
-        
-        final String subjectDN = "CN=foo subject,O=Bar";
-        EndEntityInformation addUser = new EndEntityInformation();
-        addUser.setDN(subjectDN);
-        addUser.setSubjectAltName("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com");
-        
-        EndEntityInformationFiller.fillUserDataWithDefaultValues(addUser, profile);
-        log.info(addUser.getDN());
-        log.info(addUser.getSubjectAltName());
-        
-    }
 
     /**
      * Test merging of DNs with multiple components
