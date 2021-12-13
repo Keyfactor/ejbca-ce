@@ -18,7 +18,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -27,10 +27,8 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 /**
  * This is a class used for plugin testing and example purposes.
  * It is supposed to illustrate how to implement a custom publisher in EJBCA 5.
- * @version $Id$
- *
  */
-public class MyPublisher implements ICustomPublisher{
+public class MyPublisher implements ICustomPublisher {
     		
     private static Logger log = Logger.getLogger(MyPublisher.class);
 
@@ -79,6 +77,16 @@ public class MyPublisher implements ICustomPublisher{
 	public boolean isReadOnly() {
             return false;
 	}
+
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
+    }
 
 }
 

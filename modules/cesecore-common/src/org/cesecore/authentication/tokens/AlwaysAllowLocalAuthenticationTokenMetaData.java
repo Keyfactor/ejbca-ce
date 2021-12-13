@@ -21,7 +21,6 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 /**
  * Meta data definition and ServiceLoader marker for {@link org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken}.
  * 
- * @version $Id$
  */
 public class AlwaysAllowLocalAuthenticationTokenMetaData extends AuthenticationTokenMetaDataBase {
 
@@ -48,6 +47,11 @@ public class AlwaysAllowLocalAuthenticationTokenMetaData extends AuthenticationT
 
         @Override
         public boolean isIssuedByCa() {
+            return false;
+        }
+
+        @Override
+        public boolean isIssuedByOauthProvider() {
             return false;
         }
 

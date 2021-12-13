@@ -35,8 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /** Tests the external process tools static helper class.
- * 
- * @version $Id: ExternalProcessToolsTest.java 25133 2017-12-14 09:20:32Z anjakobs $
  */
 public class ExternalProcessToolsTest {
 
@@ -135,7 +133,7 @@ public class ExternalProcessToolsTest {
         log.trace(">launchExternalCommandWithWriteFileToDisk()");
         
         // Platforms: MS Windows and Unix/Linux.
-        final X509Certificate certificate = createSelfSignedX509TestCertificate("test03Launch");
+        final X509Certificate certificate = createSelfSignedX509TestCertificate("launchExternalCommandWithWriteFileToDisk");
         final String cmd = getFilePathFromClasspath("external_process_tools_with_write_to_disk_exit_code_0");
         List<String> out = null;
         final List<String> arguments = new ArrayList<String>();
@@ -145,7 +143,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             if (log.isDebugEnabled()) {
                 log.debug("Out A:1: " + out);
             }
@@ -164,7 +162,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, false, false, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             if (log.isDebugEnabled()) {
                 log.debug("Out A:2: " + out);
             }
@@ -182,7 +180,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, true, true, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             fail("The external command '" + cmd + "' should have failed (failOnStandardError=true).");
         } catch(Exception e) {
             if (log.isDebugEnabled()) {
@@ -201,7 +199,7 @@ public class ExternalProcessToolsTest {
         try {
             arguments.clear();
             out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, false, false, arguments,
-                    this.getClass().getName());
+                    this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
             fail("The external command '" + cmd + "' should have failed (failOnStandardError=true).");
         } catch(Exception e) {
             if (log.isDebugEnabled()) {
@@ -244,7 +242,7 @@ public class ExternalProcessToolsTest {
                 arguments.add(Integer.toString(exitCode));
                 arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
                 out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
-                        this.getClass().getName());
+                        this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
                 assertTrue("The exit code must be " + exitCode + ".", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
                 cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
                 assertTrue("At least " + cnt + " line(s) must have been logged to STDOUT.", cnt > 3);
@@ -259,7 +257,106 @@ public class ExternalProcessToolsTest {
         
         log.trace("<launchExternalCommandDontWriteFileToDisk()");
     }
-    
+
+    /**
+     * Tests using an allow list for launching external commands, allow or dissallow all or specific commands
+     * 
+     * @throws Exception any exception.
+     */
+    @Test
+    public void launchExternalCommandAllowList() throws Exception {
+        log.trace(">launchExternalCommandAllowList()");
+        
+        // Platforms: Unix/Linux only.
+        // Script parameters contains '%cert%' -> PEM certificate is in STDIN.
+        if (!SystemUtils.IS_OS_WINDOWS) {            
+            final X509Certificate certificate = createSelfSignedX509TestCertificate("launchExternalCommandAllowList");
+            final String cmd = getFilePathFromClasspath("external_process_tools_dont_write_to_disk");
+            List<String> out = null;
+            final List<String> arguments = new ArrayList<String>();
+            int exitCode = 0;
+            
+            // ExternalScriptsAllowlist.permitAll allows script to run, should succeed.
+            try {
+                arguments.clear();
+                arguments.add("param1");
+                arguments.add(Integer.toString(exitCode));
+                arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
+                out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
+                        this.getClass().getName(), ExternalScriptsAllowlist.permitAll());
+                assertEquals("The exit code must be " + exitCode + ".", Integer.valueOf(exitCode), ExternalProcessTools.extractExitCode(out));
+            } catch(Exception e) {
+                log.warn(e.getMessage(), e);
+                fail("The external command '" + cmd + "' should have succeeded (failOnStandardError=false): " + e.getMessage());
+            }
+
+            // ExternalScriptsAllowlist.forbidAll forbids script to run, should throw
+            try {
+                arguments.clear();
+                arguments.add("param1");
+                arguments.add(Integer.toString(exitCode));
+                arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
+                out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
+                        this.getClass().getName(), ExternalScriptsAllowlist.forbidAll());
+                fail("Command should not have been allowed to run with ExternalScriptsAllowlist.forbidAll()");
+            } catch(ExternalProcessException e) {
+                assertTrue("Wrong error message: " + e.getMessage(), e.getMessage().startsWith("An allow list has been enabled, but the command")); 
+            }
+
+            // Give an allowList, but don't enable it, should run
+            try {
+                arguments.clear();
+                arguments.add("param1");
+                arguments.add(Integer.toString(exitCode));
+                arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
+                ExternalScriptsAllowlist list = ExternalScriptsAllowlist.fromText(
+                        "/bin/touch\n" + cmd, 
+                        false);
+                out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
+                        this.getClass().getName(), list);
+                assertEquals("The exit code must be " + exitCode + ".", Integer.valueOf(exitCode), ExternalProcessTools.extractExitCode(out));
+            } catch(Exception e) {
+                log.warn(e.getMessage(), e);
+                fail("The external command '" + cmd + "' should have succeeded (failOnStandardError=false): " + e.getMessage());
+            }
+            
+            // Give an allowList, and enable it, should run
+            try {
+                arguments.clear();
+                arguments.add("param1");
+                arguments.add(Integer.toString(exitCode));
+                arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
+                ExternalScriptsAllowlist list = ExternalScriptsAllowlist.fromText(
+                        "/bin/touch\n" + cmd, 
+                        true);
+                out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
+                        this.getClass().getName(), list);
+                assertEquals("The exit code must be " + exitCode + ".", Integer.valueOf(exitCode), ExternalProcessTools.extractExitCode(out));
+            } catch(Exception e) {
+                log.warn(e.getMessage(), e);
+                fail("The external command '" + cmd + "' should have succeeded (failOnStandardError=false): " + e.getMessage());
+            }
+
+            // Give an allowList, enable it, but don't include the right script, should not run
+            try {
+                arguments.clear();
+                arguments.add("param1");
+                arguments.add(Integer.toString(exitCode));
+                arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
+                ExternalScriptsAllowlist list = ExternalScriptsAllowlist.fromText(
+                        "/bin/touch", 
+                        true);
+                out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
+                        this.getClass().getName(), list);
+                fail("Command should not have been allowed to run with since list does not include the right command");
+            } catch(ExternalProcessException e) {
+                assertTrue("Wrong error message: " + e.getMessage(), e.getMessage().startsWith("An allow list has been enabled, but the command")); 
+            }
+
+        }
+        log.trace("<launchExternalCommandAllowList()");
+    }
+
     private final X509Certificate createSelfSignedX509TestCertificate(final String cn) throws Exception {
         final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         return CertTools.genSelfCert(

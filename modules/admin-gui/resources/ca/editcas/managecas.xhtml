@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+	  xmlns:f="http://xmlns.jcp.org/jsf/core"
+	  xmlns:h="http://xmlns.jcp.org/jsf/html"
+	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -24,102 +24,115 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{manageCAsMBean}" />
+	<ui:param name="resourceBean" value="#{manageCAsMBean}" />
 	<ui:define name="content">
 		<h1>
 			<h:outputText value="#{web.text.MANAGECAS}" />
-            <h:outputText
-                    value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
-                    escape="false" styleClass="helpReference"/>
-			
+			<h:outputText
+					value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
+					escape="false" styleClass="helpReference"/>
+
 		</h1>
 
-		<h:form id="managecas">
+		<h:form id="managecas" enctype="multipart/form-data">
 			<h:panelGrid styleClass="list">
 				<h:panelGroup>
-						<h3>
-							<h:outputText value="#{web.text.LISTOFCAS}" />
-						</h3>
+					<h3>
+						<h:outputText value="#{web.text.LISTOFCAS}" />
+					</h3>
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:selectOneListbox id="selectcas"
-							value="#{manageCAsMBean.selectedCaId}" style="width: 50em" size="15"
-							class="select-list">
-							<f:selectItems value="#{manageCAsMBean.listOfCas.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
-						    <f:ajax render="@form"/>
+										value="#{manageCAsMBean.selectedCaId}" style="width: 50em" size="15"
+										class="select-list">
+						<f:selectItems value="#{manageCAsMBean.listOfCas.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
+						<f:ajax render="@form"/>
 					</h:selectOneListbox>
 				</h:panelGroup>
 
 				<h:panelGroup>
-						<h:panelGrid columns="4" >
+					<h:panelGrid columns="4" >
 						<h:panelGroup>
-								<h:commandButton 
-										id="buttoneditca"
-										value="#{manageCAsMBean.editCAButtonValue}" 
-										action="#{manageCAsMBean.editCaPage}"/>
+							<h:commandButton
+									id="buttoneditca"
+									value="#{manageCAsMBean.editCAButtonValue}"
+									action="#{manageCAsMBean.editCaPage}"/>
 						</h:panelGroup>
-						<h:panelGroup>				
-								<h:commandButton
-										class="buttonstyle" 
-										onclick="return confirmcaaction('#{manageCAsMBean.confirmMessage}')"
-										id="buttondeleteca"
-										value="#{web.text.DELETECA}"
-										action="#{manageCAsMBean.deleteCA()}"
-										rendered="#{manageCAsMBean.canRemoveResource}" />
+						<h:panelGroup>
+							<h:commandButton
+									class="buttonstyle"
+									onclick="return confirmcaaction('#{manageCAsMBean.confirmMessage}')"
+									id="buttondeleteca"
+									value="#{web.text.DELETECA}"
+									action="#{manageCAsMBean.deleteCA()}"
+									rendered="#{manageCAsMBean.canRemoveResource}" />
 						</h:panelGroup>
 						<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
-								<h:commandButton 
-										id="buttonimportca"
-										value="#{manageCAsMBean.importKeystoreText}"
-										rendered="#{manageCAsMBean.canAddResource}" 
-										action="importca"/>
+							<h:commandButton
+									id="buttonimportca"
+									value="#{manageCAsMBean.importKeystoreText}"
+									rendered="#{manageCAsMBean.canAddResource}"
+									action="importca"/>
 						</h:panelGroup>
-						<h:panelGroup>				
-								<h:commandButton
-										id="buttonimportcacert"
-										value="#{manageCAsMBean.importCertificateText}"
-										rendered="#{manageCAsMBean.canAddResource}" 
-										action="importcacert"/>
+						<h:panelGroup>
+							<h:commandButton
+									id="buttonimportcacert"
+									value="#{manageCAsMBean.importCertificateText}"
+									rendered="#{manageCAsMBean.canAddResource}"
+									action="importcacert"/>
 
 						</h:panelGroup>
-						</h:panelGrid>
+					</h:panelGrid>
 				</h:panelGroup>
 			</h:panelGrid>
 
 			<h:panelGrid class="actions" columns="1">
 				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
-					<h:commandButton 
+					<h:commandButton
 							id="buttonsignrequest"
 							value="#{web.text.CREATEAUTHCSR}"
 							rendered="#{manageCAsMBean.canRenewResource}"
-							action="#{manageCAsMBean.createAuthCertSignRequest()}" /> 
+							action="#{manageCAsMBean.createAuthCertSignRequest()}" />
 				</h:panelGroup>
 				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddAndEditResource}">
-						<h3>
-							<h:outputText value="#{web.text.ADDCA}"
-								rendered="#{manageCAsMBean.canAddOrEditResource}" />
-						</h3>
+					<h3>
+						<h:outputText value="#{web.text.ADDCA}"
+									  rendered="#{manageCAsMBean.canAddOrEditResource}" />
+					</h3>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddAndEditResource}">
-						<h:inputText
+					<h:inputText
 							id="textfieldcaname" size="40" maxlength="255"
 							title="#{web.text.FORMAT_ID_STR}"
 							value="#{manageCAsMBean.createCaName}"
 							rendered="#{manageCAsMBean.canAddOrEditResource}"
 							style="margin-right:3px;"
-							/>  
-						<h:commandButton id="buttoncreateca"
-							value="#{web.text.CREATE}..."
-							rendered="#{manageCAsMBean.canAddResource}" 						
-							action="#{manageCAsMBean.createCaPage}"
-							style="margin-right:3px;"
-							/>  
-						<h:commandButton id="buttonrenameca"
-							value="#{web.text.RENAME_SELECTED}"
-							rendered="#{manageCAsMBean.canEditResource}" 
-							action="#{manageCAsMBean.renameCA()}"
-							onclick="return checkfieldforlegalchars(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
-							/>
+					/>
+					<h:commandButton id="buttoncreateca"
+									 value="#{web.text.CREATE}..."
+									 rendered="#{manageCAsMBean.canAddResource}"
+									 action="#{manageCAsMBean.createCaPage}"
+									 style="margin-right:3px;"
+					/>
+					<h:commandButton id="buttonrenameca"
+									 value="#{web.text.RENAME_SELECTED}"
+									 rendered="#{manageCAsMBean.canEditResource}"
+									 action="#{manageCAsMBean.renameCA()}"
+									 onclick="return checkfieldforlegalchars(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
+					/>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{manageCAsMBean.canAddResource}">
+					<h3>
+						<h:outputText value="#{web.text.IMPORT_CERTIFICATE_BUNDLE}"/>
+					</h3>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{manageCAsMBean.canAddResource}">
+					<div>
+						<h:outputLabel for="importCertificateBundle" value="#{web.text.SELECT_CERTIFICATE_BUNDLE}"/>
+					</div>
+					<h:inputFile value="#{manageCAsMBean.certificateBundle}" id="importCertificateBundle">
+						<f:ajax render="@all" listener="#{manageCAsMBean.importCertificateBundle}" />
+					</h:inputFile>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>

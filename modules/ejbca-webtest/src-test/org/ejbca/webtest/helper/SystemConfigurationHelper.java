@@ -64,6 +64,7 @@ public class SystemConfigurationHelper extends BaseHelper {
         ADMINPREFERENCES("Administrator Preferences"),
         PROTOCOLCONFIG("Protocol Configuration"),
         EXTENDEDKEYUSAGE("Extended Key Usages"),
+        OAUTHPROVIDERS("Trusted OAuth Providers"),
         CTLOGS("Certificate Transparency Logs"),
         CUSTOMCERTEXTENSIONS("Custom Certificate Extensions"),
         CUSTOMRASTYLES("Custom RA Styles"),
@@ -87,7 +88,8 @@ public class SystemConfigurationHelper extends BaseHelper {
     public enum SysConfigProtokols {
         ACME("ACME"),
         CERTSTORE("Certstore"),
-        REST_CERTIFICATE_MANAGEMENT("REST Certificate Management");
+        REST_CERTIFICATE_MANAGEMENT("REST Certificate Management"),
+        REST_CERTIFICATE_MANAGEMENT_V2("REST Certificate Management V2");
 
         private final String label;
 

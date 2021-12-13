@@ -10,25 +10,26 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
+import static org.ejbca.ui.web.rest.api.resource.CertificateRestResourceUtil.authorizeSearchCertificatesRestRequestReferences;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -55,8 +56,11 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -68,6 +72,8 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
@@ -84,11 +90,14 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.CertificateRequestRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
@@ -132,6 +141,12 @@ public class CertificateRestResource extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
+    
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
 
     @GET
     @Path("/status")
@@ -148,7 +163,7 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrollment with client generated keys",
+    @ApiOperation(value = "Enrollment with client generated keys, using CSR subject",
             notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
             response = CertificateRestResponse.class,
             code = 201)
@@ -173,6 +188,42 @@ public class CertificateRestResource extends BaseRestResource {
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
+        }
+    }
+
+    @POST
+    @Path("/certificaterequest")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Enrollment with client generated keys for an existing End Entity",
+            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+            response = CertificateRestResponse.class,
+            code = 201)
+    public Response certificateRequest(@Context HttpServletRequest requestContext, final CertificateRequestRestRequest certificateRequestRestRequest)
+            throws RestException, AuthorizationDeniedException, CesecoreException, IOException, SignatureException, ConstructionException, NoSuchFieldException {
+        try {
+            final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
+            EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
+            final byte[] certificateBytes = raMasterApi.processCertificateRequest(authenticationToken, requestData.getUsername(), requestData.getPassword(),
+                requestData.getCertificateRequest(), CertificateConstants.CERT_REQ_TYPE_PKCS10, null, "CERTIFICATE");
+
+            final X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+
+            final List<Certificate> certificateChain = certificateRequestRestRequest.getIncludeChain()
+                    ? raMasterApi.getLastCaChain(authenticationToken, certificateRequestRestRequest.getCertificateAuthorityName())
+                        .stream()
+                        .map(certificateWrapper -> certificateWrapper.getCertificate())
+                        .collect(Collectors.toList())
+                    : null;
+            final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
+                    certificateChain,
+                    certificate
+            );
+            return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
+        } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException |
+                CertificateExtensionException | CertificateException | EjbcaException | 
+                ParseException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
@@ -210,12 +261,11 @@ public class CertificateRestResource extends BaseRestResource {
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyStoreRestRequest.getKeyAlg());
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keyStoreRestRequest.getKeySpec());
         final int tokenType = endEntityInformation.getTokenType();
-        if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS)) {
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be PKCS12 or JKS");
+        if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS || tokenType ==SecConst.TOKEN_SOFT_BCFKS)) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        final KeyStore keyStore = KeyTools.createKeyStore(keyStoreBytes, keyStoreRestRequest.getPassword());
-        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStore, keyStoreRestRequest.getPassword());
+        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType());
         return Response.status(Status.CREATED).entity(response).build();
     }
 
@@ -367,10 +417,11 @@ public class CertificateRestResource extends BaseRestResource {
         code = 201)
     public Response finalizeEnrollment(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Approval request id") @PathParam("request_id") int requestId,
-            @ApiParam(value = "responseFormat must be one of 'P12', 'JKS', 'DER'") FinalizeRestRequest request)
+            @ApiParam(value = "Approval request id")
+            @PathParam("request_id") int requestId,
+            @ApiParam(value = "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'") FinalizeRestRequest request)
                     throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException,
-                        KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
+                        KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
         final String password = request.getPassword();
@@ -435,29 +486,29 @@ public class CertificateRestResource extends BaseRestResource {
             }
         } else {
             // Initial request was server generated key store
-            byte[] certificateBytes;
+            byte[] keyStoreBytes;
             if (responseFormat.equals(TokenDownloadType.JKS.name())) {
                 endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
             } else if (responseFormat.equals(TokenDownloadType.P12.name())) {
                 endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
             } else if (responseFormat.equals(TokenDownloadType.PEM.name())) {
                 endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_PEM);
+            } else if  (responseFormat.equals(TokenDownloadType.BCFKS.name())) {
+                endEntityInformation.setTokenType((EndEntityConstants.TOKEN_SOFT_BCFKS));
             } else {
-                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid response format. Must be 'JKS', 'P12' or 'PEM'");
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid response format. Must be 'JKS', 'P12', 'BCFKS', or 'PEM'");
             }
 
-            certificateBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
+            keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
-                Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
-                response = CertificateRestResponse.builder().setCertificate(certificateBytes).
+                Certificate certificate = CertTools.getCertfromByteArray(keyStoreBytes, Certificate.class);
+                response = CertificateRestResponse.builder().setCertificate(keyStoreBytes).
                         setSerialNumber(CertTools.getSerialNumberAsString(certificate)).setResponseFormat("PEM").build();
             } else if (responseFormat.equals(TokenDownloadType.DER.name())) {
-                final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
+                final Certificate certificate = CertTools.getCertfromByteArray(keyStoreBytes, Certificate.class);
                 response = CertificateRestResponse.converter().toRestResponse(certificate);
             } else {
-                // JKS or PKCS12. Will be detected by content.
-                final KeyStore keyStore = KeyTools.createKeyStore(certificateBytes, password);
-                response = CertificateRestResponse.converter().toRestResponse(keyStore, password);
+                response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType());
             }
         }
         return Response.status(Status.CREATED).entity(response).build();
@@ -478,74 +529,10 @@ public class CertificateRestResource extends BaseRestResource {
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException {
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         validateObject(searchCertificatesRestRequest);
-        authorizeSearchCertificatesRestRequestReferences(authenticationToken, searchCertificatesRestRequest);
-        final SearchCertificatesRestResponse searchCertificatesRestResponse = searchCertificates(authenticationToken, searchCertificatesRestRequest);
+
+        authorizeSearchCertificatesRestRequestReferences(authenticationToken, raMasterApi, searchCertificatesRestRequest);
+        final SearchCertificatesRestResponse searchCertificatesRestResponse = searchCertificates(authenticationToken, searchCertificatesRestRequest, certificateProfileSession, endEntityProfileSession);
         return Response.ok(searchCertificatesRestResponse).build();
-    }
-    
-    /**
-     * Authorizes the input search request for proper access references (End entity profile ids, Certificate profile ids and CA ids) inside a request.
-     *
-     * @param authenticationToken authentication token to use.
-     * @param searchCertificatesRestRequest input search request.
-     * @throws RestException In case of inaccessible reference usage.
-     */
-    private void authorizeSearchCertificatesRestRequestReferences(
-            final AuthenticationToken authenticationToken,
-            final SearchCertificatesRestRequest searchCertificatesRestRequest
-    ) throws RestException {
-        Map<Integer, String> availableEndEntityProfiles = new HashMap<>();
-        Map<Integer, String> availableCertificateProfiles = new HashMap<>();
-        Map<Integer, String> availableCAs = new HashMap<>();
-        for(SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest : searchCertificatesRestRequest.getCriteria()) {
-            final SearchCertificateCriteriaRestRequest.CriteriaProperty criteriaProperty = SearchCertificateCriteriaRestRequest.CriteriaProperty.resolveCriteriaProperty(searchCertificateCriteriaRestRequest.getProperty());
-            if(criteriaProperty == null) {
-                throw new RestException(
-                        Response.Status.BAD_REQUEST.getStatusCode(),
-                        "Invalid search criteria content."
-                );
-            }
-            switch (criteriaProperty) {
-                case END_ENTITY_PROFILE:
-                    availableEndEntityProfiles = loadAuthorizedEndEntityProfiles(authenticationToken, availableEndEntityProfiles);
-                    final String criteriaEndEntityProfileName = searchCertificateCriteriaRestRequest.getValue();
-                    final Integer criteriaEndEntityProfileId = getKeyFromMapByValue(availableEndEntityProfiles, criteriaEndEntityProfileName);
-                    if(criteriaEndEntityProfileId == null) {
-                        throw new RestException(
-                                Response.Status.BAD_REQUEST.getStatusCode(),
-                                "Invalid search criteria content, unknown end entity profile."
-                        );
-                    }
-                    searchCertificateCriteriaRestRequest.setIdentifier(criteriaEndEntityProfileId);
-                    break;
-                case CERTIFICATE_PROFILE:
-                    availableCertificateProfiles = loadAuthorizedCertificateProfiles(authenticationToken, availableCertificateProfiles);
-                    final String criteriaCertificateProfileName = searchCertificateCriteriaRestRequest.getValue();
-                    final Integer criteriaCertificateProfileId = getKeyFromMapByValue(availableCertificateProfiles, criteriaCertificateProfileName);
-                    if(criteriaCertificateProfileId == null) {
-                        throw new RestException(
-                                Response.Status.BAD_REQUEST.getStatusCode(),
-                                "Invalid search criteria content, unknown certificate profile."
-                        );
-                    }
-                    searchCertificateCriteriaRestRequest.setIdentifier(criteriaCertificateProfileId);
-                    break;
-                case CA:
-                    availableCAs = loadAuthorizedCAs(authenticationToken, availableCAs);
-                    final String criteriaCAName = searchCertificateCriteriaRestRequest.getValue();
-                    final Integer criteriaCAId = getKeyFromMapByValue(availableCAs, criteriaCAName);
-                    if(criteriaCAId == null) {
-                        throw new RestException(
-                                Response.Status.BAD_REQUEST.getStatusCode(),
-                                "Invalid search criteria content, unknown CA."
-                        );
-                    }
-                    searchCertificateCriteriaRestRequest.setIdentifier(criteriaCAId);
-                    break;
-                default:
-                    // Do nothing
-            }
-        }
     }
     
     /**
@@ -559,45 +546,12 @@ public class CertificateRestResource extends BaseRestResource {
      */
     private SearchCertificatesRestResponse searchCertificates(
             final AuthenticationToken authenticationToken,
-            final SearchCertificatesRestRequest searchCertificatesRestRequest
+            final SearchCertificatesRestRequest searchCertificatesRestRequest,
+            final CertificateProfileSession certificateProfileSession,
+            final EndEntityProfileSession endEntityProfileSession
     ) throws RestException, CertificateEncodingException {
         final RaCertificateSearchRequest raCertificateSearchRequest = SearchCertificatesRestRequest.converter().toEntity(searchCertificatesRestRequest);
         final RaCertificateSearchResponse raCertificateSearchResponse = raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest);
-        return SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse);
-    }
-
-    private Map<Integer, String> loadAuthorizedEndEntityProfiles(final AuthenticationToken authenticationToken, final  Map<Integer, String> availableEndEntityProfiles) {
-        if(availableEndEntityProfiles.isEmpty()) {
-            return raMasterApi.getAuthorizedEndEntityProfileIdsToNameMap(authenticationToken);
-        }
-        return availableEndEntityProfiles;
-    }
-
-    private Map<Integer, String> loadAuthorizedCertificateProfiles(final AuthenticationToken authenticationToken, final  Map<Integer, String> availableCertificateProfiles) {
-        if(availableCertificateProfiles.isEmpty()) {
-            return raMasterApi.getAuthorizedCertificateProfileIdsToNameMap(authenticationToken);
-        }
-        return availableCertificateProfiles;
-    }
-
-    private Map<Integer, String> loadAuthorizedCAs(final AuthenticationToken authenticationToken, final Map<Integer, String> availableCAs) {
-        if(availableCAs.isEmpty()) {
-            final Map<Integer, String> authorizedCAIds = new HashMap<>();
-            final List<CAInfo> caInfosList = raMasterApi.getAuthorizedCas(authenticationToken);
-            for(final CAInfo caInfo : caInfosList) {
-                authorizedCAIds.put(caInfo.getCAId(), caInfo.getName());
-            }
-            return authorizedCAIds;
-        }
-        return availableCAs;
-    }
-
-    private Integer getKeyFromMapByValue(final Map<Integer, String> map, final String value) {
-        for(Integer key : map.keySet()) {
-            if(map.get(key).equals(value)) {
-                return key;
-            }
-        }
-        return null;
+        return SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse, certificateProfileSession, endEntityProfileSession);
     }
 }

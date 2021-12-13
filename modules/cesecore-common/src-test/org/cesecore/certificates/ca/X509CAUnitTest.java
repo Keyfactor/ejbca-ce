@@ -12,39 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
-import java.security.cert.X509Certificate;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimeZone;
-
-import javax.security.auth.x500.X500Principal;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -135,6 +102,38 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
 
+import javax.security.auth.x500.X500Principal;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
+import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimeZone;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -145,7 +144,6 @@ import static org.junit.Assume.assumeTrue;
 
 /** JUnit test for X.509 CA
  *
- * @version $Id$
  */
 public class X509CAUnitTest extends X509CAUnitTestBase {
 
@@ -310,7 +308,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Calendar before = Calendar.getInstance();
         before.set(Calendar.MILLISECOND, 0);
         final Date justBefore = before.getTime(); // Round to seconds
-        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals(CADN, CertTools.getIssuerDN(xcrl));
@@ -334,7 +332,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Revoke some cert
         Date revDate = new Date();
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
-        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 2);
+        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 2, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         set = xcrl.getRevokedCertificates();
@@ -355,7 +353,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a delta CRL
         revcerts = new ArrayList<>();
-        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 3, 2);
+        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 3, 2, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals(CADN, CertTools.getIssuerDN(xcrl));
@@ -366,7 +364,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(2, deltanum.intValue());
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
-        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 4, 3);
+        crl = x509ca.generateDeltaCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 4, 3, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
@@ -393,7 +391,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
         
         // Generate a CRL with default CRL period, should now not create a CRL with max date value
-        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         // Max date from RFC5280 4.1.2.5, 99991231235959Z
@@ -407,7 +405,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // 365 days per year, 24 hours per day, 3600 seconds per hour, 1000ms per second 
         long l = 9999L*365L*24L*3600L*1000L;
         x509ca.setCRLPeriod(l);
-        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertTrue("nextUpdate of CRL should be maxvalue from RFC5280 (" + cal.getTime() + ") but was " + xcrl.getNextUpdate(), xcrl.getNextUpdate().equals(cal.getTime()));
@@ -733,14 +731,20 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     EndEntityInformation endEntityInformation, X509Certificate certificate) throws ValidationException {
                 switch (phase) {
                 case DATA_VALIDATION:
-                    throw new ValidationException("DATA_VALIDATION");                    
+                    throw new ValidationException("DATA_VALIDATION");
                 case CERTIFICATE_VALIDATION:
-                    throw new ValidationException("CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("CERTIFICATE_VALIDATION");
                 case PRE_CERTIFICATE_VALIDATION:
-                    throw new ValidationException("PRE_CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("PRE_CERTIFICATE_VALIDATION");
                 case PRESIGN_CERTIFICATE_VALIDATION:
                     // check the certificate that it is signed with the hard coded key, and has poison extension
-                    PublicKey pubK = CAConstants.getPreSignPublicKey(certificate.getSigAlgName());
+                    PublicKey pubK;
+                    try {
+                        pubK = CAConstants.getPreSignPublicKey(certificate.getSigAlgName(),
+                                cryptoToken.getPublicKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)));
+                    } catch (CryptoTokenOfflineException e) {
+                        throw new ValidationException("cannot get CA key");
+                    }
                     try {
                         certificate.verify(pubK);
                     } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
@@ -761,9 +765,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     assertEquals("authority key identifier should be from the hardcoded presign key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
                     // No poison extension in presign certificate
                     assertNull("There must not be a CT poison extension in the presign certificate.", certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
-                    throw new ValidationException("PRESIGN_CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("PRESIGN_CERTIFICATE_VALIDATION");
                 default:
-                    throw new ValidationException("default");                    
+                    throw new ValidationException("default");
                 }
             }
         });        
@@ -954,7 +958,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         } 
         try {
             Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-            x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+            x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
             fail("should not work to issue this CRL");
         } catch (SignatureException e) {
             Certificate cacert = x509ca.getCACertificate();
@@ -977,7 +981,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         assertNotNull(usercert);
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
     }
 
@@ -1166,7 +1170,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         X509CA testCa = createTestCA(cryptoToken, "CN=foo");
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
+        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0, null);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);

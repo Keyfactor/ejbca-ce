@@ -559,7 +559,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
-	 * - /endentityprofilesrules/<end entity profile of the user owning the cert>/revoke_end_entity
+	 * - /endentityprofilesrules/&lt;end entity profile of the user owning the cert&gt;/revoke_end_entity
 	 * - /ca/&lt;ca of certificate&gt;
 	 * </pre>
 	 * <p>
@@ -681,7 +681,7 @@ public interface IEjbcaWS {
 	 * - /administrator
 	 * - /ra_functionality/keyrecovery
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
-	 * - /ca/<ca of users certificate>
+	 * - /ca/&lt;ca of users certificate&gt;
 	 * </pre>
 	 *
 	 * @param username unique username in EJBCA
