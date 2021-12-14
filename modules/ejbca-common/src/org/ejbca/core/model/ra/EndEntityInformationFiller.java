@@ -24,12 +24,18 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.dn.DistinguishedName;
 
+import com.google.common.reflect.Parameter;
+
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.Rdn;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /** This class gives facilities to populate user data with default values from profile.
@@ -40,6 +46,8 @@ public class EndEntityInformationFiller {
 
     /** For log purpose. */
     private static final Logger log = Logger.getLogger(EndEntityInformationFiller.class.getName());
+    private static final String SUBJECT_DN = "dn";
+    private static final String SUBJECT_ALTERNATE_NAME = "san";
 
     /** This method fill user data with the default values from the specified profile.
      *
@@ -253,4 +261,222 @@ public class EndEntityInformationFiller {
         }
         return dnses.toString();
     }
+    
+    public static void mergeDnString(EndEntityInformation user, final EndEntityProfile profile) {
+        profile.getAllowMultiValueRDNs();
+         user.setDN(mergeDnString(user.getDN(), profile, "", SUBJECT_DN));
+    }
+    
+    public static void mergeSanString(EndEntityInformation user, final EndEntityProfile profile) {
+        user.setSubjectAltName(mergeDnString(user.getSubjectAltName(), profile, "", SUBJECT_ALTERNATE_NAME));
+   }
+    
+    // does not support multivalue-rdns
+    public static String mergeDnString(String userDnString, final EndEntityProfile profile, 
+                            String entityEmail, String entityType) {
+        
+        if (userDnString==null) {
+            userDnString = "";
+        } else {
+            userDnString = userDnString.trim();
+        }
+        
+        if(!StringUtils.isEmpty(entityEmail)) {
+            if(StringUtils.isEmpty(userDnString)) {
+                userDnString += ",";
+            }
+            if(entityType.equals(SUBJECT_DN) && profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+                userDnString += "E=" + entityEmail;
+            }
+            if(entityType.equals(SUBJECT_ALTERNATE_NAME) && profile.getUse(DnComponents.RFC822NAME, 0)) {
+                userDnString += "RFC822NAME=" + entityEmail;
+            }
+        }
+        
+        final int averageRdnsPerDnField = 16;
+        final int numberofDnfields;
+        if(entityType.equals(SUBJECT_DN)) {
+            numberofDnfields = profile.getSubjectDNFieldOrderLength();
+        } else {
+            numberofDnfields = profile.getSubjectAltNameFieldOrderLength();
+        }
+        LinkedHashMap<String, LinkedHashSet<String>> userRdns = 
+                new LinkedHashMap<String, LinkedHashSet<String>>();
+        LinkedHashSet<String> dnOrdering = new LinkedHashSet<String>();
+        
+        LinkedHashMap<String, LinkedHashSet<String>> groupedModifiableProfileRdns = 
+                new LinkedHashMap<String, LinkedHashSet<String>>(numberofDnfields/averageRdnsPerDnField);
+        LinkedHashMap<String, LinkedHashSet<String>> groupedAllProfileRdns = 
+                new LinkedHashMap<String, LinkedHashSet<String>>(numberofDnfields/averageRdnsPerDnField);
+        Map<String, Integer> emptyFieldsForDntype = new HashMap<String, Integer>();
+        int[] fielddata = null;
+        String value;
+        LinkedHashSet<String> orderedRdns;
+        LinkedHashSet<String> orderedModifiableRdns;
+        StringBuilder result = new StringBuilder(numberofDnfields*10);
+        
+        //Build user DN, all DN types are validated
+        String[] userDnParts = userDnString.split(",");
+        String[] dnParts;
+        String parameter;
+        for (String curDn:userDnParts) {
+            dnParts = curDn.split("=");
+            if(dnParts.length!=2) {
+                continue;
+                //exception: no multivalue rdn
+            }
+            parameter = dnParts[0].toUpperCase(Locale.ROOT); 
+            // TODO: validation
+            if(!isValidDnType(parameter, entityType)) {
+                // exception
+            }
+            value = dnParts[1];
+            
+            if(StringUtils.isEmpty(value)) {
+                continue;
+                //exception
+            }
+            value = value.trim();
+            
+            if(!userRdns.containsKey(parameter)){
+                orderedRdns = new LinkedHashSet<String>(averageRdnsPerDnField);
+                userRdns.put(parameter, orderedRdns);
+            } else {
+                orderedRdns = userRdns.get(parameter);
+            }
+            
+            orderedRdns.add(value);
+            
+        }
+        
+        //Build profile's DN
+        boolean isModifiable;
+        for (int i = 0; i < numberofDnfields; i++) {
+            fielddata = entityType.equals(SUBJECT_DN) ? 
+                    profile.getSubjectDNFieldsInOrder(i) : profile.getSubjectAltNameFieldsInOrder(i);
+            value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
+            
+            if(!(value==null || StringUtils.isEmpty(value))) {
+                value = value.trim();
+            }
+            
+            // also validates parameter type
+            parameter = DNFieldExtractor.getFieldComponent(
+                    DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
+                    entityType.equals(SUBJECT_DN) ? 
+                    DNFieldExtractor.TYPE_SUBJECTDN : DNFieldExtractor.TYPE_SUBJECTALTNAME);
+            parameter = StringUtils.replace(parameter, "=", "");
+            dnOrdering.add(parameter);
+            isModifiable = profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
+            
+            if(!groupedAllProfileRdns.containsKey(parameter)){
+                orderedRdns = new LinkedHashSet<String>(averageRdnsPerDnField);
+                groupedAllProfileRdns.put(parameter, orderedRdns);
+
+                orderedModifiableRdns = new LinkedHashSet<String>(averageRdnsPerDnField);
+                groupedModifiableProfileRdns.put(parameter, orderedModifiableRdns);
+                emptyFieldsForDntype.put(parameter, 0);
+                
+            } else {
+                orderedRdns = groupedAllProfileRdns.get(parameter);
+                orderedModifiableRdns = groupedModifiableProfileRdns.get(parameter);
+            }
+            
+            orderedRdns.add(value);
+            if(isModifiable) {
+                if(StringUtils.isEmpty(value)) {
+                    // only modifiable fields can be empty
+                    emptyFieldsForDntype.put(parameter, emptyFieldsForDntype.get(parameter)+1);
+                } else {
+                    orderedModifiableRdns.add(value);
+                }
+            }
+            
+        }
+        
+        LinkedHashSet<String> currentDnTypeUserRdns;
+        int currentDnTypeModifiedDns;
+
+        for(String dnType: dnOrdering) {
+            if(userRdns.containsKey(dnType)) {
+                currentDnTypeUserRdns = userRdns.get(dnType);
+            } else {
+                continue; // only profile rdns to add, nothing to remove
+            }
+            
+            if(groupedAllProfileRdns.containsKey(dnType)) {
+                orderedRdns = groupedAllProfileRdns.get(dnType);
+                orderedModifiableRdns = groupedModifiableProfileRdns.get(dnType);
+            } else {
+                continue; // only user rdns to add, nothing to remove
+            }
+            
+            currentDnTypeModifiedDns = 0;
+            for(String userdn: currentDnTypeUserRdns) {
+                if(!orderedRdns.remove(userdn)){ 
+                    // modifiable fields were not altered, if already part of profile dn
+                    currentDnTypeModifiedDns++;
+                }
+                // if in non-modifiable set, only sent to top of dn list
+                // removed from modifiable list
+                orderedModifiableRdns.remove(userdn); 
+            }
+            
+            // remove entries from modifiable fields to make room for added user dns
+            Iterator<String> it = orderedModifiableRdns.iterator();
+            currentDnTypeModifiedDns -= emptyFieldsForDntype.get(dnType);
+            for(int i=0; i<currentDnTypeModifiedDns; i++) {
+                if(it.hasNext()) {
+                    // no need to remove from modifiable one 
+                    orderedRdns.remove(it.next());
+                } else {
+                    // TODO exception: added fields exceeds no of modifiable fields
+                    // or we can wait for doesUserFulfillEndEntityProfileXX
+                    break;
+                }
+            }
+
+        }
+        
+        for(String dnType: dnOrdering) {
+            // finally, add all dnTypes according to sequence userDn and then in profile
+            // for individual dn type, first user dns and the profile dns
+            if(userRdns.containsKey(dnType)) {
+                for(String dn: userRdns.get(dnType)) {
+                    appendDn(result, dnType, dn);
+                }
+            }
+            
+            for(String dn: groupedAllProfileRdns.get(dnType)) {
+                appendDn(result, dnType, dn);
+            }
+        }
+            
+        String mergedDn = result.toString();
+        mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
+        log.debug("merged dn: " + mergedDn);
+        
+        return mergedDn;
+    }
+    
+    private static void appendDn(StringBuilder buffer, String dnType, String dn) {
+        if(dn==null || StringUtils.isEmpty(dn)) {
+            return;
+        }
+        buffer.append(dnType);
+        buffer.append("=");
+        buffer.append(dn);
+        buffer.append(",");
+    }
+    
+    private static boolean isValidDnType(String dnType, String entityType) {
+        if(entityType.equals(SUBJECT_DN)) {
+            return DnComponents.getDnIdFromDnName(dnType) != null;
+        } else {
+            return DnComponents.getDnIdFromAltName(dnType) != null;
+        }
+    }
+    
+    
+    
 }
