@@ -260,13 +260,29 @@ public class EndEntityInformationFiller {
         return dnses.toString();
     }
     
+    /** This method fills user subject DN with the default values from the specified profile.
+     * It overrides the empty slots in profile corresponding to a type and then starts overwriting modifiable slots.
+     * A potential substitute to mergeSubjectDnWithDefaultValues(String, EndEntityProfile, String).
+    *
+    * @param userData user data.
+    * @param profile user associated profile.
+    * @return updated user.
+    */
     public static void mergeDnString(EndEntityInformation user, final EndEntityProfile profile) {
          user.setDN(mergeDnString(user.getDN(), profile, SUBJECT_DN));
     }
     
+    /** This method fills user subject alternative name with the default values from the specified profile.
+     * It overrides the empty slots in profile corresponding to a type and then starts overwriting modifiable slots.
+     * A potential substitute to mergeSubjectAltNameWithDefaultValues(String, EndEntityProfile, String).
+    *
+    * @param userData user data.
+    * @param profile user associated profile.
+    * @return updated user.
+    */
     public static void mergeSanString(EndEntityInformation user, final EndEntityProfile profile) {
         user.setSubjectAltName(mergeDnString(user.getSubjectAltName(), profile, SUBJECT_ALTERNATE_NAME));
-   }
+    }
     
     private static String mergeDnString(String userDnString, final EndEntityProfile profile, final String entityType) {
         
@@ -276,7 +292,9 @@ public class EndEntityInformationFiller {
             userDnString = userDnString.trim();
         }
         
-        /*if(!StringUtils.isEmpty(entityEmail)) {
+        /*
+         * append end entity email to user dn or san to achieve the same functionality
+         * if(!StringUtils.isEmpty(entityEmail)) {
             if(!StringUtils.isEmpty(userDnString)) {
                 userDnString += ",";
             }
@@ -343,9 +361,9 @@ public class EndEntityInformationFiller {
                 } else {
                     orderedRdns = userRdns.get(parameter);
                 }
-                
                 orderedRdns.add(rdn);
             } else {
+                
                 value = curDn.substring(dnParts[0].length()+1).trim();
                 String []currentDnParts = curDn.split("\\+");
                 for(String currentDnPart: currentDnParts) {
@@ -362,7 +380,8 @@ public class EndEntityInformationFiller {
                     Rdn rdn = convertToRdn(parameter, value);
                     value = ""; 
                     // we only add the value against first dnType
-                    // for rest null is added, but dnType is tracked to validate number of fields in profile
+                    // for rest null is added, but dnType is tracked to validate 
+                    // against number of fields allowed in profile
                     if(!userRdns.containsKey(parameter)){
                         orderedRdns = new LinkedHashSet<Rdn>(averageRdnsPerDnField);
                         userRdns.put(parameter, orderedRdns);
@@ -456,7 +475,6 @@ public class EndEntityInformationFiller {
                     orderedRdns.remove(it.next());
                 } else {
                     // added fields exceeds no of modifiable fields
-                    // or we can wait for doesUserFulfillEndEntityProfileXX
                     throw new IllegalArgumentException("User DN has too many components for " + dnType);
                 }
             }
@@ -464,7 +482,7 @@ public class EndEntityInformationFiller {
         }
         
         for(String dnType: groupedAllProfileRdns.keySet()) {
-            // finally, add all dnTypes according to sequence userDn and then in profile
+            // finally, add all dnTypes according to sequence in profile
             // for individual dn type, first user dns and the profile dns
             if(userRdns.containsKey(dnType)) {
                 for(Rdn dn: userRdns.get(dnType)) {
@@ -479,7 +497,7 @@ public class EndEntityInformationFiller {
             
         String mergedDn = result.toString();
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
-        //log.debug("merged dn: " + mergedDn);
+        log.debug("merged dn: " + mergedDn);
         
         return mergedDn;
     }
