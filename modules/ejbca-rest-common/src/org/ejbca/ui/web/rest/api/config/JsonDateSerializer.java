@@ -21,8 +21,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
  * JSON serializer for Jackson to handle a java.util.Date instance and present it in ISO8601 format with UTC timezone.
- *
- * @version $Id: JsonDateSerializer.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 public class JsonDateSerializer extends JsonSerializer<Date> {
 
