@@ -442,14 +442,14 @@ public class EndEntityInformationFillerTest {
     @Test
     public void testMergeDNString() {
         EndEntityProfile p = new EndEntityProfile();
-        //p.addField(DnComponents.COMMONNAME);//5
-        p.addField(DnComponents.ORGANIZATIONALUNIT);//11
+        //p.addField(DnComponents.COMMONNAME); by default a CN field is added by noarg constructor
         p.addField(DnComponents.ORGANIZATIONALUNIT);
         p.addField(DnComponents.ORGANIZATIONALUNIT);
         p.addField(DnComponents.ORGANIZATIONALUNIT);
-        p.addField(DnComponents.ORGANIZATION);//12
+        p.addField(DnComponents.ORGANIZATIONALUNIT);
+        p.addField(DnComponents.ORGANIZATION);
         p.addField(DnComponents.ORGANIZATION);        
-        p.addField(DnComponents.COUNTRY);//16
+        p.addField(DnComponents.COUNTRY);
         p.addField(DnComponents.DNEMAILADDRESS);
 
         p.setValue(DnComponents.COMMONNAME, 0, "User Usersson");
@@ -472,6 +472,15 @@ public class EndEntityInformationFillerTest {
             EndEntityInformationFiller.mergeDnString(user, p);  
             fail("Processed user dn with too many of a dn type.");
         } catch (Exception e) {
+            assertEquals("User DN has too many components for OU", e.getMessage());
+        }
+        
+        try {
+            user.setDN("CN=Name2,OU=MyOrg1,OU=,OU=MyOrg2");
+            EndEntityInformationFiller.mergeDnString(user, p);  
+            fail("Processed user dn with invalid user dn.");
+        } catch (Exception e) {
+            assertEquals("Invalid DN component: OU=", e.getMessage());
         }
         
         try {
@@ -481,27 +490,40 @@ public class EndEntityInformationFillerTest {
         } catch (Exception e) {
         }
         
-        try {
-            user.setDN("CN=Name2,OU=MyOrg1,OU=,OU=MyOrg2");
-            EndEntityInformationFiller.mergeDnString(user, p);  
-            fail("Processed user dn with invalid user dn.");
-        } catch (Exception e) {
-        }
+        p.setModifyable(DnComponents.ORGANIZATIONALUNIT, 0, false);
+        
+        user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
+        EndEntityInformationFiller.mergeDnString(user, p);
+        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit1,O=Org1,C=SE", user.getDN());
     
+        p.setModifyable(DnComponents.ORGANIZATIONALUNIT, 0, true);
+        p.setModifyable(DnComponents.ORGANIZATIONALUNIT, 1, false);
+        
+        user = new EndEntityInformation();
+        user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
+        EndEntityInformationFiller.mergeDnString(user, p);
+        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+    
+        try {
+            user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=MyOrg4");
+            EndEntityInformationFiller.mergeDnString(user, p);  
+            fail("Processed user dn with too many of a dn type with non-modifable and nonempty dn.");
+        } catch (Exception e) {
+            assertEquals("User DN has too many components for OU", e.getMessage());
+        }
     }
     
     
     @Test
     public void testMergeDNMultiValueRdn() {
         EndEntityProfile p = new EndEntityProfile();
-        //p.addField(DnComponents.COMMONNAME);//5
-        p.addField(DnComponents.ORGANIZATIONALUNIT);//11
         p.addField(DnComponents.ORGANIZATIONALUNIT);
         p.addField(DnComponents.ORGANIZATIONALUNIT);
         p.addField(DnComponents.ORGANIZATIONALUNIT);
-        p.addField(DnComponents.ORGANIZATION);//12
+        p.addField(DnComponents.ORGANIZATIONALUNIT);
+        p.addField(DnComponents.ORGANIZATION);
         p.addField(DnComponents.ORGANIZATION);        
-        p.addField(DnComponents.COUNTRY);//16
+        p.addField(DnComponents.COUNTRY);
 
         p.setValue(DnComponents.COMMONNAME, 0, "User Usersson");
         p.setValue(DnComponents.ORGANIZATIONALUNIT, 0, "Unit1");
@@ -521,7 +543,7 @@ public class EndEntityInformationFillerTest {
     }
     
     /**
-     * Test merging of DNs with multiple components
+     * Test merging of SANs with multiple components
      */
     @Test
     public void testMergeSanString() {
@@ -530,7 +552,7 @@ public class EndEntityInformationFillerTest {
         p.addField(DnComponents.DNSNAME);
         p.addField(DnComponents.DNSNAME);
         p.addField(DnComponents.RFC822NAME);
-        p.addField(DnComponents.RFC822NAME);//5
+        p.addField(DnComponents.RFC822NAME);
         p.addField(DnComponents.DNSNAME);
         p.setValue(DnComponents.DNSNAME, 2, "server.bad.com");
         p.setValue(DnComponents.DNSNAME, 3, "server.superbad.com");
