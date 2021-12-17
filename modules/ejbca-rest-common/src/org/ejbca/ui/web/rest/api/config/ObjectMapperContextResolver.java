@@ -25,8 +25,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * ObjectMapper for Jackson to apply defaults for JSON serialization and deserialization.
- *
- * @version $Id: JsonDateSerializer.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
