@@ -602,7 +602,7 @@ public class RaSearchCertsBean implements Serializable {
                 statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION }));
                 stagedRequest.setExpiresAfter(System.currentTimeMillis());
             } else if(EXPIRED_STATUS.equalsIgnoreCase(criteriaStatusSplit[0])) {
-                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION }));
+                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, CertificateConstants.CERT_ARCHIVED }));
                 stagedRequest.setExpiresBefore(System.currentTimeMillis());
             } else {
                 statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_REVOKED, CertificateConstants.CERT_ARCHIVED }));
