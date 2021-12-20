@@ -39,6 +39,34 @@ public interface ECA extends CA {
     
     static final String CA_TYPE = "ECA";
     
+    /**
+     * TODO document parameters once they're determined.
+     * Generate EtsiTs103097Certificate intened for C-ITS application.
+     * 
+     * @param cryptoToken
+     * @param subject
+     * @param request
+     * @param publicKey
+     * @param keyusage
+     * @param notBefore
+     * @param notAfter
+     * @param certProfile
+     * @param extensions
+     * @param sequence
+     * @param certGenParams
+     * @param cceConfig
+     * @return
+     * @throws CryptoTokenOfflineException
+     * @throws CAOfflineException
+     * @throws InvalidAlgorithmException
+     * @throws IllegalValidityException
+     * @throws IllegalNameException
+     * @throws OperatorCreationException
+     * @throws CertificateCreateException
+     * @throws CertificateExtensionException
+     * @throws SignatureException
+     * @throws IllegalKeyException
+     */
     ITSCertificate generateItsCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
             Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig)
