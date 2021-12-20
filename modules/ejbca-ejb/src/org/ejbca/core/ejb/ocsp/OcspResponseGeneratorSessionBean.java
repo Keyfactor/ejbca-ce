@@ -38,6 +38,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -118,7 +119,9 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -196,6 +199,8 @@ import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.PublisherException;
+
+import com.ibm.db2.jcc.a.c;
 
 
 /**
@@ -640,28 +645,49 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         return CertificateStatus.OK;
     }
+    
+    private boolean isSelfSigned(final X509Certificate cert) {
+       	if ((CertTools.getIssuerDN(cert).equals(CertTools.getSubjectDN(cert)) && (-1 != cert.getBasicConstraints()))){
+    		return true;
+    	}
+    	return false;
+    }
+    
+    private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
+    	for (final Certificate certificate : certificateList) {
+    		X509Certificate x509cert = (X509Certificate) certificate;
+    		if (x509cert.getPublicKey().hashCode() != currentLevelCertificate.getPublicKey().hashCode()) {
+        		currentLevelCertificate = x509cert;
+        		break;
+        	}
+    	}
+    	return currentLevelCertificate;
+    }
 
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
-        final List<X509Certificate> caCertificateChain = new ArrayList<>();
+    	final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
-        final Set<String> includedDn = new HashSet<>();
-        while (!CertTools.getIssuerDN(currentLevelCertificate).equals(CertTools.getSubjectDN(currentLevelCertificate))) {
+        final Set<String> includedFingerprint = new HashSet<>();
+        while (!isSelfSigned(currentLevelCertificate)) {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
-            currentLevelCertificate = certificateStoreSession.findLatestX509CertificateBySubject(issuerDn);
-            if (currentLevelCertificate == null) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
-                        CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
-                return Collections.emptyList();
+            List<Certificate> resultList = new ArrayList<>();
+        	resultList = certificateStoreSession.findCertificatesBySubject(issuerDn);
+        	currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
+        	if (currentLevelCertificate == null) {
+            	log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+            			CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
+            	return Collections.emptyList();
             }
-            if (!includedDn.add(issuerDn)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Cyclic cross signing detected in '" + issuerDn + "'");
-                }
-                break;
-            }
-            caCertificateChain.add(currentLevelCertificate);
+            final String issuerFingerprint = CertTools.getFingerprintAsString(currentLevelCertificate);
+        	if (!includedFingerprint.add(issuerFingerprint)) {
+        		if (log.isDebugEnabled()) {
+        			log.debug("Cyclic cross signing detected in '" + issuerDn + "'");
+        		}
+        		break;
+        	}
+        	caCertificateChain.add(currentLevelCertificate);
         }
-        try {
+    	try {
             CertTools.verify(leafCertificate, caCertificateChain, new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
         } catch (CertPathValidatorException e) {
             // Apparently the built chain could not be used to validate the leaf certificate
