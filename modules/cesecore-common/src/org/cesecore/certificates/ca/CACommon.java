@@ -143,7 +143,7 @@ public interface CACommon extends IUpgradeableData {
      */
     List<Certificate> getCertificateChain();
 
-    void setCertificateChain(List<Certificate> certificatechain);
+    void setCertificateChain(final List<Certificate> certificatechain);
 
     /**
      * @return the list of renewed CA certificates in order from the oldest as first to the newest as the last one

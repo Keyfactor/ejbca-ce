@@ -15,6 +15,7 @@ package org.cesecore.certificate.ca.its;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.Date;
+import java.util.List;
 
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.its.ITSCertificate;
@@ -39,10 +40,77 @@ public interface ECA extends CA {
     
     static final String CA_TYPE = "ECA";
     
-    ITSCertificate generateItsCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
+    /**
+     * TODO document parameters once they're determined.
+     * Generate explicit EtsiTs103097Certificate intended for C-ITS application.
+     * 
+     * @param cryptoToken
+     * @param subject
+     * @param request
+     * @param publicKey
+     * @param keyusage
+     * @param notBefore
+     * @param notAfter
+     * @param certProfile
+     * @param extensions
+     * @param sequence
+     * @param certGenParams
+     * @param cceConfig
+     * @return
+     * @throws CryptoTokenOfflineException
+     * @throws CAOfflineException
+     * @throws InvalidAlgorithmException
+     * @throws IllegalValidityException
+     * @throws IllegalNameException
+     * @throws OperatorCreationException
+     * @throws CertificateCreateException
+     * @throws CertificateExtensionException
+     * @throws SignatureException
+     * @throws IllegalKeyException
+     */
+    ITSCertificate generateExplicitItsCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
             Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
             OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException;
-
+    
+    
+    /**
+     * TODO document parameters once they're determined.
+     * Generate implicit EtsiTs103097Certificate intended for C-ITS application.
+     * 
+     * @param subject
+     * @param request
+     * @param publicKey
+     * @param keyusage
+     * @param notBefore
+     * @param notAfter
+     * @param certProfile
+     * @param extensions
+     * @param sequence
+     * @param certGenParams
+     * @param cceConfig
+     * @return
+     * @throws CryptoTokenOfflineException
+     * @throws CAOfflineException
+     * @throws InvalidAlgorithmException
+     * @throws IllegalValidityException
+     * @throws IllegalNameException
+     * @throws OperatorCreationException
+     * @throws CertificateCreateException
+     * @throws CertificateExtensionException
+     * @throws SignatureException
+     * @throws IllegalKeyException
+     */
+    ITSCertificate generateImplicitItsCertificate(EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
+            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
+            CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException;
+    
+    void setItsCertificateChain(final List<ITSCertificate> certificatechain);
+    
+    List<ITSCertificate> getItsCertificateChain();
+    
+    ITSCertificate getItsCACertificate();
 }
