@@ -58,8 +58,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Adds an end entity to the database.
- *
- * @version $Id$
  */
 public class AddEndEntityCommand extends BaseRaCommand {
 
@@ -69,12 +67,13 @@ public class AddEndEntityCommand extends BaseRaCommand {
     private static final String P12 = "P12";
     private static final String JKS = "JKS";
     private static final String PEM = "PEM";
+    private static final String BCFKS = "BCFKS";
     private static final String OLD_SUBCOMMAND = "adduser";
     private static final String SUBCOMMAND = "addendentity";
 
-    private static final String[] SOFT_TOKEN_NAMES = { USERGENERATED, P12, JKS, PEM };
+    private static final String[] SOFT_TOKEN_NAMES = { USERGENERATED, P12, JKS, PEM, BCFKS };
     private static final int[] SOFT_TOKEN_IDS = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS,
-            SecConst.TOKEN_SOFT_PEM };
+            SecConst.TOKEN_SOFT_PEM, SecConst.TOKEN_SOFT_BCFKS };
 
     private static final Set<String> ALIASES = new HashSet<String>();
     static {
@@ -122,7 +121,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
                 "Type (mask): INVALID=0; END-USER=1; " + (globalConfiguration.getEnableKeyRecovery() ? "KEYRECOVERABLE=128; " : "")
                         + "SENDNOTIFICATION=256; PRINTUSERDATA=512"));
         registerParameter(new Parameter(TOKEN_KEY, "Token", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Desired token type for the end entity: USERGENERATED, P12, JKS, PEM."));
+                "Desired token type for the end entity: USERGENERATED, P12, JKS, PEM, BCFKS."));
         registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The certificate profile, will default to End User."));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -343,7 +342,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
         sb.append("Existing certificate profiles: " + existingCps + "\n");
 
         
-        sb.append("Existing tokens: " + USERGENERATED + ", " + P12 + ", " + JKS + ", " + PEM + ", \n");
+        sb.append("Existing tokens: " + USERGENERATED + ", " + P12 + ", " + JKS + ", " + PEM + ", " + BCFKS + ", \n");
 
         StringBuilder existingEeps = new StringBuilder();
         Map<Integer, String> endentityprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
