@@ -31,6 +31,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -3757,5 +3758,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 null,
                 securityEventProperties.toMap()
         );
+    }
+    
+    public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
+        List<Certificate> certChain = null;
+        if (caChainBytes != null) {
+            try {
+                certChain = CertTools.getCertsFromPEM(new ByteArrayInputStream(caChainBytes), Certificate.class);
+                if (certChain.size()==0) {
+                    throw new IllegalStateException("Certificate chain contained no certificates");
+                }
+            } catch (Exception e) {
+                // Maybe it's just a single binary CA cert
+                try {
+                    Certificate cert = CertTools.getCertfromByteArray(caChainBytes, Certificate.class);
+                    certChain = new ArrayList<>();
+                    certChain.add(cert);
+                } catch (CertificateParsingException e2) {
+                    // Ok.. so no chain was supplied.. we go ahead anyway..
+                    throw new CADoesntExistsException("Invalid CA chain file.");
+                }
+            }
+        }
+        try {
+            return makeRequest(administrator, caid, certChain, nextSignKeyAlias);
+        } catch (CertPathValidatorException e) {
+            throw new IllegalStateException("Unexpected outcome.", e);
+        }
     }
 }
