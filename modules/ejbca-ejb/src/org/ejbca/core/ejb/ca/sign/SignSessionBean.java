@@ -102,7 +102,6 @@ import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -194,8 +193,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
-    @EJB
-    private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     @EJB
@@ -484,14 +481,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         endEntityInformation = suppliedUserData;
                     }
                     
-                    // This method is only relevant for local bean. 
-                    EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfileNoClone(
-                                                    endEntityInformation.getEndEntityProfileId());
-                    // Merge DNs which are marked as enforced.
-                    if( endEntityProfile.getAllowMergeDn()) {
-                        endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(
-                                                                endEntityInformation, endEntityProfile);
-                    }
                     // We need to make sure we use the users registered CA here
                     if (endEntityInformation.getCAId() != ca.getCAId()) {
                         final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()),
