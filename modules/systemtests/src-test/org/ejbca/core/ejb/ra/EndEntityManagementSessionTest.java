@@ -645,7 +645,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     }
     
     @Test
-    public void test07MergeWithWS() throws Exception {
+    public void test07MergeDN() throws Exception {
         // First make sure we have end entity profile limitations enabled
         final boolean eelimitation = setEnableEndEntityProfileLimitations(true);
         try {
