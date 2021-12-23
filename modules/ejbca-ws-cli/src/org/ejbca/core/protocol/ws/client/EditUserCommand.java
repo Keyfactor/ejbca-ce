@@ -35,8 +35,6 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 /**
  * Adds a user to the database or edits an existing user.
- *
- * @version $Id$
  */
 public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -207,7 +205,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
                 + " permanentIdentifier=<Permanent Identifier values>, subjectIdentificationMethod=<Subject Identification Method values or parameters>, "
                 + " registeredID=<object identifier>, xmppAddr=<RFC6120 XmppAddr>, srvName=<RFC4985 SRVName>, fascN=<FIPS 201-2 PIV FASC-N>\"");
         getPrintStream().println("Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
-        getPrintStream().println("Existing tokens: USERGENERATED, P12, JKS, PEM");
+        getPrintStream().println("Existing tokens: USERGENERATED, P12, JKS, PEM, BCFKS");
         getPrintStream().println("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL");
         getPrintStream().println("Start time and end time is of form \"May 26, 2009 9:52 AM\" or \"days:hours:minutes\"");
         getPrintStream().println();
