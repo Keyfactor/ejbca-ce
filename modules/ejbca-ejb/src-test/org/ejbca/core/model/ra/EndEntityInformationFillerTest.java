@@ -12,20 +12,16 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
 
 /** Tests DN merging
  * 
@@ -34,8 +30,6 @@ import java.util.Arrays;
 public class EndEntityInformationFillerTest {
 	EndEntityProfile profile;
 	EndEntityInformation userData = new EndEntityInformation();
-    private static final Logger log = Logger.getLogger(EndEntityInformationFillerTest.class);
-
 
 	@Before
     public void setUp() throws Exception {
