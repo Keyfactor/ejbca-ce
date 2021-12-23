@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
 import org.cesecore.util.Base64GetHashMap;
 
 
@@ -44,7 +43,6 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      *
      */
 	private static final long serialVersionUID = -1766329888474901945L;
-	
     // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
     protected LinkedHashMap<Object, Object> data;
     private boolean upgraded = false;
