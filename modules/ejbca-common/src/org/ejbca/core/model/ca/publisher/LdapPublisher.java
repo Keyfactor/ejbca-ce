@@ -1680,7 +1680,9 @@ public class LdapPublisher extends BasePublisher {
 
 		Collection<Integer> usefields = getUseFieldInLdapDN();
 		if (!getUseCustomDnOrder() && usefields instanceof List<?>) {
-			Collections.sort((List<Integer>) usefields); // XXX this sorting order is wrong!
+			// Note: This sorting order does NOT fully match the "LDAP DN Order" in EJBCA.
+			// This can be worked around by enabling "Custom order of DN fields" in the LDAP publisher
+			Collections.sort((List<Integer>) usefields);
 		}
 		final X500NameBuilder nameBuilder = new X500NameBuilder(LdapNameStyle.INSTANCE);
 		for (Integer fieldNum : usefields) { // There must be at least one
