@@ -63,7 +63,7 @@ public class ProtocolsEnableDisableCommandTest {
 
     @Test
     public void updateStatusScep() {
-        final LinkedHashMap<String, Boolean> before = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> before = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         toggleProtocol(AvailableProtocols.SCEP.getName(), "sCeP");
         toggleProtocol(AvailableProtocols.SCEP.getName(), "--name", "ScEp");
         assertEquals("Operation should not change anything.", before, getAvailableProtocolsConfiguration().getAllProtocolsAndStatus());
@@ -71,7 +71,7 @@ public class ProtocolsEnableDisableCommandTest {
     
     @Test
     public void updateStatusRaWeb() {
-        final LinkedHashMap<String, Boolean> before = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> before = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         toggleProtocol(AvailableProtocols.RA_WEB.getName(), "RA WeB");
         toggleProtocol(AvailableProtocols.RA_WEB.getName(), "--name", "RA_wEB");
         assertEquals("Operation should not change anything.", before, getAvailableProtocolsConfiguration().getAllProtocolsAndStatus());
@@ -79,7 +79,7 @@ public class ProtocolsEnableDisableCommandTest {
 
     @Test
     public void protocolNameShouldBeMandatory() {
-        final LinkedHashMap<String, Boolean> before = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> before = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         assertEquals(CommandResult.CLI_FAILURE, new ProtocolsDisableCommand().execute());
         assertEquals(CommandResult.CLI_FAILURE, new ProtocolsEnableCommand().execute());
         assertEquals(CommandResult.CLI_FAILURE, new ProtocolsDisableCommand().execute("--name"));
@@ -89,7 +89,7 @@ public class ProtocolsEnableDisableCommandTest {
 
     @Test
     public void unknownProtocolNamesShouldFail() {
-        final LinkedHashMap<String, Boolean> before = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> before = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         assertEquals(CommandResult.CLI_FAILURE, new ProtocolsDisableCommand().execute("PlainHttpCurlPipeToSudo"));
         assertEquals(CommandResult.CLI_FAILURE, new ProtocolsEnableCommand().execute("PlainHttpCurlPipeToSudo"));
         assertEquals(CommandResult.CLI_FAILURE, new ProtocolsDisableCommand().execute("--name", "PlainHttpCurlPipeToSudo"));
