@@ -42,6 +42,7 @@ public abstract class CAInfo implements Serializable {
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;
     public static final int CATYPE_SSH = 3;
+    public static final int CATYPE_CITS = 4;
 
     /**
      * Constants indicating that the CA is selfsigned.
