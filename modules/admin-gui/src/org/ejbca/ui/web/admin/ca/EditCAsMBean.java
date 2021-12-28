@@ -224,6 +224,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private Date caCertNotAfter = null;
     
     private AuthenticationToken administrator;
+    
+    // place holders for UI properties
+    private String citsCertificateId;
+    private String citsValidity;
 
     public UploadedFile getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
@@ -332,6 +336,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setCaTypeSSH() {
         caInfoDto.setCaType(CAInfo.CATYPE_SSH);
+    }
+    
+    public void setCaTypeCits() {
+        caInfoDto.setCaType(CAInfo.CATYPE_CITS);
     }
 
     public String getCurrentCaType() {
@@ -604,6 +612,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean isCaTypeSSH() {
         return caInfoDto.getCaType() == CAInfo.CATYPE_SSH;
+    }
+    
+    public boolean isCaTypeCits() {
+        return caInfoDto.getCaType() == CAInfo.CATYPE_CITS;
     }
 
     public String getCaSubjectAltName() {
@@ -1271,6 +1283,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE);
     }
 
+    public boolean isRenderCitsAvailable() {
+        return true; //TODO: CAFactory.INSTANCE.existsCaType(IEEE1609CaInfo caIo);
+    }
+    
     public boolean isCvcAvailable() {
         return isCvcAvailable;
     }
@@ -1302,6 +1318,20 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void resetSignedBy() {
         caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
+        updateAvailableCryptoTokenList();
+        // default true
+        caInfoDto.setUseCertificateStorage(true);
+        caInfoDto.setUseUserStorage(true);
+    }
+    
+    public void renderCitsFields() {
+        caInfoDto.setCaType(CAInfo.CATYPE_CITS);
+        caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        // default false
+        caInfoDto.setUseCertificateStorage(false);
+        caInfoDto.setUseUserStorage(false);
+        updateAvailableCryptoTokenList();
+        updateAvailableSigningAlgorithmList();
     }
 
     public boolean isCreateLinkCertificate() {
@@ -1346,32 +1376,70 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String cancel() {
         return EditCaUtil.MANAGE_CA_NAV;
     }
+    
+    private void validateCitsFields() throws Exception {
+        
+        // external ca
+        
+        // max validity 5 years + pattern
+        
+        // certificate id regex
+        
+        // signkey and default key are different and both ECC or both null(create then)
+        if(catoken!=null) {
+            final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), catoken.getCryptoTokenId());
+            String certSignKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            String encryptionKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT);
+            
+            if(certSignKey.equals(encryptionKey)) {
+                addErrorMessage("CITS_KEYS_SAME");
+            }
+            
+            String signKeySpec = "";
+            String encKeySpec = "";
+            
+            for(KeyPairInfo keyPairInfo: cryptoTokenKeyPairInfos) {
+                if(keyPairInfo.getAlias().equals(certSignKey)) {
+                    signKeySpec = keyPairInfo.getKeySpecification();
+                }
+                if(keyPairInfo.getAlias().equals(encryptionKey)) {
+                    encKeySpec = keyPairInfo.getKeySpecification();
+                }
+            }
+            
+            if(!encKeySpec.equals(signKeySpec)) {
+                addErrorMessage("CITS_KEYS_CURVE_MISMATCH");
+            }
+        }
+        
+    }
 
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
         boolean illegalDnOrAltName;
 
+        byte[] fileBuffer = null;
         if (makeRequest) {
-            final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
-            try {
-                illegalDnOrAltName = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
-                if (illegalDnOrAltName) {
-                    addErrorMessage("INVALIDSUBJECTDN");
+            if(isCaTypeCits()) {
+                // only applicable to externally signed ca
+                try {
+                    validateCitsFields();
+                } catch (final Exception e) {
+                    addNonTranslatedErrorMessage(e);
+                    return "";
                 }
-            } catch (final Exception e) {
-                addNonTranslatedErrorMessage(e);
-                return "";
             }
-        } else {
-            try {
-                illegalDnOrAltName = saveOrCreateCaInternal(createCa, makeRequest, null);
-                if (illegalDnOrAltName) {
-                    addErrorMessage("INVALIDSUBJECTDN");
-                }
-            } catch (final Exception e) {
-                addNonTranslatedErrorMessage(e);
-                return "";
+            fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
+        }
+        
+        try {
+            illegalDnOrAltName = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
+            if (illegalDnOrAltName) {
+                addErrorMessage("INVALIDSUBJECTDN");
             }
+        } catch (final Exception e) {
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
 
         final long crlperiod = SimpleTime.getInstance(caInfoDto.getCrlCaCrlPeriod(), "0" + SimpleTime.TYPE_MINUTES).getLong();
@@ -2142,8 +2210,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private void updateAvailableSigningAlgorithmList() {
-        availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
-
+        if(isCaTypeCits()) {
+            availableSigningAlgorithmSelectItems = new ArrayList<SelectItem>();
+            availableSigningAlgorithmSelectItems.add(
+                    new SelectItem(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, ""));
+            availableSigningAlgorithmSelectItems.add(
+                    new SelectItem(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, ""));
+        } else {
+            availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
+        }
+        
         // Update caInfoDTO with a default algorithm
         if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.size() > 0){
             // Never suggest SHA1 based signature algorithms as default
@@ -2163,8 +2239,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         // Defaults if an error occurs
         suitableCryptoTokenExists = true;
         availableCryptoTokenSelectItems = Collections.emptyList();
+        log.info("isCaTypeCits(): " + isCaTypeCits());
         try {
-            List<Entry<String, String>> availableCryptoTokens = caBean.getAvailableCryptoTokens(isEditCA);
+            List<Entry<String, String>> availableCryptoTokens = 
+                            caBean.getAvailableCryptoTokens(isEditCA, isCaTypeCits());
             if (availableCryptoTokens == null) {
                 availableCryptoTokens = Collections.emptyList();
             }

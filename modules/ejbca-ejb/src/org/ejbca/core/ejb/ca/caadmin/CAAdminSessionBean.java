@@ -101,6 +101,7 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -578,6 +579,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
             mergeCertificatePoliciesFromCAAndProfile(sshCainfo, certprofile);
+        } else if (cainfo.getCAType() == X509CAInfo.CATYPE_CITS) {
+            log.info("Creating an CITS CA: " + cainfo.getName());
+            CitsCaInfo citsCainfo = (CitsCaInfo) cainfo;
+            
+            ca = (CA) CAFactory.INSTANCE.getCitsCaImpl(citsCainfo);
+            ca.setCAToken(catoken);
+            // Set certificate policies in profile object
+            mergeCertificatePoliciesFromCAAndProfile(citsCainfo, certprofile);
         } else {
             throw new IllegalStateException("CA of unknown type " + cainfo.getCAType() + " was encountered.");
         }

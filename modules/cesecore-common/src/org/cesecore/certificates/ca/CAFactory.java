@@ -23,7 +23,7 @@ public enum CAFactory {
     private static final String CA_TYPE_X509_EXT = "X509CA_EXTERNAL";
     private static final String CA_TYPE_CVC_EAC = "CVC_EAC";
     private static final String CA_TYPE_SSH = SshCa.CA_TYPE;
-
+    private static final String CA_TYPE_CITS = "CITS";
 
     private static final Logger log = Logger.getLogger(CAFactory.class);
 
@@ -106,6 +106,14 @@ public enum CAFactory {
         return null;
     }
 
+    public CACommon getCitsCaImpl(CitsCaInfo caInfo) {
+        if (caImplMap.containsKey(CA_TYPE_CITS)) {
+            return createCaByImpl(CA_TYPE_CITS, CitsCaInfo.class, caInfo);
+        }
+        log.error("C-ITS CA implementation not found");
+        return null;
+    }
+    
     public CACommon getSshCaImpl(SshCaInfo caInfo) {
         if (caImplMap.containsKey(CA_TYPE_SSH)) {
             return createCaByImpl(CA_TYPE_SSH, SshCaInfo.class, caInfo);
