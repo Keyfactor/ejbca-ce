@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -59,6 +60,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.CvcPlugin;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -359,22 +361,37 @@ public class CAInterfaceBean implements Serializable {
                     cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caInfoDto.getCaName() + postfix, SoftCryptoToken.class.getName(),
                             cryptoTokenProperties, null, null);
                 }
-                // Next generate recommended RSA key pairs for decryption and test
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), AlgorithmConstants.KEYALGORITHM_RSA + "2048");
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), AlgorithmConstants.KEYALGORITHM_RSA + "1024");
                 // Next, create a CA signing key
                 final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(caInfoDto.getSignatureAlgorithmParam());
                 String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + EditCaUtil.DEFAULT_KEY_SIZE;
                 if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
                 } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
-                    caSignKeySpec = "prime256v1";
+                    // ECDSA curves can only sign compatible digest sizes
+                    if(caInfoDto.getSignatureAlgorithmParam().contains("384")) {
+                        // for SHA384withECDSA
+                        caSignKeySpec = "secp384r1";
+                    } else if(caInfoDto.getSignatureAlgorithmParam().contains("256")){
+                        // for SHA256withECDSA
+                        caSignKeySpec = "prime256v1";
+                    } else {
+                        log.error("No matching curve for signing algorithm: " + caInfoDto.getSignatureAlgorithmParam());
+                        throw new Exception("No matching curve for ECDSA signing algorithm.");
+                    }
                 } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
                 } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
                 }
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), caSignKeySpec);
+                if(caInfoDto.getCaType()!=CAInfo.CATYPE_CITS) {
+                    // Next generate recommended RSA key pairs for decryption and test
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), AlgorithmConstants.KEYALGORITHM_RSA + "2048");
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), AlgorithmConstants.KEYALGORITHM_RSA + "1024");
+                } else {
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), caSignKeySpec);
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), caSignKeySpec);
+                }
             }
             return actionCreateCaMakeRequestInternal(caInfoDto, approvals, availablePublisherValues, availableKeyValidatorValues,
                     buttonCreateCa, buttonMakeRequest, cryptoTokenId, fileBuffer);
@@ -444,10 +461,12 @@ public class CAInterfaceBean implements Serializable {
         } else {
             caToken.setKeySequence(caInfoDto.getKeySequence());
         }
-	    try {
-	        CertTools.stringToBcX500Name(caInfoDto.getCaSubjectDN());
-	    } catch (IllegalArgumentException e) {
-	        illegaldnoraltname = true;
+        if(!caInfoDto.isCaTypeX509()) {
+    	    try {
+    	        CertTools.stringToBcX500Name(caInfoDto.getCaSubjectDN());
+    	    } catch (IllegalArgumentException e) {
+    	        illegaldnoraltname = true;
+    	    }
 	    }
         int certprofileid = (caInfoDto.getCurrentCertProfile()==null ? 0 : Integer.parseInt(caInfoDto.getCurrentCertProfile()));
         int defaultCertProfileId = (caInfoDto.getDefaultCertificateProfile() == null ? 0 : Integer.parseInt(caInfoDto.getDefaultCertificateProfile()));
@@ -726,10 +745,26 @@ public class CAInterfaceBean implements Serializable {
                         saveRequestInfo(sshCaInfo);
                     }
                 }
+            } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
+                // do validations
+                
+                CitsCaInfo citsCaInfo =  new CitsCaInfo();
+                citsCaInfo.setName(caInfoDto.getCaName());
+                citsCaInfo.setCertificateId(caInfoDto.getCertificateId());
+                citsCaInfo.setCertificateProfileId(certprofileid);
+                citsCaInfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
+                citsCaInfo.setEncodedValidity(caInfoDto.getCaEncodedValidity());
+                citsCaInfo.setCAToken(caToken);
+                citsCaInfo.setDescription(caInfoDto.getDescription());
+                citsCaInfo.setUseUserStorage(caInfoDto.isUseUserStorage());
+                citsCaInfo.setUseCertificateStorage(caInfoDto.isUseCertificateStorage());
+                
+                saveRequestInfo(citsCaInfo);
+                
             } else {
                 throw new IllegalStateException("Unknown CA type with identifier " + caInfoDto.getCaType() + " was encountered.");
             }
-	    }
+	    } 
         if (buttonMakeRequest && !illegaldnoraltname) {
             CAInfo cainfo = getRequestInfo();
             caadminsession.createCA(authenticationToken, cainfo);
@@ -1032,12 +1067,20 @@ public class CAInterfaceBean implements Serializable {
         }
         return null;
 	}
+    
+    public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA)
+            throws AuthorizationDeniedException {
+        return getAvailableCryptoTokens(isEditingCA, false);
+    }
 
-	public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA)
+	public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA, boolean citsElligibleTokensOnly)
             throws AuthorizationDeniedException {
         final List<Entry<String, String>> availableCryptoTokens = new ArrayList<>();
         final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
-
+        
+        Set<String> eccKeysForCurvePresent = new HashSet<String>();
+        boolean citsElligible = false;
+        String keySpec;
         for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
             // Make sure we may use it
             if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
@@ -1048,7 +1091,28 @@ public class CAInterfaceBean implements Serializable {
                     final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
                     // Only allow tokens with at least one keypair
                     if (!cryptoTokenKeyPairInfos.isEmpty()) {
-                        availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+                        if(citsElligibleTokensOnly) {
+                            eccKeysForCurvePresent.clear();
+                            citsElligible = false;
+                            for(KeyPairInfo keyPairInfo: cryptoTokenKeyPairInfos) {
+                                keySpec = keyPairInfo.getKeySpecification();
+                                if(!keyPairInfo.getKeyAlgorithm().contains("EC")) {
+                                    continue;
+                                }
+                                if(!eccKeysForCurvePresent.contains(keySpec)) {
+                                    eccKeysForCurvePresent.add(keySpec);
+                                } else {
+                                    // at least one EC key of same key spec is already present
+                                    citsElligible = true;
+                                    break;
+                                }
+                            }
+                        }
+                        // we expect two key pairs of same curve family in EC family to be useful i.e. sign and encryption key
+                        // there can be two keys with same size but different curve family
+                        if(!citsElligibleTokensOnly || citsElligible) {
+                            availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+                        }
                     }
                 } catch (CryptoTokenOfflineException ctoe) {
                     // The CryptoToken might have timed out
