@@ -700,6 +700,7 @@
         		<include name="ejbca-rest-camanagement.jar" />
         		<include name="ejbca-rest-endentity.jar" />
         		<include name="ejbca-ssh.jar" />
+        		<include name="ejbca-cits.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
