@@ -107,6 +107,10 @@ public enum CAFactory {
     }
 
     public CACommon getCitsCaImpl(CitsCaInfo caInfo) {
+        log.info("caImplMap-------");
+        for(String caType: caImplMap.keySet()) {
+            log.info("caImplMap: " + caType + " : " + caImplMap.get(caType).getClass().getSimpleName());
+        }
         if (caImplMap.containsKey(CA_TYPE_CITS)) {
             return createCaByImpl(CA_TYPE_CITS, CitsCaInfo.class, caInfo);
         }
