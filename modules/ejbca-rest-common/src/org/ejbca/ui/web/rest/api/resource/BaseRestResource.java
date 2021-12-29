@@ -35,7 +35,7 @@ public abstract class BaseRestResource {
     private static volatile Validator validator = null;
     private static Object mutex = new Object();
 
-    public static final String RESOURCE_STATUS = "OK";
+    private static final String RESOURCE_STATUS = "OK";
     public static final String RESOURCE_VERSION = "1.0";
     
     // Some status codes (including 422) are missing from the JAX-RS Response.Status enum
