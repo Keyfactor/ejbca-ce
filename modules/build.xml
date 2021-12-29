@@ -480,7 +480,7 @@
     </target>
 	
     <target name="cits" if="${mod.cits.exists}" description="Build EJBCA CITS">
-        <ant antfile="${mod.cits.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.cits.path}/build.xml" target="build-cits" inheritall="true" inheritrefs="true"/>
     </target>
 	
     <target name="ejbca-rest-cryptotoken" if="${mod.ejbca-rest-cryptotoken.exists}" depends="ejbca-rest-common" description="Build EJBCA REST Crypto Token module">
