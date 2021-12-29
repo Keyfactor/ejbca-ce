@@ -960,6 +960,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableSigningAlgList() {
         final List<SelectItem> resultList = new ArrayList<>();
+        if(isCaTypeCits()) {
+            resultList.add(new SelectItem(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, 
+                                        AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, ""));
+            resultList.add(new SelectItem(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, 
+                                        AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, ""));
+            return resultList;
+        } 
         final String cryptoTokenIdParam = caInfoDto.getCryptoTokenIdParam();
 
         for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
@@ -1319,6 +1326,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void resetSignedBy() {
         caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
         updateAvailableCryptoTokenList();
+        updateAvailableSigningAlgorithmList();
         // default true
         caInfoDto.setUseCertificateStorage(true);
         caInfoDto.setUseUserStorage(true);
@@ -2210,15 +2218,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private void updateAvailableSigningAlgorithmList() {
-        if(isCaTypeCits()) {
-            availableSigningAlgorithmSelectItems = new ArrayList<SelectItem>();
-            availableSigningAlgorithmSelectItems.add(
-                    new SelectItem(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, ""));
-            availableSigningAlgorithmSelectItems.add(
-                    new SelectItem(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, ""));
-        } else {
-            availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
-        }
+        availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
         
         // Update caInfoDTO with a default algorithm
         if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.size() > 0){
