@@ -1335,7 +1335,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
         // default false
         caInfoDto.setUseUserStorage(false);
-        updateAvailableCryptoTokenList();
+        updateAvailableCryptoTokenList(true);
         updateAvailableSigningAlgorithmList();
     }
 
@@ -2236,14 +2236,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
     }
-
+    
     private void updateAvailableCryptoTokenList() {
+        updateAvailableCryptoTokenList(false);
+    }
+
+    private void updateAvailableCryptoTokenList(boolean citsCompatible) {
         // Defaults if an error occurs
         suitableCryptoTokenExists = true;
         availableCryptoTokenSelectItems = Collections.emptyList();
         try {
             List<Entry<String, String>> availableCryptoTokens = 
-                            caBean.getAvailableCryptoTokens(isEditCA, isCaTypeCits());
+                            caBean.getAvailableCryptoTokens(isEditCA, citsCompatible);
             if (availableCryptoTokens == null) {
                 availableCryptoTokens = Collections.emptyList();
             }
