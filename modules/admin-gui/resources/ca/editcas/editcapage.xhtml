@@ -35,7 +35,7 @@
 			<h:outputText value="#{web.text.CANAME}" />
 			<h:outputText value="#{editCAsMBean.editCaName}"
 				rendered="#{editCAsMBean.editCA}" />
-			<h:outputText value="#{editCAsMBean.createCaNameTitle} XX"
+			<h:outputText value="#{editCAsMBean.createCaNameTitle}"
 				rendered="#{not editCAsMBean.editCA}" />
 		</h3>
 
@@ -92,7 +92,7 @@
 						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
 					</h:commandButton>
 					<h:commandButton
-						id="catypeieee1609_2"
+						id="catypecits"
 						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeCits?'selected':''}"
 						action="#{editCAsMBean.setCaTypeCits}"
 						value="#{editCAsMBean.caTypeCits?'✓':' '}#{web.text.CITS_CA}"
@@ -484,25 +484,6 @@
 						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:outputLabel for="checkboxuseuserstorage" value="#{web.text.USE}" />
 				</h:panelGroup>
-
-				<h:panelGroup>
-					<h:outputLabel for="citscheckboxusecertificatestorage"
-						value="#{web.text.USECERTIFICATESTORAGE}" />
-					<h:outputText
-						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_User_Storage')}"
-						escape="false" styleClass="helpReference"/>
-				</h:panelGroup>
-
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="citscheckboxusecertificatestorage"
-						value="#{editCAsMBean.caInfoDto.useCertificateStorage}"
-						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render="nonExistingCertRevokeSection" immediate="true" event="change"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel for="checkboxusecertificatestorage"
-						value="#{editCAsMBean.checkboxUseCollapsedText}" />
-				</h:panelGroup>
-				
 				
 			</h:panelGrid>
 			
