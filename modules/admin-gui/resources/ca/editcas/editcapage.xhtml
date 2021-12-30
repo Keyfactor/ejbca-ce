@@ -232,7 +232,8 @@
 					<h:outputLabel for="crlSignKey" value="crlSignKey" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable 
+									and editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.caTypeCits}">
 					<h:outputText id="crlSignKey"
 						value="#{editCAsMBean.currentCaCryptoTokenCrlSignKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
@@ -244,20 +245,19 @@
 					<h:outputLabel for="keyEncryptKey" value="keyEncryptKey" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable 
+									and editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.caTypeCits}">
 					<h:outputText id="keyEncryptKey"
 						value="#{editCAsMBean.currentCaCryptoTokenKeyEncryptKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent
-												and not editCAsMBean.caTypeCits}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="testKey" value="testKey" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent
-												and not editCAsMBean.caTypeCits}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputText id="testKey"
 						value="#{editCAsMBean.currentCaCryptoTokenTestKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
@@ -320,14 +320,12 @@
 
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable
-									and not editCAsMBean.caTypeCits}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="testKey" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable
-									and not editCAsMBean.caTypeCits}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu name="selectkeytestkey"
 						value="#{editCAsMBean.selectTestKey}">
 						<f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('testKey')}" />
@@ -419,11 +417,13 @@
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputText value="#{editCAsMBean.caInfoDto.certificateId}"
-						rendered="#{editCAsMBean.caExternal}" />
+						rendered="#{editCAsMBean.editCA}" />
 					<h:inputText size="20" maxlength="255"
 						id="textfieldcertificateid" styleClass="mandatory"
 						value="#{editCAsMBean.caInfoDto.certificateId}"
-						disabled="#{not editCAsMBean.hasEditRight}" >
+						required="true"
+						rendered="#{not editCAsMBean.editCA}" 
+						disabled="#{not editCAsMBean.editCA and not editCAsMBean.hasEditRight}" >
 					</h:inputText>	
 					<br />	
 					<h:outputText styleClass="help"
@@ -457,11 +457,14 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup>
+					<h:outputText value="#{editCAsMBean.caEncodedValidity}"
+						rendered="#{editCAsMBean.editCA}" />
 					<h:inputText name="textfieldcitsvalidity" id="textfieldcitsvalidity"
 						size="25" maxlength="225"
 						value="#{editCAsMBean.caEncodedValidity}"
 						title="#{web.text.CITS_VALIDITY_HELP}"
 						label="Cits Ca Validity" styleClass="mandatory"
+						rendered="#{not editCAsMBean.editCA}"
 						required="true" 
 						disabled="#{!editCAsMBean.hasEditRight and !editCAsMBean.caUninitialized}">
 					</h:inputText>	
