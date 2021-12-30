@@ -230,6 +230,10 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return EjbcaJSFHelper.getBean().getEjbcaWebBean().isHelpEnabled();
     }
     
+    public boolean isLogoutAvailable() {
+        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getUseSessionTimeout();
+    }
+    
     public String getHeadBannerUrl() {
         return EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getHeadBanner();
     }
