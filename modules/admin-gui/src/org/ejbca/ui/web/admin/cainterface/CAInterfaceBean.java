@@ -757,7 +757,6 @@ public class CAInterfaceBean implements Serializable {
                 citsCaInfo.setCAToken(caToken);
                 citsCaInfo.setDescription(caInfoDto.getDescription());
                 citsCaInfo.setUseUserStorage(caInfoDto.isUseUserStorage());
-                citsCaInfo.setUseCertificateStorage(caInfoDto.isUseCertificateStorage());
                 
                 saveRequestInfo(citsCaInfo);
                 
@@ -897,7 +896,9 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getDescription() == null) {
             caInfoDto.setDescription("");
         }
-        if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+        if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) 
+                && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA
+                && !caInfoDto.isCaTypeCits()) {
             // A validityString of null is allowed, when using a validity is not applicable
             caInfoDto.setCaEncodedValidity("0d");
         } else {
@@ -1059,7 +1060,19 @@ public class CAInterfaceBean implements Serializable {
                         // TODO ECA-9293: SSH, add approvals here
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
+            } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
+                CitsCaInfo citsCaInfo =  new CitsCaInfo();
+                citsCaInfo.setName(caInfoDto.getCaName());
+                citsCaInfo.setCertificateId(caInfoDto.getCertificateId());
+                citsCaInfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
+                citsCaInfo.setEncodedValidity(caInfoDto.getCaEncodedValidity());
+                citsCaInfo.setCAToken(catoken);
+                citsCaInfo.setDescription(caInfoDto.getDescription());
+                citsCaInfo.setUseUserStorage(caInfoDto.isUseUserStorage());
+                
+                cainfo = citsCaInfo;
             }
+           
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(caInfo.getStatus());
             cainfo.setName(caInfo.getName());
