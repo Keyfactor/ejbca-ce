@@ -43,6 +43,9 @@ public abstract class CAInfo implements Serializable {
     public static final int CATYPE_CVC = 2;
     public static final int CATYPE_SSH = 3;
     public static final int CATYPE_CITS = 4;
+    
+    // Used to indicate CITS certificateId in database in subjectDN column
+    public static final String CITS_SUBJECTDN_PREFIX = "cits:";
 
     /**
      * Constants indicating that the CA is selfsigned.
@@ -146,8 +149,13 @@ public abstract class CAInfo implements Serializable {
         return subjectdn;
     }
 
-    public void setSubjectDN(final String subjectDn) {
-        this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
+    public void setSubjectDN(String subjectDn) {
+        subjectDn = StringTools.strip(subjectDn);
+        if(subjectDn.startsWith(CITS_SUBJECTDN_PREFIX)) {
+            this.subjectdn = subjectDn;
+        } else {
+            this.subjectdn = CertTools.stringToBCDNString(subjectDn);
+        }
     }
 
     /**
@@ -202,6 +210,9 @@ public abstract class CAInfo implements Serializable {
         }
         if (catype == CAInfo.CATYPE_SSH) {
             return SshCa.CA_TYPE;
+        }
+        if (catype == CAInfo.CATYPE_CITS) {
+            return "CITS";
         }
         return String.valueOf(catype);
     }

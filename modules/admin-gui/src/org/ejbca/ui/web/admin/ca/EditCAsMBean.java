@@ -70,6 +70,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.ExtendedUserDataHandlerFactory;
@@ -224,10 +225,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private Date caCertNotAfter = null;
     
     private AuthenticationToken administrator;
-    
-    // place holders for UI properties
-    private String citsCertificateId;
-    private String citsValidity;
 
     public UploadedFile getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
@@ -350,6 +347,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return "CVC";
         case CAInfo.CATYPE_SSH:
             return SshCa.CA_TYPE;
+        case CAInfo.CATYPE_CITS:
+            return "CITS";
         default:
             return "UNKNOWN";
         }
@@ -1328,7 +1327,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
         // default true
-        caInfoDto.setUseCertificateStorage(true);
         caInfoDto.setUseUserStorage(true);
     }
     
@@ -1336,7 +1334,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setCaType(CAInfo.CATYPE_CITS);
         caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
         // default false
-        caInfoDto.setUseCertificateStorage(false);
         caInfoDto.setUseUserStorage(false);
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
@@ -1432,6 +1429,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 // only applicable to externally signed ca
                 try {
                     validateCitsFields();
+                    caInfoDto.setCaSubjectDN(CAInfo.CITS_SUBJECTDN_PREFIX + caInfoDto.getCertificateId());
                 } catch (final Exception e) {
                     addNonTranslatedErrorMessage(e);
                     return "";
@@ -1841,7 +1839,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         CAInfo cainfo;
 
         //External CAs do not require a validity to be set
-        if (caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+        if (caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA && !isCaTypeCits()) {
             caInfoDto.setCaEncodedValidity(null);
         }
 
@@ -2081,7 +2079,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
 
         caInfoDto.setCaEncodedValidity(cainfo.getEncodedValidity());
-        final boolean validityNotUsed = (isCaexternal || (!isCaUninitialized && signbyexternal));
+        final boolean validityNotUsed = ((isCaexternal && !isCaTypeCits()) || (!isCaUninitialized && signbyexternal));
         if (validityNotUsed && (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) || "0d".equals(caInfoDto.getCaEncodedValidity()))) {
             hideValidity = true;
             caInfoDto.setCaEncodedValidity("");
@@ -2089,6 +2087,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         caInfoDto.setUseCertReqHistory(cainfo.isUseCertReqHistory());
         caInfoDto.setUseUserStorage(cainfo.isUseUserStorage());
+        
+        if (caInfoDto.isCaTypeCits() && cainfo != null) {
+            caInfoDto.setCertificateId(((CitsCaInfo)cainfo).getCertificateId());
+        }
 
         if (caInfoDto.isCaTypeX509() && cainfo != null) {
             final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
@@ -2239,7 +2241,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         // Defaults if an error occurs
         suitableCryptoTokenExists = true;
         availableCryptoTokenSelectItems = Collections.emptyList();
-        log.info("isCaTypeCits(): " + isCaTypeCits());
         try {
             List<Entry<String, String>> availableCryptoTokens = 
                             caBean.getAvailableCryptoTokens(isEditCA, isCaTypeCits());

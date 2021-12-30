@@ -203,8 +203,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
             CAInfo cainfo = ca.getCAInfo();
             // The CA needs a name and a subject DN in order to store it
-            if ((ca.getName() == null) || (ca.getSubjectDN() == null)) {
-                throw new CAExistsException("Null CA name or SubjectDN. Name: '"+ca.getName()+"', SubjectDN: '"+ca.getSubjectDN()+"'.");
+            // C-ITS or ECA certificates do not have subject DN
+            if ((ca.getName() == null) || cainfo.getSubjectDN() == null) {
+                throw new CAExistsException("Null CA name or SubjectDN/CertificateId. Name: '"+ca.getName()+"', SubjectDN: '"+ca.getSubjectDN()+"'.");
             }
             if (findByName(cainfo.getName()) != null) {
                 String msg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());
@@ -214,6 +215,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 String msg = intres.getLocalizedMessage("caadmin.caexistsid", ca.getCAId());
                 throw new CAExistsException(msg);
             }
+            
             final CAData caData = new CAData(cainfo.getSubjectDN(), cainfo.getName(), cainfo.getStatus(), ca);
             entityManager.persist(caData);
             caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.

@@ -432,10 +432,10 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getCryptoTokenCertSignKey().length() > 0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
-        if (caInfoDto.getCryptoTokenCertSignKey().length() > 0) {
+        if (caInfoDto.getCryptoTokenCertSignKey().length() > 0 && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
-        if (caInfoDto.getSelectedKeyEncryptKey().length() > 0) {
+        if (caInfoDto.getSelectedKeyEncryptKey().length() > 0 && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caInfoDto.getSelectedKeyEncryptKey());
         }
         if (caInfoDto.getTestKey().length() > 0) {
@@ -461,7 +461,7 @@ public class CAInterfaceBean implements Serializable {
         } else {
             caToken.setKeySequence(caInfoDto.getKeySequence());
         }
-        if(!caInfoDto.isCaTypeX509()) {
+        if(!caInfoDto.isCaTypeX509() && !caInfoDto.isCaTypeCits()) {
     	    try {
     	        CertTools.stringToBcX500Name(caInfoDto.getCaSubjectDN());
     	    } catch (IllegalArgumentException e) {
@@ -477,7 +477,7 @@ public class CAInterfaceBean implements Serializable {
 	    }
 
 	    // If 'buttonMakeRequest' set encodedValidity to zero days, otherwise perform validation if it's an absolute date or a relative time.
-	    if (buttonMakeRequest) {
+	    if (buttonMakeRequest && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
 	        caInfoDto.setCaEncodedValidity("0d"); // not applicable
         } else {
             String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity());

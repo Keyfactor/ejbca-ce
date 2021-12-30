@@ -12,7 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 
 public class CitsCaInfo extends CAInfo {
     
@@ -27,6 +30,7 @@ public class CitsCaInfo extends CAInfo {
         setCertificateChain(null);
         setCAType(CATYPE_CITS);
         setApprovals(new HashMap<>());
+        setExtendedCAServiceInfos(new ArrayList<ExtendedCAServiceInfo>());
     }
 
     @Override
@@ -39,7 +43,8 @@ public class CitsCaInfo extends CAInfo {
     }
 
     public void setCertificateId(String certificateId) {
-        this.caid = certificateId.hashCode();
+        this.subjectdn = CITS_SUBJECTDN_PREFIX + certificateId;
+        this.caid = this.subjectdn.hashCode();
         this.certificateId = certificateId;
     }
     
