@@ -268,8 +268,9 @@ public class EndEntityInformationFiller {
     * @param profile user associated profile.
     * @return updated user.
     */
-    public static void mergeDnString(EndEntityInformation user, final EndEntityProfile profile) {
-         user.setDN(mergeDnString(user.getDN(), profile, SUBJECT_DN));
+    public static void mergeDnString(EndEntityInformation user, final EndEntityProfile profile, 
+                                        final String entityEmail) {
+         user.setDN(mergeDnString(user.getDN(), profile, SUBJECT_DN, entityEmail));
     }
     
     /** This method fills user subject alternative name with the default values from the specified profile.
@@ -280,11 +281,13 @@ public class EndEntityInformationFiller {
     * @param profile user associated profile.
     * @return updated user.
     */
-    public static void mergeSanString(EndEntityInformation user, final EndEntityProfile profile) {
-        user.setSubjectAltName(mergeDnString(user.getSubjectAltName(), profile, SUBJECT_ALTERNATE_NAME));
+    public static void mergeSanString(EndEntityInformation user, final EndEntityProfile profile,
+                                        final String entityEmail) {
+        user.setSubjectAltName(mergeDnString(user.getSubjectAltName(), profile, SUBJECT_ALTERNATE_NAME, entityEmail));
     }
     
-    private static String mergeDnString(String userDnString, final EndEntityProfile profile, final String entityType) {
+    private static String mergeDnString(String userDnString, final EndEntityProfile profile, 
+                                final String entityType, final String entityEmail) {
         
         if (userDnString==null) {
             userDnString = "";
@@ -292,9 +295,9 @@ public class EndEntityInformationFiller {
             userDnString = userDnString.trim();
         }
         
-        /*
-         * append end entity email to user dn or san to achieve the same functionality
-         * if(!StringUtils.isEmpty(entityEmail)) {
+        
+        // append end entity email to user dn or san to achieve the same functionality
+        if(!StringUtils.isEmpty(entityEmail)) {
             if(!StringUtils.isEmpty(userDnString)) {
                 userDnString += ",";
             }
@@ -304,7 +307,7 @@ public class EndEntityInformationFiller {
             if(entityType.equals(SUBJECT_ALTERNATE_NAME) && profile.getUse(DnComponents.RFC822NAME, 0)) {
                 userDnString += "RFC822NAME=" + entityEmail;
             }
-        }*/
+        }
         
         final int averageRdnsPerDnField = 16;
         final int numberofDnfields;
@@ -314,18 +317,18 @@ public class EndEntityInformationFiller {
             numberofDnfields = profile.getSubjectAltNameFieldOrderLength();
         }
         LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns = 
-                new LinkedHashMap<String, LinkedHashSet<Rdn>>();
+                new LinkedHashMap<>();
         
         LinkedHashMap<String, LinkedHashSet<Rdn>> groupedModifiableProfileRdns = 
-                new LinkedHashMap<String, LinkedHashSet<Rdn>>(numberofDnfields/averageRdnsPerDnField);
+                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
         LinkedHashMap<String, LinkedHashSet<Rdn>> groupedAllProfileRdns = 
-                new LinkedHashMap<String, LinkedHashSet<Rdn>>(numberofDnfields/averageRdnsPerDnField);
-        Map<String, Integer> emptyFieldsForDntype = new HashMap<String, Integer>();
+                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
+        Map<String, Integer> emptyFieldsForDntype = new HashMap<>();
         int[] fielddata = null;
         String value;
         LinkedHashSet<Rdn> orderedRdns;
         LinkedHashSet<Rdn> orderedModifiableRdns;
-        LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<Rdn>();
+        LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<>();
 
         StringBuilder result = new StringBuilder(numberofDnfields*10);
         
@@ -414,8 +417,27 @@ public class EndEntityInformationFiller {
             parameter = StringUtils.replace(parameter, "=", "");
             isModifiable = profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
             
+            if(value.contains(";")) {
+                // we need to address DN values with multiple valid choices
+                // they are represented as ;-separated list and unmodifiable
+                boolean optionSelected = false;
+                if(userRdns.containsKey(parameter)) {
+                    orderedRdns = userRdns.get(parameter);
+                    for(String dn: value.split(";")) {
+                        if(orderedRdns.contains(convertToRdn(parameter, dn))) {
+                            optionSelected = true;
+                            value = dn;
+                        }
+                    }
+                }
+                
+                if(!optionSelected) {
+                    value = value.substring(0, value.indexOf(";"));
+                }
+            }
+            
             if(!groupedAllProfileRdns.containsKey(parameter)){
-                orderedRdns = new LinkedHashSet<Rdn>(averageRdnsPerDnField);
+                orderedRdns = new LinkedHashSet<>(averageRdnsPerDnField);
                 groupedAllProfileRdns.put(parameter, orderedRdns);
 
                 orderedModifiableRdns = new LinkedHashSet<Rdn>(averageRdnsPerDnField);
@@ -429,6 +451,7 @@ public class EndEntityInformationFiller {
             
             Rdn rdn = convertToRdn(parameter, value);
             orderedRdns.add(rdn);
+            
             if(isModifiable) {
                 if(StringUtils.isEmpty(value)) {
                     // only modifiable fields can be empty
@@ -506,7 +529,7 @@ public class EndEntityInformationFiller {
         if(rdn==null||StringUtils.isEmpty((String) rdn.getValue())) {
             return;
         }
-        buffer.append(rdn.toString().replace("\\+", "+").replace("\\=", "="));
+        buffer.append(rdn.toString().replace("\\+", "+").replace("\\=", "=").replace("\\;", "/"));
         buffer.append(",");
     }
     
