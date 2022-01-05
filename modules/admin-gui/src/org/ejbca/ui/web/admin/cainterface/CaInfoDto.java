@@ -87,7 +87,8 @@ public class CaInfoDto {
     private String crlCaDeltaCrlPeriod;
     private boolean generateCrlUponRevocation = false;
     private String requestPreProcessor;
-
+    private String certificateId;
+    
     long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
@@ -114,6 +115,10 @@ public class CaInfoDto {
     
     public boolean isCaTypeSsh() {
         return caType == CAInfo.CATYPE_SSH;
+    }
+    
+    public boolean isCaTypeCits() {
+        return caType == CAInfo.CATYPE_CITS;
     }
 
 
@@ -648,6 +653,14 @@ public class CaInfoDto {
         this.usePartitionedCrl = false;
         this.crlPartitions = 0;
         this.suspendedCrlPartitions = 0;
+    }
+    
+    public String getCertificateId() {
+        return certificateId;
+    }
+
+    public void setCertificateId(String certificateId) {
+        this.certificateId = certificateId;
     }
 }
 
