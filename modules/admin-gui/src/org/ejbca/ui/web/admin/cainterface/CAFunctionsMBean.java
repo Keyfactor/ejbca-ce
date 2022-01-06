@@ -228,6 +228,10 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return subjectDn;
         }
 
+        public String getURLEncodedSubjectDn() throws UnsupportedEncodingException {
+            return URLEncoder.encode(subjectDn, StandardCharsets.UTF_8.toString());
+        }
+
         public int getLastCrlNumber() {
             return lastCrlNumber;
         }

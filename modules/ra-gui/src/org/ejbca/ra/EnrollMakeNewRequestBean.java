@@ -68,7 +68,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -125,10 +127,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
+    
     private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
-    public static int MAX_CSR_LENGTH = 10240;
+    public static int MAX_CSR_LENGTH = 250000;
     private static final int MIN_OPTIONAL_FIELDS_TO_SHOW = 2;
 
     @EJB
@@ -204,6 +207,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private UIComponent userCredentialsMessagesComponent;
     private UIComponent confirmPasswordComponent;
     private UIComponent validityInputComponent;
+    private String nameConstraintPermitted;
+    private String nameConstraintExcluded;
 
     private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
     private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
@@ -317,6 +322,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isEmailRequired() {
         return getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0) ||
                 getEndEntityProfile().isRequired(EndEntityProfile.EMAIL, 0);
+    }
+
+    public boolean isDnEmail(EndEntityProfile.FieldInstance instance) {
+        return instance.getName().equals(DnComponents.DNEMAILADDRESS);
     }
 
     /**
@@ -1009,7 +1018,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         downloadToken(token, APPLICATION_OCTET_STREAM, ".pem");
     }
 
-    private ExtendedInformation getProcessedExtendedInformation() {
+    private ExtendedInformation getProcessedExtendedInformation() throws CertificateExtensionException {
         final ExtendedInformation extendedInformation = new ExtendedInformation();
         final Properties properties = new Properties();
         
@@ -1066,6 +1075,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
         
+
+        if(nameConstraintPermitted!=null && !StringUtils.isBlank(nameConstraintPermitted)) {
+            extendedInformation.setNameConstraintsPermitted(
+                    NameConstraint.parseNameConstraintsList(nameConstraintPermitted));
+        }
+        
+        if(nameConstraintExcluded!=null && !StringUtils.isBlank(nameConstraintExcluded)) {
+            extendedInformation.setNameConstraintsExcluded(
+                    NameConstraint.parseNameConstraintsList(nameConstraintExcluded));
+        }
+        
         return extendedInformation;
     }
     
@@ -1077,6 +1097,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return generated token as byte array or null if token could not be generated
      */
     private byte[] addEndEntityAndGenerateToken(int tokenType, TokenDownloadType tokenDownloadType) {
+        // Fill subjectDn email fields
+        for(EndEntityProfile.FieldInstance instance: getSubjectDn().getFieldInstances()) {
+            if (instance.isUseDataFromEmailField()) {
+                instance.setValue(getEndEntityInformation().getEmail());
+            }
+        }
+
         //Update the EndEntityInformation data
         getSubjectDn().update();
         getSubjectAlternativeName().update();
@@ -1090,7 +1117,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile())).getId());
         endEntityInformation.setDN(getSubjectDn().toString());
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile())).getId());
-        endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
+        
+        try {
+            endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
+        } catch(CertificateExtensionException e) {
+            reportGenericError(null, e);
+            return null;
+        }
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
         endEntityInformation.setTimeCreated(new Date());
@@ -1455,8 +1488,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public final void validateCsr(String csrValue) throws ValidatorException {
         algorithmFromCsr = null;
-        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
-            log.info("CSR uploaded was too large: " + csrValue.length());
+        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) { 
+           log.info("CSR uploaded was too large: " + csrValue.length());
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
@@ -1465,7 +1498,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-
+        
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
         final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {
@@ -1540,6 +1573,58 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return null;
     }
 
+    public boolean isNameConstraintPermittedRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsPermittedUsed();
+    }
+    
+    public boolean isNameConstraintPermittedRequired() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsPermittedRequired();
+    }    
+
+    public String getNameConstraintPermitted() {
+        return nameConstraintPermitted;
+    }
+
+    public void setNameConstraintPermitted(String nameConstraintPermitted) {
+        this.nameConstraintPermitted = nameConstraintPermitted;
+    }
+    
+    public boolean isNameConstraintExcludedRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsExcludedUsed();
+    }
+    
+    public boolean isNameConstraintExcludedRequired() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsExcludedRequired();
+    }    
+
+    public String getNameConstraintExcluded() {
+        return nameConstraintExcluded;
+    }
+
+    public void setNameConstraintExcluded(String nameConstraintExcluded) {
+        this.nameConstraintExcluded = nameConstraintExcluded;
+    }
+    
     /**
      * @return The user-defined validity for the private key.
      */
@@ -2234,6 +2319,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 subjectDn = new SubjectDn(endEntityProfile);
                 subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
                 subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
+                for (EndEntityProfile.FieldInstance instance: subjectDn.getRequiredFieldInstances()) {
+                    if (isDnEmail(instance)) {
+                        instance.setUseDataFromEmailField(true);
+                    }
+                }
             }
         }
         return subjectDn;

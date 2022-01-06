@@ -278,8 +278,15 @@
 										<h:outputLabel for="subjectDnField"
 											value="#{msg['subject_dn_'.concat(instance.name)]} *"
 											rendered="#{instance.required and instance.modifiable}" />
+
+										<h:selectBooleanCheckbox value="#{instance.useDataFromEmailField}"
+											id="#{'subject_dn_email_required'}"
+											onclick="return false;"
+											rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+										<h:outputLabel for="#{'subject_dn_email_required'}" value="#{msg.subject_dn_USESEMAILFIELDDATA}" rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+
 										<h:inputText id="subjectDnField" value="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-											 rendered="#{instance.modifiable and !instance.selectable}">
+											 rendered="#{instance.modifiable and !instance.selectable and !enrollMakeNewRequestBean.isDnEmail(instance)}">
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
 											<f:validator validatorId="extendedRequiredValidator"/>
@@ -317,9 +324,14 @@
 										<h:outputLabel for="subjectDnFieldOptional"
 											value="#{msg['subject_dn_'.concat(instance.name)]}"
 											rendered="#{!instance.required}" />
-										
+
+											<h:selectBooleanCheckbox value="#{instance.useDataFromEmailField}"
+												id="#{'subjectDnEmailOptional'}"
+												rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+											<h:outputLabel for="#{'subjectDnEmailOptional'}" value="#{msg.subject_dn_USESEMAILFIELDDATA}" rendered="#{enrollMakeNewRequestBean.isDnEmail(instance)}"/>
+
 										<h:inputText id="subjectDnFieldOptional" value="#{enrollMakeNewRequestBean.subjectDn.optionalFieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-											rendered="#{!instance.required and !instance.selectable}" >
+											rendered="#{!instance.required and !instance.selectable and !enrollMakeNewRequestBean.isDnEmail(instance)}" >
 											<f:validator validatorId="extendedRegexValidator" />
 											<f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
 											<f:validator validatorId="extendedRequiredValidator"/>
@@ -487,8 +499,9 @@
                             </h:panelGroup>
                             </ui:fragment>
 							</ui:repeat>
+                           
 							</h:panelGroup>
-							
+														
 							<fieldset>
 							 <h:commandButton id="showFullOptionalSANFieldToggle" action="#{enrollMakeNewRequestBean.showFullOptionalSanFieldsToggle}"
                                 rendered="#{enrollMakeNewRequestBean.renderOptionalSanFieldToggler}" actionListener="#{enrollMakeNewRequestBean.checkSubjectDn}"
@@ -498,8 +511,62 @@
 									render=":requestInfoForm:sanSection" />
 							</h:commandButton>
 							</fieldset>
-							
 						</h:panelGroup>
+						
+						<h:panelGroup id="nameConstraintSection" layout="block" styleClass="pure-control-group" 
+									rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() or 
+													enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}">
+							
+							<h3>
+								<h:outputText value="#{msg.enroll_name_constraint_attributes}" rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}"/>
+							</h3>
+							<h:panelGroup layout="block" styleClass="pure-control-group" 
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}">
+							
+							<h:panelGroup rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}" >
+									<h:outputLabel for="nameConstraintPermitted"
+										value="#{msg.enroll_name_constraint_permitted}"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() and 
+														!enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}" />
+									<h:outputLabel for="nameConstraintPermitted"
+										value="#{msg.enroll_name_constraint_permitted} *"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() and 
+														enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}" />
+									<h:inputTextarea id="nameConstraintPermitted" rows="4" cols="38"
+											value="#{enrollMakeNewRequestBean.nameConstraintPermitted}"
+                                        rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}" 
+                                        required="#{enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}"
+                                        requiredMessage="#{msg.enroll_name_constraint_permitted_required}">
+                                   </h:inputTextarea>
+                                   <h:message for="nameConstraintPermitted" id="nameConstraintPermittedMessage" styleClass="validationErrorMessage showErrorMessage"/>
+                            </h:panelGroup>
+                            
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" styleClass="pure-control-group" 
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}">
+                            
+                            <h:panelGroup rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}" >
+									<h:outputLabel for="nameConstraintExcluded"
+										value="#{msg.enroll_name_constraint_excluded}"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered() and 
+														!enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}" />
+									<h:outputLabel for="nameConstraintExcluded"
+										value="#{msg.enroll_name_constraint_excluded} *"
+										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered() and 
+														enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}" />
+									<h:inputTextarea id="nameConstraintExcluded" rows="4" cols="38"
+											value="#{enrollMakeNewRequestBean.nameConstraintExcluded}"
+                                        rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}" 
+                                        required="#{enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}"
+                                        requiredMessage="#{msg.enroll_name_constraint_excluded_required}">
+                                   </h:inputTextarea>
+                                   <h:message for="nameConstraintExcluded" id="nameConstraintExcludedMessage" styleClass="validationErrorMessage showErrorMessage"/>
+                            </h:panelGroup>
+                            
+                            </h:panelGroup>
+                       	</h:panelGroup>
+							
 						<h:panelGroup id="subjectDirectoryAttributeSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributesRendered}">
 							<h3>
 								<h:outputText value="#{msg.enroll_required_subject_directory_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.requiredFieldInstances.size() gt 0}" />

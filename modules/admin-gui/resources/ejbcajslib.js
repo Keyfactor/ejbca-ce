@@ -394,6 +394,18 @@ function inputIntoField(oldaliasfield, aliasfield, oldalias, infotext) {
 	return false;
 }
 
+function inputIntoFieldIncludingEmptyString(oldaliasfield, aliasfield, oldalias, infotext) {
+	var input = prompt(infotext,"");
+	if (input != null) {
+		document.getElementById(oldaliasfield).value = oldalias;
+		document.getElementById(aliasfield).value = input;
+		return true;
+	}
+	document.getElementById(oldaliasfield).value = '';
+	document.getElementById(aliasfield).value = '';
+	return false;
+}
+
 /**
  * Create a confirmation window for a checkbox. (Checkbox stays unchecked if
  * cancel button is clicked.)

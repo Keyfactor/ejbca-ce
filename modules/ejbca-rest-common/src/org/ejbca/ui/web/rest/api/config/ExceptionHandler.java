@@ -33,8 +33,6 @@ import org.ejbca.ui.web.rest.api.io.response.ExceptionInfoRestResponse.Exception
 
 /**
  * General JAX-RS Exception handler to catch an Exception and create its appropriate response with error's status and error's message.
- *
- * @version $Id: ExceptionHandler.java 28962 2018-05-21 06:54:45Z andrey_s_helmes $
  */
 @Provider
 public class ExceptionHandler implements ExceptionMapper<Exception> {

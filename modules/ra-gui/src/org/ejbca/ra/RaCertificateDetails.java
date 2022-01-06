@@ -357,7 +357,13 @@ public class RaCertificateDetails {
         switch (status) {
         case CertificateConstants.CERT_ACTIVE:
         case CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION:
-            return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_active");
+        {
+            if(isExpired()) {
+                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_expired");
+            } else {
+                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_active");
+            }
+        }
         case CertificateConstants.CERT_ARCHIVED:
         case CertificateConstants.CERT_REVOKED:
             return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_"+revocationReason);
