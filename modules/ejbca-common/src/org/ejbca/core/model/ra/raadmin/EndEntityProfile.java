@@ -2971,6 +2971,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private final int profileId;
         private boolean rfcEmailUsed;
         private boolean dnsCopyCheckbox;
+		private boolean useDataFromEmailField;
         String regexPattern;
         public FieldInstance(String name, int number){
             this.name = name;
@@ -3012,7 +3013,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public void setValue(String value) { this.value = value; }
         public String getDefaultValue() { return defaultValue; }
         public void setDefaultValue(String value) { this.defaultValue = value; }
-        public String getName() { return name; }
+		public boolean isUseDataFromEmailField() { return useDataFromEmailField; }
+		public void setUseDataFromEmailField(boolean useDataFromEmailField) { this.useDataFromEmailField = useDataFromEmailField; }
+		public String getName() { return name; }
         public String getRegexPattern() { return regexPattern; }
         public int getNumber() { return number; }
         public boolean isSelectable() {

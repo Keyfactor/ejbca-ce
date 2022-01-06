@@ -45,7 +45,6 @@ public class EndEntityInformationFiller {
      *
      * @param userData user data.
      * @param profile user associated profile.
-     * @param onlyEnforcedFields include enforced Subject DN or alternate name field in End Entity profile
      * @return update user.
      */
     public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, 
