@@ -312,7 +312,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         endEntity.setSubjectAltName(getAddDnsFromCnToAltName(endEntity.getDN(), endEntity.getSubjectAltName(), profile));
 
-        // Merge DNs which are marked as enforced.
         if( profile.getAllowMergeDn()) {
             endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile);
         }
