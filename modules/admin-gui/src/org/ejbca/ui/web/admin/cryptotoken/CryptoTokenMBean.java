@@ -1097,7 +1097,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_AUTHENTICATION_TYPE, getCurrentCryptoToken().getAzureAuthenticationType().toString());
-                properties.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
+                if (vaultKeyBinding != null) {
+                    properties.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
+                }
             } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.AWSKMS_NAME;
                 String region = getCurrentCryptoToken().getAWSKMSRegion().trim();

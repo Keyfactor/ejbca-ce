@@ -35,12 +35,15 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -63,6 +66,10 @@ public class RaEndEntityBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(RaEndEntityBean.class);
+    private static final String MISSING_PERMITTED_NAME_CONSTRAINTS = "enroll_name_constraint_permitted_required";
+    private static final String MISSING_EXCLUDED_NAME_CONSTRAINTS = "enroll_name_constraint_excluded_required";
+    private static final String INVALID_PERMITTED_NAME_CONSTRAINTS = "enroll_invalid_permitted_name_constraints";
+    private static final String INVALID_EXCLUDED_NAME_CONSTRAINTS = "enroll_invalid_excluded_name_constraints";
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -117,6 +124,12 @@ public class RaEndEntityBean implements Serializable {
     private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
     private Map<Integer, String> endEntityProfiles;
     private boolean deleted = false;
+    private List<String> nameConstraintsPermitted;
+    private List<String> nameConstraintsExcluded;
+    private int nameConstraintsPermittedUpdateStatus = 0;
+    private int nameConstraintsExcludedUpdateStatus = 0;
+    private String nameConstraintsPermittedString;
+    private String nameConstraintsExcludedString;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -293,6 +306,18 @@ public class RaEndEntityBean implements Serializable {
             newUsername = username;
             changed = true;
         }
+
+        if (eep.isEmailUsed()) {
+            for (EndEntityProfile.FieldInstance instance: subjectDistinguishNames.getFieldInstances()) {
+                if (isDnEmail(instance)) {
+                    if (instance.isUseDataFromEmailField()) {
+                        instance.setValue(email[0]+"@"+email[1]);
+                    } else {
+                        instance.setValue(instance.getDefaultValue());
+                    }
+                }
+            }
+        }
         String subjectDn = subjectDistinguishNames.getValue();
         if(!subjectDn.equals(endEntityInformation.getDN())) {
             endEntityInformation.setDN(subjectDn);
@@ -367,6 +392,18 @@ public class RaEndEntityBean implements Serializable {
         if (caId != endEntityInformation.getCAId()) {
             endEntityInformation.setCAId(caId);
             changed = true;
+        }
+        if(nameConstraintsPermittedUpdateStatus==1) {
+            endEntityInformation.getExtendedInformation().setNameConstraintsPermitted(nameConstraintsPermitted);
+            changed = true;
+        } else if(nameConstraintsPermittedUpdateStatus<0) {
+            return;
+        }
+        if(nameConstraintsExcludedUpdateStatus==1) {
+            endEntityInformation.getExtendedInformation().setNameConstraintsExcluded(nameConstraintsExcluded);
+            changed = true;
+        } else if(nameConstraintsExcludedUpdateStatus<0) {
+            return;
         }
 
         if (changed) {
@@ -900,6 +937,15 @@ public class RaEndEntityBean implements Serializable {
         if (subjectDistinguishNames == null) {
             EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
             subjectDistinguishNames = new SubjectDn(eep, raEndEntityDetails.getSubjectDn());
+
+            String eeEmail = raEndEntityDetails.getEmail();
+            for (EndEntityProfile.FieldInstance instance: subjectDistinguishNames.getFieldInstances()) {
+                if (isDnEmail(instance)
+                    && StringUtils.isNotBlank(eeEmail)
+                    && instance.getValue().equals(eeEmail)) {
+                    instance.setUseDataFromEmailField(true);
+                }
+            }
         }
     }
 
@@ -1012,5 +1058,83 @@ public class RaEndEntityBean implements Serializable {
     public boolean isPasswordAutogenerated(){
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
         return endEntityProfile.useAutoGeneratedPasswd();
+    }
+
+    /**
+     *
+     * @return SubjectDn email address field name
+     */
+    public String getDnEmailFieldName() {
+        return DnComponents.DNEMAILADDRESS;
+    }    
+
+    public String getNameConstraintsPermitted() {
+        if(nameConstraintsPermitted==null) {
+            nameConstraintsPermittedString = raEndEntityDetails.getNameConstraintsPermitted();
+        }
+        return nameConstraintsPermittedString;
+    }
+    
+    public boolean isNameConstraintsPermittedRequired() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsPermittedRequired();
+    }
+    
+    /**
+     * Validates and sets permitted name constraints. Additionally, it check if end entity profile mandates
+     * permitted name constraints and shows appropriate error messages.
+     * 
+     * @param nameConstraintPermitted
+     */
+    public void setNameConstraintsPermitted(String nameConstraintPermitted) {
+        if(isNameConstraintsPermittedRequired() && nameConstraintPermitted.trim().isEmpty()) {
+            raLocaleBean.addMessageError(MISSING_PERMITTED_NAME_CONSTRAINTS);
+            nameConstraintsPermittedUpdateStatus = -1;
+            return;
+        }
+        nameConstraintsPermittedString = nameConstraintPermitted;
+        try {
+            nameConstraintsPermitted = NameConstraint.parseNameConstraintsList(nameConstraintPermitted);
+            nameConstraintsPermittedUpdateStatus = 1;
+        } catch(CertificateExtensionException e) {
+            raLocaleBean.addMessageError(INVALID_PERMITTED_NAME_CONSTRAINTS, e.getMessage().split(":")[1]);
+            nameConstraintsPermittedUpdateStatus = -1;
+        }
+    }
+    
+    public String getNameConstraintsExcluded() {
+        if(nameConstraintsExcluded==null) {
+            nameConstraintsExcludedString = raEndEntityDetails.getNameConstraintsExcluded();
+        }
+        return nameConstraintsExcludedString;
+    }
+    
+    public boolean isNameConstraintsExcludedRequired() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isNameConstraintsExcludedRequired();
+    }
+    
+    /**
+     * Validates and sets excluded name constraints. Additionally, it check if end entity profile mandates
+     * permitted name constraints and shows appropriate error messages.
+     * 
+     * @param nameConstraintExcluded
+     */
+    public void setNameConstraintsExcluded(String nameConstraintExcluded) {
+        if(isNameConstraintsExcludedRequired() && nameConstraintExcluded.trim().isEmpty()) {
+            nameConstraintsExcludedUpdateStatus = -1;
+            raLocaleBean.addMessageError(MISSING_EXCLUDED_NAME_CONSTRAINTS);
+            return;
+        }
+        nameConstraintsExcludedString = nameConstraintExcluded;
+        try {
+            nameConstraintsExcluded = NameConstraint.parseNameConstraintsList(nameConstraintExcluded);
+            nameConstraintsExcludedUpdateStatus = 1;
+        } catch(CertificateExtensionException e) {
+            raLocaleBean.addMessageError(INVALID_EXCLUDED_NAME_CONSTRAINTS, e.getMessage().split(":")[1]);
+            nameConstraintsExcludedUpdateStatus = -1;
+        }
+    }
+    
+    private boolean isDnEmail(EndEntityProfile.FieldInstance instance) {
+        return instance.getName().equals(DnComponents.DNEMAILADDRESS);
     }
 }
