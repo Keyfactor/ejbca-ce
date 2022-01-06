@@ -202,7 +202,7 @@ public class DistinguishedName extends LdapName {
                     if (value != null) {
                         try {
                             localRdns.add(new Rdn(translateComponentName(compName), value));
-                        } catch (InvalidNameException e) { } // never occurs                    	
+                        } catch (InvalidNameException e) { } // never occurs                            
                     }
                 }
             }
