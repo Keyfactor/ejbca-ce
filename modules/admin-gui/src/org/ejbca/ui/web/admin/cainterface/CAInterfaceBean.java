@@ -90,6 +90,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.AsStringComparator;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -134,10 +135,9 @@ public class CAInterfaceBean implements Serializable {
     private CertReqHistorySessionLocal certreqhistorysession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private PublisherSessionLocal publishersession;
+    private KeyValidatorSessionLocal keyValidatorSession;
 
     private SignSession signsession;
-
-    private CADataHandler cadatahandler;
 
     private boolean initialized;
     private AuthenticationToken authenticationToken;
@@ -162,10 +162,10 @@ public class CAInterfaceBean implements Serializable {
           signsession = ejbLocalHelper.getSignSession();
           publishersession = ejbLocalHelper.getPublisherSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+          keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
           authenticationToken = ejbcawebbean.getAdminObject();
           this.ejbcawebbean = ejbcawebbean;
 
-          cadatahandler = new CADataHandler(authenticationToken, ejbLocalHelper, ejbcawebbean);
           initialized =true;
         }
     }
@@ -201,13 +201,10 @@ public class CAInterfaceBean implements Serializable {
         return casession.getCAIdToNameMap().get(caId);
     }
 
-    public CADataHandler getCADataHandler(){
-      return cadatahandler;
-    }
-
     /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
     public CAInfoView getCAInfo(int caid) throws AuthorizationDeniedException {
-      return cadatahandler.getCAInfo(caid);
+      final CAInfo cainfo = casession.getCAInfo(authenticationToken, caid);
+      return new CAInfoView(cainfo, ejbcawebbean, publishersession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
     }
 
     public int getCAStatusNoAuth(int caid) {
@@ -738,7 +735,8 @@ public class CAInterfaceBean implements Serializable {
             caadminsession.createCA(authenticationToken, cainfo);
             int caid = cainfo.getCAId();
             try {
-                byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                byte[] certreq = caadminsession.makeRequest(authenticationToken, caid, 
+                                       fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 saveRequestData(certreq);
             } catch (CryptoTokenOfflineException e) {
                 casession.removeCA(authenticationToken, caid);
