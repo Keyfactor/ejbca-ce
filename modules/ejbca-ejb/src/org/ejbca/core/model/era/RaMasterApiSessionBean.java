@@ -1891,6 +1891,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return null;
         }
     }
+    
+    @Override
+    public EndEntityInformation searchUserForCertificateCreation(final AuthenticationToken admin, String username) {
+        try {
+            return endEntityAccessSession.findUserForCertificateCreation(admin, username);
+        } catch (AuthorizationDeniedException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Not authorized to end entity '" + username + "'");
+            }
+            return null;
+        }
+    }
 
     @Override
     public void checkUserStatus(AuthenticationToken admin, String username, String password) throws NoSuchEndEntityException, AuthStatusException, AuthLoginException {
