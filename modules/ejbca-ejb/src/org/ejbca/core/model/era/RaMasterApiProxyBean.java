@@ -1165,6 +1165,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+    
+    @Override
+    public EndEntityInformation searchUserForCertificateCreation(AuthenticationToken authenticationToken, String username) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    final EndEntityInformation result = raMasterApi.searchUserForCertificateCreation(authenticationToken, username);
+                    if (result != null) {
+                        return result;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public void checkUserStatus(AuthenticationToken authenticationToken, String username, String password)

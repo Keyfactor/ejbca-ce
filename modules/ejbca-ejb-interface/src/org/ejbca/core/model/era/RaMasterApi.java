@@ -675,6 +675,15 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username);
+    
+    /**
+     * Finds end entity by its username for the explicit purpose of creating a certificate for an existing end entity.
+     * @param authenticationToken authentication token
+     * @param username username of the end entity
+     * @return end entity as EndEntityInformation
+     * @since Initial RA Master API version (EJBCA 6.6.0)
+     */
+    EndEntityInformation searchUserForCertificateCreation(AuthenticationToken authenticationToken, String username);
 
     /**
      * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.
