@@ -642,21 +642,35 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     private boolean isSelfSigned(final X509Certificate cert) {
-       	if ((CertTools.getIssuerDN(cert).equals(CertTools.getSubjectDN(cert)) && (-1 != cert.getBasicConstraints()))){
+        if ((CertTools.getIssuerDN(cert).equals(CertTools.getSubjectDN(cert)) && (-1 != cert.getBasicConstraints()))){
     		return true;
     	}
     	return false;
     }
     
     private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
-    	for (final Certificate certificate : certificateList) {
-    		X509Certificate x509cert = (X509Certificate) certificate;
-    		if (x509cert.getPublicKey().hashCode() != currentLevelCertificate.getPublicKey().hashCode()) {
-        		currentLevelCertificate = x509cert;
-        		break;
-        	}
-    	}
-    	return currentLevelCertificate;
+        Collection<X509Certificate> possibleIssuers = new ArrayList<>();
+        List<X509Certificate> verifiedIssuers = new ArrayList<>();
+        for (final Certificate certificate : certificateList) {
+            X509Certificate x509cert = (X509Certificate) certificate;
+            possibleIssuers.add(x509cert);
+            try {
+                if (CertTools.verify(currentLevelCertificate, possibleIssuers)) {
+                    verifiedIssuers.add(x509cert);
+                }
+            } catch (CertPathValidatorException e) {
+                //NOOP, try next..
+            }
+            possibleIssuers.clear();
+        }
+        X509Certificate issuer = null;
+        for (final X509Certificate cert : verifiedIssuers) {
+            //Find latest among possible issuers
+            if (issuer == null || CertTools.getNotBefore(cert).after(CertTools.getNotBefore(issuer))) {
+                issuer = cert;
+            }
+        }
+        return issuer;
     }
 
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
