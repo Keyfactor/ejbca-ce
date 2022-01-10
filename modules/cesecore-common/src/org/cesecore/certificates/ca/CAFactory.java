@@ -14,7 +14,6 @@ import org.cesecore.certificates.ca.ssh.SshCaInfo;
 /**
  * Constructs instances of CA implementations. Depending on which implementations are available
  * in the current build, the appropriate implementation of the CA interface is returned.
- * @version $Id$
  */
 public enum CAFactory {
     INSTANCE;
