@@ -679,6 +679,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final Set<String> includedFingerprint = new HashSet<>();
         while (!isSelfSigned(currentLevelCertificate)) {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
+            final String issuerFingerprint = CertTools.getFingerprintAsString(currentLevelCertificate);
             List<Certificate> resultList = new ArrayList<>();
         	resultList = certificateStoreSession.findCertificatesBySubject(issuerDn);
         	currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
@@ -687,8 +688,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             			CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
             	return Collections.emptyList();
             }
-            final String issuerFingerprint = CertTools.getFingerprintAsString(currentLevelCertificate);
-        	if (!includedFingerprint.add(issuerFingerprint)) {
+            if (!includedFingerprint.add(issuerFingerprint)) {
         		if (log.isDebugEnabled()) {
         			log.debug("Cyclic cross signing detected in '" + issuerDn + "'");
         		}
