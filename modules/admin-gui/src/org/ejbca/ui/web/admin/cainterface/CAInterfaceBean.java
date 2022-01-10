@@ -746,20 +746,44 @@ public class CAInterfaceBean implements Serializable {
                     }
                 }
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
-                // do validations
-                
-                CitsCaInfo citsCaInfo =  new CitsCaInfo();
-                citsCaInfo.setName(caInfoDto.getCaName());
-                citsCaInfo.setCertificateId(caInfoDto.getCertificateId());
-                citsCaInfo.setCertificateProfileId(certprofileid);
-                citsCaInfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
-                citsCaInfo.setEncodedValidity(caInfoDto.getCaEncodedValidity());
-                citsCaInfo.setCAToken(caToken);
-                citsCaInfo.setDescription(caInfoDto.getDescription());
-                citsCaInfo.setUseUserStorage(caInfoDto.isUseUserStorage());
-                
+                // TODO: Validations on CaInfoDTO
+
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
+
+                CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder()
+                                           .setName(caInfoDto.getCaName())
+                                           .setDescription(caInfoDto.getDescription())
+                                           .setCertificateProfileId(certprofileid)
+                                           .setDefaultCertProfileId(defaultCertProfileId)
+                                           .setEncodedValidity(caInfoDto.getCaEncodedValidity())
+                                           .setCaType(caInfoDto.getCaType())
+                                           .setStatus(CAConstants.CA_ACTIVE)
+                                           .setSignedBy(signedBy)
+                                           .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                           .setUpdateTime(new Date())
+                                           .setExpireTime(null)
+                                           .setCertificateChain(null)
+                                           .setCaToken(caToken)
+                                           .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
+                                           .setExtendedCAServiceInfos(extendedCaServiceInfos)
+                                           .setValidators(keyValidators)
+                                           .setFinishUser(caInfoDto.isFinishUser())
+                                           .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                                           .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
+                                           .setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
+                                           .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
+                                           .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
+                                           .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                                           .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
+                                           .setUseUserStorage(caInfoDto.isUseUserStorage())
+                                           .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
+                                           .setCertificateId(caInfoDto.getCertificateId());
+
+
+                CitsCaInfo citsCaInfo =  citsCaInfoBuilder.build();
+
                 saveRequestInfo(citsCaInfo);
-                
             } else {
                 throw new IllegalStateException("Unknown CA type with identifier " + caInfoDto.getCaType() + " was encountered.");
             }
@@ -1061,16 +1085,40 @@ public class CAInterfaceBean implements Serializable {
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
-                CitsCaInfo citsCaInfo =  new CitsCaInfo();
-                citsCaInfo.setName(caInfoDto.getCaName());
-                citsCaInfo.setCertificateId(caInfoDto.getCertificateId());
-                citsCaInfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
-                citsCaInfo.setEncodedValidity(caInfoDto.getCaEncodedValidity());
-                citsCaInfo.setCAToken(catoken);
-                citsCaInfo.setDescription(caInfoDto.getDescription());
-                citsCaInfo.setUseUserStorage(caInfoDto.isUseUserStorage());
-                
-                cainfo = citsCaInfo;
+                int certificateProfileId = (caInfoDto.getCurrentCertProfile()==null ? 0 : Integer.parseInt(caInfoDto.getCurrentCertProfile()));
+                int defaultCertProfileId = (caInfoDto.getDefaultCertificateProfile() == null ? 0 : Integer.parseInt(caInfoDto.getDefaultCertificateProfile()));
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+
+                CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder().setCaId(caid)
+                                                                                                   .setName(caInfoDto.getCaName())
+                                                                                                   .setDescription(caInfoDto.getDescription())
+                                                                                                   .setCertificateProfileId(certificateProfileId)
+                                                                                                   .setDefaultCertProfileId(defaultCertProfileId)
+                                                                                                   .setEncodedValidity(caInfoDto.getCaEncodedValidity())
+                                                                                                   .setCaType(caInfoDto.getCaType())
+                                                                                                   .setSignedBy(caInfoDto.getSignedBy())
+                                                                                                   .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                                                                                   .setUpdateTime(new Date())
+                                                                                                   .setExpireTime(null)
+                                                                                                   .setCertificateChain(null)
+                                                                                                   .setCaToken(catoken)
+                                                                                                   .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
+                                                                                                   .setExtendedCAServiceInfos(extendedCaServiceInfos)
+                                                                                                   .setValidators(keyValidators)
+                                                                                                   .setFinishUser(caInfoDto.isFinishUser())
+                                                                                                   .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                                                                                                   .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
+                                                                                                   .setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
+                                                                                                   .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
+                                                                                                   .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
+                                                                                                   .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                                                                                                   .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
+                                                                                                   .setUseUserStorage(caInfoDto.isUseUserStorage())
+                                                                                                   .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
+                                                                                                   .setCertificateId(caInfoDto.getCertificateId());
+
+
+                cainfo = citsCaInfoBuilder.buildForUpdate();
             }
            
             cainfo.setSubjectDN(subjectDn);
