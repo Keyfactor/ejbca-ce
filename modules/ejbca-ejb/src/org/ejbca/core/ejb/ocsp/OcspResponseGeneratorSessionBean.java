@@ -26,6 +26,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -38,6 +39,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -642,30 +644,32 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     private boolean isSelfSigned(final X509Certificate cert) {
-        if ((CertTools.getIssuerDN(cert).equals(CertTools.getSubjectDN(cert)) && (-1 != cert.getBasicConstraints()))){
-    		return true;
-    	}
-    	return false;
+        final byte[] aki = CertTools.getAuthorityKeyId(cert);
+        final byte[] ski = CertTools.getSubjectKeyId(cert);
+        final boolean keyIdsAreEqual = Arrays.equals(aki, ski);
+        final Principal sdn = cert.getSubjectDN();
+        final Principal idn = cert.getIssuerDN();
+        final boolean dNsAreEqual = sdn.equals(idn);
+        //AKI can be omitted in self signed certificates, RFC 5280
+        if ( (aki.equals(null) && dNsAreEqual) || keyIdsAreEqual ){
+            return true;
+        }
+        return false;
     }
     
     private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
-        Collection<X509Certificate> possibleIssuers = new ArrayList<>();
         List<X509Certificate> verifiedIssuers = new ArrayList<>();
+        final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
         for (final Certificate certificate : certificateList) {
             X509Certificate x509cert = (X509Certificate) certificate;
-            possibleIssuers.add(x509cert);
-            try {
-                if (CertTools.verify(currentLevelCertificate, possibleIssuers)) {
-                    verifiedIssuers.add(x509cert);
-                }
-            } catch (CertPathValidatorException e) {
-                //NOOP, try next..
+            final byte[] ski = CertTools.getSubjectKeyId(x509cert);
+            if (!aki.equals(null) && Arrays.equals(aki, ski)) {
+                verifiedIssuers.add(x509cert);
             }
-            possibleIssuers.clear();
         }
         X509Certificate issuer = null;
         for (final X509Certificate cert : verifiedIssuers) {
-            //Find latest among possible issuers
+            //Find latest issuer cert
             if (issuer == null || CertTools.getNotBefore(cert).after(CertTools.getNotBefore(issuer))) {
                 issuer = cert;
             }
@@ -674,29 +678,29 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
-    	final List<X509Certificate> caCertificateChain = new ArrayList<>();
+        final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
         final Set<String> includedFingerprint = new HashSet<>();
         while (!isSelfSigned(currentLevelCertificate)) {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
             final String issuerFingerprint = CertTools.getFingerprintAsString(currentLevelCertificate);
             List<Certificate> resultList = new ArrayList<>();
-        	resultList = certificateStoreSession.findCertificatesBySubject(issuerDn);
-        	currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
-        	if (currentLevelCertificate == null) {
-            	log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
-            			CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
-            	return Collections.emptyList();
+            resultList = certificateStoreSession.findCertificatesBySubject(issuerDn);
+            currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
+            if (currentLevelCertificate == null) {
+                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                        CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
+                return Collections.emptyList();
             }
             if (!includedFingerprint.add(issuerFingerprint)) {
-        		if (log.isDebugEnabled()) {
-        			log.debug("Cyclic cross signing detected in '" + issuerDn + "'");
-        		}
-        		break;
-        	}
-        	caCertificateChain.add(currentLevelCertificate);
+                if (log.isDebugEnabled()) {
+                    log.debug("Cyclic cross signing detected in '" + issuerDn + "'");
+                }
+                break;
+            }
+            caCertificateChain.add(currentLevelCertificate);
         }
-    	try {
+        try {
             CertTools.verify(leafCertificate, caCertificateChain, new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
         } catch (CertPathValidatorException e) {
             // Apparently the built chain could not be used to validate the leaf certificate
