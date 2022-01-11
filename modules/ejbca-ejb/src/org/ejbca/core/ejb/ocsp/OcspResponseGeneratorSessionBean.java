@@ -646,7 +646,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private boolean isSelfSigned(final X509Certificate cert) {
         final byte[] aki = CertTools.getAuthorityKeyId(cert);
         final byte[] ski = CertTools.getSubjectKeyId(cert);
-        final boolean keyIdsAreEqual = Arrays.equals(aki, ski);
+        boolean keyIdsAreEqual = false;
+        if (!aki.equals(null)) {
+            keyIdsAreEqual = Arrays.equals(aki, ski) ? true : false;
+        }
         final Principal sdn = cert.getSubjectDN();
         final Principal idn = cert.getIssuerDN();
         final boolean dNsAreEqual = sdn.equals(idn);
