@@ -142,6 +142,8 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
     }
     
     public abstract X509CA createX509Ca() throws Exception;
+    
+    public abstract X509CA createX509Ca(String subjectDn, String username) throws Exception;
 
     public abstract void tearDownCa(CA ca);
 

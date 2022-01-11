@@ -189,6 +189,51 @@
 					</f:facet>
 				</h:column>
 			</h:dataTable>
+			
+			<h3><h:outputText rendered="#{internalKeyBindingMBean.ocspKeyBinding}"
+							value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_CERTIFICATE_GROUP}"/></h3>
+			
+			<h:panelGroup rendered="#{not internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.ocspKeyBinding}">
+				<h:outputText rendered="#{internalKeyBindingMBean.signOcspResponseForCas.rowCount == 0}" 
+								value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSES_ONLY_SELF}"/>
+			</h:panelGroup>	
+					
+			<h:panelGroup>
+				<h:dataTable id="signOcspResponseForCaList" value="#{internalKeyBindingMBean.signOcspResponseForCas}" var="otherCa"
+						 rendered="#{internalKeyBindingMBean.ocspKeyBinding and 
+						 (internalKeyBindingMBean.signOcspResponseForCas.rowCount != 0 or internalKeyBindingMBean.inEditMode)}">
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
+					<h:outputText value="#{internalKeyBindingMBean.signOcspResponseForCasCaName}" title="#{otherCa.caId}"/>
+					<f:facet name="footer">
+						<h:selectOneMenu rendered="#{internalKeyBindingMBean.inEditMode}"
+										 value="#{internalKeyBindingMBean.currentCertificateAuthorityOcspRespToSign}">
+							<f:selectItems value="#{internalKeyBindingMBean.availableCertificateAuthoritiesForOcspSign}"/>
+						</h:selectOneMenu>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_DESCRIPTION}"/></f:facet>
+					<h:outputText value="#{otherCa.trustEntryDescription}"/>
+					<f:facet name="footer">
+						<h:inputText id="trustEntryDescription" rendered="#{internalKeyBindingMBean.inEditMode}" required="false"
+									 value="#{internalKeyBindingMBean.currentTrustEntryDescriptionOcspRespToSign}"
+									 size="18" maxlength="255"
+									 title="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_TITLE}">
+						</h:inputText>
+						<h:message for="trustEntryDescription" rendered="#{internalKeyBindingMBean.inEditMode}"/>
+					</f:facet>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{internalKeyBindingMBean.removeCaToSignOcspResponse}" rendered="#{internalKeyBindingMBean.inEditMode}"/>
+					<f:facet name="footer">
+						<h:commandButton  rendered="#{internalKeyBindingMBean.inEditMode}" action="#{internalKeyBindingMBean.addCaToSignOcspResponse}"
+										  value="#{web.text.ADD}"/>
+					</f:facet>
+				</h:column>
+				</h:dataTable>
+			</h:panelGroup>		
 
 			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/></h3>
 			<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
