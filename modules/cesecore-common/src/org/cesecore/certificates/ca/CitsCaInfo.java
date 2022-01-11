@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import org.bouncycastle.oer.its.GeographicRegion;
+import org.bouncycastle.oer.its.IdentifiedRegion;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.util.CertTools;
 
@@ -25,6 +27,9 @@ public class CitsCaInfo extends CAInfo {
     private static final long serialVersionUID = -2024462945820076720L;
     
     private String certificateId;
+    private GeographicRegion region;
+    private IdentifiedRegion identifiedRegion;
+
 
     /**
      * To be used when creating a CA. This constructor creates a CITS CA with defaults values for the parameters
@@ -35,6 +40,8 @@ public class CitsCaInfo extends CAInfo {
                                                            .setDescription(description)
                                                            .setEncodedValidity(encodedValidity)
                                                            .setCertificateId(certificateId)
+                                                           .setRegion(null)
+                                                           .setIdentifiedRegion(null)
                                                            .setCertificateProfileId(certificateProfileId)
                                                            .setDefaultCertProfileId(defaultCertProfileId)
                                                            .setStatus(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE)
@@ -65,12 +72,14 @@ public class CitsCaInfo extends CAInfo {
     private CitsCaInfo(final String name, final String description, final String encodedValidity, final String certificateId, final int certificateProfileId, final int defaultCertProfileId, final int status, final boolean acceptRevocationNonExistingEntry,
                        final List<Certificate> certificateChain, final CAToken caToken, final List<ExtendedCAServiceInfo> extendedCAServiceInfos, List<Integer> validators, final boolean finishUser,
                        final boolean useNoConflictCertificateData, final boolean includeInHealthCheck, final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName,
-                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage, final boolean useCertificateStorage) {
+                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage, final boolean useCertificateStorage, GeographicRegion region, IdentifiedRegion identifiedRegion) {
 
         setName(name);
         setDescription(description);
         setEncodedValidity(encodedValidity);
         setCertificateId(certificateId);
+        setRegion(region);
+        setIdentifiedRegion(identifiedRegion);
         setCertificateProfileId(certificateProfileId);
         setDefaultCertificateProfileId(defaultCertProfileId);
         setStatus(status);
@@ -132,6 +141,22 @@ public class CitsCaInfo extends CAInfo {
         this.certificateId = certificateId;
     }
 
+    public GeographicRegion getRegion() {
+        return region;
+    }
+
+    public void setRegion(GeographicRegion region) {
+        this.region = region;
+    }
+
+    public IdentifiedRegion getIdentifiedRegion() {
+        return identifiedRegion;
+    }
+
+    public void setIdentifiedRegion(IdentifiedRegion identifiedRegion) {
+        this.identifiedRegion = identifiedRegion;
+    }
+
     public static class CitsCaInfoBuilder {
         // Common Field from CAINFO.
         private int caId;
@@ -165,6 +190,8 @@ public class CitsCaInfo extends CAInfo {
 
         // CITS Specific Fields
         private String certificateId;
+        private GeographicRegion region;
+        private IdentifiedRegion identifiedRegion;
         private String subjectDN; // Built based on certificateID (prefix + certificateId)
 
         public CitsCaInfoBuilder setCaId(int caId) {
@@ -326,12 +353,24 @@ public class CitsCaInfo extends CAInfo {
             return this;
         }
 
+        /**
+         * @param region ITS define GeographicRegion. If null, it's considered global.
+         */
+        public CitsCaInfoBuilder setRegion(GeographicRegion region) {
+            this.region = region;
+            return this;
+        }
+
+        public CitsCaInfoBuilder setIdentifiedRegion(IdentifiedRegion identifiedRegion) {
+            this.identifiedRegion = identifiedRegion;
+            return this;
+        }
 
         public CitsCaInfo build() {
             CitsCaInfo caInfo = new CitsCaInfo(name, description, encodedValidity, certificateId, certificateProfileId, defaultCertProfileId, status, acceptRevocationNonExistingEntry,
                                                certificateChain, caToken, extendedCAServiceInfos, validators, finishUser,
                                                useNoConflictCertificateData, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal, doEnforceUniqueDistinguishedName,
-                                               doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage);
+                                               doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, region, identifiedRegion);
 
             // May be done differently
             caInfo.setCAId(CertTools.stringToBCDNString(subjectDN).hashCode());
@@ -359,7 +398,7 @@ public class CitsCaInfo extends CAInfo {
             CitsCaInfo caInfo = new CitsCaInfo(name, description, encodedValidity, certificateId, certificateProfileId, defaultCertProfileId, status, acceptRevocationNonExistingEntry,
                                                certificateChain, caToken, extendedCAServiceInfos, validators, finishUser,
                                                useNoConflictCertificateData, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal, doEnforceUniqueDistinguishedName,
-                                               doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage);
+                                               doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, region, identifiedRegion);
 
             // May be done differently
             caInfo.setCAId(caId);
