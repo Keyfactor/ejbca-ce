@@ -495,10 +495,14 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderGenerateKeyStorePkcs12(){
-        if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
             return false;
         }
-        EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
+            return false;
+        }
+        EndEntityProfile endEntityProfile = holder.getValue();
         if (endEntityProfile == null) {
             return false;
         }
@@ -508,6 +512,10 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public boolean isRenderGenerateKeyStoreBcfks() {
         if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
+            return false;
+        }
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
             return false;
         }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
@@ -520,6 +528,10 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public boolean isRenderGenerateKeyStorePem(){
         if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+            return false;
+        }
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
             return false;
         }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
