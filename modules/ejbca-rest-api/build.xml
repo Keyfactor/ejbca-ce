@@ -29,6 +29,7 @@
         <path refid="lib.json-smart.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.swagger.classpath"/>
+		<path refid="lib.swagger.v3.classpath"/>
 		<path refid="lib.jackson2.classpath"/>
         <path refid="lib.jboss-logging.classpath"/>
         <path refid="lib.commons-fileupload.classpath"/>
