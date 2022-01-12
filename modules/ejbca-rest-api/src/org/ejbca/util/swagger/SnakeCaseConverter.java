@@ -14,10 +14,12 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import io.swagger.converter.ModelConverter;
-import io.swagger.converter.ModelConverterContext;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverter;
+import io.swagger.v3.core.converter.ModelConverterContext;
 import io.swagger.models.Model;
 import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
 
 /**
  * Converter for Swagger to be able to accept input parameters in snake_case format
@@ -26,20 +28,21 @@ import io.swagger.models.properties.Property;
  */
 public class SnakeCaseConverter implements ModelConverter {
 
-    @Override
+    /*@Override
     public Property resolveProperty(Type type, ModelConverterContext context, Annotation[] annotations, Iterator<ModelConverter> chain) {
         if (chain.hasNext()) {
             final ModelConverter converter = chain.next();
             return converter.resolveProperty(type, context, annotations, chain);
         }
         return null;
-    }
+    }*/
 
     @Override
-    public Model resolve(Type type, ModelConverterContext context, Iterator<ModelConverter> chain) {
+    public Schema resolve(AnnotatedType type, ModelConverterContext context, Iterator<ModelConverter> chain) {
         if (chain.hasNext()) {
             final ModelConverter converter = chain.next();
-            final Model model = converter.resolve(type, context, chain);
+            final Schema model = converter.resolve(type, context, chain);
+
             if (model != null) {
                 final Map<String, Property> properties = model.getProperties();
                 final Map<String, Property> newProperties = new LinkedHashMap<>();
