@@ -10,7 +10,7 @@
 
 package org.ejbca.ui.web.rest.api;
 
-import io.swagger.converter.ModelConverters;
+import io.swagger.v3.core.converter.ModelConverters;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.ui.web.rest.api.resource.IllegalWildCardSyntaxExceptionWrapper;
