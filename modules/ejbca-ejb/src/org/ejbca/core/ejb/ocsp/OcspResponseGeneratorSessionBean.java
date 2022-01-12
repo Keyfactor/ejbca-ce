@@ -662,6 +662,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
         List<Certificate> verifiedIssuers = new ArrayList<>();
+        Certificate issuer = null;
         final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
         for (final Certificate certificate : certificateList) {
             final byte[] ski = CertTools.getSubjectKeyId(certificate);
@@ -669,14 +670,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 verifiedIssuers.add(certificate);
             }
         }
-        X509Certificate issuer = null;
         for (final Certificate cert : verifiedIssuers) {
             //Find latest issuer cert
             if (issuer == null || CertTools.getNotBefore(cert).after(CertTools.getNotBefore(issuer))) {
-                issuer = (X509Certificate) cert;
+                issuer = cert;
             }
         }
-        return issuer;
+        return (X509Certificate) issuer;
     }
 
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
