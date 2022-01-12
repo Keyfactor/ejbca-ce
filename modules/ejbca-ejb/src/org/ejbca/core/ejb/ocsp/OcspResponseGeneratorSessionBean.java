@@ -661,20 +661,19 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
-        List<X509Certificate> verifiedIssuers = new ArrayList<>();
+        List<Certificate> verifiedIssuers = new ArrayList<>();
         final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
         for (final Certificate certificate : certificateList) {
-            X509Certificate x509cert = (X509Certificate) certificate;
-            final byte[] ski = CertTools.getSubjectKeyId(x509cert);
+            final byte[] ski = CertTools.getSubjectKeyId(certificate);
             if (!aki.equals(null) && Arrays.equals(aki, ski)) {
-                verifiedIssuers.add(x509cert);
+                verifiedIssuers.add(certificate);
             }
         }
         X509Certificate issuer = null;
-        for (final X509Certificate cert : verifiedIssuers) {
+        for (final Certificate cert : verifiedIssuers) {
             //Find latest issuer cert
             if (issuer == null || CertTools.getNotBefore(cert).after(CertTools.getNotBefore(issuer))) {
-                issuer = cert;
+                issuer = (X509Certificate) cert;
             }
         }
         return issuer;
