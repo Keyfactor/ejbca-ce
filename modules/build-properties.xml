@@ -302,11 +302,6 @@
 		<fileset dir="${ejbca.home}/lib/ext/swagger" includes="*.jar"/>
 	</path>
 
-	<mkdir dir="${ejbca.home}/lib/ext/swagger-v3"/> <!-- Avoid failure when this directory is excluded from a release. -->
-	<path id="lib.swagger.v3.classpath">
-		<fileset dir="${ejbca.home}/lib/ext/swagger-v3" includes="*.jar"/>
-	</path>
-
     <mkdir dir="${ejbca.home}/lib/ext/jackson2"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.jackson2.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
