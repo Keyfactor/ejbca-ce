@@ -1,6 +1,0 @@
-"Project";                      "Library Name";                     "License type(s)";      "License text";             "Source";                                                                                           "Comment";
-"Swagger JAXRS2";               "swagger-jaxrs2-2.1.12";             "ALv2";                 "LICENSE-APACHE-2.0";       "https://repo1.maven.org/maven2/io/swagger/core/v3/swagger-jaxrs2/2.1.12/";                                  "Needed for Swagger for Rest-Api";
-"Swagger Core";                 "swagger-core-2.1.12";              "ALv2";                 "LICENSE-APACHE-2.0";       "https://repo1.maven.org/maven2/io/swagger/core/v3/swagger-core/2.1.12/";                                   "Needed for Swagger for Rest-Api";
-"Swagger Models";               "swagger-models-2.1.12";            "ALv2";                 "LICENSE-APACHE-2.0";       "https://repo1.maven.org/maven2/io/swagger/core/v3/swagger-models/2.1.12/";                                 "Needed for Swagger for Rest-Api";
-"Swagger Annotations";          "swagger-annotations-2.1.12";       "ALv2";                 "LICENSE-APACHE-2.0";       "https://repo1.maven.org/maven2/io/swagger/core/v3/swagger-annotations/2.1.12/";                            "Needed for Swagger for Rest-Api";
-
