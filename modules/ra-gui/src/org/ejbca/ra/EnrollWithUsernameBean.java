@@ -111,7 +111,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
      */
     public void checkUsernameEnrollmentCode() {
         if (StringUtils.isNotEmpty(username)) {
-            final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUserForCertificateCreation(raAuthenticationBean.getAuthenticationToken(), username);
+            final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUserWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), username);
             if (endEntityInformation == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Could not find  End Entity for the username='" + username + "'");

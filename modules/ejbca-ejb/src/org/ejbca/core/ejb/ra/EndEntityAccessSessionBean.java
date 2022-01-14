@@ -66,7 +66,6 @@ import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
 
 /**
- * @version $Id$
  * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityAccessSessionRemote")
@@ -213,9 +212,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityInformation findUserForCertificateCreation(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
+    public EndEntityInformation findUserWithoutViewEndEntityAccessRule(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace(">findUserForCertificateCreation(" + username + ")");
+            log.trace(">findUserWithoutViewEndEntityAccessRule(" + username + ")");
         }        
         final UserData data = findByUsername(username);
         if (data == null) {
@@ -223,9 +222,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 log.debug("Cannot find user with username='" + username + "'");
             }
         }
-        final EndEntityInformation ret = convertUserDataToEndEntityInformationForCertificateCreation(admin, data, username);
+        final EndEntityInformation ret = convertUserDataToEndEntityInformationWithoutViewEndEntityAccessRule(admin, data, username);
         if (log.isTraceEnabled()) {
-            log.trace("<findUserForCertificateCreation(" + username + "): " + (ret == null ? "null" : ret.getDN()));
+            log.trace("<findUserWithoutViewEndEntityAccessRule(" + username + "): " + (ret == null ? "null" : ret.getDN()));
         }
         return ret;
     }
@@ -317,17 +316,17 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     }
     
     /** 
-     * @return the userdata value object if admin is authorized. Does not leak username if auth fails. 
+     * @return the userdata value object if user is authorized. Does not leak username if auth fails. Does not require the view end entity access rule.
      * 
      * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
      */
-    private EndEntityInformation convertUserDataToEndEntityInformationForCertificateCreation(final AuthenticationToken admin, final UserData data,
+    private EndEntityInformation convertUserDataToEndEntityInformationWithoutViewEndEntityAccessRule(final AuthenticationToken admin, final UserData data,
             final String requestedUsername) throws AuthorizationDeniedException {
         if (data != null) {
             if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
                     .getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
-                if (!authorizedToEndEntityProfileForCertificateCreation(admin, data.getEndEntityProfileId())) {
+                if (!authorizedToEndEntityProfileForRaWebCertificateCreation(admin, data.getEndEntityProfileId())) {
                     if (requestedUsername == null) {
                         final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()),
                                 admin.toString());
@@ -370,7 +369,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         return returnval;
     }
     
-    private boolean authorizedToEndEntityProfileForCertificateCreation(AuthenticationToken admin, int profileid) {
+    private boolean authorizedToEndEntityProfileForRaWebCertificateCreation(AuthenticationToken admin, int profileid) {
         boolean returnval = false;
         if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
             if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
