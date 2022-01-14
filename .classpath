@@ -138,11 +138,11 @@
 	<classpathentry kind="lib" path="lib/ext/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/javax.ws.rs-api-2.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/json-patch-1.13.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-4.7.1.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-api-4.7.1.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-4.7.1.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-4.7.1.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-4.7.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-5.0.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-api-5.0.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-5.0.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-5.0.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-5.0.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.2.7.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.2.7.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-4.7.1.Final.jar"/>
