@@ -34,8 +34,6 @@ import org.cesecore.util.XmlSerializer;
 
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
- *
- * @version $Id$
  */
 public class EndEntityInformation implements Serializable {
 
