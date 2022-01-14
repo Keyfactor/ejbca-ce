@@ -172,7 +172,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 } else {
                     requestUsername = raApprovalRequestInfo.getEditableData().getUsername();
                 }
-                endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), requestUsername);
+                endEntityInformation = raMasterApiProxyBean.searchUserWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), requestUsername);
                 if (endEntityInformation == null) {
                     log.error("Could not find endEntity for the username='" + requestUsername + "'");
                 }else if(endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED){
@@ -436,7 +436,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         }
         
         try {
-            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStoreWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
             log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
                     endEntityInformation.getUsername());
             try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
