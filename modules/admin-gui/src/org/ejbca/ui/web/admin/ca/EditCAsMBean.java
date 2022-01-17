@@ -62,6 +62,9 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.region.ItsGeographicElement;
+import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -153,10 +156,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     private final TreeMap<String,Integer> rootCaProfiles = getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames();
     private final TreeMap<String,Integer> subCaProfiles = getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames();
+    //TODO: reconsider if IEEE 1609 RCA is implemented
+    private final TreeMap<String,Integer> itsEcaProfiles = getEjbcaWebBean().getAuthorizedItsCACertificateProfileNames();
 
     private CaInfoDto caInfoDto = new CaInfoDto();
     private boolean isEditCA;
-
 
     private int caRevokeReason;
     private String certSignKeyReNewValue;
@@ -225,6 +229,67 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private Date caCertNotAfter = null;
     
     private AuthenticationToken administrator;
+    
+    private List<ItsGeographicRegionGuiWrapper> geographicElementsInGui = null;
+    private String currentGeographicRegionType;
+    private List<String> geographicRegionTypes;
+    
+    public List<ItsGeographicRegionGuiWrapper> getGeographicRegions() {
+        return geographicElementsInGui;
+    }
+
+    public void setGeographicRegions(List<ItsGeographicRegionGuiWrapper> geographicElementsInGui) {
+        this.geographicElementsInGui = geographicElementsInGui;
+    }
+    
+    public String getCurrentGeographicRegionType() {
+        return currentGeographicRegionType;
+    }
+
+    public void setCurrentGeographicRegionType(String currentGeographicRegionType) {
+        this.currentGeographicRegionType = currentGeographicRegionType;
+    }
+    
+    public List<String> getGeographicRegionTypes() {
+        log.info("getting geoelement types ");
+        if(geographicRegionTypes==null) {
+            geographicRegionTypes = EditCaUtil.getAllGeographicRegionTypes();
+        }
+        if(currentGeographicRegionType==null) {
+            currentGeographicRegionType = geographicRegionTypes.get(0);
+        }
+//        if(!currentGeographicRegionType.equals(ItsGeographicRegion.RegionType.NONE.getDisplayName()) && 
+//                !geographicElementsInGui.isEmpty()) {
+//            return Arrays.asList(currentGeographicRegionType);
+//        }
+        return geographicRegionTypes;
+    }
+    
+    public String addGeographicRegion() {
+        log.info("adding geoelement: ");
+        log.info("adding geoelement: " + currentGeographicRegionType);
+        if(!geographicElementsInGui.isEmpty() && 
+                (!geographicElementsInGui.get(0).getType().equals(currentGeographicRegionType))) {
+            addNonTranslatedErrorMessage("It is not allowed to add different types of regions. Please remove all other elements");
+            return "";
+        }
+        try {
+            EditCaUtil.addGeographicRegionGui(currentGeographicRegionType, geographicElementsInGui);
+        } catch(Exception e) {
+            addNonTranslatedErrorMessage(e);
+        }
+        return "";
+    }
+    
+    public void removeLastGeographicRegion() {
+        log.info("removing last geoelement: ");
+        geographicElementsInGui.remove(geographicElementsInGui.size()-1);
+    }
+    
+    public void removeAllGeographicRegions() {
+        log.info("removing all geoelement: ");
+        geographicElementsInGui.clear();
+    }
 
     public UploadedFile getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
@@ -578,7 +643,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getCertificateProfiles() {
         final List<SelectItem> resultList = new ArrayList<>();
-        if (caInfoDto.getSignedBy() == CAInfo.SELFSIGNED) {
+        if(isCaTypeCits()) {
+            for (final Entry<String, Integer> entry : itsEcaProfiles.entrySet()) {
+                resultList.add(new SelectItem(entry.getValue(), entry.getKey()));
+            }
+        } else if (caInfoDto.getSignedBy() == CAInfo.SELFSIGNED) {
             for (final Entry<String, Integer> entry : rootCaProfiles.entrySet()) {
                 resultList.add(new SelectItem(entry.getValue(), entry.getKey()));
             }
@@ -1290,7 +1359,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isRenderCitsAvailable() {
-        return true; //TODO: CAFactory.INSTANCE.existsCaType(IEEE1609CaInfo caIo);
+        return CAFactory.INSTANCE.existsCaType(ECA.CA_TYPE);
     }
     
     public boolean isCvcAvailable() {
@@ -1326,17 +1395,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setSignedBy(CAInfo.SELFSIGNED);
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
-        // default true
-        caInfoDto.setUseUserStorage(true);
     }
     
     public void renderCitsFields() {
         caInfoDto.setCaType(CAInfo.CATYPE_CITS);
         caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
-        // default false
-        caInfoDto.setUseUserStorage(false);
         updateAvailableCryptoTokenList(true);
         updateAvailableSigningAlgorithmList();
+        getCertificateProfiles();
+        geographicElementsInGui = new ArrayList<>();
     }
 
     public boolean isCreateLinkCertificate() {
@@ -1430,6 +1497,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 try {
                     validateCitsFields();
                     caInfoDto.setCaSubjectDN(CAInfo.CITS_SUBJECTDN_PREFIX + caInfoDto.getCertificateId());
+                    ItsGeographicElement geoElement = 
+                            EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
+                    caInfoDto.setRegion(geoElement.toStringFormat());
                 } catch (final Exception e) {
                     addNonTranslatedErrorMessage(e);
                     return "";
@@ -2090,6 +2160,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         
         if (caInfoDto.isCaTypeCits() && cainfo != null) {
             caInfoDto.setCertificateId(((CitsCaInfo)cainfo).getCertificateId());
+            ItsGeographicRegion region = ((CitsCaInfo)cainfo).getRegion();
+            if(region!=null) {
+                geographicElementsInGui = new ArrayList<ItsGeographicRegionGuiWrapper>();
+                EditCaUtil.loadGeographicRegionsForGui(geographicElementsInGui, region);
+                caInfoDto.setRegion(region.toString());
+            }
         }
 
         if (caInfoDto.isCaTypeX509() && cainfo != null) {
@@ -2410,6 +2486,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
         return approvalRequestItems;
-    }
+    }    
 
 }

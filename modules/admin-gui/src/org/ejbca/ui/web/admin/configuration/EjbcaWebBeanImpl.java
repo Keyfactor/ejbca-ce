@@ -1052,6 +1052,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         return ret;
     }
+    
+    /**
+     * Returns authorized ITS CA certificate profile names as a treemap of name (String) -> id (Integer)
+     */
+    @Override
+    public TreeMap<String, Integer> getAuthorizedItsCACertificateProfileNames() {
+        final TreeMap<String,Integer> ret = new TreeMap<>();
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ITS);
+        final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (final int id : authorizedIds) {
+            ret.put(idtonamemap.get(id),id);
+        }
+        return ret;
+    }
 
     /**
      * Method returning the all available approval profiles id to name.
