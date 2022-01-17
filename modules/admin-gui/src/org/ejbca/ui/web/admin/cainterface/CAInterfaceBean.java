@@ -778,9 +778,10 @@ public class CAInterfaceBean implements Serializable {
                                            .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                                            .setUseUserStorage(caInfoDto.isUseUserStorage())
                                            .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
-                                           .setCertificateId(caInfoDto.getCertificateId());
+                                           .setCertificateId(caInfoDto.getCertificateId())
+                                           .setRegion(caInfoDto.getRegion());
 
-
+                log.info("Set cits region: " + caInfoDto.getRegion());
                 CitsCaInfo citsCaInfo =  citsCaInfoBuilder.build();
 
                 saveRequestInfo(citsCaInfo);
@@ -1085,15 +1086,11 @@ public class CAInterfaceBean implements Serializable {
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
-                int certificateProfileId = (caInfoDto.getCurrentCertProfile()==null ? 0 : Integer.parseInt(caInfoDto.getCurrentCertProfile()));
-                int defaultCertProfileId = (caInfoDto.getDefaultCertificateProfile() == null ? 0 : Integer.parseInt(caInfoDto.getDefaultCertificateProfile()));
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
 
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder().setCaId(caid)
                                                                                                    .setName(caInfoDto.getCaName())
                                                                                                    .setDescription(caInfoDto.getDescription())
-                                                                                                   .setCertificateProfileId(certificateProfileId)
-                                                                                                   .setDefaultCertProfileId(defaultCertProfileId)
                                                                                                    .setEncodedValidity(caInfoDto.getCaEncodedValidity())
                                                                                                    .setCaType(caInfoDto.getCaType())
                                                                                                    .setSignedBy(caInfoDto.getSignedBy())
@@ -1264,7 +1261,8 @@ public class CAInterfaceBean implements Serializable {
 	public boolean isCaExportable(CAInfo caInfo) {
 	    boolean ret = false;
 	    final int caInfoStatus = caInfo.getStatus();
-	    if (caInfoStatus != CAConstants.CA_EXTERNAL && caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+	    if ((caInfoStatus != CAConstants.CA_EXTERNAL && caInfo.getCAType()!=CAInfo.CATYPE_CITS) && 
+	                                    caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
 	        final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
 	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
 	        if (cryptoTokenInfo!=null) {
