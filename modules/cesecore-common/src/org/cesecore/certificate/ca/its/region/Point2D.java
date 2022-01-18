@@ -71,6 +71,11 @@ public class Point2D implements ItsGeographicElement {
     public String toStringFormat() {
         return latitude + ItsGeographicRegion.SEPARATOR + longitude;
     }
+    
+    @Override
+    public String toString() {
+        return this.toStringFormat();
+    }
 
     @Override
     public String getFormatHint() {

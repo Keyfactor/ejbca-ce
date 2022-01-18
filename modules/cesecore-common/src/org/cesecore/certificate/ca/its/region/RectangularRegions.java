@@ -12,8 +12,8 @@ import org.bouncycastle.oer.its.SequenceOfRectangularRegion;
 public class RectangularRegions implements ItsGeographicElement {
 
     private List<Point2D[]> rectangles;
-    public static final String RECTANGLE_FORMAT_HINT =  "Expected format[without braces]: "
-          + "for each recatangle: {latitudeNorthWest,longitudeNorthWest,latitudeSouthEast,longitudeSouthEast}";
+    public static final String RECTANGLE_FORMAT_HINT =  "Expected format: "
+          + "for each recatangle: latitudeNorthWest,longitudeNorthWest,latitudeSouthEast,longitudeSouthEast";
     
     public RectangularRegions(List<Long[]> rectangles) {
         createRectangles(rectangles);
@@ -44,7 +44,7 @@ public class RectangularRegions implements ItsGeographicElement {
             }
             String[] coords = rectangle.split(ItsGeographicRegion.SEPARATOR);
             if(coords.length!=4) {
-                throw new IllegalArgumentException(RECTANGLE_FORMAT_HINT+rectangle);
+                throw new IllegalArgumentException(RECTANGLE_FORMAT_HINT + " : " + rectangle);
             }
             Long[] coordinates = new Long[4];
             for(int i=0; i<4; i++) {
@@ -71,6 +71,11 @@ public class RectangularRegions implements ItsGeographicElement {
             sb.append(ItsGeographicRegion.SEQUENCE_SEPARATOR);
         }
         return sb.toString();
+    }
+    
+    @Override
+    public String toString() {
+        return this.toStringFormat();
     }
 
     @Override
