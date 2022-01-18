@@ -44,7 +44,7 @@ public class RectangularRegions implements ItsGeographicElement {
             }
             String[] coords = rectangle.split(ItsGeographicRegion.SEPARATOR);
             if(coords.length!=4) {
-                throw new IllegalArgumentException(RECTANGLE_FORMAT_HINT);
+                throw new IllegalArgumentException(RECTANGLE_FORMAT_HINT+rectangle);
             }
             Long[] coordinates = new Long[4];
             for(int i=0; i<4; i++) {
@@ -65,9 +65,9 @@ public class RectangularRegions implements ItsGeographicElement {
         StringBuilder sb = new StringBuilder();
         sb.append(ItsGeographicRegion.REGION_TYPE_RECTANGLE);
         for(Point2D[] point: this.rectangles) {
-            sb.append(point[0].toString());
+            sb.append(point[0].toStringFormat());
             sb.append(ItsGeographicRegion.SEPARATOR);
-            sb.append(point[1].toString());
+            sb.append(point[1].toStringFormat());
             sb.append(ItsGeographicRegion.SEQUENCE_SEPARATOR);
         }
         return sb.toString();
@@ -92,12 +92,27 @@ public class RectangularRegions implements ItsGeographicElement {
 
     @Override
     public void validateArgs() {
+        // TODO: is north east point in north and east of the other point?
         // nothing to do
     }
 
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         return null;
+    }
+
+    @Override
+    public List<String> getGuiDescription() {
+        List<String> guiStrings = new ArrayList<>();
+        for(Point2D[] rect: rectangles) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<b>North-West point:</b> ");
+            sb.append(rect[0].getGuiDescription().get(0));
+            sb.append("<br><b>South-East point:</b> ");
+            sb.append(rect[1].getGuiDescription().get(0));
+            guiStrings.add(sb.toString());
+        }
+        return guiStrings;
     }
     
 }
