@@ -266,8 +266,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String addGeographicRegion() {
-        log.info("adding geoelement: ");
-        log.info("adding geoelement: " + currentGeographicRegionType);
         if(!geographicElementsInGui.isEmpty() && 
                 (!geographicElementsInGui.get(0).getType().equals(currentGeographicRegionType))) {
             addErrorMessage("CITS_MULTIPLE_TYPE_REGION_ADD_ERROR");
@@ -283,12 +281,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public void removeLastGeographicRegion() {
-        log.info("removing last geoelement: ");
         geographicElementsInGui.remove(geographicElementsInGui.size()-1);
     }
     
     public void removeAllGeographicRegions() {
-        log.info("removing all geoelement: ");
         geographicElementsInGui.clear();
     }
 
