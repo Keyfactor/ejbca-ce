@@ -756,12 +756,10 @@ public class CAInterfaceBean implements Serializable {
                                            .setName(caInfoDto.getCaName())
                                            .setDescription(caInfoDto.getDescription())
                                            .setCertificateProfileId(certprofileid)
-                                           .setDefaultCertProfileId(defaultCertProfileId)
                                            .setEncodedValidity(caInfoDto.getCaEncodedValidity())
                                            .setCaType(caInfoDto.getCaType())
                                            .setStatus(CAConstants.CA_ACTIVE)
                                            .setSignedBy(signedBy)
-                                           .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                                            .setUpdateTime(new Date())
                                            .setExpireTime(null)
                                            .setCertificateChain(null)
@@ -770,7 +768,6 @@ public class CAInterfaceBean implements Serializable {
                                            .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                            .setValidators(keyValidators)
                                            .setFinishUser(caInfoDto.isFinishUser())
-                                           .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                                            .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
                                            .setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
                                            .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
@@ -779,6 +776,9 @@ public class CAInterfaceBean implements Serializable {
                                            .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                                            .setUseUserStorage(caInfoDto.isUseUserStorage())
                                            .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
+                                           .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                           .setDefaultCertProfileId(defaultCertProfileId)
+                                           .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                                            .setCertificateId(caInfoDto.getCertificateId())
                                            .setRegion(caInfoDto.getRegion());
 
@@ -817,7 +817,9 @@ public class CAInterfaceBean implements Serializable {
     public String isValidityTimeValid(String validityString, boolean isCitsCa) {
         
         if(isCitsCa) {
-          //Only positive relative times allowed.
+            if(StringUtils.isEmpty(validityString)) {
+                return ""; // during edit CA
+            }
             try {
                 if (SimpleTime.parseItsValidity(validityString) <= 0) {
                     return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND");
@@ -1124,6 +1126,9 @@ public class CAInterfaceBean implements Serializable {
                                                                                                    .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                                                                                                    .setUseUserStorage(caInfoDto.isUseUserStorage())
                                                                                                    .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
+                                                                                                   .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                                                                                   .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
+                                                                                                   .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                                                                                                    .setCertificateId(caInfoDto.getCertificateId());
 
 
