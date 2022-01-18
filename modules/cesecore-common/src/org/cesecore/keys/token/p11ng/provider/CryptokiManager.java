@@ -41,7 +41,7 @@ public class CryptokiManager {
 
     public synchronized CryptokiDevice getDevice(final String libName, final String libDir, final boolean withCache) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(">getDevice(" + libName + ", " + libDir + ")");
+            LOG.debug(">getDevice(" + libName + ", " + libDir + ", " + withCache + ")");
         }
         CryptokiDevice result = devices.get(getId(libName, libDir));
         if (result == null) {
