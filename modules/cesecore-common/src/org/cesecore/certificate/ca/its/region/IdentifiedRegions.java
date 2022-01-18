@@ -9,7 +9,7 @@ import org.bouncycastle.oer.its.SequenceOfIdentifiedRegion;
 
 public class IdentifiedRegions implements ItsGeographicElement {
     
-    // should only be populated by IdentifiedRegionCountry
+    // should only be populated by IdentifiedRegionCountry and IdentifiedRegionCountryRegions
     private List<ItsGeographicElement> identifiedRegions;
 
     public IdentifiedRegions(String element) {
@@ -59,6 +59,15 @@ public class IdentifiedRegions implements ItsGeographicElement {
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         return null;
+    }
+
+    @Override
+    public List<String> getGuiDescription() {
+        List<String> guiStrings = new ArrayList<>();
+        for(ItsGeographicElement region: identifiedRegions) {
+            guiStrings.addAll(region.getGuiDescription());
+        }
+        return guiStrings;
     }
     
 }
