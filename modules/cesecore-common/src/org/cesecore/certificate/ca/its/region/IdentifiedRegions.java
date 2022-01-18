@@ -36,6 +36,11 @@ public class IdentifiedRegions implements ItsGeographicElement {
         sb.deleteCharAt(sb.length()-1);
         return sb.toString();
     }
+    
+    @Override
+    public String toString() {
+        return this.toStringFormat();
+    }
 
     @Override
     public ItsGeographicElement fromString(String formattedString) {

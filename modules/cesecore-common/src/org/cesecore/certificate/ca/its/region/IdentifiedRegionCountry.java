@@ -36,6 +36,11 @@ public class IdentifiedRegionCountry implements ItsGeographicElement {
     public String toStringFormat() {
         return ItsGeographicRegion.REGION_TYPE_IDENTIFIED_COUNTRY + country.getDisplayName();
     }
+    
+    @Override
+    public String toString() {
+        return this.toStringFormat();
+    }
 
     @Override
     public ItsGeographicElement fromString(String formattedString) {

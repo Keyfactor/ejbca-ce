@@ -14,7 +14,7 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
     private ItsSupportedCountries country;
     private List<Integer> regions;
     
-    public static final String COUNTRY_REGION_HINT = "Expected format[without braces]: {region1,region2,region3} e.g. 123,456,789"; 
+    public static final String COUNTRY_REGION_HINT = "Expected format: region1,region2,region3 e.g. 123,456,789"; 
     
     public IdentifiedRegionCountryRegions() {
     }
@@ -63,6 +63,11 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
         return ItsGeographicRegion.REGION_TYPE_IDENTIFIED_COUNTRY_REGION + country.getDisplayName() + 
                 ItsGeographicRegion.SEPARATOR + regions.toString().replace(" ","")
                                                     .replace("[","").replace("]","");
+    }
+    
+    @Override
+    public String toString() {
+        return this.toStringFormat();
     }
 
     @Override

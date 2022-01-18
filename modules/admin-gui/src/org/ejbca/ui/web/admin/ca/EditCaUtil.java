@@ -154,9 +154,8 @@ public final class EditCaUtil {
         ItsGeographicElement geoElement = null;
         String errorString = ""; //
         StringBuilder description = new StringBuilder();
-       
-        //TODO: validation non-empty and selected element(not none) outside
-        
+        int i = 0;
+               
         switch(regionType) {
             case CIRCULAR:
                 if(geographicElementsInGui.size()!=1) {
@@ -168,15 +167,19 @@ public final class EditCaUtil {
                 break;
             case RECTANGULAR:
                 for(ItsGeographicRegionGuiWrapper guiWrapper: geographicElementsInGui) {
+                    i++;
+                    if(StringUtils.isEmpty(guiWrapper.getDescription())) {
+                        errorString = "Please enter the coordinates in geographic element: " + i;
+                        log.info(errorString);
+                        throw new IllegalArgumentException(errorString);
+                    }
                     description.append(guiWrapper.getDescription());
                     description.append(ItsGeographicRegion.SEQUENCE_SEPARATOR);
                 }
-                log.info("rectangles: " + description.toString());
                 geoElement = new RectangularRegions(description.toString());
                 break;
             case IDENTIFIED:
                 // covers both country and country region
-                int i = 0;
                 for(ItsGeographicRegionGuiWrapper guiWrapper: geographicElementsInGui) {
                     i++; // one-based
                     if(guiWrapper.getCountry().equals(ItsSupportedCountries.WHOLE_EUROPE.getDisplayName()) && 
