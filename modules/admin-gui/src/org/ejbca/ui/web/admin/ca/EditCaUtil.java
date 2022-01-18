@@ -22,7 +22,6 @@ import javax.faces.context.FacesContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.bouncycastle.oer.its.RectangularRegion;
 import org.cesecore.certificate.ca.its.region.CircularRegion;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegionCountryRegions;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegions;
@@ -172,6 +171,7 @@ public final class EditCaUtil {
                     description.append(guiWrapper.getDescription());
                     description.append(ItsGeographicRegion.SEQUENCE_SEPARATOR);
                 }
+                log.info("rectangles: " + description.toString());
                 geoElement = new RectangularRegions(description.toString());
                 break;
             case IDENTIFIED:
@@ -188,7 +188,7 @@ public final class EditCaUtil {
                     if(StringUtils.isEmpty(guiWrapper.getDescription())) {
                         description.append(ItsGeographicRegion.REGION_TYPE_IDENTIFIED_COUNTRY);
                         description.append(guiWrapper.getCountry());
-                        description.append(ItsGeographicRegion.SEPARATOR);
+                        //description.append(ItsGeographicRegion.SEPARATOR);
                     } else {
                         description.append(ItsGeographicRegion.REGION_TYPE_IDENTIFIED_COUNTRY_REGION);
                         description.append(guiWrapper.getCountry());
@@ -202,16 +202,37 @@ public final class EditCaUtil {
                 break;
             case NONE:
             default:
-                //validated outside or select default region here(worldwide/whole europe)
-                throw new IllegalArgumentException("Invalid geographic element.");
+                //alternate select default region here(worldwide/whole Europe)
+                break;
         }
         
         return geoElement;
     }
 
-    public static void loadGeographicRegionsForGui(List<ItsGeographicRegionGuiWrapper> geographicElementsInGui, ItsGeographicRegion region) {
-        // TODO Auto-generated method stub
-        
+    public static void loadGeographicRegionsForGui(List<ItsGeographicRegionGuiWrapper> geographicElementsInGui, ItsGeographicRegion region) {        
+        ItsGeographicRegion.RegionType regionType = region.getRegionType();
+        ItsGeographicRegionGuiWrapper guiWrapper = null;
+        switch(regionType) {
+            case CIRCULAR:
+                guiWrapper = new ItsGeographicRegionGuiWrapper();
+                guiWrapper.setName(regionType.getDisplayName() + " region");
+                guiWrapper.setDescription(region.getGeographicElement().getGuiDescription().get(0));
+                geographicElementsInGui.add(guiWrapper);
+                break;
+            case RECTANGULAR:
+            case IDENTIFIED:
+                for(String guiString: region.getGeographicElement().getGuiDescription()) {
+                    guiWrapper = new ItsGeographicRegionGuiWrapper();
+                    guiWrapper.setName(regionType.getDisplayName() + " region " + (geographicElementsInGui.size()+1));
+                    guiWrapper.setDescription(guiString);
+                    geographicElementsInGui.add(guiWrapper);
+                }
+                break;
+            case NONE:
+            default:
+                //should never happen
+                throw new IllegalArgumentException("Invalid geographic element.");
+        }
     }
     
 }

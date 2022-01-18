@@ -1,5 +1,8 @@
 package org.cesecore.certificate.ca.its.region;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.oer.its.GeographicRegion;
 import org.bouncycastle.oer.its.IdentifiedRegion;
@@ -93,6 +96,19 @@ public class Point2D implements ItsGeographicElement {
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         return null;
+    }
+
+    @Override
+    public List<String> getGuiDescription() {
+        List<String> guiStrings = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<em>latitude:</em> ");
+        sb.append(getLatitude());
+        sb.append(";&nbsp;");
+        sb.append("<em>longitude:</em> ");
+        sb.append(getLongitude());
+        guiStrings.add(sb.toString());
+        return guiStrings;
     }
     
 }

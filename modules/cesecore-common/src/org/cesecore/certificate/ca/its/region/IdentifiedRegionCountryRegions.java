@@ -61,7 +61,8 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
     @Override
     public String toStringFormat() {
         return ItsGeographicRegion.REGION_TYPE_IDENTIFIED_COUNTRY_REGION + country.getDisplayName() + 
-                ItsGeographicRegion.SEPARATOR + regions.toString();
+                ItsGeographicRegion.SEPARATOR + regions.toString().replace(" ","")
+                                                    .replace("[","").replace("]","");
     }
 
     @Override
@@ -85,6 +86,21 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
     @Override
     public void validateArgs() {
         // nothing to do
+    }
+
+    @Override
+    public List<String> getGuiDescription() {
+        List<String> guiStrings = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<b>Country:</b> ");
+        sb.append(country.getDisplayName());
+        sb.append("<br><b>Regions:</b> ");
+        for(Integer region: regions) {
+            sb.append(region);
+            sb.append(ItsGeographicRegion.SEPARATOR);
+        }
+        guiStrings.add(sb.toString());
+        return guiStrings;
     }
 
 }
