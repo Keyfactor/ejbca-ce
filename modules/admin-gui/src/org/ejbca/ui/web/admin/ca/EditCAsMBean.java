@@ -270,12 +270,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         log.info("adding geoelement: " + currentGeographicRegionType);
         if(!geographicElementsInGui.isEmpty() && 
                 (!geographicElementsInGui.get(0).getType().equals(currentGeographicRegionType))) {
-            addNonTranslatedErrorMessage("It is not allowed to add different types of regions. Please remove all other elements");
+            addErrorMessage("CITS_MULTIPLE_TYPE_REGION_ADD_ERROR");
             return "";
         }
         try {
             EditCaUtil.addGeographicRegionGui(currentGeographicRegionType, geographicElementsInGui);
         } catch(Exception e) {
+            addErrorMessage("CITS_INVALID_REGION_DESC_ERROR");
             addNonTranslatedErrorMessage(e);
         }
         return "";
@@ -413,7 +414,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         case CAInfo.CATYPE_SSH:
             return SshCa.CA_TYPE;
         case CAInfo.CATYPE_CITS:
-            return "CITS";
+            return "ECA";
         default:
             return "UNKNOWN";
         }
@@ -1499,7 +1500,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     caInfoDto.setCaSubjectDN(CAInfo.CITS_SUBJECTDN_PREFIX + caInfoDto.getCertificateId());
                     ItsGeographicElement geoElement = 
                             EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
-                    caInfoDto.setRegion(geoElement.toStringFormat());
+                    if(geoElement!=null) {
+                        caInfoDto.setRegion(geoElement.toStringFormat());
+                    }
                 } catch (final Exception e) {
                     addNonTranslatedErrorMessage(e);
                     return "";
@@ -2161,6 +2164,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (caInfoDto.isCaTypeCits() && cainfo != null) {
             caInfoDto.setCertificateId(((CitsCaInfo)cainfo).getCertificateId());
             ItsGeographicRegion region = ((CitsCaInfo)cainfo).getRegion();
+            log.info("retrieved region: " + region);
             if(region!=null) {
                 geographicElementsInGui = new ArrayList<ItsGeographicRegionGuiWrapper>();
                 EditCaUtil.loadGeographicRegionsForGui(geographicElementsInGui, region);
