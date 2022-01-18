@@ -124,18 +124,21 @@ public class ItsGeographicRegion implements Serializable {
         
     }
     
-    private RegionType parseAndSetRegionType(String region) {
+    private void parseAndSetRegionType(String region) {
         if(region.indexOf(TYPE_SEPARATOR)==-1) {
             throw new IllegalArgumentException("Invalid region: " + region);
         }
         String regionType = region.substring(0, region.indexOf(TYPE_SEPARATOR)) + TYPE_SEPARATOR;
-        switch(regionType) {
+        switch(regionType.trim()) {
         case REGION_TYPE_CIRCULAR:
-            return RegionType.CIRCULAR;
+            setRegionType(RegionType.CIRCULAR);
+            break;
         case REGION_TYPE_RECTANGLE:
-            return RegionType.RECTANGULAR;
+            setRegionType(RegionType.RECTANGULAR);
+            break;
         case REGION_TYPE_IDENTIFIED:
-            return RegionType.IDENTIFIED;
+            setRegionType(RegionType.IDENTIFIED);
+            break;
         default:
             throw new IllegalStateException("Invalid region type: " + regionType);
         }
