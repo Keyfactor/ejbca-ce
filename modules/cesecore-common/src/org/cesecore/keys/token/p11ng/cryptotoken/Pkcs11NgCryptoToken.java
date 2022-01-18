@@ -10,6 +10,28 @@
 
 package org.cesecore.keys.token.p11ng.cryptotoken;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -34,27 +56,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
-
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
 
 /** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
@@ -90,13 +91,31 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         setProperties(properties);
         init(properties, false, id);
         sSlotLabel = getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_VALUE, properties);
-        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_TYPE, properties));
-        String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
+        // Create the slot from the PKCS#11 driver, creating the JCE/JCA provider in Java 
+        initSlot(properties);
+        // If autoactivation is enabled, login to the slot, otherwise leave it to be logged in manually
+        String autoActivatePin = BaseCryptoToken.getAutoActivatePin(properties);
+        try {
+            if (autoActivatePin != null) {
+                activate(autoActivatePin.toCharArray());
+            }
+        } catch (CryptoTokenAuthenticationFailedException e) {
+            throw new CryptoTokenOfflineException(e);
+        }        
+    }
 
-        String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
-        String libraryFileName = sharedLibrary.substring(sharedLibrary.lastIndexOf("/") + 1, sharedLibrary.length());
-
-        CryptokiDevice device = CryptokiManager.getInstance().getDevice(libraryFileName, libraryFileDir, true);
+    private void initSlot(Properties properties) throws NoSuchSlotException {
+        final Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_TYPE, properties));
+        final String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
+        final String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
+        final String libraryFileName = sharedLibrary.substring(sharedLibrary.lastIndexOf("/") + 1, sharedLibrary.length());
+        if (log.isDebugEnabled()) {
+            log.debug(">initSlot: id=" + getId() + ", slotLabelType=" + slotLabelType.toString() + 
+                    ", sharedLibrary=" + sharedLibrary +
+                    ", libraryFileDir=" + libraryFileDir +
+                    ", libraryFileName=" + libraryFileName);
+        }
+       final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libraryFileName, libraryFileDir, true);
         device.getSlots();
         if (slotLabelType == Pkcs11SlotLabelType.SLOT_NUMBER) {
             slot = device.getSlot(Long.valueOf(sSlotLabel));
@@ -109,28 +128,34 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         }
         
         if (slot == null) {
-            throw new NoSuchSlotException("Unable to obtain token in slot");
+            final String msg = "Unable to obtain token in slot: id=" + getId();
+            log.debug(msg);
+            throw new NoSuchSlotException(msg);
+        }
+        setJCAProvider(slot.getProvider());
+        if (log.isDebugEnabled()) {
+            log.debug("Created a slot with provider: " + slot.getProvider());
         }
 
-        String autoActivatePin = BaseCryptoToken.getAutoActivatePin(properties);
-        try {
-            if (autoActivatePin != null) {
-                activate(autoActivatePin.toCharArray());
-            }
-        } catch (CryptoTokenAuthenticationFailedException e) {
-            throw new CryptoTokenOfflineException(e);
-        }
-        
-        setJCAProvider(slot.getProvider());
     }
 
     @Override
     public void activate(char[] authenticationcode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
         if (slot == null) {
-            throw new CryptoTokenOfflineException("Slot not initialized.");
+            // After a network disconnect and enough errors it can happen that that slot is gone
+            // if it is, reconnect by re-creating it here when we try to activate it again
+            if (log.isDebugEnabled()) {
+                log.debug(">activate: slot is null, calling initSlot: id=" + getId());
+            }
+            try {
+                initSlot(getProperties());
+            } catch (NoSuchSlotException e) {
+                throw new CryptoTokenOfflineException("Slot not initialized: id=" + getId());
+            }
         }
         try {
-            slot.prepareLogin();
+            // Acquires a session and releases it. Called before login to check for non-authorization related exception
+            slot.releaseSession(slot.aquireSession());
         } catch (Exception e) {
             final String msg = "Failed to initialize PKCS#11 provider slot '" + sSlotLabel + "': "  + e.getMessage();
             log.warn(msg, e);
@@ -149,7 +174,15 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
 
     @Override
     public void deactivate() {
-        this.slot.logout();
+        if (log.isDebugEnabled()) {
+            log.debug(">deactivate: id=" + getId());
+        }
+        if (slot != null) {
+            // Logout will close all sessions, logging out from the HSM 
+            // sessions, but till keep the "public" slot reference so we can 
+            // create new sessions and log in again easily
+            slot.logout();
+        }
         autoActivate();
     }
 
