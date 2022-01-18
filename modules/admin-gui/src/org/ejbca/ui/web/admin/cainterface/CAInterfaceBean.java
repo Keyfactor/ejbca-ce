@@ -480,7 +480,8 @@ public class CAInterfaceBean implements Serializable {
 	    if (buttonMakeRequest && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
 	        caInfoDto.setCaEncodedValidity("0d"); // not applicable
         } else {
-            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity());
+            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity(), 
+                                        caInfoDto.getCaType()==CAInfo.CATYPE_CITS);
             if(!StringUtils.isEmpty(errorMessage)) {
                 throw new ParameterException(errorMessage);
             }
@@ -750,7 +751,7 @@ public class CAInterfaceBean implements Serializable {
 
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
                 final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
-
+                log.info("Set cits region: " + caInfoDto.getRegion());
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder()
                                            .setName(caInfoDto.getCaName())
                                            .setDescription(caInfoDto.getDescription())
@@ -813,9 +814,20 @@ public class CAInterfaceBean implements Serializable {
 
     }
 
-    public String isValidityTimeValid(String validityString) {
+    public String isValidityTimeValid(String validityString, boolean isCitsCa) {
+        
+        if(isCitsCa) {
+          //Only positive relative times allowed.
+            try {
+                if (SimpleTime.parseItsValidity(validityString) <= 0) {
+                    return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND");
+                }
+            } catch (NumberFormatException e) {
+                return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage();
+            }
+        }
         // Fixed end dates are not limited
-        if (ValidityDate.isValidIso8601Date(validityString)) {
+        else if (ValidityDate.isValidIso8601Date(validityString)) {
             //We have a valid date, let's just check that it's in the future as well.
             Date validityDate;
             try {

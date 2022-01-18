@@ -1,5 +1,8 @@
 package org.cesecore.certificate.ca.its.region;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.bouncycastle.oer.its.CountryOnly;
 import org.bouncycastle.oer.its.GeographicRegion;
 import org.bouncycastle.oer.its.IdentifiedRegion;
@@ -52,6 +55,11 @@ public class IdentifiedRegionCountry implements ItsGeographicElement {
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         return new IdentifiedRegion(IdentifiedRegion.countryOnly, new CountryOnly(country.getM49Code()));
+    }
+
+    @Override
+    public List<String> getGuiDescription() {
+        return Arrays.asList(country.getDisplayName());
     }
     
 }

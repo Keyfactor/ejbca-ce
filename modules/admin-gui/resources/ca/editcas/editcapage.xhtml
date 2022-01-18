@@ -514,7 +514,8 @@
 				rendered="#{editCAsMBean.caTypeCits}"
 				columnClasses="editColumn1,editColumn2">
 				
-				<h:panelGroup >
+				<h:panelGroup 
+					rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
 					<h:outputLabel
 						value="#{web.text.ACCEPTREVOCATIONSNONEXISTINGENTRY}" />
 					<h:outputText
@@ -522,7 +523,8 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 
-				<h:panelGroup>
+				<h:panelGroup
+					rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
 					<h:selectBooleanCheckbox
 						id="citscheckboxacceptrevocationsnonexistingentry"
 						value="#{editCAsMBean.caInfoDto.acceptRevocationsNonExistingEntry}"
@@ -534,14 +536,14 @@
 						value="#{web.text.ACCEPT}" />
 				</h:panelGroup>
 
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
 					<h:outputLabel value="#{web.text.CERTIFICATEPROFILEFORNONEXISTING}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Default_Certificate_Profile_for_Non-Existing_Entries')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
 					<h:selectOneMenu id="citsselectdefaultcertificateprofile"
 						value="#{editCAsMBean.caInfoDto.defaultCertificateProfile}"
 						disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}">
@@ -549,14 +551,14 @@
 					</h:selectOneMenu>
 				</h:panelGroup>
 
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
 					<h:outputLabel value="#{web.text.USEAPPENDONLYTABLE}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_Append-Only_Table')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
 					<h:selectBooleanCheckbox id="citscheckboxuseappendonlytable"
 						value="#{editCAsMBean.caInfoDto.useNoConflictCertificateData}"
 						disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}">
@@ -571,13 +573,14 @@
 				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0" 
 				rendered="#{editCAsMBean.caTypeCits}"
 				columnClasses="editColumn1,editColumn2">
-				<h:panelGrid id="geographicregionheader">
+				
 				 <h:outputText style="font-weight: bold;" rendered="#{not editCAsMBean.editCA}"
                     value="#{web.text.SELECT_CITS_GEOGRAPHIC_REGION}" />
                  <h:outputText style="font-weight: bold;" rendered="#{editCAsMBean.editCA}"
                     value="#{web.text.CITS_GEOGRAPHIC_REGION}" />
-                </h:panelGrid>
+                
                 <h:panelGrid id="geographicregiongrid" columns="4">
+                	<h:panelGroup id="header_cits_georegions_view" rendered="#{editCAsMBean.editCA}"/>
                     <h:selectOneMenu id="geographicRegionType"
                         value="#{editCAsMBean.currentGeographicRegionType}"
                         rendered="#{not editCAsMBean.editCA}">
@@ -615,10 +618,8 @@
                 columnClasses="editColumn1,editColumn2">
                 
                 <h:column>
-	                <h:panelGrid>
 	                    <h:outputLabel for="georegiondescription"
 	                        value="#{geoRegion.name}" />
-	                 </h:panelGrid>
                 </h:column>
                 <h:column>
                 	<h:panelGrid id="georegiondescriptionGrid" columns="3">
@@ -633,10 +634,14 @@
 	                    </h:selectOneMenu>
 	                    <h:inputText id="georegiondescription"
                             value="#{geoRegion.description}" size="45"
-                            maxlength="512"
-                            disabled="#{editCAsMBean.editCA}">
+                            maxlength="512" required="true"
+                            rendered="#{not editCAsMBean.editCA}">
                             <f:ajax />
                         </h:inputText>
+                        <h:outputText id="georegiondescriptionview"
+                            value="#{geoRegion.description}" escape="false"
+                            rendered="#{editCAsMBean.editCA}">
+                        </h:outputText>
                     </h:panelGrid>
                     <h:outputText styleClass="help" value="#{geoRegion.helpText}" />
                 </h:column>

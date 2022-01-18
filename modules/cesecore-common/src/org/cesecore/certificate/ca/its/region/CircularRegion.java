@@ -1,5 +1,8 @@
 package org.cesecore.certificate.ca.its.region;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.oer.its.GeographicRegion;
 import org.bouncycastle.oer.its.IdentifiedRegion;
@@ -81,6 +84,18 @@ public class CircularRegion implements ItsGeographicElement {
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         return null;
+    }
+
+    @Override
+    public List<String> getGuiDescription() {
+        List<String> guiStrings = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<b>Center</b>: ");
+        sb.append(center.getGuiDescription().get(0));
+        sb.append("<br><b>Radius:</b> ");
+        sb.append(radius);
+        guiStrings.add(sb.toString());
+        return guiStrings;
     }
     
 }

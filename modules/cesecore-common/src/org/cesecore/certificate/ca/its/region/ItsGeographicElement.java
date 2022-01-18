@@ -1,5 +1,7 @@
 package org.cesecore.certificate.ca.its.region;
 
+import java.util.List;
+
 import org.bouncycastle.oer.its.GeographicRegion;
 import org.bouncycastle.oer.its.IdentifiedRegion;
 
@@ -17,5 +19,16 @@ public interface ItsGeographicElement {
     public IdentifiedRegion getIdentifiedRegion();
     
     public void validateArgs();
+    
+    public List<String> getGuiDescription();
+    
+    /**
+     * To be implemented for validation purpose of requestedRegion in enrollment request
+     * and current region instance of CA.
+     * 
+     * may use any(any/all) logic while validating against sequence. 
+     * @return
+     */
+    //public boolean isSubregion(ItsGeographicElement requestedRegion);
     
 }

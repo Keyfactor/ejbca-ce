@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import org.bouncycastle.oer.its.GeographicRegion;
-import org.bouncycastle.oer.its.IdentifiedRegion;
 import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.catoken.CAToken;
 
