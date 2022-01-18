@@ -13,8 +13,8 @@ public class CircularRegion implements ItsGeographicElement {
     private Point2D center;
     private int radius;
     
-    public static final String CIRCLE_FORMAT_HINT = "Expected format[without braces]: {centerLatitude,centerLongitude,radius} "
-                                            + "e.g. {12892199,994123,13222}. max radius: 65535";
+    public static final String CIRCLE_FORMAT_HINT = "Expected format: centerLatitude,centerLongitude,radius "
+                                            + "e.g. 12892199,994123,13222. max radius: 65535";
     
     public CircularRegion(int centerLatitude,  int centerLongitude, int radius) {
         this.center = new Point2D(centerLatitude, centerLongitude);
@@ -84,6 +84,11 @@ public class CircularRegion implements ItsGeographicElement {
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         return null;
+    }
+    
+    @Override
+    public String toString() {
+        return this.toStringFormat();
     }
 
     @Override

@@ -576,7 +576,8 @@
 				
 				 <h:outputText style="font-weight: bold;" rendered="#{not editCAsMBean.editCA}"
                     value="#{web.text.SELECT_CITS_GEOGRAPHIC_REGION}" />
-                 <h:outputText style="font-weight: bold;" rendered="#{editCAsMBean.editCA}"
+                 <h:outputText style="font-weight: bold;" 
+                 rendered="#{editCAsMBean.editCA and not empty editCAsMBean.geographicRegions}"
                     value="#{web.text.CITS_GEOGRAPHIC_REGION}" />
                 
                 <h:panelGrid id="geographicregiongrid" columns="4">
