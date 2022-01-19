@@ -392,7 +392,8 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     @Override
     public int getTokenStatus() {
         autoActivate();
-        if (slot == null || slot.getActiveSessions().isEmpty()) {
+        // If there is no slot or there are no sessions to the HSM, consider it offline 
+        if (slot == null || (slot.getActiveSessions().isEmpty() && slot.getIdleSessions().isEmpty())) {
             return CryptoToken.STATUS_OFFLINE;
         }
         return CryptoToken.STATUS_ACTIVE;
