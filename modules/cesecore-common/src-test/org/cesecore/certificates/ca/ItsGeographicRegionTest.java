@@ -164,7 +164,7 @@ public class ItsGeographicRegionTest {
             new IdentifiedRegionCountryRegions("Belgium,1234,66000,342");
             fail("too large region index.");
         } catch(Exception e) {
-            assertEquals(e.getMessage(), "Expected unsigned 16bit integer(0-65535) as region.");
+            assertEquals(e.getMessage(), "Expected unsigned 16bit integer(0-65535) as region. 66000");
         }
     }
 
