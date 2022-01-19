@@ -247,6 +247,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     private JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter();
 
+    /** For tests only */
+    protected void setMockedCaSession(final CaSessionLocal caSession) { this.caSession = caSession; }
+    protected void setMockedCertificateStoreSession(final CertificateStoreSessionLocal certificateStoreSession) { this.certificateStoreSession = certificateStoreSession; }
+    protected void setMockedCryptoTokenSession(final CryptoTokenSessionLocal cryptoTokenSession) { this.cryptoTokenSession = cryptoTokenSession; }
+    protected void setMockedInternalKeyBindingDataSession(final InternalKeyBindingDataSessionLocal internalKeyBindingDataSession) { this.internalKeyBindingDataSession = internalKeyBindingDataSession; }
+    protected void setMockedGlobalConfigurationSession(final GlobalConfigurationSessionLocal globalConfigurationSession) { this.globalConfigurationSession = globalConfigurationSession; }
+    protected void setMockedTimerService(final TimerService timerService) { this.timerService = timerService; }
+
     @PostConstruct
     public void init() {
         if (OcspConfiguration.getLogSafer()) {
