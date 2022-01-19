@@ -160,7 +160,7 @@ public final class EditCaUtil {
             case CIRCULAR:
                 if(geographicElementsInGui.size()!=1) {
                     errorString = "Circular geographic region expects one geoElement in GUI.";
-                    log.info(errorString);
+                    log.debug(errorString);
                     throw new IllegalArgumentException(errorString);
                 }
                 geoElement = new CircularRegion(geographicElementsInGui.get(0).getDescription());
@@ -170,7 +170,7 @@ public final class EditCaUtil {
                     i++;
                     if(StringUtils.isEmpty(guiWrapper.getDescription())) {
                         errorString = "Please enter the coordinates in geographic element: " + i;
-                        log.info(errorString);
+                        log.debug(errorString);
                         throw new IllegalArgumentException(errorString);
                     }
                     description.append(guiWrapper.getDescription());
@@ -185,13 +185,12 @@ public final class EditCaUtil {
                     if(guiWrapper.getCountry().equals(ItsSupportedCountries.WHOLE_EUROPE.getDisplayName()) && 
                             !StringUtils.isEmpty(guiWrapper.getDescription())) {
                         errorString = "Please select the country in which region belongs in geographic element: " + i;
-                        log.info(errorString);
+                        log.debug(errorString);
                         throw new IllegalArgumentException(errorString);
                     }
                     if(StringUtils.isEmpty(guiWrapper.getDescription())) {
                         description.append(ItsGeographicRegion.REGION_TYPE_IDENTIFIED_COUNTRY);
                         description.append(guiWrapper.getCountry());
-                        //description.append(ItsGeographicRegion.SEPARATOR);
                     } else {
                         description.append(ItsGeographicRegion.REGION_TYPE_IDENTIFIED_COUNTRY_REGION);
                         description.append(guiWrapper.getCountry());
