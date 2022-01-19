@@ -26,7 +26,12 @@ import java.util.Optional;
  */
 interface CryptokiFacade {
     /**
-     * C_FindObjects.
+     * Clears any caches that the CryptokiFacade implementation may have
+     */
+    void clear();
+    
+    /**
+     * C_FindObjects, first removes expired cache entries, then looks for objects in the cache and if expired look in the underlying API, updating the cache.
      *
      * @param session session handle.
      * @param ckas the attributes to use when searching for objects in the HSM.
@@ -35,7 +40,7 @@ interface CryptokiFacade {
     List<Long> findObjects(long session, CKA... ckas);
 
     /**
-     * C_FindObjectsInCache, looks for objects in the object cache only, does not pass on to underlying API.
+     * C_FindObjects, In Cache, looks for objects in the object cache only, does not pass on to underlying API and does not expire cache entries.
      *
      * @param session session handle.
      * @param ckas the attributes to use when searching for objects in the HSM.
