@@ -44,11 +44,13 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.FacesException;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -258,24 +260,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if(currentGeographicRegionType==null) {
             currentGeographicRegionType = geographicRegionTypes.get(0);
         }
-//        if(!currentGeographicRegionType.equals(ItsGeographicRegion.RegionType.NONE.getDisplayName()) && 
-//                !geographicElementsInGui.isEmpty()) {
-//            return Arrays.asList(currentGeographicRegionType);
-//        }
         return geographicRegionTypes;
     }
     
     public String addGeographicRegion() {
-        if(!geographicElementsInGui.isEmpty() && 
-                (!geographicElementsInGui.get(0).getType().equals(currentGeographicRegionType))) {
-            addErrorMessage("CITS_MULTIPLE_TYPE_REGION_ADD_ERROR");
-            return "";
-        }
         try {
             EditCaUtil.addGeographicRegionGui(currentGeographicRegionType, geographicElementsInGui);
         } catch(Exception e) {
-            addErrorMessage("CITS_INVALID_REGION_DESC_ERROR");
-            addNonTranslatedErrorMessage(e);
+            log.debug(e);
         }
         return "";
     }

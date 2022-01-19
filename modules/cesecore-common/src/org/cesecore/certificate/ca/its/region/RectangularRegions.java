@@ -16,18 +16,18 @@ public class RectangularRegions implements ItsGeographicElement {
           + "for each recatangle: latitudeNorthWest,longitudeNorthWest,latitudeSouthEast,longitudeSouthEast";
     
     public RectangularRegions(List<Long[]> rectangles) {
-        createRectangles(rectangles);
-    }
-    
-    private void createRectangles(List<Long[]> rectangles) {
         this.rectangles = new ArrayList<Point2D[]>();
         for(Long[] coord: rectangles) {
             if(coord.length!=4) {
                 throw new IllegalArgumentException(RECTANGLE_FORMAT_HINT);
             }
-            Point2D pointNW = new Point2D(coord[0], coord[1]);
-            Point2D pointSE = new Point2D(coord[2], coord[3]);
-            this.rectangles.add(new Point2D[] {pointNW, pointSE});
+            try {
+                Point2D pointNW = new Point2D(coord[0], coord[1]);
+                Point2D pointSE = new Point2D(coord[2], coord[3]);
+                this.rectangles.add(new Point2D[] {pointNW, pointSE});
+            } catch(Exception e) {
+                throw new IllegalArgumentException("Error processing: " + coord + ", " + e.getMessage());
+            }
         }
     }
     
@@ -37,7 +37,8 @@ public class RectangularRegions implements ItsGeographicElement {
         }
         
         String[] rectangles = formattedString.split(ItsGeographicRegion.SEQUENCE_SEPARATOR);
-        List<Long[]> rectangleCoords = new ArrayList<>();
+        this.rectangles = new ArrayList<Point2D[]>();
+        
         for(String rectangle: rectangles){
             if(StringUtils.isEmpty(rectangle)) {
                 continue;
@@ -50,9 +51,14 @@ public class RectangularRegions implements ItsGeographicElement {
             for(int i=0; i<4; i++) {
                 coordinates[i] = Long.parseLong(coords[i]);
             }
-            rectangleCoords.add(coordinates);
+            try {
+                Point2D pointNW = new Point2D(coordinates[0], coordinates[1]);
+                Point2D pointSE = new Point2D(coordinates[2], coordinates[3]);
+                this.rectangles.add(new Point2D[] {pointNW, pointSE});
+            } catch(Exception e) {
+                throw new IllegalArgumentException("Error processing: " + rectangle + ", " + e.getMessage());
+            }
         }
-        createRectangles(rectangleCoords);
     }
     
     @Override

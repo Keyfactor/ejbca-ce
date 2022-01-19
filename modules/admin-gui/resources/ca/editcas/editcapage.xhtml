@@ -584,7 +584,8 @@
                 	<h:panelGroup id="header_cits_georegions_view" rendered="#{editCAsMBean.editCA}"/>
                     <h:selectOneMenu id="geographicRegionType"
                         value="#{editCAsMBean.currentGeographicRegionType}"
-                        rendered="#{not editCAsMBean.editCA}">
+                        rendered="#{not editCAsMBean.editCA}"
+                        disabled="#{not empty editCAsMBean.geographicRegions}">
                         <f:ajax />
                         <!-- Needed to submit the selected item via AJAX -->
                         <f:selectItems id="geoRegionTypesList"
@@ -594,20 +595,20 @@
                         value="#{web.text.ADD}"
                         rendered="#{not editCAsMBean.editCA}"
                         action="#{editCAsMBean.addGeographicRegion()}">
-                        <f:ajax
-                            render="geographicregions" />
+                        <f:ajax onerror="function(data){ejbca.adminweb.showAlertOnError(data);}"
+                            render="geographicRegionType geographicregions " />
                     </h:commandButton>
                     <h:commandButton id="removeLastGeographicRegion"
 	                        value="#{web.text.REMOVELAST}"
 	                        rendered="#{not editCAsMBean.editCA}"
 	                        action="#{editCAsMBean.removeLastGeographicRegion()}">
-	                        <f:ajax render="geographicregions" />
+	                        <f:ajax render="geographicRegionType geographicregions" />
 	                 </h:commandButton>
 	                 <h:commandButton id="removeAllGeographicRegions"
 	                        value="#{web.text.REMOVEALL}"
 	                        rendered="#{not editCAsMBean.editCA}"
 	                        action="#{editCAsMBean.removeAllGeographicRegions()}">
-	                        <f:ajax render="geographicregions" />
+	                        <f:ajax render="geographicRegionType geographicregions" />
 	                 </h:commandButton>
                 </h:panelGrid>
 			</h:panelGrid>
@@ -635,7 +636,7 @@
 	                    </h:selectOneMenu>
 	                    <h:inputText id="georegiondescription"
                             value="#{geoRegion.description}" size="45"
-                            maxlength="512" required="true"
+                            maxlength="512" 
                             rendered="#{not editCAsMBean.editCA}">
                             <f:ajax />
                         </h:inputText>
