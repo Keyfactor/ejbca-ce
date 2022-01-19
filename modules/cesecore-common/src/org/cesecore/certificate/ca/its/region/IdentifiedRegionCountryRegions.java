@@ -23,10 +23,15 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
         String[] parts = formattedString.split(ItsGeographicRegion.SEPARATOR);
         this.country = ItsSupportedCountries.fromDisplayName(parts[0]);
         this.regions = new ArrayList<>();
+        int j;
         for(int i=1; i<parts.length; i++) {
-            int j = Integer.parseInt(parts[i]);
+            try {
+                j = Integer.parseInt(parts[i]);
+            } catch(NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid region entry, see expected format: " + parts[i]);
+            }
             if(j<0 || j>0xffff) {
-                throw new IllegalArgumentException("Expected unsigned 16bit integer(0-65535) as region.");
+                throw new IllegalArgumentException("Expected unsigned 16bit integer(0-65535) as region. " + parts[i]);
             }
             this.regions.add(j);
         }
