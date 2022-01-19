@@ -317,6 +317,8 @@ public class CryptokiDevice {
                 // 
                 // So it doesn't matter which slot we login to and we don't have to keep track of which slot was used for login
                 c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
+                // The loginSession can be used as a normal session, push it back to the idle pool if no error occurred
+                releaseSession(loginSession);
             } catch (Exception e) {
                 try {
                     // Avoid session leak. Close the acquired session if login failed.
