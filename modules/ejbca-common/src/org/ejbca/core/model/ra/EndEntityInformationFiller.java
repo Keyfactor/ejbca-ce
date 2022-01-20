@@ -29,12 +29,14 @@ import javax.naming.ldap.Rdn;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /** This class gives facilities to populate user data with default values from profile.
  *
@@ -44,8 +46,18 @@ public class EndEntityInformationFiller {
 
     /** For log purpose. */
     private static final Logger log = Logger.getLogger(EndEntityInformationFiller.class.getName());
-    private static final String SUBJECT_DN = "dn";
-    private static final String SUBJECT_ALTERNATE_NAME = "san";
+    private static final String SUBJECT_DN = "subject DN";
+    private static final String SUBJECT_ALTERNATIVE_NAME = "subject alternative name";
+    
+    private static final Map<String, String> BC_STYLE_PARAMETERS;
+    
+    static {
+        BC_STYLE_PARAMETERS = new HashMap<>();
+        BC_STYLE_PARAMETERS.put("EMAILADDRESS", "E");
+        BC_STYLE_PARAMETERS.put("EMAIL", "E");
+        BC_STYLE_PARAMETERS.put("SERIALNUMBER", "SN");
+        BC_STYLE_PARAMETERS.put("COMMONNAME", "CN");
+    }
 
     /** This method fill user data with the default values from the specified profile.
      *
@@ -81,13 +93,10 @@ public class EndEntityInformationFiller {
         }
 
         // Processing Subject DN values
-        String subjectDn = userData.getDN();
-        subjectDn = mergeSubjectDnWithDefaultValues(subjectDn, profile, userData.getEmail());
-        userData.setDN(subjectDn);
-        String subjectAltName = userData.getSubjectAltName();
+        userData.setDN(mergeDnString(userData.getDN(), profile, SUBJECT_DN, userData.getEmail()));
         // Processing Subject Altname values
-        subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
-        userData.setSubjectAltName(subjectAltName);
+        userData.setSubjectAltName(mergeDnString(userData.getSubjectAltName(), profile, 
+                                                SUBJECT_ALTERNATIVE_NAME, userData.getEmail()));
         if (userData.getType().getHexValue() == EndEntityTypes.INVALID.hexValue()) {
         	if (StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))) {
         	    final int type = Integer.parseInt(profile.getValue(EndEntityProfile.FIELDTYPE, 0));
@@ -260,30 +269,13 @@ public class EndEntityInformationFiller {
         return dnses.toString();
     }
     
-    /** This method fills user subject DN with the default values from the specified profile.
-     * It overrides the empty slots in profile corresponding to a type and then starts overwriting modifiable slots.
-     * A potential substitute to mergeSubjectDnWithDefaultValues(String, EndEntityProfile, String).
-    *
-    * @param userData user data.
-    * @param profile user associated profile.
-    * @return updated user.
-    */
-    public static void mergeDnString(EndEntityInformation user, final EndEntityProfile profile, 
-                                        final String entityEmail) {
-         user.setDN(mergeDnString(user.getDN(), profile, SUBJECT_DN, entityEmail));
-    }
-    
-    /** This method fills user subject alternative name with the default values from the specified profile.
-     * It overrides the empty slots in profile corresponding to a type and then starts overwriting modifiable slots.
-     * A potential substitute to mergeSubjectAltNameWithDefaultValues(String, EndEntityProfile, String).
-    *
-    * @param userData user data.
-    * @param profile user associated profile.
-    * @return updated user.
-    */
-    public static void mergeSanString(EndEntityInformation user, final EndEntityProfile profile,
-                                        final String entityEmail) {
-        user.setSubjectAltName(mergeDnString(user.getSubjectAltName(), profile, SUBJECT_ALTERNATE_NAME, entityEmail));
+    private static void populateUserEmail(EndEntityInformation user, final EndEntityProfile profile) {
+        if (StringUtils.isEmpty(user.getEmail())) {
+            final String email = profile.getValue(EndEntityProfile.EMAIL, 0);
+            if (StringUtils.isNotEmpty(email) && email.indexOf("@") > 0) {
+                user.setEmail(email);
+            }
+        }
     }
     
     private static String mergeDnString(String userDnString, final EndEntityProfile profile, 
@@ -304,7 +296,7 @@ public class EndEntityInformationFiller {
             if(entityType.equals(SUBJECT_DN) && profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
                 userDnString += "E=" + entityEmail;
             }
-            if(entityType.equals(SUBJECT_ALTERNATE_NAME) && profile.getUse(DnComponents.RFC822NAME, 0)) {
+            if(entityType.equals(SUBJECT_ALTERNATIVE_NAME) && profile.getUse(DnComponents.RFC822NAME, 0)) {
                 userDnString += "RFC822NAME=" + entityEmail;
             }
         }
@@ -316,6 +308,16 @@ public class EndEntityInformationFiller {
         } else {
             numberofDnfields = profile.getSubjectAltNameFieldOrderLength();
         }
+        
+        if(numberofDnfields==0) {
+            if(!userDnString.isEmpty()) {
+                // no fields are allowed in profile
+                throw new IllegalArgumentException("Only empty " + entityType + " is supported.");
+            } else {
+                return "";
+            }
+        }
+        
         LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns = 
                 new LinkedHashMap<>();
         
@@ -347,6 +349,7 @@ public class EndEntityInformationFiller {
             }
             
             parameter = dnParts[0].toUpperCase(Locale.ROOT);
+            parameter = getBcNameStyle(parameter, entityType);
             if(!isValidDnType(parameter, entityType)) {
                 throw new IllegalArgumentException("Invalid DN type: " + parameter);
             }
@@ -372,9 +375,11 @@ public class EndEntityInformationFiller {
                 for(String currentDnPart: currentDnParts) {
                     dnParts = currentDnPart.split("=");
                     parameter = dnParts[0].toUpperCase(Locale.ROOT);
+                    parameter = getBcNameStyle(parameter, entityType);
                     if(!isValidDnType(parameter, entityType)) {
                         throw new IllegalArgumentException("Invalid DN component: " + parameter);
                     }
+                    
                     if(dnParts.length!=2 || StringUtils.isEmpty(dnParts[1])) {
                         throw new IllegalArgumentException(
                                 "Invalid DN component detected during processing multi-valued rdn: " + curDn);
@@ -405,7 +410,7 @@ public class EndEntityInformationFiller {
                     profile.getSubjectDNFieldsInOrder(i) : profile.getSubjectAltNameFieldsInOrder(i);
             value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
             
-            if(!(value==null || StringUtils.isEmpty(value))) {
+            if(StringUtils.isNotEmpty(value)) {
                 value = value.trim();
             }
             
@@ -463,6 +468,15 @@ public class EndEntityInformationFiller {
             
         }
         
+        Set<String> userDnTypes = new HashSet<>(userRdns.keySet());
+        userDnTypes.removeAll(groupedAllProfileRdns.keySet());
+        if(!userDnTypes.isEmpty()){
+            // user contains un-allowed DN types
+            String error = "Not allowed " + entityType + " type(s): " + userDnTypes;
+            log.debug(error);
+            throw new IllegalArgumentException(error);
+        }
+        
         int currentDnTypeModifiedDns;
         for(String dnType: groupedAllProfileRdns.keySet()) {
             if(userRdns.containsKey(dnType)) {
@@ -517,7 +531,12 @@ public class EndEntityInformationFiller {
                 appendDn(result, dn);
             }
         }
-            
+        
+        if(result.length()==0) {
+            log.debug("merged dn is empty.");
+            return "";
+        }
+        
         String mergedDn = result.toString();
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
         log.debug("merged dn: " + mergedDn);
@@ -525,6 +544,13 @@ public class EndEntityInformationFiller {
         return mergedDn;
     }
     
+    private static String getBcNameStyle(String parameter, String entityType) {
+        if(entityType.equals(SUBJECT_ALTERNATIVE_NAME)) {
+            return parameter;
+        }
+        return BC_STYLE_PARAMETERS.getOrDefault(parameter.toUpperCase(), parameter.toUpperCase());
+    }
+
     private static void appendDn(StringBuilder buffer, Rdn rdn) {
         if(rdn==null||StringUtils.isEmpty((String) rdn.getValue())) {
             return;
@@ -548,6 +574,7 @@ public class EndEntityInformationFiller {
         try {
             return new Rdn(parameter, value);
         } catch (InvalidNameException e) {
+            log.debug("Invalid Rdn parameter or value: " + e.getMessage());
             throw new IllegalStateException(e);
         }
     }

@@ -60,7 +60,7 @@ public class EndEntityInformationFillerTest {
     /**
      * Test merging of DNs with multiple components
      */
-	@Test
+	// @Test: retained for legacy version
     public void testMergeDN() {
 	    EndEntityProfile p = new EndEntityProfile();
         p.addField(DnComponents.COMMONNAME);//5
@@ -175,7 +175,7 @@ public class EndEntityInformationFillerTest {
      * Test merging of DNs with multiple components
      */
     @Test
-    public void testMergeDNStringNewFunction() {
+    public void testfillUserDataWithDefaultValuesNewFunction() {
         EndEntityProfile p = new EndEntityProfile();
         //p.addField(DnComponents.COMMONNAME); by  default an empty CN field is created
         p.addField(DnComponents.ORGANIZATIONALUNIT);//11
@@ -194,97 +194,103 @@ public class EndEntityInformationFillerTest {
         
         EndEntityInformation user = new EndEntityInformation();
         // No DN in end entity to start with
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
         // Null should be the same as empty to start with
         user.setDN(null);
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
         // or empty string
         user.setDN("");
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
         
         // Run it again, now everything is the same as default, and should turn out the same again
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // and again...
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Set a simple DN, only CN, same as default
         user.setDN("CN=User Usersson");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=User Usersson,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Change to something else than default, this should override the default
         user.setDN("CN=Name2");
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Change default
         p.setValue(DnComponents.COMMONNAME, 0, "Name2");
         user.setDN("CN=Name2");
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=Unit1,OU=Unit2,OU=Unit3,O=Org1,C=SE", user.getDN());
 
         // Add some new fields
         user.setDN("CN=Name20,O=MyOrg");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name20,OU=Unit1,OU=Unit2,OU=Unit3,O=MyOrg,O=Org1,C=SE", user.getDN());
 
         // Add some new fields in the DN, will be placed in the front as default values are "merged" in after
         // the first "default" value in the profile, will instead use the field from user, and the default values merged in where 
         // such items are missing from the user DN
         user.setDN("CN=Name2,O=MyOrg,OU=MyOrgU");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrgU,OU=Unit2,OU=Unit3,O=MyOrg,O=Org1,C=SE", user.getDN());
 
         // Change order in request
         user.setDN("O=MyOrg,OU=MyOrgU,CN=Name2");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrgU,OU=Unit2,OU=Unit3,O=MyOrg,O=Org1,C=SE", user.getDN());
 
         // Change order in request, and some values
         user.setDN("C=NO,O=MyOrg,OU=MyOrgU,CN=Name3");
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit2,OU=Unit3,O=MyOrg,O=Org1,C=NO", user.getDN());
 
         // Remove the last (third) OU, we should now override the second
         p.setValue(DnComponents.ORGANIZATIONALUNIT, 2, null);
         user.setDN("C=NO,O=MyOrg,OU=MyOrgU,CN=Name3");
-        EndEntityInformationFiller.mergeDnString(user, p, "myEmail@dom.com");
+        user.setEmail("myEmail@dom.com");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit1,OU=Unit2,O=MyOrg,O=Org1,C=NO", user.getDN());
 
         // Trim it down a little again
         user.setDN("CN=Name3,OU=MyOrgU");
-        EndEntityInformationFiller.mergeDnString(user, p, "myEmail@dom.com");
+        user.setEmail("myEmail@dom.com");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit1,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Try the same again, just to be sure
         p.removeField(DnComponents.ORGANIZATIONALUNIT, 0);
         user.setDN("CN=Name3,OU=MyOrgU");
-        EndEntityInformationFiller.mergeDnString(user, p, "myEmail@dom.com");
+        user.setEmail("myEmail@dom.com");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name3,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
 
         // Add serialnumber
         p.addField(DnComponents.DNSERIALNUMBER);
         user.setDN("SN=123456789,OU=MyOrgU");
-        EndEntityInformationFiller.mergeDnString(user, p, "myEmail@dom.com");
+        user.setEmail("myEmail@dom.com");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrgU,OU=Unit2,O=Org1,C=SE,SN=123456789", user.getDN());
 
         // Add serial number
-        user.setDN("SN=12345,OU=MyOrgU");
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        user.setDN("SERIALNUMBER=12345,OU=MyOrgU");
+        user.setEmail("");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrgU,OU=Unit2,O=Org1,C=SE,SN=12345", user.getDN());
         
         // Add serial number, and remove CN
         // This is the case where things get confused, because serial number makes CertTools.stringToBCDNString think that the DN is reversed 
         // making the OUs re-ordered.
         user.setDN("SN=12345,OU=MyOrgU");
+        user.setEmail("");
         p.setValue(DnComponents.COMMONNAME, 0, null);
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("OU=MyOrgU,OU=Unit2,O=Org1,C=SE,SN=12345", user.getDN());
     }
 
@@ -307,7 +313,7 @@ public class EndEntityInformationFillerTest {
     public void testFillUserDataWithDefaultValuesDnOnly() {
         userData.setSendNotification(true);
         userData.setPassword("userPassword");
-        String expectedUserDn="CN=userName,O=linagora,C=FR";
+        String expectedUserDn="CN=userName,C=FR,O=linagora";
         EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
         assertEquals("userName", userData.getUsername());
         assertTrue(userData.getSendNotification());
@@ -410,7 +416,8 @@ public class EndEntityInformationFillerTest {
     private void testMergeDNNewPerf() {
         EndEntityInformation user = new EndEntityInformation();
         user.setDN(bigUserDn);
-        EndEntityInformationFiller.mergeDnString(user, bigProfile, "");
+        user.setEmail("");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, bigProfile);
     }
     
     private void testMergeDNOldPerf() {
@@ -437,7 +444,7 @@ public class EndEntityInformationFillerTest {
      * Test merging of DNs with multiple components
      */
     @Test
-    public void testMergeDNString() {
+    public void testfillSubjectDnWithDefaultValues() {
         EndEntityProfile p = new EndEntityProfile();
         //p.addField(DnComponents.COMMONNAME); by default a CN field is added by noarg constructor
         p.addField(DnComponents.ORGANIZATIONALUNIT);
@@ -458,16 +465,12 @@ public class EndEntityInformationFillerTest {
         p.setModifyable(DnComponents.COUNTRY, 0, false);
         EndEntityInformation user = new EndEntityInformation();
         user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
-        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=Unit1,OU=Unit2,O=Org1,C=DE", user.getDN());
-        
-        user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,O=Org1,C=DE\\;SE", user.getDN());
+        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=Unit1,OU=Unit2,O=Org1,C=DE", user.getDN());
         
         try {
             user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=MyOrg4,OU=MyOrg5");
-            EndEntityInformationFiller.mergeDnString(user, p, null);  
+            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);  
             fail("Processed user dn with too many of a dn type.");
         } catch (Exception e) {
             assertEquals("User DN has too many components for OU", e.getMessage());
@@ -475,7 +478,7 @@ public class EndEntityInformationFillerTest {
         
         try {
             user.setDN("CN=Name2,OU=MyOrg1,OU=,OU=MyOrg2");
-            EndEntityInformationFiller.mergeDnString(user, p, "");  
+            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);  
             fail("Processed user dn with invalid user dn.");
         } catch (Exception e) {
             assertEquals("Invalid DN component: OU=", e.getMessage());
@@ -483,7 +486,7 @@ public class EndEntityInformationFillerTest {
         
         try {
             user.setDN("CN=Name2,OU=MyOrg1,OU=,OU=MyOrg2");
-            EndEntityInformationFiller.mergeDnString(user, p, "");  
+            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);  
             fail("Processed user dn with invalid user dn.");
         } catch (Exception e) {
         }
@@ -491,11 +494,11 @@ public class EndEntityInformationFillerTest {
         p.setModifyable(DnComponents.ORGANIZATIONALUNIT, 0, false);
         
         user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit1,O=Org1,C=DE", user.getDN());
         
         user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,C=SE");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit1,O=Org1,C=SE", user.getDN());
     
         p.setModifyable(DnComponents.ORGANIZATIONALUNIT, 0, true);
@@ -503,12 +506,12 @@ public class EndEntityInformationFillerTest {
         
         user = new EndEntityInformation();
         user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
-        EndEntityInformationFiller.mergeDnString(user, p, null);
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=DE", user.getDN());
     
         try {
             user.setDN("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=MyOrg4");
-            EndEntityInformationFiller.mergeDnString(user, p, null);  
+            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);  
             fail("Processed user dn with too many of a dn type with non-modifable and nonempty dn.");
         } catch (Exception e) {
             assertEquals("User DN has too many components for OU", e.getMessage());
@@ -535,20 +538,16 @@ public class EndEntityInformationFillerTest {
         
         EndEntityInformation user = new EndEntityInformation();
         user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
-        EndEntityInformationFiller.mergeDnString(user, p, "");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
         
-        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2");
-        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=Unit2,O=Org1,C=SE", user.getDN());
-    
     }
     
     /**
      * Test merging of SANs with multiple components
      */
     @Test
-    public void testMergeSanString() {
+    public void testfillUserSANWithDefaultValues() {
         EndEntityProfile p = new EndEntityProfile();
         p.addField(DnComponents.DNSNAME);
         p.addField(DnComponents.DNSNAME);
@@ -562,22 +561,21 @@ public class EndEntityInformationFillerTest {
         String san = "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com";
         EndEntityInformation user = new EndEntityInformation();
         user.setSubjectAltName(san);
-        EndEntityInformationFiller.mergeSanString(user, p, "");
+        user.setEmail("");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", user.getSubjectAltName());
         
         user.setSubjectAltName(san);
+        user.setEmail("myEmail@dom.com");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals(san, user.getSubjectAltName());
-        
-        user.setSubjectAltName(san);
-        EndEntityInformationFiller.mergeSanString(user, p, "myEmail@dom.com");
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com", user.getSubjectAltName());
     
         try {
             user.setSubjectAltName(san + ",RFC822NAME=foo123@bar.com");
-            EndEntityInformationFiller.mergeSanString(user, p, "myEmail@dom.com");
+            user.setEmail("myEmail@dom.com");
+            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
             fail("Processed user SAN with too many parameters of one type.");
         } catch (Exception e) {
             assertEquals("User DN has too many components for RFC822NAME", e.getMessage());
