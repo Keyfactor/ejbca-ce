@@ -133,6 +133,7 @@ public class LdapPublisher extends BasePublisher {
 	protected static final String DELTACRLATTRIBUTE        = "deltacrlattribute";
 	protected static final String ARLATTRIBUTE             = "arlattribute";
 	protected static final String USEFIELDINLDAPDN         = "usefieldsinldapdn";
+	protected static final String USECUSTOMDNORDER         = "usecustomdnorder";
 	protected static final String ADDMULTIPLECERTIFICATES  = "addmultiplecertificates";
 	protected static final String REMOVEREVOKED            = "removerevoked";    
 	protected static final String REMOVEUSERONCERTREVOKE   = "removeusersoncertrevoke";    
@@ -1229,6 +1230,19 @@ public class LdapPublisher extends BasePublisher {
 		data.put(USEFIELDINLDAPDN, usefieldinldapdn);
 	}    
 
+	public boolean getUseCustomDnOrder() {
+        // On upgrade, we need to check if getUseFieldInLdapDN returns a sorted array.
+	    final Object value = data.get(USECUSTOMDNORDER);
+        return value != null ? ((Boolean) value).booleanValue() : false;
+    }
+
+	/**
+	 * Sets whether a custom DN order should be used
+	 */
+	public void setUseCustomDnOrder(final boolean customDnOrder) {
+	    data.put(USECUSTOMDNORDER, customDnOrder);
+	}
+
 	/**
 	 *  Returns true if multiple certificates should be appended to existing user entries, instead of replacing.
 	 */    
@@ -1665,7 +1679,9 @@ public class LdapPublisher extends BasePublisher {
 		final DNFieldExtractor userDataExtractor = userDataDN!=null ? new DNFieldExtractor(userDataDN, DNFieldExtractor.TYPE_SUBJECTDN) : null;
 
 		Collection<Integer> usefields = getUseFieldInLdapDN();
-		if(usefields instanceof List<?>){
+		if (!getUseCustomDnOrder() && usefields instanceof List<?>) {
+			// Note: This sorting order does NOT fully match the "LDAP DN Order" in EJBCA.
+			// This can be worked around by enabling "Custom order of DN fields" in the LDAP publisher
 			Collections.sort((List<Integer>) usefields);
 		}
 		final X500NameBuilder nameBuilder = new X500NameBuilder(LdapNameStyle.INSTANCE);
