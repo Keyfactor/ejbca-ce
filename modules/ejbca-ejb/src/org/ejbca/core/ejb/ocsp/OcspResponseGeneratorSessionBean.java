@@ -647,14 +647,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final byte[] aki = CertTools.getAuthorityKeyId(cert);
         final byte[] ski = CertTools.getSubjectKeyId(cert);
         boolean keyIdsAreEqual = false;
-        if (!aki.equals(null)) {
-            keyIdsAreEqual = Arrays.equals(aki, ski) ? true : false;
+        if (aki != null) {
+            keyIdsAreEqual = Arrays.equals(aki, ski);
         }
         final Principal sdn = cert.getSubjectDN();
         final Principal idn = cert.getIssuerDN();
         final boolean dNsAreEqual = sdn.equals(idn);
         //AKI can be omitted in self signed certificates, RFC 5280
-        if ( (aki.equals(null) && dNsAreEqual) || keyIdsAreEqual ){
+        if ((aki == null && dNsAreEqual) || keyIdsAreEqual ){
             return true;
         }
         return false;
@@ -666,7 +666,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
         for (final Certificate certificate : certificateList) {
             final byte[] ski = CertTools.getSubjectKeyId(certificate);
-            if (!aki.equals(null) && Arrays.equals(aki, ski)) {
+            if (aki != null && Arrays.equals(aki, ski)) {
                 verifiedIssuers.add(certificate);
             }
         }
