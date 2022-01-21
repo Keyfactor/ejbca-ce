@@ -36,8 +36,10 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
@@ -53,7 +55,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
-import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 import javax.annotation.PostConstruct;
@@ -103,6 +104,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
+    private RoleDataSessionLocal roleDataSession;
+    @EJB
+    private RoleMemberDataSessionLocal roleMemberDataSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
@@ -110,7 +115,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
-    private CADataHandler cadatahandler;
     private Map<Integer, String> caidtonamemap;
     private Part certificateBundle;
 
@@ -250,7 +254,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         } catch (ServletException e) {
             throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
         }
-        cadatahandler = caBean.getCADataHandler();
         caidtonamemap = caSession.getCAIdToNameMap();
     }
 
@@ -440,7 +443,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String deleteCA() {
         try {
-            if (!cadatahandler.removeCA(selectedCaId)) {
+            if (!removeCA(selectedCaId)) {
                 addErrorMessage("COULDNTDELETECA");
                 final List<String> certificateProfilesUsedByCa = certificateProfilesUsedByCa(selectedCaId);
                 if (!certificateProfilesUsedByCa.isEmpty()) {
@@ -462,6 +465,36 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage(e.getMessage());
         }
         return EditCaUtil.MANAGE_CA_NAV;
+    }
+    
+    private boolean removeCA(final int caId) throws AuthorizationDeniedException{     
+        final boolean caIdIsPresent = endEntityManagementSession.checkForCAId(caId) ||
+                certificateProfileSessionLocal.existsCAIdInCertificateProfiles(caId) ||
+                endEntityProfileSession.existsCAInEndEntityProfiles(caId) ||
+                isCaIdInUseByRoleOrRoleMember(caId);   
+        if (!caIdIsPresent) {
+            caSession.removeCA(getEjbcaWebBean().getAdminObject(), caId);
+        }
+        return !caIdIsPresent;
+    }
+    
+    private boolean isCaIdInUseByRoleOrRoleMember(final int caId) {
+        for (final Role role : roleDataSession.getAllRoles()) {
+            if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caId))) {
+                return true;
+            }
+            for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId())) {
+                if (roleMember.getTokenIssuerId()==caId) {
+                    // Do more expensive checks if it is a potential match
+                    final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
+                            roleMember.getTokenType()).getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                    if (accessMatchValue.isIssuedByCa()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public String renameCA() {
