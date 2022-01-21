@@ -131,7 +131,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
-    public static int MAX_CSR_LENGTH = 10240;
+    public static int MAX_CSR_LENGTH = 250000;
     private static final int MIN_OPTIONAL_FIELDS_TO_SHOW = 2;
 
     @EJB
@@ -1488,8 +1488,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public final void validateCsr(String csrValue) throws ValidatorException {
         algorithmFromCsr = null;
-        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
-            log.info("CSR uploaded was too large: " + csrValue.length());
+        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) { 
+           log.info("CSR uploaded was too large: " + csrValue.length());
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
@@ -1498,7 +1498,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-
+        
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
         final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {

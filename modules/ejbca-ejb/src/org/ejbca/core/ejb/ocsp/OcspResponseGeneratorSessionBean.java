@@ -121,6 +121,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -130,6 +131,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStatusHolder;
@@ -198,7 +200,6 @@ import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.PublisherException;
-
 
 /**
  * This SSB generates OCSP responses. 
@@ -486,6 +487,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                     OcspSigningCacheEntry ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspSigningCertificate, ocspKeyBinding);
                     if (ocspSigningCacheEntry != null) {
+                        addSignResponseOnBehalfCasToCacheEntry(ocspSigningCacheEntry, ocspKeyBinding);
                         OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
                     }
                 }
@@ -498,7 +500,55 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // Schedule a new timer of this type
             addTimer(OcspConfiguration.getSigningCertsValidTimeInMilliseconds(), TIMERID_OCSPSIGNINGCACHE);
         }
-    } 
+    }
+    
+    private void addSignResponseOnBehalfCasToCacheEntry(OcspSigningCacheEntry ocspSigningCacheEntry, 
+                                                                            OcspKeyBinding ocspKeyBinding) {
+        Set<CertificateID> signedBehalfOfCaIds = ocspSigningCacheEntry.getSignedBehalfOfCaIds();
+        Map<CertificateID, X509Certificate> signedBehalfOfCaCerticates = 
+                                                        ocspSigningCacheEntry.getSignedBehalfOfCaCerticates();
+        Map<CertificateID, CertificateStatus> signedBehalfOfCaStatus = 
+                                                            ocspSigningCacheEntry.getSignedBehalfOfCaStatus();
+        
+        List<CertificateID> willSignForCaId;
+        for(InternalKeyBindingTrustEntry signOnBehalfEntry: ocspKeyBinding.getSignOcspResponseOnBehalf()) {
+            CAData caData = caSession.findById(signOnBehalfEntry.getCaId());
+            if(caData==null) {
+                log.debug("CA with id might have been deleted (caId): " + signOnBehalfEntry.getCaId());
+                continue;
+            }
+            
+            boolean preProduceOcspResponse = false;
+            if (caData.getCA().getCAInfo() instanceof X509CAInfo) {
+                preProduceOcspResponse = ((X509CAInfo) caData.getCA().getCAInfo()).isDoPreProduceOcspResponses();
+            } else {
+                continue;
+            }
+            
+            if(caData.getStatus()!=CAConstants.CA_ACTIVE && caData.getStatus()!=CAConstants.CA_EXTERNAL && 
+                    !(caData.getStatus() == CAConstants.CA_EXPIRED && preProduceOcspResponse)) {
+                log.debug("OCSP sign on behalf is allowed only for active, "
+                        + "external CAs or expired CAs with preproduced OCSP response (caId): "
+                                                                        + signOnBehalfEntry.getCaId());
+                continue;
+            }
+            
+            X509Certificate caCert = (X509Certificate) caData.getCA().getCACertificate();
+            willSignForCaId = OcspSigningCache.getCertificateIDFromCertificate(caCert);
+            signedBehalfOfCaIds.addAll(willSignForCaId);
+            CertificateStatus certificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCert, true);
+            
+            for(CertificateID certId: willSignForCaId) {
+                signedBehalfOfCaStatus.put(certId, certificateStatus);
+                signedBehalfOfCaCerticates.put(certId, caCert);
+            }
+            
+        }
+        
+        if(!signedBehalfOfCaIds.isEmpty()) {
+            ocspSigningCacheEntry.refreshInternalMappings();
+        }
+    }
     
     private byte[] getAuthorityKeyIdentifier(X509Certificate certificate) {
         byte[] fullExtValue = certificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
@@ -655,14 +705,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final byte[] aki = CertTools.getAuthorityKeyId(cert);
         final byte[] ski = CertTools.getSubjectKeyId(cert);
         boolean keyIdsAreEqual = false;
-        if (!aki.equals(null)) {
-            keyIdsAreEqual = Arrays.equals(aki, ski) ? true : false;
+        if (aki != null) {
+            keyIdsAreEqual = Arrays.equals(aki, ski);
         }
         final Principal sdn = cert.getSubjectDN();
         final Principal idn = cert.getIssuerDN();
         final boolean dNsAreEqual = sdn.equals(idn);
         //AKI can be omitted in self signed certificates, RFC 5280
-        if ( (aki.equals(null) && dNsAreEqual) || keyIdsAreEqual ){
+        if ((aki == null && dNsAreEqual) || keyIdsAreEqual ){
             return true;
         }
         return false;
@@ -674,7 +724,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
         for (final Certificate certificate : certificateList) {
             final byte[] ski = CertTools.getSubjectKeyId(certificate);
-            if (!aki.equals(null) && Arrays.equals(aki, ski)) {
+            if (aki != null && Arrays.equals(aki, ski)) {
                 verifiedIssuers.add(certificate);
             }
         }
@@ -1379,7 +1429,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 
                 ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                 OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
-
+                
                 // Locate the CA which gave out the certificate
                 if (Objects.isNull(ocspSigningCacheEntry)) {
 
@@ -1403,6 +1453,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                     }
                 }
+                                
                 // We only store pre-produced single responses
                 if (ocspRequests.length == 1 && ocspDataConfig != null && ocspDataConfig.isPreProductionEnabled()) {
                     
@@ -1434,10 +1485,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                             if (transactionLogger.isEnabled()) {
                                 if (ocspSigningCacheEntry != null) {
-                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
+                                    transactionLogger.paramPut(TransactionLogger.OCSP_CERT_ISSUER_NAME_DN,
                                             ocspSigningCacheEntry.getSigningCertificateIssuerDn());
-                                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW,
+                                    transactionLogger.paramPut(TransactionLogger.OCSP_CERT_ISSUER_NAME_DN_RAW,
                                             ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
+                                    // Issuer of the requested certificate is not logged to save database lookup
                                 }
                                 org.bouncycastle.cert.ocsp.CertificateStatus status = ((BasicOCSPResp) ocspResp.getResponseObject()).getResponses()[0]
                                         .getCertStatus();
@@ -1488,8 +1540,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (ocspSigningCacheEntry != null) {
                     if (!isPreSigning && transactionLogger.isEnabled()) {
                         // This will be the issuer DN of the signing certificate, whether an OCSP responder or an internal CA  
-                        transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, ocspSigningCacheEntry.getSigningCertificateIssuerDn());
-                        transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
+                        transactionLogger.paramPut(TransactionLogger.OCSP_CERT_ISSUER_NAME_DN,
+                                ocspSigningCacheEntry.getSigningCertificateIssuerDn());
+                        transactionLogger.paramPut(TransactionLogger.OCSP_CERT_ISSUER_NAME_DN_RAW,
+                                ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
                     }
                 } else {
                     /*
@@ -1553,6 +1607,62 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         continue;
                     }
                 }
+                
+                final org.bouncycastle.cert.ocsp.CertificateStatus certStatus;
+                // Check if the cacert (or the default responderid) is revoked
+                X509Certificate caCertificate = ocspSigningCacheEntry.getIssuerCaCertificate();
+                final CertificateStatus signerIssuerCertStatus = ocspSigningCacheEntry.getIssuerCaCertificateStatus();
+                final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
+                String signedBehalfOfCaSubjectDn = null;
+                CertificateStatus onBehalfOfCaStatus = CertificateStatus.OK; // placeholder
+                CertificateStatusHolder certificateStatusHolder = null;
+                OCSPResponseItem respItem;
+                
+                X509Certificate shouldSignOnBehalfCaCert = null;
+                
+                // only necessary if sign on belaf entries are present for corresponding cache entry
+                if(!ocspSigningCacheEntry.getSignedBehalfOfCaIds().isEmpty()) {
+                    List<CertificateDataWrapper> certificateWrappers = 
+                            certificateStoreSession.getCertificateDataBySerno(certId.getSerialNumber());
+                    
+                    for(CertificateDataWrapper certificateWrapper: certificateWrappers) {
+                        if(certificateWrapper.getCertificateData()==null || certificateWrapper.getCertificate()==null) {
+                            continue;
+                        }
+                        if(certificateWrapper.getCertificateData().getIssuerDN().equals(caCertificateSubjectDn)) {
+                            log.debug("ocsp issuer is signing CA.");
+                            break;
+                        } else {
+                            Certificate fetchedCertificate = certificateWrapper.getCertificate();
+                            if(!(fetchedCertificate instanceof X509Certificate)) {
+                                continue;
+                            }
+                            CertificateID issuerCertId = ocspSigningCacheEntry.getSignBehalfOfCaCertId(
+                                                            (X509Certificate) fetchedCertificate);
+    
+                            if(issuerCertId!=null) {
+                                shouldSignOnBehalfCaCert = ocspSigningCacheEntry.getSignBehalfOfCaCertificate(issuerCertId);
+                                signedBehalfOfCaSubjectDn = CertTools.getSubjectDN(shouldSignOnBehalfCaCert);
+                                onBehalfOfCaStatus = ocspSigningCacheEntry.getSignedBehalfOfCaStatus().get(issuerCertId);
+                                log.debug("ocsp will be signed behalf of: \"" + signedBehalfOfCaSubjectDn 
+                                                    + "\" by:\"" + caCertificateSubjectDn + "\"");
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if(shouldSignOnBehalfCaCert!=null) {
+                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
+                            CertTools.getIssuerDN(shouldSignOnBehalfCaCert));
+                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW,
+                            shouldSignOnBehalfCaCert.getIssuerDN().getName());
+                } else {
+                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
+                            ocspSigningCacheEntry.getSigningCertificateIssuerDn());
+                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW,
+                            ocspSigningCacheEntry.getSigningCertificateIssuerDnRaw());
+                }
 
                 final List<String> extensionOids = ocspSigningCacheEntry.getOcspKeyBinding() != null
                         ? ocspSigningCacheEntry.getOcspKeyBinding().getOcspExtensions()
@@ -1563,14 +1673,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (alwaysUseOid != null && !extensionOids.contains(alwaysUseOid)) {
                     extensionOids.add(alwaysUseOid);
                 }
-                
-                final org.bouncycastle.cert.ocsp.CertificateStatus certStatus;
-                // Check if the cacert (or the default responderid) is revoked
-                X509Certificate caCertificate = ocspSigningCacheEntry.getIssuerCaCertificate();
-                final CertificateStatus signerIssuerCertStatus = ocspSigningCacheEntry.getIssuerCaCertificateStatus();
-                final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
-                CertificateStatusHolder certificateStatusHolder = null;
-                OCSPResponseItem respItem;
+                                
                 if (signerIssuerCertStatus.equals(CertificateStatus.REVOKED)) {
                     /*
                      * According to chapter 2.7 in RFC2560:
@@ -1578,7 +1681,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                      * 2.7 CA Key Compromise If an OCSP responder knows that a particular CA's private key has been compromised, it MAY return the revoked
                      * state for all certificates issued by that CA.
                      */
-                    // If we've ended up here it's because the signer issuer certificate was revoked. 
+                    // If we've ended up here it's because the signer issuer certificate was revoked.                    
                     certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
                     log.info(intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate),
@@ -1588,22 +1691,44 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                         transactionLogger.paramPut(TransactionLogger.REV_REASON, signerIssuerCertStatus.revocationReason);
                     }
+                } else if(!onBehalfOfCaStatus.equals(CertificateStatus.OK)) {
+                    certStatus = new UnknownStatus();
+                    // allow persist responses with 'unknown' if issuer CA is revoked
+                    log.info(intres.getLocalizedMessage("ocsp.issuerrevoked", CertTools.getSerialNumberAsString(shouldSignOnBehalfCaCert),
+                            CertTools.getSubjectDN(shouldSignOnBehalfCaCert)));
+                    respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
+                    if (!isPreSigning && transactionLogger.isEnabled()) {
+                        transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
+                        if(onBehalfOfCaStatus.equals(CertificateStatus.REVOKED)) {
+                            transactionLogger.paramPut(TransactionLogger.REV_REASON, onBehalfOfCaStatus.revocationReason);
+                        } else {
+                            transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
+                        }
+                    }
                 } else {
                     /**
                      * Here is the actual check for the status of the sought certificate (easy to miss). Here we grab just the status if there aren't
                      * any OIDs defined (default case), but if there are we'll probably need the certificate as well. If that's the case, we'll grab
                      * the certificate in the same transaction.
                      */
-                    final CertificateStatus status;
+                    CertificateStatus status;
+                    String issuerDnOcspRequest = caCertificateSubjectDn;
+                    if(signedBehalfOfCaSubjectDn!=null) {
+                        issuerDnOcspRequest = signedBehalfOfCaSubjectDn;
+                        // we will also use certificate profile settings for issuing certificate
+                    }
                     if (extensionOids.isEmpty()) {
-                        status = certificateStoreSession.getStatus(caCertificateSubjectDn, certId.getSerialNumber());
+                        log.info("extensionOids empty");
+                        status = certificateStoreSession.getStatus(issuerDnOcspRequest, certId.getSerialNumber());
                     } else {
-                        certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(caCertificateSubjectDn, certId.getSerialNumber());
+                        certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(issuerDnOcspRequest, certId.getSerialNumber());
                         status = certificateStatusHolder.getCertificateStatus();
                     }
                     if (!isPreSigning && transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, String.valueOf(status.certificateProfileId));
                     }
+                    log.info("ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate(): " + 
+                                    ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate());
                     // If we have an OcspKeyBinding configured for this request, we override the default value
                     if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                         nextUpdate = ocspSigningCacheEntry.getOcspKeyBinding().getUntilNextUpdate()*1000L;
@@ -1628,7 +1753,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         // No revocation info available for this cert, handle it
                         if (log.isDebugEnabled()) {
                             log.debug("Unable to find revocation information for certificate with serial '" + certId.getSerialNumber().toString(16)
-                                    + "'" + " from issuer '" + caCertificateSubjectDn + "'");
+                                    + "'" + " from issuer '" + issuerDnOcspRequest + "'");
                         }
                         /* 
                          * If we do not treat non existing certificates as good or revoked
@@ -2090,6 +2215,28 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                         break;
                                     }
                                 }
+                                
+                                for(InternalKeyBindingTrustEntry signOnBehalfEntry: ocspKeyBinding.getSignOcspResponseOnBehalf()) {
+                                    CAData caData = caSession.findById(signOnBehalfEntry.getCaId());
+                                    if(!(caData.getCA().getCACertificate() instanceof X509Certificate)) {
+                                        continue;
+                                    }
+                                    issuingCertificate = (X509Certificate) caData.getCA().getCACertificate();
+                                    // repeating same logic as before
+                                    if (certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
+                                        ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspCertificate, ocspKeyBinding);
+
+                                        if (ocspSigningCacheEntry != null) {
+                                            OcspSigningCache.INSTANCE.addSingleEntry(ocspSigningCacheEntry);
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                if (ocspSigningCacheEntry != null) {
+                                    break;
+                                }
+                                
                             } catch (OCSPException e) {
                                 throw new IllegalStateException("Could not create BcDigestCalculatorProvider", e);
                             }
@@ -2114,6 +2261,27 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                             OcspSigningCache.INSTANCE.addSingleEntry(ocspSigningCacheEntry);
                                             break;
                                         }
+                                    }
+                                    
+                                    for(InternalKeyBindingTrustEntry signOnBehalfEntry: ocspKeyBinding.getSignOcspResponseOnBehalf()) {
+                                        CAData caData = caSession.findById(signOnBehalfEntry.getCaId());
+                                        if(!(caData.getCA().getCACertificate() instanceof X509Certificate)) {
+                                            continue;
+                                        }
+                                        issuingCertificate = (X509Certificate) caData.getCA().getCACertificate();
+                                        // repeating same logic as before
+                                        if (certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
+                                            ocspSigningCacheEntry = makeOcspSigningCacheEntry(ocspCertificate, ocspKeyBinding);
+
+                                            if (ocspSigningCacheEntry != null) {
+                                                OcspSigningCache.INSTANCE.addSingleEntry(ocspSigningCacheEntry);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (ocspSigningCacheEntry != null) {
+                                        break;
                                     }
                                 } catch (OCSPException e) {
                                     throw new IllegalStateException("Could not create BcDigestCalculatorProvider", e);
