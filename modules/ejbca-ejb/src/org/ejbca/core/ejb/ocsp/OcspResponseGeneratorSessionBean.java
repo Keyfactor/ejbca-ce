@@ -26,6 +26,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -38,6 +39,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -690,20 +692,59 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         return CertificateStatus.OK;
     }
+    
+    private boolean isSelfSigned(final X509Certificate cert) {
+        final byte[] aki = CertTools.getAuthorityKeyId(cert);
+        final byte[] ski = CertTools.getSubjectKeyId(cert);
+        boolean keyIdsAreEqual = false;
+        if (aki != null) {
+            keyIdsAreEqual = Arrays.equals(aki, ski);
+        }
+        final Principal sdn = cert.getSubjectDN();
+        final Principal idn = cert.getIssuerDN();
+        final boolean dNsAreEqual = sdn.equals(idn);
+        //AKI can be omitted in self signed certificates, RFC 5280
+        if ((aki == null && dNsAreEqual) || keyIdsAreEqual ){
+            return true;
+        }
+        return false;
+    }
+    
+    private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
+        List<Certificate> verifiedIssuers = new ArrayList<>();
+        Certificate issuer = null;
+        final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
+        for (final Certificate certificate : certificateList) {
+            final byte[] ski = CertTools.getSubjectKeyId(certificate);
+            if (aki != null && Arrays.equals(aki, ski)) {
+                verifiedIssuers.add(certificate);
+            }
+        }
+        for (final Certificate cert : verifiedIssuers) {
+            //Find latest issuer cert
+            if (issuer == null || CertTools.getNotBefore(cert).after(CertTools.getNotBefore(issuer))) {
+                issuer = cert;
+            }
+        }
+        return (X509Certificate) issuer;
+    }
 
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
         final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
-        final Set<String> includedDn = new HashSet<>();
-        while (!CertTools.getIssuerDN(currentLevelCertificate).equals(CertTools.getSubjectDN(currentLevelCertificate))) {
+        final Set<String> includedFingerprint = new HashSet<>();
+        while (!isSelfSigned(currentLevelCertificate)) {
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
-            currentLevelCertificate = certificateStoreSession.findLatestX509CertificateBySubject(issuerDn);
+            final String issuerFingerprint = CertTools.getFingerprintAsString(currentLevelCertificate);
+            List<Certificate> resultList = new ArrayList<>();
+            resultList = certificateStoreSession.findCertificatesBySubject(issuerDn);
+            currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
             if (currentLevelCertificate == null) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
                 return Collections.emptyList();
             }
-            if (!includedDn.add(issuerDn)) {
+            if (!includedFingerprint.add(issuerFingerprint)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Cyclic cross signing detected in '" + issuerDn + "'");
                 }
