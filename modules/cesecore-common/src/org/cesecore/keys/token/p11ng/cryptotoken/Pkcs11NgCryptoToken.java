@@ -182,6 +182,9 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             // sessions, but till keep the "public" slot reference so we can 
             // create new sessions and log in again easily
             slot.logout();
+            // Using for example Utimaco, it will still give "0x00000032: DEVICE_REMOVED" when trying to 
+            // create new sessions and logging in the a session again, we have to re-create the slot from scratch
+            slot = null;
         }
         autoActivate();
     }
