@@ -17,6 +17,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,7 +62,7 @@ public class EndEntityInformationFillerTest {
      * Test merging of DNs with multiple components
      */
 	// @Test: retained for legacy version
-    public void testMergeDN() {
+    public void testMergeDN() throws Exception {
 	    EndEntityProfile p = new EndEntityProfile();
         p.addField(DnComponents.COMMONNAME);//5
         p.addField(DnComponents.ORGANIZATIONALUNIT);//11
@@ -175,7 +176,7 @@ public class EndEntityInformationFillerTest {
      * Test merging of DNs with multiple components
      */
     @Test
-    public void testfillUserDataWithDefaultValuesNewFunction() {
+    public void testfillUserDataWithDefaultValuesNewFunction() throws Exception {
         EndEntityProfile p = new EndEntityProfile();
         //p.addField(DnComponents.COMMONNAME); by  default an empty CN field is created
         p.addField(DnComponents.ORGANIZATIONALUNIT);//11
@@ -308,9 +309,10 @@ public class EndEntityInformationFillerTest {
     /**
      * Test that DN is merged with a simple default value (O is not replaced, C is added), 
      * as well as CabfOrganizationIdentifier merged in (ExtendedInformation)
+     * @throws Exception 
      */
     @Test
-    public void testFillUserDataWithDefaultValuesDnOnly() {
+    public void testFillUserDataWithDefaultValuesDnOnly() throws Exception {
         userData.setSendNotification(true);
         userData.setPassword("userPassword");
         String expectedUserDn="CN=userName,C=FR,O=linagora";
@@ -327,7 +329,7 @@ public class EndEntityInformationFillerTest {
      * userName is merged
      */
 	@Test
-    public void testFillUserDataWithDefaultValuesUserName() {
+    public void testFillUserDataWithDefaultValuesUserName() throws Exception {
     	userData.setUsername("");
     	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertTrue(!userData.getUsername().equals("userName"));
@@ -337,7 +339,7 @@ public class EndEntityInformationFillerTest {
      * SendNotification is merged
      */
 	@Test
-   public void testFillUserDataWithDefaultValuesSendNotification() {
+   public void testFillUserDataWithDefaultValuesSendNotification() throws Exception {
     	profile.setSendNotificationDefault(true);
     	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertTrue(userData.getSendNotification());
@@ -346,7 +348,7 @@ public class EndEntityInformationFillerTest {
      * Email is merged
      */
 	@Test
-    public void testFillUserDataWithDefaultValuesEmail() {
+    public void testFillUserDataWithDefaultValuesEmail() throws Exception {
     	userData.setEmail("");
     	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertEquals("defaultMail@linagora.com", userData.getEmail());
@@ -362,7 +364,7 @@ public class EndEntityInformationFillerTest {
      * Password is merged
      */
 	@Test
-    public void testFillUserDataWithDefaultValuesPassword() {
+    public void testFillUserDataWithDefaultValuesPassword() throws Exception {
     	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertEquals("defaultPassword", userData.getPassword());
     }
@@ -413,30 +415,16 @@ public class EndEntityInformationFillerTest {
         }
     }
     
-    private void testMergeDNNewPerf() {
-        EndEntityInformation user = new EndEntityInformation();
-        user.setDN(bigUserDn);
-        user.setEmail("");
-        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, bigProfile);
-    }
-    
-    private void testMergeDNOldPerf() {
+    private void testMergeDNPerf() throws Exception {
         EndEntityInformation user = new EndEntityInformation();
         user.setDN(bigUserDn);
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, bigProfile);
     }
     
     @Test
-    public void testMergeDNNewMulti() {
+    public void testMergeDNMulti() throws Exception {
         for(int i=0; i<1000; i++) {
-            testMergeDNNewPerf();
-        }
-    }
-    
-    @Test
-    public void testMergeDNOldMulti() {
-        for(int i=0; i<1000; i++) {
-            testMergeDNOldPerf();
+            testMergeDNPerf();
         }
     }
     
@@ -444,7 +432,7 @@ public class EndEntityInformationFillerTest {
      * Test merging of DNs with multiple components
      */
     @Test
-    public void testfillSubjectDnWithDefaultValues() {
+    public void testfillSubjectDnWithDefaultValues() throws Exception {
         EndEntityProfile p = new EndEntityProfile();
         //p.addField(DnComponents.COMMONNAME); by default a CN field is added by noarg constructor
         p.addField(DnComponents.ORGANIZATIONALUNIT);
@@ -476,20 +464,9 @@ public class EndEntityInformationFillerTest {
             assertEquals("User DN has too many components for OU", e.getMessage());
         }
         
-        try {
-            user.setDN("CN=Name2,OU=MyOrg1,OU=,OU=MyOrg2");
-            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);  
-            fail("Processed user dn with invalid user dn.");
-        } catch (Exception e) {
-            assertEquals("Invalid DN component: OU=", e.getMessage());
-        }
-        
-        try {
-            user.setDN("CN=Name2,OU=MyOrg1,OU=,OU=MyOrg2");
-            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);  
-            fail("Processed user dn with invalid user dn.");
-        } catch (Exception e) {
-        }
+        user.setDN("CN=Name2,OU=MyOrg1,OU=,OU=MyOrg2");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2,OU=MyOrg1,OU=MyOrg2,OU=Unit1,OU=Unit2,O=Org1,C=DE", user.getDN());
         
         p.setModifyable(DnComponents.ORGANIZATIONALUNIT, 0, false);
         
@@ -520,7 +497,7 @@ public class EndEntityInformationFillerTest {
     
     
     @Test
-    public void testMergeDNMultiValueRdn() {
+    public void testMergeDNMultiValueRdn() throws Exception {
         EndEntityProfile p = new EndEntityProfile();
         p.addField(DnComponents.ORGANIZATIONALUNIT);
         p.addField(DnComponents.ORGANIZATIONALUNIT);
@@ -539,7 +516,15 @@ public class EndEntityInformationFillerTest {
         EndEntityInformation user = new EndEntityInformation();
         user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+        assertEquals("CN=Name2\\+OU\\=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+        
+        user.setDN("CN=Name2,OU=MyOrg101+MyOrg102,OU=MyOrg2,OU=MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+        
+        user.setDN("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2,OU=MyOrg101\\\\\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
         
     }
     
@@ -547,7 +532,7 @@ public class EndEntityInformationFillerTest {
      * Test merging of SANs with multiple components
      */
     @Test
-    public void testfillUserSANWithDefaultValues() {
+    public void testfillUserSANWithDefaultValues() throws Exception {
         EndEntityProfile p = new EndEntityProfile();
         p.addField(DnComponents.DNSNAME);
         p.addField(DnComponents.DNSNAME);

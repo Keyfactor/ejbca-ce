@@ -22,6 +22,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.dn.DistinguishedName;
 
 import javax.naming.InvalidNameException;
@@ -51,6 +52,8 @@ public class EndEntityInformationFiller {
     
     private static final Map<String, String> BC_STYLE_PARAMETERS;
     
+    private static final String REPLACED_ESCAPABLE_CHARS = "Replaced_EndEntityInformationFiller_Dn_Chars";
+    
     static {
         BC_STYLE_PARAMETERS = new HashMap<>();
         BC_STYLE_PARAMETERS.put("EMAILADDRESS", "E");
@@ -64,8 +67,9 @@ public class EndEntityInformationFiller {
      * @param userData user data.
      * @param profile user associated profile.
      * @return update user.
+     * @throws EndEntityProfileValidationException 
      */
-    public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, final EndEntityProfile profile) {
+    public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, final EndEntityProfile profile) throws EndEntityProfileValidationException {
 
 
     	if (StringUtils.isEmpty(userData.getUsername())) {
@@ -269,17 +273,8 @@ public class EndEntityInformationFiller {
         return dnses.toString();
     }
     
-    private static void populateUserEmail(EndEntityInformation user, final EndEntityProfile profile) {
-        if (StringUtils.isEmpty(user.getEmail())) {
-            final String email = profile.getValue(EndEntityProfile.EMAIL, 0);
-            if (StringUtils.isNotEmpty(email) && email.indexOf("@") > 0) {
-                user.setEmail(email);
-            }
-        }
-    }
-    
     private static String mergeDnString(String userDnString, final EndEntityProfile profile, 
-                                final String entityType, final String entityEmail) {
+                                final String entityType, final String entityEmail) throws EndEntityProfileValidationException {
         
         if (userDnString==null) {
             userDnString = "";
@@ -312,7 +307,7 @@ public class EndEntityInformationFiller {
         if(numberofDnfields==0) {
             if(!userDnString.isEmpty()) {
                 // no fields are allowed in profile
-                throw new IllegalArgumentException("Only empty " + entityType + " is supported.");
+                throw new EndEntityProfileValidationException("Only empty " + entityType + " is supported.");
             } else {
                 return "";
             }
@@ -321,34 +316,27 @@ public class EndEntityInformationFiller {
         LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns = 
                 new LinkedHashMap<>();
         
-        LinkedHashMap<String, LinkedHashSet<Rdn>> groupedModifiableProfileRdns = 
-                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
-        LinkedHashMap<String, LinkedHashSet<Rdn>> groupedAllProfileRdns = 
-                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
+        
         Map<String, Integer> emptyFieldsForDntype = new HashMap<>();
         int[] fielddata = null;
         String value;
         LinkedHashSet<Rdn> orderedRdns;
         LinkedHashSet<Rdn> orderedModifiableRdns;
-        LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<>();
-
-        StringBuilder result = new StringBuilder(numberofDnfields*10);
+        LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<>();        
         
         //Build user DN, all DN types are validated
-        String[] userDnParts = userDnString.split(",");
+        String[] userDnParts = splitEscaped(userDnString, ",");
         String[] dnParts;
         String parameter;
-        for (String curDn:userDnParts) {
+        for (String curDn: userDnParts) {
             currentDnTypeUserRdns.clear();
-            dnParts = curDn.split("=");            
+            dnParts = splitEscaped(curDn, "=");            
             if(dnParts.length==1) {
-                if(StringUtils.isEmpty(userDnString)) {
-                    break;
-                }
-                throw new IllegalArgumentException("Invalid DN component: " + curDn);
+                // skip processing empty DN values as they will be ignored at the end
+                continue;
             }
             
-            parameter = dnParts[0].toUpperCase(Locale.ROOT);
+            parameter = dnParts[0].toUpperCase(Locale.ROOT).trim();
             parameter = getBcNameStyle(parameter, entityType);
             if(!isValidDnType(parameter, entityType)) {
                 throw new IllegalArgumentException("Invalid DN type: " + parameter);
@@ -371,10 +359,10 @@ public class EndEntityInformationFiller {
             } else {
                 
                 value = curDn.substring(dnParts[0].length()+1).trim();
-                String []currentDnParts = curDn.split("\\+");
+                String []currentDnParts = splitEscaped(curDn, "+");
                 for(String currentDnPart: currentDnParts) {
-                    dnParts = currentDnPart.split("=");
-                    parameter = dnParts[0].toUpperCase(Locale.ROOT);
+                    dnParts = splitEscaped(currentDnPart, "=");
+                    parameter = dnParts[0].toUpperCase(Locale.ROOT).trim();
                     parameter = getBcNameStyle(parameter, entityType);
                     if(!isValidDnType(parameter, entityType)) {
                         throw new IllegalArgumentException("Invalid DN component: " + parameter);
@@ -404,6 +392,11 @@ public class EndEntityInformationFiller {
         }
         
         //Build profile's DN
+        LinkedHashMap<String, LinkedHashSet<Rdn>> groupedModifiableProfileRdns = 
+                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
+        LinkedHashMap<String, LinkedHashSet<Rdn>> groupedAllProfileRdns = 
+                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
+        
         boolean isModifiable;
         for (int i = 0; i < numberofDnfields; i++) {
             fielddata = entityType.equals(SUBJECT_DN) ? 
@@ -420,7 +413,6 @@ public class EndEntityInformationFiller {
                     entityType.equals(SUBJECT_DN) ? 
                     DNFieldExtractor.TYPE_SUBJECTDN : DNFieldExtractor.TYPE_SUBJECTALTNAME);
             parameter = StringUtils.replace(parameter, "=", "");
-            isModifiable = profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
             
             if(value.contains(";")) {
                 // we need to address DN values with multiple valid choices
@@ -456,7 +448,8 @@ public class EndEntityInformationFiller {
             
             Rdn rdn = convertToRdn(parameter, value);
             orderedRdns.add(rdn);
-            
+            isModifiable = profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
+
             if(isModifiable) {
                 if(StringUtils.isEmpty(value)) {
                     // only modifiable fields can be empty
@@ -512,12 +505,13 @@ public class EndEntityInformationFiller {
                     orderedRdns.remove(it.next());
                 } else {
                     // added fields exceeds no of modifiable fields
-                    throw new IllegalArgumentException("User DN has too many components for " + dnType);
+                    throw new EndEntityProfileValidationException("User DN has too many components for " + dnType);
                 }
             }
 
         }
         
+        StringBuilder result = new StringBuilder(numberofDnfields*10);
         for(String dnType: groupedAllProfileRdns.keySet()) {
             // finally, add all dnTypes according to sequence in profile
             // for individual dn type, first user dns and the profile dns
@@ -555,7 +549,7 @@ public class EndEntityInformationFiller {
         if(rdn==null||StringUtils.isEmpty((String) rdn.getValue())) {
             return;
         }
-        buffer.append(rdn.toString().replace("\\+", "+").replace("\\=", "=").replace("\\;", "/"));
+        buffer.append(rdn.toString());
         buffer.append(",");
     }
     
@@ -579,6 +573,16 @@ public class EndEntityInformationFiller {
         }
     }
     
+    private static String[] splitEscaped(String input, String separator) {
+        if(separator.equals("+")) {
+            separator = "\\+";
+        }
+        String[] parts = input.replace("\\" + separator, REPLACED_ESCAPABLE_CHARS).split(separator);
+        for(int i=0; i<parts.length; i++) {
+            parts[i] = parts[i].replace(REPLACED_ESCAPABLE_CHARS, "\\" + separator);
+        }
+        return parts;
+    }
     
     
 }
