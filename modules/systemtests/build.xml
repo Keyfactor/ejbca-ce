@@ -443,15 +443,8 @@
 
 	<target name="runcmp" depends="build, assert-appserverrunning" description="Run CMP system tests">
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
-		<echo message="Checking if the CMP TCP listener is listening on port ${tcpCmpProxyIP}:${tcpCmpProxyPort}..."/>
-		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
-			<socket server="${tcpCmpProxyIP}" port="${tcpCmpProxyPort}"/>
-		</waitfor>
-		<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
-			<sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
-			<sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />
@@ -459,11 +452,10 @@
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}" unless="cmptcplistener.notrunning">
+			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
-					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 				</fileset>
 			</batchtest>
