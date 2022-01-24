@@ -96,7 +96,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         
         // Configure CMP for this test
         if(this.cmpConfiguration.aliasExists(cmpAlias)) {
-            this.cmpConfiguration.renameAlias(cmpAlias, "backupTcpAlias");
+            this.cmpConfiguration.renameAlias(cmpAlias, "backupAlias");
         }
         this.cmpConfiguration.addAlias(cmpAlias);
         this.cmpConfiguration.setRAMode(cmpAlias, true);
@@ -131,8 +131,8 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
 
         this.cmpConfiguration.removeAlias(cmpAlias);
-        if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
-            this.cmpConfiguration.renameAlias("backupTcpAlias", cmpAlias);
+        if(this.cmpConfiguration.aliasExists("backupAlias")) {
+            this.cmpConfiguration.renameAlias("backupAlias", cmpAlias);
         }
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
@@ -143,7 +143,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     }
 
     @Test
-    public void test02CrmfTcpOkUser() throws Exception {
+    public void test02CrmfHttpOkUser() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -159,7 +159,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpTcp(ba, 5);
+        byte[] resp = sendCmpHttp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
         assertNotNull(cert);
@@ -174,7 +174,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         out.writeObject(req1);
         ba = bao.toByteArray();
         // Send request and receive response
-        resp = sendCmpTcp(ba, 5);
+        resp = sendCmpHttp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
@@ -187,7 +187,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         out.writeObject(revReq);
         ba = bao.toByteArray();
         // Send request and receive response
-        resp = sendCmpTcp(ba, 5);
+        resp = sendCmpHttp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, true);
         int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
