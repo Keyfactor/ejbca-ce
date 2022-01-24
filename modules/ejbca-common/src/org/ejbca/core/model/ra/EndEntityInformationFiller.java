@@ -123,7 +123,7 @@ public class EndEntityInformationFiller {
     }
 
     /**
-     * This method merge subject DN with data from End entity profile.
+     * This method merge subject DN with data from End entity profile. Kept as legacy.
      *
      * @param subjectDN   user Distinguished Name.
      * @param profile     user associated profile.
@@ -175,7 +175,7 @@ public class EndEntityInformationFiller {
     }
 
     /**
-     * This method merge subject Alt name with data from End entity profile.
+     * This method merge subject Alt name with data from End entity profile. Kept as legacy.
      *
      * @param subjectAltName user subject alt name.
      * @param profile        user associated profile.
@@ -414,7 +414,7 @@ public class EndEntityInformationFiller {
                     DNFieldExtractor.TYPE_SUBJECTDN : DNFieldExtractor.TYPE_SUBJECTALTNAME);
             parameter = StringUtils.replace(parameter, "=", "");
             
-            if(value.contains(";")) {
+            if(StringUtils.isNotEmpty(value) && value.contains(";")) {
                 // we need to address DN values with multiple valid choices
                 // they are represented as ;-separated list and unmodifiable
                 boolean optionSelected = false;
