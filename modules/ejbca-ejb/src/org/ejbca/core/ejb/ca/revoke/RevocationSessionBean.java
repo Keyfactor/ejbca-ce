@@ -65,6 +65,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
@@ -144,11 +145,19 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         		} else {
         		    final String serialNumber = certificateData.getSerialNumberHex();
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
-        			final String msg = "Unrevoked cert:" + serialNumber + " reason: " + reason + " Could not be republished.";
         			final Map<String, Object> details = new LinkedHashMap<>();
-                	details.put("msg", msg);
                 	final int caid = certificateData.getIssuerDN().hashCode();
-                	auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+                    Map<Integer, BasePublisher> all = publisherSession.getAllPublishers();
+                    boolean anySafeDirect = publishers.stream().anyMatch(id -> all.get(id).getSafeDirectPublishing());
+                    if (anySafeDirect) {
+                        final String msg = "Unrevoked cert:" + serialNumber + " Queued to be published.";
+                        details.put("msg", msg);
+                        auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+                    } else {
+                        final String msg = "Unrevoked cert:" + serialNumber + " reason: " + reason + " Could not be republished.";
+                        details.put("msg", msg);
+                        auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+                    }
         		}    			
     		} else {
     			// revocation
@@ -218,7 +227,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                         final Map<String, Object> details = new LinkedHashMap<>();
                         details.put("msg", msg);
                         final int caid = certificateData.getIssuerDN().hashCode();
-                        auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+                        // auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
                     }               
                 } else {
                     // revocation
