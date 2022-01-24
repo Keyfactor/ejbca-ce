@@ -526,6 +526,41 @@ public class EndEntityInformationFillerTest {
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2,OU=MyOrg101\\\\\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
         
+        p.addField(DnComponents.DNSERIALNUMBER); 
+        p.addField(DnComponents.DNQUALIFIER);
+        p.addField(DnComponents.GIVENNAME);
+        p.addField(DnComponents.SURNAME);
+        p.addField(DnComponents.UID);
+        
+        p.setValue(DnComponents.DNSERIALNUMBER, 0, "FAB12342"); 
+        p.setValue(DnComponents.DNQUALIFIER, 0, "test dn qual");
+        p.setValue(DnComponents.GIVENNAME, 0, "test name");
+        p.setValue(DnComponents.SURNAME, 0, "test surname");
+        p.setValue(DnComponents.UID, 0, "1234DDEF");
+        
+        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2\\+OU\\=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE,"
+                + "SN=FAB12342,DN=test dn qual,GIVENNAME=test name,SURNAME=test surname,UID=1234DDEF", user.getDN());
+        
+        user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,OU=MyOrg2,OU=MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2\\+SN\\=CCCC\\+GIVENNAME\\=untested name,"
+                + "OU=MyOrg2,OU=MyOrg3,OU=Unit1,OU=Unit2,O=Org1,C=SE,"
+                + "DN=test dn qual,SURNAME=test surname,UID=1234DDEF", user.getDN());
+        
+        user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,OU=MyOrg2,OU=MyOrg3,UID=2345+DN=another qual");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2\\+SN\\=CCCC\\+GIVENNAME\\=untested name,"
+                + "OU=MyOrg2,OU=MyOrg3,OU=Unit1,OU=Unit2,O=Org1,C=SE,"
+                + "SURNAME=test surname,UID=2345\\+DN\\=another qual", user.getDN());
+        
+        user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,OU=MyOrg2,OU=MyOrg3,SURNAME=tiny sname+DN=another qual");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2\\+SN\\=CCCC\\+GIVENNAME\\=untested name,"
+                + "OU=MyOrg2,OU=MyOrg3,OU=Unit1,OU=Unit2,O=Org1,C=SE,"
+                + "SURNAME=tiny sname\\+DN\\=another qual,UID=1234DDEF", user.getDN());
+        
     }
     
     /**
