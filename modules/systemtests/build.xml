@@ -298,8 +298,6 @@
 				<path refid="${runone-internal.classpath}" />
 			</classpath>
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
-			<sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
-			<sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
