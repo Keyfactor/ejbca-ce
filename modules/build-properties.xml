@@ -354,7 +354,6 @@
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xmlpull-*.jar"/>
 		<fileset dir="${ejbca.home}/lib/xstream" includes="xpp3_min-*.jar"/>
 	</path>
-	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.json-simple.classpath"><fileset dir="${ejbca.home}/lib" includes="json-simple-*.jar"/></path>
 	<path id="lib.snakeyaml.classpath"><fileset dir="${ejbca.home}/lib" includes="snakeyaml*.jar"/></path>
 	<path id="lib.nimbus-jose-jwt.classpath">
