@@ -121,7 +121,6 @@
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
 		<pathelement location="${mod.ejbca-common.lib}"/>
 		<path location="${mod.ejbca-entity.lib}" />
-		<path refid="lib.quickserver.classpath" />
 		<path location="${systemtests.build.interface.dir}" />
 		<path location="${systemtests.build.common.dir}" />
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
