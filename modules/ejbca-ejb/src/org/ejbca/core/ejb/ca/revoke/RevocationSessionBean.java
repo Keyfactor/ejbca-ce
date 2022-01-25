@@ -143,17 +143,13 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         		if (published) {
         			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
         		} else {
-        		    final String serialNumber = certificateData.getSerialNumberHex();
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
-        			final Map<String, Object> details = new LinkedHashMap<>();
-                	final int caid = certificateData.getIssuerDN().hashCode();
                     Map<Integer, BasePublisher> all = publisherSession.getAllPublishers();
                     boolean anySafeDirect = publishers.stream().anyMatch(id -> all.get(id).getSafeDirectPublishing());
-                    if (anySafeDirect) {
-                        final String msg = "Unrevoked cert:" + serialNumber + " Queued to be published.";
-                        details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
-                    } else {
+                    if (!anySafeDirect) {
+                        final String serialNumber = certificateData.getSerialNumberHex();
+                        final Map<String, Object> details = new LinkedHashMap<>();
+                        final int caid = certificateData.getIssuerDN().hashCode();
                         final String msg = "Unrevoked cert:" + serialNumber + " reason: " + reason + " Could not be republished.";
                         details.put("msg", msg);
                         auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
