@@ -273,9 +273,13 @@ public class JackNJI11Provider extends Provider {
                         myKey.getObject());
                 log.debug("C_SignInit with mechanism 0x" + Long.toHexString(mechanism) + " successful.");
             } catch (Exception e) {
-                log.error("An exception occurred when calling C_SignInit: " + e.getMessage());
+                // An Exception can mean that something has happened causing the session to be broken
+                // two threads sharing the same session or something weird, close this session so it can be recovered.
+                // We don't want to return this session to the Idle pool if C_SignInit had been called because that will result in a 
+                // CKR_OPERATION_ACTIVE if the session is re-used by another signing operation
+                log.error("An exception occurred when calling C_SignInit, closing session: " + e.getMessage());
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
-                    myKey.getSlot().releaseSession(session);
+                    myKey.getSlot().closeSession(session);
                     hasActiveSession = false;
                 }
                 throw new InvalidKeyException(e);
@@ -312,6 +316,10 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected byte[] engineSign() throws SignatureException {
+            if (myKey instanceof NJI11ReleasebleSessionPrivateKey && !hasActiveSession) {
+                log.warn("No active PKCS#11 session when attempting to sign. Enable debug logging to see init stack trace", debugStacktrace);
+                throw new SignatureException("No active PKCS#11 session when attempting to sign.");
+            }
             try {
                 if (type == MechanismNames.T_UPDATE) {
                     return myKey.getSlot().getCryptoki().SignFinal(session);
@@ -423,17 +431,31 @@ public class JackNJI11Provider extends Provider {
                     }
                     return rawSig;
                 }
+                // An Exception during signing can result in canceling this signing, while C_SignInit has still been called,
+                // re-using this session can then later result in CKR_OPERATION_ACTIVE, so upon failure it's better to close 
+                // this session so it can be re-created
             } catch (IOException e) {
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
                 throw new SignatureException(e);
             } catch (NoSuchAlgorithmException e) {
                 log.warn("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.", e);
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
                 throw new SignatureException(e);
             } catch (NoSuchProviderException e) {
                 log.error("The Bouncy Castle provider has not been installed.");
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                throw new SignatureException(e);
+            } catch (CKRException e) {
+                log.warn("PKCS#11 exception while trying to sign: ", e);
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
                 throw new SignatureException(e);
             } finally {
-                // Signing is done, either successful or failed
-                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                // Signing is done, either successful or failed, release the session if there is an active one
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey && hasActiveSession) {
                     myKey.getSlot().releaseSession(session);
                     hasActiveSession = false;
                 }

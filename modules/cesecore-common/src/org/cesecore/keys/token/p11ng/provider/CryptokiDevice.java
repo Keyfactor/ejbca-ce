@@ -286,7 +286,28 @@ public class CryptokiDevice {
             }
         }
         
+        /** 
+         * Closes a session, but making sure that the last session is not closed so we 
+         * are logged out. If you try to close the last session, a new one will be created
+         * in the idle pool before the requested session is closed.
+         * Unless creating a new session fails of course, then this will be the last session 
+         * closed and you will become logged out of the HSM
+         * @param session the PKCS#11 session to close
+         */
         protected synchronized void closeSession(final long session) {
+            if (activeSessions.size() <=1 && idleSessions.size() == 0) { // session in param is the 1
+                // Put a new session in the idle pool
+                releaseSession(aquireSession());
+            }
+            closeSessionFinal(session);
+        }
+
+        /**
+         * Closes a session, removing it from active and idle pools. If it's the last session open, 
+         * it's closed an you will get logged out of the HSM
+         * @param session the PKCS#11 session to close
+         */
+        private synchronized void closeSessionFinal(final long session) {
             try {
                 c.CloseSession(session);
             } catch (CKRException ex) {
@@ -315,14 +336,15 @@ public class CryptokiDevice {
                 // sessions will enter either the "R/W SO Functions" state, the "R/W User Functions" state, 
                 // or the "R/O User Functions" state."
                 // 
-                // So it doesn't matter which slot we login to and we don't have to keep track of which slot was used for login
+                // So it doesn't matter which session we login to and we don't have to keep track of which session was used for login
                 c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
                 // The loginSession can be used as a normal session, push it back to the idle pool if no error occurred
                 releaseSession(loginSession);
             } catch (Exception e) {
                 try {
                     // Avoid session leak. Close the acquired session if login failed.
-                    closeSession(loginSession);
+                    LOG.info("Exception logging into PKCS#11 session, closing session: " + e.getMessage());
+                    closeSessionFinal(loginSession);
                 } catch (Exception e1) {
                     // No point in throwing
                 }
@@ -560,10 +582,13 @@ public class CryptokiDevice {
                 if (privateRef != null) {
                     return new NJI11StaticSessionPrivateKey(session, privateRef, this, false);
                 }
-            } catch (Exception e) {
+            } catch (CKRException e) {
+                // If a CKRException happens here, it's likely someting wrong with the session. 
+                // Close it so we can create a new session instead 
                 closeSession(session);
                 throw e;
             }
+            // And if we ended up here...we could not get a private key...again something wrong with the session? 
             closeSession(session);
             return null;
         }
@@ -579,6 +604,7 @@ public class CryptokiDevice {
         public PrivateKey getReleasableSessionPrivateKey(String alias) { 
             Long session = null;
             try {
+                // A session needed just to get the private key, will be released before return of method
                 session = aquireSession();
                 final Long privateRef = getPrivateKeyRefByLabel(session, alias);
                 if (privateRef != null) {
@@ -593,6 +619,12 @@ public class CryptokiDevice {
                     return new NJI11ReleasebleSessionPrivateKey(privateRef, "RSA", this);
                 }
                 return null;
+            } catch (CKRException e) {
+                // If a CKRException happens here, it's likely something wrong with the session. 
+                // Close it so we can create a new session instead, don't release it to the idle pool. 
+                closeSession(session);
+                session = null;
+                throw e;
             } finally {
                 if (session != null) {
                     releaseSession(session);
