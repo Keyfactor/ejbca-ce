@@ -185,6 +185,13 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             // Using for example Utimaco, it will still give "0x00000032: DEVICE_REMOVED" when trying to 
             // create new sessions and logging in the a session again, we have to re-create the slot from scratch
             slot = null;
+            // Note that if database protection is using the HSM, and the same slot, 
+            // it will be logged out as well. If auto-activation is not used here 
+            // log entries can then not be written to the (database) audit log.
+            // It will cause one failed audit log write, but if the error ProtectedDataIntegrityImpl
+            // detects is OBJECT_HANDLE_INVALID it will try to reload the databaseprotection and re-activate
+            // the crypto token, so it will recover after one failed operation
+            // Note: only works when database protection also uses P11NG, not SunP11
         }
         autoActivate();
     }
@@ -264,12 +271,8 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
     @Override
     public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException {
         final PublicKey publicKey = getPublicKey(alias);
-        final PrivateKey privateKey = slot.aquirePrivateKey(alias);
-        try {
-            testKeyPair(alias, publicKey, privateKey);
-        } finally {
-            slot.releasePrivateKey(privateKey);
-        }
+        final PrivateKey privateKey = slot.getReleasableSessionPrivateKey(alias);
+        testKeyPair(alias, publicKey, privateKey);
     }
     
     @Override
