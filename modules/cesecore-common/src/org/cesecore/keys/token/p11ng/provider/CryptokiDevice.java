@@ -78,6 +78,7 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -1429,7 +1430,9 @@ public class CryptokiDevice {
         }
         
         private byte[] wrapForRsaSign(byte[] dig, String hashAlgo) throws DigestException {
-            DigestInfo di = new DigestInfo(new DefaultDigestAlgorithmIdentifierFinder().find(hashAlgo), dig);
+            // PKCS#1 [RFC3447] requires that the padding used for RSA signatures (EMSA-PKCS1-v1_5) MUST use SHA2 AlgorithmIdentifiers with NULL parameters
+            final DigestInfo di = new DigestInfo(new AlgorithmIdentifier(new DefaultDigestAlgorithmIdentifierFinder().find(hashAlgo).getAlgorithm(), 
+                    DERNull.INSTANCE), dig);
             try {
                 return di.getEncoded();
             } catch (IOException e) {
