@@ -519,27 +519,51 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                 continue;
             }
             for (ApprovalPartition partition : partitions) {
-                DynamicUiProperty<? extends Serializable> dynamicUiProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS);
-                if (dynamicUiProperty == null) {
+                // Update roles with approval rights
+                DynamicUiProperty<? extends Serializable> rolesWithApprovalRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS);
+                if (rolesWithApprovalRightsProperty == null) {
                     continue;
-                }
-                
-                RoleInformation newRoleInfo = null;
-                RoleInformation oldRoleInfo = null;
+                }               
+                RoleInformation newApprovalRightsRoleInfo = null;
+                RoleInformation oldApprovalRightsRoleInfo = null;
                 @SuppressWarnings("unchecked")
-                List<RoleInformation> roleInfos = (List<RoleInformation>) dynamicUiProperty.getValues();
+                List<RoleInformation> roleInfos = (List<RoleInformation>) rolesWithApprovalRightsProperty.getValues();
                 for (RoleInformation roleInfo : roleInfos) {
                     if (roleInfo.getIdentifier() != role.getRoleId() || roleInfo.getAccessUserAspects() == null) {
                         continue;
                     }
-                    newRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), role.getName(), roleMembers);
-                    oldRoleInfo = roleInfo;
+                    newApprovalRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), role.getName(), roleMembers);
+                    oldApprovalRightsRoleInfo = roleInfo;
                 }
-                if (oldRoleInfo != null && newRoleInfo != null) {
-                    roleInfos.remove(oldRoleInfo);
-                    roleInfos.add(newRoleInfo);
-                    dynamicUiProperty.setValuesGeneric(roleInfos);
-                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), dynamicUiProperty);
+                if (oldApprovalRightsRoleInfo != null && newApprovalRightsRoleInfo != null) {
+                    roleInfos.remove(oldApprovalRightsRoleInfo);
+                    roleInfos.add(newApprovalRightsRoleInfo);
+                    rolesWithApprovalRightsProperty.setValuesGeneric(roleInfos);
+                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithApprovalRightsProperty);
+                    isApprovalProfileUpdated = true;
+                }
+                
+                // Update roles with view rights
+                DynamicUiProperty<? extends Serializable> rolesWithViewRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_VIEW_RIGHTS);
+                if (rolesWithViewRightsProperty == null) {
+                    continue;
+                }                
+                RoleInformation newViewRightsRoleInfo = null;
+                RoleInformation oldViewRightsRoleInfo = null;
+                @SuppressWarnings("unchecked")
+                List<RoleInformation> viewRightsRoleInfos = (List<RoleInformation>) rolesWithViewRightsProperty.getValues();
+                for (RoleInformation roleInfo : viewRightsRoleInfos) {
+                    if (roleInfo.getIdentifier() != role.getRoleId() || roleInfo.getAccessUserAspects() == null) {
+                        continue;
+                    }
+                    newViewRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), role.getName(), roleMembers);
+                    oldViewRightsRoleInfo = roleInfo;
+                }
+                if (oldViewRightsRoleInfo != null && newViewRightsRoleInfo != null) {
+                    viewRightsRoleInfos.remove(oldViewRightsRoleInfo);
+                    viewRightsRoleInfos.add(newViewRightsRoleInfo);
+                    rolesWithViewRightsProperty.setValuesGeneric(viewRightsRoleInfos);
+                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithViewRightsProperty);
                     isApprovalProfileUpdated = true;
                 }
             }
