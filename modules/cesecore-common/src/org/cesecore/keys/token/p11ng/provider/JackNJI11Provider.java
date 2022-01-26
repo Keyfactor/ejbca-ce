@@ -47,7 +47,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
@@ -320,7 +322,9 @@ public class JackNJI11Provider extends Provider {
                     final byte[] sigInput;
                     if (MechanismNames.longFromSigAlgoName(this.algorithm).get() == CKM.RSA_PKCS) {
                         // RSA PKCS#1 input value to the signature operation is a DER encoded DigestInfo structure
-                        DigestInfo di = new DigestInfo(new DefaultDigestAlgorithmIdentifierFinder().find(md.getAlgorithm()), digest);
+                        // PKCS#1 [RFC3447] requires that the padding used for RSA signatures (EMSA-PKCS1-v1_5) MUST use SHA2 AlgorithmIdentifiers with NULL parameters
+                        final DigestInfo di = new DigestInfo(new AlgorithmIdentifier(new DefaultDigestAlgorithmIdentifierFinder().find(md.getAlgorithm()).getAlgorithm(), 
+                                DERNull.INSTANCE), digest);
                         sigInput = di.getEncoded(ASN1Encoding.DER);
                     } else {
                         // RSA_PKCS_PSS, ECDSA and EDDSA all take the raw hash as input
