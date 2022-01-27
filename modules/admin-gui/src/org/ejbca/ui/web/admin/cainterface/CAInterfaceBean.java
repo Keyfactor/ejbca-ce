@@ -751,7 +751,6 @@ public class CAInterfaceBean implements Serializable {
 
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
                 final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
-                log.info("Set cits region: " + caInfoDto.getRegion());
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder()
                                            .setName(caInfoDto.getCaName())
                                            .setDescription(caInfoDto.getDescription())
@@ -782,7 +781,6 @@ public class CAInterfaceBean implements Serializable {
                                            .setCertificateId(caInfoDto.getCertificateId())
                                            .setRegion(caInfoDto.getRegion());
 
-                log.info("Set cits region: " + caInfoDto.getRegion());
                 CitsCaInfo citsCaInfo =  citsCaInfoBuilder.build();
 
                 saveRequestInfo(citsCaInfo);
@@ -935,9 +933,22 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getDescription() == null) {
             caInfoDto.setDescription("");
         }
-        if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) 
-                && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA
-                && !caInfoDto.isCaTypeCits()) {
+        
+        if(caInfoDto.isCaTypeCits()) {
+            if(StringUtils.isEmpty(caInfoDto.getCaEncodedValidity())){
+                // only needed if remote bean is used i.e. non CA GUI
+                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+            }
+            try {
+                if (SimpleTime.parseItsValidity(caInfoDto.getCaEncodedValidity()) <= 0) {
+                    throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                }
+            } catch (NumberFormatException e) {
+                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage());
+            }
+            // no need to convert to hours(not days like other cases) here
+        } else if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) 
+                && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
             // A validityString of null is allowed, when using a validity is not applicable
             caInfoDto.setCaEncodedValidity("0d");
         } else {
@@ -1101,7 +1112,6 @@ public class CAInterfaceBean implements Serializable {
                 cainfo = sshCAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
-
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder().setCaId(caid)
                                                                                                    .setName(caInfoDto.getCaName())
                                                                                                    .setDescription(caInfoDto.getDescription())
@@ -1129,7 +1139,8 @@ public class CAInterfaceBean implements Serializable {
                                                                                                    .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                                                                                                    .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
                                                                                                    .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
-                                                                                                   .setCertificateId(caInfoDto.getCertificateId());
+                                                                                                   .setCertificateId(caInfoDto.getCertificateId())
+                                                                                                   .setRegion(caInfoDto.getRegion());
 
 
                 cainfo = citsCaInfoBuilder.buildForUpdate();

@@ -89,6 +89,28 @@ public final class EditCaUtil {
         return regionTypes;
     }
     
+    public static String getRegionPreview(String regionTypeString, String description) {
+        if(StringUtils.isEmpty(regionTypeString)||StringUtils.isEmpty(description)) {
+            // initial case or user is yet to provide description
+            // also identified country without region
+            return "";
+        }
+        ItsGeographicRegion.RegionType regionType = 
+                ItsGeographicRegion.RegionType.fromDisplayName(regionTypeString);
+        switch(regionType) {
+            case CIRCULAR:
+                CircularRegion region = new CircularRegion(description);
+                return region.getGuiDescription().get(0);
+            case RECTANGULAR:
+                RectangularRegions region2 = new RectangularRegions(description + ItsGeographicRegion.SEQUENCE_SEPARATOR);
+                return region2.getGuiDescription().get(0);
+            case IDENTIFIED:
+            default:
+                // for identified region, there is only one list of regions
+                return "";
+        }
+    } 
+    
     /**
      * Adds or removes GUI elements for geographic regions.
      * 
@@ -214,20 +236,55 @@ public final class EditCaUtil {
     public static void loadGeographicRegionsForGui(List<ItsGeographicRegionGuiWrapper> geographicElementsInGui, ItsGeographicRegion region) {        
         ItsGeographicRegion.RegionType regionType = region.getRegionType();
         ItsGeographicRegionGuiWrapper guiWrapper = null;
+        String regionDescription = region.getGeographicElement().toStringFormat();
+        regionDescription = regionDescription.substring(
+                                    regionDescription.indexOf(ItsGeographicRegion.TYPE_SEPARATOR)+1);
+        String[] descriptions = regionDescription.split(ItsGeographicRegion.SEQUENCE_SEPARATOR);
         switch(regionType) {
             case CIRCULAR:
                 guiWrapper = new ItsGeographicRegionGuiWrapper();
+                guiWrapper.setType(regionType.getDisplayName());
                 guiWrapper.setName(regionType.getDisplayName() + " region");
-                guiWrapper.setDescription(region.getGeographicElement().getGuiDescription().get(0));
+                guiWrapper.setDescription(regionDescription);
+                guiWrapper.setPreviewText(region.getGeographicElement().getGuiDescription().get(0));
+                guiWrapper.setHelpText(CircularRegion.CIRCLE_FORMAT_HINT);
                 geographicElementsInGui.add(guiWrapper);
                 break;
             case RECTANGULAR:
-            case IDENTIFIED:
+                int i=0;
                 for(String guiString: region.getGeographicElement().getGuiDescription()) {
                     guiWrapper = new ItsGeographicRegionGuiWrapper();
+                    guiWrapper.setType(regionType.getDisplayName());
                     guiWrapper.setName(regionType.getDisplayName() + " region " + (geographicElementsInGui.size()+1));
-                    guiWrapper.setDescription(guiString);
+                    guiWrapper.setDescription(descriptions[i]);
+                    guiWrapper.setPreviewText(guiString);
+                    guiWrapper.setHelpText(RectangularRegions.RECTANGLE_FORMAT_HINT);
                     geographicElementsInGui.add(guiWrapper);
+                    i++;
+                }
+                break;
+            case IDENTIFIED:
+                int j=0, split;
+                for(String guiString: region.getGeographicElement().getGuiDescription()) {
+                    guiWrapper = new ItsGeographicRegionGuiWrapper();
+                    guiWrapper.setType(regionType.getDisplayName());
+                    guiWrapper.setName(regionType.getDisplayName() + " region " + (geographicElementsInGui.size()+1));
+                    split = descriptions[j].indexOf(ItsGeographicRegion.SEPARATOR);
+                    if(split!=-1) {
+                        guiWrapper.setDescription(descriptions[j].substring(split+1));
+                        guiWrapper.setCountry(
+                                descriptions[j].substring(descriptions[j].indexOf(ItsGeographicRegion.TYPE_SEPARATOR)+1, 
+                                        descriptions[j].indexOf(ItsGeographicRegion.SEPARATOR)));
+                    } else {
+                        guiWrapper.setDescription("");
+                        guiWrapper.setCountry(
+                                descriptions[j].substring(descriptions[j].indexOf(ItsGeographicRegion.TYPE_SEPARATOR)+1));
+                    }
+                    guiWrapper.setHelpText(IdentifiedRegionCountryRegions.COUNTRY_REGION_HINT);
+                    guiWrapper.setPreviewText(guiString);
+                    guiWrapper.setValidOptions(ItsSupportedCountries.getSupportedCountryNames());
+                    geographicElementsInGui.add(guiWrapper);
+                    j++;
                 }
                 break;
             case NONE:
@@ -235,6 +292,29 @@ public final class EditCaUtil {
                 //should never happen
                 throw new IllegalArgumentException("Invalid geographic element.");
         }
+    }
+
+    /**
+     * Acts also as an validation layer.
+     * @param geographicElementsInGui
+     */
+    public static void updateGeographicRegions(List<ItsGeographicRegionGuiWrapper> geographicElementsInGui) {
+        for(int i=0; i<geographicElementsInGui.size(); i++) {
+            ItsGeographicRegionGuiWrapper guiWrapper = geographicElementsInGui.get(i);
+            if(guiWrapper.isToRemove()) {
+                geographicElementsInGui.remove(i);
+                continue;
+            }
+            String previewText = "";
+            try {
+                previewText = EditCaUtil.getRegionPreview(guiWrapper.getType(), guiWrapper.getDescription());
+            } catch (Exception e) { // may catch exceptions from BC
+                log.info("Invalid geographic element:" + e.getMessage());
+                previewText = "Provided description is invalid";
+            }
+            guiWrapper.setPreviewText(previewText);
+        }
+        return;
     }
     
 }
