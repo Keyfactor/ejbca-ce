@@ -253,7 +253,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public List<String> getGeographicRegionTypes() {
-        log.info("getting geoelement types ");
         if(geographicRegionTypes==null) {
             geographicRegionTypes = EditCaUtil.getAllGeographicRegionTypes();
         }
@@ -270,14 +269,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             log.debug(e);
         }
         return "";
-    }
-    
-    public void removeLastGeographicRegion() {
-        geographicElementsInGui.remove(geographicElementsInGui.size()-1);
-    }
-    
-    public void removeAllGeographicRegions() {
-        geographicElementsInGui.clear();
     }
     
     public void updateGeographicRegions() {
@@ -1921,6 +1912,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                         EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
                 if(geoElement!=null) {
                     caInfoDto.setRegion(geoElement.toStringFormat());
+                } else {
+                    caInfoDto.setRegion("");
                 }
             } catch (final Exception e) {
                 addNonTranslatedErrorMessage(e);
