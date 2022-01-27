@@ -534,7 +534,7 @@
                 "tags": ["v1/endentity"],
                 "summary": "Get the status of this REST Resource",
                 "description": "Returns status, API version and EJBCA version.",
-                "operationId": "status_3",
+                "operationId": "status_4",
                 "produces": ["application/json"],
                 "parameters": [],
                 "responses": {
@@ -575,7 +575,7 @@
                 "tags": ["v1/endentity"],
                 "summary": "Searches for end entities with given criteria.",
                 "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchEndEntitiesCriteriaRestRequest model.",
-                "operationId": "searchCertificates",
+                "operationId": "searchCertificates_3",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
                 "parameters": [{
@@ -711,7 +711,7 @@
                 "tags": ["v2/certificate"],
                 "summary": "Get the status of this REST Resource",
                 "description": "Returns status, API version and EJBCA version.",
-                "operationId": "status_4",
+                "operationId": "status_5",
                 "produces": ["application/json"],
                 "parameters": [],
                 "responses": {
@@ -848,6 +848,60 @@
                 }
             }
         },
+        "AddEndEntityRestRequest": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "dn": {
+                    "type": "string"
+                },
+                "subject_alt_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "extension_data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExtendedInformationRestRequestComponent"
+                    }
+                },
+                "ca_name": {
+                    "type": "string"
+                },
+                "certificate_profile_name": {
+                    "type": "string"
+                },
+                "endEntity_profile_name": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string",
+                    "enum": ["USERGENERATED", "P12", "BCFKS", "JKS", "PEM"]
+                },
+                "account_binding_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ExtendedInformationRestRequestComponent": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
         "EndEntityRestResponse": {
             "type": "object",
             "properties": {
@@ -886,6 +940,22 @@
                 },
                 "value": {
                     "type": "string"
+                }
+            }
+        },
+        "SetEndEntityStatusRestRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string",
+                    "enum": ["USERGENERATED", "P12", "BCFKS", "JKS", "PEM"]
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["NEW", "FAILED", "INITIALIZED", "INPROCESS", "GENERATED", "REVOKED", "HISTORICAL", "KEYRECOVERY", "WAITINGFORADDAPPROVAL"]
                 }
             }
         },
