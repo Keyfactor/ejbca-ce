@@ -266,7 +266,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.addField(DnComponents.COMMONNAME);
             profile.addField(DnComponents.COUNTRY);
             profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
-            profile.setAllowMergeDnWebServices(true);
+            profile.setAllowMergeDn(true);
             // Profile will be removed in finally clause
             endEntityProfileSession.addEndEntityProfile(admin, eeprofileName, profile);
             int profileId = endEntityProfileSession.getEndEntityProfileId(eeprofileName);
@@ -643,14 +643,9 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         assertTrue("User does not exist does not throw NotFoundException", removed);
         log.trace("<test06DeleteUser()");
     }
-
-    /**
-     * Test adding a user, merging the DN request in the End Entity with the default DN fields in the end entity profile.
-     * 
-     * @throws Exception error
-     */
+    
     @Test
-    public void test07MergeWithWS() throws Exception {
+    public void test07MergeDN() throws Exception {
         // First make sure we have end entity profile limitations enabled
         final boolean eelimitation = setEnableEndEntityProfileLimitations(true);
         try {
@@ -665,7 +660,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.addField(DnComponents.ORGANIZATION);
             profile.addField(DnComponents.COUNTRY);
             profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
-            profile.setAllowMergeDnWebServices(true);
+            profile.setAllowMergeDn(true);
 
             endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
             int profileId = endEntityProfileSession.getEndEntityProfileId("TESTMERGEWITHWS");
@@ -676,7 +671,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                     EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
                     SecConst.TOKEN_SOFT_P12, null);
             addUser.setPassword("foo123");
-            endEntityManagementSession.addUserFromWS(admin, addUser, false);
+            endEntityManagementSession.addUser(admin, addUser, false);
             EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
             assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
@@ -703,7 +698,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                     EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
                     SecConst.TOKEN_SOFT_P12, null);
             addUserMulti.setPassword("foo123");
-            endEntityManagementSession.addUserFromWS(admin, addUserMulti, false);
+            endEntityManagementSession.addUser(admin, addUserMulti, false);
             EndEntityInformation dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
             assertEquals("CN=" + usernameMulti + ",OU=FooOrgUnit,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
             // OU overrides from the back in priority order, i.e. when there are two OUs with values, the hoho below overrides the first one
@@ -732,7 +727,39 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             // CN=" + username + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=OrgUnit2,OU=hoho1,O=AnaTom,C=SE", dataMulti.getDN());
+            
+            addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=ahoho2");
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=ahoho2,OU=hoho1,O=AnaTom,C=SE", dataMulti.getDN());
+            
+            addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=zhoho2");
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=zhoho2,OU=hoho1,O=AnaTom,C=SE", dataMulti.getDN());
+            
+            profile.addField(DnComponents.ORGANIZATIONALUNIT);
+            profile.addField(DnComponents.ORGANIZATIONALUNIT);
+            profile.setValue(DnComponents.ORGANIZATIONALUNIT, 2, "OrgUnit22");
+            profile.addField(DnComponents.ORGANIZATIONALUNIT);
+            profile.setValue(DnComponents.ORGANIZATIONALUNIT, 4, "OrgUnit23");
+            endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+            
+            addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho3");
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
+            
+            addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho3,OU=hoho4");
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=hoho4,O=AnaTom,C=SE", dataMulti.getDN());
+            
+            addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho5");
+            endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
+            dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho5,OU=hoho4,O=AnaTom,C=SE", dataMulti.getDN());
             
             //Skip this test on Community
             if (DnComponents.enterpriseMappingsExist()) {
@@ -754,7 +781,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
                 addUser.setPassword("foo123");
                 try {
-                    endEntityManagementSession.addUserFromWS(admin, addUser, false);
+                    endEntityManagementSession.addUser(admin, addUser, false);
                     fail("Should not be allowed since we have altNames that are not allowed in the profile.");
                 } catch (EndEntityProfileValidationException e) {
                     // NOPMD
@@ -765,9 +792,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 profile.addField(DnComponents.DNSNAME);
                 profile.addField(DnComponents.RFC822NAME);
                 endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-                endEntityManagementSession.addUserFromWS(admin, addUser, false);
+                endEntityManagementSession.addUser(admin, addUser, false);
                 data = endEntityAccessSession.findUser(admin, username);
-                assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
+                assertEquals("JurisdictionCountry=NO,JurisdictionState=California,"
+                        + "JurisdictionLocality=Stockholm,CN=foo subject,"
+                        + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
                 assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
@@ -779,9 +808,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 // The resulting altName will have 4 dnsNames, so we must allow this amount
                 profile.addField(DnComponents.DNSNAME);
                 endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-                endEntityManagementSession.addUserFromWS(admin, addUser, false);
+                endEntityManagementSession.addUser(admin, addUser, false);
                 data = endEntityAccessSession.findUser(admin, username);
-                assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
+                assertEquals("JurisdictionCountry=NO,JurisdictionState=California,"
+                        + "JurisdictionLocality=Stockholm,CN=foo subject,"
+                        + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
                 assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
