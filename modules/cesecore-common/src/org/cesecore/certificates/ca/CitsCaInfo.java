@@ -75,7 +75,6 @@ public class CitsCaInfo extends CAInfo {
         setDescription(description);
         setEncodedValidity(encodedValidity);
         setCertificateId(certificateId);
-        setRegion(region);
         setStatus(status);
         setAcceptRevocationNonExistingEntry(acceptRevocationNonExistingEntry);
         setCertificateChain(certificateChain);
@@ -386,7 +385,8 @@ public class CitsCaInfo extends CAInfo {
             // May be done differently
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(new Date());
-
+            caInfo.setRegion(region);
+            
             return caInfo;
         }
     }

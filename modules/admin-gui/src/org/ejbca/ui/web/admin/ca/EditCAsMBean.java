@@ -279,6 +279,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void removeAllGeographicRegions() {
         geographicElementsInGui.clear();
     }
+    
+    public void updateGeographicRegions() {
+        EditCaUtil.updateGeographicRegions(geographicElementsInGui);
+    }
 
     public UploadedFile getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
@@ -1358,6 +1362,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean isRenderExternallySignedCaCreationRenewal() {
         final int cryptoTokenId = catoken == null ? currentCryptoTokenId : catoken.getCryptoTokenId();
+        if(isCaTypeCits() && currentCryptoTokenId==0) {
+            // currentCryptoTokenId is 0 only if no suitable token is present
+            // for all other CAs any token is suitable, 
+            // but for ECA(not ITS) we need 2 EC keys of same type
+            return isHasEditRight();
+        }
         try {
             return !isCaexternal && cryptoTokenManagementSession.isCryptoTokenPresent(getAdmin(), cryptoTokenId) &&
                     cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId) &&
@@ -1903,6 +1913,20 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA && !isCaTypeCits()) {
             caInfoDto.setCaEncodedValidity(null);
         }
+        
+        if(isCaTypeCits()) {
+            // only applicable to externally signed ca
+            try {
+                ItsGeographicElement geoElement = 
+                        EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
+                if(geoElement!=null) {
+                    caInfoDto.setRegion(geoElement.toStringFormat());
+                }
+            } catch (final Exception e) {
+                addNonTranslatedErrorMessage(e);
+                return null;
+            }
+        }
 
         try {
             cainfo = caBean.createCaInfo(caInfoDto, caid, getSubjectDn(), getApprovals(),
@@ -2152,11 +2176,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (caInfoDto.isCaTypeCits() && cainfo != null) {
             caInfoDto.setCertificateId(((CitsCaInfo)cainfo).getCertificateId());
             ItsGeographicRegion region = ((CitsCaInfo)cainfo).getRegion();
-            log.info("retrieved region: " + region);
+            geographicElementsInGui = new ArrayList<>();
             if(region!=null) {
-                geographicElementsInGui = new ArrayList<ItsGeographicRegionGuiWrapper>();
                 EditCaUtil.loadGeographicRegionsForGui(geographicElementsInGui, region);
                 caInfoDto.setRegion(region.toString());
+                currentGeographicRegionType = geographicElementsInGui.get(0).getType();
+            } else {
+                caInfoDto.setRegion("");
             }
         }
 

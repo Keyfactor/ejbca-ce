@@ -457,20 +457,19 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:outputText value="#{editCAsMBean.caEncodedValidity}"
-						rendered="#{editCAsMBean.editCA}" />
 					<h:inputText name="textfieldcitsvalidity" id="textfieldcitsvalidity"
 						size="25" maxlength="225"
 						value="#{editCAsMBean.caEncodedValidity}"
 						title="#{web.text.CITS_VALIDITY_HELP}"
 						label="Cits Ca Validity" styleClass="mandatory"
-						rendered="#{not editCAsMBean.editCA}"
 						required="true" 
 						disabled="#{!editCAsMBean.hasEditRight and !editCAsMBean.caUninitialized}">
 					</h:inputText>	
 					<br />	
 					<h:outputText styleClass="help"
 						value="#{web.text.CITS_VALIDITY_HELP}" style="margin-left: 3px;"/> 
+					<h:outputText styleClass="help" rendered="#{editCAsMBean.editCA}"
+						value="#{web.text.CERT_VALIDITY_CA_HELP}" style="margin-left: 3px;"/> 
 				</h:panelGroup>
 				
 				<h:panelGroup>
@@ -569,22 +568,17 @@
 				
            	</h:panelGrid>	
            	
-           	<h:panelGrid id="addgeographicregion" columns="2" cellspacing="3" 
+           	<h:panelGrid id="addgeographicregion" columns="3" cellspacing="3" 
 				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0" 
 				rendered="#{editCAsMBean.caTypeCits}"
 				columnClasses="editColumn1,editColumn2">
 				
-				 <h:outputText style="font-weight: bold;" rendered="#{not editCAsMBean.editCA}"
+				 <h:outputText style="font-weight: bold;" 
                     value="#{web.text.SELECT_CITS_GEOGRAPHIC_REGION}" />
-                 <h:outputText style="font-weight: bold;" 
-                 rendered="#{editCAsMBean.editCA and not empty editCAsMBean.geographicRegions}"
-                    value="#{web.text.CITS_GEOGRAPHIC_REGION}" />
                 
                 <h:panelGrid id="geographicregiongrid" columns="4">
-                	<h:panelGroup id="header_cits_georegions_view" rendered="#{editCAsMBean.editCA}"/>
                     <h:selectOneMenu id="geographicRegionType"
                         value="#{editCAsMBean.currentGeographicRegionType}"
-                        rendered="#{not editCAsMBean.editCA}"
                         disabled="#{not empty editCAsMBean.geographicRegions}">
                         <f:ajax />
                         <!-- Needed to submit the selected item via AJAX -->
@@ -593,21 +587,19 @@
                     </h:selectOneMenu>
                     <h:commandButton id="addGeographicRegion"
                         value="#{web.text.ADD}"
-                        rendered="#{not editCAsMBean.editCA}"
                         action="#{editCAsMBean.addGeographicRegion()}">
                         <f:ajax onerror="function(data){ejbca.adminweb.showAlertOnError(data);}"
                             render="geographicRegionType geographicregions " />
                     </h:commandButton>
-                    <h:commandButton id="removeLastGeographicRegion"
-	                        value="#{web.text.REMOVELAST}"
-	                        rendered="#{not editCAsMBean.editCA}"
-	                        action="#{editCAsMBean.removeLastGeographicRegion()}">
-	                        <f:ajax render="geographicRegionType geographicregions" />
-	                 </h:commandButton>
 	                 <h:commandButton id="removeAllGeographicRegions"
 	                        value="#{web.text.REMOVEALL}"
 	                        rendered="#{not editCAsMBean.editCA}"
 	                        action="#{editCAsMBean.removeAllGeographicRegions()}">
+	                        <f:ajax render="geographicRegionType geographicregions" />
+	                 </h:commandButton>
+	                 <h:commandButton id="updateGeographicRegions"
+	                        value="#{web.text.UPDATE}"
+	                        action="#{editCAsMBean.updateGeographicRegions()}">
 	                        <f:ajax render="geographicRegionType geographicregions" />
 	                 </h:commandButton>
                 </h:panelGrid>
@@ -621,14 +613,22 @@
                 
                 <h:column>
 	                    <h:outputLabel for="georegiondescription"
-	                        value="#{geoRegion.name}" />
+	                        value="#{geoRegion.name}" /> <br/>
+	                    <h:outputText id="georegionpreview"
+                            value="#{geoRegion.previewText}" escape="false">
+                        </h:outputText> <br/>
+                        <h:selectBooleanCheckbox 
+							value="#{geoRegion.toRemove}"
+							disabled="#{not editCAsMBean.hasEditRight}" >
+							<f:ajax />
+						</h:selectBooleanCheckbox>
+						<h:outputLabel value="#{web.text.REMOVE}" /> 
                 </h:column>
                 <h:column>
                 	<h:panelGrid id="georegiondescriptionGrid" columns="3">
 	                    <h:selectOneMenu id="geographicregioncountry"
 	                        value="#{geoRegion.country}"
-	                        rendered="#{not empty geoRegion.validOptions}"
-	                        disabled="#{editCAsMBean.editCA}">
+	                        rendered="#{not empty geoRegion.validOptions}">
 	                        <f:ajax />
 	                        <!-- Needed to submit the selected item via AJAX -->
 	                        <f:selectItems id="georegionidentites"
@@ -636,14 +636,9 @@
 	                    </h:selectOneMenu>
 	                    <h:inputText id="georegiondescription"
                             value="#{geoRegion.description}" size="45"
-                            maxlength="512" 
-                            rendered="#{not editCAsMBean.editCA}">
+                            maxlength="512">
                             <f:ajax />
                         </h:inputText>
-                        <h:outputText id="georegiondescriptionview"
-                            value="#{geoRegion.description}" escape="false"
-                            rendered="#{editCAsMBean.editCA}">
-                        </h:outputText>
                     </h:panelGrid>
                     <h:outputText styleClass="help" value="#{geoRegion.helpText}" />
                 </h:column>
