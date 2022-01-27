@@ -47,8 +47,12 @@ public class EndEntityInformationFiller {
      * @param profile user associated profile.
      * @return update user.
      */
-    public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, final EndEntityProfile profile) {
-
+    public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, 
+            final EndEntityProfile profile) {
+        
+        if(userData.isProfileMerged()) {
+            return userData;
+        }
 
     	if (StringUtils.isEmpty(userData.getUsername())) {
         	userData.setUsername(profile.getUsernameDefault());
@@ -100,6 +104,7 @@ public class EndEntityInformationFiller {
             }
         }
         
+        userData.setProfileMerged(true);
         return userData;
     }
 
@@ -111,7 +116,7 @@ public class EndEntityInformationFiller {
      * @param entityEmail entity email.
      * @return updated DN.
      */
-    private static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile,
+    public static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile,
                                                           String entityEmail) {
         DistinguishedName profiledn;
         DistinguishedName userdn;
@@ -144,6 +149,7 @@ public class EndEntityInformationFiller {
         Collections.reverse(rdnList);
         profiledn = new DistinguishedName(rdnList);
         if (log.isDebugEnabled()) {
+            log.debug("user subject DN: " + userdn);
             log.debug("Profile DN to merge with subject DN: " + profiledn.toString());
         }
 
@@ -163,7 +169,8 @@ public class EndEntityInformationFiller {
      * @param entityEmail    entity email field
      * @return updated subject alt name
      */
-    private static String mergeSubjectAltNameWithDefaultValues(String subjectAltName, EndEntityProfile profile, String entityEmail) {
+    public static String mergeSubjectAltNameWithDefaultValues(String subjectAltName, EndEntityProfile profile, 
+                                    String entityEmail) {
         DistinguishedName profileAltName;
         DistinguishedName userAltName;
         try {
@@ -195,6 +202,11 @@ public class EndEntityInformationFiller {
         Map<String, String> dnMap = new HashMap<String, String>();
         if (profile.getUse(DnComponents.RFC822NAME, 0)) {
             dnMap.put(DnComponents.RFC822NAME, entityEmail);
+        }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("user SAN: " + subjectAltName);
+            log.debug("Profile SAN to merge with subject SAN: " + profileAltName.toString());
         }
 
         return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
@@ -253,4 +265,5 @@ public class EndEntityInformationFiller {
         }
         return dnses.toString();
     }
+    
 }

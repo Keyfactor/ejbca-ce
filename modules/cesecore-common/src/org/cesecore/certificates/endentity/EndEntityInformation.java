@@ -69,7 +69,9 @@ public class EndEntityInformation implements Serializable {
     private int tokentype;
     /** ExtendedInformation holding extra data of the End entity */
     private ExtendedInformation extendedinformation;
-
+    /** Indicates Subject DN and SAN merged with End Entity Profile*/
+    private boolean profileMerged = false;
+    
     /** Creates new empty EndEntityInformation */
     public EndEntityInformation() {
     }
@@ -96,6 +98,7 @@ public class EndEntityInformation implements Serializable {
         this.timemodified = endEntityInformation.getTimeModified();
         this.tokentype = endEntityInformation.getTokenType();
         this.extendedinformation = (endEntityInformation.getExtendedInformation() != null ? new ExtendedInformation(endEntityInformation.getExtendedInformation()) : null);
+        this.profileMerged = endEntityInformation.isProfileMerged();
     }
 
     /**
@@ -432,4 +435,13 @@ public class EndEntityInformation implements Serializable {
         }
         return changedValues;
     }
+
+    public boolean isProfileMerged() {
+        return profileMerged;
+    }
+
+    public void setProfileMerged(boolean profileMerged) {
+        this.profileMerged = profileMerged;
+    }
+    
 }
