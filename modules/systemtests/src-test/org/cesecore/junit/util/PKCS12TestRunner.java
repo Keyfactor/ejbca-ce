@@ -62,11 +62,16 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     public PKCS12TestRunner(Class<?> klass) throws InitializationError, NoSuchMethodException, SecurityException {
         super(klass);
     }
-
+    
     @Override
     public X509CA createX509Ca() throws Exception {
-        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(getSubjectDn()).hashCode());
-        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, getSubjectDn());
+        return createX509Ca(getSubjectDn(), getName());
+    }
+
+    @Override
+    public X509CA createX509Ca(String subjectDn, String username) throws Exception {
+        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, subjectDn);
         int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, KeyGenParams.builder("RSA1024").build());      
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
