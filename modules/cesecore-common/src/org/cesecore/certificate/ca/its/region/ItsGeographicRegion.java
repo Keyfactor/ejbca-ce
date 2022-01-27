@@ -26,7 +26,7 @@ public class ItsGeographicRegion implements Serializable {
     public static final String SEPARATOR = ",";
     public static final String SEQUENCE_SEPARATOR = ";";
     
-    private static final String TYPE_SEPARATOR = ":";
+    public static final String TYPE_SEPARATOR = ":";
     
     protected static final int IDENTIFIED_REGION_EUROPE = 0xFFFF;
     

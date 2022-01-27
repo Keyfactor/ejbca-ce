@@ -21,6 +21,10 @@ public class ItsGeographicRegionGuiWrapper implements Serializable {
     
     private String helpText;
     
+    private boolean toRemove;
+    
+    private String previewText;
+    
     public String getCountry() {
         return country;
     }
@@ -75,6 +79,25 @@ public class ItsGeographicRegionGuiWrapper implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isToRemove() {
+        return toRemove;
+    }
+
+    public void setToRemove(boolean toRemove) {
+        this.toRemove = toRemove;
+    }
+
+    public String getPreviewText() {
+        if(previewText==null) {
+            previewText = "";
+        }
+        return previewText;
+    }
+
+    public void setPreviewText(String previewText) {
+        this.previewText = previewText;
     }      
     
 }
