@@ -171,6 +171,10 @@ public final class EditCaUtil {
     public static ItsGeographicElement getGeographicRegion(String selectedGeographicRegionType, 
             List<ItsGeographicRegionGuiWrapper> geographicElementsInGui){
         
+        if(geographicElementsInGui.isEmpty()) {
+            return null; //alternate select default region here(worldwide/whole Europe)
+        }
+        
         ItsGeographicRegion.RegionType regionType = 
                 ItsGeographicRegion.RegionType.fromDisplayName(selectedGeographicRegionType);
         ItsGeographicElement geoElement = null;
@@ -303,6 +307,7 @@ public final class EditCaUtil {
             ItsGeographicRegionGuiWrapper guiWrapper = geographicElementsInGui.get(i);
             if(guiWrapper.isToRemove()) {
                 geographicElementsInGui.remove(i);
+                i--;
                 continue;
             }
             String previewText = "";
@@ -312,7 +317,9 @@ public final class EditCaUtil {
                 log.info("Invalid geographic element:" + e.getMessage());
                 previewText = "Provided description is invalid";
             }
-            guiWrapper.setPreviewText(previewText);
+            if(StringUtils.isNotEmpty(previewText)) {
+                guiWrapper.setPreviewText(previewText);
+            }
         }
         return;
     }
