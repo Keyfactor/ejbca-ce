@@ -197,6 +197,9 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     	KeyRecoveryInformation keyData = null;
     	KeyPair rsaKeys = null;
     	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
+        if (userdata == null) {
+            throw new NoSuchEndEntityException("User '" + username + "' does not exist");
+        }
     	if (userdata.getStatus() == EndEntityConstants.STATUS_NEW) {
     	    isNewToken = true;
     	}
