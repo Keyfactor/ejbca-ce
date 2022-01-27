@@ -1169,7 +1169,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username) {
         for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 13) {
                 try {
                     final EndEntityInformation result = raMasterApi.searchUserWithoutViewEndEntityAccessRule(authenticationToken, username);
                     if (result != null) {

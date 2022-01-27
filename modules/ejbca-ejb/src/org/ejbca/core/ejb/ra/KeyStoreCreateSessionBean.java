@@ -78,8 +78,6 @@ import java.util.Date;
 /**
  * Implementation of KeyStoreCreateSession
  * Class that has helper methods to generate tokens for users in ejbca.
- *
- * @version $Id$
  */
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyStoreCreateSessionRemote")
@@ -246,7 +244,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     	}
     	X509Certificate cert = null;
     	if ((reusecertificate) && (keyData != null)) {
-            cert = (X509Certificate) keyData.getCertificate(); // TODO Validity ignored here?
+            cert = (X509Certificate) keyData.getCertificate();
     		boolean finishUser = true;
 			finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
     		if (finishUser) {
@@ -275,7 +273,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
-            CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");
         }
@@ -283,6 +281,9 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         KeyRecoveryInformation keyData = null;
         KeyPair rsaKeys = null;
         EndEntityInformation userdata = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(administrator, username);
+        if (userdata == null) {
+            throw new NoSuchEndEntityException("User '" + username + "' does not exist");
+        }
         if (userdata.getStatus() == EndEntityConstants.STATUS_NEW) {
             isNewToken = true;
         }
@@ -330,7 +331,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         X509Certificate cert = null;
         if ((reusecertificate) && (keyData != null)) {
-            cert = (X509Certificate) keyData.getCertificate(); // TODO Validity ignored here?
+            cert = (X509Certificate) keyData.getCertificate();
             boolean finishUser = true;
             finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
             if (finishUser) {
@@ -353,7 +354,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     private KeyStore finishProcessingAndStoreKeys(AuthenticationToken administrator, String username, String password, int caid, int keystoreType,
             boolean loadkeys, boolean savekeys, boolean isNewToken, KeyPair rsaKeys, EndEntityInformation userdata, X509Certificate cert)
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException, CertificateSignatureException,
-            KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateEncodingException {
+            KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
             if (loadkeys) {
