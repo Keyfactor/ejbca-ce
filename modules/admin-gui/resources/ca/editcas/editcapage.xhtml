@@ -591,14 +591,8 @@
                         <f:ajax onerror="function(data){ejbca.adminweb.showAlertOnError(data);}"
                             render="geographicRegionType geographicregions " />
                     </h:commandButton>
-	                 <h:commandButton id="removeAllGeographicRegions"
-	                        value="#{web.text.REMOVEALL}"
-	                        rendered="#{not editCAsMBean.editCA}"
-	                        action="#{editCAsMBean.removeAllGeographicRegions()}">
-	                        <f:ajax render="geographicRegionType geographicregions" />
-	                 </h:commandButton>
 	                 <h:commandButton id="updateGeographicRegions"
-	                        value="#{web.text.UPDATE}"
+	                        value="#{web.text.PREVIEW_REMOVE_SELECTED}"
 	                        action="#{editCAsMBean.updateGeographicRegions()}">
 	                        <f:ajax render="geographicRegionType geographicregions" />
 	                 </h:commandButton>
@@ -613,7 +607,8 @@
                 
                 <h:column>
 	                    <h:outputLabel for="georegiondescription"
-	                        value="#{geoRegion.name}" /> <br/>
+	                        value="#{geoRegion.name}" 
+	                        rendered="#{empty geoRegion.previewText}"/> <br/>
 	                    <h:outputText id="georegionpreview"
                             value="#{geoRegion.previewText}" escape="false">
                         </h:outputText> <br/>
