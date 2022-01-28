@@ -91,6 +91,8 @@ MySQL and MariaDB specifics
 ---------------
 EJBCA have been tested with MySQL 5.x and MariaDB 5.x.
 
+If you are using MariaDB 10.2, set database.name to "mariadb10.2". In all other cases just use "mysql".
+
 It is NOT recommended to use the MyISAM storage engine, since it only supports
 table locks and not row-locking.
 

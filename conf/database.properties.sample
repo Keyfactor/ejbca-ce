@@ -18,8 +18,9 @@
 # See the document doc/howto/HOWTO-database.txt for database specifics and tips and tricks.
 # (Note that the names below are fixed for the database type, it is not the name of your database instance.)
 # Default: h2
-# For MariaDB, use "mysql"
+# For MariaDB, use mariadb10.2 for MariaDB 10.2, or "mysql" else
 #database.name=mysql
+#database.name=mariadb10.2
 #database.name=postgres
 #database.name=mssql
 #database.name=oracle
