@@ -543,7 +543,7 @@ public class EndEntityInformationFillerTest {
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\\\=org02,O=Org1,C=SE", user.getDN());
         
-        //user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\,org02");
+        //illegal: user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\,org02");
         
     }
     
@@ -570,19 +570,7 @@ public class EndEntityInformationFillerTest {
         user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
-        
-//        user.setDN("CN=Name2,OU=MyOrg101+MyOrg102,OU=MyOrg2,OU=MyOrg3");
-//        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-//        assertEquals("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
-//        
-//        user.setDN("CN=Name2,OU=MyOrg101\\,MyOrg102,OU=MyOrg2,OU=MyOrg3");
-//        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-//        assertEquals("CN=Name2,OU=MyOrg101\\,MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
-//        
-//        user.setDN("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3");
-//        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-//        assertEquals("CN=Name2,OU=MyOrg101\\\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
-        
+                
         p.addField(DnComponents.DNSERIALNUMBER); 
         p.addField(DnComponents.DNQUALIFIER);
         p.addField(DnComponents.GIVENNAME);
