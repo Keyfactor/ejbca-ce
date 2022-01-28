@@ -64,6 +64,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
@@ -575,16 +576,14 @@ public class EnrollWithRequestIdBean implements Serializable {
             log.info("CSR uploaded was too large: "+valueStr.length());
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
-        if (pkcs10CertificateRequest == null) {
+        RequestMessage certificateRequestMessage = RequestMessageUtils.parseRequestMessage(valueStr.getBytes());
+        if (certificateRequestMessage == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
-        final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {
-            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+            final String keySpecification = AlgorithmTools.getKeySpecification(certificateRequestMessage.getRequestPublicKey());
+            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certificateRequestMessage.getRequestPublicKey());
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
@@ -601,6 +600,8 @@ public class EnrollWithRequestIdBean implements Serializable {
             certificateRequest = value.toString();
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+        } catch (NoSuchProviderException e) {//TODO
+            throw new RuntimeException(e.getMessage());
         }
     }
 
