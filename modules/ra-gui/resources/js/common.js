@@ -46,15 +46,26 @@
     			var fileReader = new FileReader();
     			fileReader.onloadend = function(event) {
     				if (event.target.readyState == FileReader.DONE) {
+	                	var b64str = '';         
     					if (onUploadFinishedCallback) {
-    						onUploadFinishedCallback(event.target.result);
+	                    	let bytes = new Uint8Array(event.target.result);
+                        	let len = bytes.byteLength;
+                        	for (let i = 0; i < len; i++) {
+                            	b64str += String.fromCharCode(bytes[i]);
+                        	}
+                            if (!b64str.includes("-----BEGIN CERTIFICATE REQUEST-----")){
+	                            //This is not a PEM request, encode b64
+	                        	b64str = window.btoa(b64str);
+                            }
+	                        onUploadFinishedCallback(b64str);
     					}
     					inputFileElement.value = '';
     				}
     			};
-    			fileReader.readAsText(inputFileElement.files[0]);
-    		};
+                fileReader.readAsArrayBuffer(inputFileElement.files[0]);
+            };
     	};
+         
     	document.getElementById(appendToElementId).appendChild(inputFileElement);
     };
 
@@ -126,7 +137,7 @@
     	}
     }
 
-    /**
+	/**
      * Keep JSF session alive by polling back-end before the session has expired.
      * 
      * @param linkElementId ID of a-element pointing to keep alive link.
