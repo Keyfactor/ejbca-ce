@@ -37,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /** This class gives facilities to populate user data with default values from profile.
@@ -52,7 +53,9 @@ public class EndEntityInformationFiller {
     
     private static final Map<String, String> BC_STYLE_PARAMETERS;
     
-    private static final String REPLACED_ESCAPABLE_CHARS = "Replaced_EndEntityInformationFiller_Dn_Chars";
+    private static final String REPLACED_ESCAPABLE_CHARS = "Replaced_Dn_Chars_";
+    
+    private static final Map<String, String> ESCAPED_CHARS;    
     
     static {
         BC_STYLE_PARAMETERS = new HashMap<>();
@@ -60,6 +63,11 @@ public class EndEntityInformationFiller {
         BC_STYLE_PARAMETERS.put("EMAIL", "E");
         BC_STYLE_PARAMETERS.put("SERIALNUMBER", "SN");
         BC_STYLE_PARAMETERS.put("COMMONNAME", "CN");
+        
+        ESCAPED_CHARS = new HashMap<>();
+        ESCAPED_CHARS.put("+", "plus");
+        ESCAPED_CHARS.put("=", "equal");
+        ESCAPED_CHARS.put(",", "comma");
     }
 
     /** This method fill user data with the default values from the specified profile.
@@ -313,6 +321,8 @@ public class EndEntityInformationFiller {
             }
         }
         
+        userDnString = escapeSpecialChars(userDnString);
+        
         LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns = 
                 new LinkedHashMap<>();
         
@@ -373,8 +383,8 @@ public class EndEntityInformationFiller {
                                 "Invalid DN component detected during processing multi-valued rdn: " + curDn);
                     }
                     
-                    Rdn rdn = convertToRdn(parameter, value);
-                    value = ""; 
+                    Rdn rdn = convertToRdn(curDn);
+                    curDn = ""; 
                     // we only add the value against first dnType
                     // for rest null is added, but dnType is tracked to validate 
                     // against number of fields allowed in profile
@@ -471,19 +481,15 @@ public class EndEntityInformationFiller {
         }
         
         int currentDnTypeModifiedDns;
-        for(String dnType: groupedAllProfileRdns.keySet()) {
-            if(userRdns.containsKey(dnType)) {
-                currentDnTypeUserRdns = userRdns.get(dnType);
+        for(Entry<String, LinkedHashSet<Rdn>> dnType: groupedAllProfileRdns.entrySet()) {
+            if(userRdns.containsKey(dnType.getKey())) {
+                currentDnTypeUserRdns = userRdns.get(dnType.getKey());
             } else {
                 continue; // only profile rdns to add, nothing to remove
             }
             
-            if(groupedAllProfileRdns.containsKey(dnType)) {
-                orderedRdns = groupedAllProfileRdns.get(dnType);
-                orderedModifiableRdns = groupedModifiableProfileRdns.get(dnType);
-            } else {
-                continue; // only user rdns to add, nothing to remove
-            }
+            orderedRdns = dnType.getValue();
+            orderedModifiableRdns = groupedModifiableProfileRdns.get(dnType.getKey());
             
             currentDnTypeModifiedDns = 0;
             for(Rdn userdn: currentDnTypeUserRdns) {
@@ -498,30 +504,31 @@ public class EndEntityInformationFiller {
             
             // remove entries from modifiable fields to make room for added user dns
             Iterator<Rdn> it = orderedModifiableRdns.iterator();
-            currentDnTypeModifiedDns -= emptyFieldsForDntype.get(dnType);
+            currentDnTypeModifiedDns -= emptyFieldsForDntype.get(dnType.getKey());
             for(int i=0; i<currentDnTypeModifiedDns; i++) {
                 if(it.hasNext()) {
                     // no need to remove from modifiable one 
                     orderedRdns.remove(it.next());
                 } else {
                     // added fields exceeds no of modifiable fields
-                    throw new EndEntityProfileValidationException("User DN has too many components for " + dnType);
+                    throw new EndEntityProfileValidationException(
+                            "User DN has too many components for " + dnType.getKey());
                 }
             }
 
         }
         
         StringBuilder result = new StringBuilder(numberofDnfields*10);
-        for(String dnType: groupedAllProfileRdns.keySet()) {
+        for(Entry<String, LinkedHashSet<Rdn>> dnType: groupedAllProfileRdns.entrySet()) {
             // finally, add all dnTypes according to sequence in profile
             // for individual dn type, first user dns and the profile dns
-            if(userRdns.containsKey(dnType)) {
-                for(Rdn dn: userRdns.get(dnType)) {
+            if(userRdns.containsKey(dnType.getKey())) {
+                for(Rdn dn: userRdns.get(dnType.getKey())) {
                     appendDn(result, dn);
                 }
             }
             
-            for(Rdn dn: groupedAllProfileRdns.get(dnType)) {
+            for(Rdn dn: groupedAllProfileRdns.get(dnType.getKey())) {
                 appendDn(result, dn);
             }
         }
@@ -533,6 +540,7 @@ public class EndEntityInformationFiller {
         
         String mergedDn = result.toString();
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
+        mergedDn = unEscapeSpecialChars(mergedDn);
         log.debug("merged dn: " + mergedDn);
         
         return mergedDn;
@@ -573,16 +581,38 @@ public class EndEntityInformationFiller {
         }
     }
     
-    private static String[] splitEscaped(String input, String separator) {
-        if(separator.equals("+")) {
-            separator = "\\+";
+    private static Rdn convertToRdn(String value) {
+        if(StringUtils.isEmpty(value)) {
+            return null;
         }
-        String[] parts = input.replace("\\" + separator, REPLACED_ESCAPABLE_CHARS).split(separator);
-        for(int i=0; i<parts.length; i++) {
-            parts[i] = parts[i].replace(REPLACED_ESCAPABLE_CHARS, "\\" + separator);
+        try {
+            return new Rdn(value);
+        } catch (InvalidNameException e) {
+            log.debug("Invalid Rdn parameter or value: " + e.getMessage());
+            throw new IllegalStateException(e);
         }
-        return parts;
     }
     
+    private static String[] splitEscaped(String input, String separator) {
+        String formattedSeparator = separator;
+        if(formattedSeparator.equals("+")) {
+            formattedSeparator = "\\+";
+        }
+        return input.split(formattedSeparator);
+    }
+    
+    private static String escapeSpecialChars(String rdnString) {
+      for(Entry<String, String> entry: ESCAPED_CHARS.entrySet()) {
+          rdnString = rdnString.replace("\\" + entry.getKey(), REPLACED_ESCAPABLE_CHARS + entry.getValue());
+      }
+        return rdnString;
+    }
+    
+    private static String unEscapeSpecialChars(String rdnString) {
+        for(Entry<String, String> entry: ESCAPED_CHARS.entrySet()) {
+            rdnString = rdnString.replace(REPLACED_ESCAPABLE_CHARS + entry.getValue(), "\\" + entry.getKey());
+        }
+          return rdnString;
+      }
     
 }
