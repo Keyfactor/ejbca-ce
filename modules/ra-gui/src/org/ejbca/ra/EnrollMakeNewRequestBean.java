@@ -1184,8 +1184,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Add end-entity
             // Generates a keystore token if user has specified "ON SERVER" key pair generation.
             // Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
-            EndEntityProfile profile = getEndEntityProfile();
-            boolean isClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+            boolean isClearPwd = isClearPassword();
 
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 ret = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
@@ -2362,6 +2361,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
         return subjectAlternativeName;
+    }
+
+    public boolean isClearPassword() {
+        EndEntityProfile profile = getEndEntityProfile();
+
+        if (profile != null) {
+            return profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+        }
+
+        return false;
     }
 
     /**
