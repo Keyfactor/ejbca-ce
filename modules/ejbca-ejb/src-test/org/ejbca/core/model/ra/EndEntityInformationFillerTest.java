@@ -17,13 +17,13 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
 
 /** Tests DN merging
  * 
@@ -494,6 +494,60 @@ public class EndEntityInformationFillerTest {
         }
     }
     
+    @Test
+    public void testMergeDNEscapedChars() throws Exception { 
+        
+        EndEntityProfile p = new EndEntityProfile();
+        p.addField(DnComponents.ORGANIZATIONALUNIT);
+        p.addField(DnComponents.ORGANIZATIONALUNIT);
+        p.addField(DnComponents.ORGANIZATION);
+        p.addField(DnComponents.ORGANIZATION);        
+        p.addField(DnComponents.COUNTRY);
+
+        p.setValue(DnComponents.COMMONNAME, 0, "User Usersson");
+        p.setValue(DnComponents.ORGANIZATIONALUNIT, 0, "Unit1");
+        p.setValue(DnComponents.ORGANIZATIONALUNIT, 1, "Unit2");
+        p.setValue(DnComponents.COUNTRY, 0, "SE");
+        p.setValue(DnComponents.ORGANIZATION, 0, "Org1");
+        
+        EndEntityInformation user = new EndEntityInformation(); 
+        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2+MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2\\+MyOrg3,O=Org1,C=SE", user.getDN());
+        
+        user.setDN("CN=Name2+OU=MyOrg1\\+MyOrg111,OU=MyOrg2+MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2+OU=MyOrg1\\+MyOrg111,OU=MyOrg2\\+MyOrg3,O=Org1,C=SE", user.getDN());
+        
+        try {
+        user.setDN("CN=Name2+OU=MyOrg1+MyOrg111,OU=MyOrg2+MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        } catch(Exception e) {
+            
+        }
+        
+        // + does not need to be escaped but in previous EJBCA versions it was needed to be
+        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2\\+MyOrg3");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2\\+MyOrg3,O=Org1,C=SE", user.getDN());
+        
+        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\=org02");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\=org02,O=Org1,C=SE", user.getDN());
+        
+        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\,org02");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\,org02,O=Org1,C=SE", user.getDN());
+        
+        user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\=org02");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\\\=org02,O=Org1,C=SE", user.getDN());
+        
+        //user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,O=org01\\\\,org02");
+        
+    }
+    
+    
     
     @Test
     public void testMergeDNMultiValueRdn() throws Exception {
@@ -515,15 +569,19 @@ public class EndEntityInformationFillerTest {
         EndEntityInformation user = new EndEntityInformation();
         user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2\\+OU\\=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
         
-        user.setDN("CN=Name2,OU=MyOrg101+MyOrg102,OU=MyOrg2,OU=MyOrg3");
-        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
-        
-        user.setDN("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3");
-        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2,OU=MyOrg101\\\\\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+//        user.setDN("CN=Name2,OU=MyOrg101+MyOrg102,OU=MyOrg2,OU=MyOrg3");
+//        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+//        assertEquals("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+//        
+//        user.setDN("CN=Name2,OU=MyOrg101\\,MyOrg102,OU=MyOrg2,OU=MyOrg3");
+//        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+//        assertEquals("CN=Name2,OU=MyOrg101\\,MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
+//        
+//        user.setDN("CN=Name2,OU=MyOrg101\\+MyOrg102,OU=MyOrg2,OU=MyOrg3");
+//        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+//        assertEquals("CN=Name2,OU=MyOrg101\\\\+MyOrg102,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE", user.getDN());
         
         p.addField(DnComponents.DNSERIALNUMBER); 
         p.addField(DnComponents.DNQUALIFIER);
@@ -539,26 +597,43 @@ public class EndEntityInformationFillerTest {
         
         user.setDN("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2\\+OU\\=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE,"
+        assertEquals("CN=Name2+OU=MyOrg1,OU=MyOrg2,OU=MyOrg3,OU=Unit2,O=Org1,C=SE,"
                 + "SN=FAB12342,DN=test dn qual,GIVENNAME=test name,SURNAME=test surname,UID=1234DDEF", user.getDN());
         
         user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,OU=MyOrg2,OU=MyOrg3");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2\\+SN\\=CCCC\\+GIVENNAME\\=untested name,"
+        // order may change inside a multi-dn value. mostly alphabetical based on DN type
+        assertEquals("CN=Name2+GIVENNAME=untested name+SN=CCCC," 
                 + "OU=MyOrg2,OU=MyOrg3,OU=Unit1,OU=Unit2,O=Org1,C=SE,"
                 + "DN=test dn qual,SURNAME=test surname,UID=1234DDEF", user.getDN());
         
         user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,OU=MyOrg2,OU=MyOrg3,UID=2345+DN=another qual");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2\\+SN\\=CCCC\\+GIVENNAME\\=untested name,"
+        assertEquals("CN=Name2+GIVENNAME=untested name+SN=CCCC," 
                 + "OU=MyOrg2,OU=MyOrg3,OU=Unit1,OU=Unit2,O=Org1,C=SE,"
-                + "SURNAME=test surname,UID=2345\\+DN\\=another qual", user.getDN());
+                + "SURNAME=test surname,DN=another qual+UID=2345", user.getDN());
         
         user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,OU=MyOrg2,OU=MyOrg3,SURNAME=tiny sname+DN=another qual");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("CN=Name2\\+SN\\=CCCC\\+GIVENNAME\\=untested name,"
+        assertEquals("CN=Name2+GIVENNAME=untested name+SN=CCCC,"
                 + "OU=MyOrg2,OU=MyOrg3,OU=Unit1,OU=Unit2,O=Org1,C=SE,"
-                + "SURNAME=tiny sname\\+DN\\=another qual,UID=1234DDEF", user.getDN());
+                + "DN=another qual+SURNAME=tiny sname,UID=1234DDEF", user.getDN());
+        
+        p.addField(DnComponents.SURNAME);
+        user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,OU=MyOrg2,OU=MyOrg3,SURNAME=tiny sname+DN=another qual");
+        EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+        assertEquals("CN=Name2+GIVENNAME=untested name+SN=CCCC,"
+                + "OU=MyOrg2,OU=MyOrg3,OU=Unit1,OU=Unit2,O=Org1,C=SE,"
+                + "DN=another qual+SURNAME=tiny sname,SURNAME=test surname,UID=1234DDEF", user.getDN());
+        
+        try {
+            user.setDN("CN=Name2+SN=CCCC+GIVENNAME=untested name,GIVENNAME=FFBBAA,"
+                    + "OU=MyOrg2,OU=MyOrg3,SURNAME=tiny sname+DN=another qual");
+            EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
+            fail("created user with too many components.");
+        } catch (EndEntityProfileValidationException e) {
+            assertEquals("User DN has too many components for GIVENNAME", e.getMessage());
+        }
         
     }
     
