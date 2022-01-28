@@ -65,8 +65,7 @@
                 fileReader.readAsArrayBuffer(inputFileElement.files[0]);
             };
     	};
-         
-    	document.getElementById(appendToElementId).appendChild(inputFileElement);
+        document.getElementById(appendToElementId).appendChild(inputFileElement);
     };
 
     /** Looked for tagged objects and make the page nicer when JS is available */
