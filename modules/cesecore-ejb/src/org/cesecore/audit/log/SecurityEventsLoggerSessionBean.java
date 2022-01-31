@@ -20,7 +20,8 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.ModuleType;
@@ -47,7 +48,8 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSessionLocal, SecurityEventsLoggerSessionRemote {
 
-    private static final Logger log = Logger.getLogger(SecurityEventsLoggerSessionBean.class);
+    private static final Logger log = LogManager.getLogger(SecurityEventsLoggerSessionBean.class);
+    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
