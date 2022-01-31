@@ -158,8 +158,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             }
         }
         
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+        boolean isClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
-        addOrEditUser(admin, userdata, false, true);
+        addOrEditUser(admin, userdata, isClearPwd, true);
         // Process request
         try {
             
@@ -259,7 +262,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     log.debug("New end entity '" + username + "', adding userdata. New status '" + userdata.getStatus() + "'.");
                 }
                 // addUserfromWS also checks useUserStorage internally, so don't duplicate the check
-                endEntityManagementSession.addUserFromWS(admin, userdata, clearpwd);
+                endEntityManagementSession.addUser(admin, userdata, clearpwd);
             }
         } catch (WaitingForApprovalException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically

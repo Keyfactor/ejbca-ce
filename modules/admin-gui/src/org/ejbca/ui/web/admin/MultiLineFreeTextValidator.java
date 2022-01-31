@@ -29,7 +29,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  *
  * @version $Id$
  */
-public class MultiLineFreeTextValidator implements Validator {
+public class MultiLineFreeTextValidator implements Validator<Object> {
     private static final Logger log = Logger.getLogger(MultiLineFreeTextValidator.class);
 
     private static final String CONTROL_CHARS = "\u0000-\u0008\u000B\u000C\u000E-\u001F"; // all characters from 0x00-0x1F except 09 (tab), 0A (line feed) and 0D (carriage return)

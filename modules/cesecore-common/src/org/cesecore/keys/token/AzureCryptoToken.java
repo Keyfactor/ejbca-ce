@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
@@ -67,6 +69,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -158,9 +161,16 @@ public class AzureCryptoToken extends BaseCryptoToken {
     public static final String KEY_VAULT_CLIENTID = "keyVaultClientID";
 
     /**
-     * Property for storing whether we will use app secret or an internal key binding when authenticating to Azure.
+     * Property for storing whether we will use app secret or an internal key binding when authenticating to Azure.  
+     * This is a legacy setting - in versions 7.7.1 and up, we use the KEY_VAULT_AUTENTICATION_TYPE enumeration.
      */
     public static final String KEY_VAULT_USE_KEY_BINDING = "keyVaultUseKeyBinding";
+
+    /**
+     * Holds an {@link AzureAuthenticationType} enumeration.  Determines how we will authenticate to Azure when using
+     * the key vault.
+     */
+    public static final String KEY_VAULT_AUTHENTICATION_TYPE = "keyVaultAuthenticationType";
 
     /**
      * Named key binding to use when authenticating to Azure
@@ -210,7 +220,24 @@ public class AzureCryptoToken extends BaseCryptoToken {
 
     /** get the keyVaultType, set during init of crypto token */
     private boolean isKeyVaultUseKeyBinding() {
-        return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
+        // check the original, boolean setting
+        final String authenticationTypeString = getProperties().getProperty(KEY_VAULT_AUTHENTICATION_TYPE);
+        if (authenticationTypeString == null) {
+            return Boolean.parseBoolean(getProperties().getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"));
+        }
+        
+        // check the newer enumeration of authentication types
+        return AzureAuthenticationType.valueOf(authenticationTypeString) == AzureAuthenticationType.KEY_BINDING;
+    }
+    
+    private boolean isKeyVaultUseManagedIdentity() {
+        // if this is a 7.7 or earlier properties, this value won't be set
+        final String authenticationTypeString = getProperties().getProperty(KEY_VAULT_AUTHENTICATION_TYPE);
+        if (authenticationTypeString == null) {
+            return false;
+        }
+        
+        return AzureAuthenticationType.valueOf(authenticationTypeString) == AzureAuthenticationType.MANAGED_IDENTITY;
     }
 
     /** get the keyVaultType, set during init of crypto token */
@@ -821,8 +848,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
      */
     private void azureAuthorizationRequestFrom401Response(CloseableHttpResponse response)
             throws CryptoTokenAuthenticationFailedException, ParseException, IOException {
+        log.debug("in azureAuthorizationRequestFrom401Response");
         // Get bearer token (authentication token) from the response.
         final Header lastHeader = response.getLastHeader("WWW-Authenticate");
+        log.debug("lastHeader = " + lastHeader);
         // Close as soon as possible, we don't need this response, it's an "Error Response" for invalid_token 
         response.close();
         final HeaderElement[] elements = lastHeader.getElements();
@@ -855,6 +884,82 @@ public class AzureCryptoToken extends BaseCryptoToken {
             throw new CryptoTokenAuthenticationFailedException(
                     "We did not find a 'Bearer authorization' uri in the WWW-Authenticate for a 401 response");
         }
+        final HttpRequestBase request = isKeyVaultUseManagedIdentity() 
+                ? createManagedIdentityTokenRequest(oauthResource) 
+                : createOauthTokenPostRequest(oauthServiceURL, oauthResource);
+        try (final CloseableHttpResponse authResponse = authHttpClient.execute(request)) {
+            final int authStatusCode = authResponse.getStatusLine().getStatusCode();
+            if (log.isDebugEnabled()) {
+                log.debug("Status code for authorization request is: " + authStatusCode);
+                log.debug("Response.toString: " + authResponse.toString());
+            }
+            final String json = IOUtils.toString(authResponse.getEntity().getContent(), StandardCharsets.UTF_8);
+            if (log.isDebugEnabled()) {
+                log.debug("Authorization JSON response: " + json);
+            }
+            final JSONParser jsonParser = new JSONParser();
+            final JSONObject parse = (JSONObject) jsonParser.parse(json);
+            if (authStatusCode == 401 || authStatusCode == 400) { // 401 expected for no secret or wrong secret, 400 expected for wrong client_id
+                authorizationHeader = null;
+                log.info("Authorization denied with statusCode " + authStatusCode + " for Azure Crypto Token authentication call to URI "
+                        + request.getURI() + ", for client_id " + clientID);
+                throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization denied, JSON response: " + json);
+            } else if (authStatusCode == 200) {
+                final String accessToken = (String) parse.get("access_token");
+                authorizationHeader = "Bearer " + accessToken;
+                if (log.isDebugEnabled()) {
+                    log.debug("Authorization header from authentication response: " + authorizationHeader);
+                }
+            } else {
+                throw new CryptoTokenAuthenticationFailedException(
+                        "Azure Crypto Token authorization failed with unknown response code " + authStatusCode + ", JSON response: " + json);
+            }
+        }
+    }
+
+    /**
+     * Create an HTTP request that will request a Bearer token from the Azure Machine Identity URL.
+     * 
+     * @see <a 
+     *  href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token#get-a-token-using-http">
+     * How to use managed identities for Azure resources on an Azure VM to acquire an access token</a>
+     * @see <a href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/tutorial-windows-vm-access-nonaad">
+     * Tutorial: Use a Windows VM system-assigned managed identity to access Azure Key Vault</a>
+     * 
+     * @param oauthServiceURL Base URL for Azure's OAuth2 Authorization Server
+     * @param oauthResource The resource we're requesting access to
+     * @return A POST request that can be sent to retrieve the bearer token
+     * @throws CryptoTokenAuthenticationFailedException unable to create the request
+     */
+    private HttpGet createManagedIdentityTokenRequest(final String oauthResource) throws CryptoTokenAuthenticationFailedException {
+        try {
+            // It should be OK to have that address hard-coded.  It's part of the Azure Managed Identity specification
+            //@formatter:off
+            final URI managedIdentityUrl = new URIBuilder("http://169.254.169.254/metadata/identity/oauth2/token")
+                .setParameter("api-version", "2018-02-01")
+                .setParameter("resource", oauthResource)
+                .build();
+            //@formatter:on
+            log.debug("Created managed identity url: " + managedIdentityUrl.toString());
+            HttpGet httpGet = new HttpGet(managedIdentityUrl);
+            httpGet.setHeader("Metadata", "true");
+            return httpGet;
+        } catch (URISyntaxException e) {
+            throw new CryptoTokenAuthenticationFailedException("Unable to create Machine Identity URL", e);
+        }
+    }
+
+    /**
+     * Create an HTTP request that will request a Bearer token from Azure's Authorization Server (specified in oauthServiceUrl).
+     * 
+     * @param oauthServiceURL Base URL for Azure's OAuth2 Authorization Server
+     * @param oauthResource The resource we're requesting access to
+     * @return A POST request that can be sent to retrieve the bearer token
+     * @throws CryptoTokenAuthenticationFailedException unable to create the POST request
+     * @throws UnsupportedEncodingException Unable to format the POST request
+     */
+    private HttpPost createOauthTokenPostRequest(String oauthServiceURL, String oauthResource)
+            throws CryptoTokenAuthenticationFailedException, UnsupportedEncodingException {
         final HttpPost request = new HttpPost(oauthServiceURL + "/oauth2/token");
         final ArrayList<NameValuePair> parameters = new ArrayList<>();
         parameters.add(new BasicNameValuePair("grant_type", "client_credentials"));
@@ -897,34 +1002,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
         if (log.isDebugEnabled()) {
             log.debug("Authorization request: " + request.toString());
         }
-        try (final CloseableHttpResponse authResponse = authHttpClient.execute(request)) {
-            final int authStatusCode = authResponse.getStatusLine().getStatusCode();
-            if (log.isDebugEnabled()) {
-                log.debug("Status code for authorization request is: " + authStatusCode);
-                log.debug("Response.toString: " + authResponse.toString());
-            }
-            final String json = IOUtils.toString(authResponse.getEntity().getContent(), StandardCharsets.UTF_8);
-            if (log.isDebugEnabled()) {
-                log.debug("Authorization JSON response: " + json);
-            }
-            final JSONParser jsonParser = new JSONParser();
-            final JSONObject parse = (JSONObject) jsonParser.parse(json);
-            if (authStatusCode == 401 || authStatusCode == 400) { // 401 expected for no secret or wrong secret, 400 expected for wrong client_id
-                authorizationHeader = null;
-                log.info("Authorization denied with statusCode " + authStatusCode + " for Azure Crypto Token authentication call to URI "
-                        + request.getURI() + ", for client_id " + clientID);
-                throw new CryptoTokenAuthenticationFailedException("Azure Crypto Token authorization denied, JSON response: " + json);
-            } else if (authStatusCode == 200) {
-                final String accessToken = (String) parse.get("access_token");
-                authorizationHeader = "Bearer " + accessToken;
-                if (log.isDebugEnabled()) {
-                    log.debug("Authorization header from authentication response: " + authorizationHeader);
-                }
-            } else {
-                throw new CryptoTokenAuthenticationFailedException(
-                        "Azure Crypto Token authorization failed with unknown response code " + authStatusCode + ", JSON response: " + json);
-            }
-        }
+        return request;
     }
 
     /**

@@ -13,27 +13,25 @@
 
 package org.cesecore.config;
 
-import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.configuration.ConfigurationBase;
-
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.configuration.ConfigurationBase;
+
 public class OAuthConfiguration extends ConfigurationBase implements Serializable {
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(OAuthConfiguration.class);
     private static final long serialVersionUID = 1L;
 
     public static final String OAUTH_CONFIGURATION_ID = "OAUTH";
     private static final   String OAUTH_KEYS          = "oauthkeys";
     // Default OAuth Keys
-    private static final LinkedHashMap<Integer,OAuthKeyInfo> OAUTH_KEYS_DEFAULT = new LinkedHashMap<>();
     private static final   String DEFAULT_OAUTH_KEY   = "defaultoauthkey";
 
     public Map<String,OAuthKeyInfo> getOauthKeys() {
+        @SuppressWarnings("unchecked")
         final Map<String,OAuthKeyInfo> ret = (Map<String,OAuthKeyInfo>)data.get(OAUTH_KEYS);
         return (ret == null ? new LinkedHashMap<>() : new LinkedHashMap<>(ret));
     }

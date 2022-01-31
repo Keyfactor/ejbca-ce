@@ -565,7 +565,7 @@ public class KeyRecoveryTest extends CaTestCase {
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
             
-            // Issue a certifiate + keystore
+            // Issue a certificate + keystore
             eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
             assertNotNull("Could not find test user", testuser);
             eeinfo.setPassword("foo123");

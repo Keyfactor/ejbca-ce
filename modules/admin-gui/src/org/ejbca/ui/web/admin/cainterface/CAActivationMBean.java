@@ -42,6 +42,8 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -232,7 +234,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                            cryptoTokenManagementSession.activate(authenticationToken, tokenAndCa.getCryptoTokenId(), authenticationcode.toCharArray());
 	                            log.info(authenticationToken.toString() + " activated CryptoToken " + tokenAndCa.getCryptoTokenId());
 	                        } catch (CryptoTokenAuthenticationFailedException e) {
-	                            super.addNonTranslatedErrorMessage("Bad authentication code.");
+	                            super.addNonTranslatedErrorMessage("Unable to log in to the token. Either the authentication code " +
+                                        "was wrong or you forgot to provide a smart card or PED key.");
 	                        } catch (CryptoTokenOfflineException e) {
 	                            super.addNonTranslatedErrorMessage("Crypto Token is offline and cannot be activated.");
 	                        } catch (AuthorizationDeniedException e) {
@@ -258,6 +261,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	            if (ca.isNewState() && ca.getStatus()==CAConstants.CA_OFFLINE) {
 	                try {
 	                    caAdminSession.activateCAService(authenticationToken, ca.getCaId());
+	                } catch (WaitingForApprovalException|ApprovalException e) {
+	                    super.addInfoMessage(e.getMessage());
 	                } catch (Exception e) {
 	                    super.addNonTranslatedErrorMessage(e);
 	                }
