@@ -23,7 +23,7 @@ import javax.faces.validator.ValidatorException;
  * @version $Id$
  *
  */
-public class DummyValidator implements Validator {
+public class DummyValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object object) throws ValidatorException {

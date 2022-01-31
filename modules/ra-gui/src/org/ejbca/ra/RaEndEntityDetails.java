@@ -12,11 +12,25 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -28,19 +42,6 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * UI representation of a result set item from the back end.
@@ -81,7 +82,7 @@ public class RaEndEntityDetails {
 
     private RaEndEntityDetails next = null;
     private RaEndEntityDetails previous = null;
-
+    
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<Integer,String> caIdToNameMap) {
         this(endEntity, callbacks, cpIdToNameMap.get(Integer.valueOf(endEntity.getCertificateProfileId())),
@@ -358,27 +359,60 @@ public class RaEndEntityDetails {
     public boolean isNameConstraintsPermittedEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedUsed() : false;
     }
+    public boolean isNameConstraintsPermittedRequired() {
+        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedRequired() : false;
+    }
+    /**
+     * Format permitted name constraints as user has entered earlier to create end 
+     * entity. This is shown in edit end entity page.
+     * 
+     * @return string
+     */
     public String getNameConstraintsPermitted() {
         final List<String> value = extendedInformation.getNameConstraintsPermitted();
         if (value!=null) {
-            return Arrays.toString(extendedInformation.getNameConstraintsPermitted().toArray());
+            return NameConstraint.formatNameConstraintsList(value);
         }
         return "";
     }
+    /**
+     * Format permitted name constraints as a user friendly semicolon separated list for
+     * view end entity page accessible in RA web from search results.
+     *  
+     * @return semicolon separated string
+     */
+    public String getNameConstraintsPermittedViewOnly() {
+        return getNameConstraintsPermitted().replace("\n", "; ");
+    }
+    
     public boolean isNameConstraintsExcludedEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedUsed() : false;
     }
-    /** @return true if CSR exists in EEI*/
-    public boolean isCsrSet() {
-        return extendedInformation.getCertificateRequest() != null;
+    public boolean isNameConstraintsExcludedRequired() {
+        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedRequired() : false;
     }
     public String getNameConstraintsExcluded() {
         final List<String> value = extendedInformation.getNameConstraintsExcluded();
         if (value!=null) {
-            return Arrays.toString(extendedInformation.getNameConstraintsExcluded().toArray());
+            return NameConstraint.formatNameConstraintsList(value);
         }
         return "";
     }
+    /**
+     * Format excluded name constraints as a semicolon separated list for
+     * view end entity page accessible in RA web from search results.
+     *  
+     * @return semicolon separated string
+     */
+    public String getNameConstraintsExcludedViewOnly() {
+        return getNameConstraintsExcluded().replace("\n", "; ");
+    }
+    
+    /** @return true if CSR exists in EEI*/
+    public boolean isCsrSet() {
+        return extendedInformation.getCertificateRequest() != null;
+    }
+    
 
     public boolean isAllowedRequestsEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isAllowedRequestsUsed() : false;
@@ -395,7 +429,7 @@ public class RaEndEntityDetails {
         return getEndEntityProfile() != null ? getEndEntityProfile().isIssuanceRevocationReasonUsed() : false;
     }
     public String getIssuanceRevocationReason() {
-        final String reasonCode = extendedInformation.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
+      final String reasonCode = String.valueOf(extendedInformation.getIssuanceRevocationReason());
         if (reasonCode!=null) {
             return callbacks.getRaLocaleBean().getMessage("component_eedetails_field_issuancerevocation_reason_"+reasonCode);
         }

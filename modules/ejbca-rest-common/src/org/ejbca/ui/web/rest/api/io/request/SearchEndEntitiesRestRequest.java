@@ -11,6 +11,7 @@ package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequestList;
@@ -18,7 +19,9 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityMaxNumberOfResult
 
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -148,6 +151,26 @@ public class SearchEndEntitiesRestRequest {
                             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
                         }
                         raEndEntitySearchRequest.getStatuses().add(endEntityStatus.getStatusValue());
+                        break;
+                    }
+                    case MODIFIED_BEFORE: {
+                        Date modifiedBefore;
+                        try {
+                            modifiedBefore = ValidityDate.parseAsIso8601(criteriaValue);
+                        } catch (ParseException e) {
+                            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid date format for modifiedBefore value.");
+                        }
+                        raEndEntitySearchRequest.setModifiedBefore(modifiedBefore.getTime());
+                        break;
+                    }
+                    case MODIFIED_AFTER: {
+                        Date modifiedAfter;
+                        try {
+                            modifiedAfter = ValidityDate.parseAsIso8601(criteriaValue);
+                        } catch (ParseException e) {
+                            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid date format for modifiedAfter value.");
+                        }
+                        raEndEntitySearchRequest.setModifiedAfter(modifiedAfter.getTime());
                         break;
                     }
                     default:

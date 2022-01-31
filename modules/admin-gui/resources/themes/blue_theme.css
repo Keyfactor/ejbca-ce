@@ -740,6 +740,7 @@ table.edit-bottom, table.subsection {
 
 .fixEditColumn1 {
 	width: 360px;
+	min-width: 360px;
 	text-align: left
 }
 .fixEditColumn2 {

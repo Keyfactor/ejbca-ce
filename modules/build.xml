@@ -22,13 +22,11 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean"  inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.batchenrollment-gui.path}/build-nonb.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -54,8 +52,12 @@
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, plugins-ee-clean, 
-		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean"/>
-	
+		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean"/>
+
+  <target name="cesecore-p11-clean" if="build.cesecore.p11.jar">
+       <ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+   </target>
+
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
 		<ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -131,7 +133,6 @@
     </condition>
 	<target name="cmpproxyclean" if="${cmpproxy.exists}">
 		<echo message="Cleaning cmpProxy"/>
-		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
     <condition property="validationtool.exists">
@@ -206,7 +207,7 @@
     <target name="ejbca-rest-endentity-clean" if="${mod.ejbca-rest-endentity.exists}">
         <ant antfile="${mod.ejbca-rest-endentity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>   
-	
+
 	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
@@ -363,22 +364,6 @@
             </fileset>
         </copy>
         <chmod file="${mod.validationtool.srcdist}/modules/validationtool/bin/*.sh" perm="a+rx"/>
-	</target>
-
-	<target name="ejbca-cmp-tcp" description="Build EJBCA CMP TCP module" depends="ejbca-common-web, cesecore-ejb-interface">
-		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-
-	<target name="cmpTcpProxy" description="Build CMP TCP proxy" depends="ejbca-common">
-		<echo  message="${mod.cmpProxy.path}/build-tcp.xml" />
-		<fail message="CMP TCP Proxy tool is not distributed with this version of EJBCA">
-		    <condition>
-		    	<not>
-		    		<available file="${mod.cmpProxy.path}/build-tcp.xml" />
-		    	</not>
-		    </condition>
-		</fail>	
-		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home" depends="ejbca-common, cesecore-ejb-interface, externalra-library">
@@ -562,7 +547,7 @@
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
-					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
+					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca.clients,
 					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, 
 					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae">
 	</target>
