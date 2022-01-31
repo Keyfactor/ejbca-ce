@@ -23,7 +23,7 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
  * Wrapper class for holding CaInfo properties.
  */
 public class CaInfoDto {
-
+    
     private String caName;
     private String signatureAlgorithmParam = StringUtils.EMPTY;
     private String signKeySpec = EditCaUtil.DEFAULT_KEY_SIZE;
@@ -87,7 +87,10 @@ public class CaInfoDto {
     private String crlCaDeltaCrlPeriod;
     private boolean generateCrlUponRevocation = false;
     private String requestPreProcessor;
+    
+    //cits
     private String certificateId;
+    private String region;
     
     long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
@@ -661,6 +664,14 @@ public class CaInfoDto {
 
     public void setCertificateId(String certificateId) {
         this.certificateId = certificateId;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 }
 
