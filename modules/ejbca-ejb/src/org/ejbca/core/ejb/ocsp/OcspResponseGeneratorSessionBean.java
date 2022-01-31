@@ -191,8 +191,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.log.ProbableErrorHandler;
-import org.cesecore.util.log.SaferAppenderListener;
-import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.PublisherException;
@@ -203,7 +201,7 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSessionRemote, OcspResponseGeneratorSessionLocal, SaferAppenderListener {
+public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSessionRemote, OcspResponseGeneratorSessionLocal {
 
     /** Max size of a request is 100000 bytes */
     private static final int MAX_REQUEST_SIZE = 100000;
@@ -247,10 +245,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     @PostConstruct
     public void init() {
-        if (OcspConfiguration.getLogSafer()) {
-            SaferDailyRollingFileAppender.addSubscriber(this);
-            log.info("Added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
-        }
         timerService = sessionContext.getTimerService();
     }
     
@@ -711,10 +705,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
    
     
-    @Override
-    public void setCanlog(boolean canLog) {
-        CanLogCache.INSTANCE.setCanLog(canLog);
-    }
+      // ECA_10509 No fix available.
+//    @Override
+//    public void setCanlog(boolean canLog) {
+//        CanLogCache.INSTANCE.setCanLog(canLog);
+//    }
 
     /**
      * This method exists solely to avoid code duplication when error handling in getOcspResponse.
@@ -1867,11 +1862,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                 }
                 // See if the Appender has reported any problems
-                if (!CanLogCache.INSTANCE.canLog()) {
-                    log.info("SaferDailyRollingFileAppender reported error, cannot answer request");
-                    // RFC 2560: responseBytes are not set on error.
-                    ocspResponse = responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null);
-                }
+                // ECA-10509 No fix available.
+//                if (!CanLogCache.INSTANCE.canLog()) {
+//                    log.info("SaferDailyRollingFileAppender reported error, cannot answer request");
+//                    // RFC 2560: responseBytes are not set on error.
+//                    ocspResponse = responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null);
+//                }
             }
         } catch (IOException e) {
             log.error("Unexpected IOException caught.", e);
@@ -2270,24 +2266,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         log.debug("Using signature algorithm for response: " + sigAlg);
         return sigAlg;
-    }
-    
-    private static enum CanLogCache {
-        INSTANCE;
-
-        private boolean canLog;
-
-        private CanLogCache() {
-            this.canLog = true;
-        }
-
-        public boolean canLog() {
-            return canLog;
-        }
-
-        public void setCanLog(boolean canLog) {
-            this.canLog = canLog;
-        }
     }
 
     @Override
