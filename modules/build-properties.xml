@@ -124,7 +124,6 @@
     <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
     <property name="mod.externalra-scep.war" location="${ejbca.dist.path}/scepraserver.war" />
     <property name="mod.batchenrollment-gui.path" location="${mod.path}/batchenrollment-gui" />
-    <property name="mod.appserver-ext.path" location="${mod.path}/appserver-ext" />
     <property name="mod.logsigning.lib" location="${ejbca.dist.path}/ejbcalogsigning.jar" />
     <property name="mod.jbosslog4jsafer.lib" location="${mod.dist.path}/jbosslog4jsafer.jar" />
 	<property name="mod.scep-ra.path" location="${mod.path}/scep-ra" />
