@@ -43,7 +43,6 @@
 	<classpathentry kind="src" path="modules/edition-specific/src-ejb"/>
 	<classpathentry kind="src" path="modules/edition-specific/src-interface"/>
 	<classpathentry kind="src" path="modules/edition-specific-ee/src-ejb"/>
-	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src-test"/>
