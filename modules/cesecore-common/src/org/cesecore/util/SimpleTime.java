@@ -38,6 +38,10 @@ public class SimpleTime {
 	public static final long MILLISECONDS_PER_MINUTE = 60000L;
 	public static final long MILLISECONDS_PER_SECOND = 1000L;
 	
+	public static final long SECONDS_PER_YEAR_IEEE = 31_556_952L;
+	public static final long SECONDS_PER_SIXTY_HOUR_IEEE = 216_000L;
+	public static final long SECONDS_PER_HOUR_IEEE = 3_600L;
+	
 	public static final String TYPE_YEARS = "y";
 	public static final String TYPE_MONTHS = "mo";
 	public static final String TYPE_DAYS = "d";
@@ -45,6 +49,8 @@ public class SimpleTime {
 	public static final String TYPE_MINUTES = "m";
 	public static final String TYPE_SECONDS = "s";
 	public static final String TYPE_MILLISECONDS = "ms";
+	
+	public static final String TYPE_SIXTY_HOURS = "sh";
 	
     public static final String PRECISION_MILLISECONDS = "milliseconds";
     public static final String PRECISION_SECONDS = "seconds";
@@ -54,6 +60,7 @@ public class SimpleTime {
             PRECISION_MILLISECONDS, PRECISION_SECONDS, PRECISION_DAYS);
 	    
 	private static final Map<String, Long> MILLISECONDS_FACTOR = new LinkedHashMap<>();
+	private static final Map<String, Long> ITS_SECONDS_FACTOR = new LinkedHashMap<>();
 	static {
 	    MILLISECONDS_FACTOR.put(TYPE_YEARS, MILLISECONDS_PER_YEAR);
 	    MILLISECONDS_FACTOR.put(TYPE_MONTHS, MILLISECONDS_PER_MONTH);
@@ -62,9 +69,16 @@ public class SimpleTime {
 	    MILLISECONDS_FACTOR.put(TYPE_MINUTES, MILLISECONDS_PER_MINUTE);
 	    MILLISECONDS_FACTOR.put(TYPE_SECONDS, MILLISECONDS_PER_SECOND);
 	    MILLISECONDS_FACTOR.put(TYPE_MILLISECONDS, 1L);
+	    
+	    ITS_SECONDS_FACTOR.put(TYPE_YEARS, SECONDS_PER_YEAR_IEEE);
+	    ITS_SECONDS_FACTOR.put(TYPE_SIXTY_HOURS, SECONDS_PER_SIXTY_HOUR_IEEE);
+	    ITS_SECONDS_FACTOR.put(TYPE_HOURS, SECONDS_PER_HOUR_IEEE);
 	}
 	
     private static final Logger log = Logger.getLogger(SimpleTime.class);
+    
+    private static final TimeUnitFormat ITS_FORMAT_INSTANCE = new TimeUnitFormat(
+            Arrays.asList(TYPE_YEARS, TYPE_SIXTY_HOURS, TYPE_HOURS), ITS_SECONDS_FACTOR);
 	
     private static final TimeUnitFormat DAYS_FORMAT_INSTANCE = new TimeUnitFormat(
             Arrays.asList(TYPE_YEARS, TYPE_MONTHS, TYPE_DAYS), MILLISECONDS_FACTOR);
@@ -184,6 +198,11 @@ public class SimpleTime {
         return MILLISECONDS_FORMAT_INSTANCE;
     }
     
+    
+    public static final TimeUnitFormat getItsSecondsFormat() {
+        return ITS_FORMAT_INSTANCE;
+    }
+    
     /**
      * Gets the TimeUnitFormat by precision.
      * @param precision
@@ -217,6 +236,10 @@ public class SimpleTime {
     
     public static final long parseMillies(String time) throws NumberFormatException {
         return SimpleTime.getMilliSecondsFormat().parseMillis(time);
+    }
+    
+    public static final long parseItsValidity(String time) throws NumberFormatException {
+        return SimpleTime.getItsSecondsFormat().parseSeconds(time);
     }
 	
 	private void setTime(long time) {
