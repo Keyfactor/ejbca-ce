@@ -223,6 +223,9 @@ public class CAInfoView implements Serializable, Cloneable {
         case CAInfo.CATYPE_SSH:
             caTypeValue = "SSH";
             break;
+        case CAInfo.CATYPE_CITS:
+            caTypeValue = "ECA";
+            break;
         default:
             caTypeValue = "";
             break;

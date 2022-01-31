@@ -457,20 +457,19 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:outputText value="#{editCAsMBean.caEncodedValidity}"
-						rendered="#{editCAsMBean.editCA}" />
 					<h:inputText name="textfieldcitsvalidity" id="textfieldcitsvalidity"
 						size="25" maxlength="225"
 						value="#{editCAsMBean.caEncodedValidity}"
 						title="#{web.text.CITS_VALIDITY_HELP}"
 						label="Cits Ca Validity" styleClass="mandatory"
-						rendered="#{not editCAsMBean.editCA}"
 						required="true" 
 						disabled="#{!editCAsMBean.hasEditRight and !editCAsMBean.caUninitialized}">
 					</h:inputText>	
 					<br />	
 					<h:outputText styleClass="help"
 						value="#{web.text.CITS_VALIDITY_HELP}" style="margin-left: 3px;"/> 
+					<h:outputText styleClass="help" rendered="#{editCAsMBean.editCA}"
+						value="#{web.text.CERT_VALIDITY_CA_HELP}" style="margin-left: 3px;"/> 
 				</h:panelGroup>
 				
 				<h:panelGroup>
@@ -484,11 +483,162 @@
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="citscheckboxuseuserstorage"
 						value="#{editCAsMBean.caInfoDto.useUserStorage}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}" >
+					</h:selectBooleanCheckbox> 
 					<h:outputLabel for="checkboxuseuserstorage" value="#{web.text.USE}" />
 				</h:panelGroup>
 				
+				<h:panelGroup>
+					<h:outputLabel for="citscheckboxusecertificatestorage"
+						value="#{web.text.USECERTIFICATESTORAGE}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_User_Storage')}"
+						escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="citscheckboxusecertificatestorage"
+						value="#{editCAsMBean.caInfoDto.useCertificateStorage}"
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render="citsnonExistingCertRevokeSection" immediate="true" event="change"/>
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="citscheckboxusecertificatestorage"
+						value="#{editCAsMBean.checkboxUseCollapsedText}" />
+				</h:panelGroup>
+				
 			</h:panelGrid>
+				
+			<h:panelGrid id="citsnonExistingCertRevokeSection" columns="2" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0" 
+				rendered="#{editCAsMBean.caTypeCits}"
+				columnClasses="editColumn1,editColumn2">
+				
+				<h:panelGroup 
+					rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
+					<h:outputLabel
+						value="#{web.text.ACCEPTREVOCATIONSNONEXISTINGENTRY}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Accept_Revocations_of_Non-Existing_Entries')}"
+						escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+
+				<h:panelGroup
+					rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
+					<h:selectBooleanCheckbox
+						id="citscheckboxacceptrevocationsnonexistingentry"
+						value="#{editCAsMBean.caInfoDto.acceptRevocationsNonExistingEntry}"
+						disabled="#{editCAsMBean.checkboxAcceptRevocationsNonExistingEntryDisabled}">
+						<f:ajax
+							render="citsselectdefaultcertificateprofile citscheckboxuseappendonlytable" />
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxacceptrevocationsnonexistingentry"
+						value="#{web.text.ACCEPT}" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
+					<h:outputLabel value="#{web.text.CERTIFICATEPROFILEFORNONEXISTING}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Default_Certificate_Profile_for_Non-Existing_Entries')}"
+						escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
+					<h:selectOneMenu id="citsselectdefaultcertificateprofile"
+						value="#{editCAsMBean.caInfoDto.defaultCertificateProfile}"
+						disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}">
+						<f:selectItems value="#{editCAsMBean.throwAwayDefaultProfileList}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
+					<h:outputLabel value="#{web.text.USEAPPENDONLYTABLE}" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_Append-Only_Table')}"
+						escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
+					<h:selectBooleanCheckbox id="citscheckboxuseappendonlytable"
+						value="#{editCAsMBean.caInfoDto.useNoConflictCertificateData}"
+						disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxuseappendonlytable"
+						value="#{web.text.USE}" />
+				</h:panelGroup>
+				
+           	</h:panelGrid>	
+           	
+           	<h:panelGrid id="addgeographicregion" columns="3" cellspacing="3" 
+				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0" 
+				rendered="#{editCAsMBean.caTypeCits}"
+				columnClasses="editColumn1,editColumn2">
+				
+				 <h:outputText style="font-weight: bold;" 
+                    value="#{web.text.SELECT_CITS_GEOGRAPHIC_REGION}" />
+                
+                <h:panelGrid id="geographicregiongrid" columns="4">
+                    <h:selectOneMenu id="geographicRegionType"
+                        value="#{editCAsMBean.currentGeographicRegionType}"
+                        disabled="#{not empty editCAsMBean.geographicRegions}">
+                        <f:ajax />
+                        <!-- Needed to submit the selected item via AJAX -->
+                        <f:selectItems id="geoRegionTypesList"
+                            value="#{editCAsMBean.geographicRegionTypes}" />
+                    </h:selectOneMenu>
+                    <h:commandButton id="addGeographicRegion"
+                        value="#{web.text.ADD}"
+                        action="#{editCAsMBean.addGeographicRegion()}">
+                        <f:ajax onerror="function(data){ejbca.adminweb.showAlertOnError(data);}"
+                            render="geographicRegionType geographicregions " />
+                    </h:commandButton>
+	                 <h:commandButton id="updateGeographicRegions"
+	                        value="#{web.text.PREVIEW_REMOVE_SELECTED}"
+	                        action="#{editCAsMBean.updateGeographicRegions()}">
+	                        <f:ajax render="geographicRegionType geographicregions" />
+	                 </h:commandButton>
+                </h:panelGrid>
+			</h:panelGrid>
+			
+			<h:dataTable id="geographicregions" var="geoRegion" 
+                value="#{editCAsMBean.geographicRegions}"
+                cellspacing="1" cellpadding="3" border="0" width="100%"
+                rowClasses="Row0,Row1"
+                columnClasses="editColumn1,editColumn2">
+                
+                <h:column>
+	                    <h:outputLabel for="georegiondescription"
+	                        value="#{geoRegion.name}" 
+	                        rendered="#{empty geoRegion.previewText}"/> <br/>
+	                    <h:outputText id="georegionpreview"
+                            value="#{geoRegion.previewText}" escape="false">
+                        </h:outputText> <br/>
+                        <h:selectBooleanCheckbox 
+							value="#{geoRegion.toRemove}"
+							disabled="#{not editCAsMBean.hasEditRight}" >
+							<f:ajax />
+						</h:selectBooleanCheckbox>
+						<h:outputLabel value="#{web.text.REMOVE}" /> 
+                </h:column>
+                <h:column>
+                	<h:panelGrid id="georegiondescriptionGrid" columns="3">
+	                    <h:selectOneMenu id="geographicregioncountry"
+	                        value="#{geoRegion.country}"
+	                        rendered="#{not empty geoRegion.validOptions}">
+	                        <f:ajax />
+	                        <!-- Needed to submit the selected item via AJAX -->
+	                        <f:selectItems id="georegionidentites"
+	                            value="#{geoRegion.validOptions}" />
+	                    </h:selectOneMenu>
+	                    <h:inputText id="georegiondescription"
+                            value="#{geoRegion.description}" size="45"
+                            maxlength="512">
+                            <f:ajax />
+                        </h:inputText>
+                    </h:panelGrid>
+                    <h:outputText styleClass="help" value="#{geoRegion.helpText}" />
+                </h:column>
+            </h:dataTable>
+				
 			
 			<!-- ==================================================================== CITS Attributes =================================================================================== -->
 
@@ -1542,8 +1692,8 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable 
-									and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeCits}">
+				rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits) and not editCAsMBean.renderCvcAvailable 
+									and not editCAsMBean.caInfoDto.caTypeSsh}">
 				<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="approvals" />
@@ -1553,8 +1703,8 @@
 				var="requestItem" cellspacing="1" cellpadding="3" border="0"
 				width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable 
-								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeCits}">
+				rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits)and not editCAsMBean.renderCvcAvailable 
+								and not editCAsMBean.caInfoDto.caTypeSsh}">
 				<h:column>
 					<h:outputText value="#{requestItem.displayText}" />
 				</h:column>

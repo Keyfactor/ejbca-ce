@@ -480,7 +480,8 @@ public class CAInterfaceBean implements Serializable {
 	    if (buttonMakeRequest && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
 	        caInfoDto.setCaEncodedValidity("0d"); // not applicable
         } else {
-            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity());
+            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity(), 
+                                        caInfoDto.getCaType()==CAInfo.CATYPE_CITS);
             if(!StringUtils.isEmpty(errorMessage)) {
                 throw new ParameterException(errorMessage);
             }
@@ -750,17 +751,14 @@ public class CAInterfaceBean implements Serializable {
 
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
                 final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
-
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder()
                                            .setName(caInfoDto.getCaName())
                                            .setDescription(caInfoDto.getDescription())
                                            .setCertificateProfileId(certprofileid)
-                                           .setDefaultCertProfileId(defaultCertProfileId)
                                            .setEncodedValidity(caInfoDto.getCaEncodedValidity())
                                            .setCaType(caInfoDto.getCaType())
                                            .setStatus(CAConstants.CA_ACTIVE)
                                            .setSignedBy(signedBy)
-                                           .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                                            .setUpdateTime(new Date())
                                            .setExpireTime(null)
                                            .setCertificateChain(null)
@@ -769,7 +767,6 @@ public class CAInterfaceBean implements Serializable {
                                            .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                            .setValidators(keyValidators)
                                            .setFinishUser(caInfoDto.isFinishUser())
-                                           .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                                            .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
                                            .setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
                                            .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
@@ -778,8 +775,11 @@ public class CAInterfaceBean implements Serializable {
                                            .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                                            .setUseUserStorage(caInfoDto.isUseUserStorage())
                                            .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
-                                           .setCertificateId(caInfoDto.getCertificateId());
-
+                                           .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                           .setDefaultCertProfileId(defaultCertProfileId)
+                                           .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                                           .setCertificateId(caInfoDto.getCertificateId())
+                                           .setRegion(caInfoDto.getRegion());
 
                 CitsCaInfo citsCaInfo =  citsCaInfoBuilder.build();
 
@@ -812,9 +812,22 @@ public class CAInterfaceBean implements Serializable {
 
     }
 
-    public String isValidityTimeValid(String validityString) {
+    public String isValidityTimeValid(String validityString, boolean isCitsCa) {
+        
+        if(isCitsCa) {
+            if(StringUtils.isEmpty(validityString)) {
+                return ""; // during edit CA
+            }
+            try {
+                if (SimpleTime.parseItsValidity(validityString) <= 0) {
+                    return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND");
+                }
+            } catch (NumberFormatException e) {
+                return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage();
+            }
+        }
         // Fixed end dates are not limited
-        if (ValidityDate.isValidIso8601Date(validityString)) {
+        else if (ValidityDate.isValidIso8601Date(validityString)) {
             //We have a valid date, let's just check that it's in the future as well.
             Date validityDate;
             try {
@@ -920,9 +933,22 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getDescription() == null) {
             caInfoDto.setDescription("");
         }
-        if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) 
-                && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA
-                && !caInfoDto.isCaTypeCits()) {
+        
+        if(caInfoDto.isCaTypeCits()) {
+            if(StringUtils.isEmpty(caInfoDto.getCaEncodedValidity())){
+                // only needed if remote bean is used i.e. non CA GUI
+                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+            }
+            try {
+                if (SimpleTime.parseItsValidity(caInfoDto.getCaEncodedValidity()) <= 0) {
+                    throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                }
+            } catch (NumberFormatException e) {
+                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage());
+            }
+            // no need to convert to hours(not days like other cases) here
+        } else if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) 
+                && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
             // A validityString of null is allowed, when using a validity is not applicable
             caInfoDto.setCaEncodedValidity("0d");
         } else {
@@ -1085,15 +1111,10 @@ public class CAInterfaceBean implements Serializable {
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
-                int certificateProfileId = (caInfoDto.getCurrentCertProfile()==null ? 0 : Integer.parseInt(caInfoDto.getCurrentCertProfile()));
-                int defaultCertProfileId = (caInfoDto.getDefaultCertificateProfile() == null ? 0 : Integer.parseInt(caInfoDto.getDefaultCertificateProfile()));
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
-
                 CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder().setCaId(caid)
                                                                                                    .setName(caInfoDto.getCaName())
                                                                                                    .setDescription(caInfoDto.getDescription())
-                                                                                                   .setCertificateProfileId(certificateProfileId)
-                                                                                                   .setDefaultCertProfileId(defaultCertProfileId)
                                                                                                    .setEncodedValidity(caInfoDto.getCaEncodedValidity())
                                                                                                    .setCaType(caInfoDto.getCaType())
                                                                                                    .setSignedBy(caInfoDto.getSignedBy())
@@ -1115,7 +1136,11 @@ public class CAInterfaceBean implements Serializable {
                                                                                                    .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                                                                                                    .setUseUserStorage(caInfoDto.isUseUserStorage())
                                                                                                    .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
-                                                                                                   .setCertificateId(caInfoDto.getCertificateId());
+                                                                                                   .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                                                                                   .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
+                                                                                                   .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                                                                                                   .setCertificateId(caInfoDto.getCertificateId())
+                                                                                                   .setRegion(caInfoDto.getRegion());
 
 
                 cainfo = citsCaInfoBuilder.buildForUpdate();
@@ -1264,7 +1289,8 @@ public class CAInterfaceBean implements Serializable {
 	public boolean isCaExportable(CAInfo caInfo) {
 	    boolean ret = false;
 	    final int caInfoStatus = caInfo.getStatus();
-	    if (caInfoStatus != CAConstants.CA_EXTERNAL && caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+	    if ((caInfoStatus != CAConstants.CA_EXTERNAL && caInfo.getCAType()!=CAInfo.CATYPE_CITS) && 
+	                                    caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
 	        final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
 	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
 	        if (cryptoTokenInfo!=null) {
