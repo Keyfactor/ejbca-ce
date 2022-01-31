@@ -13,12 +13,15 @@
 package org.ejbca.ui.cli;
 
 import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
+import java.util.Map;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
-import org.apache.log4j.WriterAppender;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+
 import org.junit.rules.ExternalResource;
 
 // TODO ECA-8963: Extract into a separate module ejbca-unittest, as it is common utility class that can be reused.
@@ -30,29 +33,33 @@ import org.junit.rules.ExternalResource;
 public class TestLogAppenderResource extends ExternalResource {
 
     private static final String APPENDER_NAME = "log4jRuleAppender";
-    private static final Layout LAYOUT = new SimpleLayout();
 
-    private final Logger logger;
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private LoggerContext context;
+    private WriterAppender appender;
+    final StringWriter writer = new StringWriter();
 
     public TestLogAppenderResource(final Logger logger) {
-        this.logger = logger;
+        this.context = ((org.apache.logging.log4j.core.Logger) logger).getContext();
     }
 
     @Override
     protected void before() {
-        Appender appender = new WriterAppender(LAYOUT, outContent);
-        appender.setName(APPENDER_NAME);
-        logger.addAppender(appender);
+        final Configuration config = context.getConfiguration();
+        final Map.Entry<String, Appender> existing = config.getAppenders().entrySet().iterator().next();
+        appender = WriterAppender.newBuilder().setConfiguration(config).setName(APPENDER_NAME).setLayout(existing.getValue().getLayout()).setTarget(writer).build();
+        appender.start();
+        context.getRootLogger().addAppender(appender);
     }
 
     @Override
     protected void after() {
-        logger.removeAppender(APPENDER_NAME);
+        appender.stop();
+        context.getRootLogger().removeAppender(appender);
+
     }
 
     public String getOutput() {
-        return outContent.toString();
+        return writer.toString();
     }
 
 }
