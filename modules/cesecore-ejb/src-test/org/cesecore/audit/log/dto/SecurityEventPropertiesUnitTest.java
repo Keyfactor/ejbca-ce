@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.cesecore.util.TestLogAppenderResource;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,8 +32,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class SecurityEventPropertiesUnitTest {
 
+    // EJBCAINTER-323 Formatting.
+    private static final String prefix = "[main] WARN  org.cesecore.audit.log.dto.SecurityEventProperties  - ";
+    
     @Rule
-    public TestLogAppenderResource testLog = new TestLogAppenderResource(Logger.getLogger(SecurityEventProperties.class));
+    public TestLogAppenderResource testLog = new TestLogAppenderResource(LogManager.getLogger(SecurityEventProperties.class));
 
     @Test
     public void shouldMapCertSignKey() {
@@ -195,7 +198,7 @@ public class SecurityEventPropertiesUnitTest {
         final Map<String, Object> resultMap = securityEventProperties.toMap();
         // then
         assertEquals("Resulting map has unexpected number of elements.", 0, resultMap.keySet().size());
-        assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Got an entry with null key, excluding from the result map."));
+        assertTrue("Event log is missing.", testLog.getOutput().contains(prefix + "Got an entry with null key, excluding from the result map."));
     }
 
     @Test
@@ -214,7 +217,7 @@ public class SecurityEventPropertiesUnitTest {
         final Map<String, Object> resultMap = securityEventProperties.toMap();
         // then
         assertEquals("Resulting map has unexpected number of elements.", 1, resultMap.keySet().size());
-        assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - The standalone property [msg] was overridden by property in custom map."));
+        assertTrue("Event log is missing.", testLog.getOutput().contains(prefix + "The standalone property [msg] was overridden by property in custom map."));
         assertEquals("msg was not mapped from customMap.", customValue, resultMap.get(SecurityEventProperties.MSG));
     }
 
