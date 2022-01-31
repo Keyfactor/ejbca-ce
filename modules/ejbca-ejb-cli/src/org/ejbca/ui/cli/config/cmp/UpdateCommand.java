@@ -84,7 +84,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
                     }
                     getCmpConfiguration().setValue(key, defaultCa, alias);
             
-                }else if (!(EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(value))){
+                }else {
                     log.error("CMP default CA name does not exist");
         }
         }else {
