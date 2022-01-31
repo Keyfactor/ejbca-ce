@@ -14,14 +14,14 @@ package org.cesecore.audit.impl.log4j;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.ErrorHandler;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.ErrorHandler;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.cesecore.audit.AuditLogDevice;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.audit.AuditExporter;
@@ -49,28 +49,27 @@ import org.cesecore.util.query.QueryCriteria;
  * 
  * @version $Id$
  */
-public class Log4jDevice implements AuditLogDevice {
+public class Log4j2Device implements AuditLogDevice {
 
-	private static final Logger LOG = Logger.getLogger(Log4jDevice.class);
-	private static final String UNSUPPORTED = Log4jDevice.class.getSimpleName() + " does not support query, verification or export operations.";
-	private final List<Log4jDeviceErrorHandler> errorHandlers = new ArrayList<Log4jDeviceErrorHandler>();
+    private static final Logger LOG = LogManager.getLogger(Log4j2Device.class);
 	
-	public Log4jDevice() {
-		@SuppressWarnings("unchecked")
-        final Enumeration<Appender> enumeration = LOG.getAllAppenders();
-		while (enumeration.hasMoreElements()) {
-			final Appender appender = enumeration.nextElement();
-			final ErrorHandler errorHandler = appender.getErrorHandler();
+	private static final String UNSUPPORTED = Log4j2Device.class.getSimpleName() + " does not support query, verification or export operations.";
+	private final List<Log4j2DeviceErrorHandler> errorHandlers = new ArrayList<>();
+	
+	public Log4j2Device() {
+		final Map<String, Appender> appendersMap = ((org.apache.logging.log4j.core.Logger) LOG).getAppenders();
+		for (final Appender appender : appendersMap.values()) {
+			final ErrorHandler errorHandler = appender.getHandler();
 			if (errorHandler != null) {
-				final Log4jDeviceErrorHandler wrappedErrorHandler = new Log4jDeviceErrorHandler(errorHandler);
+				final Log4j2DeviceErrorHandler wrappedErrorHandler = new Log4j2DeviceErrorHandler(errorHandler);
 				errorHandlers.add(wrappedErrorHandler);
-				appender.setErrorHandler(wrappedErrorHandler);
+				appender.setHandler(wrappedErrorHandler);
 			}
 		}
 	}
 	
 	private void assertNoErrors() throws AuditRecordStorageException {
-		for (final Log4jDeviceErrorHandler errorHandler : errorHandlers) {
+		for (final Log4j2DeviceErrorHandler errorHandler : errorHandlers) {
 			if (!errorHandler.isOk()) {
 				throw new AuditRecordStorageException("A log4j device failed to log.");
 			}
