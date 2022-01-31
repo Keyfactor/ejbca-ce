@@ -36,7 +36,7 @@ import java.util.EnumSet;
 public class SearchEndEntityCriteriaRestRequest {
 
     @ApiModelProperty(value = "A search property",
-            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA, STATUS"
+            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA, STATUS, MODIFIED_BEFORE, MODIFIED_AFTER"
     )
     private String property;
 
@@ -45,7 +45,7 @@ public class SearchEndEntityCriteriaRestRequest {
     private String value;
 
     @ApiModelProperty(value = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
-            allowableValues = "EQUALS, LIKE",
+            allowableValues = "EQUAL, LIKE",
             dataType = "java.lang.String")
     private String operation;
 
@@ -96,7 +96,9 @@ public class SearchEndEntityCriteriaRestRequest {
         END_ENTITY_PROFILE,
         CERTIFICATE_PROFILE,
         CA,
-        STATUS;
+        STATUS,
+        MODIFIED_BEFORE,
+        MODIFIED_AFTER;
 
         /**
          * Resolves the CriteriaProperty using its name or returns null.
