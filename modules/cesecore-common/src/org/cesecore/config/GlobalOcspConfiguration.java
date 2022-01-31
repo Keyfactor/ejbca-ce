@@ -126,7 +126,8 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         if (data.get(PROPERTY_OCSP_TRANSACTION_LOG_VALUES) == null) {
             return "${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}\"${CLIENT_IP}\";\"${SIGN_ISSUER_NAME_DN}\";\"" +
                     "${SIGN_SUBJECT_NAME}\";${SIGN_SERIAL_NO};\"${LOG_TIME}\";${REPLY_TIME};${NUM_CERT_ID};0;" +
-                    "0;0;0;0;0;0;\"${ISSUER_NAME_DN}\";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};" +
+                    "0;0;0;0;0;0;\"${ISSUER_NAME_DN}\";${ISSUER_NAME_HASH};"
+                    + "${ISSUER_KEY};\"${OCSP_CERT_ISSUER_NAME_DN}\";${DIGEST_ALGOR};" +
                     "${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID};${FORWARDED_FOR}";
         }
         return (String) data.get(PROPERTY_OCSP_TRANSACTION_LOG_VALUES);
@@ -172,7 +173,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     }
 
     public String getOcspLoggingDateFormat() {
-        if (data.get("yyyy-MM-dd HH:mm:ss.SSSZ") == null) {
+        if (data.get(PROPERTY_OCSP_LOGGING_DATE_FORMAT) == null) {
             return "yyyy-MM-dd HH:mm:ss.SSSZ";
         }
         return (String) data.get(PROPERTY_OCSP_LOGGING_DATE_FORMAT);

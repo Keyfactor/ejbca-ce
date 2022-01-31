@@ -13,7 +13,9 @@
 package org.ejbca.core.ejb.ca.publisher;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -29,10 +31,12 @@ public class PublishingResult implements Serializable {
     private static final long serialVersionUID = 1L;
     private Set<String> successes;
     private Set<String> failures;
-
+    private Map<String, String> messages;
+    
     public PublishingResult() {
         successes = new HashSet<>();
         failures = new HashSet<>();
+        messages = new HashMap<>();
     }
     
     public void addSuccess(final String fingerprint) {
@@ -41,6 +45,16 @@ public class PublishingResult implements Serializable {
     
     public void addFailure(final String fingerprint) {
         failures.add(fingerprint);
+    }
+    
+    public void addSuccess(final String fingerprint, final String message) {
+        successes.add(fingerprint);
+        messages.put(fingerprint, message);
+    }
+    
+    public void addFailure(final String fingerprint, final String message) {
+        failures.add(fingerprint);
+        messages.put(fingerprint, message);
     }
     
     /**
@@ -56,6 +70,22 @@ public class PublishingResult implements Serializable {
 
     public int getFailures() {
         return failures.size();
+    }
+    
+    /**
+     * @param fingerprint of the entry containing a message
+     * @return message for the queries entry. May return null.
+     */
+    public String getMessage(final String fingerprint) {
+        return messages.get(fingerprint);
+    }
+    
+    /**
+     * @param fingerprint success / failed entry to set message for
+     * @param messasge success / error message.
+     */
+    public void setMessage(final String fingerprint, final String messasge) {
+        this.messages.put(fingerprint, messasge);
     }
     
     public void append(PublishingResult result) {

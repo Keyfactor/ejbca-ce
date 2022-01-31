@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -146,14 +147,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     }
 
     @Override
-    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus)
+    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus, boolean safeDirectPublish)
             throws CreateException {
         if (log.isTraceEnabled()) {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
         }
         try {
             entityManager.persist(new org.ejbca.core.ejb.ca.publisher.PublisherQueueData(publisherId, publishType, fingerprint, queueData,
-                    publishStatus));
+                    publishStatus, (safeDirectPublish && publishType == PublisherConst.PUBLISH_TYPE_CERT)));
         } catch (Exception e) {
             throw new CreateException(e.getMessage());
         }
@@ -322,6 +323,11 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         return doPublish(admin, publisher, publisherQueueDatas);
     }
 
+    @Override
+    public PublishingResult doPublish(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData publisherQueueData) {
+        return doPublish(admin, publisher, Collections.singletonList(publisherQueueData));
+    }
+    
     /** 
      * @param admin the administrator that must be authorized for publishing
      * @param publisher the publisher to publish to
@@ -432,7 +438,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 // getLogSession().log
                 log.debug(e.getMessage());
                 // We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
-                result.addFailure(fingerprint);
+                result.addFailure(fingerprint, e.getMessage());
             }
             if (published) {
                 if (publisher.getKeepPublishedInQueue()) {

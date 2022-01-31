@@ -21,11 +21,7 @@ import org.cesecore.keys.token.PKCS11SlotListWrapper;
 import org.cesecore.keys.token.PKCS11SlotListWrapperFactory;
 
 /**
- * This class wraps C_GetSlotList call to P11 to get information about slots/tokens and their labels
- * 
- * A slot list and token labels for each slot is cached so that C_GetSlotList() only has to be called once and
- * so that C_GetTokenInfo() only has to be called once for each slot. This means that is additional/new slots are created on a token
- * EJBCA has to be restarted.
+ * Factory class for creating P11NGSlotListWrapper in a thread safe way
  */
 public class P11NGSlotListWrapperFactory implements PKCS11SlotListWrapperFactory {
     private static final Logger log = Logger.getLogger(P11NGSlotListWrapperFactory.class);

@@ -188,10 +188,10 @@ public class RaAccessBean implements Serializable {
     }
 
     /** correspond to menu items in menu.xhtml
-     * This method shows and hides the whole enrollment menu */
+     * This method shows and hides the whole or part of enrollment menu depending on access rules*/
     public boolean isAuthorizedToEnroll() {
         return isAuthorizedToEnrollMakeRequest() ||
-                isAuthorizedToEnrollWithRequestId();
+                isAuthorizedToEnrollCertificate();
     }
 
     /** correspond to menu items in menu.xhtml
@@ -208,12 +208,9 @@ public class RaAccessBean implements Serializable {
 
     /** correspond to menu items in menu.xhtml
      * This method shows and hides the use request id sub menu item */
-    public boolean isAuthorizedToEnrollWithRequestId() {
-        // There are no access rules available for "finalizing" requests, i.e. retrieving the certificate for your request
-        // For starters we will assume that the same person who made the request is finalizing it with request ID, therefore
-        // The same access rules aply as when making a request.
-        // This is a safe default until we can add access rules to allow "public" users to enroll
-        return isAuthorizedToEnrollMakeRequest();
+    public boolean isAuthorizedToEnrollCertificate() {
+        // Checks if user is allowed to enroll certificate.
+        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
     }
 
     public boolean isAuthorizedToCas() {

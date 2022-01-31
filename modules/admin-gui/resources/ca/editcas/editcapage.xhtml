@@ -878,6 +878,9 @@
 					<br />	
 					<h:outputText styleClass="smallHelp"
 						value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP2}"/>
+					<br /> 
+					<h:outputText styleClass="smallHelp"
+						value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP3}"/>
 				</h:panelGroup>
 
 				<h:panelGroup
@@ -897,7 +900,10 @@
 						disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}" />
 					<br />
 					<h:outputText styleClass="smallHelp"
-						value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP}" />
+						value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP1}"/>
+					<br />	
+					<h:outputText styleClass="smallHelp"
+						value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP2}"/>
 				</h:panelGroup>
 
 				<h:panelGroup

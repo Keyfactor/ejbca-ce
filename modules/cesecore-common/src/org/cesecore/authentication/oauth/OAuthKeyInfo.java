@@ -24,12 +24,13 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.StringTools;
 
 /**
  * Represents an OAuth Public Key entry
- *
  */
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -83,6 +84,12 @@ public final class OAuthKeyInfo implements Serializable {
     private String tokenUrl;
     private String logoutUrl;
 
+    private String audience;
+    private boolean audienceCheckDisabled = false;
+    
+    // if null, use client secret
+    private Integer keyBinding;
+    
     /**
      * Creates a OAuth Key info object
      *
@@ -245,18 +252,28 @@ public final class OAuthKeyInfo implements Serializable {
     }
 
     public String getTokenUrl() {
-        if (getType() == OAuthProviderType.TYPE_PINGID) {
-            return tokenUrl;
+        switch (getType()){
+            case TYPE_AZURE:
+            case TYPE_KEYCLOAK:
+                return getTypeSpecificUrl("token");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return tokenUrl;
         }
-        return getTypeSpecificUrl("token");
+
     }
 
     public String getLogoutUrl() {
-        if (getType() == OAuthProviderType.TYPE_PINGID) {
-            return logoutUrl;
+        switch (getType()){
+            case TYPE_AZURE:
+            case TYPE_KEYCLOAK:
+                return getTypeSpecificUrl("logout");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return logoutUrl;
         }
-        
-        return getTypeSpecificUrl("logout");
     }
 
     private String getTypeSpecificUrl(String endpoint){
@@ -325,4 +342,64 @@ public final class OAuthKeyInfo implements Serializable {
     public void setLogoutUrl(String logoutUrl) {
         this.logoutUrl = logoutUrl;
     }
+
+    public String createLogString(){
+        StringBuilder msg = new StringBuilder();
+        msg.append("{ type=").append( getType().getLabel()).append(", ")
+                .append("client=").append(getClient()).append(", ")
+                .append("realm=").append(getRealm()).append(", ")
+                .append("scope=").append(getScope()).append(", ")
+                .append("url=").append(getUrl()).append(", ")
+                .append("audience=").append(getAudience()).append(", ")
+                .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
+                .append("tokenUrl=").append(getTokenUrl()).append(", ")
+                .append("logoutUrl=").append(getLogoutUrl()).append(", ")
+                .append("skewLimit=").append(getSkewLimit()).append(", ")
+                .append("keys=[");
+        if (getKeys() != null) {
+            for (String key : getKeys().keySet()) {
+                msg.append(key + ";");
+            }
+        }
+        msg.append("]}");
+        return msg.toString();
+    }
+
+    public String getAudience() {
+        return audience;
+    }
+
+    public void setAudience(String audience) {
+        this.audience = audience;
+    }
+
+    public Integer getKeyBinding() {
+        return keyBinding;
+    }
+
+    public void setKeyBinding(Integer keyBinding) {
+        this.keyBinding = keyBinding;
+    }
+    
+    /**
+     * If this is an Azure key info, return the login server's URL, which should be the base 
+     * URL for logout/token/auth endpoints.
+     */
+    public String getLoginServerUrl() {
+        Preconditions.checkState(getType() == OAuthProviderType.TYPE_AZURE);
+        
+        String uri = getUrl();
+        uri += getUrl().endsWith("/") ? "" : "/";
+        uri += getRealm() + "/v2.0";
+        return uri;
+    }
+
+    public boolean isAudienceCheckDisabled() {
+        return audienceCheckDisabled;
+    }
+
+    public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
+        this.audienceCheckDisabled = audienceCheckDisabled;
+    }
+
 }

@@ -415,13 +415,6 @@
 			replacement-web-uri="renew.war"
 			replacement-context-root="/ejbca/renew"
 		/>
-		<war-replacement-in-module
-			replacement-tag="!--@ejbca-cmp-tcp.war@-->"
-			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${cmp.tcp.enabled}"
-			replacement-web-uri="ejbca-cmp-tcp.war"
-			replacement-context-root="/ejbca/cmp-tcp"
-		/>
 		<jar-replacement-in-module
 			replacement-tag="!--@ejbca-ws-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
@@ -569,6 +562,7 @@
                 <include name="bcpkix-jdk15on-*.jar"/>
                 <include name="bcprov-jdk15on-*.jar"/>
                 <include name="bctls-jdk15on-*.jar"/>
+				<include name="bcutil-jdk15on-*.jar"/>
                 <include name="cert-cvc-*.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-*.jar" unless="jbosseap6-specials"/>
@@ -634,7 +628,6 @@
                 <include name="certstore.war" />
                 <include name="crlstore.war" />
                 <include name="renew.war" />
-                <include name="ejbca-cmp-tcp.war" />
 				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
             	<include name="statedump-ejb.jar" />
             	<include name="configdump-ejb.jar" />
@@ -1085,6 +1078,7 @@
                 <exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/peerconnector/**"/>
                 <exclude unless="edition.is.ee" name="modules/admin-gui/resources/peerconnector/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/acme/AcmeConfigMBean.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-common-web/src/org/ejbca/core/model/services/workers/PreCertificateRevocationWorker.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ScepRaModeExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ProtocolScepHttpRATest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ClientCertificateRenewalExtension.java"/>
@@ -1601,14 +1595,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     
     <target name="validationtool-src" depends="doc, deprecated:check" description="Builds source distribution of the ValidationTool">
     	<ant dir="modules" target="validationtool-src" />
-    </target>
-
-    <target name="ejbca-cmp-tcp">
-    	<ant dir="modules" target="ejbca-cmp-tcp" />
-    </target>
-	
-    <target name="cmpTcpProxy" depends="deprecated:check" description="Builds a CMP TCP proxy. (Enterprise only)">
-    	<ant dir="modules" target="cmpTcpProxy" />
     </target>
 	
     <target name="cmpHttpProxy" depends="deprecated:check" description="Builds a CMP HTTP proxy. (Enterprise only)">

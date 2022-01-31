@@ -178,6 +178,7 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
      * @param domainNames the domain names from the certificate.
      * @return a JSON payload to send to the Google Safe Browsing Lookup API.
      */
+    @SuppressWarnings("unchecked")
     private String createJsonPayload(final String[] domainNames) {
         final JSONObject client = new JSONObject();
         final JSONObject threatInfo = new JSONObject();
@@ -256,9 +257,9 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
     }
 
     private String getValidationResult(final JSONArray matches, final String domainName) {
-        final Iterator<JSONObject> iterator = matches.iterator();
+        final Iterator<?> iterator = matches.iterator();
         while (iterator.hasNext()) {
-            final JSONObject nextMatch = iterator.next();
+            final JSONObject nextMatch = (JSONObject) iterator.next();
             final JSONObject threat = (JSONObject) nextMatch.get("threat");
             if (StringUtils.equals((String) threat.get("url"), domainName)) {
                 return domainName + " is a threat.";

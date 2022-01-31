@@ -64,12 +64,17 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
                 }
             }
             log.info("URL: " + info.getUrl());
+            log.info("Audience: " + info.getAudience());
             if (info.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
                 log.info("Realm: " + info.getRealm());
             }
             if (info.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
                 log.info("Tenant: " + info.getRealm());
                 log.info("Scope: " + info.getScope());
+                Integer keyBindingId = info.getKeyBinding();
+                if (keyBindingId != null) {
+                    log.info("Key Binding: " + keyBindingIdToName(keyBindingId).orElse("not found"));
+                }
             }
             if (info.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
                 log.info("Token URL: " + info.getTokenUrl());

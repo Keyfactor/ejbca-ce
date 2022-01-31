@@ -939,6 +939,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return ejbcaWebBean.getText("OR").toLowerCase() + " " + ejbcaWebBean.getText("DAYS").toLowerCase() + ":"
                 + ejbcaWebBean.getText("HOURS").toLowerCase() + ":" + ejbcaWebBean.getText("MINUTES").toLowerCase();
     }
+    
+    public boolean getAllowMergeDn() {
+        return profiledata.getAllowMergeDn();
+    }
+    
+    public void setAllowMergeDn(boolean allowMergeDn) {
+        profiledata.setAllowMergeDn(allowMergeDn);
+    }
 
     public boolean isUseCardNumber() {
         return profiledata.isCardNumberUsed();

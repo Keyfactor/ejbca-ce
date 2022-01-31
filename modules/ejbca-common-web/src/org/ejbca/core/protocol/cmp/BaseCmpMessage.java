@@ -68,7 +68,7 @@ public abstract class BaseCmpMessage implements Serializable {
     private byte[] getByteArrayFromAsn1Encodable(final ASN1Encodable asn1Encodable) throws IllegalStateException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            new ASN1OutputStream(baos).writeObject(asn1Encodable);
+            ASN1OutputStream.create(baos).writeObject(asn1Encodable);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
