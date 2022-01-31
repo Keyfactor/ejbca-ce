@@ -58,6 +58,7 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
@@ -368,8 +369,8 @@ public abstract class EstTestCase extends CaTestCase {
         return StringUtils.defaultIfEmpty(result, defaultValue);
     }
 
-    protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, String changeToSubjectDN, Extensions exts,
-            final KeyPair keys) throws OperatorCreationException {
+    protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, String changeToSubjectDN, String changeToSubjectAltName, 
+            Extensions exts, final KeyPair keys) throws OperatorCreationException {
         // Generate keys
 
         // Create challenge password attribute for PKCS10
@@ -397,22 +398,33 @@ public abstract class EstTestCase extends CaTestCase {
             attributesVec.add(new DERSequence(challpwdattr));
         }
         // ChangeSubjectName, RFC7030 section 4.2.1, RFC6402, section 2.8
+        final ASN1EncodableVector changesubjectnameattr = new ASN1EncodableVector(); // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
+        final ASN1EncodableVector changeSubjectName = new ASN1EncodableVector();
+        // ChangeSubjectName attribute
+        // The actual ChangeSubjectName value
+        // ChangeSubjectName ::= SEQUENCE {
+        //    subject             Name OPTIONAL,
+        //    subjectAlt          SubjectAltName OPTIONAL
+        //}
+        //(WITH COMPONENTS {..., subject PRESENT} |
+        //      COMPONENTS {..., subjectAlt PRESENT} )
+        boolean useChangeSubjectNameAttribute = false;
         if (changeToSubjectDN != null) {
-            final ASN1EncodableVector changesubjectnameattr = new ASN1EncodableVector(); // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
-            // ChangeSubjectName attribute
             changesubjectnameattr.add(EstConfiguration.id_cmc_changeSubjectName); // Type
-            ASN1EncodableVector changevalues = new ASN1EncodableVector();
-            // The actual ChangeSubjectName value
-            // ChangeSubjectName ::= SEQUENCE {
-            //    subject             Name OPTIONAL,
-            //    subjectAlt          SubjectAltName OPTIONAL
-            //}
-            //(WITH COMPONENTS {..., subject PRESENT} |
-            //      COMPONENTS {..., subjectAlt PRESENT} )
-            ASN1EncodableVector changeSubjectName = new ASN1EncodableVector();
             final X500Name changenameValue = new X500Name(CeSecoreNameStyle.INSTANCE, changeToSubjectDN);
             changeSubjectName.add(changenameValue);
-            // No altName
+            useChangeSubjectNameAttribute = true;
+        }
+        if (changeToSubjectAltName != null) {
+            if (!useChangeSubjectNameAttribute) {
+                changesubjectnameattr.add(EstConfiguration.id_cmc_changeSubjectName);
+            }
+            final GeneralNames altName = CertTools.getGeneralNamesFromAltName(changeToSubjectAltName);
+            changeSubjectName.add(altName);
+            useChangeSubjectNameAttribute = true;
+        }
+        if (useChangeSubjectNameAttribute) {
+            final ASN1EncodableVector changevalues = new ASN1EncodableVector();    
             changevalues.add(new DERSequence(changeSubjectName));
             final DERSet values = new DERSet(changevalues); // values
             changesubjectnameattr.add(values);

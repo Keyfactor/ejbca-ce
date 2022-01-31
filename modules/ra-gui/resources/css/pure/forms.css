@@ -235,6 +235,12 @@ since IE8 won't execute CSS that contains a CSS3 selector.
     width: 10em;
     margin: 0 1em 0 0;
 }
+.pure-form-aligned .pure-control-group input[type=checkbox] {
+    margin-right: 5px;
+}
+.pure-form-aligned .pure-control-group input[type=checkbox] + label {
+    width: auto;
+}
 .pure-form-aligned .pure-controls {
     margin: 1.5em 0 0 11em;
 }
