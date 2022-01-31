@@ -19,12 +19,10 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResu
 
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import static org.ejbca.ui.web.rest.api.config.JsonDateSerializer.DATE_FORMAT_ISO8601;
+import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestUtil.parseDateFromStringValue;
 
 /**
  * JSON input for a certificate search containing multiple search criteria and output limitation.
@@ -37,7 +35,7 @@ import static org.ejbca.ui.web.rest.api.config.JsonDateSerializer.DATE_FORMAT_IS
  *
  * @version $Id: SearchCertificatesRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
-public class SearchCertificatesRestRequest {
+public class SearchCertificatesRestRequest implements SearchCertificateCriteriaRequest {
 
     @ValidSearchCertificateMaxNumberOfResults
     private Integer maxNumberOfResults;
@@ -54,6 +52,7 @@ public class SearchCertificatesRestRequest {
         this.maxNumberOfResults = maxNumberOfResults;
     }
 
+    @Override
     public List<SearchCertificateCriteriaRestRequest> getCriteria() {
         return criteria;
     }
@@ -212,15 +211,6 @@ public class SearchCertificatesRestRequest {
                 }
             }
             return raCertificateSearchRequest;
-        }
-    }
-
-    private static Date parseDateFromStringValue(final String dateString) throws RestException {
-        try {
-            return DATE_FORMAT_ISO8601.parse(dateString);
-        }
-        catch (ParseException pEx) {
-            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Cannot handle the request", pEx);
         }
     }
 

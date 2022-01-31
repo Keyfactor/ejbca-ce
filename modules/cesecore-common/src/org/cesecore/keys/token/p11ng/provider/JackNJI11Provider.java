@@ -18,6 +18,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.security.MessageDigestSpi;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -29,7 +30,9 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -42,15 +45,21 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
+import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.token.AzureProvider.AzureCipher;
 import org.cesecore.keys.token.p11ng.MechanismNames;
 import org.cesecore.util.StringTools;
 import org.pkcs11.jacknji11.CKM;
+import org.pkcs11.jacknji11.CKRException;
+import org.pkcs11.jacknji11.LongRef;
 
 /**
  * Provider using JackNJI11.
@@ -65,10 +74,10 @@ public class JackNJI11Provider extends Provider {
     public static final String NAME = "JackNJI11";
 
     public JackNJI11Provider() {
-        super(NAME, 1.2, "JackNJI11 Provider");
+        super(NAME, 1.3, "JackNJI11 Provider");
  
-        putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "MD5withRSA", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "NONEwithRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA1withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA224withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA256withRSA", MySignature.class.getName()));
@@ -76,10 +85,16 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Signature", "SHA512withRSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "NONEwithDSA", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA1withDSA", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "NONEwithRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA1withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA256withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA384withRSAandMGF1", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", "SHA512withRSAandMGF1", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "NONEwithRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA1withRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA256withRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA384withRSASSA-PSS", MySignature.class.getName()));
+        putService(new MySigningService(this, "Signature", "SHA512withRSASSA-PSS", MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, MySignature.class.getName()));
         putService(new MySigningService(this, "Signature", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, MySignature.class.getName()));
@@ -174,30 +189,35 @@ public class JackNJI11Provider extends Provider {
         private long session;
         private ByteArrayOutputStream buffer;
         private final int type;
+        private AlgorithmParameterSpec params;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
-
-        // constant for type digesting, we do the hashing ourselves
-        private final static int T_DIGEST = 1;
-        // constant for type update, token does everything
-        private final static int T_UPDATE = 2;
-        // constant for type raw, used with NONEwithRSA and EdDSA only
-        private final static int T_RAW = 3;
         
+        /** A static HashMap that is used to cache how large byte buffer we need to allocate 
+         * to hold the signature created by a specific key for a specific signature algorithm
+         */
+        private static final HashMap<Integer, Integer> bufLenCache = new HashMap<>();
+        // code snitched from Eclipse's auto-generation of hashCode methods
+        public int bufLenCacheKey(long slot, long keyRef, String algorithm) {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + (int) (slot ^ (slot >>> 32));
+            result = prime * result + (int) (keyRef ^ (keyRef >>> 32));
+            result = prime * result + algorithm.hashCode();
+            return result;
+        }
         
         @SuppressWarnings("unused")
         public MySignature(Provider provider, String algorithm) {
             super();
-            this.algorithm = algorithm;
-            if (log.isTraceEnabled()) {
-                log.info("Creating Signature provider for algorithm: " + algorithm + ", and provider: " + provider);
+            this.algorithm = algorithm;            
+            if (MechanismNames.typeFromSigAlgoName(algorithm).isPresent()) {
+                type = MechanismNames.typeFromSigAlgoName(algorithm).get();                
+            } else {
+                throw new RuntimeException("Algorithm " + algorithm + " is not supported, it has not PKCS#11 signature type defined.");
             }
-            if (algorithm.equals("NONEwithRSA") || algorithm.startsWith("Ed")) {
-                type = T_RAW;
-            } else if (algorithm.contains("ECDSA")) {
-                type = T_DIGEST;
-            } else { // SHA256WithRSA, etc
-                type = T_UPDATE;
+            if (log.isTraceEnabled()) {
+                log.trace("Creating Signature provider for algorithm: " + algorithm + ", and provider " + provider + ", type=" + type);
             }
         }
 
@@ -236,7 +256,14 @@ public class JackNJI11Provider extends Provider {
                     final long LUNA_CKM_EDDSA = (0x80000000L + 0xC03L);
                     mechanism = LUNA_CKM_EDDSA;
                 }
-                byte[] param = MechanismNames.CKM_PARAMS.get(mechanism);
+                final byte[] param;
+                if (params == null) {
+                    param = MechanismNames.CKM_PARAMS.get(this.algorithm);
+                } else if (params instanceof PSSParameterSpec) {
+                    param = MechanismNames.encodePssParameters((PSSParameterSpec) params);
+                } else {
+                    throw new InvalidKeyException("Unsupported algorithm parameter: " + params);
+                }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("engineInitSign: session: " + session + ", object: " +
                             myKey.getObject() + ", sigAlgoValue: 0x" + Long.toHexString(mechanism) + ", param: " + StringTools.hex(param));
@@ -251,7 +278,7 @@ public class JackNJI11Provider extends Provider {
                     myKey.getSlot().releaseSession(session);
                     hasActiveSession = false;
                 }
-                throw e;
+                throw new InvalidKeyException(e);
             }
         }
 
@@ -263,7 +290,7 @@ public class JackNJI11Provider extends Provider {
         @Override
         protected void engineUpdate(byte[] bytes, int offset, int length) throws SignatureException {
             switch (type) {
-            case T_UPDATE:
+            case MechanismNames.T_UPDATE:
                 if (offset != 0 || length != bytes.length) {
                     byte[] newArray = Arrays.copyOfRange(bytes, offset, (offset + length));
                     myKey.getSlot().getCryptoki().SignUpdate(session, newArray);
@@ -271,8 +298,8 @@ public class JackNJI11Provider extends Provider {
                     myKey.getSlot().getCryptoki().SignUpdate(session, bytes);
                 }
                 break;
-            case T_RAW: // No need to call SignUpdate as hash is supplied already
-            case T_DIGEST: // Will hash the buffer in engineSign
+            case MechanismNames.T_RAW: // No need to call SignUpdate as hash is supplied already
+            case MechanismNames.T_DIGEST: // Will hash the buffer in engineSign
                 if (buffer == null) {
                     buffer = new ByteArrayOutputStream();
                 }
@@ -285,17 +312,57 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected byte[] engineSign() throws SignatureException {
-            if (log.isDebugEnabled()) {
-                log.debug("engineSign with " + type);
-            }
             try {
-                if (type == T_UPDATE) {
+                if (type == MechanismNames.T_UPDATE) {
                     return myKey.getSlot().getCryptoki().SignFinal(session);
-                } else if (type == T_DIGEST) {
+                } else if (type == MechanismNames.T_DIGEST) {
                     // Since it's T_DIGEST, hash the buffer before signing it
-                    final byte[] digest = AlgorithmTools.getDigestFromAlgoName(this.algorithm).digest(buffer.toByteArray());
-                    final byte[] rawSig = myKey.getSlot().getCryptoki().Sign(session, digest);
+                    final MessageDigest md = AlgorithmTools.getDigestFromAlgoName(this.algorithm);
+                    final byte[] digest = md.digest(buffer.toByteArray());
+                    final byte[] sigInput;
+                    if (MechanismNames.longFromSigAlgoName(this.algorithm).get() == CKM.RSA_PKCS) {
+                        // RSA PKCS#1 input value to the signature operation is a DER encoded DigestInfo structure
+                        // PKCS#1 [RFC3447] requires that the padding used for RSA signatures (EMSA-PKCS1-v1_5) MUST use SHA2 AlgorithmIdentifiers with NULL parameters
+                        final DigestInfo di = new DigestInfo(new AlgorithmIdentifier(new DefaultDigestAlgorithmIdentifierFinder().find(md.getAlgorithm()).getAlgorithm(), 
+                                DERNull.INSTANCE), digest);
+                        sigInput = di.getEncoded(ASN1Encoding.DER);
+                    } else {
+                        // RSA_PKCS_PSS, ECDSA and EDDSA all take the raw hash as input
+                        sigInput = digest;
+                    }
+                    
+                    // Make the signature, see if we have cached the length of the signature for this slot, key and algorithm
+                    // so that we can optimize away the call to check for the resulting signature length
+                    final int key = bufLenCacheKey(myKey.getSlot().getId(), myKey.getObject(), algorithm);
+                    final Integer bufLen = bufLenCache.get(key); 
+                    byte[] rawSig;
+                    if (bufLen != null) {
+                        rawSig = new byte[bufLen];
+                        try {
+                            myKey.getSlot().getCryptoki().Sign(session, sigInput, rawSig, new LongRef(bufLen));
+                        } catch (CKRException e) {
+                            // Assuming CKR_BUFFER_TOO_SMALL, fallback to multi-call, where the first call asks the HSM 
+                            // for the size of buffer needed, and the second call calls with that size of a buffer 
+                            // (handled internally in JackNJI11) 
+                            if (log.isDebugEnabled()) {
+                                log.debug("CKRException calling Sign with pre-allocated buffer of length " + bufLen + ": " + e.getMessage());
+                            }
+                            rawSig = myKey.getSlot().getCryptoki().Sign(session, sigInput);
+                            // Add the signature length to the cache
+                            bufLenCache.put(key, rawSig.length);
+                        }
+                    } else {
+                        rawSig = myKey.getSlot().getCryptoki().Sign(session, sigInput);
+                        // Add the signature length to the cache
+                        bufLenCache.put(key, rawSig.length);
+                    }
 
+                    // RSA signing by the HSM returns the padded signature, ready to use
+                    if (this.algorithm.contains("RSA")) {
+                        return rawSig;
+                    }
+                    // If not RSA, assume it's EC/Ed and continue here to assemble the signature as ECDSA HSM 
+                    // signing returns the raw signature, but what is put in signed objects is an ASN.1 encoded version
                     final BigInteger[] sig = new BigInteger[2];
                     final byte[] first = new byte[rawSig.length / 2];
                     final byte[] second = new byte[rawSig.length / 2];
@@ -306,20 +373,55 @@ public class JackNJI11Provider extends Provider {
                     sig[1] = new BigInteger(1, second);
 
                     if (log.isDebugEnabled()) {
-                        log.debug("Parsed signature: " +  System.lineSeparator() +
-                                       "   X: " + sig[0].toString() + System.lineSeparator() +
-                                       "   Y: " + sig[1].toString());
+                        log.debug("Parsed EC signature: " +  System.lineSeparator() +
+                                "   X: " + sig[0].toString() + System.lineSeparator() +
+                                "   Y: " + sig[1].toString());
                     }
 
                     // DER encode the elliptic curve point as a DER sequence with two integers (X, Y)
                     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     final DERSequenceGenerator seq = new DERSequenceGenerator(baos);
+                    // For RSA and EdDSA the signature lengths are fixed - with RSA it's the size of the modulus, 
+                    // Ed25519 is 64 bytes, Ed448 is 114 bytes.
+                    // ECDSA/DSA is a bit tricky though - they're both ASN.1 encoded, for DSA it's defined as:
+                    // Dss-Sig-Value  ::=  SEQUENCE  {
+                    //    r       INTEGER,
+                    //    s       INTEGER  }
+                    // ECDSA is the same. This means they can vary, INTEGER is signed, so if r or s encode to bits where the top bit is 1, 
+                    // the rules require adding 8 bits of zero as a pad byte.
+                    // Using ASN1Integer, it will automatically add the padding when necessary
                     seq.addObject(new ASN1Integer(sig[0]));
                     seq.addObject(new ASN1Integer(sig[1]));
                     seq.close();
                     return baos.toByteArray();
                 } else { // T_RAW
-                    return myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                    // Ed25519 and Ed448 uses T_RAW
+                    // Make the signature, see if we have cached the length of the signature for this key and algorithm
+                    // so that we can optimize away the call to check for the resulting signature length
+                    final int key = Long.valueOf(myKey.getObject()).hashCode() ^ this.algorithm.hashCode();
+                    final Integer bufLen = bufLenCache.get(key); 
+                    byte[] rawSig;
+                    if (bufLen != null) {
+                        rawSig = new byte[bufLen];
+                        try {
+                            myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray(), rawSig, new LongRef(bufLen));
+                        } catch (CKRException e) {
+                            // Assuming CKR_BUFFER_TOO_SMALL, fallback to multi-call, where the first call asks the HSM 
+                            // for the size of buffer needed, and the second call calls with that size of a buffer 
+                            // (handled internally in JackNJI11) 
+                            if (log.isDebugEnabled()) {
+                                log.debug("CKRException calling C_Sign with pre-allocated buffer of length " + bufLen + ", retrying calling with len=0 to fetch the need length: " + e.getMessage());
+                            }
+                            rawSig = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                            // Add the signature length to the cache
+                            bufLenCache.put(key, rawSig.length);
+                        }
+                    } else {
+                        rawSig = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                        // Add the signature length to the cache
+                        bufLenCache.put(key, rawSig.length);
+                    }
+                    return rawSig;
                 }
             } catch (IOException e) {
                 throw new SignatureException(e);
@@ -351,6 +453,7 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected void engineSetParameter(AlgorithmParameterSpec params) throws InvalidAlgorithmParameterException {
+            this.params = params;
         }
         
         @Override
@@ -423,7 +526,7 @@ public class JackNJI11Provider extends Provider {
      */
     public static class MyCipher extends CipherSpi {
 
-        private static final Logger log = Logger.getLogger(AzureCipher.class);
+        private static final Logger log = Logger.getLogger(MyCipher.class);
 
         private int opmode;
         private String algorithm;

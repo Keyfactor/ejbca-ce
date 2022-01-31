@@ -28,7 +28,6 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -120,6 +119,7 @@ import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.IncompletelyIssuedCertificateInfo;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -1335,8 +1335,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (ei != null) {
             final List<String> permittedNC = ei.getNameConstraintsPermitted();
             final List<String> excludedNC = ei.getNameConstraintsExcluded();
-            if (!certProfile.getUseNameConstraints() && (permittedNC != null && !permittedNC.isEmpty()) || (excludedNC != null && !excludedNC.isEmpty())) {
-                throw new CertificateCreateException("Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
+            if (!certProfile.getUseNameConstraints()
+                    && ((permittedNC != null && !permittedNC.isEmpty()) || (excludedNC != null && !excludedNC.isEmpty()))) {
+                throw new CertificateCreateException(
+                        "Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
             }
         }
 
@@ -1556,7 +1558,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (certGenParams != null && certGenParams.getAuthenticationToken() != null && 
                     certGenParams.getCertificateValidationDomainService() != null && certGenParams.getCertificateValidationDomainService().willValidateInPhase(IssuancePhase.PRESIGN_CERTIFICATE_VALIDATION, this)) {
                 try {
-                    PrivateKey presignKey = CAConstants.getPreSignPrivateKey(sigAlg);
+                    PrivateKey presignKey = CAConstants.getPreSignPrivateKey(sigAlg, caPublicKey);
                     if (presignKey == null) {
                         throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
                     }
@@ -1574,7 +1576,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                         // Create a new authorityKeyIdentifier for the fake key
                         // SHA1 used here, but it's not security relevant here as this is the RFC5280 Key Identifier
                         JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                        AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg));
+                        AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg, caPublicKey));
                         certbuilder.replaceExtension(Extension.authorityKeyIdentifier, ext.isCritical(), aki.getEncoded());
                     }
                     X509CertificateHolder presignCertHolder = certbuilder.build(presignSigner);
@@ -1637,6 +1639,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 } else if (certGenParams.getSctDataCallback() == null) {
                     log.debug("Not logging to CT. No sctData persistance callback was passed.");
                 } else {
+                   // Commit certificate information in case of a rollback, power outage, or similar. This will be picked up by an IncompleteIssuanceServiceWorker (if enabled)
+                   final int crlPartitionIndex = getCAInfo().determineCrlPartitionIndex(cert);
+                   certGenParams.addToIncompleteIssuanceJournal(new IncompletelyIssuedCertificateInfo(getCAId(), serno, new Date(), subject, cert, cacert, crlPartitionIndex));
                    // Get certificate chain
                    final List<Certificate> chain = new ArrayList<>();
                    chain.add(cert);
@@ -1989,7 +1994,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final Date thisUpdate = new Date();
         final Date nextUpdate = new Date();
         // Set standard nextUpdate time
-        long nextUpdateTime = nextUpdate.getTime() + crlPeriod;
+        long nextUpdateTime = nextUpdate.getTime() + crlPeriod - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
         nextUpdate.setTime(nextUpdateTime);
         // Check if the time is too large, then set time to "max/final" time according to RFC5280 section 4.1.2.5, 99991231235959Z
         TimeZone tz = TimeZone.getTimeZone("GMT");
@@ -2072,15 +2077,20 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
         boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
         if(keepexpiredcertsoncrl) {
-            SimpleDateFormat sdf = new SimpleDateFormat();
-            final String GMTdatePattern = "yyyyMMddHHmmss";
-            sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
-            sdf.applyPattern(GMTdatePattern);
             // For now force parameter with date equals NotBefore of CA certificate, or now
-            final Date keepDate = cacert != null ? cacert.getNotBefore() : new Date();
-            crlgen.addExtension(ExpiredCertsOnCRL, false, new DERGeneralizedTime(keepDate));
+            final DERGeneralizedTime keepDate;
+            if (cacert != null) {
+                keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+            } else {
+                // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)
+                SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
+                dateF.setTimeZone(new SimpleTimeZone(0, "Z"));
+                String d = dateF.format(new Date()) + "Z";
+                keepDate = new DERGeneralizedTime(d);
+            }
+            crlgen.addExtension(ExpiredCertsOnCRL, false, keepDate);
             if (log.isDebugEnabled()) {
-                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: "+keepDate);
+                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: " + keepDate.getTime());
             }
         }
 
