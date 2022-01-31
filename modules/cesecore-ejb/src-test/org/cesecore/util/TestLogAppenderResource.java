@@ -20,6 +20,7 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.WriterAppender;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.rules.ExternalResource;
 
 // TODO ECA-8963: Extract into a separate module ejbca-unittest, as it is common utility class that can be reused.
@@ -43,8 +44,7 @@ public class TestLogAppenderResource extends ExternalResource {
     @Override
     protected void before() {
         final Configuration config = context.getConfiguration();
-        final Map.Entry<String, Appender> existing = config.getAppenders().entrySet().iterator().next();
-        appender = WriterAppender.newBuilder().setConfiguration(config).setName(APPENDER_NAME).setLayout(existing.getValue().getLayout()).setTarget(writer).build();
+        appender = WriterAppender.newBuilder().setConfiguration(config).setName(APPENDER_NAME).setLayout(PatternLayout.newBuilder().withPattern("%level - %m%n").build()).setTarget(writer).build();
         appender.start();
         context.getRootLogger().addAppender(appender);
     }

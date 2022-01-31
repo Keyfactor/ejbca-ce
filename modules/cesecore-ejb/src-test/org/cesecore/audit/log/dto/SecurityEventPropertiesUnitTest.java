@@ -198,7 +198,7 @@ public class SecurityEventPropertiesUnitTest {
         final Map<String, Object> resultMap = securityEventProperties.toMap();
         // then
         assertEquals("Resulting map has unexpected number of elements.", 0, resultMap.keySet().size());
-        assertTrue("Event log is missing.", testLog.getOutput().contains(prefix + "Got an entry with null key, excluding from the result map."));
+        assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Got an entry with null key, excluding from the result map."));
     }
 
     @Test
@@ -217,7 +217,7 @@ public class SecurityEventPropertiesUnitTest {
         final Map<String, Object> resultMap = securityEventProperties.toMap();
         // then
         assertEquals("Resulting map has unexpected number of elements.", 1, resultMap.keySet().size());
-        assertTrue("Event log is missing.", testLog.getOutput().contains(prefix + "The standalone property [msg] was overridden by property in custom map."));
+        assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - The standalone property [msg] was overridden by property in custom map."));
         assertEquals("msg was not mapped from customMap.", customValue, resultMap.get(SecurityEventProperties.MSG));
     }
 
