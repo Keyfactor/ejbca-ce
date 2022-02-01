@@ -366,6 +366,8 @@ public class CryptokiDevice {
             // After closing all sessions we don't want to keep references to them any longer, clear all our session caches
             idleSessions.clear();
             activeSessions.clear();
+            // Clear object and attribute caches
+            cryptoki.clear();
         }
         
         /** Finds a PrivateKey object by either certificate label or by private key label 
@@ -373,8 +375,8 @@ public class CryptokiDevice {
          */
         // TODO: Support alias that is hexadecimal or label or Id
         private Long getPrivateKeyRefByLabel(final Long session, final String alias) {
-            // We need to optimize so we don't make any unessecary calls to the HSM, as latency for network HSMs
-            // can easily destroy performance of unessecary FindObject calls are made. So first we check in the 
+            // We need to optimize so we don't make any unnecessary calls to the HSM, as latency for network HSMs
+            // can easily destroy performance of unnecessary FindObject calls are made. So first we check in the 
             // cache only, only if not in the cache will we fall back to look on the HSM, hopefully populating
             // the cache until next time we try to get the private key
             Long ret = getPrivateKeyRefByLabel(session, alias, true);
@@ -402,14 +404,22 @@ public class CryptokiDevice {
                     LOG.warn("Missing ID attribute on certificate object with label " + alias);
                     return null;
                 }
-                privateKeyRefs = findPrivateKeyObjectsByID(session, ckaId.getValue());
+                if (onlyCache) {
+                    privateKeyRefs = findPrivateKeyObjectsByIDInCache(session, ckaId.getValue());
+                } else {
+                    privateKeyRefs = findPrivateKeyObjectsByID(session, ckaId.getValue());                    
+                }
                 if (privateKeyRefs.size() > 1) {
                     LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()) + " for alias '" + alias + "'.");
                     return null;
                 }
             } else {
                 // In this case, we assume the private/public key has the alias in the ID attribute
-                privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));
+                if (onlyCache) {
+                    privateKeyRefs = findPrivateKeyObjectsByIDInCache(session, alias.getBytes(StandardCharsets.UTF_8));
+                } else {
+                    privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));                    
+                }
                 if (privateKeyRefs.size() > 1) {
                     LOG.warn("More than one private key object sharing CKA_LABEL=" + alias);
                     return null;
@@ -2066,8 +2076,7 @@ public class CryptokiDevice {
                 return (certificateRefs == null ? Collections.emptyList() : certificateRefs);
             } catch (CKRException ex) {
                 throw new EJBException("Failed to find certificate objects.", ex);
-            }            
-            
+            }
         }
 
         /**
@@ -2095,7 +2104,7 @@ public class CryptokiDevice {
          * @return found public key objects, which can be an empty list ((Collections.emptyList)) if no objects are found
          */
         List<Long> findPublicKeyObjectsByID(Long session, byte[] ckaIdValue) {
-            return findPublicKeyObjectsByIDInternal(session, ckaIdValue, false);
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PUBLIC_KEY, false);
         }
         /**
          * Fetches public key objects with given ID, only returning cached object if cache is enabled and object is present in the cache, not returning anything otherwise.
@@ -2105,25 +2114,26 @@ public class CryptokiDevice {
          * @return found public key objects, which can be an empty list ((Collections.emptyList)) if no objects are found
          */
         List<Long> findPublicKeyObjectsByIDInCache(Long session, byte[] ckaIdValue) {
-            return findPublicKeyObjectsByIDInternal(session, ckaIdValue, true);
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PUBLIC_KEY, true);
         }
         /**
          * @param onlyCache Only look into the cache, and return empty list if there is nothing in the cache, ignoring calling the underlying PKCS#11 api
+         * @param type CKO.PUBLIC_KEY or CKO.PRIVATE_KEY 
          */
-        private List<Long> findPublicKeyObjectsByIDInternal(Long session, byte[] ckaIdValue, boolean onlyCache) {
+        private List<Long> findKeyObjectsByIDInternal(Long session, byte[] ckaIdValue, long type, boolean onlyCache) {
              try {
                  List<Long> pubkeyRefs = null;
                  if (onlyCache) {
-                     Optional<List<Long>> cacheret = cryptoki.findObjectsInCache(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
+                     Optional<List<Long>> cacheret = cryptoki.findObjectsInCache(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));
                      if (cacheret.isPresent()) {
                          pubkeyRefs = cacheret.get(); 
                      }
                  } else {
-                     pubkeyRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));                     
+                     pubkeyRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));                     
                  }
                  return (pubkeyRefs == null ? Collections.emptyList() : pubkeyRefs);
              } catch (CKRException ex) {
-                 throw new EJBException("Failed to find public key objects.", ex);
+                 throw new EJBException("Failed to find key objects of type (2=pub, 3=priv) " + type, ex);
              }
          }
 
@@ -2134,14 +2144,21 @@ public class CryptokiDevice {
          *
          * @param session session in HSM slot used to fetch objects 
          * @param ckaIdValue CKA_ID of a private key
-         * @return found private key objects, which can be an empty array if no objects are found
+         * @return found private key object references, which can be an empty array if no objects are found
          */
         public List<Long> findPrivateKeyObjectsByID(Long session, byte[] ckaIdValue) {
-            try {
-                return cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaIdValue));
-            } catch (CKRException ex) {
-                throw new EJBException("Failed to find private key objects.", ex);
-            }
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PRIVATE_KEY, false);
+        }
+
+        /**
+         * Fetches private key objects with given ID, only returning cached object if cache is enabled and object is present in the cache, not returning anything otherwise.
+         * 
+         * @param session session in HSM slot used to fetch objects 
+         * @param ckaIdValue CKA_ID of public key
+         * @return found private key object references, which can be an empty list ((Collections.emptyList)) if no objects are found
+         */
+        List<Long> findPrivateKeyObjectsByIDInCache(Long session, byte[] ckaIdValue) {
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PRIVATE_KEY, true);
         }
 
         /**
