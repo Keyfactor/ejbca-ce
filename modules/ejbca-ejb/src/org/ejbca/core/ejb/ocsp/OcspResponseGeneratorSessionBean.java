@@ -1630,7 +1630,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             continue;
                         }
                         if(certificateWrapper.getCertificateData().getIssuerDN().equals(caCertificateSubjectDn)) {
-                            log.debug("ocsp issuer is signing CA.");
                             break;
                         } else {
                             Certificate fetchedCertificate = certificateWrapper.getCertificate();
@@ -1718,7 +1717,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         // we will also use certificate profile settings for issuing certificate
                     }
                     if (extensionOids.isEmpty()) {
-                        log.info("extensionOids empty");
                         status = certificateStoreSession.getStatus(issuerDnOcspRequest, certId.getSerialNumber());
                     } else {
                         certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(issuerDnOcspRequest, certId.getSerialNumber());
@@ -1727,8 +1725,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     if (!isPreSigning && transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, String.valueOf(status.certificateProfileId));
                     }
-                    log.info("ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate(): " + 
-                                    ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate());
                     // If we have an OcspKeyBinding configured for this request, we override the default value
                     if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                         nextUpdate = ocspSigningCacheEntry.getOcspKeyBinding().getUntilNextUpdate()*1000L;
