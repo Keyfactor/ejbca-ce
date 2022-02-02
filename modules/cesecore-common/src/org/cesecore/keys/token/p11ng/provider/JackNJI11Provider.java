@@ -516,7 +516,7 @@ public class JackNJI11Provider extends Provider {
     private static class MyMessageDigiest extends MessageDigestSpi {
         // While this MessageDigiest "implementation" doesn't do anything currently, it's required
         // in order for MGF1 Algorithms to work since BC performs a sanity check before
-        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)
+        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.OperatorHelper.notDefaultPSSParams(...)
         @SuppressWarnings("unused")
         public MyMessageDigiest(Provider provider, String algorithm) {
             super();
