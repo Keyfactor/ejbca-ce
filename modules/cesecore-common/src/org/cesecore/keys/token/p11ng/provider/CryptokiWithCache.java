@@ -10,6 +10,7 @@
 
 package org.cesecore.keys.token.p11ng.provider;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKM;
@@ -59,18 +60,11 @@ class CryptokiWithCache implements CryptokiFacade {
         }
     }
 
-    private class TimestampedCkaSet {
+    private class CkaSet {
         public final Set<CKA> ckas;
-        public final long timestamp;
 
-        public TimestampedCkaSet(final Set<CKA> ckas) {
+        public CkaSet(final Set<CKA> ckas) {
             this.ckas = ckas;
-            this.timestamp = System.currentTimeMillis();
-        }
-
-        boolean isExpired() {
-            // Hard coded cache time of 2 minutes
-            return (System.currentTimeMillis() - (120 * 1000)) > timestamp;
         }
 
         @Override
@@ -80,10 +74,10 @@ class CryptokiWithCache implements CryptokiFacade {
 
         @Override
         public boolean equals(final Object o) {
-            if (o.getClass() != TimestampedCkaSet.class) {
+            if (o.getClass() != CkaSet.class) {
                 return false;
             }
-            final TimestampedCkaSet timestampedCka = (TimestampedCkaSet) o;
+            final CkaSet timestampedCka = (CkaSet) o;
             return timestampedCka.ckas.equals(this.ckas);
         }
 
@@ -91,16 +85,16 @@ class CryptokiWithCache implements CryptokiFacade {
         public String toString() {
             return String.format(System.lineSeparator() +
                     "{" + System.lineSeparator() +
-                    "    timestamp => %s" + System.lineSeparator() +
                     "    CKA => %s" + System.lineSeparator() +
-                    "}" + System.lineSeparator(), timestamp, ckas);
+                    "}" + System.lineSeparator(), ckas);
         }
     }
 
     private static final Logger log = Logger.getLogger(CryptokiWithCache.class);
     private final CryptokiFacade api;
     private final LinkedHashMap<AttributeKey, CKA> attributesCache = new LinkedHashMap<>();
-    private final LinkedHashMap<TimestampedCkaSet, List<Long>> objectsCache = new LinkedHashMap<>();
+    // In the object cache we want a timestamp so cache entries can expire for example in case a certificate object is changed
+    private final LinkedHashMap<CkaSet, Pair<Long, List<Long>>> objectsCache = new LinkedHashMap<>();
     
     /**
      * 
@@ -112,38 +106,49 @@ class CryptokiWithCache implements CryptokiFacade {
     }
 
     @Override
+    public void clear() {
+        attributesCache.clear();
+        objectsCache.clear();
+    }
+    
+    @Override
     public List<Long> findObjects(final long session, final CKA... ckas) {
-        final Optional<List<Long>> objectRefsFromCache = findObjectsInCache(session, ckas);
-        if (objectRefsFromCache.isPresent()) {
-            return new ArrayList<>(objectRefsFromCache.get());
-        } else {
-            if (log.isTraceEnabled()) {
-                log.trace(String.format("Cache miss, calling api.findObjects(session = %s, cka = %s)", session, Arrays.asList(ckas)));
+        final CkaSet key = new CkaSet(Arrays.stream(ckas).collect(toSet()));
+        final Pair<Long, List<Long>> objectRefsFromCache = objectsCache.get(key);
+        if (objectRefsFromCache != null) {
+            // Hard coded cache time of 2 minutes
+            if ( !((System.currentTimeMillis() - (120 * 1000)) > objectRefsFromCache.getLeft()) ) {
+                // Not expired return value
+                return new ArrayList<>(objectRefsFromCache.getRight()); // Return copy
             }
-            final List<Long> objectRefsFromApi = api.findObjects(session, ckas);
-            objectsCache.put(new TimestampedCkaSet(Arrays.stream(ckas).collect(toSet())), objectRefsFromApi);
-            // Return a copy to the cache can be modified while these search results are used
-            return new ArrayList<>(objectRefsFromApi);
         }
+        // No entry in cache, or cache expired
+        if (log.isTraceEnabled()) {
+            log.trace(String.format("Cache miss, calling api.findObjects(session = %s, cka = %s)", session, Arrays.asList(ckas)));
+        }
+        final List<Long> objectRefsFromApi = api.findObjects(session, ckas);
+        // It may be an empty list that we store in the cache as we cache "not found" as well
+        objectsCache.put(key, Pair.of(System.currentTimeMillis(), objectRefsFromApi));
+        // Return a copy to the cache for free use by the caller
+        return new ArrayList<>(objectRefsFromApi);
     }
 
     @Override
     public Optional<List<Long>> findObjectsInCache(final long session, final CKA... ckas) {
-        objectsCache.keySet().removeIf(timestampedCkaList -> timestampedCkaList.isExpired());
-        final List<Long> objectRefsFromCache = objectsCache.get(new TimestampedCkaSet(Arrays.stream(ckas).collect(toSet())));
+        final Pair<Long, List<Long>> objectRefsFromCache = objectsCache.get(new CkaSet(Arrays.stream(ckas).collect(toSet())));
         if (log.isTraceEnabled()) {
-            log.trace("Attempting to find objects in cache. Found " + objectRefsFromCache);
+            log.trace("Attempting to find objects in cache. Found " + objectRefsFromCache.getRight());
             log.trace("Searching for objects with all these attributes set: " + Arrays.stream(ckas).map(cka -> cka.type).collect(toSet()));
             log.trace("Content of the objects cache: " + objectsCache);
         }
-        // Return a copy to the cache can be modified while these search results are used
-        return objectRefsFromCache == null ? Optional.empty() : Optional.of(new ArrayList<>(objectRefsFromCache));
+        // Return a copy to the cache for free use by the caller
+        return objectRefsFromCache == null ? Optional.empty() : Optional.of(new ArrayList<>(objectRefsFromCache.getRight()));
     }
 
     @Override
     public void destroyObject(final long session, final long objectRef) {
         attributesCache.keySet().removeIf(attributeKey -> attributeKey.objectRef == objectRef);
-        objectsCache.values().forEach(objectRefs -> objectRefs.remove(objectRef));
+        objectsCache.values().forEach(objectRefs -> objectRefs.getRight().remove(objectRef));
         api.destroyObject(session, objectRef);
     }
 
