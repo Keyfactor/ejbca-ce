@@ -3,11 +3,11 @@ package org.cesecore.certificate.ca.its.region;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bouncycastle.oer.its.CountryAndRegions;
-import org.bouncycastle.oer.its.CountryOnly;
-import org.bouncycastle.oer.its.GeographicRegion;
-import org.bouncycastle.oer.its.IdentifiedRegion;
-import org.bouncycastle.oer.its.Region;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryOnly;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Region;
 
 public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
 

@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.oer.its.GeographicRegion;
-import org.bouncycastle.oer.its.IdentifiedRegion;
-import org.bouncycastle.oer.its.RectangularRegion;
-import org.bouncycastle.oer.its.SequenceOfRectangularRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.RectangularRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfRectangularRegion;
 
 public class RectangularRegions implements ItsGeographicElement {
 
