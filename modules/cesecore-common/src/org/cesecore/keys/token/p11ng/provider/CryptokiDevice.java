@@ -159,9 +159,9 @@ public class CryptokiDevice {
             }
         }
         
-        // TODO: Assumes static slots
+        // Assumes static slots, not dynamically changing for every call, which works with all known HSMs at this time (2022)
         if (LOG.isTraceEnabled()) {
-            LOG.trace("c.GetSlotList(true)");
+            LOG.trace("c.GetSlotList(true): " + libName);
         }
         try {
             final long[] slotsWithTokens = c.GetSlotList(true);
@@ -184,7 +184,7 @@ public class CryptokiDevice {
             throw new EJBException("Slot list retrieval failed.", ex);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("slots: " + slots);
+            LOG.debug("slots (" + libName + "): " + slots);
         }
     }
     
@@ -216,7 +216,6 @@ public class CryptokiDevice {
         private final String label;
         private final LinkedList<Long> activeSessions = new LinkedList<>();
         private final LinkedList<Long> idleSessions = new LinkedList<>();
-        private Long loginSession;
         private final CryptokiFacade cryptoki;
         
         private Slot(final long id, final String label, CryptokiFacade cryptoki) {
@@ -254,13 +253,13 @@ public class CryptokiDevice {
             if (!idleSessions.isEmpty()) {
                 session = idleSessions.pop();
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("Popped session " + session);
+                    LOG.trace("Popped session: " + session + ", " + this);
                 }
             } else {
                 try {
                     session = c.OpenSession(id, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
                     if (LOG.isTraceEnabled()) {
-                        LOG.trace("c.OpenSession : " + session);
+                        LOG.trace("c.OpenSession: " + session + ", " + this);
                     }
                 } catch (CKRException ex) {
                     throw new EJBException("Failed to open session.", ex);
@@ -275,61 +274,77 @@ public class CryptokiDevice {
             return session;
         }
         
-        protected synchronized void releaseSession(final long session) {
+        public synchronized void releaseSession(final long session) {
             // TODO: Checks
             if (!activeSessions.remove(session)) {
-                LOG.error("Releasing session not active: " + session);
+                LOG.warn("Releasing session not active: " + session + ", " + this);
             }
             idleSessions.push(session);
             
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Released session " + session + ", " + this);
+                LOG.trace("Released session: " + session + ", " + this);
             }
         }
         
+        /** 
+         * Closes a session, but making sure that the last session is not closed so we 
+         * are logged out. If you try to close the last session, a new one will be created
+         * in the idle pool before the requested session is closed.
+         * Unless creating a new session fails of course, then this will be the last session 
+         * closed and you will become logged out of the HSM
+         * @param session the PKCS#11 session to close
+         */
         protected synchronized void closeSession(final long session) {
-            // TODO: Checks
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("c.CloseSession(" + session + ")");
+            if (activeSessions.size() <=1 && idleSessions.size() == 0) { // session in param is the 1
+                // Put a new session in the idle pool
+                releaseSession(aquireSession());
             }
+            closeSessionFinal(session);
+        }
+
+        /**
+         * Closes a session, removing it from active and idle pools. If it's the last session open, 
+         * it's closed an you will get logged out of the HSM
+         * @param session the PKCS#11 session to close
+         */
+        private synchronized void closeSessionFinal(final long session) {
             try {
                 c.CloseSession(session);
             } catch (CKRException ex) {
-                throw new EJBException("Could not close session.", ex);
+                throw new EJBException("Could not close session " + session, ex);
             }
             activeSessions.remove(session);
             if (idleSessions.contains(session)) {
-                LOG.error("Session that was closed is still marked as idle: " + session);
+                LOG.warn("Session that was closed is marked as idle (removing): " + session + ", " + this);
+                idleSessions.remove(session);
             }
             
             if (LOG.isTraceEnabled()) {
-                LOG.trace(this);
+                LOG.trace("Closed session " + session + ", " + this);
             }
         }
 
-        /** Acquires the login session. Can be called before login to check distinguish non-authorization related exception */
-        public synchronized void prepareLogin() {
-            if (loginSession == null) {
-                loginSession = aquireSession();
-            }
-        }
-        
         public synchronized void login(final String pin) {
-            // Note: We use a dedicated session for login so it will remain logged in
-            if (loginSession == null) {
-                loginSession = aquireSession();
-            }
+            final long loginSession = aquireSession();
             if (LOG.isTraceEnabled()) {
-                LOG.trace("c.Login(" + loginSession + ")");
+                LOG.trace("c.Login: " + loginSession + ", " + this);
             }
             try {
+                // PKCS#11 C_Login: 
+                // https://docs.oasis-open.org/pkcs11/pkcs11-base/v3.0/csprd01/pkcs11-base-v3.0-csprd01.html#_Toc10472658
+                // "When the user type is either CKU_SO or CKU_USER, if the call succeeds, each of the application's 
+                // sessions will enter either the "R/W SO Functions" state, the "R/W User Functions" state, 
+                // or the "R/O User Functions" state."
+                // 
+                // So it doesn't matter which session we login to and we don't have to keep track of which session was used for login
                 c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
+                // The loginSession can be used as a normal session, push it back to the idle pool if no error occurred
+                releaseSession(loginSession);
             } catch (Exception e) {
                 try {
-                    // Avoid session leak. Close the aquired session if login failed.
-                    closeSession(loginSession);
-                    // Aquire a new session on next attempt. This one is closed.
-                    loginSession = null;
+                    // Avoid session leak. Close the acquired session if login failed.
+                    LOG.info("Exception logging into PKCS#11 session, closing session: " + e.getMessage());
+                    closeSessionFinal(loginSession);
                 } catch (Exception e1) {
                     // No point in throwing
                 }
@@ -338,22 +353,21 @@ public class CryptokiDevice {
         }
         
         public synchronized void logout() {
-            try {
-                if (loginSession == null) {
-                    loginSession = aquireSession();
-                }
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("c.Logout(" + loginSession + ")");
-                }
-                cryptoki.logout(loginSession);
-            } catch (CKRException ex) {
-                throw new EJBException("Logout failed.", ex);
-            } finally {
-                if (loginSession != null) {
-                    releaseSession(loginSession);
-                    loginSession = null;
-                }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Logout c_CloseAllSessions" + ", " + this);
             }
+            // See PKCS#11 specification for C_CloseAllSessions: 
+            // https://docs.oasis-open.org/pkcs11/pkcs11-base/v3.0/csprd01/pkcs11-base-v3.0-csprd01.html#_Toc10472653
+            // "After successful execution of this function, the login state of the token for the application returns to public sessions. 
+            // Any new sessions to the token opened by the application will be either R/O Public or R/W Public sessions."
+            //
+            // So there is no need to explicitly call C_Logout, which just does the same but keeps sessions open as Public sessions.
+            c.CloseAllSessions(this.id);
+            // After closing all sessions we don't want to keep references to them any longer, clear all our session caches
+            idleSessions.clear();
+            activeSessions.clear();
+            // Clear object and attribute caches
+            cryptoki.clear();
         }
         
         /** Finds a PrivateKey object by either certificate label or by private key label 
@@ -361,8 +375,8 @@ public class CryptokiDevice {
          */
         // TODO: Support alias that is hexadecimal or label or Id
         private Long getPrivateKeyRefByLabel(final Long session, final String alias) {
-            // We need to optimize so we don't make any unessecary calls to the HSM, as latency for network HSMs
-            // can easily destroy performance of unessecary FindObject calls are made. So first we check in the 
+            // We need to optimize so we don't make any unnecessary calls to the HSM, as latency for network HSMs
+            // can easily destroy performance of unnecessary FindObject calls are made. So first we check in the 
             // cache only, only if not in the cache will we fall back to look on the HSM, hopefully populating
             // the cache until next time we try to get the private key
             Long ret = getPrivateKeyRefByLabel(session, alias, true);
@@ -390,14 +404,22 @@ public class CryptokiDevice {
                     LOG.warn("Missing ID attribute on certificate object with label " + alias);
                     return null;
                 }
-                privateKeyRefs = findPrivateKeyObjectsByID(session, ckaId.getValue());
+                if (onlyCache) {
+                    privateKeyRefs = findPrivateKeyObjectsByIDInCache(session, ckaId.getValue());
+                } else {
+                    privateKeyRefs = findPrivateKeyObjectsByID(session, ckaId.getValue());                    
+                }
                 if (privateKeyRefs.size() > 1) {
                     LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()) + " for alias '" + alias + "'.");
                     return null;
                 }
             } else {
                 // In this case, we assume the private/public key has the alias in the ID attribute
-                privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));
+                if (onlyCache) {
+                    privateKeyRefs = findPrivateKeyObjectsByIDInCache(session, alias.getBytes(StandardCharsets.UTF_8));
+                } else {
+                    privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));                    
+                }
                 if (privateKeyRefs.size() > 1) {
                     LOG.warn("More than one private key object sharing CKA_LABEL=" + alias);
                     return null;
@@ -570,10 +592,13 @@ public class CryptokiDevice {
                 if (privateRef != null) {
                     return new NJI11StaticSessionPrivateKey(session, privateRef, this, false);
                 }
-            } catch (Exception e) {
+            } catch (CKRException e) {
+                // If a CKRException happens here, it's likely someting wrong with the session. 
+                // Close it so we can create a new session instead 
                 closeSession(session);
                 throw e;
             }
+            // And if we ended up here...we could not get a private key...again something wrong with the session? 
             closeSession(session);
             return null;
         }
@@ -589,6 +614,7 @@ public class CryptokiDevice {
         public PrivateKey getReleasableSessionPrivateKey(String alias) { 
             Long session = null;
             try {
+                // A session needed just to get the private key, will be released before return of method
                 session = aquireSession();
                 final Long privateRef = getPrivateKeyRefByLabel(session, alias);
                 if (privateRef != null) {
@@ -603,6 +629,12 @@ public class CryptokiDevice {
                     return new NJI11ReleasebleSessionPrivateKey(privateRef, "RSA", this);
                 }
                 return null;
+            } catch (CKRException e) {
+                // If a CKRException happens here, it's likely something wrong with the session. 
+                // Close it so we can create a new session instead, don't release it to the idle pool. 
+                closeSession(session);
+                session = null;
+                throw e;
             } finally {
                 if (session != null) {
                     releaseSession(session);
@@ -2044,8 +2076,7 @@ public class CryptokiDevice {
                 return (certificateRefs == null ? Collections.emptyList() : certificateRefs);
             } catch (CKRException ex) {
                 throw new EJBException("Failed to find certificate objects.", ex);
-            }            
-            
+            }
         }
 
         /**
@@ -2073,7 +2104,7 @@ public class CryptokiDevice {
          * @return found public key objects, which can be an empty list ((Collections.emptyList)) if no objects are found
          */
         List<Long> findPublicKeyObjectsByID(Long session, byte[] ckaIdValue) {
-            return findPublicKeyObjectsByIDInternal(session, ckaIdValue, false);
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PUBLIC_KEY, false);
         }
         /**
          * Fetches public key objects with given ID, only returning cached object if cache is enabled and object is present in the cache, not returning anything otherwise.
@@ -2083,25 +2114,26 @@ public class CryptokiDevice {
          * @return found public key objects, which can be an empty list ((Collections.emptyList)) if no objects are found
          */
         List<Long> findPublicKeyObjectsByIDInCache(Long session, byte[] ckaIdValue) {
-            return findPublicKeyObjectsByIDInternal(session, ckaIdValue, true);
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PUBLIC_KEY, true);
         }
         /**
          * @param onlyCache Only look into the cache, and return empty list if there is nothing in the cache, ignoring calling the underlying PKCS#11 api
+         * @param type CKO.PUBLIC_KEY or CKO.PRIVATE_KEY 
          */
-        private List<Long> findPublicKeyObjectsByIDInternal(Long session, byte[] ckaIdValue, boolean onlyCache) {
+        private List<Long> findKeyObjectsByIDInternal(Long session, byte[] ckaIdValue, long type, boolean onlyCache) {
              try {
                  List<Long> pubkeyRefs = null;
                  if (onlyCache) {
-                     Optional<List<Long>> cacheret = cryptoki.findObjectsInCache(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));
+                     Optional<List<Long>> cacheret = cryptoki.findObjectsInCache(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));
                      if (cacheret.isPresent()) {
                          pubkeyRefs = cacheret.get(); 
                      }
                  } else {
-                     pubkeyRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PUBLIC_KEY), new CKA(CKA.ID, ckaIdValue));                     
+                     pubkeyRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));                     
                  }
                  return (pubkeyRefs == null ? Collections.emptyList() : pubkeyRefs);
              } catch (CKRException ex) {
-                 throw new EJBException("Failed to find public key objects.", ex);
+                 throw new EJBException("Failed to find key objects of type (2=pub, 3=priv) " + type, ex);
              }
          }
 
@@ -2112,14 +2144,21 @@ public class CryptokiDevice {
          *
          * @param session session in HSM slot used to fetch objects 
          * @param ckaIdValue CKA_ID of a private key
-         * @return found private key objects, which can be an empty array if no objects are found
+         * @return found private key object references, which can be an empty array if no objects are found
          */
         public List<Long> findPrivateKeyObjectsByID(Long session, byte[] ckaIdValue) {
-            try {
-                return cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaIdValue));
-            } catch (CKRException ex) {
-                throw new EJBException("Failed to find private key objects.", ex);
-            }
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PRIVATE_KEY, false);
+        }
+
+        /**
+         * Fetches private key objects with given ID, only returning cached object if cache is enabled and object is present in the cache, not returning anything otherwise.
+         * 
+         * @param session session in HSM slot used to fetch objects 
+         * @param ckaIdValue CKA_ID of public key
+         * @return found private key object references, which can be an empty list ((Collections.emptyList)) if no objects are found
+         */
+        List<Long> findPrivateKeyObjectsByIDInCache(Long session, byte[] ckaIdValue) {
+            return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PRIVATE_KEY, true);
         }
 
         /**
