@@ -38,6 +38,10 @@ class CryptokiWithoutCache implements CryptokiFacade {
     }
 
     @Override
+    public void clear() {
+    }
+
+    @Override
     public List<Long> findObjects(final long session, final CKA... ckas) {
         return Arrays.stream(api.FindObjects(session, ckas)).boxed().collect(toList());
     }
