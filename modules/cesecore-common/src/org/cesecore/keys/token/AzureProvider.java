@@ -81,9 +81,9 @@ public class AzureProvider extends Provider {
         put("Signature.SHA256WITHECDSA" , AzureSignature.SHA256WithECDSA.class.getName());
         put("Signature.SHA384WITHECDSA" , AzureSignature.SHA384WithECDSA.class.getName());
         put("Signature.SHA512WITHECDSA" , AzureSignature.SHA512WithECDSA.class.getName());
-        put("MessageDigest.SHA256" , AzureMessageDigiest.class.getName());
-        put("MessageDigest.SHA384" , AzureMessageDigiest.class.getName());
-        put("MessageDigest.SHA512" , AzureMessageDigiest.class.getName());
+        put("MessageDigest.SHA256" , AzureMessageDigest.class.getName());
+        put("MessageDigest.SHA384" , AzureMessageDigest.class.getName());
+        put("MessageDigest.SHA512" , AzureMessageDigest.class.getName());
         put("AlgorithmParameters.PSS" , AzureAlgorithmParameters.class.getName());
         // Encryption with RSA can be done to support key recovery and SCEP
         put("Cipher.RSA" , AzureCipher.RSA.class.getName());
@@ -482,11 +482,11 @@ public class AzureProvider extends Provider {
         }
     }
 
-    public static class AzureMessageDigiest extends MessageDigestSpi {
+    public static class AzureMessageDigest extends MessageDigestSpi {
         // While this MessageDigiest "implementation" doesn't do anything currently, it's required
         // in order for MGF1 Algorithms to work since BC performs a sanity check before
         // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)
-        public AzureMessageDigiest() {
+        public AzureMessageDigest() {
             super();
         }
         
