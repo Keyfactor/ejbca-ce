@@ -1470,21 +1470,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String fileName = uploadFile.getName();
 
         csrFileName = fileName;
-
-        String fileContents;
+        byte[] fileContents;
+        String pemEncodedCsr;
         try {
-            fileContents = new String(uploadFile.getBytes());
+            fileContents = uploadFile.getBytes();
+            if (new String(fileContents).startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)) {
+                pemEncodedCsr = new String(uploadFile.getBytes());
+            } else {
+                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
+            }
         } catch (IOException e) {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
 
-        validateCsr(fileContents);
+        validateCsr(pemEncodedCsr);
         if (algorithmFromCsr != null) { // valid CSR
             uploadCsr();
         }
     }
-
     /**
      * Validate an uploaded CSR and store the extracted key algorithm and CSR for later use.
      */
