@@ -13,6 +13,14 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -100,20 +108,17 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * This test runs in CMP client mode.
  *
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL,
  * for example "-DhttpCmpProxyURL=http://proxy-ip:8080/cmpProxy-6.4.0", which can be set in Run Configurations if running the
  * test from Eclipse.
+ * Adjusting the properties in cmpProxy.properties could be required, for example set the two below:
+ * 
+ * cmp.backend.http.url=http://proxy-ip:8080/ejbca/publicweb/cmp/CrmfRequestTestCmpConfigAlias
+ * cmp.backend.http.appendalias=false
+ * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrmfRequestTest extends CmpTestCase {
@@ -317,13 +322,8 @@ public class CrmfRequestTest extends CmpTestCase {
     @Test
     public void test05BadBytes() throws Exception {
         log.trace(">test05BadBytes");
-        byte[] msg = bluexir;
-        // Change some bytes to make the message bad
-        msg[10] = 0;
-        msg[15] = 0;
-        msg[22] = 0;
-        msg[56] = 0;
-        msg[88] = 0;
+        byte[] msg = bluexirBad;
+        
         /* Before EJBCA 6.8.0 we responded with HTTP 400, but now we send a PKIFailureInfo.badRequest instead. */
         byte[] resp = sendCmpHttp(msg, 200, cmpAlias);
         assertNotNull(resp);
@@ -1114,6 +1114,17 @@ public class CrmfRequestTest extends CmpTestCase {
             + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
             + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
 
+    
+    
+    static byte[] bluexirBad = Base64.decode(("BADCIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"
+            + "IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz" + "dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"
+            + "AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8" + "ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"
+            + "ARmkJqARGA8yMDA2MDkxOTE2MTEyNlqhERgPMjAwOTA2MTUxNjExMjZapR0wGzEZ" + "MBcGA1UEAwwQU29tZSBDb21tb24gTmFtZaaBoDANBgkqhkiG9w0BAQEFAAOBjgAw"
+            + "gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/" + "Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"
+            + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
+            + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
+    
+    
     /*
      *	header:
      *		pvno: cmp2000 (cmp.pvno = 2)
