@@ -623,10 +623,21 @@ public class CryptokiDevice {
                     // CKA_MODULUS, CKA_PRIVATE_EXPONENT, and CKA_PUBLIC_EXPONENT. 
                     final CKA modulus = getAttribute(session, privateRef, P11NGStoreConstants.CKA_MODULUS);
                     // If we have a modulus value, it's an RSA key. Otherwise, bravely assume it's EC.
+                    final BigInteger mod;
+                    final String keyAlg;
                     if (modulus.getValue() == null) {
-                        return new NJI11ReleasebleSessionPrivateKey(privateRef, "EC", this);
+                        mod = null;
+                        keyAlg = "EC";
+                    } else {
+                        // We need special treatment for RSA private keys because OpenJDK make a bitLength check 
+                        // on the RSA private key in the TLS implementation
+                        // SignatureScheme.getSignerOfPreferableAlgorithm->KeyUtil.getKeySize
+                        // hence we need to modulus also in the private key, not only in the public
+                        final byte[] modulusBytes = modulus.getValue();
+                        mod = new BigInteger(1, modulusBytes);
+                        keyAlg = "RSA";
                     }
-                    return new NJI11ReleasebleSessionPrivateKey(privateRef, "RSA", this);
+                    return NJI11ReleasebleSessionPrivateKey.getInstance(privateRef, keyAlg, this, mod);
                 }
                 return null;
             } catch (CKRException e) {
