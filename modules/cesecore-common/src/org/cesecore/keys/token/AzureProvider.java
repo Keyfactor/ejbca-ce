@@ -33,6 +33,8 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
+import java.security.interfaces.RSAKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 
@@ -527,7 +529,30 @@ public class AzureProvider extends Provider {
         private String keyAlg;
         private AzureCryptoToken cryptoToken;
 
-        public KeyVaultPrivateKey(String keyURL, String keyAlg, AzureCryptoToken cryptoToken) {
+        /** Instance methods to create different implementations depending on keyAlg.
+         * 
+         * @param keyURL The Azure Key Vault URL for the key
+         * @param keyAlg Key algorithm to be returned by Key.getAlgorithm, typically RSA or EC
+         * @param cryptoToken The AzureCryptoToken this key is used on, used by the provider in order to perform REST API calls
+         * @param publicKey the public key in order to get parameters from, only used if keyAlg is RSA for the public key modulus to get keySize, can be left null otherwise
+         * @return PrivateKey that is either a KeyVaultPrivateKey or a KeyVaultPrivateRSAKey
+         * @throws RuntimException if keyAlg is RSA but publicKey is not an RSAPublicKey 
+         */
+        public static PrivateKey getInstance(String keyURL, String keyAlg, AzureCryptoToken cryptoToken, PublicKey publicKey) {
+            if ("RSA".equals(keyAlg)) {
+                // We only need special treatment for RSA private keys because OpenJDK make a bitLength check 
+                // on the RSA private key in the TLS implementation
+                // SignatureScheme.getSignerOfPreferableAlgorithm->KeyUtil.getKeySize
+                if (publicKey instanceof RSAPublicKey) {
+                    return new KeyVaultPrivateRSAKey(keyURL, cryptoToken, ((RSAPublicKey)publicKey).getModulus());
+                } else {
+                    throw new RuntimeException("Public key parameter must be an RSA public key when creating RSA private keys, but was " + publicKey.getAlgorithm());
+                }
+            }
+            return new KeyVaultPrivateKey(keyURL, keyAlg, cryptoToken);
+        }
+
+        private KeyVaultPrivateKey(String keyURL, String keyAlg, AzureCryptoToken cryptoToken) {
             this.keyURL = keyURL;
             this.keyAlg = keyAlg;
             this.cryptoToken = cryptoToken;
@@ -561,6 +586,20 @@ public class AzureProvider extends Provider {
             return getKeyURL() + ":" + getAlgorithm() + ":" + getCryptoToken().getTokenName();
         }
     }
+    
+    public static class KeyVaultPrivateRSAKey extends KeyVaultPrivateKey implements RSAKey {
+        private static final long serialVersionUID = 1L;
+        private BigInteger modulus;
 
+        private KeyVaultPrivateRSAKey(String keyURL, AzureCryptoToken cryptoToken, BigInteger modulus) {
+            super(keyURL, "RSA", cryptoToken);
+            this.modulus = modulus;
+        }
 
+        @Override
+        public BigInteger getModulus() {
+            return modulus;
+        }
+    }
+    
 }
