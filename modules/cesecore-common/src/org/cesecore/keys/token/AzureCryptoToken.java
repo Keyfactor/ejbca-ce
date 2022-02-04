@@ -660,7 +660,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             // This is a URI for Key Vault
             log.debug("getPrivateKey: " + keyurl);
         }
-        return new AzureProvider.KeyVaultPrivateKey(keyurl, pubK.getAlgorithm(), this);
+        return AzureProvider.KeyVaultPrivateKey.getInstance(keyurl, pubK.getAlgorithm(), this, pubK);
     }
 
     @Override
