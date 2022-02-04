@@ -465,39 +465,8 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                 // Persist the new role member
                 final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
-                roleMemberSession.persist(getAdmin(), roleMember);
-                
-                // Update Approval Profile Partitions with updated AccessUserAspects
-                List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                Collection<ApprovalProfile> approvalProfileList = approvalProfileSession.getApprovalProfilesList();
-                for (ApprovalProfile approvalProfile : approvalProfileList) {
-                    List<ApprovalStep> steps = approvalProfile.getStepList();
-                    if (steps == null) {
-                        continue;
-                    }
-                    Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
-
-                    if (isApprovalProfileUpdated) {
-                        approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
-                    }
-                }
-                // Update Approvals as well
-                List<ApprovalData> approvalDataList = approvalSession.findWaitingForApprovalApprovalDataLocal();
-                for (ApprovalData data : approvalDataList) {
-                    if (data == null || data.hasRequestOrApprovalExpired() || data.getApprovalRequest() == null || data.getApprovalRequest().getApprovalProfile() == null) {
-                        continue;
-                    }
-                    ApprovalRequest approvalRequest = data.getApprovalRequest();
-                    ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-                    List<ApprovalStep> steps = approvalProfile.getStepList();
-                    if (steps == null) {
-                        continue;
-                    }
-                    Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
-                    if (isApprovalProfileUpdated) {
-                        approvalSession.updateApprovalRequest(data.getId(), approvalRequest);
-                    }
-                }
+                roleMemberSession.persist(getAdmin(), roleMember);                
+                updateApprovalProfilesAndApprovals();
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
             }
@@ -508,6 +477,40 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             roleMembers = null;
         } finally {
             nonAjaxPostRedirectGet();
+        }
+    }
+
+    private void updateApprovalProfilesAndApprovals() throws AuthorizationDeniedException {
+        // Update Approval Profile Partitions with updated AccessUserAspects
+        List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
+        Collection<ApprovalProfile> approvalProfileList = approvalProfileSession.getApprovalProfilesList();
+        for (ApprovalProfile approvalProfile : approvalProfileList) {
+            List<ApprovalStep> steps = approvalProfile.getStepList();
+            if (steps == null) {
+                continue;
+            }
+            Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
+
+            if (isApprovalProfileUpdated) {
+                approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
+            }
+        }
+        // Update Approvals as well
+        List<ApprovalData> approvalDataList = approvalSession.findWaitingForApprovalApprovalDataLocal();
+        for (ApprovalData data : approvalDataList) {
+            if (data == null || data.hasRequestOrApprovalExpired() || data.getApprovalRequest() == null || data.getApprovalRequest().getApprovalProfile() == null) {
+                continue;
+            }
+            ApprovalRequest approvalRequest = data.getApprovalRequest();
+            ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
+            List<ApprovalStep> steps = approvalProfile.getStepList();
+            if (steps == null) {
+                continue;
+            }
+            Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
+            if (isApprovalProfileUpdated) {
+                approvalSession.updateApprovalRequest(data.getId(), approvalRequest);
+            }
         }
     }
 
@@ -613,6 +616,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         try {
             roleMemberSession.remove(getAdmin(), roleMemberToDelete.getId());
             super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ROLEMEMBERS_INFO_REMOVED");
+            updateApprovalProfilesAndApprovals();
             roleMembers = null;
             roleMemberToDelete = null;
             nonAjaxPostRedirectGet();
