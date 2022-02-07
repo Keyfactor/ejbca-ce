@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Uint16;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.UINT16;
 
 public class CircularRegion implements ItsGeographicElement {
     
@@ -68,7 +68,7 @@ public class CircularRegion implements ItsGeographicElement {
     public GeographicRegion getGeographicRegion() {
         return new GeographicRegion(GeographicRegion.circularRegion, 
                 new org.bouncycastle.oer.its.ieee1609dot2.basetypes.
-                    CircularRegion(this.center.getTwoDLocation(), new Uint16(this.radius)));
+                    CircularRegion(this.center.getTwoDLocation(), new UINT16(this.radius)));
     }
 
     @Override
@@ -79,7 +79,7 @@ public class CircularRegion implements ItsGeographicElement {
 
     @Override
     public void validateArgs() {
-        new Uint16(getRadius());
+        new UINT16(getRadius());
     }
 
     @Override
