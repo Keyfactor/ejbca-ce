@@ -12,4 +12,4 @@ else
     JAVACMD=$JAVA_HOME/bin/java
 fi
 
-exec "$JAVACMD" -jar ejbca-ejb-cli.jar "$@"
+exec "$JAVACMD" -Dlog4j1.compatibility=true -jar ejbca-ejb-cli.jar "$@"
