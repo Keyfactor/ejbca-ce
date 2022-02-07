@@ -50,12 +50,22 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalData;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -72,6 +82,10 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -448,12 +462,15 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             }
             final int tokenProviderId = accessMatchValue.isIssuedByOauthProvider() ? this.tokenProviderId : RoleMember.NO_PROVIDER;
             try {
+                // Persist the new role member
                 final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
-                roleMemberSession.persist(getAdmin(), roleMember);
+                roleMemberSession.persist(getAdmin(), roleMember);                
+                updateApprovalProfilesAndApprovals();
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
             }
+            
             // Only reset this one, since admin might want to add additional matches of the same type
             tokenMatchValue = "";
             // Trigger a reload of the RoleMember list (if this is an AJAX requests and no new viewscope will be created)
@@ -461,6 +478,100 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         } finally {
             nonAjaxPostRedirectGet();
         }
+    }
+
+    private void updateApprovalProfilesAndApprovals() throws AuthorizationDeniedException {
+        // Update Approval Profile Partitions with updated AccessUserAspects
+        List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
+        Collection<ApprovalProfile> approvalProfileList = approvalProfileSession.getApprovalProfilesList();
+        for (ApprovalProfile approvalProfile : approvalProfileList) {
+            List<ApprovalStep> steps = approvalProfile.getStepList();
+            if (steps == null) {
+                continue;
+            }
+            Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
+
+            if (isApprovalProfileUpdated) {
+                approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
+            }
+        }
+        // Update Approvals as well
+        List<ApprovalData> approvalDataList = approvalSession.findWaitingForApprovalApprovalDataLocal();
+        for (ApprovalData data : approvalDataList) {
+            if (data == null || data.hasRequestOrApprovalExpired() || data.getApprovalRequest() == null || data.getApprovalRequest().getApprovalProfile() == null) {
+                continue;
+            }
+            ApprovalRequest approvalRequest = data.getApprovalRequest();
+            ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
+            List<ApprovalStep> steps = approvalProfile.getStepList();
+            if (steps == null) {
+                continue;
+            }
+            Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
+            if (isApprovalProfileUpdated) {
+                approvalSession.updateApprovalRequest(data.getId(), approvalRequest);
+            }
+        }
+    }
+
+    private Boolean updateApprovalProfile(List<RoleMember> roleMembers, ApprovalProfile approvalProfile, List<ApprovalStep> steps) {
+        Boolean isApprovalProfileUpdated = false;
+        for (ApprovalStep step : steps) {
+            List<ApprovalPartition> partitions = step.getPartitionList();
+            if (partitions == null) {
+                continue;
+            }
+            for (ApprovalPartition partition : partitions) {
+                // Update roles with approval rights
+                DynamicUiProperty<? extends Serializable> rolesWithApprovalRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS);
+                if (rolesWithApprovalRightsProperty == null) {
+                    continue;
+                }               
+                RoleInformation newApprovalRightsRoleInfo = null;
+                RoleInformation oldApprovalRightsRoleInfo = null;
+                @SuppressWarnings("unchecked")
+                List<RoleInformation> roleInfos = (List<RoleInformation>) rolesWithApprovalRightsProperty.getValues();
+                for (RoleInformation roleInfo : roleInfos) {
+                    if (roleInfo.getIdentifier() != role.getRoleId() || roleInfo.getAccessUserAspects() == null) {
+                        continue;
+                    }
+                    newApprovalRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), role.getName(), roleMembers);
+                    oldApprovalRightsRoleInfo = roleInfo;
+                }
+                if (oldApprovalRightsRoleInfo != null && newApprovalRightsRoleInfo != null) {
+                    roleInfos.remove(oldApprovalRightsRoleInfo);
+                    roleInfos.add(newApprovalRightsRoleInfo);
+                    rolesWithApprovalRightsProperty.setValuesGeneric(roleInfos);
+                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithApprovalRightsProperty);
+                    isApprovalProfileUpdated = true;
+                }
+                
+                // Update roles with view rights
+                DynamicUiProperty<? extends Serializable> rolesWithViewRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_VIEW_RIGHTS);
+                if (rolesWithViewRightsProperty == null) {
+                    continue;
+                }                
+                RoleInformation newViewRightsRoleInfo = null;
+                RoleInformation oldViewRightsRoleInfo = null;
+                @SuppressWarnings("unchecked")
+                List<RoleInformation> viewRightsRoleInfos = (List<RoleInformation>) rolesWithViewRightsProperty.getValues();
+                for (RoleInformation roleInfo : viewRightsRoleInfos) {
+                    if (roleInfo.getIdentifier() != role.getRoleId() || roleInfo.getAccessUserAspects() == null) {
+                        continue;
+                    }
+                    newViewRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), role.getName(), roleMembers);
+                    oldViewRightsRoleInfo = roleInfo;
+                }
+                if (oldViewRightsRoleInfo != null && newViewRightsRoleInfo != null) {
+                    viewRightsRoleInfos.remove(oldViewRightsRoleInfo);
+                    viewRightsRoleInfos.add(newViewRightsRoleInfo);
+                    rolesWithViewRightsProperty.setValuesGeneric(viewRightsRoleInfos);
+                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithViewRightsProperty);
+                    isApprovalProfileUpdated = true;
+                }
+            }
+        }
+        return isApprovalProfileUpdated;
     }
 
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies that it is issued by a CA */
@@ -505,6 +616,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         try {
             roleMemberSession.remove(getAdmin(), roleMemberToDelete.getId());
             super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ROLEMEMBERS_INFO_REMOVED");
+            updateApprovalProfilesAndApprovals();
             roleMembers = null;
             roleMemberToDelete = null;
             nonAjaxPostRedirectGet();
