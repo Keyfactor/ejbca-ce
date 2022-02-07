@@ -76,7 +76,7 @@ public enum ItsSupportedCountries {
         throw new IllegalArgumentException("Invalid country name: " + country);
     }
     
-    public static ItsSupportedCountries fromDisplayName(int countryCode) {
+    public static ItsSupportedCountries fromCountryCode(int countryCode) {
         for(ItsSupportedCountries sc : values()){
             if(sc.getM49Code()==countryCode){
                 return sc;

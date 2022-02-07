@@ -13,8 +13,12 @@
 package org.cesecore.certificate.ca.its.region;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Region;
 
 /**
  * Intermediate representation of GeographicRegion region object for GUI and persistence.
@@ -67,13 +71,6 @@ public class ItsGeographicRegion implements Serializable {
         // they have identical representation in UI
         COUNTRY, COUNTRY_WITH_REGIONS
     }
-    
-//    private static final Map<RegionType, Class> regionTypeImplementations;
-//    static {
-//        regionTypeImplementations = new HashMap<>();
-//        regionTypeImplementations.put(RegionType.CIRCULAR, CircularRegion.class);
-//        //regionTypeImplementations.get(RegionType.CIRCULAR).getConstructor(String.class).newInstance(null);
-//    }
     
     private RegionType regionType;
     private ItsGeographicElement geographicElement;
@@ -128,17 +125,17 @@ public class ItsGeographicRegion implements Serializable {
         }
         String regionType = region.substring(0, region.indexOf(TYPE_SEPARATOR)) + TYPE_SEPARATOR;
         switch(regionType.trim()) {
-        case REGION_TYPE_CIRCULAR:
-            setRegionType(RegionType.CIRCULAR);
-            break;
-        case REGION_TYPE_RECTANGLE:
-            setRegionType(RegionType.RECTANGULAR);
-            break;
-        case REGION_TYPE_IDENTIFIED:
-            setRegionType(RegionType.IDENTIFIED);
-            break;
-        default:
-            throw new IllegalStateException("Invalid region type: " + regionType);
+            case REGION_TYPE_CIRCULAR:
+                setRegionType(RegionType.CIRCULAR);
+                break;
+            case REGION_TYPE_RECTANGLE:
+                setRegionType(RegionType.RECTANGULAR);
+                break;
+            case REGION_TYPE_IDENTIFIED:
+                setRegionType(RegionType.IDENTIFIED);
+                break;
+            default:
+                throw new IllegalStateException("Invalid region type: " + regionType);
         }
     }
     
@@ -154,6 +151,64 @@ public class ItsGeographicRegion implements Serializable {
         itsGeographicRegion.parseAndSetRegionType(region);
         itsGeographicRegion.setGeographicElement(getItsGeographicElementFromString(region));
         return itsGeographicRegion;
+    }
+    
+    public static ItsGeographicElement fromGeographicRegion(GeographicRegion region) {
+        //TODO: testing
+        switch(region.getChoice()) {
+            case GeographicRegion.circularRegion:
+                org.bouncycastle.oer.its.ieee1609dot2.basetypes.CircularRegion circular = 
+                                (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CircularRegion)region.getRegion();
+                return new CircularRegion(circular.getCenter().getLatitude().getValue().intValue(), 
+                        circular.getCenter().getLongitude().getValue().intValue(), circular.getRadius().getValue().intValue());
+            case GeographicRegion.rectangularRegion:
+                org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfRectangularRegion rectangularRegions = 
+                    (org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfRectangularRegion)region.getRegion();
+                List<Long[]> rectangles = new ArrayList<>();
+                for(org.bouncycastle.oer.its.ieee1609dot2.basetypes.RectangularRegion rectangle: 
+                                            rectangularRegions.getRectangularRegions()) {
+                    rectangles.add(new Long[] {rectangle.getNorthWest().getLatitude().longValueExact(), 
+                            rectangle.getNorthWest().getLongitude().longValueExact(),
+                            rectangle.getSouthEast().getLatitude().longValueExact(), 
+                            rectangle.getSouthEast().getLongitude().longValueExact()});
+                }
+                return new RectangularRegions(rectangles);
+            case GeographicRegion.identifiedRegion:
+                org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfIdentifiedRegion identifiedRegions = 
+                    (org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfIdentifiedRegion)region.getRegion();
+                StringBuilder sb = new StringBuilder();
+                for(org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion identifiedRegion: 
+                                                                    identifiedRegions.getIdentifiedRegions()) {
+                    if(identifiedRegion.getChoice()==
+                            org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion.countryOnly) {
+                        sb.append(REGION_TYPE_IDENTIFIED_COUNTRY);
+                        sb.append(
+                                ItsSupportedCountries.fromCountryCode((
+                                        (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryOnly)identifiedRegion.getRegion())
+                                        .getValue().intValue()).getDisplayName());
+                    } else if(identifiedRegion.getChoice()==
+                                org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion.countryAndRegions){
+                        sb.append(REGION_TYPE_IDENTIFIED_COUNTRY_REGION);
+                        org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions countryAndRegion =
+                                (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions) identifiedRegion.getRegion();
+                        sb.append(ItsSupportedCountries.fromCountryCode(
+                                countryAndRegion.getCountryOnly().getValue().intValue()).getDisplayName());
+                        sb.append(SEPARATOR);
+                        for(Region r: countryAndRegion.getRegions()) {
+                            sb.append(r.getValue().intValue());
+                            sb.append(SEPARATOR);
+                        }
+                        
+                    } else {
+                        // country and sub-region, region and sub-region
+                        throw new IllegalArgumentException("Provided identified region type is not supported.");
+                    }
+                    sb.append(SEQUENCE_SEPARATOR);
+                }
+                return new IdentifiedRegions(sb.toString());
+            default: // polygonal, extension
+                throw new IllegalArgumentException("Provided region type is not supported: " + region.getChoice());
+        }
     }
 
 }
