@@ -137,7 +137,7 @@ class CryptokiWithCache implements CryptokiFacade {
     public Optional<List<Long>> findObjectsInCache(final long session, final CKA... ckas) {
         final Pair<Long, List<Long>> objectRefsFromCache = objectsCache.get(new CkaSet(Arrays.stream(ckas).collect(toSet())));
         if (log.isTraceEnabled()) {
-            log.trace("Attempting to find objects in cache. Found " + objectRefsFromCache.getRight());
+            log.trace("Attempting to find objects in cache. Found " + (objectRefsFromCache == null ? "none" : objectRefsFromCache.getRight()));
             log.trace("Searching for objects with all these attributes set: " + Arrays.stream(ckas).map(cka -> cka.type).collect(toSet()));
             log.trace("Content of the objects cache: " + objectsCache);
         }
