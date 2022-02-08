@@ -147,6 +147,17 @@
 			</h:panelGroup>
 
 			<h:panelGroup>
+				<div><h:outputText value="#{web.text.HIDE_PUBLIC_WEB}" styleClass="titles"/></div>
+				<div><h:outputText value="#{web.text.HIDE_PUBLIC_WEB_HELP}" styleClass="help"/></div>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="hidePublicWeb"
+										 value="#{systemConfigMBean.currentConfig.hidePublicWeb}"
+										 disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:outputLabel for="hidePublicWeb" value="#{web.text.HIDE}"/>
+			</h:panelGroup>
+
+			<h:panelGroup>
 				<h:outputLabel for="vaStatusTimeConstraint" value="#{web.text.HEALTHCHECK}" styleClass="titles"/>
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Monitoring_and_Healthcheck.html')}" escape="false"/>
 				<br/>
