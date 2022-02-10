@@ -112,6 +112,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -1133,7 +1134,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
             final String dn = certificateStoreSession.getCADnFromRequest(req);
-            final String keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            final String keySequence; 
+            
+            if(req instanceof ScepRequestMessage) {
+                keySequence = new BigInteger(req.getCASequence()).toString(16).toUpperCase(); // BigInteger string to uppercase for scep case
+            } else {
+                keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            }
+            
             if (log.isDebugEnabled()) {
                 log.debug(">getCAFromRequest, dn: " + dn + ": " + keySequence);
             }
