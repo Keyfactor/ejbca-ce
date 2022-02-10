@@ -167,10 +167,10 @@ public class ItsGeographicRegion implements Serializable {
                 List<Long[]> rectangles = new ArrayList<>();
                 for(org.bouncycastle.oer.its.ieee1609dot2.basetypes.RectangularRegion rectangle: 
                                             rectangularRegions.getRectangularRegions()) {
-                    rectangles.add(new Long[] {rectangle.getNorthWest().getLatitude().longValueExact(), 
-                            rectangle.getNorthWest().getLongitude().longValueExact(),
-                            rectangle.getSouthEast().getLatitude().longValueExact(), 
-                            rectangle.getSouthEast().getLongitude().longValueExact()});
+                    rectangles.add(new Long[] {rectangle.getNorthWest().getLatitude().getValue().longValueExact(), 
+                            rectangle.getNorthWest().getLongitude().getValue().longValueExact(),
+                            rectangle.getSouthEast().getLatitude().getValue().longValueExact(), 
+                            rectangle.getSouthEast().getLongitude().getValue().longValueExact()});
                 }
                 return new RectangularRegions(rectangles);
             case GeographicRegion.identifiedRegion:
