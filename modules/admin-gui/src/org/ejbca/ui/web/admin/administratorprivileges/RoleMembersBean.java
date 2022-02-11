@@ -466,7 +466,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                 final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
                 roleMemberSession.persist(getAdmin(), roleMember);                
-                updateApprovalProfilesAndApprovals();
+                try {
+                    approvalSession.updateApprovalRights(getAdmin(), role.getRoleId(), role.getName());
+                } catch (AuthorizationDeniedException e) {
+                    log.warn("Approval rights were not updated for role '" + role.getName() + "' after adding the role member since the user lacked the required rights.");
+                }
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
             }
@@ -478,100 +482,6 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         } finally {
             nonAjaxPostRedirectGet();
         }
-    }
-
-    private void updateApprovalProfilesAndApprovals() throws AuthorizationDeniedException {
-        // Update Approval Profile Partitions with updated AccessUserAspects
-        List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-        Collection<ApprovalProfile> approvalProfileList = approvalProfileSession.getApprovalProfilesList();
-        for (ApprovalProfile approvalProfile : approvalProfileList) {
-            List<ApprovalStep> steps = approvalProfile.getStepList();
-            if (steps == null) {
-                continue;
-            }
-            Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
-
-            if (isApprovalProfileUpdated) {
-                approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
-            }
-        }
-        // Update Approvals as well
-        List<ApprovalData> approvalDataList = approvalSession.findWaitingForApprovalApprovalDataLocal();
-        for (ApprovalData data : approvalDataList) {
-            if (data == null || data.hasRequestOrApprovalExpired() || data.getApprovalRequest() == null || data.getApprovalRequest().getApprovalProfile() == null) {
-                continue;
-            }
-            ApprovalRequest approvalRequest = data.getApprovalRequest();
-            ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-            List<ApprovalStep> steps = approvalProfile.getStepList();
-            if (steps == null) {
-                continue;
-            }
-            Boolean isApprovalProfileUpdated = updateApprovalProfile(roleMembers, approvalProfile, steps);
-            if (isApprovalProfileUpdated) {
-                approvalSession.updateApprovalRequest(data.getId(), approvalRequest);
-            }
-        }
-    }
-
-    private Boolean updateApprovalProfile(List<RoleMember> roleMembers, ApprovalProfile approvalProfile, List<ApprovalStep> steps) {
-        Boolean isApprovalProfileUpdated = false;
-        for (ApprovalStep step : steps) {
-            List<ApprovalPartition> partitions = step.getPartitionList();
-            if (partitions == null) {
-                continue;
-            }
-            for (ApprovalPartition partition : partitions) {
-                // Update roles with approval rights
-                DynamicUiProperty<? extends Serializable> rolesWithApprovalRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS);
-                if (rolesWithApprovalRightsProperty == null) {
-                    continue;
-                }               
-                RoleInformation newApprovalRightsRoleInfo = null;
-                RoleInformation oldApprovalRightsRoleInfo = null;
-                @SuppressWarnings("unchecked")
-                List<RoleInformation> roleInfos = (List<RoleInformation>) rolesWithApprovalRightsProperty.getValues();
-                for (RoleInformation roleInfo : roleInfos) {
-                    if (roleInfo.getIdentifier() != role.getRoleId() || roleInfo.getAccessUserAspects() == null) {
-                        continue;
-                    }
-                    newApprovalRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), role.getName(), roleMembers);
-                    oldApprovalRightsRoleInfo = roleInfo;
-                }
-                if (oldApprovalRightsRoleInfo != null && newApprovalRightsRoleInfo != null) {
-                    roleInfos.remove(oldApprovalRightsRoleInfo);
-                    roleInfos.add(newApprovalRightsRoleInfo);
-                    rolesWithApprovalRightsProperty.setValuesGeneric(roleInfos);
-                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithApprovalRightsProperty);
-                    isApprovalProfileUpdated = true;
-                }
-                
-                // Update roles with view rights
-                DynamicUiProperty<? extends Serializable> rolesWithViewRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_VIEW_RIGHTS);
-                if (rolesWithViewRightsProperty == null) {
-                    continue;
-                }                
-                RoleInformation newViewRightsRoleInfo = null;
-                RoleInformation oldViewRightsRoleInfo = null;
-                @SuppressWarnings("unchecked")
-                List<RoleInformation> viewRightsRoleInfos = (List<RoleInformation>) rolesWithViewRightsProperty.getValues();
-                for (RoleInformation roleInfo : viewRightsRoleInfos) {
-                    if (roleInfo.getIdentifier() != role.getRoleId() || roleInfo.getAccessUserAspects() == null) {
-                        continue;
-                    }
-                    newViewRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), role.getName(), roleMembers);
-                    oldViewRightsRoleInfo = roleInfo;
-                }
-                if (oldViewRightsRoleInfo != null && newViewRightsRoleInfo != null) {
-                    viewRightsRoleInfos.remove(oldViewRightsRoleInfo);
-                    viewRightsRoleInfos.add(newViewRightsRoleInfo);
-                    rolesWithViewRightsProperty.setValuesGeneric(viewRightsRoleInfos);
-                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithViewRightsProperty);
-                    isApprovalProfileUpdated = true;
-                }
-            }
-        }
-        return isApprovalProfileUpdated;
     }
 
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies that it is issued by a CA */
@@ -616,7 +526,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         try {
             roleMemberSession.remove(getAdmin(), roleMemberToDelete.getId());
             super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ROLEMEMBERS_INFO_REMOVED");
-            updateApprovalProfilesAndApprovals();
+            try {
+                approvalSession.updateApprovalRights(getAdmin(), role.getRoleId(), role.getRoleName());
+            } catch (AuthorizationDeniedException e) {
+                log.warn("Approval rights were not updated for role '" + role.getName() + "' after removing a role member since the user lacked the required rights.");
+            }
             roleMembers = null;
             roleMemberToDelete = null;
             nonAjaxPostRedirectGet();
