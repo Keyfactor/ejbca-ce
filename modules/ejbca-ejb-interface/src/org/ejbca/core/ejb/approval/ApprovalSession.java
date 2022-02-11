@@ -15,15 +15,15 @@ package org.ejbca.core.ejb.approval;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 
-/** Session bean to manage approval requests, i.e. add and find.
- * 
- * @version $Id$
+/** 
+ * Session bean to manage approval requests, i.e. add and find.
  */
 public interface ApprovalSession {
 
@@ -179,5 +179,14 @@ public interface ApprovalSession {
      */
     ApprovalDataVO findApprovalDataByRequestId(int requestId);
 
+    /**
+     * Update the approval/view rights of the Approval
+     * 
+     * @param admin administrator triggering the approval rights update
+     * @param roleId the affected role which needs an approval rights refresh
+     * @param roleName the name of the affected role
+     * @throws AuthorizationDeniedException if the user is not authorized to perform this action.
+     */    
+    void updateApprovalRights(AuthenticationToken admin, int roleId, String roleName) throws AuthorizationDeniedException;
 
 }
