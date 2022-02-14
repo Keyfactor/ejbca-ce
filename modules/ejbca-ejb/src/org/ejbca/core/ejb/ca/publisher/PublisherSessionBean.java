@@ -386,13 +386,14 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         for (final int id : publisherids) {
             int publishStatus = PublisherConst.STATUS_PENDING;
             BasePublisher publ = getPublisherInternal(id, null, true);
+            final boolean ocspPublisher = isOcspResponsePublisher(publ);
             if (publ != null) {
                 final String name = getPublisherName(id);
                 // If it should be published directly
                 if (!publ.getOnlyUseQueue()) {
                     try {
                         
-                        if (isOcspResponsePublisher(publ) && publisherQueueSession
+                        if (ocspPublisher && publisherQueueSession
                                 .publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
                             
                             publishStatus = PublisherConst.STATUS_SUCCESS;
@@ -413,7 +414,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     continue;
                 }
                 
-                if (publishStatus != PublisherConst.STATUS_SUCCESS) {
+                if (ocspPublisher && publishStatus != PublisherConst.STATUS_SUCCESS) {
                     return false;
                 }
                 
