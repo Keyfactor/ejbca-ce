@@ -272,9 +272,13 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>-->
             <h:outputLabel for="notification" value="#{msg.component_eedetails_field_notification}" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
+            <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled and (not cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
                 value="#{msg['component_eedetails_field_notification_'.concat(cc.attrs.raEndEntityDetails.sendNotification)]}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:selectBooleanCheckbox id="notificationcheckbox" value="#{cc.attrs.raEndEntityBean.sendNotification}"
+                disabled="#{cc.attrs.raEndEntityDetails.sendNotificationDisabled}"
+                rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.sendNotificationEnabled and not cc.attrs.approvalRequestMode}" />
+
             <h:outputLabel for="certserialoverride" value="#{msg.component_eedetails_field_certserialoverride}"
                 rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
