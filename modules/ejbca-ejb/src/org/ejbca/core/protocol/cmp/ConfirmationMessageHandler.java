@@ -165,15 +165,17 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
     
 	private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
 	    CAInfo caInfo = null;
-	    final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+	    final String caDnDefault;
 	    
 	    if (caDn == null) {
+	        caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
 	        caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
 	    } else {
 	        final String caDnNormalized = CertTools.stringToBCDNString(caDn);
 	        caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
 	        
 	        if(caInfo == null) {
+	            caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
 	            final int noDefaultCA = 0;
                     LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
                             " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ")."); 
