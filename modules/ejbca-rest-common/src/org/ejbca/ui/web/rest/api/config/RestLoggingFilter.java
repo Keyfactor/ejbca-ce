@@ -23,7 +23,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.WriteListener;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -34,10 +33,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Servlet Filter for logging REST request and responses.
- * 
- * @version $Id: RestLoggingFilter.java 29032 2018-05-25 14:11:02Z tarmor $
  */
-@WebFilter("/v1/*")
 public class RestLoggingFilter implements Filter {
 
     /** Helper class for making a copy of a ServletOutputStream */
@@ -142,10 +138,8 @@ public class RestLoggingFilter implements Filter {
     public void destroy() {}
 
     @Override
-    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
-        
+    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {        
         final long startTime = System.currentTimeMillis();
-        
         final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         final StringBuilder sbInfo = new StringBuilder(200);
         sbInfo.append(httpServletRequest.getMethod() + " " + httpServletRequest.getRequestURL().toString() + " received from " + servletRequest.getRemoteAddr());
