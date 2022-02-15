@@ -522,7 +522,7 @@
                                  rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
                 <h:commandButton action ="#{raEndEntityBean.backToSearch}" value="#{msg.search_ees_page_cdclose_command}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-                                 rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.apiEditCompatible and raEndEntityBean.viewEndEntityMode}" />
+                                 rendered="#{raEndEntityBean.viewEndEntityMode}" />
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
