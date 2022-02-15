@@ -520,6 +520,9 @@
                 <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
                                  rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                <h:commandButton action ="#{raEndEntityBean.backToSearch}" value="#{msg.search_ees_page_cdclose_command}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{raEndEntityBean.viewEndEntityMode}" />
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
