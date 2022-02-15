@@ -50,12 +50,22 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalData;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -72,6 +82,10 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -448,12 +462,19 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             }
             final int tokenProviderId = accessMatchValue.isIssuedByOauthProvider() ? this.tokenProviderId : RoleMember.NO_PROVIDER;
             try {
+                // Persist the new role member
                 final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
-                roleMemberSession.persist(getAdmin(), roleMember);
+                roleMemberSession.persist(getAdmin(), roleMember);                
+                try {
+                    approvalSession.updateApprovalRights(getAdmin(), role.getRoleId(), role.getName());
+                } catch (AuthorizationDeniedException e) {
+                    log.warn("Approval rights were not updated for role '" + role.getName() + "' after adding the role member since the user lacked the required rights.");
+                }
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
             }
+            
             // Only reset this one, since admin might want to add additional matches of the same type
             tokenMatchValue = "";
             // Trigger a reload of the RoleMember list (if this is an AJAX requests and no new viewscope will be created)
@@ -505,6 +526,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         try {
             roleMemberSession.remove(getAdmin(), roleMemberToDelete.getId());
             super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ROLEMEMBERS_INFO_REMOVED");
+            try {
+                approvalSession.updateApprovalRights(getAdmin(), role.getRoleId(), role.getRoleName());
+            } catch (AuthorizationDeniedException e) {
+                log.warn("Approval rights were not updated for role '" + role.getName() + "' after removing a role member since the user lacked the required rights.");
+            }
             roleMembers = null;
             roleMemberToDelete = null;
             nonAjaxPostRedirectGet();

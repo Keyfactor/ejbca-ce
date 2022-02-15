@@ -171,7 +171,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
             final ConfigdumpExportResult results = configDump.performExport(admin, settings);
-            if (results.isSuccessful()) {
+            if (results.isSuccessful() || ignoreErrors) {
                 return Response.ok(results.getOutput().get(), MediaType.APPLICATION_JSON).build();
             } else {
                 return Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.APPLICATION_JSON)
@@ -246,7 +246,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
             final ConfigdumpExportResult results = configDump.performExport(admin, settings);
-            if (results.isSuccessful()) {
+            if (results.isSuccessful() || ignoreErrors) {
                 return Response.ok(results.getOutput().get(), MediaType.APPLICATION_JSON).build();
             } else {
                 return Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.APPLICATION_JSON)
@@ -325,7 +325,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
             final ConfigdumpExportResult results = configDump.performExport(admin, settings);
             if (results.isNothingExported()) {
                 return Response.status(Status.NOT_FOUND).build();
-            } else if (results.isSuccessful()) {
+            } else if (results.isSuccessful() || ignoreErrors) {
                 return Response.ok(results.getOutput().get(), MediaType.APPLICATION_JSON).build();
             } else {
                 return Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.APPLICATION_JSON)
@@ -409,7 +409,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
             final ConfigdumpExportResult results = configDump.performExport(admin, settings);
-            if (results.isSuccessful()) {
+            if (results.isSuccessful() || ignoreErrors) {
                 return Response.ok(results.getOutput().get(), "application/zip").header("Content-Disposition", "attachment; filename=configdump.zip")
                         .build();
             } else {
