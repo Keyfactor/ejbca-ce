@@ -22,6 +22,6 @@ fi
 
 OLD_PWD=`pwd`
 cd "$EJBCA_HOME/modules/batchenrollment-gui"
-exec "$JAVACMD" -jar $EJBCA_HOME/modules/batchenrollment-gui/dist/batchenrollment-gui.jar "$@"
+exec "$JAVACMD" -jar -Dlog4j1.compatibility=true $EJBCA_HOME/modules/batchenrollment-gui/dist/batchenrollment-gui.jar "$@"
 cd "$OLD_PWD"
 

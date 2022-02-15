@@ -102,7 +102,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private static final float LATEST_VERSION = 15;
+    private static final float LATEST_VERSION = 16;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -254,6 +254,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
     private static final String REVERSEFFIELDCHECKS = "REVERSEFFIELDCHECKS";
     private static final String ALLOW_MERGEDN_WEBSERVICES = "ALLOW_MERGEDN_WEBSERVICES";
+    private static final String ALLOW_MERGEDN = "ALLOW_MERGEDN";
     private static final String ALLOW_MULTI_VALUE_RDNS = "ALLOW_MULTI_VALUE_RDNS";
 
     private static final String PRINTINGUSE            = "PRINTINGUSE";
@@ -431,6 +432,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(getFieldTypeBoundary(USE) + offset, use);
     	data.put(getFieldTypeBoundary(MODIFYABLE) + offset, modifyable);
     	data.put(getFieldTypeBoundary(COPY) + offset, copy);
+    	
     	if (validation != null) {
     	    // validation should be a map of a validator class name (excluding package name) and a validator-specific object.
     	    data.put(getFieldTypeBoundary(VALIDATION) + offset, validation);
@@ -1469,14 +1471,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setReverseFieldChecks(final boolean reverse){
     	data.put(REVERSEFFIELDCHECKS, reverse);
     }
-
-    /** @return true if profile DN should be merged to webservices. Default is false. */
-    public boolean getAllowMergeDnWebServices(){
-    	return getValueDefaultFalse(ALLOW_MERGEDN_WEBSERVICES);
+    
+    /** @return true if profile DN should be merged with DN in added user or uploaded CSR across all interfaces. Default is false. */
+    public boolean getAllowMergeDn(){
+        return getValueDefaultFalse(ALLOW_MERGEDN);
     }
 
-    public void setAllowMergeDnWebServices(final boolean merge){
-    	data.put(ALLOW_MERGEDN_WEBSERVICES, merge);
+    public void setAllowMergeDn(final boolean merge){
+        data.put(ALLOW_MERGEDN, merge);
     }
 
     /** @return true if multi value RDNs should be supported, on a few specific RDNs. Default is false. */
@@ -2290,7 +2292,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
             // Support for merging DN from WS-API with default values in profile, in profile version 10
             if (getVersion() < 10) {
-                setAllowMergeDnWebServices(false);
+                setAllowMergeDn(false);
+            }
+            if (getVersion() < 16) {
+                setAllowMergeDn(getBoolean(ALLOW_MERGEDN_WEBSERVICES, false));
             }
             // Support for issuance revocation status in profile version 11
             if (getVersion() < 11) {

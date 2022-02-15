@@ -221,6 +221,10 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     public boolean isAuthorizedToViewPublicWeb() {
         return getEjbcaErrorWebBean().isRunningBuildWithCA();
     }
+
+    public boolean isPublicWebHidden() {
+        return getEjbcaWebBean().getGlobalConfiguration().getHidePublicWeb();
+    }
     
     public boolean isAuthorizedToViewRaWeb() {
         return getEjbcaErrorWebBean().isRunningBuildWithRAWeb();
@@ -228,6 +232,10 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     public boolean isHelpEnabled() {
         return EjbcaJSFHelper.getBean().getEjbcaWebBean().isHelpEnabled();
+    }
+    
+    public boolean isLogoutAvailable() {
+        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getUseSessionTimeout();
     }
     
     public String getHeadBannerUrl() {

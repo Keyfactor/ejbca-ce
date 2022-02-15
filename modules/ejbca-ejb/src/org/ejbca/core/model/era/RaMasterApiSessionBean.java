@@ -341,9 +341,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>10<td>=<td>7.4.2
      * <tr><th>11<td>=<td>7.5.0
      * <tr><th>12<td>=<td>7.5.1
+     * <tr><th>13<td>=<td>7.9.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 12;
+    private static final int RA_MASTER_API_VERSION = 13;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1861,11 +1862,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EjbcaException {
         EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS);
-        final int profileId = endEntityInformation.getEndEntityProfileId();
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-        if (profile.getAllowMergeDnWebServices()) {
-            endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntityInformation, profile);
-        }
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, isClearPwd);
         return endEntityAccessSession.findUser(endEntityInformation.getUsername()) != null;
     }
@@ -1884,6 +1880,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public EndEntityInformation searchUser(final AuthenticationToken admin, String username) {
         try {
             return endEntityAccessSession.findUser(admin, username);
+        } catch (AuthorizationDeniedException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Not authorized to end entity '" + username + "'");
+            }
+            return null;
+        }
+    }
+    
+    @Override
+    public EndEntityInformation searchUserWithoutViewEndEntityAccessRule(final AuthenticationToken admin, String username) {
+        try {
+            return endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(admin, username);
         } catch (AuthorizationDeniedException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Not authorized to end entity '" + username + "'");
@@ -1971,15 +1979,75 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
             throw new KeyStoreGeneralRaException(e);
         }
-        if(endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
-            try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
+        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
             } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
                 log.error(e); //should never happen if keyStore is valid object
             }
-        }else{
-            try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
+        } else{
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                keyStore.store(outputStream, endEntity.getPassword().toCharArray());
+                return outputStream.toByteArray();
+            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+                log.error(e); //should never happen if keyStore is valid object
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public byte[] generateKeyStoreWithoutViewEndEntityAccessRule(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException {
+        KeyStore keyStore;
+        try {
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntity.getEndEntityProfileId());
+            boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
+            EndEntityInformation data = endEntityAccessSession.findUser(endEntity.getUsername());
+            if (data == null) {
+                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '"+endEntity.getUsername()+"' does not exist");
+            }
+            final boolean saveKeysFlag = data.getKeyRecoverable() && useKeyRecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
+            final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
+            final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
+            ExtendedInformation ei = endEntity.getExtendedInformation();
+            if (ei == null) {
+                // ExtendedInformation is optional, and we don't want any NPEs here
+                // Make it easy for ourselves and create a default one if there is none in the end entity
+                ei = new ExtendedInformation();
+            }
+            final String encodedValidity = ei.getCertificateEndTime();
+            final Date notAfter = encodedValidity == null ? null :
+                ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
+            keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(admin, // Authentication token
+                    endEntity.getUsername(), // Username
+                    endEntity.getPassword(), // Enrollment code
+                    endEntity.getCAId(), // The CA signing the private keys
+                    ei.getKeyStoreAlgorithmSubType(), // Keylength
+                    ei.getKeyStoreAlgorithmType(), // Signature algorithm
+                    null, // Not valid before
+                    notAfter, // Not valid after
+                    endEntity.getTokenType(), // Type of token
+                    loadKeysFlag, // Perform key recovery?
+                    saveKeysFlag, // Save private keys?
+                    reuseCertificateFlag, // Reuse recovered cert?
+                    endEntity.getEndEntityProfileId()); // Identifier for end entity
+        } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
+                | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
+                | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
+                | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
+                | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
+            throw new KeyStoreGeneralRaException(e);
+        }
+        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
+                return outputStream.toByteArray();
+            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+                log.error(e); //should never happen if keyStore is valid object
+            }
+        } else {
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 keyStore.store(outputStream, endEntity.getPassword().toCharArray());
                 return outputStream.toByteArray();
             } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
