@@ -233,7 +233,7 @@ public class RaEndEntityBean implements Serializable {
      */
     public void editEditEndEntity() {
         editEditEndEntityMode = isApiEditCompatible();
-            if (editEditEndEntityMode) {
+        if (editEditEndEntityMode) {
             viewEndEntityMode=false;
         }
         reload();
