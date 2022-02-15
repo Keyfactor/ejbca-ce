@@ -478,6 +478,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     } else {
                         endEntityInformation = suppliedUserData;
                     }
+                    
                     // We need to make sure we use the users registered CA here
                     if (endEntityInformation.getCAId() != ca.getCAId()) {
                         final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()),
