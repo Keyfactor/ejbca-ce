@@ -105,6 +105,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -896,6 +898,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, "(Issuer-Name-Dn -> String");
             transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW, "(Issuer-Name-Dn-Raw) -> String");
             transactionLogger.paramPut(PatternLogger.ISSUER_NAME_HASH, "(Issuer-Name-Hash -> String)");
+            transactionLogger.paramPut(TransactionLogger.OCSP_CERT_ISSUER_NAME_DN, "(OCSP-Issuer-Name-Dn -> String");
+            transactionLogger.paramPut(TransactionLogger.OCSP_CERT_ISSUER_NAME_DN_RAW, "(OCSP-Issuer-Name-Dn-Raw) -> String");
             transactionLogger.paramPut(PatternLogger.ISSUER_KEY, "(Issuer-Key -> String)");
             transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, "(Digest-Algorithm -> String)");
             transactionLogger.paramPut(PatternLogger.SERIAL_NOHEX, "(Certificate-Serial-No -> String)");
@@ -929,10 +933,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String currentTrustEntryDescription  = null;
     private String currentOcspExtension = null;
     private ListDataModel<InternalKeyBindingTrustEntry>trustedCertificates = null;
+    private ListDataModel<InternalKeyBindingTrustEntry>signOcspResponseForCas = null;
     private ListDataModel<String> ocspExtensions = null;
     private Map<String, String> ocspExtensionOidNameMap = new HashMap<>();
     private Boolean useIssuerNotBeforeAsArchiveCutoff;
     private SimpleTime retentionPeriod;
+    
+    private Integer currentCertificateAuthorityOcspRespToSign = null;
+    private String currentTrustEntryDescriptionOcspRespToSign  = null;
 
     public boolean getUseIssuerNotBeforeAsArchiveCutoff() {
         try {
@@ -1032,6 +1040,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     public void setCurrentCertificateAuthority(Integer currentCertificateAuthority) {
         this.currentCertificateAuthority = currentCertificateAuthority;
+    }    
+
+    public Integer getCurrentCertificateAuthorityOcspRespToSign() {
+        return currentCertificateAuthorityOcspRespToSign;
+    }
+
+    public void setCurrentCertificateAuthorityOcspRespToSign(Integer currentCertificateAuthorityOcspRespToSign) {
+        this.currentCertificateAuthorityOcspRespToSign = currentCertificateAuthorityOcspRespToSign;
     }
 
     public String getCurrentOcspExtension() {
@@ -1051,10 +1067,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         currentNextKeyPairAlias = null;
         internalKeyBindingPropertyList = null;
         trustedCertificates = null;
+        signOcspResponseForCas = null;
         inEditMode = false;
         ocspExtensions = null;
         retentionPeriod = null;
         useIssuerNotBeforeAsArchiveCutoff = null;
+        currentTrustEntryDescriptionOcspRespToSign  = null;
     }
 
     /** @return the current InternalKeyBindingId as a String */
@@ -1121,8 +1139,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
             internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<>(internalKeyBinding.getCopyOfProperties().values()));
             trustedCertificates = null;
+            signOcspResponseForCas = null;
             retentionPeriod = null;
             useIssuerNotBeforeAsArchiveCutoff = null;
+            currentTrustEntryDescriptionOcspRespToSign  = null;
         }
     }
 
@@ -1450,6 +1470,24 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         availableCertificateAuthorities.sort((o1, o2) -> o1.getLabel().compareToIgnoreCase(o2.getLabel()));
         return availableCertificateAuthorities;
     }
+    
+    /** @return a list of all CAs without (active and inactive) OCSP key binding */
+    public List<SelectItem/*<Integer,String>*/> getAvailableCertificateAuthoritiesForOcspSign() {
+        
+        final Map<Integer, String> caIdToNameMap = 
+                                    internalKeyBindingSession.getAllCaWithoutOcspKeyBinding();
+        final List<SelectItem> availableCertificateAuthorities = new ArrayList<>();
+                                
+        for (final Entry<Integer, String> caIdToNameMapEntry : caIdToNameMap.entrySet()) {
+                availableCertificateAuthorities.add(new SelectItem(caIdToNameMapEntry.getKey(), 
+                                                                        caIdToNameMapEntry.getValue()));
+        }
+        if (currentCertificateAuthorityOcspRespToSign == null && !availableCertificateAuthorities.isEmpty()) {
+            currentCertificateAuthorityOcspRespToSign = (Integer) availableCertificateAuthorities.get(0).getValue();
+        }
+        availableCertificateAuthorities.sort((o1, o2) -> o1.getLabel().compareToIgnoreCase(o2.getLabel()));
+        return availableCertificateAuthorities;
+    }
 
     public List<SelectItem> getAvailableOcspExtensions() {
         final List<SelectItem> ocspExtensionItems = new ArrayList<>();
@@ -1530,12 +1568,42 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         this.currentTrustEntryDescription = description;
     }
     
+    public String getCurrentTrustEntryDescriptionOcspRespToSign() {
+        return currentTrustEntryDescriptionOcspRespToSign;
+    }
+    
+    public void setCurrentTrustEntryDescriptionOcspRespToSign(String description) {
+        this.currentTrustEntryDescriptionOcspRespToSign = description;
+    }
+    
     public String getTrustedCertificatesCaName() {
         return caSession.getCAIdToNameMap().get(trustedCertificates.getRowData().getCaId());
+    }
+    
+    public String getSignOcspResponseForCasCaName() {
+        return caSession.getCAIdToNameMap().get(signOcspResponseForCas.getRowData().getCaId());
     }
 
     public String getTrustedCertificatesSerialNumberHex() {
         return trustedCertificates.getRowData().fetchCertificateSerialNumber().toString(16);
+    }
+    
+    public ListDataModel<InternalKeyBindingTrustEntry> getSignOcspResponseForCas() {
+        if (signOcspResponseForCas == null) {
+            final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
+            if (internalKeyBindingId == 0) {
+                signOcspResponseForCas = new ListDataModel<>(new ArrayList<InternalKeyBindingTrustEntry>());
+            } else {
+                try {
+                    final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
+                            authenticationToken, internalKeyBindingId);
+                    signOcspResponseForCas = new ListDataModel<>(internalKeyBinding.getSignOcspResponseOnBehalf());
+                } catch (AuthorizationDeniedException e) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+                }
+            }
+        }
+        return signOcspResponseForCas;
     }
 
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */
@@ -1588,6 +1656,27 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 .getWrappedData();
         trustedCertificateReferences.remove(trustEntry);
         trustedCertificates.setWrappedData(trustedCertificateReferences);
+    }
+    
+    /** Invoked when the user wants to a new entry to the list of OCSP signed recipient certificate references */
+    @SuppressWarnings("unchecked")
+    public void addCaToSignOcspResponse() {
+        final List<InternalKeyBindingTrustEntry> caIssuedCertsToSign = 
+                (List<InternalKeyBindingTrustEntry>) getSignOcspResponseForCas().getWrappedData();
+        caIssuedCertsToSign.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthorityOcspRespToSign(), 
+                                                  null, currentTrustEntryDescriptionOcspRespToSign));
+        signOcspResponseForCas.setWrappedData(caIssuedCertsToSign);
+        currentTrustEntryDescriptionOcspRespToSign="";
+    }
+
+    /** Invoked when the user wants to remove an entry to the list of OCSP signed recipient certificate references */
+    @SuppressWarnings("unchecked")
+    public void removeCaToSignOcspResponse() {
+        final InternalKeyBindingTrustEntry trustEntry = (signOcspResponseForCas.getRowData());
+        final List<InternalKeyBindingTrustEntry> caIssuedCertsToSign = 
+                (List<InternalKeyBindingTrustEntry>) getSignOcspResponseForCas().getWrappedData();
+        caIssuedCertsToSign.remove(trustEntry);
+        signOcspResponseForCas.setWrappedData(caIssuedCertsToSign);
     }
 
     /** @return a list of the current InteralKeyBinding's properties */
@@ -1647,12 +1736,24 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         currentKeyPairAlias, currentSignatureAlgorithm, dataMap, (List<InternalKeyBindingTrustEntry>) trustedCertificates.getWrappedData()));
                 if (isOcspKeyBinding()) {
                     List<String> exts = (List<String>) ocspExtensions.getWrappedData();
+                    final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, Integer.parseInt(currentInternalKeyBindingId));
+
                     if (exts != null && !exts.isEmpty()) {
                         // If we have some OCSP extensions, these are not created above, so we have to merge again
-                        final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, Integer.parseInt(currentInternalKeyBindingId));
                         internalKeyBinding.setOcspExtensions(exts);
-                        currentInternalKeyBindingId = String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding));
                     }
+                    
+                    List<InternalKeyBindingTrustEntry> signOcspResponseForCas = null;
+                    if(!Objects.isNull(this.signOcspResponseForCas.getWrappedData())) {
+                        signOcspResponseForCas = (List<InternalKeyBindingTrustEntry>) this.signOcspResponseForCas.getWrappedData();
+                    } else {
+                        signOcspResponseForCas = new ArrayList<InternalKeyBindingTrustEntry>();
+                    }
+                    internalKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCas);
+                    // we save an empty list for sign on behalf of CAs
+                    currentInternalKeyBindingId = String.valueOf(
+                            internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding));
+                
                 }
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(getCurrentName() + " created with ID " + currentInternalKeyBindingId));
@@ -1698,6 +1799,13 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 if (useIssuerNotBeforeAsArchiveCutoff != null) {
                     ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(useIssuerNotBeforeAsArchiveCutoff);
                 }
+                List<InternalKeyBindingTrustEntry> signOcspResponseForCas = null;
+                if(!Objects.isNull(this.signOcspResponseForCas.getWrappedData())) {
+                    signOcspResponseForCas = (List<InternalKeyBindingTrustEntry>) this.signOcspResponseForCas.getWrappedData();
+                } else {
+                    signOcspResponseForCas = new ArrayList<InternalKeyBindingTrustEntry>();
+                }
+                ocspKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCas);
             }
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                     .getWrappedData();
