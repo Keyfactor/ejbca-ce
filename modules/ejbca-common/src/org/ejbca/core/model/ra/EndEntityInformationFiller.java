@@ -23,18 +23,14 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.util.dn.DistinguishedName;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.Rdn;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -131,124 +127,6 @@ public class EndEntityInformationFiller {
     }
 
     /**
-     * This method merge subject DN with data from End entity profile. Kept as legacy.
-     *
-     * @param subjectDN   user Distinguished Name.
-     * @param profile     user associated profile.
-     * @param entityEmail entity email.
-     * @return updated DN.
-     */
-    private static String mergeSubjectDnWithDefaultValues(String subjectDN, EndEntityProfile profile,
-                                                          String entityEmail) {
-        DistinguishedName profiledn;
-        DistinguishedName userdn;
-        if (StringUtils.isNotEmpty(subjectDN)) {
-            try {
-                userdn = new DistinguishedName(subjectDN);
-            } catch (InvalidNameException ine) {
-                log.debug(subjectDN, ine);
-                throw new RuntimeException(ine);
-            }
-        } else {
-            userdn = new DistinguishedName(Collections.emptyList());
-        }
-        final int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
-        final List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectdnfields);
-        int[] fielddata = null;
-        String value;
-        //Build profile's DN
-        for (int i = 0; i < numberofsubjectdnfields; i++) {
-            fielddata = profile.getSubjectDNFieldsInOrder(i);
-            value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-            if (!StringUtils.isEmpty(value) && !StringUtils.isWhitespace(value)) {
-                value = value.trim();
-                addFieldValueToRdnList(rdnList, fielddata, value, DNFieldExtractor.TYPE_SUBJECTDN);
-            }
-        }
-        // As the constructor taking a list of RDNs numbers them from behind, which is typically not what we want when mergin DNs from a profile
-        // that has specified CN=User,OU=Org1,OU=Org2, we'll reverse them. This is of little importance when you only have one item of each component,
-        // but when you have multiple, such as sevral OUs it becomes important. See DistingushedNameTest for more detailed tests of this behavios
-        Collections.reverse(rdnList);
-        profiledn = new DistinguishedName(rdnList);
-        if (log.isDebugEnabled()) {
-            log.debug("Profile DN to merge with subject DN: " + profiledn.toString());
-        }
-
-        Map<String, String> dnMap = new HashMap<String, String>();
-        if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
-            dnMap.put(DnComponents.DNEMAILADDRESS, entityEmail);
-        }
-
-        return CertTools.stringToBCDNString(profiledn.mergeDN(userdn, true, dnMap).toString());
-    }
-
-    /**
-     * This method merge subject Alt name with data from End entity profile. Kept as legacy.
-     *
-     * @param subjectAltName user subject alt name.
-     * @param profile        user associated profile.
-     * @param entityEmail    entity email field
-     * @return updated subject alt name
-     */
-    private static String mergeSubjectAltNameWithDefaultValues(String subjectAltName, EndEntityProfile profile, String entityEmail) {
-        DistinguishedName profileAltName;
-        DistinguishedName userAltName;
-        try {
-            if(subjectAltName==null) {
-                subjectAltName = "";
-            }
-            userAltName = new DistinguishedName(subjectAltName);
-        } catch (InvalidNameException ine) {
-            log.debug(subjectAltName,ine);
-            throw new RuntimeException(ine);
-        }
-        int numberofsubjectAltNamefields = profile.getSubjectAltNameFieldOrderLength();
-        List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectAltNamefields);
-        int[] fielddata = null;
-        String value;
-        //Build profile's Alt Name
-        for (int i = 0; i < numberofsubjectAltNamefields; i++) {
-            fielddata = profile.getSubjectAltNameFieldsInOrder(i);
-            value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-            if (value != null) {
-                value = value.trim();
-                if (!value.equals("")) {
-                    addFieldValueToRdnList(rdnList, fielddata, value, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-                }
-            }
-        }
-        profileAltName = new DistinguishedName(rdnList);
-
-        Map<String, String> dnMap = new HashMap<String, String>();
-        if (profile.getUse(DnComponents.RFC822NAME, 0)) {
-            dnMap.put(DnComponents.RFC822NAME, entityEmail);
-        }
-
-        return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
-    }
-
-    /**
-     *  Adds a value to rdnList.
-     * @param rdnList rdnList to be updated
-     * @param fielddata a field data, what will be added to rdnList
-     * @param value field value to be added to rdnList
-     * @param dnFieldExtractorType subject DNFieldExtractor.TYPE_SUBJECTALTNAME or subject DNFieldExtractor.TYPE_SUBJECTDN
-     */
-    private static void addFieldValueToRdnList(List<Rdn> rdnList, final int[] fielddata, final String value, final int dnFieldExtractorType) {
-        String parameter = DNFieldExtractor.getFieldComponent(
-                DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
-                dnFieldExtractorType);
-        try {
-            parameter = StringUtils.replace(parameter, "=", "");
-            rdnList.add(new Rdn(parameter, value));
-        } catch (InvalidNameException ine) {
-            log.debug("InvalidNameException while creating new Rdn with parameter " + parameter + " and value " + value, ine);
-            throw new RuntimeException(ine);
-        }
-    }
-
-
-    /**
      * Gets the first Common Name value from subjectDn and sets this value to all dns's with "use from CN" checked
      *
      * @param endEntityProfile EEP selected for end entity
@@ -281,6 +159,29 @@ public class EndEntityInformationFiller {
         return dnses.toString();
     }
     
+    /**
+     * This method merges user provided DNs with DNs configured in profile. We parse the user provided string to
+     * collection of javax.naming.ldap.Rdn instances while retaining order of different type of Rdns and 
+     * values for each type. Then we do the same for profile. Then we override the values in profile starting 
+     * with empty fields and then modifiable but non-empty values against each type of Rdns. If there are still
+     * new values in user dn is present, then exception is thrown. Otherwise, rest of the unmodifiable DN values
+     * from profile are appended. This is repeated for each DN type in profile. It accounts for 
+     * DNs present in both user provided string and profile. Exception is also thrown if DN type is present 
+     * in user configured string but not in profile.
+     * <br>
+     * e.g. userDnString: CN=My Name,O=My Org1,O=My Org2<br>
+     * profile: CN=,O=ProfileOrg1(unmodifiable),O=ProfileOrg2(modifiable),O=(empty)<br>
+     * result: CN=My Name,O=My Org1,O=My Org2,O=ProfileOrg1<br>
+     * 
+     * if userDnString has one more instance of DN type O, it will result in exception.
+     * 
+     * @param userDnString SubjectDN or Subject Alternate Name provided by user as String
+     * @param profile 
+     * @param entityType indicates SubjectDN or Subject Alternate Name
+     * @param entityEmail email value to be merged as configured in profile
+     * @return
+     * @throws EndEntityProfileValidationException
+     */
     private static String mergeDnString(String userDnString, final EndEntityProfile profile, 
                                 final String entityType, final String entityEmail) throws EndEntityProfileValidationException {
         
@@ -368,7 +269,6 @@ public class EndEntityInformationFiller {
                 orderedRdns.add(rdn);
             } else {
                 
-                value = curDn.substring(dnParts[0].length()+1).trim();
                 String []currentDnParts = splitEscaped(curDn, "+");
                 for(String currentDnPart: currentDnParts) {
                     dnParts = splitEscaped(currentDnPart, "=");
