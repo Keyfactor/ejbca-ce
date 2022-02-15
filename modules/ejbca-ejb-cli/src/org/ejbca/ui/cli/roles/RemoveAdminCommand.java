@@ -28,6 +28,7 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -37,7 +38,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Removes an admin
- * @version $Id$
  */
 public class RemoveAdminCommand extends BaseRolesCommand {
 
@@ -164,6 +164,11 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                     foundMatch = true;
                     getLogger().info("Removed role member: " + "'" + caName + "' " + accessMatchValue + " " + accessMatchType + " '" +
                             tokenMatchValue + "' from role " + super.getFullRoleName(namespace, roleName));
+                    try {
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class).updateApprovalRights(getAuthenticationToken(), role.getRoleId(), roleName);
+                    } catch (AuthorizationDeniedException e) {
+                        getLogger().warn("Approval rights were not updated after removing role member due to insufficient rights.");
+                    }
                 }
             }
             if (!foundMatch) {

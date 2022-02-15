@@ -44,8 +44,8 @@ public class EndEntityInformationFiller {
 
     /** For log purpose. */
     private static final Logger log = Logger.getLogger(EndEntityInformationFiller.class.getName());
-    private static final String SUBJECT_DN = "subject DN";
-    private static final String SUBJECT_ALTERNATIVE_NAME = "subject alternative name";
+    public static final String SUBJECT_DN = "subject DN";
+    public static final String SUBJECT_ALTERNATIVE_NAME = "subject alternative name";
     
     private static final Map<String, String> BC_STYLE_PARAMETERS;
     
@@ -74,7 +74,6 @@ public class EndEntityInformationFiller {
      * @throws EndEntityProfileValidationException 
      */
     public static EndEntityInformation fillUserDataWithDefaultValues(final EndEntityInformation userData, final EndEntityProfile profile) throws EndEntityProfileValidationException {
-
 
     	if (StringUtils.isEmpty(userData.getUsername())) {
         	userData.setUsername(profile.getUsernameDefault());
@@ -123,8 +122,10 @@ public class EndEntityInformationFiller {
             }
         }
         
+        userData.setProfileMerged(true);
         return userData;
     }
+
 
     /**
      * Gets the first Common Name value from subjectDn and sets this value to all dns's with "use from CN" checked
@@ -182,7 +183,7 @@ public class EndEntityInformationFiller {
      * @return
      * @throws EndEntityProfileValidationException
      */
-    private static String mergeDnString(String userDnString, final EndEntityProfile profile, 
+    public static String mergeDnString(String userDnString, final EndEntityProfile profile, 
                                 final String entityType, final String entityEmail) throws EndEntityProfileValidationException {
         
         if (userDnString==null) {
