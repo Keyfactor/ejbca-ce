@@ -420,17 +420,37 @@ public class EndEntityInformationFiller {
         }
         
         StringBuilder result = new StringBuilder(numberofDnfields*10);
-        for(Entry<String, LinkedHashSet<Rdn>> dnType: groupedAllProfileRdns.entrySet()) {
-            // finally, add all dnTypes according to sequence in profile
-            // for individual dn type, first user dns and the profile dns
-            if(userRdns.containsKey(dnType.getKey())) {
-                for(Rdn dn: userRdns.get(dnType.getKey())) {
+        if(entityType.equalsIgnoreCase(SUBJECT_ALTERNATIVE_NAME)) {
+            for(Entry<String, LinkedHashSet<Rdn>> dnType: groupedAllProfileRdns.entrySet()) {
+                // finally, add all dnTypes according to sequence in profile
+                // for individual dn type, first user dns and the profile dns
+                if(userRdns.containsKey(dnType.getKey())) {
+                    for(Rdn dn: userRdns.get(dnType.getKey())) {
+                        appendDn(result, dn);
+                    }
+                }
+                
+                for(Rdn dn: groupedAllProfileRdns.get(dnType.getKey())) {
                     appendDn(result, dn);
                 }
             }
-            
-            for(Rdn dn: groupedAllProfileRdns.get(dnType.getKey())) {
-                appendDn(result, dn);
+        } else {
+            String[] forwardOrderedDnTypes = DnComponents.getDnObjects(true);
+            for(String currentDnType: forwardOrderedDnTypes) {
+                currentDnType = currentDnType.toUpperCase();
+                if(!groupedAllProfileRdns.containsKey(currentDnType)) {
+                    continue;
+                }
+                
+                if(userRdns.containsKey(currentDnType)) {
+                    for(Rdn dn: userRdns.get(currentDnType)) {
+                        appendDn(result, dn);
+                    }
+                }
+                
+                for(Rdn dn: groupedAllProfileRdns.get(currentDnType)) {
+                    appendDn(result, dn);
+                }
             }
         }
         
