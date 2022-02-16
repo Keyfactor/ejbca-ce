@@ -88,6 +88,9 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         List<Region> regions = new ArrayList<>();
+        for(Integer r: this.regions) {
+            regions.add(new Region(r));
+        }
         return new IdentifiedRegion(IdentifiedRegion.countryAndRegions, 
                 new CountryAndRegions(new CountryOnly(country.getM49Code()),
                         regions ));

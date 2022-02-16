@@ -33,7 +33,6 @@ public class IdentifiedRegions implements ItsGeographicElement {
             sb.append(region.toStringFormat());
             sb.append(ItsGeographicRegion.SEQUENCE_SEPARATOR);
         }
-        sb.deleteCharAt(sb.length()-1);
         return sb.toString();
     }
     
