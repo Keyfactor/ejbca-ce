@@ -829,7 +829,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
                               
                 dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
-                dn = EndEntityInformationFiller.mergeSubjectDnWithDefaultValues(dn, profile, null);
+                dn = EndEntityInformationFiller.mergeDnString(dn, profile, EndEntityInformationFiller.SUBJECT_DN, null);
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
@@ -846,7 +846,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
                 }
                 altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
-                altName = EndEntityInformationFiller.mergeSubjectAltNameWithDefaultValues(altName, profile, null);                
+                altName = EndEntityInformationFiller.mergeDnString(altName, profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);                
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
