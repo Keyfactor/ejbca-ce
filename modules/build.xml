@@ -48,7 +48,7 @@
 	</target>
 	
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
-        edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
+        edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, plugins-ee-clean, 
 		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean"/>
 
@@ -80,14 +80,6 @@
 	<target name="externalraclean" if="${mod.externalra.exists}">
 		<echo message="Cleaning externalra"/>
 		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-	</target>
-	
-    <condition property="externalra-gui.exists">
-    	<available file="${mod.externalra-gui.path}/build.xml" />
-    </condition>
-	<target name="externalra-guiclean" if="${externalra-gui.exists}">
-		<echo message="Cleaning externalra-gui"/>
-		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="externalra-scepclean" if="${mod.externalra-scep.exists}">
@@ -437,10 +429,6 @@
 
 	<target name="externalra-scep" depends="ejbca-common, externalra-library" description="Build the EJBCA External RA StandAlone SCEP WAR">
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-
-	<target name="externalra-gui" depends="cesecore-ejb-interface, ejbca-common, externalra-library" description="Build the EJBCA External RA StandAlone GUI WAR">
-		<ant antfile="${mod.externalra-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="batchenrollment-gui" depends="cesecore-common, ejbca-ws-cli, ejbca-ws-common, ejbca-common" description="Build the EJBCA Batch Enrollment StandAlone GUI JAR">
