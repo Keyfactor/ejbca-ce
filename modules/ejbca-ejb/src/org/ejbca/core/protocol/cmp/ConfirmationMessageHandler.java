@@ -165,21 +165,29 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
     
 	private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
 	    CAInfo caInfo = null;
+	    final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+	    
 	    if (caDn == null) {
-	        final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
 	        caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
 	    } else {
 	        final String caDnNormalized = CertTools.stringToBCDNString(caDn);
 	        caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
+	        
 	        if(caInfo == null) {
-	            final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	            LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
-	                    " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
-	            caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-	        }
+	            final int noDefaultCA = 0;
+                    LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
+                            " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ")."); 
+                   
+                    if (caDnDefault.hashCode()==noDefaultCA) {
+                        LOG.error("No CMP Default CA exists in Alias");
+                        throw new CADoesntExistsException ("No CMP DefaultCA exists");
+                    } else {
+                    caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
+                    }
+           } 
 	    }
 	    if (!(caInfo instanceof X509CAInfo)) {
-	        throw new CADoesntExistsException("Incorrect CA type.");
+	        throw new CADoesntExistsException("Incorrect CA type."); 
 	    }
 	    return (X509CAInfo) caInfo;
 	}
