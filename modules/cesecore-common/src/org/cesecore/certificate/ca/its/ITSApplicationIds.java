@@ -60,4 +60,13 @@ public enum ITSApplicationIds {
     public String getApplicationName() {
         return applicationName;
     }
+    
+    public static ITSApplicationIds fromSspValue(int sspValue) {
+        for(ITSApplicationIds sc : values()){
+            if(sc.getPsId()==sspValue){
+                return sc;
+            }
+        }
+        throw new IllegalArgumentException("Invalid Psid SSP value: " + sspValue);
+    }
 }

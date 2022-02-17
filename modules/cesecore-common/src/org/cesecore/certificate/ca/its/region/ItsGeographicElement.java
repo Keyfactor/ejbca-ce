@@ -2,8 +2,8 @@ package org.cesecore.certificate.ca.its.region;
 
 import java.util.List;
 
-import org.bouncycastle.oer.its.GeographicRegion;
-import org.bouncycastle.oer.its.IdentifiedRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion;
 
 public interface ItsGeographicElement {
     

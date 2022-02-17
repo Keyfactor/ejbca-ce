@@ -463,10 +463,10 @@
     	<pathelement location="${mod.ejbca-common-web.lib}"/>
 	</path>
 
-	<path id="lib.bouncycastle-provonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcprov-jdk15on-*.jar"/></fileset></path>
-	<path id="lib.bouncycastle-mailonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcpkix-jdk15on-*.jar"/></fileset></path>
-	<path id="lib.bouncycastle-tlsonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bctls-jdk15on-*.jar"/></fileset></path>
-	<path id="lib.bouncycastle-util.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcutil-jdk15on-*.jar"/></fileset></path>
+	<path id="lib.bouncycastle-provonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcprov-jdk18on-*.jar"/></fileset></path>
+	<path id="lib.bouncycastle-mailonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcpkix-jdk18on-*.jar"/></fileset></path>
+	<path id="lib.bouncycastle-tlsonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bctls-jdk18on-*.jar"/></fileset></path>
+	<path id="lib.bouncycastle-util.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcutil-jdk18on-*.jar"/></fileset></path>
 	<path id="lib.bouncycastle.classpath">
 		<path refid="lib.bouncycastle-provonly.classpath"/>
 		<path refid="lib.bouncycastle-mailonly.classpath"/>
