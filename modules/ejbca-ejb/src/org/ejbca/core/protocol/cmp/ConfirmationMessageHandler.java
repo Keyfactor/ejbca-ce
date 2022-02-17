@@ -162,34 +162,59 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             LOG.error("Exception during CMP response signing: " + e.getMessage(), e);            
         }
     }
-    
+	
 	private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
-	    CAInfo caInfo = null;
-	    final String caDnDefault;
-	    
-	    if (caDn == null) {
-	        caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	        caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-	    } else {
-	        final String caDnNormalized = CertTools.stringToBCDNString(caDn);
-	        caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
-	        
-	        if(caInfo == null) {
-	            caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-                    LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
-                            " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ")."); 
-                   
-                if (caDnDefault.equals("")) {
-                    LOG.error("No CMP Default CA exists in Alias");
-                        throw new CADoesntExistsException ("No CMP DefaultCA exists");
-                } else {
-                    caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-                }
-           } 
-	    }
-	    if (!(caInfo instanceof X509CAInfo)) {
-	        throw new CADoesntExistsException("Incorrect CA type."); 
-	    }
-	    return (X509CAInfo) caInfo;
-	}
+        CAInfo caInfo = null;
+        final String caDnDefault;
+        
+        if (caDn != null) {
+            caInfo = caSession.getCAInfoInternal(CertTools.stringToBCDNString(caDn).hashCode(), null, true);
+        } else {
+            final String cmpDefaultCA = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+            
+            if (cmpDefaultCA.equals("")) {
+                LOG.error("No CMP Default CA exists in Alias");
+                throw new CADoesntExistsException("No CMP DefaultCA exists");
+            } else {
+                caDnDefault = CertTools.stringToBCDNString(cmpDefaultCA);
+                caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
+                LOG.info("Could not find Recipient CA with DN '" + CertTools.stringToBCDNString(caDn) + "'."
+                        + " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
+            }
+        }
+        if (!(caInfo instanceof X509CAInfo)) {
+            throw new CADoesntExistsException("Incorrect CA type.");
+        }
+        return (X509CAInfo) caInfo;
+    }
+    
+//	private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
+//	    CAInfo caInfo = null;
+//	    final String caDnDefault;
+//	    
+//	    if (caDn == null) {
+//	        caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+//	        caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
+//	    } else {
+//	        final String caDnNormalized = CertTools.stringToBCDNString(caDn);
+//	        caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
+//	        
+//	        if(caInfo == null) {
+//	            caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+//                    LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
+//                            " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ")."); 
+//                   
+//                if (caDnDefault.equals("")) {
+//                    LOG.error("No CMP Default CA exists in Alias");
+//                        throw new CADoesntExistsException ("No CMP DefaultCA exists");
+//                } else {
+//                    caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
+//                }
+//           } 
+//	    }
+//	    if (!(caInfo instanceof X509CAInfo)) {
+//	        throw new CADoesntExistsException("Incorrect CA type."); 
+//	    }
+//	    return (X509CAInfo) caInfo;
+//	}
 }
