@@ -14,9 +14,15 @@ import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
 
+import java.io.InputStream;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.GlobalConfiguration;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -28,6 +34,8 @@ import org.junit.Test;
  * A set of system tests for CaRestResource ('').
  */
 public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
+    
+    private static final Logger log = Logger.getLogger(CaRestResourceSystemTest.class);
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -60,6 +68,28 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals(Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
+    }
+    
+    @Test
+    public void shouldReturnStatusInformation2() throws Exception {
+        // given
+        final String expectedStatus = "OK";
+        final String expectedVersion = "1.0";
+        final String expectedRevision = GlobalConfiguration.EJBCA_VERSION;
+        
+        byte[] bytebody = Hex.decode("ABCDEF123456ABCD04");
+        Entity<byte[]> requestEntity = Entity.entity(bytebody, "application/x-its-request");
+        // when
+        final Response actualResponse = newRequest("cits/etsi/its/enroll-certificate", 
+                getBaseUrl().replace("ejbca-rest-api", "")).request().post(requestEntity);
+        InputStream is = actualResponse.readEntity(InputStream.class);
+        log.info(Hex.toHexString(is.readAllBytes()));
+        log.info(actualResponse.getHeaders());
+        
+        // then
+        assertEquals(Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        //assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
     }
 
     /**
