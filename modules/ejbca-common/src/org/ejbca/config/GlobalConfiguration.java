@@ -211,6 +211,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
+    private static final String HIDE_PUBLIC_WEB = "hide_public_web";
     private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
 
     /** Creates a new instance of GlobalConfiguration */
@@ -573,6 +574,14 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         } else {
             data.put(SESSIONTIMEOUTTIME, timeInMinutes);
         }
+    }
+
+    public boolean getHidePublicWeb() {
+        return getBoolean(HIDE_PUBLIC_WEB, false);
+    }
+
+    public void setHidePublicWeb(final boolean hideDeprecatedFunctionality) {
+        putBoolean(HIDE_PUBLIC_WEB, hideDeprecatedFunctionality);
     }
 
     public int getVaStatusTimeConstraint() {

@@ -72,7 +72,6 @@
     <property file="${ejbca.home}/conf/mail.properties" />
     <property file="${ejbca.home}/conf/ocsp.properties" />
     <property file="${ejbca.home}/conf/web.properties" />
-    <property file="${ejbca.home}/conf/cmptcp.properties" />
     <property file="${ejbca.home}/conf/jaxws.properties" />
     <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scepra.properties" />
@@ -162,16 +161,11 @@
 	<!-- By default, we connect directly to EJBCA in the CMP tests, but it is also
 	     possible override those variables to connect via the CMP proxy -->
 	<property name="httpCmpProxyURL" value="http://${target.hostname}:${target.port.http}/ejbca/publicweb/cmp"/>
-	<property name="tcpCmpProxyIP" value="${target.hostname}"/>
-	<property name="tcpCmpProxyPort" value="5587"/>
 	<condition property="doc.war.enabled">
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
 	<condition property="renew.war.enabled">
 		<equals arg1="true" arg2="${web.renewalenabled}" casesensitive="false" trim="true" />
-	</condition>
-	<condition property="cmptcpservices.enabled">
-		<istrue value="${cmp.tcp.enabled}"/>
 	</condition>
 
 	<property name="ocsp.enabled" value="true" />
@@ -245,10 +239,6 @@ httpserver.external.fqdn = ${httpserver.external.fqdn}
 web.contentencoding      = ${web.contentencoding}
 web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
-cmp.tcp.enabled                 = ${cmp.tcp.enabled}
-cmp.tcp.portno                  = ${cmp.tcp.portno}
-cmp.tcp.logdir                  = ${cmp.tcp.logdir}
-cmp.tcp.conffile                = ${cmp.tcp.conffile}
 unidfnr.enabled                 = ${unidfnr.enabled}
 
       </echo>

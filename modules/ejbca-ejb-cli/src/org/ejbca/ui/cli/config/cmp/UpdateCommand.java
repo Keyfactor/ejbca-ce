@@ -32,10 +32,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-/**
- * @version $Id$
- *
- */
 public class UpdateCommand extends BaseCmpConfigCommand {
 
     private static final String ALIAS_KEY = "--alias";
@@ -76,7 +72,25 @@ public class UpdateCommand extends BaseCmpConfigCommand {
 
         key = alias + "." + key;
         log.info("Configuration was: " + key + "=" + getCmpConfiguration().getValue(key, alias));
-        getCmpConfiguration().setValue(key, value, alias);
+        //Check before updating defaultCA 
+        if (key.equals(alias + ".defaultca")){
+                if (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(value)) {
+                    String defaultCa;
+                    try {
+                        defaultCa = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), value).getSubjectDN();
+                    } catch (AuthorizationDeniedException e) {
+                        log.error("Permission to update CMP Default CA denied");
+                        throw new IllegalStateException(e);
+                    }
+                    getCmpConfiguration().setValue(key, defaultCa, alias);
+            
+                }else {
+                    log.error("CMP default CA name does not exist");
+        }
+        }else {
+            getCmpConfiguration().setValue(key, value, alias);
+        }
+    
         try {
             getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(), getCmpConfiguration());
             log.info("Configuration updated: " + key + "=" + getCmpConfiguration().getValue(key, alias));
@@ -86,7 +100,6 @@ public class UpdateCommand extends BaseCmpConfigCommand {
             log.info("Failed to update configuration: " + e.getLocalizedMessage());
             return CommandResult.AUTHORIZATION_FAILURE;
         }
-
     }
 
     @Override
