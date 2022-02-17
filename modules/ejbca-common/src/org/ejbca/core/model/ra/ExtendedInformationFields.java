@@ -29,4 +29,6 @@ public class ExtendedInformationFields {
 	/** The (optional) counter is the counter how many request have been received, will decrease for every request until 0. */
 	public  static final String CUSTOM_REQUESTCOUNTER = "REQUESTCOUNTER";
 
+    public static final String CUSTOM_CANONICAL_PUBLICKEY = "CANONICALPUBLICKEY";
+
 }
