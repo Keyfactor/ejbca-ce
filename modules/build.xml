@@ -479,7 +479,7 @@
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 	
-    <target name="cits" if="${mod.cits.exists}" description="Build EJBCA CITS">
+    <target name="cits" if="${mod.cits.exists}" depends="ejbca-rest-common" description="Build EJBCA CITS">
         <ant antfile="${mod.cits.path}/build.xml" target="build-cits" inheritall="true" inheritrefs="true"/>
     </target>
 	
@@ -604,7 +604,7 @@
 		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme" if="${mod.edition-specific-ee.exists}">
+	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme, cits" if="${mod.edition-specific-ee.exists}">
 		<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
