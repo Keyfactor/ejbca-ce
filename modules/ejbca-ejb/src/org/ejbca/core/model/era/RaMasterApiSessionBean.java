@@ -61,6 +61,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventType;
@@ -163,6 +164,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
+import org.ejbca.core.ejb.its.EtsiEcaOperationsSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
@@ -319,6 +321,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeAuthorizationDataSessionLocal acmeAuthorizationDataSession;
     @EJB
     private AcmeChallengeDataSessionLocal acmeChallengeDataSession;
+    @EJB
+    private EtsiEcaOperationsSessionLocal ecaOperationsSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -341,9 +345,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>10<td>=<td>7.4.2
      * <tr><th>11<td>=<td>7.5.0
      * <tr><th>12<td>=<td>7.5.1
+     * <tr><th>13<td>=<td>ITS
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 12;
+    private static final int RA_MASTER_API_VERSION = 13; 
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -3118,5 +3123,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
         return scepMessageDispatcherSession.dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+    }
+
+    @Override
+    public byte[] enrollItsCredential(AuthenticationToken authenticationToken, byte[] requestBody) throws AuthorizationDeniedException {
+        log.info("requestBody: " + Hex.toHexString(requestBody));
+        ecaOperationsSession.enrollItsCredential(authenticationToken, requestBody);
+        return null;
     }
 }
