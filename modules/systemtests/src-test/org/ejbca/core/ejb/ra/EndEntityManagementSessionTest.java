@@ -651,7 +651,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         try {
             // An end entity profile that has CN,DNEMAIL,OU=FooOrgUnit,O,C
             EndEntityProfile profile = new EndEntityProfile();
-            profile.addField(DnComponents.COMMONNAME);
+            //profile.addField(DnComponents.COMMONNAME); default EndEntityProfile constructor adds a CN field
             profile.addField(DnComponents.DNEMAILADDRESS);
             profile.addField(DnComponents.ORGANIZATIONALUNIT);
             profile.setUse(DnComponents.ORGANIZATIONALUNIT, 0, true);
@@ -664,7 +664,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
 
             endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
             int profileId = endEntityProfileSession.getEndEntityProfileId("TESTMERGEWITHWS");
-
             // An end entity with CN=username,O=AnaTom,C=SE
             // Merged with the EE profile default it should become CN=username,OU=FooOrgUnit,OU=BarOrgUnit,O=AnaTom,C=SE
             EndEntityInformation addUser = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caId, null, null,
@@ -674,7 +673,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             endEntityManagementSession.addUser(admin, addUser, false);
             EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
             assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
-
             addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
             // Changing the user feeding in EMAIL=foo@bar.com,OU=hoho it will actually be merged with the existing end entity user DN into
             // EMAIL:foo@bar.com,CN=username,OU=hoho,O=AnaTom,C=SE
@@ -685,7 +683,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             data = endEntityAccessSession.findUser(admin, username);
             // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
             assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
-
             // Since ECA-8942 (EJBCA 7.4.0) we support multiple fields in the profile
             // Add additional tests with multiple fields, typically organizations want to use multiple OU fields, but other fields should behave the same
             profile.addField(DnComponents.ORGANIZATIONALUNIT);
@@ -727,17 +724,17 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             // CN=" + username + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=OrgUnit2,OU=hoho1,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho1,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
             
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=ahoho2");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=ahoho2,OU=hoho1,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=ahoho2,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
             
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=zhoho2");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=zhoho2,OU=hoho1,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=zhoho2,OU=OrgUnit2,O=AnaTom,C=SE", dataMulti.getDN());
             
             profile.addField(DnComponents.ORGANIZATIONALUNIT);
             profile.addField(DnComponents.ORGANIZATIONALUNIT);
@@ -749,17 +746,20 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho3");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=FooOrgUnit,"
+                    + "OU=OrgUnit22,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
             
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho3,OU=hoho4");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=hoho4,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho3,OU=hoho4,"
+                    + "OU=OrgUnit22,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
             
             addUserMulti.setDN("SERIALNUMBER=12345,CN=" + usernameMulti + ",OU=hoho2,OU=hoho5");
             endEntityManagementSession.changeUser(admin, addUserMulti, false, true);
             dataMulti = endEntityAccessSession.findUser(admin, usernameMulti);
-            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho5,OU=hoho4,O=AnaTom,C=SE", dataMulti.getDN());
+            assertEquals("CN=" + usernameMulti + ",SN=12345,OU=hoho2,OU=hoho5,OU=hoho4,"
+                    + "OU=OrgUnit22,OU=OrgUnit23,O=AnaTom,C=SE", dataMulti.getDN());
             
             //Skip this test on Community
             if (DnComponents.enterpriseMappingsExist()) {
@@ -799,7 +799,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com", data.getSubjectAltName());
                 // Try with some altName value to merge
                 endEntityManagementSession.deleteUser(admin, username);
                 profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
@@ -815,7 +815,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,"
+                        + "DNSNAME=server.bad.com,DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", data.getSubjectAltName());
             } else {
                 log.debug("Skipped test related to Enterprise DN properties.");
             }
