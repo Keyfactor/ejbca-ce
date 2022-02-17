@@ -262,7 +262,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     log.debug("New end entity '" + username + "', adding userdata. New status '" + userdata.getStatus() + "'.");
                 }
                 // addUserfromWS also checks useUserStorage internally, so don't duplicate the check
-                endEntityManagementSession.addUserFromWS(admin, userdata, clearpwd);
+                endEntityManagementSession.addUser(admin, userdata, clearpwd);
             }
         } catch (WaitingForApprovalException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
