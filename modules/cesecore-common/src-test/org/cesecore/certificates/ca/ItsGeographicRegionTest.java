@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
 import org.cesecore.certificate.ca.its.region.CircularRegion;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegionCountryRegions;
 import org.cesecore.certificate.ca.its.region.ItsGeographicElement;
@@ -80,7 +81,6 @@ public class ItsGeographicRegionTest {
             fail("invalid radius");
         } catch(Exception e) {
             assertTrue(e.getClass().getSimpleName().contains("IllegalArgumentException"));
-            assertEquals(e.getMessage(), "Uint16 must be <= 0xFFFF");
         }
     }
     
@@ -166,6 +166,34 @@ public class ItsGeographicRegionTest {
         } catch(Exception e) {
             assertEquals(e.getMessage(), "Expected unsigned 16bit integer(0-65535) as region. 66000");
         }
+    }
+    
+    private void roundTripBCtoEJBCA(String regionDescription) {
+        GeographicRegion region =
+                ItsGeographicRegion.fromString(regionDescription)
+                .getGeographicElement().getGeographicRegion();
+
+        assertEquals(ItsGeographicRegion.fromGeographicRegion(region).toStringFormat(), regionDescription);
+    }
+    
+    @Test
+    public void testConstructItsRegionFromBCRectangle() {
+        roundTripBCtoEJBCA("rectangle:12,23,34,56;78,90,76,65;");
+    }
+    
+    @Test
+    public void testConstructItsRegionFromBCCircle() {
+        roundTripBCtoEJBCA("circular:1234,5678,125");
+    }
+    
+    @Test
+    public void testConstructItsRegionFromBCIdentifedRegion() {
+        roundTripBCtoEJBCA("identifed:country:Denmark;country_region:Belgium,1234,456,342;country:-Europe;country_region:Austria,4566;");
+    }
+    
+    @Test
+    public void testConstructItsRegionFromBCIdentifedRegion2() {
+        roundTripBCtoEJBCA("identifed:country_region:Belgium,1234,456,342;country_region:Austria,4566;");
     }
 
 }
