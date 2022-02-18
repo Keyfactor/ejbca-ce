@@ -274,6 +274,12 @@ public interface EjbcaWebBean extends Serializable {
     TreeMap<String, Integer>  getAuthorizedSshCertificateProfileNames();
     
     /**
+     * 
+     * @return authorized ITS certificate profile names as a treemap of name (String) -> id (Integer)
+     */
+    TreeMap<String, Integer>  getAuthorizedItsCertificateProfileNames();
+
+    /**
      * Method returning the all available approval profiles id to name.
      *
      * @return the approvalprofiles-id-to-name-map (HashMap)
