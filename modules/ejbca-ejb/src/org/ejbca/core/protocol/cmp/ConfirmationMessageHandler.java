@@ -158,8 +158,11 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             } else if (LOG.isDebugEnabled()) {
                 LOG.debug("CMP Confirm message header has no protection alg, using default alg in response.");
             }
-        } catch (CADoesntExistsException | CryptoTokenOfflineException e) {
-            LOG.error("Exception during CMP response signing: " + e.getMessage(), e);            
+        } catch (CADoesntExistsException e) {
+            LOG.error("Exception during CMP response signing: " + e.getMessage());            
+        }
+        catch (CryptoTokenOfflineException e) {
+            LOG.error("Exception during CMP response signing: " + e.getMessage(), e);
         }
     }
 	
@@ -167,7 +170,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         CAInfo caInfo = null;
         final String caDnDefault;
         
-        if (caDn != null) {
+        if (StringUtils.isNotBlank(caDn)) {
             caInfo = caSession.getCAInfoInternal(CertTools.stringToBCDNString(caDn).hashCode(), null, true);
         } else {
             final String cmpDefaultCA = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
@@ -188,33 +191,4 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         return (X509CAInfo) caInfo;
     }
     
-//	private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
-//	    CAInfo caInfo = null;
-//	    final String caDnDefault;
-//	    
-//	    if (caDn == null) {
-//	        caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-//	        caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-//	    } else {
-//	        final String caDnNormalized = CertTools.stringToBCDNString(caDn);
-//	        caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
-//	        
-//	        if(caInfo == null) {
-//	            caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-//                    LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
-//                            " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ")."); 
-//                   
-//                if (caDnDefault.equals("")) {
-//                    LOG.error("No CMP Default CA exists in Alias");
-//                        throw new CADoesntExistsException ("No CMP DefaultCA exists");
-//                } else {
-//                    caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-//                }
-//           } 
-//	    }
-//	    if (!(caInfo instanceof X509CAInfo)) {
-//	        throw new CADoesntExistsException("Incorrect CA type."); 
-//	    }
-//	    return (X509CAInfo) caInfo;
-//	}
 }
