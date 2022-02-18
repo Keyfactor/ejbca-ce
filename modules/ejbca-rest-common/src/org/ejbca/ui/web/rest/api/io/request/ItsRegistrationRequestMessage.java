@@ -9,6 +9,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -47,6 +48,7 @@ public class ItsRegistrationRequestMessage {
             eeInformation.setCertificateProfileId(certificateProfileId);
             eeInformation.setEndEntityProfileId(endEntityProfileId);
             eeInformation.setCAId(caId);
+            eeInformation.setTokenType(EndEntityConstants.TOKEN_USERGEN);
             return eeInformation;
         }
     }
