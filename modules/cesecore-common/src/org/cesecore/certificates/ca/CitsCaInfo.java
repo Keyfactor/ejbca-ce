@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import org.bouncycastle.its.ITSCertificate;
 import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.catoken.CAToken;
 
@@ -26,8 +27,11 @@ public class CitsCaInfo extends CAInfo {
     
     private String certificateId;
     private ItsGeographicRegion region;
-    
+        
+    public static final String CERTIFICATE_ID = "certificateid";
     public static final String GEOGRAPHIC_REGION = "geographicregion";
+    public static final String ITS_CA_CERTIFICATE = "itscacert";
+    public static final String ECA_HASHED_ID = "ecahashedid";
 
     /**
      * To be used when creating a CA. This constructor creates a CITS CA with defaults values for the parameters
@@ -171,8 +175,7 @@ public class CitsCaInfo extends CAInfo {
         private boolean useCertReqHistory;
         private boolean useUserStorage;
         private boolean useCertificateStorage;
-
-
+        
         // CITS Specific Fields
         private String certificateId;
         private ItsGeographicRegion region;
@@ -389,6 +392,7 @@ public class CitsCaInfo extends CAInfo {
             
             return caInfo;
         }
+
     }
     
 }
