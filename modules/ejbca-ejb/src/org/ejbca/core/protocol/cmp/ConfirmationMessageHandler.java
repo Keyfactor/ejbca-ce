@@ -170,9 +170,10 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         CAInfo caInfo = null;
         final String caDnDefault;
         
-        if (StringUtils.isNotBlank(caDn)) {
-            caInfo = caSession.getCAInfoInternal(CertTools.stringToBCDNString(caDn).hashCode(), null, true);
-        } else {
+        caInfo = caSession.getCAInfoInternal(CertTools.stringToBCDNString(caDn).hashCode(), null, true);
+        
+        // Null caInfo, try with the default ca from cmp alias
+        if (caInfo == null) {
             final String cmpDefaultCA = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
             
             if (cmpDefaultCA.equals("")) {
