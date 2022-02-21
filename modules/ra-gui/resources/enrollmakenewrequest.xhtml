@@ -658,7 +658,6 @@
 									render=":requestInfoForm:subjectDirectoryAttributeSection" />
 							</h:commandButton>
 							</fieldset>
-							
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.renderOtherCertificateData}">
 							<h3>
@@ -708,7 +707,16 @@
 								</h:selectOneMenu>
 							</h:panelGroup>
 						</h:panelGroup>
-						
+						<h:panelGroup id="otherDataSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.renderOtherData}">
+							<h3>
+								<h:outputText value="#{msg.enroll_other_data}" />
+							</h3>
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
+								<h:outputLabel for="keyRecoveryCheckbox" value="#{msg.component_eedetails_field_keyrecoverable}"/>
+								<h:selectBooleanCheckbox id="keyRecoveryCheckbox" value="#{enrollMakeNewRequestBean.keyRecoverableUse}" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
+                            	</h:selectBooleanCheckbox>
+						    </h:panelGroup>
+						</h:panelGroup>
                         <fieldset>
     						<h:commandButton id="updateRequestPreview"
     							value="#{msg.enroll_update_request_preview}"
@@ -802,7 +810,7 @@
 						<h:message for="userCredentialsMessageInput" id="userCredentialsMessage" errorClass="showErrorMessage"/>
 					</h:panelGroup>
 				</h:panelGroup>
-
+				
 				<h:panelGroup layout="block" id="requestPreviewOuterPanel" rendered="#{enrollMakeNewRequestBean.confirmRequestRendered}">
 					<h2>
 						<h:outputText value="#{msg.enroll_confirm_request}" />
