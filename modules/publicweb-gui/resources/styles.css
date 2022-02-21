@@ -220,6 +220,11 @@ acronym { border-bottom: none; }
 	border: solid black 1px;
 }
 
+.errormessage {
+	color: #C00;
+	font-weight: bold;
+}
+
 .message .label {
 	padding: 5px 10px;
 	background: #369;
