@@ -107,9 +107,6 @@
     <property name="mod.validationtool.srcdist" location="${ejbca.dist.path}/validationtool-src" />
     <property name="mod.validationtool.lib" location="${mod.validationtool.dist}/ValidationTool.jar" />
     <property name="mod.validationtool.path" location="${mod.path}/validationtool" />
-    <property name="mod.oldlogexport.dist" location="${ejbca.dist.path}/oldlogexport-cli" />
-    <property name="mod.oldlogexport.lib" location="${mod.oldlogexport.dist}/oldlogexport-cli.jar" />
-    <property name="mod.oldlogexport.path" location="${mod.path}/oldlogexport-cli" />
     <property name="mod.cmpHttpProxy.dist" location="${ejbca.dist.path}/cmpHttpProxy" />
     <property name="mod.cmpProxy.path" location="${mod.path}/cmpProxy" />
     <property name="mod.externalra.path" location="${mod.path}/externalra" />
@@ -124,7 +121,6 @@
     <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
     <property name="mod.externalra-scep.war" location="${ejbca.dist.path}/scepraserver.war" />
     <property name="mod.batchenrollment-gui.path" location="${mod.path}/batchenrollment-gui" />
-    <property name="mod.appserver-ext.path" location="${mod.path}/appserver-ext" />
     <property name="mod.logsigning.lib" location="${ejbca.dist.path}/ejbcalogsigning.jar" />
     <property name="mod.jbosslog4jsafer.lib" location="${mod.dist.path}/jbosslog4jsafer.jar" />
 	<property name="mod.scep-ra.path" location="${mod.path}/scep-ra" />
@@ -318,7 +314,7 @@
 	</path>
 	
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
-	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-log4j*.jar"/></path>
+	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-reload*.jar"/></path>
 	<path id="lib.slf4japi.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-api*.jar"/></path>
 	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>
     <path id="lib.commons-lang.classpath">
