@@ -65,8 +65,18 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.its.ITSCertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.oer.OEREncoder;
+import org.bouncycastle.oer.OERInputStream;
+import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Signed;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
+import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
+import org.bouncycastle.oer.its.template.etsi103097.EtsiTs103097Module;
+import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
+import org.bouncycastle.oer.its.template.ieee1609dot2.basetypes.Ieee1609Dot2BaseTypes;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -87,6 +97,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificate.ca.its.ECA;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
@@ -169,6 +180,7 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
@@ -3794,5 +3806,185 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (CertPathValidatorException e) {
             throw new IllegalStateException("Unexpected outcome.", e);
         }
+    }
+    
+    public byte[] makeCitsRequest(AuthenticationToken authenticationToken, int caid, byte[] caChainBytes, 
+            String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
+        // TODO: currently ignoring cert chain
+        if (log.isTraceEnabled()) {
+            log.trace(">makeCItsRequest: " + caid + ", caid=" + caid);
+        }
+        byte[] returnval;
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CARENEW.resource())) {
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", caid);
+            logAuditEvent(
+                    EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    detailsMsg
+            );
+            throw new AuthorizationDeniedException(detailsMsg);
+        }
+        
+        if(StringUtils.isEmpty(signKeyAlias)) {
+            //TODO: support via resource files
+            log.debug("ECA CSR can not have empty signKeyAlias.");
+            throw new EJBException("ECA CSR can not have empty signKeyAlias.");
+        }
+        
+        try {
+            final ECA ca = (ECA) caSession.getCAForEdit(authenticationToken, caid);
+
+            // Generate new certificate signing request.
+            final CAToken caToken = ca.getCAToken();
+            final int cryptoTokenId = caToken.getCryptoTokenId();
+            try {
+                // Test if key already exists
+                cryptoTokenManagementSession.testKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
+            } catch (Exception e) {
+                throw new EJBException("ECA crypto token test failed.");
+            }
+            
+            // compulsory re-keying: page 21 in 102 941, 3 paragraph below note 1 -> ETSI
+            // also canRequestRollover in certificate is absent always as per 103 097 in section 6
+            // so change during IEEE
+            if(StringUtils.isEmpty(verificationKeyAlias)) {
+                boolean generateNewKeys = caToken.generateNextKeysEcaToken();
+                verificationKeyAlias = caToken.getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT);
+                encryptKeyAlias = caToken.getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT);
+                
+                if(generateNewKeys && ca.getItsCACertificate()!=null) {
+                    try {
+                        cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, signKeyAlias,
+                                verificationKeyAlias);
+                        cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, signKeyAlias,
+                                encryptKeyAlias);
+                        // Audit log CA key generation
+                        final Properties oldprop = caToken.getProperties();
+                        final String oldsequence = caToken.getKeySequence();
+                        logAuditEvent(
+                                EventTypes.CA_KEYGEN, EventStatus.SUCCESS,
+                                authenticationToken, caid,
+                                SecurityEventProperties.builder()
+                                        .withMsg(intres.getLocalizedMessage("catoken.generatedkeys", caid, true, false))
+                                        .withOldproperties(oldprop)
+                                        .withOldsequence(oldsequence)
+                                        .withProperties(caToken.getProperties())
+                                        .withSequence(caToken.getKeySequence())
+                                        .build()
+                        );
+                    } catch (AuthorizationDeniedException | CryptoTokenOfflineException e2) {
+                        throw e2;
+                    } catch (Exception e2) {
+                        throw new RuntimeException(e2);
+                    }
+                } 
+            }
+            
+            ca.setCAToken(caToken);
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+            
+            final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
+            returnval = ca.createRequest(cryptoToken, signKeyAlias, verificationKeyAlias, encryptKeyAlias, certificateProfile);
+            
+            caSession.editCA(authenticationToken, ca, true);
+            // Log information about the event
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.SUCCESS,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.certreqcreated", ca.getName(), caid)
+            );
+        } catch (CryptoTokenOfflineException e) {
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.errorcertreq", caid)
+            );
+            throw e;
+        } catch (Exception e) {
+            log.debug("Exception during Cits CSR creation: ", e);
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.errorcertreq", caid)
+            );
+            throw new EJBException(e);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<makeCitsRequest: " + caid);
+        }
+        return returnval;
+        
+    }
+    
+    public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
+                        byte[] signedCertificate) throws CADoesntExistsException {
+        // TODO: later support certificate chain
+        
+        if (log.isTraceEnabled()) {
+            log.trace(">receiveCitsResponse: " + caid);
+        }
+        
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CARENEW.resource())) {
+            logAuditEvent(
+                    EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", caid)
+            );
+        }
+        
+        // validate signedCertificate is properly formatted
+        ITSCertificate certificate =  ECAUtils.parseItsCertificate(signedCertificate);
+        
+        try {
+            ECA ca = (ECA) caSession.getCAForEdit(authenticationToken, caid);
+            if (ca == null) {
+                throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
+            }
+            
+            final CAToken catoken = ca.getCAToken();
+            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+            catoken.activateNextKeysEcaToken();
+            
+            cryptoToken.testKeyPair(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            cryptoToken.testKeyPair(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
+            
+            // Activated the next signing key(s) so generate audit log
+            logAuditEvent(
+                    EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS,
+                    authenticationToken, caid,
+                    SecurityEventProperties.builder()
+                            .withMsg(intres.getLocalizedMessage("catoken.activatednextkey", caid))
+                            .withCertSignKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN))
+                            .withSequence(catoken.getKeySequence())
+                            .build()
+            );
+            ca.setCAToken(catoken);
+            ca.setItsCaCertificate(certificate);
+    
+            // Set status to active, so we can sign certificates for the external services below.
+            ca.setStatus(CAConstants.CA_ACTIVE);
+    
+            // TODO: also add expiry time to CA GUI
+            ca.setExpireTime(ECAUtils.getExpiryDate(certificate));
+            
+            // create hashedId8 and update subjectDn/certificate id
+            // not overwriting id
+            ca.setHashedId(Hex.toHexString(ECAUtils.generateHashedId8(certificate).getHashBytes()));
+       
+            // Save CA
+            caSession.editCA(authenticationToken, ca, true);
+    
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.SUCCESS,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.certrespreceived", caid)
+            );
+            
+        } catch (AuthorizationDeniedException|CryptoTokenOfflineException|
+                InvalidAlgorithmException|InvalidKeyException e) {
+            throw new EJBException(e);
+        } 
+        
     }
 }

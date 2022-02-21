@@ -49,6 +49,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -235,9 +236,13 @@ public class CAInterfaceBean implements Serializable {
 	public String getRequestDataAsString() throws Exception{
 		String returnval = null;
 		if(request != null ){
-			returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
-			+ new String(Base64.encode(request, true))
-			+ RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
+		    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
+		    if(cainfo.getCAType()==CAInfo.CATYPE_CITS) {
+		        returnval += Hex.toHexString(request);
+		    } else {
+		        returnval += new String(Base64.encode(request, true));
+		    }
+			returnval += RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
 		}
 		return returnval;
 	}
@@ -370,10 +375,10 @@ public class CAInterfaceBean implements Serializable {
                     // ECDSA curves can only sign compatible digest sizes
                     if(caInfoDto.getSignatureAlgorithmParam().contains("384")) {
                         // for SHA384withECDSA
-                        caSignKeySpec = "secp384r1";
+                        caSignKeySpec = "brainpoolP384R1";
                     } else if(caInfoDto.getSignatureAlgorithmParam().contains("256")){
                         // for SHA256withECDSA
-                        caSignKeySpec = "prime256v1";
+                        caSignKeySpec = "secp256r1";
                     } else {
                         log.error("No matching curve for signing algorithm: " + caInfoDto.getSignatureAlgorithmParam());
                         throw new Exception("No matching curve for ECDSA signing algorithm.");
@@ -793,8 +798,16 @@ public class CAInterfaceBean implements Serializable {
             caadminsession.createCA(authenticationToken, cainfo);
             int caid = cainfo.getCAId();
             try {
-                byte[] certreq = caadminsession.makeRequest(authenticationToken, caid, 
+                byte[] certreq = null;
+                if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
+                    certreq = caadminsession.makeCitsRequest(authenticationToken, caid, 
+                            fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
+                            caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
+                            caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
+                } else {
+                    certreq = caadminsession.makeRequest(authenticationToken, caid, 
                                        fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                }
                 saveRequestData(certreq);
             } catch (CryptoTokenOfflineException e) {
                 casession.removeCA(authenticationToken, caid);
