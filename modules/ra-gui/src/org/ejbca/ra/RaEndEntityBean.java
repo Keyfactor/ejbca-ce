@@ -131,6 +131,7 @@ public class RaEndEntityBean implements Serializable {
     private String nameConstraintsPermittedString;
     private String nameConstraintsExcludedString;
     private boolean viewEndEntityMode = false;
+    private Boolean sendNotification;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -191,6 +192,7 @@ public class RaEndEntityBean implements Serializable {
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
                 if (email == null || email.length == 1)
                     email = new String[] {"", ""};
+                sendNotification = endEntityInformation.getSendNotification();
             }
         }
         issuedCerts = null;
@@ -251,7 +253,7 @@ public class RaEndEntityBean implements Serializable {
         viewEndEntityMode = true;
         reload();
     }
-    
+
     public boolean isViewEndEntityMode() {
         return viewEndEntityMode;
     }
@@ -390,6 +392,14 @@ public class RaEndEntityBean implements Serializable {
             endEntityInformation.setEmail(null);
         }
 
+        if (eep.isSendNotificationUsed() && !sendNotification.equals(endEntityInformation.getSendNotification())) {
+            if (verifyEmailForNotifications(endEntityInformation.getEmail())) {
+                endEntityInformation.setSendNotification(sendNotification);
+                changed = true;
+            } else {
+                return;
+            }
+        }
         if (eepId != endEntityInformation.getEndEntityProfileId()) {
             endEntityInformation.setEndEntityProfileId(eepId);
             changed = true;
@@ -493,6 +503,17 @@ public class RaEndEntityBean implements Serializable {
         }
         if (!enrollmentCode.equals(enrollmentCodeConfirm)) {
             raLocaleBean.addMessageError("editendentity_password_nomatch");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @return true if enrollment code and confirm enrollment code are valid
+     */
+    private boolean verifyEmailForNotifications(String email) {
+        if (sendNotification && StringUtils.isBlank(email)) {
+            raLocaleBean.addMessageError("editendentity_email_required");
             return false;
         }
         return true;
@@ -1142,11 +1163,19 @@ public class RaEndEntityBean implements Serializable {
             nameConstraintsExcludedUpdateStatus = -1;
         }
     }
-    
+
+    public Boolean getSendNotification() {
+        return sendNotification;
+    }
+
+    public void setSendNotification(Boolean sendNotification) {
+        this.sendNotification = sendNotification;
+    }
+
     private boolean isDnEmail(EndEntityProfile.FieldInstance instance) {
         return instance.getName().equals(DnComponents.DNEMAILADDRESS);
     }
-    
+
     public String backToSearch () {
         return "search_ees.xhtml";
     }
