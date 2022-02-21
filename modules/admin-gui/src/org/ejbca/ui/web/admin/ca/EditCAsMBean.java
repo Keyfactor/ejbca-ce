@@ -60,6 +60,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -1353,9 +1354,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean isRenderExternallySignedCaCreationRenewal() {
         final int cryptoTokenId = catoken == null ? currentCryptoTokenId : catoken.getCryptoTokenId();
-        if(isCaTypeCits() && currentCryptoTokenId==0) {
+        if(isCaTypeCits()) {
             // currentCryptoTokenId is 0 only if no suitable token is present
-            // for all other CAs any token is suitable, 
+            // for all other CAs any token is suitable + due to ManagementCA in CA at least one token is present
             // but for ECA(not ITS) we need 2 EC keys of same type
             return isHasEditRight();
         }
@@ -1710,18 +1711,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String receiveResponse() {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
         try {
-            receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
-            try {
-                rolloverNotBefore = caBean.getRolloverNotBefore(caid);
-                rolloverNotAfter = caBean.getRolloverNotAfter(caid);
-                caCertNotAfter = caBean.getCANotAfter(caid);
-            } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-                log.warn("Failed to get CA notAfter and/or rollover date", e);
-            }
-            if (rolloverNotBefore != null) {
-                addInfoMessage(getEjbcaWebBean().getText("CAROLLOVERPENDING") + getEjbcaWebBean().formatAsISO8601(rolloverNotBefore));
+            if(isCaTypeCits()) {
+                caAdminSession.receiveCitsResponse(administrator, caid, Hex.decode(new String(fileBuffer))); 
             } else {
-                addInfoMessage(getEjbcaWebBean().getText("CAACTIVATED"));
+                receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
+                try {
+                    rolloverNotBefore = caBean.getRolloverNotBefore(caid);
+                    rolloverNotAfter = caBean.getRolloverNotAfter(caid);
+                    caCertNotAfter = caBean.getCANotAfter(caid);
+                } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+                    log.warn("Failed to get CA notAfter and/or rollover date", e);
+                }
+                if (rolloverNotBefore != null) {
+                    addInfoMessage(getEjbcaWebBean().getText("CAROLLOVERPENDING") + getEjbcaWebBean().formatAsISO8601(rolloverNotBefore));
+                } else {
+                    addInfoMessage(getEjbcaWebBean().getText("CAACTIVATED"));
+                }
             }
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (final Exception e) {
@@ -1871,9 +1876,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
 
-        byte[] certreq;
+        byte[] certreq = null;
         try {
-            certreq = caAdminSession.makeRequest(administrator, caid, fileBuffer, this.certExtrSignKeyReNewValue);
+            if (isCaTypeCits()) {
+                certreq = caAdminSession.makeCitsRequest(administrator, caid, fileBuffer, 
+                                                    getCurrentCaCryptoTokenCertSignKey(), null, null);
+            } else {
+                certreq = caAdminSession.makeRequest(administrator, caid, fileBuffer, this.certExtrSignKeyReNewValue);
+            }
         } catch (CADoesntExistsException | CryptoTokenOfflineException | AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e);
             return "";
