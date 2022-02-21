@@ -272,9 +272,16 @@
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>-->
             <h:outputLabel for="notification" value="#{msg.component_eedetails_field_notification}" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled}"
+            <h:outputText id="notification" rendered="#{cc.attrs.raEndEntityDetails.sendNotificationEnabled and (not cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
                 value="#{msg['component_eedetails_field_notification_'.concat(cc.attrs.raEndEntityDetails.sendNotification)]}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                    rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.sendNotificationEnabled and not cc.attrs.approvalRequestMode}">
+                <h:selectBooleanCheckbox id="notificationcheckbox" value="#{cc.attrs.raEndEntityBean.sendNotification}"
+                     disabled="#{cc.attrs.raEndEntityDetails.sendNotificationDisabled}"/>
+            </h:panelGroup>
+
             <h:outputLabel for="certserialoverride" value="#{msg.component_eedetails_field_certserialoverride}"
                 rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -527,6 +534,9 @@
                 <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
                                  rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                <h:commandButton action ="#{raEndEntityBean.backToSearch}" value="#{msg.search_ees_page_cdclose_command}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{raEndEntityBean.viewEndEntityMode}" />
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
