@@ -210,6 +210,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private UIComponent validityInputComponent;
     private String nameConstraintPermitted;
     private String nameConstraintExcluded;
+    private Boolean sendNotification;
 
     private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
     private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
@@ -321,7 +322,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isEmailRequired() {
-        return getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0) ||
+        return getSendNotification() ||
                 getEndEntityProfile().isRequired(EndEntityProfile.EMAIL, 0);
     }
 
@@ -695,7 +696,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isEABrendered(){
-        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (getCertificateProfile() != null
+        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (getCertificateProfile() != null
                 && getCertificateProfile().getEabNamespaces() != null && !getCertificateProfile().getEabNamespaces().isEmpty());
         if (result && eabConfiguration == null) {
             eabConfiguration = raMasterApiProxyBean.getGlobalConfiguration(EABConfiguration.class);
@@ -703,31 +704,42 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return result;
     }
 
+    public boolean isOtherDataRendered(){
+        return (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && isSendNotificationRendered();
+    }
+
+    public boolean isSendNotificationRendered(){
+        return getEndEntityProfile().isSendNotificationUsed();
+    }
+    public boolean isSendNotificationDisabled(){
+        return getEndEntityProfile().isSendNotificationRequired();
+    }
+
     /**
      * @return the provideRequestMetadataRendered
      */
     public boolean isProvideUserCredentialsRendered() {
-        return (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
+        return (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
     }
 
     /**
      * @return the confirmRequestRendered
      */
     public boolean isConfirmRequestRendered() {
-        return isKeyAlgorithmAvailable() || isTokenTypeAvilable();
+        return isKeyAlgorithmAvailable() || isTokenTypeAvailable();
     }
 
     /**
      * @return the provideRequestInfoRendered
      */
     public boolean isProvideRequestInfoRendered() {
-        return isKeyAlgorithmAvailable() || isTokenTypeAvilable();
+        return isKeyAlgorithmAvailable() || isTokenTypeAvailable();
     }
 
     /**
      * @return true if a token type has been selected
      */
-    private boolean isTokenTypeAvilable() {
+    private boolean isTokenTypeAvailable() {
         return selectedTokenType > 0;
     }
 
@@ -769,6 +781,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private void setProfileDefaults() {
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         cabfOrganizationIdentifier = endEntityProfile != null ? endEntityProfile.getCabfOrganizationIdentifier() : null;
+        sendNotification = endEntityProfile != null && endEntityProfile.isSendNotificationDefault();
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -1135,8 +1148,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setTimeModified(new Date());
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
-        endEntityInformation.setSendNotification(getEndEntityProfile().isSendNotificationUsed() && getEndEntityProfile().isSendNotificationDefault() && !endEntityInformation.getSendNotification());
         endEntityInformation.setKeyRecoverable(getKeyRecoverableUse());
+        endEntityInformation.setSendNotification(getSendNotification());
         endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
         
@@ -1189,6 +1202,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Add end-entity
             // Generates a keystore token if user has specified "ON SERVER" key pair generation.
             // Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
+            boolean isClearPwd = isClearPassword();
+
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 ret = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 if (ret == null) {
@@ -1220,7 +1235,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             } else if (KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
                 endEntityInformation.setTokenType(selectedTokenType);
-                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
+                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, isClearPwd);
                 if (!isRequestIdInfoRendered()) {
                     raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
                 }
@@ -1473,21 +1488,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String fileName = uploadFile.getName();
 
         csrFileName = fileName;
-
-        String fileContents;
+        byte[] fileContents;
+        String pemEncodedCsr;
         try {
-            fileContents = new String(uploadFile.getBytes());
+            fileContents = uploadFile.getBytes();
+            if (new String(fileContents).startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)) {
+                pemEncodedCsr = new String(uploadFile.getBytes());
+            } else {
+                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
+            }
         } catch (IOException e) {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
 
-        validateCsr(fileContents);
+        validateCsr(pemEncodedCsr);
         if (algorithmFromCsr != null) { // valid CSR
             uploadCsr();
         }
     }
-
     /**
      * Validate an uploaded CSR and store the extracted key algorithm and CSR for later use.
      */
@@ -2157,6 +2176,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.accountBindingId = accountBindingId;
     }
 
+    public Boolean getSendNotification() {
+        return sendNotification;
+    }
+
+    public void setSendNotification(Boolean sendNotification) {
+        this.sendNotification = sendNotification;
+    }
+
     public String getPsd2NcaName() {
         return psd2NcaName;
     }
@@ -2384,6 +2411,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
         return subjectAlternativeName;
+    }
+
+    public boolean isClearPassword() {
+        EndEntityProfile profile = getEndEntityProfile();
+
+        if (profile != null) {
+            return profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+        }
+
+        return false;
     }
 
     /**
