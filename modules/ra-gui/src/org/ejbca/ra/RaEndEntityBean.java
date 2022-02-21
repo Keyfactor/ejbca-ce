@@ -130,6 +130,7 @@ public class RaEndEntityBean implements Serializable {
     private int nameConstraintsExcludedUpdateStatus = 0;
     private String nameConstraintsPermittedString;
     private String nameConstraintsExcludedString;
+    private boolean keyRecoverable;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -186,6 +187,9 @@ public class RaEndEntityBean implements Serializable {
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
+                
+                keyRecoverable = raEndEntityDetails.getEndEntityInformation().getKeyRecoverable();
+                
                 resetMaxFailedLogins();
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
                 if (email == null || email.length == 1)
@@ -404,6 +408,10 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         } else if(nameConstraintsExcludedUpdateStatus<0) {
             return;
+        }
+        if (keyRecoverable != endEntityInformation.getKeyRecoverable()) {
+            endEntityInformation.setKeyRecoverable(keyRecoverable);
+            changed = true;
         }
 
         if (changed) {
@@ -1042,6 +1050,21 @@ public class RaEndEntityBean implements Serializable {
     public boolean getAnySubjectDirectoryAttribute() {
         EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
         return eep.getSubjectDirAttrFieldOrderLength() > 0;
+    }
+    
+    /**
+     * @return true if keyRecoverable
+     */
+    public boolean getKeyRecoverable() {
+        return keyRecoverable;
+    }
+    
+    /**
+     * Set keyRecoverable
+     * @param keyRecoverable the boolean value of keyRecoverable
+     */
+    public void setKeyRecoverable(boolean keyRecoverable) {
+        this.keyRecoverable = keyRecoverable;
     }
 
     /**

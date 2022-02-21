@@ -203,6 +203,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private int requestId;
     private boolean requestPreviewMoreDetails;
     private boolean setCustomValidity;
+    private Boolean useKeyRecoverable = null;
     private UIComponent subjectDnMessagesComponent;
     private UIComponent userCredentialsMessagesComponent;
     private UIComponent confirmPasswordComponent;
@@ -792,6 +793,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
 
+    public boolean isRenderOtherData() {
+        return getEndEntityProfile().isKeyRecoverableUsed();
+    }
+    
     public boolean isRenderCertExtensionDataField() {
         return getEndEntityProfile().getUseExtensiondata();
     }
@@ -964,7 +969,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, username);
         }
     }
-
+    
     /**
      * Calculate the summary of holders from the current state for the certificate Subjects
      */
@@ -1131,7 +1136,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
         endEntityInformation.setSendNotification(getEndEntityProfile().isSendNotificationUsed() && getEndEntityProfile().isSendNotificationDefault() && !endEntityInformation.getSendNotification());
-        endEntityInformation.setKeyRecoverable(getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault() && !endEntityInformation.getKeyRecoverable());
+        endEntityInformation.setKeyRecoverable(getKeyRecoverableUse());
         endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
         
@@ -2217,6 +2222,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public String getCabfOrganizationIdentifierRegex() {
         return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+    
+    public boolean isUseKeyRecoverable() {
+        if (getEndEntityProfile()!= null) {
+            return getEndEntityProfile().isKeyRecoverableUsed();
+        }
+        return false;
+    }
+    
+    public boolean getKeyRecoverableUse() {
+        if (useKeyRecoverable != null) {
+            return useKeyRecoverable;
+        } else if (getEndEntityProfile() != null) {
+            return (getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault());
+        }
+        return false;
+    }
+    
+    public void setKeyRecoverableUse(boolean keyRecoverable) {
+        useKeyRecoverable = keyRecoverable;
     }
 
     /**

@@ -364,7 +364,7 @@
              styleClass="editNameConstraints #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
              	<f:ajax event="change" />
              </h:inputTextarea>
-             
+              
             <h:outputLabel for="allowedrequests" value="#{msg.component_eedetails_field_allowedrequests}"
                 rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsEnabled}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -483,8 +483,17 @@
                     dnEmailFieldName="#{cc.attrs.raEndEntityBean.dnEmailFieldName}"
                     eeEmail="#{cc.attrs.raEndEntityDetails.email}"/>
             </h:panelGroup>
-
-            <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
+            <!-- kr -->
+            <h:outputLabel value="#{msg.component_eedetails_field_keyrecoverable}" styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"/>
+			<h:selectBooleanCheckbox id="eeKeyRecoverable"
+				    rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}" 
+				    value="#{cc.attrs.raEndEntityBean.keyRecoverable}"/>
+			<h:outputText styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" 
+								value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_yes : msg.component_eedetails_field_keyrecoverable_no }"
+			                   rendered="#{cc.attrs.approvalRequestMode or not cc.attrs.editMode}"/>
+			<h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+			<!-- kr -->                   		
+           <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
                            rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="addEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId}"
@@ -504,8 +513,7 @@
             <h:outputText id="revokeEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds}"
                           rendered="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds != ''}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
-            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+		<h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
                 <h:commandButton action="#{raEndEntityBean.revokeCertificatesAndDeleteEndEntity}" value="#{msg.endentity_page_command_edit_revoke_delete}"
