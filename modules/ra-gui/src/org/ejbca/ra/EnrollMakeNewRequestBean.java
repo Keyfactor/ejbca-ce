@@ -209,6 +209,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private UIComponent validityInputComponent;
     private String nameConstraintPermitted;
     private String nameConstraintExcluded;
+    private Boolean sendNotification;
 
     private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
     private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
@@ -320,7 +321,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isEmailRequired() {
-        return getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0) ||
+        return getSendNotification() ||
                 getEndEntityProfile().isRequired(EndEntityProfile.EMAIL, 0);
     }
 
@@ -694,7 +695,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isEABrendered(){
-        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (getCertificateProfile() != null
+        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (getCertificateProfile() != null
                 && getCertificateProfile().getEabNamespaces() != null && !getCertificateProfile().getEabNamespaces().isEmpty());
         if (result && eabConfiguration == null) {
             eabConfiguration = raMasterApiProxyBean.getGlobalConfiguration(EABConfiguration.class);
@@ -702,31 +703,42 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return result;
     }
 
+    public boolean isOtherDataRendered(){
+        return (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && isSendNotificationRendered();
+    }
+
+    public boolean isSendNotificationRendered(){
+        return getEndEntityProfile().isSendNotificationUsed();
+    }
+    public boolean isSendNotificationDisabled(){
+        return getEndEntityProfile().isSendNotificationRequired();
+    }
+
     /**
      * @return the provideRequestMetadataRendered
      */
     public boolean isProvideUserCredentialsRendered() {
-        return (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
+        return (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
     }
 
     /**
      * @return the confirmRequestRendered
      */
     public boolean isConfirmRequestRendered() {
-        return isKeyAlgorithmAvailable() || isTokenTypeAvilable();
+        return isKeyAlgorithmAvailable() || isTokenTypeAvailable();
     }
 
     /**
      * @return the provideRequestInfoRendered
      */
     public boolean isProvideRequestInfoRendered() {
-        return isKeyAlgorithmAvailable() || isTokenTypeAvilable();
+        return isKeyAlgorithmAvailable() || isTokenTypeAvailable();
     }
 
     /**
      * @return true if a token type has been selected
      */
-    private boolean isTokenTypeAvilable() {
+    private boolean isTokenTypeAvailable() {
         return selectedTokenType > 0;
     }
 
@@ -768,6 +780,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private void setProfileDefaults() {
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         cabfOrganizationIdentifier = endEntityProfile != null ? endEntityProfile.getCabfOrganizationIdentifier() : null;
+        sendNotification = endEntityProfile != null && endEntityProfile.isSendNotificationDefault();
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -1130,7 +1143,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setTimeModified(new Date());
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
-        endEntityInformation.setSendNotification(getEndEntityProfile().isSendNotificationUsed() && getEndEntityProfile().isSendNotificationDefault() && !endEntityInformation.getSendNotification());
+        endEntityInformation.setSendNotification(getSendNotification());
         endEntityInformation.setKeyRecoverable(getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault() && !endEntityInformation.getKeyRecoverable());
         endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
@@ -2156,6 +2169,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void setAccountBindingId(String accountBindingId) {
         this.accountBindingId = accountBindingId;
+    }
+
+    public Boolean getSendNotification() {
+        return sendNotification;
+    }
+
+    public void setSendNotification(Boolean sendNotification) {
+        this.sendNotification = sendNotification;
     }
 
     public String getPsd2NcaName() {
