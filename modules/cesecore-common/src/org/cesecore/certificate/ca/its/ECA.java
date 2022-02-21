@@ -14,9 +14,12 @@ package org.cesecore.certificate.ca.its;
 
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -108,9 +111,16 @@ public interface ECA extends CA {
             throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
             OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException;
     
-    void setItsCertificateChain(final List<ITSCertificate> certificatechain);
-    
-    List<ITSCertificate> getItsCertificateChain();
-    
+    void setItsCaCertificate(final ITSCertificate caCertificate);
+        
     ITSCertificate getItsCACertificate();
+    
+    byte[] createRequest(final CryptoToken cryptoToken, final String signKeyAlias, 
+            final String verificationKeyAlias, final String encryptKeyAlias,
+             final CertificateProfile certificateProfile) throws CryptoTokenOfflineException, CertificateExtensionException;
+
+
+    void setHashedId(String hexString);
+
+    String getHashedId();
 }
