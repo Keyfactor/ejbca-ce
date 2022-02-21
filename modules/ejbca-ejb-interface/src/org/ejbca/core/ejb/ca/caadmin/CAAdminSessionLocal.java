@@ -88,4 +88,11 @@ public interface CAAdminSessionLocal extends CAAdminSession {
     
     public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) 
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
+    public byte[] makeCitsRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, 
+            String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
+    public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
+            byte[] signedCertificate) throws CADoesntExistsException;
 }
