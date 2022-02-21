@@ -321,6 +321,9 @@ public class RaEndEntityDetails {
     public boolean isSendNotificationEnabled() {
         return getEndEntityProfile() != null ? getEndEntityProfile().isSendNotificationUsed() : false;
     }
+    public boolean isSendNotificationDisabled(){
+        return getEndEntityProfile().isSendNotificationRequired();
+    }
     public boolean isSendNotification() {
         return endEntityInformation.getSendNotification();
     }
