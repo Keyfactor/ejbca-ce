@@ -1815,7 +1815,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         // See section 7.3 and 7.2.2 in https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.7.1.pdf
                         // Since EJBCA 7.9 this is optional, enabled by default. See ECA-10571 for more info.
                         final CRLReason crlReason;
-                        if (ocspSigningCacheEntry.getOcspKeyBinding().isOmitReasonCodeEnabled() && reasonCode != RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) {
+                        if (ocspSigningCacheEntry.getOcspKeyBinding().isOmitReasonCodeEnabled() && reasonCode == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) {
                             crlReason = null;
                         } else {
                             crlReason = CRLReason.lookup(reasonCode);
