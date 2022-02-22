@@ -12,13 +12,15 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import org.bouncycastle.its.ITSCertificate;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.catoken.CAToken;
-
-import java.security.cert.Certificate;
-import java.util.*;
-
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 
 public class CitsCaInfo extends CAInfo {
@@ -31,7 +33,7 @@ public class CitsCaInfo extends CAInfo {
     public static final String CERTIFICATE_ID = "certificateid";
     public static final String GEOGRAPHIC_REGION = "geographicregion";
     public static final String ITS_CA_CERTIFICATE = "itscacert";
-    public static final String ECA_HASHED_ID = "ecahashedid";
+    public static final String ECA_CERT_HASH = "ecacerthash";
 
     /**
      * To be used when creating a CA. This constructor creates a CITS CA with defaults values for the parameters
