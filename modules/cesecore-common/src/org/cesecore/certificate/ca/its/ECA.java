@@ -120,7 +120,7 @@ public interface ECA extends CA {
              final CertificateProfile certificateProfile) throws CryptoTokenOfflineException, CertificateExtensionException;
 
 
-    void setHashedId(String hexString);
+    void setCertificateHash(String hexString);
 
-    String getHashedId();
+    String getCertificateHash();
 }
