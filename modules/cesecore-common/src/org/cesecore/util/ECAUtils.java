@@ -53,6 +53,10 @@ public class ECAUtils {
         return new HashedId8(output);
     }
     
+    public static byte[] generateHash(byte[] input) {
+        return generateHash("SHA256", input);
+    }
+    
     public static byte[] generateHash(String algorithm, byte[] input) {
         if(input==null) {
             getEmptyStringHash(algorithm);
