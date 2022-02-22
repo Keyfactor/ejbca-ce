@@ -1615,7 +1615,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 
                 X509Certificate shouldSignOnBehalfCaCert = null;
                 
-                // only necessary if sign on belaf entries are present for corresponding cache entry
+                // only necessary if sign on behalf entries are present for corresponding cache entry
                 if(!ocspSigningCacheEntry.getSignedBehalfOfCaIds().isEmpty()) {
                     List<CertificateDataWrapper> certificateWrappers = 
                             certificateStoreSession.getCertificateDataBySerno(certId.getSerialNumber());
@@ -1814,11 +1814,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         // CA/B Forum Baseline Requirements 1.7.1+ require that reason code is omitted when it is Unspecified.
                         // See section 7.3 and 7.2.2 in https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.7.1.pdf
                         // Since EJBCA 7.9 this is optional, enabled by default. See ECA-10571 for more info.
-                        if (ocspSigningCacheEntry.getOcspKeyBinding().isOmitReasonCodeEnabled()) {
-                            final CRLReason crlReason = reasonCode != RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED ? CRLReason.lookup(reasonCode)
-                                    : null;
-                            certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate), crlReason));
+                        final CRLReason crlReason;
+                        if (ocspSigningCacheEntry.getOcspKeyBinding().isOmitReasonCodeEnabled() && reasonCode != RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) {
+                            crlReason = null;
+                        } else {
+                            crlReason = CRLReason.lookup(reasonCode);
                         }
+                        certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate), crlReason));
+
                         if (!isPreSigning && transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                             transactionLogger.paramPut(TransactionLogger.REV_REASON, reasonCode);
