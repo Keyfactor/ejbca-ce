@@ -241,12 +241,16 @@ public abstract class StoreServletBase extends HttpServlet {
 		return false;
 	}
 	
-	private void printInfo(X509Certificate certs[], String indent, PrintWriter pw, String url) {
-        for (X509Certificate cert : certs) {
+	private void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url) {
+        
+	    for (X509Certificate cert : certs) {
             // Escape the URL as it might be unsafe
             printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
+            
             pw.println();
+            
             final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }
