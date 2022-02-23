@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
@@ -172,7 +173,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 } else {
                     requestUsername = raApprovalRequestInfo.getEditableData().getUsername();
                 }
-                endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), requestUsername);
+                endEntityInformation = raMasterApiProxyBean.searchUserWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), requestUsername);
                 if (endEntityInformation == null) {
                     log.error("Could not find endEntity for the username='" + requestUsername + "'");
                 }else if(endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED){
@@ -436,7 +437,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         }
         
         try {
-            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            byte[] keystoreAsByteArray = raMasterApiProxyBean.generateKeyStoreWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
             log.info(endEntityInformation.getTokenType() + " token has been generated for the end entity with username " +
                     endEntityInformation.getUsername());
             try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
@@ -495,10 +496,14 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderGenerateKeyStorePkcs12(){
-        if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
             return false;
         }
-        EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
+            return false;
+        }
+        EndEntityProfile endEntityProfile = holder.getValue();
         if (endEntityProfile == null) {
             return false;
         }
@@ -508,6 +513,10 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public boolean isRenderGenerateKeyStoreBcfks() {
         if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
+            return false;
+        }
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
             return false;
         }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
@@ -520,6 +529,10 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     public boolean isRenderGenerateKeyStorePem(){
         if(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+            return false;
+        }
+        KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
+        if (holder == null) {
             return false;
         }
         EndEntityProfile endEntityProfile = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId()).getValue();
@@ -638,16 +651,14 @@ public class EnrollWithRequestIdBean implements Serializable {
             log.info("CSR uploaded was too large: "+valueStr.length());
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
-        if (pkcs10CertificateRequest == null) {
+        RequestMessage certificateRequestMessage = RequestMessageUtils.parseRequestMessage(valueStr.getBytes());
+        if (certificateRequestMessage == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
-        final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {
-            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+            final String keySpecification = AlgorithmTools.getKeySpecification(certificateRequestMessage.getRequestPublicKey());
+            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certificateRequestMessage.getRequestPublicKey());
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
@@ -664,6 +675,8 @@ public class EnrollWithRequestIdBean implements Serializable {
             certificateRequest = value.toString();
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 

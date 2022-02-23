@@ -47,7 +47,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERSequenceGenerator;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
@@ -271,9 +273,13 @@ public class JackNJI11Provider extends Provider {
                         myKey.getObject());
                 log.debug("C_SignInit with mechanism 0x" + Long.toHexString(mechanism) + " successful.");
             } catch (Exception e) {
-                log.error("An exception occurred when calling C_SignInit: " + e.getMessage());
+                // An Exception can mean that something has happened causing the session to be broken
+                // two threads sharing the same session or something weird, close this session so it can be recovered.
+                // We don't want to return this session to the Idle pool if C_SignInit had been called because that will result in a 
+                // CKR_OPERATION_ACTIVE if the session is re-used by another signing operation
+                log.error("An exception occurred when calling C_SignInit, closing session: " + e.getMessage());
                 if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
-                    myKey.getSlot().releaseSession(session);
+                    myKey.getSlot().closeSession(session);
                     hasActiveSession = false;
                 }
                 throw new InvalidKeyException(e);
@@ -310,6 +316,10 @@ public class JackNJI11Provider extends Provider {
 
         @Override
         protected byte[] engineSign() throws SignatureException {
+            if (myKey instanceof NJI11ReleasebleSessionPrivateKey && !hasActiveSession) {
+                log.warn("No active PKCS#11 session when attempting to sign. Enable debug logging to see init stack trace", debugStacktrace);
+                throw new SignatureException("No active PKCS#11 session when attempting to sign.");
+            }
             try {
                 if (type == MechanismNames.T_UPDATE) {
                     return myKey.getSlot().getCryptoki().SignFinal(session);
@@ -320,7 +330,9 @@ public class JackNJI11Provider extends Provider {
                     final byte[] sigInput;
                     if (MechanismNames.longFromSigAlgoName(this.algorithm).get() == CKM.RSA_PKCS) {
                         // RSA PKCS#1 input value to the signature operation is a DER encoded DigestInfo structure
-                        DigestInfo di = new DigestInfo(new DefaultDigestAlgorithmIdentifierFinder().find(md.getAlgorithm()), digest);
+                        // PKCS#1 [RFC3447] requires that the padding used for RSA signatures (EMSA-PKCS1-v1_5) MUST use SHA2 AlgorithmIdentifiers with NULL parameters
+                        final DigestInfo di = new DigestInfo(new AlgorithmIdentifier(new DefaultDigestAlgorithmIdentifierFinder().find(md.getAlgorithm()).getAlgorithm(), 
+                                DERNull.INSTANCE), digest);
                         sigInput = di.getEncoded(ASN1Encoding.DER);
                     } else {
                         // RSA_PKCS_PSS, ECDSA and EDDSA all take the raw hash as input
@@ -419,17 +431,31 @@ public class JackNJI11Provider extends Provider {
                     }
                     return rawSig;
                 }
+                // An Exception during signing can result in canceling this signing, while C_SignInit has still been called,
+                // re-using this session can then later result in CKR_OPERATION_ACTIVE, so upon failure it's better to close 
+                // this session so it can be re-created
             } catch (IOException e) {
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
                 throw new SignatureException(e);
             } catch (NoSuchAlgorithmException e) {
                 log.warn("The signature algorithm " + algorithm + " uses an unknown hashing algorithm.", e);
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
                 throw new SignatureException(e);
             } catch (NoSuchProviderException e) {
                 log.error("The Bouncy Castle provider has not been installed.");
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
+                throw new SignatureException(e);
+            } catch (CKRException e) {
+                log.warn("PKCS#11 exception while trying to sign: ", e);
+                myKey.getSlot().closeSession(session);
+                hasActiveSession = false; // prevent pushing this closed session to the idle pool
                 throw new SignatureException(e);
             } finally {
-                // Signing is done, either successful or failed
-                if (myKey instanceof NJI11ReleasebleSessionPrivateKey) {
+                // Signing is done, either successful or failed, release the session if there is an active one
+                if (myKey instanceof NJI11ReleasebleSessionPrivateKey && hasActiveSession) {
                     myKey.getSlot().releaseSession(session);
                     hasActiveSession = false;
                 }
@@ -490,7 +516,7 @@ public class JackNJI11Provider extends Provider {
     private static class MyMessageDigiest extends MessageDigestSpi {
         // While this MessageDigiest "implementation" doesn't do anything currently, it's required
         // in order for MGF1 Algorithms to work since BC performs a sanity check before
-        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.notDefaultPSSParams(...)
+        // creating signatures with PSS parameters. See org.bouncycastle.operator.jcajce.OperatorHelper.notDefaultPSSParams(...)
         @SuppressWarnings("unused")
         public MyMessageDigiest(Provider provider, String algorithm) {
             super();

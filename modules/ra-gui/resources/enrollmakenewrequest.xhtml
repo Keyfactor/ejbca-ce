@@ -788,6 +788,11 @@
 								</h:inputSecret>
 								<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
+								<h:outputLabel for="passwordClearPassword" value="#{msg.component_eedetails_field_cleartextpassword}"/>
+								<h:selectBooleanCheckbox id="passwordClearPassword" disabled="true"
+														 value="#{enrollMakeNewRequestBean.clearPassword}" />
+							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.emailRendered}">
 								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
 								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" 

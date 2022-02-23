@@ -55,6 +55,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
@@ -479,7 +480,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public String savePublisher() throws AuthorizationDeniedException {
         try {
             prepareForSave();
-        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException e) {
+        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
             addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
         }
@@ -490,7 +491,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
         try {
             prepareForSave();
-        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException e) {
+        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
             addErrorMessage(e.getMessage());
             return;
         }
@@ -510,7 +511,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
                 || StringUtils.contains(selectedPublisherType, "EnterpriseValidationAuthorityPublisher");
     }
     
-    private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException, PublisherException {
+    private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException, PublisherException, ParameterException {
         //Set General Settings
         setPublisherQueueAndGeneralSettings();
         
