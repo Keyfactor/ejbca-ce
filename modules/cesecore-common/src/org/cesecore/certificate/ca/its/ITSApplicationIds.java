@@ -15,6 +15,7 @@ package org.cesecore.certificate.ca.its;
 
 /**
  * ITS Application identifiers as specified in ETSI TS 102 965 V2.1.1 and IEEE 1609.2
+ * 
  */
 public enum ITSApplicationIds {
     // WAVE Security Management as specified in IEEE 1609.2
