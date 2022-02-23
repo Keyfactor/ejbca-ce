@@ -414,7 +414,7 @@ if(configheaderprinted){
 		</li>
 <% } %>
 
-<% if (ejbcawebbean.isRunningBuildWithCA()) { %>
+<% if (!globalconfiguration.getHidePublicWeb() && ejbcawebbean.isRunningBuildWithCA()) { %>
 		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" rel="noopener noreferer"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
 		</li>
 <% } %>

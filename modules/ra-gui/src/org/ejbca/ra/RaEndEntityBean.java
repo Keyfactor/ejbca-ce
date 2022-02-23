@@ -130,6 +130,7 @@ public class RaEndEntityBean implements Serializable {
     private int nameConstraintsExcludedUpdateStatus = 0;
     private String nameConstraintsPermittedString;
     private String nameConstraintsExcludedString;
+    private boolean viewEndEntityMode = false;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -232,6 +233,9 @@ public class RaEndEntityBean implements Serializable {
      */
     public void editEditEndEntity() {
         editEditEndEntityMode = isApiEditCompatible();
+        if (editEditEndEntityMode) {
+            viewEndEntityMode=false;
+        }
         reload();
     }
 
@@ -244,7 +248,12 @@ public class RaEndEntityBean implements Serializable {
         subjectDirectoryAttributes = null;
 
         editEditEndEntityMode = false;
+        viewEndEntityMode = true;
         reload();
+    }
+    
+    public boolean isViewEndEntityMode() {
+        return viewEndEntityMode;
     }
 
     /**
@@ -1136,5 +1145,9 @@ public class RaEndEntityBean implements Serializable {
     
     private boolean isDnEmail(EndEntityProfile.FieldInstance instance) {
         return instance.getName().equals(DnComponents.DNEMAILADDRESS);
+    }
+    
+    public String backToSearch () {
+        return "search_ees.xhtml";
     }
 }
