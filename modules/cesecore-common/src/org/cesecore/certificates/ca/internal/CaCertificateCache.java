@@ -71,7 +71,8 @@ public enum CaCertificateCache  {
             if (log.isDebugEnabled()) {
                 log.debug("Certificate not found from IssuerDN HashId in certsFromIssuerDN map. HashID=" + id.getB64());
             }
-            return null;
+            // Return empty array!
+            return new X509Certificate[0];
         }
         return sCert.toArray(new X509Certificate[sCert.size()]);
 

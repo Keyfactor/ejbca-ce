@@ -47,6 +47,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -1476,20 +1477,20 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // If we don't have a serialNumber, or CA Sequence, we take a chance that it was actually the subjectDN (for example a RootCA)
         final BigInteger sernoBigInt = req.getSerialNo();
         final String sernoString;
-        
+
         if (sernoBigInt == null) {
             sernoString = req.getCASequence();
         } else {
             sernoString = sernoBigInt.toString();
         }
-        
         if (sernoString != null) {
             final String dn = lookupCACert(issuerDn, sernoBigInt, sernoString);
-
-            if (log.isDebugEnabled()) {
-                log.debug("Using CA DN: " + dn);
+            if (!dn.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Using CA DN: " + dn);
+                }
+                return dn;
             }
-            return dn;
         }
 
         return issuerDn;
@@ -1502,12 +1503,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         // First lookup cache for potential CA certs.
         final X509Certificate[] caCert = CaCertificateCache.INSTANCE.findLatestByIssuerDN(HashID.getFromDNString(issuerDn));
-        for (final X509Certificate cert : caCert) {
-            if (cert.getSerialNumber().equals(sernoBigInt)) {
-                return CertTools.getSubjectDN(cert);
+        if (ArrayUtils.isNotEmpty(caCert)) {
+            for (final X509Certificate cert : caCert) {
+                if (cert.getSerialNumber().equals(sernoBigInt)) {
+                    return CertTools.getSubjectDN(cert);
+                }
             }
         }
-
+        
         // If no cache hit go for db lookup
         final Certificate cert = findCertificateByIssuerAndSerno(issuerDn, sernoString);
         if (cert != null) {
