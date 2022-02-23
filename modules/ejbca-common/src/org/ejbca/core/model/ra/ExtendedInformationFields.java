@@ -30,5 +30,9 @@ public class ExtendedInformationFields {
 	public  static final String CUSTOM_REQUESTCOUNTER = "REQUESTCOUNTER";
 
     public static final String CUSTOM_CANONICAL_PUBLICKEY = "CANONICALPUBLICKEY";
+    
+    public static final String CUSTOM_LATEST_ENROLL_REQUEST_HASH = "LATESTREQUESTHASH";
+    
+    public static final String CUSTOM_CURRENT_HASHED_ID = "CURRENTECHASHEDID";
 
 }
