@@ -246,7 +246,7 @@ public abstract class StoreServletBase extends HttpServlet {
             // Escape the URL as it might be unsafe
             printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
             pw.println();
-            final X509Certificate issuedCerts[] = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }
