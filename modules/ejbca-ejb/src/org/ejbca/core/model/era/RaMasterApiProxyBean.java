@@ -1165,6 +1165,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+    
+    @Override
+    public EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 13) {
+                try {
+                    final EndEntityInformation result = raMasterApi.searchUserWithoutViewEndEntityAccessRule(authenticationToken, username);
+                    if (result != null) {
+                        return result;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public void checkUserStatus(AuthenticationToken authenticationToken, String username, String password)
@@ -1258,94 +1275,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (storedEndEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
             // "Force local key recovery" enabled. The certificate is issued on the CA, but the key pair is generated and stored locally.
-            final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
-            final CAInfo caInfo = caInfos.getValue(storedEndEntity.getCAId());
-            if (caInfo == null) {
-                throw new AuthorizationDeniedException("Not authorized to CA with ID " + storedEndEntity.getCAId() + ", or it does not exist.");
-            }
-            final Certificate[] cachain = caInfo.getCertificateChain().toArray(new Certificate[0]);
-            if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
-                throw new AuthorizationDeniedException("Not authorized to recover keys");
-            }
-            final EndEntityProfile endEntityProfile = getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY).getValue(storedEndEntity.getEndEntityProfileId());
-            if (endEntityProfile == null) {
-                throw new AuthorizationDeniedException("Not authorized to End Entity Profile with ID " + storedEndEntity.getEndEntityProfileId() + ", or it does not exist.");
-            }
-
-            final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
-            final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
-            final X509Certificate cert;
-            final KeyPair kp;
-            try {
-                if (storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Creating locally stored key pair for end entity '" + username + "'");
-                    }
-                    // Create new key pair and CSR
-                    final String keyalg = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmType();
-                    final String keyspec = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmSubType();
-                    kp = KeyTools.genKeys(keyspec, keyalg);
-                    // requestCertForEndEntity verifies the password and performs the finishUser operation
-                    cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
-                    // Store key pair
-                    if (cryptoTokenId == null || keyAlias == null) {
-                        log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
-                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
-                    }
-                    if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cert), username, EJBTools.wrap(kp), cryptoTokenId, keyAlias)) {
-                        // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
-                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
-                    }
-                } else {
-                    // Recover existing key pair
-                    if (log.isDebugEnabled()) {
-                        log.debug("Recovering locally stored key pair for end entity '" + username + "'");
-                    }
-                    final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias);
-                    if (kri == null) {
-                        // This should not happen when the user has its status set to KEYRECOVERY
-                        final String message = "Could not find key recovery data for end entity '" + username + "'";
-                        log.debug(message);
-                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, message);
-                    }
-                    kp = kri.getKeyPair();
-                    if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
-                        final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
-                        if (cdw == null) {
-                            final String msg = "Key recovery data exists for user '" + username + "', but certificate does not: " + kri.getCertificateSN().toString(16);
-                            log.info(msg);
-                            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
-                        }
-                        cert = (X509Certificate) cdw.getCertificate();
-                        // Verify password and finish user
-                        finishUserAfterLocalKeyRecovery(authenticationToken, username, endEntity.getPassword());
-                    } else {
-                        // requestCertForEndEntity verifies the password and performs the finishUser operation
-                        cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
-                    }
-                    localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
-                }
-                // Build keystore
-                final KeyStore ks;
-                String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-                if (alias == null) {
-                    alias = username;
-                }
-                if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
-                    ks = KeyTools.createJKS(alias, kp.getPrivate(), endEntity.getPassword(), cert, cachain);
-                } else if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_BCFKS) {
-                    ks = KeyTools.createBcfks(alias, kp.getPrivate(), cert, cachain);
-                } else {
-                    ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
-                }
-                try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                    ks.store(baos, endEntity.getPassword().toCharArray());
-                    return baos.toByteArray();
-                }
-            } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
-                    InvalidAlgorithmParameterException | IOException e) {
-                throw new IllegalStateException(e);
-            }
+            return generateKeyStoreForceLocalKeyRecovery(authenticationToken, endEntity, username, storedEndEntity, globalConfig);
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Requesting key store for end entity '" + username + "'. Remote peer systems will be queried first");
@@ -1381,6 +1311,151 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw userNotFoundException;
         }
         return null;
+    }
+    
+    // This method is somewhat special, because it should not be sent/forwarded upstream depending on a configuration setting
+    @Override
+    public byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntity)
+            throws AuthorizationDeniedException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        EjbcaException userNotFoundException = null;
+
+        final String username = endEntity.getUsername();
+        final EndEntityInformation storedEndEntity = searchUserWithoutViewEndEntityAccessRule(authenticationToken, username);
+        if (storedEndEntity == null) {
+            throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User does not exist: " + username);
+        }
+        GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (storedEndEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
+            return generateKeyStoreForceLocalKeyRecovery(authenticationToken, endEntity, username, storedEndEntity, globalConfig);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Requesting key store for end entity '" + username + "'. Remote peer systems will be queried first");
+            }
+        }
+
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    return raMasterApi.generateKeyStoreWithoutViewEndEntityAccessRule(authenticationToken, endEntity);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (EjbcaException e) {
+                    // If the user is not found (e.g. during key recovery), try next implementation
+                    if (!ErrorCode.USER_NOT_FOUND.equals(e.getErrorCode())) {
+                        throw e;
+                    }
+                    if (userNotFoundException == null) {
+                        userNotFoundException = e;
+                    }
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (userNotFoundException != null) {
+            throw userNotFoundException;
+        }
+        return null;
+    }
+    
+    private byte[] generateKeyStoreForceLocalKeyRecovery(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
+            final String username, final EndEntityInformation storedEndEntity, GlobalConfiguration globalConfig)
+            throws AuthorizationDeniedException, EjbcaException {
+        final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
+        final CAInfo caInfo = caInfos.getValue(storedEndEntity.getCAId());
+        if (caInfo == null) {
+            throw new AuthorizationDeniedException("Not authorized to CA with ID " + storedEndEntity.getCAId() + ", or it does not exist.");
+        }
+        final Certificate[] cachain = caInfo.getCertificateChain().toArray(new Certificate[0]);
+        if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
+            throw new AuthorizationDeniedException("Not authorized to recover keys");
+        }
+        final EndEntityProfile endEntityProfile = getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY).getValue(storedEndEntity.getEndEntityProfileId());
+        if (endEntityProfile == null) {
+            throw new AuthorizationDeniedException("Not authorized to End Entity Profile with ID " + storedEndEntity.getEndEntityProfileId() + ", or it does not exist.");
+        }
+
+        final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
+        final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
+        final X509Certificate cert;
+        final KeyPair kp;
+        try {
+            if (storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Creating locally stored key pair for end entity '" + username + "'");
+                }
+                // Create new key pair and CSR
+                final String keyalg = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmType();
+                final String keyspec = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmSubType();
+                kp = KeyTools.genKeys(keyspec, keyalg);
+                // requestCertForEndEntity verifies the password and performs the finishUser operation
+                cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
+                // Store key pair
+                if (cryptoTokenId == null || keyAlias == null) {
+                    log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
+                }
+                if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cert), username, EJBTools.wrap(kp), cryptoTokenId, keyAlias)) {
+                    // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
+                }
+            } else {
+                // Recover existing key pair
+                if (log.isDebugEnabled()) {
+                    log.debug("Recovering locally stored key pair for end entity '" + username + "'");
+                }
+                final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias);
+                if (kri == null) {
+                    // This should not happen when the user has its status set to KEYRECOVERY
+                    final String message = "Could not find key recovery data for end entity '" + username + "'";
+                    log.debug(message);
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, message);
+                }
+                kp = kri.getKeyPair();
+                if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
+                    final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
+                    if (cdw == null) {
+                        final String msg = "Key recovery data exists for user '" + username + "', but certificate does not: " + kri.getCertificateSN().toString(16);
+                        log.info(msg);
+                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
+                    }
+                    cert = (X509Certificate) cdw.getCertificate();
+                    // Verify password and finish user
+                    finishUserAfterLocalKeyRecovery(authenticationToken, username, endEntity.getPassword());
+                } else {
+                    // requestCertForEndEntity verifies the password and performs the finishUser operation
+                    cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
+                }
+                localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
+            }
+            // Build keystore
+            final KeyStore ks;
+            String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+            if (alias == null) {
+                alias = username;
+            }
+            if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
+                ks = KeyTools.createJKS(alias, kp.getPrivate(), endEntity.getPassword(), cert, cachain);
+            } else if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_BCFKS) {
+                ks = KeyTools.createBcfks(alias, kp.getPrivate(), cert, cachain);
+            } else {
+                ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
+            }
+            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                ks.store(baos, endEntity.getPassword().toCharArray());
+                return baos.toByteArray();
+            }
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
+                InvalidAlgorithmParameterException | IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
