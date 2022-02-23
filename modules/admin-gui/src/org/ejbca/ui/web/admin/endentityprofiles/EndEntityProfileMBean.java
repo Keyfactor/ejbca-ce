@@ -775,10 +775,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
         final TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
         final TreeMap<String, Integer> sshcertificateprofilenames = ejbcaWebBean.getAuthorizedSshCertificateProfileNames();
+        final TreeMap<String, Integer> itscertificateprofilenames = ejbcaWebBean.getAuthorizedItsCertificateProfileNames();
         final TreeMap<String, Integer> mergedMap = new TreeMap<>();
         mergedMap.putAll(eecertificateprofilenames);
         mergedMap.putAll(subcacertificateprofilenames);
         mergedMap.putAll(sshcertificateprofilenames);
+        mergedMap.putAll(itscertificateprofilenames);
         for (final Entry<String,Integer> entry : mergedMap.entrySet()) {
             final int certProfileId = entry.getValue(); // map is inverted
             final String certProfileName = entry.getKey();
@@ -938,6 +940,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public String getValidityTimeExample() {
         return ejbcaWebBean.getText("OR").toLowerCase() + " " + ejbcaWebBean.getText("DAYS").toLowerCase() + ":"
                 + ejbcaWebBean.getText("HOURS").toLowerCase() + ":" + ejbcaWebBean.getText("MINUTES").toLowerCase();
+    }
+    
+    public boolean getAllowMergeDn() {
+        return profiledata.getAllowMergeDn();
+    }
+    
+    public void setAllowMergeDn(boolean allowMergeDn) {
+        profiledata.setAllowMergeDn(allowMergeDn);
     }
 
     public boolean isUseCardNumber() {
