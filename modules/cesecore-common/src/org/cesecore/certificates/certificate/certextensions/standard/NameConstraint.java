@@ -50,7 +50,9 @@ public class NameConstraint extends StandardCertificateExtension {
 
     private static final long serialVersionUID = 1L;
     
-    private static final String URI_TEMPLATE_REGEX = "^[a-zA-Z]+:(\\/\\/)?[[a-zA-Z0-9]+:[a-zA-Z0-9]+@]?[.a-zA-Z0-9:\\[\\]]+.*$";
+    private static final String URI_TEMPLATE_REGEX = "^(?!:\\/\\/)(\\.)?([a-zA-Z0-9]+\\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}?$";
+    private static final String URI_PREFIX = "uri:";
+    private static final String DNS_REGEX = "^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$";
 
     @Override
     public void init(CertificateProfile certProf) {
@@ -193,12 +195,17 @@ public class NameConstraint extends StandardCertificateExtension {
         } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)$")) {
             // IP address without netmask. This is not a valid DNS name, so catch it here.
             throw new CertificateExtensionException("Name constraint entry with IP address is missing a netmask: "+str+". Use /32 to match only this address.");
-        } else if(str.matches(URI_TEMPLATE_REGEX)) {
-            // protocol://{username:password@}authority{:port}/{path:optional}
-            // protocol e.g. ftp, http, ldap
-            // authority: domain or server_ip:port
-            return "uniformResourceIdentifier:" + str; 
-        } else if (str.matches("^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$")) {
+        } else if (str.startsWith(URI_PREFIX)) {
+            String concactedString = str.substring(URI_PREFIX.length());
+            //From RFC 5280: The constraint MUST be specified as a fully qualified domain name and MAY  specify a host 
+            //or a domain. Examples would be "host.example.com" and ".example.com".
+            if (concactedString.matches(URI_TEMPLATE_REGEX)) {
+                return "uniformResourceIdentifier:" + concactedString;
+            } else {
+                throw new CertificateExtensionException(
+                        "Cannot parse URI, should be in format of \"host.example.com\" and \".example.com\"): " + concactedString);
+            }
+        } else if (str.matches(DNS_REGEX)) {
             // DNS name (it can start with a ".", this means "all subdomains")
             return "dNSName:"+str; 
         } else if (str.matches("^[^=,]*@[a-zA-Z0-9_.\\[\\]:-]+$")) {
@@ -214,7 +221,7 @@ public class NameConstraint extends StandardCertificateExtension {
             // Directory name
             return "directoryName:" + new X500Name(CeSecoreNameStyle.INSTANCE, str).toString();
         } else {
-            throw new CertificateExtensionException("Cannot parse name constraint entry (only DNS Name, RFC 822 Name, Directory Name, IPv4/Netmask and IPv6/Netmask are supported): "+str);
+            throw new CertificateExtensionException("Cannot parse name constraint entry (only DNS Name, URI, RFC 822 Name, Directory Name, IPv4/Netmask and IPv6/Netmask are supported): "+str);
         }
     }
 
@@ -277,7 +284,7 @@ public class NameConstraint extends StandardCertificateExtension {
             }
         case GeneralName.directoryName:
         case GeneralName.uniformResourceIdentifier:
-            return (String)data; // not changed during encoding
+            return URI_PREFIX.concat((String) data);
         case GeneralName.iPAddress:
             byte[] bytes = (byte[])data;
             byte[] ip = new byte[bytes.length/2];
