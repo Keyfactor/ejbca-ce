@@ -4710,7 +4710,7 @@ public abstract class CertTools {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
                         validator.checkPermitted(sangn);
-                        if (isAllDNSNamesExcluded(excluded)) {
+                        if (excluded != null && isAllDNSNamesExcluded(excluded)) {
                             final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
                             throw new IllegalNameException(msg);
                         }
