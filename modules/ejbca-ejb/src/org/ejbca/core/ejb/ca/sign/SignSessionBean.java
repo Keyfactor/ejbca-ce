@@ -22,7 +22,14 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.its.ETSISignedData;
+import org.bouncycastle.its.ETSISignedDataBuilder;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.its.jcajce.JcaITSContentSigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Psid;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -37,6 +44,8 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -91,6 +100,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -1452,5 +1462,50 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.debug("Given payload could not be signed.", e);
             throw new SignRequestSignatureException("Given payload could not be signed.", e);
         }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public byte[] signItsPayload(final byte[] data, final ECA eca)
+            throws CryptoTokenOfflineException, SignRequestSignatureException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to sign ITS payload from CA with ID " + eca.getCAId());
+        }
+        
+        final CAToken catoken = eca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (privateKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
+        }
+
+        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
+        if(ecaCertificate==null) {
+            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
+        }
+
+        try {
+            // Psid is same for EC enroll and authorization validation
+            ETSISignedDataBuilder signedDataBuilder = ETSISignedDataBuilder.builder(
+                            new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.ordinal()));
+            signedDataBuilder.setUnsecuredData(data);
+            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
+                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
+            HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
+            ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
+
+            return etsiSignedData.getEncoded();
+        } catch ( Exception e) {
+            // high level catch block
+            log.debug("ITS payload could not be signed.", e);
+            throw new SignRequestSignatureException("ITS payload could not be signed.", e);
+        }
+    }
+
+    @Override
+    public ITSCertificate createEnrollCredential(AuthenticationToken admin, Builder certificateBuilder, ECA eca, EndEntityInformation endEntity)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
