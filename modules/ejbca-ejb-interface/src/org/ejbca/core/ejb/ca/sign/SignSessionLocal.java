@@ -19,7 +19,9 @@ import java.util.Date;
 import javax.ejb.Local;
 
 import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
 import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificate.ca.its.ECA;
@@ -239,6 +241,7 @@ public interface SignSessionLocal extends SignSession {
              throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException;
 
      ITSCertificate createEnrollCredential(AuthenticationToken admin, ToBeSignedCertificate.Builder certificateBuilder,
+             CertificateId certifcateId, PublicVerificationKey verificationKey, 
              ECA eca, EndEntityInformation endEntity) throws AuthorizationDeniedException, CryptoTokenOfflineException;
 
     byte[] signItsPayload(byte[] data, ECA eca)
