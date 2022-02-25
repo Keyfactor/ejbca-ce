@@ -73,7 +73,9 @@ import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Signed;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
 import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
 import org.bouncycastle.oer.its.template.etsi103097.EtsiTs103097Module;
 import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
 import org.bouncycastle.oer.its.template.ieee1609dot2.basetypes.Ieee1609Dot2BaseTypes;
@@ -3918,7 +3920,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
     
     public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
-                        byte[] signedCertificate) throws CADoesntExistsException {
+                        byte[] signedCertificate) throws CADoesntExistsException, EjbcaException {
         // TODO: later support certificate chain
         
         if (log.isTraceEnabled()) {
@@ -3942,8 +3944,26 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
             }
             
+            CertificateId receievedCertificateId = certificate.toASN1Structure().getToBeSignedCertificate()
+                    .getCertificateId();
+            if(receievedCertificateId.getChoice()!=CertificateId.name) {
+                throw new EjbcaException("CertificateId should be NAME instance.");
+            } else {
+                Hostname certificateId = ((Hostname)receievedCertificateId.getValue());
+                if(!certificateId.getHostName().equalsIgnoreCase(
+                                        ((CitsCaInfo)ca.getCAInfo()).getCertificateId())) {
+                    throw new EjbcaException("CertificateId did not match.");
+                }
+            }
+            
             final CAToken catoken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+            PublicKey caCertPublicKey = ECAUtils.getPublicKeyFromCertificate(certificate);
+            
+            String nextVerificationKeyAlias = catoken.getNextEcaSignKeyAlias();
+            log.info("nextVerificationKeyAlias: " + nextVerificationKeyAlias);
+            KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
+                                    caCertPublicKey, cryptoToken.getSignProviderName());
             catoken.activateNextKeysEcaToken();
             
             cryptoToken.testKeyPair(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
