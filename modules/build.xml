@@ -28,7 +28,6 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.batchenrollment-gui.path}/build-nonb.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -441,10 +440,6 @@
 
 	<target name="externalra-gui" depends="cesecore-ejb-interface, ejbca-common, externalra-library" description="Build the EJBCA External RA StandAlone GUI WAR">
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
-	</target>
-
-	<target name="batchenrollment-gui" depends="cesecore-common, ejbca-ws-cli, ejbca-ws-common, ejbca-common" description="Build the EJBCA Batch Enrollment StandAlone GUI JAR">
-		<ant antfile="build-nonb.xml" dir="${mod.batchenrollment-gui.path}" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="acme" depends="ejbca-ejb" if="${mod.acme.exists}" description="Build ACME protocol support">
