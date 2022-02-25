@@ -1456,4 +1456,8 @@ public class CAInterfaceBean implements Serializable {
         return CollectionUtils.isNotEmpty(chain) ? CertTools.getNotAfter(chain.iterator().next()) : null;
     }
 
+    public boolean isCaTypeCits() {
+        return cainfo.getCAType()==CAInfo.CATYPE_CITS;
+    }
+
 }

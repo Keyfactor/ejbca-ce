@@ -18,8 +18,13 @@ import java.util.Date;
 
 import javax.ejb.Local;
 
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificate.ca.its.ECA;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -35,6 +40,7 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -234,4 +240,10 @@ public interface SignSessionLocal extends SignSession {
      byte[] signPayload(byte[] data, final int signingCaId)
              throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException;
 
+     ITSCertificate createEnrollCredential(AuthenticationToken admin, ToBeSignedCertificate.Builder certificateBuilder,
+             CertificateId certifcateId, PublicVerificationKey verificationKey, 
+             ECA eca, EndEntityInformation endEntity) throws AuthorizationDeniedException, CryptoTokenOfflineException;
+
+    byte[] signItsPayload(byte[] data, ECA eca)
+            throws CryptoTokenOfflineException, SignRequestSignatureException;
 }
