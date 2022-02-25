@@ -474,6 +474,16 @@ public class CAToken extends UpgradeableDataHashMap {
         return true;
     }
     
+    public String getNextEcaSignKeyAlias() {
+        final Properties caTokenProperties = getProperties();
+        
+        if(!caTokenProperties.containsKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT)) {
+            return keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        } else {
+            return keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+        }
+    }
+    
     public void activateNextKeysEcaToken() {
         // TODO: may need update to support external import similar to activateNextSignKey
         final Properties caTokenProperties = getProperties();
