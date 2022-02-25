@@ -51,6 +51,12 @@ public class NameConstraint extends StandardCertificateExtension {
     private static final long serialVersionUID = 1L;
     
     private static final String URI_TEMPLATE_REGEX = "^[a-zA-Z]+:(\\/\\/)?[[a-zA-Z0-9]+:[a-zA-Z0-9]+@]?[.a-zA-Z0-9:\\[\\]]+.*$";
+    
+    private static final String UNIFORM_RESOURCE_IDENTIFIER = "uniformResourceIdentifier";
+    private static final String RFC822_NAME = "rfc822Name";
+    private static final String DIRECTORY_NAME = "directoryName";
+    private static final String DNS_NAME = "dNSName";
+    private static final String IP_ADDRESS = "iPAddress";
 
     @Override
     public void init(CertificateProfile certProf) {
@@ -125,22 +131,36 @@ public class NameConstraint extends StandardCertificateExtension {
      */
     private static int getNameConstraintType(String encoded) {
         String typeString = encoded.split(":", 2)[0];
-        if ("iPAddress".equals(typeString)) {
+        if (IP_ADDRESS.equals(typeString)) {
             return GeneralName.iPAddress;
-        }
-        if ("dNSName".equals(typeString)) {
+        } else if (DNS_NAME.equals(typeString)) {
             return GeneralName.dNSName;
-        }
-        if ("directoryName".equals(typeString)) {
+        } else if (DIRECTORY_NAME.equals(typeString)) {
             return GeneralName.directoryName;
-        }
-        if ("rfc822Name".equals(typeString)) {
+        } else if (RFC822_NAME.equals(typeString)) {
             return GeneralName.rfc822Name;
-        }
-        if ("uniformResourceIdentifier".equals(typeString)) {
+        } else if (UNIFORM_RESOURCE_IDENTIFIER.equals(typeString)) {
             return GeneralName.uniformResourceIdentifier;
+        } else {
+            throw new UnsupportedOperationException("Unsupported name constraint type " + typeString);
         }
-        throw new UnsupportedOperationException("Unsupported name constraint type "+typeString);
+    }
+    
+    public static String getNameConstraintFromType(int type) {
+        switch (type) {
+        case GeneralName.iPAddress:
+            return IP_ADDRESS;
+        case GeneralName.dNSName:
+            return DNS_NAME;
+        case GeneralName.directoryName:
+            return DIRECTORY_NAME;
+        case GeneralName.rfc822Name:
+            return RFC822_NAME;
+        case GeneralName.uniformResourceIdentifier:
+            return UNIFORM_RESOURCE_IDENTIFIER;
+        default:
+            throw new UnsupportedOperationException("Unsupported name constraint type " + type);
+        }
     }
 
     /**
