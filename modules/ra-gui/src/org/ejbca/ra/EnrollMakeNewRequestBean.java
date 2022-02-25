@@ -1255,7 +1255,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
                     raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e));
                     log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
-                } else {
+                } else if (errorCode.equals(ErrorCode.NAMECONSTRAINT_VIOLATION)) {
+                    raLocaleBean.addMessageError("enroll_invalid_name_constraint_violation", e.getMessage().replaceFirst("^[^:]*Exception: ", ""));
+                    log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
+                }
+                
+                else {
                     reportGenericError(errorCode, e);
                 }
             } else {
@@ -1323,7 +1328,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String cleanExceptionMessage(final Throwable e) {
         String message = ExceptionUtils.getRootCauseMessage(e);
         if (message != null) {
-            message = message.replaceFirst("^[^:]*EndEntityProfileValidationException: ", "");
+            message = message.replaceFirst("^[^:]*Exception: ", "");
         }
         return message;
     }
