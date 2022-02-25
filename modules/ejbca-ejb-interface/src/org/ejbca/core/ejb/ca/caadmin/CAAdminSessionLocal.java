@@ -23,6 +23,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.ejbca.core.EjbcaException;
 
 @Local
 public interface CAAdminSessionLocal extends CAAdminSession {
@@ -94,5 +95,5 @@ public interface CAAdminSessionLocal extends CAAdminSession {
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
     
     public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
-            byte[] signedCertificate) throws CADoesntExistsException;
+            byte[] signedCertificate) throws CADoesntExistsException, EjbcaException;
 }

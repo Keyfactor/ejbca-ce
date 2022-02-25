@@ -13,6 +13,7 @@ import org.bouncycastle.asn1.sec.SECObjectIdentifiers;
 import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.its.jcajce.JcaITSPublicVerificationKey;
 import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Encrypted;
@@ -27,6 +28,7 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Signature;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.ValidityPeriod;
 import org.bouncycastle.oer.its.template.etsi103097.EtsiTs103097Module;
 import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.util.encoders.Hex;
 
 public class ECAUtils {
@@ -55,6 +57,13 @@ public class ECAUtils {
     
     public static byte[] generateHash(byte[] input) {
         return generateHash("SHA256", input);
+    }
+    
+    public static PublicKey getPublicKeyFromCertificate(ITSCertificate certificate) {
+        PublicVerificationKey publicVerificationKey =
+                (PublicVerificationKey) certificate.toASN1Structure()
+                    .getToBeSignedCertificate().getVerificationKeyIndicator().getValue();
+        return new JcaITSPublicVerificationKey.Builder().build(publicVerificationKey).getKey();
     }
     
     public static byte[] generateHash(String algorithm, byte[] input) {
