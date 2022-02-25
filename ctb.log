@@ -1,0 +1,51 @@
+2021-08-23 15:12:11,890 INFO  [org.cesecore.config.ConfigurationHolder] Allow external re-configuration: true
+2021-08-23 15:12:11,891 INFO  [org.cesecore.config.ConfigurationHolder] Added system properties to configuration source (java -Dfoo.prop=bar).
+2021-08-23 15:12:11,892 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is cesecore.properties
+2021-08-23 15:12:11,894 DEBUG [org.apache.commons.configuration.ConfigurationUtils] Loading configuration from the path /Users/mikek/eclipse-workspace/ejbca_all/conf/cesecore.properties
+2021-08-23 15:12:11,896 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/cesecore.properties
+2021-08-23 15:12:11,896 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is extendedkeyusage.properties
+2021-08-23 15:12:11,896 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/extendedkeyusage.properties
+2021-08-23 15:12:11,896 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is cache.properties
+2021-08-23 15:12:11,897 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/cache.properties
+2021-08-23 15:12:11,897 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is database.properties
+2021-08-23 15:12:11,897 DEBUG [org.apache.commons.configuration.ConfigurationUtils] Loading configuration from the path /Users/mikek/eclipse-workspace/ejbca_all/conf/database.properties
+2021-08-23 15:12:11,897 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/database.properties
+2021-08-23 15:12:11,898 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is databaseprotection.properties
+2021-08-23 15:12:11,898 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/databaseprotection.properties
+2021-08-23 15:12:11,898 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is backup.properties
+2021-08-23 15:12:11,898 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/backup.properties
+2021-08-23 15:12:11,898 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is va.properties
+2021-08-23 15:12:11,899 DEBUG [org.apache.commons.configuration.ConfigurationUtils] Loading configuration from the path /Users/mikek/eclipse-workspace/ejbca_all/conf/va.properties
+2021-08-23 15:12:11,899 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/va.properties
+2021-08-23 15:12:11,899 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /Users/mikek/eclipse-workspace/ejbca_all/conf, name is ocsp.properties
+2021-08-23 15:12:11,899 DEBUG [org.apache.commons.configuration.ConfigurationUtils] Loading configuration from the path /Users/mikek/eclipse-workspace/ejbca_all/conf/ocsp.properties
+2021-08-23 15:12:11,900 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /Users/mikek/eclipse-workspace/ejbca_all/conf/ocsp.properties
+2021-08-23 15:12:11,900 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is cesecore.properties
+2021-08-23 15:12:11,901 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/cesecore.properties
+2021-08-23 15:12:11,901 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is extendedkeyusage.properties
+2021-08-23 15:12:11,901 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/extendedkeyusage.properties
+2021-08-23 15:12:11,901 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is cache.properties
+2021-08-23 15:12:11,901 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/cache.properties
+2021-08-23 15:12:11,901 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is database.properties
+2021-08-23 15:12:11,902 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/database.properties
+2021-08-23 15:12:11,902 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is databaseprotection.properties
+2021-08-23 15:12:11,902 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/databaseprotection.properties
+2021-08-23 15:12:11,902 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is backup.properties
+2021-08-23 15:12:11,902 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/backup.properties
+2021-08-23 15:12:11,902 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is va.properties
+2021-08-23 15:12:11,903 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/va.properties
+2021-08-23 15:12:11,903 DEBUG [org.apache.commons.configuration.ConfigurationUtils] ConfigurationUtils.locate(): base is /etc/cesecore/conf, name is ocsp.properties
+2021-08-23 15:12:11,903 INFO  [org.cesecore.config.ConfigurationHolder] Added file to configuration source: /etc/cesecore/conf/ocsp.properties
+2021-08-23 15:12:11,903 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/cesecore.properties
+2021-08-23 15:12:11,908 DEBUG [org.cesecore.config.ConfigurationHolder] Added url to configuration source: jar:file:/Users/mikek/eclipse-workspace/ejbca_all/dist/clientToolBox/clientToolBox.jar!/conf/cesecore.properties
+2021-08-23 15:12:11,908 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/extendedkeyusage.properties
+2021-08-23 15:12:11,908 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/cache.properties
+2021-08-23 15:12:11,908 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/database.properties
+2021-08-23 15:12:11,909 DEBUG [org.cesecore.config.ConfigurationHolder] Added url to configuration source: jar:file:/Users/mikek/eclipse-workspace/ejbca_all/dist/clientToolBox/clientToolBox.jar!/conf/database.properties
+2021-08-23 15:12:11,909 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/databaseprotection.properties
+2021-08-23 15:12:11,909 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/backup.properties
+2021-08-23 15:12:11,910 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/va.properties
+2021-08-23 15:12:11,911 DEBUG [org.cesecore.config.ConfigurationHolder] Added url to configuration source: jar:file:/Users/mikek/eclipse-workspace/ejbca_all/dist/clientToolBox/clientToolBox.jar!/conf/va.properties
+2021-08-23 15:12:11,911 DEBUG [org.cesecore.config.ConfigurationHolder] Add resource to configuration: /conf/ocsp.properties
+2021-08-23 15:12:11,912 DEBUG [org.cesecore.config.ConfigurationHolder] Added url to configuration source: jar:file:/Users/mikek/eclipse-workspace/ejbca_all/dist/clientToolBox/clientToolBox.jar!/conf/ocsp.properties
+2021-08-23 15:12:11,913 DEBUG [org.cesecore.config.ConfigurationHolder] Added url to configuration source: file:/Users/mikek/eclipse-workspace/ejbca_all/dist/clientToolBox/properties/internal.properties

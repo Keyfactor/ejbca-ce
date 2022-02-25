@@ -1648,10 +1648,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<antcall target="jee:deploy-externalragui-war" />
 	</target>
 
-	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client, deprecated:check">
-    	<ant dir="modules" target="batchenrollment-gui"/>
-	</target>
-
 	<!-- Target that copies all org.cesecore java files from EJBCA to cesecore (if it is in a subdirectory cesecore above ejbca dir).
 	     Since EJBCA usually is the master for cesecore fies, this eases code merge very much.
 	-->
