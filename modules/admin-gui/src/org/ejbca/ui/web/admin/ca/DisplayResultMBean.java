@@ -109,7 +109,7 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
                 pemlink = filePath + "/editcas/cacertreq?cmd=certreq";
                 binarylink = filePath + "/editcas/cacertreq?cmd=certreq&format=binary";
             } else {
-                binarylink = filePath + "/editcas/cacertreq?cmd=certreq&caname=" + caName;
+                binarylink = filePath + "/editcas/cacertreq?cmd=itsecacsr&caname=" + caName;
             }
             pkcs7link = StringUtils.EMPTY;
         }

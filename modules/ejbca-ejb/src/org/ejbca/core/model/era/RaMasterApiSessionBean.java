@@ -3197,9 +3197,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] enrollItsCredential(AuthenticationToken authenticationToken, byte[] requestBody) throws AuthorizationDeniedException {
+    public byte[] enrollItsCredential(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                                byte[] requestBody) throws AuthorizationDeniedException {
         log.info("requestBody: " + Hex.toHexString(requestBody));
-        ecaOperationsSession.enrollItsCredential(authenticationToken, requestBody);
-        return null;
+        return ecaOperationsSession.enrollItsCredential(authenticationToken, ecaCertificateId, requestBody);
     }
 }

@@ -1712,7 +1712,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
         try {
             if(isCaTypeCits()) {
-                caAdminSession.receiveCitsResponse(administrator, caid, Hex.decode(new String(fileBuffer))); 
+                byte[] certificateBytes = null;
+                if(fileRecieveFileRecieveRequest.getName().endsWith(".txt")) {
+                    // TODO: remove later, only for test
+                    certificateBytes = Hex.decode(new String(fileBuffer));
+                } else {
+                    certificateBytes = fileBuffer; // .oer or OER format, NOT pem, der etc
+                }
+                caAdminSession.receiveCitsResponse(administrator, caid, certificateBytes); 
             } else {
                 receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
                 try {

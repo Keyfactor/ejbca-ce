@@ -3958,12 +3958,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             
             final CAToken catoken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
-            PublicKey caCertPublicKey = ECAUtils.getPublicKeyFromCertificate(certificate);
+            PublicKey caCertPublicVerificationKey = ECAUtils.getVerificationKeyFromCertificate(certificate);
+            PublicKey caCertPublicEncryptionKey = ECAUtils.getEncryptionKeyFromCertificate(certificate);
             
             String nextVerificationKeyAlias = catoken.getNextEcaSignKeyAlias();
             log.info("nextVerificationKeyAlias: " + nextVerificationKeyAlias);
             KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
-                                    caCertPublicKey, cryptoToken.getSignProviderName());
+                    caCertPublicVerificationKey, cryptoToken.getSignProviderName());
+            
+            String nextDefaultKeyAlias = catoken.getNextEcaDefaultKeyAlias();
+            log.info("nextDefaultKeyAlias: " + nextDefaultKeyAlias);
+            KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
+                    caCertPublicEncryptionKey, cryptoToken.getSignProviderName());
             catoken.activateNextKeysEcaToken();
             
             cryptoToken.testKeyPair(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
@@ -3987,6 +3993,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     
             // TODO: also add expiry time to CA GUI
             ca.setExpireTime(ECAUtils.getExpiryDate(certificate));
+            
+            // TODO: update geographic region, app/issue permission and SSP family
             
             // create hashedId8 and update subjectDn/certificate id
             // not overwriting id
