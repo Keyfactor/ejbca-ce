@@ -340,18 +340,16 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
 
             // Check that extraCert is in the Database
-            if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
-                if (certinfo == null) {
-                    this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be " +
+            final CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
+            if (WebConfiguration.getRequireAdminCertificateInDatabase() && certinfo == null) {
+                this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be " +
                             "found in the database. Start EJBCA with 'web.reqcertindb=false' to disable this check.";
-                    return false;
-                }
+                return false;
+            }
 
-                if (!isExtraCertActive(certinfo)) {
-                    this.errorMessage = "The certificate attached to the PKI message in the extraCert field is revoked.";
-                    return false;
-                }
+            if (certinfo != null && !isExtraCertActive(certinfo)) {
+                this.errorMessage = "The certificate attached to the PKI message in the extraCert field is revoked.";
+                return false;
             }
 
             // More extraCert verifications
