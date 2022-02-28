@@ -144,8 +144,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<CAData> findAllCitsCa() {
-        final TypedQuery<CAData> query = entityManager.createQuery("SELECT a FROM CAData a where a.subjectdn LIKE :prefix", CAData.class);
-        query.setParameter("prefix", CAInfo.CITS_SUBJECTDN_PREFIX); // to avoid issue with string quotes
+        final TypedQuery<CAData>  query = entityManager.createQuery("SELECT a FROM CAData a where a.subjectDN LIKE :prefix", CAData.class);
+        query.setParameter("prefix", CAInfo.CITS_SUBJECTDN_PREFIX + "%"); // to avoid issue with string quotes
         return query.getResultList();
     }
 
