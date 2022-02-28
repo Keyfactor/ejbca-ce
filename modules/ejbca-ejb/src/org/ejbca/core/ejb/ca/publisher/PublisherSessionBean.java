@@ -386,33 +386,35 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         for (final int id : publisherids) {
             int publishStatus = PublisherConst.STATUS_PENDING;
             BasePublisher publ = getPublisherInternal(id, null, true);
-            if (publ != null && isOcspResponsePublisher(publ)) {
+            if (publ != null) {
                 final String name = getPublisherName(id);
-                // If it should be published directly
-                if (!publ.getOnlyUseQueue()) {
-                    try {
-                        
-                        if (publisherQueueSession.publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
-                            publishStatus = PublisherConst.STATUS_SUCCESS;
-                            logSuccessPublish(admin, name, publishStatus);
+                if (isOcspResponsePublisher(publ)) {
+                    // If it should be published directly
+                    if (!publ.getOnlyUseQueue()) {
+                        try {
+
+                            if (publisherQueueSession.publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
+                                publishStatus = PublisherConst.STATUS_SUCCESS;
+                                logSuccessPublish(admin, name, publishStatus);
+                            }
+                        } catch (PublisherException e) {
+                            logFailPublish(admin, name, e);
+                        } catch (AuditRecordStorageException e) {
+                            log.error("Error when loging audit data ", e);
                         }
-                    } catch (PublisherException e) {
-                        logFailPublish(admin, name, e);
-                    } catch (AuditRecordStorageException e) {
-                        log.error("Error when loging audit data ", e);
                     }
-                }
-                
-                if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
-                    addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
-                    if (log.isTraceEnabled()) {
-                        log.trace("<storeOCSPResponse");
+
+                    if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
+                        addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
+                        if (log.isTraceEnabled()) {
+                            log.trace("<storeOCSPResponse");
+                        }
+                        continue;
                     }
-                    continue;
-                }
-                
-                if (publishStatus != PublisherConst.STATUS_SUCCESS) {
-                    return false;
+
+                    if (publishStatus != PublisherConst.STATUS_SUCCESS) {
+                        return false;
+                    }
                 }
             } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
