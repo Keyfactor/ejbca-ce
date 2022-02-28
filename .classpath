@@ -123,7 +123,6 @@
 	<classpathentry kind="lib" path="lib/batik/xmlgraphics-commons-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/ext/mailapi.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.13.jar"/>
-	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.6.0.jar"/>
@@ -184,7 +183,6 @@
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.35.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-reload4j-1.7.35.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-2.3.9.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
