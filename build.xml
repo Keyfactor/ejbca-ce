@@ -1086,7 +1086,6 @@
                 <exclude unless="edition.is.ee" name="src/java/profilemappings_enterprise.properties"/>
                 <exclude unless="edition.is.ee" name="modules/edition-specific-ee/**"/>
                 <exclude unless="edition.is.ee" name="modules/externalra/**"/>
-                <exclude unless="edition.is.ee" name="modules/externalra-gui/**"/>
                 <exclude unless="edition.is.ee" name="modules/externalra-scep/**"/>
                 <exclude unless="edition.is.ee" name="modules/cmpclient/**"/>
                 <exclude unless="edition.is.ee" name="modules/acme/**"/>
@@ -1638,14 +1637,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 
 	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application (Enterprise Edition Only)" depends="externalra:check,externalra-scep,deprecated:check">
 		<antcall target="jee:deploy-scep-war" />
-	</target>
-
-	<target name="externalra-gui"  if="mod.externalra.exists" depends="deprecated:check,externalra:check" description="Build the EJBCA External RA StandAlone GUI application (Enterprise Edition Only).">
-    	<ant dir="modules" target="externalra-gui"/>
-	</target>
-
-	<target name="externalra-gui-deploy"  if="mod.externalra.exists" description="Deploy the EJBCA External RA StandAlone GUI application (Enterprise Edition Only)." depends="externalra:check, externalra-gui, deprecated:check">
-    	<antcall target="jee:deploy-externalragui-war" />
 	</target>
 
 	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client, deprecated:check">
