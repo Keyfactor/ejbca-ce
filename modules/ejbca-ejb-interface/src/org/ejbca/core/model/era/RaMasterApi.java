@@ -1572,5 +1572,6 @@ public interface RaMasterApi {
     IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
     CertificateExtensionException, CertificateRenewalException;
     
-    byte[] enrollItsCredential(AuthenticationToken authenticationToken, byte[] requestBody) throws AuthorizationDeniedException;
+    byte[] enrollItsCredential(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                                                byte[] requestBody) throws AuthorizationDeniedException;
 }
