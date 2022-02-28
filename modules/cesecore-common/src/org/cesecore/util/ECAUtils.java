@@ -14,6 +14,7 @@ import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.its.jcajce.JcaITSPublicVerificationKey;
+import org.bouncycastle.its.jcajce.JceITSPublicEncryptionKey;
 import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Encrypted;
@@ -24,6 +25,7 @@ import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
 import org.bouncycastle.oer.its.ieee1609dot2.SignedData;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Duration;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicEncryptionKey;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Signature;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.ValidityPeriod;
 import org.bouncycastle.oer.its.template.etsi103097.EtsiTs103097Module;
@@ -59,11 +61,18 @@ public class ECAUtils {
         return generateHash("SHA256", input);
     }
     
-    public static PublicKey getPublicKeyFromCertificate(ITSCertificate certificate) {
+    public static PublicKey getVerificationKeyFromCertificate(ITSCertificate certificate) {
         PublicVerificationKey publicVerificationKey =
                 (PublicVerificationKey) certificate.toASN1Structure()
                     .getToBeSignedCertificate().getVerificationKeyIndicator().getValue();
         return new JcaITSPublicVerificationKey.Builder().build(publicVerificationKey).getKey();
+    }
+    
+    public static PublicKey getEncryptionKeyFromCertificate(ITSCertificate certificate) {
+        PublicEncryptionKey publicEncryptionKey =
+                (PublicEncryptionKey) certificate.toASN1Structure()
+                    .getToBeSignedCertificate().getEncryptionKey();
+        return new JceITSPublicEncryptionKey.Builder().build(publicEncryptionKey).getKey();
     }
     
     public static byte[] generateHash(String algorithm, byte[] input) {
