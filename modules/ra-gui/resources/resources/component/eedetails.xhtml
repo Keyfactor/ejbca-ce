@@ -519,7 +519,7 @@
             <h:outputText id="revokeEEApprovalReq" value="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds}"
                           rendered="#{cc.attrs.raEndEntityDetails.revokeEndEntityApprovalRequestIds != ''}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-		<h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
                 <h:commandButton action="#{raEndEntityBean.revokeCertificatesAndDeleteEndEntity}" value="#{msg.endentity_page_command_edit_revoke_delete}"
