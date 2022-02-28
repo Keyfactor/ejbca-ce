@@ -387,8 +387,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             int publishStatus = PublisherConst.STATUS_PENDING;
             BasePublisher publ = getPublisherInternal(id, null, true);
             if (publ != null) {
-                final String name = getPublisherName(id);
                 if (isOcspResponsePublisher(publ)) {
+                    final String name = getPublisherName(id);
                     // If it should be published directly
                     if (!publ.getOnlyUseQueue()) {
                         try {
