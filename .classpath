@@ -72,14 +72,12 @@
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-test"/>
 	<classpathentry kind="src" path="modules/est/src-war"/>
-	<classpathentry kind="src" path="modules/externalra-gui/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
 	<classpathentry kind="src" path="modules/externalra/src"/>
 	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
-	<classpathentry kind="src" path="modules/oldlogexport-cli/src"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-cli"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-ejb"/>
