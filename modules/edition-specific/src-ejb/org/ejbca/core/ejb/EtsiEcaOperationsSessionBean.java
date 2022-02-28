@@ -15,7 +15,8 @@ import org.ejbca.core.ejb.its.EtsiEcaOperationsSessionRemote;
 public class EtsiEcaOperationsSessionBean implements EtsiEcaOperationsSessionLocal, EtsiEcaOperationsSessionRemote {
 
     @Override
-    public byte[] enrollItsCredential(AuthenticationToken authenticationToken, byte[] requestBody) throws AuthorizationDeniedException {
+    public byte[] enrollItsCredential(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                            byte[] requestBody) throws AuthorizationDeniedException {
         throw new UnsupportedOperationException("ECA operations are only supported in EJBCA Enterprise");
     }
 
