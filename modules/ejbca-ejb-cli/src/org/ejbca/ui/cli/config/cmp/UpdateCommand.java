@@ -21,6 +21,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -74,11 +75,19 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         log.info("Configuration was: " + key + "=" + getCmpConfiguration().getValue(key, alias));
         //Check before updating defaultCA 
         if (key.equals(alias + ".defaultca")){
+            String defaultCa;
                 if (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(value)) {
-                    String defaultCa;
                     try {
                         defaultCa = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), value).getSubjectDN();
                     } catch (AuthorizationDeniedException e) {
+                        log.error("Permission to update CMP Default CA denied");
+                        throw new IllegalStateException(e);
+                    }
+                    getCmpConfiguration().setValue(key, defaultCa, alias);
+                }else if (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(CertTools.getPartFromDN(value, "CN"))){
+                    try {
+                        defaultCa = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),CertTools.getPartFromDN(value, "CN")).getSubjectDN();
+                   } catch (AuthorizationDeniedException e) {
                         log.error("Permission to update CMP Default CA denied");
                         throw new IllegalStateException(e);
                     }
