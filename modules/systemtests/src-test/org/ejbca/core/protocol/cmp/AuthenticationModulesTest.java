@@ -21,6 +21,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -134,7 +135,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * This will test the different cmp authentication modules.
@@ -384,7 +384,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         }
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testCrmfReqFailWhenCertRequiredButNoCertInDb() throws Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
@@ -427,12 +427,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
             final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(msg);
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, testUserDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
-                    .getValue().intValue());
-            fail();
+            checkCmpFailMessage(resp,  "The certificate attached to the PKIMessage in the extraCert field could not be " +
+                    "found in the database. Start EJBCA with 'web.reqcertindb=false' to disable this check.", PKIBody.TYPE_ERROR,
+                    0, PKIFailureInfo.badRequest);
         } finally {
             removeAuthenticationToken(admToken, admCert, testUsername); // also removes testUsername
             this.internalCertStoreSession.removeCertificate(fingerprint);
