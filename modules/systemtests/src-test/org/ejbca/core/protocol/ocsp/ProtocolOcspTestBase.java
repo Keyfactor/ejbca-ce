@@ -158,7 +158,7 @@ public abstract class ProtocolOcspTestBase {
      */
     protected void test04OcspUnknown() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test04OcspUnknown()");
-        loadUserCert();
+        loadUserCert(this.caid);
         // An OCSP request for an unknown certificate (not exist in db)
         this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1"));
         log.trace("<test04OcspUnknown()");
@@ -172,7 +172,7 @@ public abstract class ProtocolOcspTestBase {
      */
     protected void test05OcspUnknownCA() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test05OcspUnknownCA()");
-        loadUserCert();
+        loadUserCert(this.caid);
         // An OCSP request for a certificate from an unknwon CA
         this.helper.verifyStatusUnknown( this.caid, this.unknowncacert, BigInteger.valueOf(1));
         log.trace("<test05OcspUnknownCA()");
@@ -180,14 +180,14 @@ public abstract class ProtocolOcspTestBase {
 
     protected void testOcspInternalError() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">testocspInternalError()");
-        loadUserCert();
+        loadUserCert(this.caid);
         // An OCSP request for a certificate from an unknwon CA
         this.helper.verifyResponseInternalError( this.caid, this.unknowncacert, BigInteger.valueOf(1));
         log.trace("<testocspInternalError()");
     }
 
     protected void test06OcspSendWrongContentType() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert();
+        loadUserCert(this.caid);
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), unknowncacert, BigInteger.valueOf(1)));
@@ -216,7 +216,7 @@ public abstract class ProtocolOcspTestBase {
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), unknowncacert, BigInteger.valueOf(1)));
 
         // Get user and ocspTestCert that we know...
-        loadUserCert();
+        loadUserCert(this.caid);
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         Extension[] extensions = new Extension[1];
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
@@ -251,7 +251,7 @@ public abstract class ProtocolOcspTestBase {
      * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
      */
     protected void test11MalformedRequest() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert();
+        loadUserCert(this.caid);
         OCSPReqBuilder gen = new OCSPReqBuilder();
         // Add 101 OCSP requests.. the Servlet will consider a request with more
         // than 100 malformed..
@@ -273,7 +273,7 @@ public abstract class ProtocolOcspTestBase {
 
     protected void test12CorruptRequests() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test12CorruptRequests()");
-        loadUserCert();
+        loadUserCert(this.caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
@@ -343,7 +343,7 @@ public abstract class ProtocolOcspTestBase {
      * Just verify that a simple GET works.
      */
     protected void test13GetRequests() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert();
+        loadUserCert(this.caid);
         // See if the OCSP Servlet can read non-encoded requests
         final String plainReq = httpReqPath
                 + '/'
@@ -372,7 +372,7 @@ public abstract class ProtocolOcspTestBase {
         assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        loadUserCert();
+        loadUserCert(this.caid);
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.build();
         BasicOCSPResp brep = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
@@ -416,7 +416,7 @@ public abstract class ProtocolOcspTestBase {
      * support this as long as the total request URL is smaller than 256 bytes.
      */
     protected void test15MultipleGetRequests() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert();
+        loadUserCert(this.caid);
         this.helper.reloadKeys();
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -485,7 +485,7 @@ public abstract class ProtocolOcspTestBase {
         
     }
 
-    protected void loadUserCert() throws Exception {
+    protected void loadUserCert(int caid) throws Exception {
         ocspTestCert = getActiveTestCert();
         cacert = getCaCert(ocspTestCert);
     }
