@@ -3962,18 +3962,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             PublicKey caCertPublicEncryptionKey = ECAUtils.getEncryptionKeyFromCertificate(certificate);
             
             String nextVerificationKeyAlias = catoken.getNextEcaSignKeyAlias();
-            log.info("nextVerificationKeyAlias: " + nextVerificationKeyAlias);
+            log.debug("nextVerificationKeyAlias: " + nextVerificationKeyAlias);
             KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
                     caCertPublicVerificationKey, cryptoToken.getSignProviderName());
             
             String nextDefaultKeyAlias = catoken.getNextEcaDefaultKeyAlias();
-            log.info("nextDefaultKeyAlias: " + nextDefaultKeyAlias);
-            KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
+            log.debug("nextDefaultKeyAlias: " + nextDefaultKeyAlias);
+            KeyTools.testKey(cryptoToken.getPrivateKey(nextDefaultKeyAlias), 
                     caCertPublicEncryptionKey, cryptoToken.getSignProviderName());
             catoken.activateNextKeysEcaToken();
-            
-            cryptoToken.testKeyPair(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-            cryptoToken.testKeyPair(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
             
             // Activated the next signing key(s) so generate audit log
             logAuditEvent(
