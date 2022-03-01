@@ -96,6 +96,8 @@ import org.junit.After;
  */
 public abstract class ProtocolOcspTestBase {
 
+    private static final String PKIX_OCSP_NONCE = "123456789";
+
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
     protected static final String CERTIFICATE_USERNAME = "ocspTest";
@@ -156,7 +158,7 @@ public abstract class ProtocolOcspTestBase {
      */
     protected void test04OcspUnknown() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test04OcspUnknown()");
-        loadUserCert(this.caid);
+        loadUserCert();
         // An OCSP request for an unknown certificate (not exist in db)
         this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1"));
         log.trace("<test04OcspUnknown()");
@@ -170,25 +172,25 @@ public abstract class ProtocolOcspTestBase {
      */
     protected void test05OcspUnknownCA() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test05OcspUnknownCA()");
-        loadUserCert(this.caid);
+        loadUserCert();
         // An OCSP request for a certificate from an unknwon CA
-        this.helper.verifyStatusUnknown( this.caid, this.unknowncacert, new BigInteger("1"));
+        this.helper.verifyStatusUnknown( this.caid, this.unknowncacert, BigInteger.valueOf(1));
         log.trace("<test05OcspUnknownCA()");
     }
 
     protected void testOcspInternalError() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">testocspInternalError()");
-        loadUserCert(this.caid);
+        loadUserCert();
         // An OCSP request for a certificate from an unknwon CA
-        this.helper.verifyResponseInternalError( this.caid, this.unknowncacert, new BigInteger("1"));
+        this.helper.verifyResponseInternalError( this.caid, this.unknowncacert, BigInteger.valueOf(1));
         log.trace("<testocspInternalError()");
     }
 
     protected void test06OcspSendWrongContentType() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert(this.caid);
+        loadUserCert();
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), unknowncacert, new BigInteger("1")));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), unknowncacert, BigInteger.valueOf(1)));
         OCSPReq req = gen.build();
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
@@ -211,13 +213,13 @@ public abstract class ProtocolOcspTestBase {
         //loadUserCert(this.caid);
         // An OCSP request for a certificate from an unknown CA
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), unknowncacert, new BigInteger("1")));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), unknowncacert, BigInteger.valueOf(1)));
 
         // Get user and ocspTestCert that we know...
-        loadUserCert(this.caid);
+        loadUserCert();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
         
         OCSPReq req = gen.build();
@@ -228,7 +230,7 @@ public abstract class ProtocolOcspTestBase {
         SingleResp singleResp1 = singleResps[0];
 
         CertificateID certId = singleResp1.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), BigInteger.valueOf(1));
         Object status = singleResp1.getCertStatus();
         assertTrue("Status is not Unknown", status instanceof UnknownStatus);
 
@@ -249,7 +251,7 @@ public abstract class ProtocolOcspTestBase {
      * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
      */
     protected void test11MalformedRequest() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert(this.caid);
+        loadUserCert();
         OCSPReqBuilder gen = new OCSPReqBuilder();
         // Add 101 OCSP requests.. the Servlet will consider a request with more
         // than 100 malformed..
@@ -261,22 +263,22 @@ public abstract class ProtocolOcspTestBase {
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         }
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         // Send the request and receive null
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPRespBuilder.MALFORMED_REQUEST, 200);
+        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), PKIX_OCSP_NONCE, OCSPRespBuilder.MALFORMED_REQUEST, 200);
         assertNull("No SingleResps should be returned.", singleResps);
     }
 
     protected void test12CorruptRequests() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test12CorruptRequests()");
-        loadUserCert(this.caid);
+        loadUserCert();
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
 
@@ -288,7 +290,7 @@ public abstract class ProtocolOcspTestBase {
         byte[] bytes = req.getEncoded();
         // Switch the first byte, now it's a really corrupted request
         bytes[0] = 0x44;
-        SingleResp[] singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespBuilder.MALFORMED_REQUEST, 200); // error
+        SingleResp[] singleResps = helper.sendOCSPPost(bytes, PKIX_OCSP_NONCE, OCSPRespBuilder.MALFORMED_REQUEST, 200); // error
         // code
         // 1
         // means
@@ -302,7 +304,7 @@ public abstract class ProtocolOcspTestBase {
         // bytes = Arrays.copyOf(orgbytes, orgbytes.length-1); only works in
         // Java 6
         bytes = ArrayUtils.remove(orgbytes, orgbytes.length - 1);
-        singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespBuilder.MALFORMED_REQUEST, 200); // error
+        singleResps = helper.sendOCSPPost(bytes, PKIX_OCSP_NONCE, OCSPRespBuilder.MALFORMED_REQUEST, 200); // error
         // code
         // 1
         // means
@@ -315,7 +317,7 @@ public abstract class ProtocolOcspTestBase {
         // more than 1 million bytes
         // bytes = Arrays.copyOf(orgbytes, 1000010); only works in Java 6
         bytes = ArrayUtils.addAll(orgbytes, new byte[1000010]);
-        singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespBuilder.MALFORMED_REQUEST, 200); // //
+        singleResps = helper.sendOCSPPost(bytes, PKIX_OCSP_NONCE, OCSPRespBuilder.MALFORMED_REQUEST, 200); // //
         // error
         // code
         // 1
@@ -331,7 +333,7 @@ public abstract class ProtocolOcspTestBase {
         gen = new OCSPReqBuilder();
         req = gen.build();
         bytes = req.getEncoded();
-        singleResps = helper.sendOCSPPost(bytes, "123456789", 1, 200); //
+        singleResps = helper.sendOCSPPost(bytes, PKIX_OCSP_NONCE, 1, 200); //
         assertNull("SingleResps should be null.", singleResps);
 
         log.trace("<test12CorruptRequests()");
@@ -341,7 +343,7 @@ public abstract class ProtocolOcspTestBase {
      * Just verify that a simple GET works.
      */
     protected void test13GetRequests() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert(this.caid);
+        loadUserCert();
         // See if the OCSP Servlet can read non-encoded requests
         final String plainReq = httpReqPath
                 + '/'
@@ -370,7 +372,7 @@ public abstract class ProtocolOcspTestBase {
         assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        loadUserCert(this.caid);
+        loadUserCert();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.build();
         BasicOCSPResp brep = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
@@ -414,12 +416,12 @@ public abstract class ProtocolOcspTestBase {
      * support this as long as the total request URL is smaller than 256 bytes.
      */
     protected void test15MultipleGetRequests() throws Exception { // NOPMD, this is not a test class itself
-        loadUserCert(this.caid);
+        loadUserCert();
         this.helper.reloadKeys();
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1")));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, BigInteger.valueOf(1)));
         OCSPReq req = gen.build();
         BasicOCSPResp brep = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         SingleResp[] singleResps = brep.getResponses();  
@@ -483,7 +485,7 @@ public abstract class ProtocolOcspTestBase {
         
     }
 
-    protected void loadUserCert(int caid) throws Exception {
+    protected void loadUserCert() throws Exception {
         ocspTestCert = getActiveTestCert();
         cacert = getCaCert(ocspTestCert);
     }
@@ -524,15 +526,14 @@ public abstract class ProtocolOcspTestBase {
 
     /** Return the latest Root CA certificate that issued the provided certificate. */
     protected X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert)));
+        Collection<Certificate> certs = EJBTools.unwrapCertCollection(
+                certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert)));
         assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
         X509Certificate latestCaCertificate = null;
         for (final Certificate current : certs) {
             if (current instanceof X509Certificate) {
                 final X509Certificate currentCaCertificate = (X509Certificate) current;
-                if (latestCaCertificate == null) {
-                    latestCaCertificate = currentCaCertificate;
-                } else if (currentCaCertificate.getNotBefore().after(latestCaCertificate.getNotBefore())) {
+                if (latestCaCertificate == null || currentCaCertificate.getNotBefore().after(latestCaCertificate.getNotBefore())) {
                     latestCaCertificate = currentCaCertificate;
                 }
             }
