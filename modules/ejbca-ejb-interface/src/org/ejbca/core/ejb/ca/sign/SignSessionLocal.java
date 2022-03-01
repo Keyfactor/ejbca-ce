@@ -240,10 +240,32 @@ public interface SignSessionLocal extends SignSession {
      byte[] signPayload(byte[] data, final int signingCaId)
              throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException;
 
+     /**
+      * Creates EC or enrollment credential.
+      * 
+      * @param admin
+      * @param certificateBuilder - populated TBSCertificateBuilder as per requestedSubjectAttributes
+      * @param certifcateId - requested certifcateId as per requestedSubjectAttributes
+      * @param verificationKey - of enrolling ITS-S in request publicKeys object
+      * @param eca
+      * @param endEntity - will be used later for persistence and certificateCreateSession 
+      * @return
+      * @throws AuthorizationDeniedException
+      * @throws CryptoTokenOfflineException
+      */
      ITSCertificate createEnrollCredential(AuthenticationToken admin, ToBeSignedCertificate.Builder certificateBuilder,
              CertificateId certifcateId, PublicVerificationKey verificationKey, 
              ECA eca, EndEntityInformation endEntity) throws AuthorizationDeniedException, CryptoTokenOfflineException;
 
-    byte[] signItsPayload(byte[] data, ECA eca)
+     /**
+      * Signs data as per IEEE 1609.2 section 5.3.1 by a crypto-token corresponding to an ECA.
+      *  
+      * @param data
+      * @param eca
+      * @return
+      * @throws CryptoTokenOfflineException
+      * @throws SignRequestSignatureException
+      */
+     byte[] signItsPayload(byte[] data, ECA eca)
             throws CryptoTokenOfflineException, SignRequestSignatureException;
 }
