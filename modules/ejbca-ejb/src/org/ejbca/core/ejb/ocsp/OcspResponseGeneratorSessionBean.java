@@ -1813,7 +1813,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                         // CA/B Forum Baseline Requirements 1.7.1+ require that reason code is omitted when it is Unspecified.
                         // See section 7.3 and 7.2.2 in https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.7.1.pdf
-                        // Since EJBCA 7.9 this is optional, enabled by default. See ECA-10571 for more info.
+                        // Since EJBCA 7.9 this is optional, enabled by default per key binding. See ECA-10571 for more info.
                         final CRLReason crlReason;
                         final OcspKeyBinding currentKBEntry = ocspSigningCacheEntry.getOcspKeyBinding();
                         
