@@ -1,12 +1,6 @@
 This directory contains extra scripts that are useful for some special functions.
 
-CMP Monitoring
---------------
-check_cmpv2 is a Python script for Nagios monitoring of the CMP server. 
-It was contributed by Fabien Hochstrasser and is provided "as is".
-
-For monitoring it sends a real CMP message, certConf, which does not perform any actual operation on the server
-and parses the response to see that the CMP server is actually up and responding to requests.
+Helper scripts are located in GitHub: https://github.com/primekeydevs/ejbcatools
 
 Code signing:
 ------------
@@ -42,21 +36,3 @@ sign-verify.sh - used to sign a file. Creates a signature file, that can later b
 
   * * * * *   root        /usr/local/ejbca/bin/extra/cronverify.sh  >/dev/null
   -----
-
-  
-csv_to_endentity.sh
--------------------
-
-This is a small utility script that can be used for creating end entities in
-EJBCA using a CSV file. Help about script can be obtained by running it without
-parameters, or with -h.
-
-Information taken from CSV includes end entity name, CN, and IP address. The IP
-address is put into ipaddress subjectAltName. A couple of changes that should be
-made prior to running the script should usually include:
-
-- Changing the default values that are passed to bin/ejbca.sh ra addendentity command
-  (look for the "Set-up default values for adding the end entity." line).
-- If the CSV contains different information that outlined above, the script will
-  required some tweaking of CSV line validation, fields read from CSV, and
-  arguments passed to bin/ejbca.sh commmand.
