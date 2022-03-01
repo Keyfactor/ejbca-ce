@@ -104,9 +104,10 @@ import org.cesecore.keys.token.p11ng.CK_CP5_INITIALIZE_PARAMS;
 import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
 import org.cesecore.keys.token.p11ng.PToPBackupObj;
 import org.cesecore.keys.token.p11ng.TokenEntry;
+import org.cesecore.keys.token.p11ng.jacknji11.CP5Constants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
-import org.pkcs11.jacknji11.CEi;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKC;
 import org.pkcs11.jacknji11.CKK;
@@ -126,7 +127,7 @@ public class CryptokiDevice {
     /** Logger for this class. */
     private static final Logger LOG = Logger.getLogger(CryptokiDevice.class);
 
-    private final CEi c;
+    private final ExtendedCryptokiE c;
     private final JackNJI11Provider provider;
     private final String libName;
     private final ArrayList<Slot> slots = new ArrayList<>();
@@ -136,7 +137,7 @@ public class CryptokiDevice {
     private static final int SIGN_HASH_SIZE = 32;
     private static final int MAX_CHAIN_LENGTH = 100;
     
-    CryptokiDevice(final CEi c, final boolean withCache, final JackNJI11Provider provider, final String libName) {
+    CryptokiDevice(final ExtendedCryptokiE c, final boolean withCache, final JackNJI11Provider provider, final String libName) {
         if (c == null) {
             throw new IllegalArgumentException("c must not be null");
         }
@@ -236,7 +237,7 @@ public class CryptokiDevice {
             return libName;
         }
 
-        final protected CEi getCryptoki() {
+        final protected ExtendedCryptokiE getCryptoki() {
             return c;
         }
         
@@ -968,7 +969,7 @@ public class CryptokiDevice {
                 params.authData = getAuthData(kakPublicKey, selectedPaddingScheme);
                 params.bAssigned = KEY_AUTHORIZATION_ASSIGNED;
                 params.write(); // Write data before passing structure to function
-                CKM mechanism = new CKM(CKM.CKM_CP5_INITIALIZE, params.getPointer(), params.size());
+                CKM mechanism = new CKM(CP5Constants.CKM_CP5_INITIALIZE, params.getPointer(), params.size());
                 
                 final byte[] initSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
 
@@ -994,7 +995,7 @@ public class CryptokiDevice {
                 CK_CP5_AUTHORIZE_PARAMS params = new CK_CP5_AUTHORIZE_PARAMS();
                 params.ulCount = authorizedoperationCount;
                 params.write(); // Write data before passing structure to function
-                CKM mechanism = new CKM(CKM.CKM_CP5_AUTHORIZE, params.getPointer(), params.size());
+                CKM mechanism = new CKM(CP5Constants.CKM_CP5_AUTHORIZE, params.getPointer(), params.size());
                 
                 final byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
@@ -1020,7 +1021,7 @@ public class CryptokiDevice {
                 CK_CP5_CHANGEAUTHDATA_PARAMS params = new CK_CP5_CHANGEAUTHDATA_PARAMS();
                 params.authData = getAuthData(kakPublicKey, selectedPaddingScheme);
                 params.write(); // Write data before passing structure to function
-                CKM mechanism = new CKM(CKM.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
+                CKM mechanism = new CKM(CP5Constants.CKM_CP5_CHANGEAUTHDATA, params.getPointer(), params.size());
                 
                 final byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
@@ -1379,9 +1380,9 @@ public class CryptokiDevice {
             authData.pPublicExponent = kakPublicKeyExponentPointer;
 
             if ("PSS".equals(selectedPaddingScheme)) {
-                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
+                authData.protocol = (byte) CP5Constants.CP5_KEY_AUTH_PROT_RSA_PSS_SHA256;
             } else {
-                authData.protocol = (byte) CKM.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
+                authData.protocol = (byte) CP5Constants.CP5_KEY_AUTH_PROT_RSA_PKCS1_5_SHA256;
             }
             return authData;
         }
