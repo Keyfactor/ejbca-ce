@@ -3011,6 +3011,9 @@ public abstract class CertTools {
      */
     public static boolean verify(X509Certificate certificate, Collection<X509Certificate> caCertChain, Date date, PKIXCertPathChecker... pkixCertPathCheckers)
             throws CertPathValidatorException {
+        if (caCertChain == null || caCertChain.isEmpty()) {
+            throw new CertPathValidatorException("Chain is missing.");
+        }
         try {
             ArrayList<X509Certificate> certlist = new ArrayList<>();
             // Create CertPath
