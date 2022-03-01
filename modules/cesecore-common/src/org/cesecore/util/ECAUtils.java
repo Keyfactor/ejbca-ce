@@ -61,6 +61,12 @@ public class ECAUtils {
         return generateHash("SHA256", input);
     }
     
+    public static byte[] caculateRequestHash(byte[] input) {
+        byte result[] = new byte[16];
+        System.arraycopy(generateHash("SHA256", input), 0, result, 0, 16);
+        return result;
+    }
+    
     public static PublicKey getVerificationKeyFromCertificate(ITSCertificate certificate) {
         PublicVerificationKey publicVerificationKey =
                 (PublicVerificationKey) certificate.toASN1Structure()
