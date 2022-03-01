@@ -232,7 +232,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test04OcspUnknown() throws Exception {
-        loadUserCert(caid);
+        loadUserCert();
         super.test04OcspUnknown();
     }
 
@@ -259,7 +259,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private void testOcspUnauthorized() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">testocspInternalError()");
-        loadUserCert(this.caid);
+        loadUserCert();
         // An OCSP request for a certificate from an unknwon CA
         this.helper.verifyResponseUnauthorized(this.caid, this.unknowncacert, new BigInteger("1"));
         log.trace("<testocspInternalError()");
