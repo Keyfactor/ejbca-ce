@@ -815,6 +815,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (isNotBlank(scepConfig.getIntuneAuthority(alias))) {
                 builder.withAzureLoginUrl(scepConfig.getIntuneAuthority(alias));
             }
+            if (isNotBlank(scepConfig.getIntuneGraphResourceUrl(alias))) {
+                builder.withGraphResourceUrl(scepConfig.getIntuneGraphResourceUrl(alias));
+            }
+            if (isNotBlank(scepConfig.getIntuneGraphApiVersion(alias))) {
+                builder.withGraphResourceUrl(scepConfig.getIntuneGraphApiVersion(alias));
+            }
 
             return builder.build();
         } catch (IllegalArgumentException e) {
