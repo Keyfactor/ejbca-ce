@@ -288,11 +288,7 @@ public class RestResourceSystemTestBase {
      *
      * @see org.jboss.resteasy.client.ClientRequest
      */
-    WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        return newRequest(uriPath, getBaseUrl());
-    }
-    
-    WebTarget newRequest(final String uriPath, final String basePath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {    
      // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -308,7 +304,7 @@ public class RestResourceSystemTestBase {
         ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(client);
         ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
         Client newClient = builder.httpEngine(engine).build();
-        WebTarget webTarget = newClient.target(basePath +uriPath);
+        WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
         
         return webTarget;
     }
@@ -335,7 +331,7 @@ public class RestResourceSystemTestBase {
         return webTarget;
     }
 
-    public static String getBaseUrl() {
+    private static String getBaseUrl() {
         return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
     }
 
