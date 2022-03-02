@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -112,10 +113,9 @@ public class IntuneRestApi {
 
     Logger logger = Logger.getLogger(getClass());
 
-    private final static String GRAPH_URL = "https://graph.microsoft.com/v1.0/servicePrincipals/appId=0000000a-0000-0000-c000-000000000000/endpoints";
-    private final static String GRAPH_SCOPE = "https://graph.microsoft.com/.default";
+    private static final String DEFAULT_GRAPH_VERSION = "v1.0";
+    private static final String DEFAULT_GRAPH_URL = "https://graph.microsoft.com";
     private static final String INTUNE_API_VERSION = "5019-05-05";
-
     // Not a typo. There are *two* forward slashes here.
     private final static String INTUNE_SCOPE = "https://api.manage.microsoft.com//.default";
 
@@ -185,6 +185,8 @@ public class IntuneRestApi {
     private String pkiConnectorUrl;
     private String scepRequestValidationUrl;
     private AzureAuthenticator.BearerToken lastToken = null; // set before API is called and cached
+    private String graphResourceUrl;
+    private String graphResourceVersion;
 
     /**
      * It's expected that clients will use the Builder class to build this.
@@ -192,11 +194,16 @@ public class IntuneRestApi {
      * @param azureCredentials object used to get a bearer token for Azure authentication
      * @param clientIdAndVersion a string passed to Azure for use in tracing and logging
      * @param client Client used to send HTTP requests to/from Azure
+     * @param graphResourceVersion 
+     * @param graphResourceUrl 
      */
-    IntuneRestApi(final AzureAuthenticator azureCredentials, final String clientIdAndVersion, HttpClientWithProxySupport client) {
+    IntuneRestApi(final AzureAuthenticator azureCredentials, final String clientIdAndVersion, HttpClientWithProxySupport client,
+            String graphResourceUrl, String graphResourceVersion) {
         this.azureCredentials = azureCredentials;
         this.client = client;
         this.clientIdAndVersion = clientIdAndVersion;
+        this.graphResourceUrl = graphResourceUrl;
+        this.graphResourceVersion = graphResourceVersion;
         logger.info(
                 "Intune client created.  Credentials = " + azureCredentials + " clientIdAndVersion = " + clientIdAndVersion + " client = " + client);
     }
@@ -211,19 +218,23 @@ public class IntuneRestApi {
             return;
         }
 
-        final AzureAuthenticator.BearerToken token = azureCredentials.getBearerTokenForResource(GRAPH_SCOPE);
+        String graphScope = new URL(new URL(graphResourceUrl), "/.default").toString();
+        final AzureAuthenticator.BearerToken token = azureCredentials.getBearerTokenForResource(graphScope);
+        
+        String graphQueryUrl = (graphResourceUrl.endsWith("/") ? graphResourceUrl : graphResourceUrl + "/") + graphResourceVersion
+                + "/servicePrincipals/appId=0000000a-0000-0000-c000-000000000000/endpoints";
 
         // get the URL for intune by querying graph API
-        logger.debug("Getting Intune endpoint URLs from Microsoft graph " + GRAPH_URL);
         try (CloseableHttpClient httpClient = client.getClient()) {
-            final HttpGet request = client.getGet(GRAPH_URL);
+            logger.debug("Getting Intune endpoint URLs from Microsoft graph " + graphQueryUrl);
+            final HttpGet request = client.getGet(graphQueryUrl);
 
             request.addHeader("Authorization", "Bearer " + token.getToken());
             request.addHeader("client-request-id", getRequestId());
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 logger.debug("Graph response:" + response.getStatusLine());
 
-                throwOnFailure(GRAPH_URL, response);
+                throwOnFailure(graphQueryUrl, response);
                 final JSONObject servicePrincipals = toJson(response);
                 final JSONArray servicePrincipalList = (JSONArray) servicePrincipals.get("value");
                 for (final Object o : servicePrincipalList) {
@@ -566,6 +577,8 @@ public class IntuneRestApi {
         private String azureLoginUrl = AzureAuthenticator.DEFAULT_AZURE_LOGIN_URL;
         private PrivateKey clientKey = null;
         private X509Certificate clientCertificate = null;
+        private String graphResourceUrl = DEFAULT_GRAPH_URL;
+        private String graphResourceVersion = DEFAULT_GRAPH_VERSION;
 
         /**
          * Create a builder for constructing an IntuneRestApi.  These fields are always needed.  
@@ -609,8 +622,18 @@ public class IntuneRestApi {
                 credentials = new AzureCertificateAuthenticator(azureLoginUrl, tenantId, clientId, clientCertificate, clientKey, client);
             }
 
-            return new IntuneRestApi(credentials, clientIdAndVersion, client);
+            return new IntuneRestApi(credentials, clientIdAndVersion, client, graphResourceUrl, graphResourceVersion);
         };
+
+        public Builder withGraphResourceUrl(String graphResourceUrl) {
+            this.graphResourceUrl = graphResourceUrl;
+            return this;
+        }
+
+        public Builder withGraphResourceVersion(String graphResourceVersion) {
+            this.graphResourceVersion = graphResourceVersion;
+            return this;
+        }
 
         public Builder withProxyPassword(String proxyPassword) {
             this.proxyPassword = proxyPassword;
