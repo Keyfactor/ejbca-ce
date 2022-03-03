@@ -218,10 +218,14 @@ public class IntuneRestApi {
             return;
         }
 
-        String graphScope = new URL(new URL(graphResourceUrl), "/.default").toString();
+        String graphResourceUrlWithProtocol = graphResourceUrl;
+        if (!graphResourceUrlWithProtocol.startsWith("http:") && !graphResourceUrlWithProtocol.startsWith("https:")) {
+            graphResourceUrlWithProtocol = "https://" + graphResourceUrl;
+        }
+        String graphScope = new URL(new URL(graphResourceUrlWithProtocol), "/.default").toString();
         final AzureAuthenticator.BearerToken token = azureCredentials.getBearerTokenForResource(graphScope);
         
-        String graphQueryUrl = (graphResourceUrl.endsWith("/") ? graphResourceUrl : graphResourceUrl + "/") + graphResourceVersion
+        String graphQueryUrl = (graphResourceUrlWithProtocol.endsWith("/") ? graphResourceUrlWithProtocol : graphResourceUrlWithProtocol + "/") + graphResourceVersion
                 + "/servicePrincipals/appId=0000000a-0000-0000-c000-000000000000/endpoints";
 
         // get the URL for intune by querying graph API
