@@ -21,6 +21,7 @@ import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Encrypted;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Signed;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
 import org.bouncycastle.oer.its.ieee1609dot2.EncryptedData;
+import org.bouncycastle.oer.its.ieee1609dot2.HashedData;
 import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
 import org.bouncycastle.oer.its.ieee1609dot2.SignedData;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Duration;
@@ -148,6 +149,22 @@ public class ECAUtils {
         }
     }
     
+    public static SignedData parseOerEncodedWrappedSignedExtenalData(byte[] oerEncodedSignedExtData) {
+        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedExtData));
+        try {
+            Ieee1609Dot2Content content = EtsiTs103097Data_Signed.getInstance(
+                    oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_SignedExternalPayload.build())).getContent();
+            if (content.getChoice() != Ieee1609Dot2Content.signedData)
+            {
+                throw new IllegalStateException(
+                        "EtsiTs103097Data-SignedExternalPayload did not have signed data content");
+            }
+            return SignedData.getInstance(content.getContent());
+        } catch (IOException e) {
+            throw new IllegalStateException("Wrapped SignedExternalPayload is malformed: " + e);
+        }
+    }
+    
     public static EncryptedData parseOerEncodedWrappedEncryptedData(byte[] oerEncodedEncryptedData) {
         OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedEncryptedData));
         try {
@@ -220,7 +237,6 @@ public class ECAUtils {
         
     }
     
-    
     public static ITSCertificate parseItsCertificate(byte[] encodedCertificate) {
         if(encodedCertificate==null) {
             return null;
@@ -234,6 +250,19 @@ public class ECAUtils {
             throw new IllegalStateException("Malformed encoded certificate bytes.");
         }
         return new ITSCertificate(content);
+    }
+
+    public static boolean verifyHashedData(byte[] marshalledAtRequest, HashedData extDataHash) {
+        byte[] hashResult = null;
+        if(extDataHash.getChoice()==HashedData.sha256HashedData) {
+            hashResult = generateHash("SHA256", marshalledAtRequest);
+        } else if(extDataHash.getChoice()==HashedData.sha384HashedData) {
+            hashResult = generateHash("SHA384", marshalledAtRequest);
+        } else {
+            return false;
+        }
+        return Hex.toHexString(hashResult).equalsIgnoreCase(
+                Hex.toHexString(((DEROctetString)extDataHash.getValue()).getOctets()));
     }
     
 }
