@@ -193,7 +193,7 @@ public class ECAUtils {
     public static Date getExpiryDate(ValidityPeriod validityPeriod) {
         long validity = getValidityInSeconds(validityPeriod);
         long startTime = validityPeriod.getTime32().toUnixMillis();
-        return new Date(startTime + validity);
+        return new Date(startTime + validity*1000);
     }
     
     public static long getValidityInSeconds(ValidityPeriod validity) {
