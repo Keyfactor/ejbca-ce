@@ -58,4 +58,44 @@ public class IntuneRestApiTest {
         intune.downloadRevocationRequests(50, null);
     }
 
+    @Test
+    public void canSpecifyResourceUrl() throws IOException, AzureException {
+        assumeNotNull(System.getProperty("CURRENT_INTUNE_SECRET"));
+
+        String tenantId = "8375a5cc-74ce-45e8-abc1-00a87441a554";
+        String applicationId = "c002d28b-f0de-4f59-82dd-f68df79fbf5b";
+        String secret = System.getProperty("CURRENT_INTUNE_SECRET");
+
+        Builder builder = new IntuneRestApi.Builder(tenantId, applicationId, "unittest");
+        IntuneRestApi intune = builder.withClientSecret(secret).withGraphResourceUrl("graph.microsoft.com").withGraphResourceVersion("v1.0").build();
+        intune.downloadRevocationRequests(50, null);
+    }
+
+    @Test
+    public void canSpecifyResourceUrlWithProtocol() throws IOException, AzureException {
+        assumeNotNull(System.getProperty("CURRENT_INTUNE_SECRET"));
+
+        String tenantId = "8375a5cc-74ce-45e8-abc1-00a87441a554";
+        String applicationId = "c002d28b-f0de-4f59-82dd-f68df79fbf5b";
+        String secret = System.getProperty("CURRENT_INTUNE_SECRET");
+
+        Builder builder = new IntuneRestApi.Builder(tenantId, applicationId, "unittest");
+        IntuneRestApi intune = builder.withClientSecret(secret).withGraphResourceUrl("https://graph.microsoft.com").withGraphResourceVersion("v1.0")
+                .build();
+        intune.downloadRevocationRequests(50, null);
+    }
+    
+    @Test(expected = AzureException.class)
+    public void canBadResourseUrlFails() throws IOException, AzureException {
+        assumeNotNull(System.getProperty("CURRENT_INTUNE_SECRET"));
+
+        String tenantId = "8375a5cc-74ce-45e8-abc1-00a87441a554";
+        String applicationId = "c002d28b-f0de-4f59-82dd-f68df79fbf5b";
+        String secret = System.getProperty("CURRENT_INTUNE_SECRET");
+
+        Builder builder = new IntuneRestApi.Builder(tenantId, applicationId, "unittest");
+        IntuneRestApi intune = builder.withClientSecret(secret).withGraphResourceUrl("https://graph2.microsoft.com").withGraphResourceVersion("v1.0")
+                .build();
+        intune.downloadRevocationRequests(50, null);
+    }
 }
