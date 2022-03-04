@@ -65,8 +65,7 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
         static final By INPUT_NAME_CONSTRAINT_PERMITTED = By.id("requestInfoForm:nameConstraintPermitted");
         static final By INPUT_NAME_CONSTRAINT_EXCLUDED = By.id("requestInfoForm:nameConstraintExcluded");
-        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");
-        static final By INPUT__USER_NAME = By.id("requestInfoForm:usernameField");
+        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");       
 
         // Manage Requests
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
@@ -475,7 +474,7 @@ public class RaWebHelper extends BaseHelper {
     };
     
     public void fillUsernameProvodeUserCredentials(String userName) {
-        fillTextarea(Page.INPUT__USER_NAME,userName);
+        fillTextarea(Page.INPUT_USERNAME,userName);
         
     }
 

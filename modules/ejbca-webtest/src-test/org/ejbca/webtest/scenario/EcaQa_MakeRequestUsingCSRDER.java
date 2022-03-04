@@ -9,6 +9,7 @@ import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.scenario.EcaQa125_RaCpRestrictions.TestData;
 import org.ejbca.webtest.util.TestFileResource;
+import org.ejbca.webtest.utils.CommandLineHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -26,12 +27,13 @@ import org.openqa.selenium.WebDriver;
  */
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Eca10582_RAWebShouldAcceptCSRInDERAndCSRFormat extends WebTestBase {
+public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
     
     //Helpers
     private static CertificateProfileHelper certificateProfileHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
     private static RaWebHelper raWebHelper;
+    private static CommandLineHelper commandLineHelper;
     
     //Test Data
     public static class TestData {
@@ -40,16 +42,15 @@ public class Eca10582_RAWebShouldAcceptCSRInDERAndCSRFormat extends WebTestBase 
         static final String CERTIFICATE_PROFILE_KEY_BIT_LENGTH = "2048 bits";
         static final String END_ENTITY_PROFILE_NAME = "RestrictEEP";
         static final String CA_TYPE = "ManagementCA";
-        static final String COMMON_NAME = "RestrictCN1";
-        static final String USER_NAME = "User1";
-        static final String CERTIFICATE_REQUEST_CSR = "/resources-test/RestrictCN.csr";
-        static final String CERTIFICATE_REQUEST_DER = "RestrictCN.der";
-//        static final String CERTIFICATE_REQUEST_DER = "/home/nutcha/ejbca/modules/ejbca-webtest/resources-test/RestrictCN.der";
+        static final String COMMON_NAME = "ComonName";
+        static final String USER_NAME = "UserName";
+        static final String COMMON_NAME_1 = "CommonName1";
+        static final String USER_NAME_1 = "UserName1";
+        static final String CERTIFICATE_REQUEST_CSR = "Restrict_CN.csr";
+        static final String CERTIFICATE_REQUEST_DER = "Restrict_CN.der";
         
                 
-    }
-    
-    //getClass().getResource(TestData.CERTIFICATE_REQUEST_DER).getFile();
+    }  
     
     @BeforeClass
     public static void init() {
@@ -70,8 +71,19 @@ public class Eca10582_RAWebShouldAcceptCSRInDERAndCSRFormat extends WebTestBase 
         removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         removeEndEntityByUsername(TestData.USER_NAME);
         removeCertificateByUsername(TestData.USER_NAME);
+        removeEndEntityByUsername(TestData.USER_NAME_1);
+        removeCertificateByUsername(TestData.USER_NAME_1);
+        deleteDownloadedFile(TestData.COMMON_NAME + ".pem");
+        
         // super
         afterClass();
+    }
+    
+    public void cleanUp() {      
+        
+        removeEndEntityByUsername(TestData.USER_NAME);
+        removeCertificateByUsername(TestData.USER_NAME);
+        raWebHelper.clickMakeRequestReset();
     }
     
     @Test
@@ -107,31 +119,46 @@ public class Eca10582_RAWebShouldAcceptCSRInDERAndCSRFormat extends WebTestBase 
     
     
     @Test
-    public void stepC_KeyPairViaCSR() throws InterruptedException {
+    public void stepC_MakeRequestUsingDER() throws InterruptedException {
         // Go to RA Web -> Make New Request
         raWebHelper.openPage(getRaWebUrl());
         Thread.sleep(2000);
         raWebHelper.makeNewCertificateRequest();
-        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
-        
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);        
         //Select KeyPairGeneration Provided by user
         raWebHelper.selectKeyPairGenerationProvided();
-        Thread.sleep(3000);
-//        raWebHelper.fillCsrFilename(getClass().getResource(TestData.CERTIFICATE_REQUEST_DER).getFile());
-        raWebHelper.fillCsrFilename(new TestFileResource(TestData.CERTIFICATE_REQUEST_DER).getFileAbsolutePath());
-//        raWebHelper.fillCsrFilename(TestData.CERTIFICATE_REQUEST_DER);
-//        raWebHelper.clickUploadCsrButton();
-        Thread.sleep(2000);
-        raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME);
-        Thread.sleep(2000);
-        raWebHelper.fillUsernameProvodeUserCredentials(TestData.USER_NAME);
+        Thread.sleep(3000);        
+        //Upload RestrictCN.der
+        raWebHelper.fillCsrFilename(new TestFileResource(TestData.CERTIFICATE_REQUEST_DER).getFileAbsolutePath());             
+        raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME);     
+        raWebHelper.fillUsernameProvodeUserCredentials(TestData.USER_NAME); 
+        //Download PEM
+        raWebHelper.clickDownloadPem();    
+       
+        commandLineHelper.assertFileExists(getDownloadDir() + "/" +TestData.COMMON_NAME + ".pem");
+        Thread.sleep(2000); 
         
-        
+               
+    }
+   /*
+    @Test
+    public void stepD_MakeRequestUsingCSR() throws InterruptedException {
+        cleanUp();
+        // Go to RA Web -> Make New Request
+        raWebHelper.openPage(getRaWebUrl());
+        Thread.sleep(2000);
+        raWebHelper.makeNewCertificateRequest();
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);        
+        //Select KeyPairGeneration Provided by user
+        raWebHelper.selectKeyPairGenerationProvided();
+        Thread.sleep(3000);        
+        //Upload RestrictCN.der
+        raWebHelper.fillCsrFilename(new TestFileResource(TestData.CERTIFICATE_REQUEST_CSR).getFileAbsolutePath());               
+        raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME_1);        
+        raWebHelper.fillUsernameProvodeUserCredentials(TestData.USER_NAME_1); 
         //Download PEM
         raWebHelper.clickDownloadPem();      
-            
-        
-    }
-    
-
+        Thread.sleep(3000);
+       }
+*/
 }
