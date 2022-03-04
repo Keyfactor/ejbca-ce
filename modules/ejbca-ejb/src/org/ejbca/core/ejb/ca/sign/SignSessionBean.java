@@ -1493,7 +1493,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             // Psid is same for EC enroll and authorization validation
             ETSISignedDataBuilder signedDataBuilder = ETSISignedDataBuilder.builder(
-                            new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.ordinal()));
+                            new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.getPsId()));
             signedDataBuilder.setUnsecuredData(data);
             JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
                     .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
