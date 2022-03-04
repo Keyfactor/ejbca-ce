@@ -203,6 +203,14 @@ public class ECAUtils {
                                         IEEE1609dot2.ExplicitCertificate.build()));
     }
     
+    public static byte[] generateHash(ITSCertificate caCertificate) {
+        // TODO properly encode certificate
+        // tbsCertificate -> compressed-y-0 or 1 -> multiple HashedId8? -> no +/- y coord, unique hash
+        // signature -> r or x-only
+        return generateHash(OEREncoder.toByteArray(caCertificate.toASN1Structure(), 
+                                        IEEE1609dot2.ExplicitCertificate.build()));
+    }
+    
     public static Date getExpiryDate(ITSCertificate certificate) {
         return getExpiryDate(certificate.toASN1Structure().getToBeSignedCertificate().getValidityPeriod());
     }
