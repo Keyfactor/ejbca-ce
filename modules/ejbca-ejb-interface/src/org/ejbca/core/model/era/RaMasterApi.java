@@ -1580,7 +1580,8 @@ public interface RaMasterApi {
      * @param requestBody - enrollment request serialized as byte array from figure 14
      * @return - signed and encrypted response from figure 15
      * @throws AuthorizationDeniedException
+     * @throws EjbcaException 
      */
-    byte[] enrollItsCredential(AuthenticationToken authenticationToken, String ecaCertificateId, 
-                                                byte[] requestBody) throws AuthorizationDeniedException;
+    byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                                                byte[] requestBody) throws AuthorizationDeniedException, EjbcaException;
 }
