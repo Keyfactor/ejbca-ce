@@ -1,5 +1,10 @@
 package org.ejbca.webtest.scenario;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
@@ -47,10 +52,8 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         static final String COMMON_NAME_1 = "CommonName1";
         static final String USER_NAME_1 = "UserName1";
         static final String CERTIFICATE_REQUEST_CSR = "Restrict_CN.csr";
-        static final String CERTIFICATE_REQUEST_DER = "Restrict_CN.der";
-        
-                
-    }  
+        static final String CERTIFICATE_REQUEST_DER = "Restrict_CN.der"; 
+   }  
     
     @BeforeClass
     public static void init() {
@@ -74,13 +77,13 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         removeEndEntityByUsername(TestData.USER_NAME_1);
         removeCertificateByUsername(TestData.USER_NAME_1);
         deleteDownloadedFile(TestData.COMMON_NAME + ".pem");
+        deleteDownloadedFile(TestData.COMMON_NAME_1 + ".pem");
         
         // super
         afterClass();
     }
     
-    public void cleanUp() {      
-        
+    public void cleanUp() {
         removeEndEntityByUsername(TestData.USER_NAME);
         removeCertificateByUsername(TestData.USER_NAME);
         raWebHelper.clickMakeRequestReset();
@@ -114,10 +117,8 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
                 Collections.singletonList(getCaName())
         );
         endEntityProfileHelper.saveEndEntityProfile();
-    }
-    
-    
-    
+    }  
+        
     @Test
     public void stepC_MakeRequestUsingDER() throws InterruptedException {
         // Go to RA Web -> Make New Request
@@ -134,13 +135,10 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         raWebHelper.fillUsernameProvodeUserCredentials(TestData.USER_NAME); 
         //Download PEM
         raWebHelper.clickDownloadPem();    
-       
-        commandLineHelper.assertFileExists(getDownloadDir() + "/" +TestData.COMMON_NAME + ".pem");
-        Thread.sleep(2000); 
-        
-               
+        Thread.sleep(2000);        
+        raWebHelper.assertDownloadedFileExits(getDownloadDir() + "/" + TestData.COMMON_NAME + ".pem");                             
     }
-   /*
+   
     @Test
     public void stepD_MakeRequestUsingCSR() throws InterruptedException {
         cleanUp();
@@ -158,7 +156,7 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         raWebHelper.fillUsernameProvodeUserCredentials(TestData.USER_NAME_1); 
         //Download PEM
         raWebHelper.clickDownloadPem();      
-        Thread.sleep(3000);
+        Thread.sleep(2000);
+        raWebHelper.assertDownloadedFileExits(getDownloadDir() + "/" + TestData.COMMON_NAME_1 + ".pem");
        }
-*/
 }

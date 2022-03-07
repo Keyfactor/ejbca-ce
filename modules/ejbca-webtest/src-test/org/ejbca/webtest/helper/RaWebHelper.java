@@ -13,11 +13,14 @@
 package org.ejbca.webtest.helper;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.ejbca.webtest.helper.OauthProvidersHelper.Page;
+import org.ejbca.webtest.scenario.EcaQa_MakeRequestUsingCSRDER.TestData;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -624,6 +627,15 @@ public class RaWebHelper extends BaseHelper {
     
     public void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
         assertAllErrorMessagesAppear(new String[]{expectedErrorMessage}, noElementMessage, assertMessage);
+    }
+    
+    /**
+     * Assert the existence of a file at a specific location
+     *
+     * @param filePath
+     */
+    public void assertDownloadedFileExits(final String filePath) {        
+        assertTrue(filePath, Files.exists(Paths.get(filePath)));
     }
     
 }
