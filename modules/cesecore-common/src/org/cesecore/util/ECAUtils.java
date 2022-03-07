@@ -176,7 +176,7 @@ public class ECAUtils {
             }
             return EncryptedData.getInstance(content.getContent());
         } catch (IOException e) {
-            throw new IllegalStateException("Wrapped SignedData is malformed: " + e);
+            throw new IllegalStateException("Wrapped EncryptedData is malformed: " + e);
         }
     }
     
