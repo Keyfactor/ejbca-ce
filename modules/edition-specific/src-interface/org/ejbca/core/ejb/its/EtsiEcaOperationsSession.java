@@ -6,7 +6,7 @@ import org.ejbca.core.EjbcaException;
 
 public interface EtsiEcaOperationsSession {
     
-    byte[] enrollItsCredential(AuthenticationToken authenticationToken, String ecaCertificateId, byte[] requestBody) 
-                                            throws AuthorizationDeniedException;
+    byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, byte[] requestBody)
+            throws AuthorizationDeniedException, EjbcaException;
 
 }

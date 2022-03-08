@@ -1493,7 +1493,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             // Psid is same for EC enroll and authorization validation
             ETSISignedDataBuilder signedDataBuilder = ETSISignedDataBuilder.builder(
-                            new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.ordinal()));
+                            new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.getPsId()));
             signedDataBuilder.setUnsecuredData(data);
             JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
                     .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
@@ -1546,6 +1546,40 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             // high level catch block
             log.debug("Enroll credential could not be generated.", e);
             throw new EJBException("Enroll credential could not be generated.", e);
+        }
+    }
+
+    @Override
+    public byte[] signItsPayload(ETSISignedDataBuilder signedDataBuilder, ECA eca) 
+                    throws CryptoTokenOfflineException, SignRequestSignatureException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to sign ITS payload from CA with ID " + eca.getCAId());
+        }
+        
+        final CAToken catoken = eca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (privateKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
+        }
+
+        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
+        if(ecaCertificate==null) {
+            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
+        }
+
+        try {
+            // Psid is same for EC enroll and authorization validation
+            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
+                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
+            HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
+            ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
+
+            return etsiSignedData.getEncoded();
+        } catch ( Exception e) {
+            // high level catch block
+            log.debug("ITS payload could not be signed.", e);
+            throw new SignRequestSignatureException("ITS payload could not be signed.", e);
         }
     }
 }
