@@ -14,7 +14,7 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
     private ItsSupportedCountries country;
     private List<Integer> regions;
     
-    public static final String COUNTRY_REGION_HINT = "Expected format: region1,region2,region3 e.g. 123,456,789"; 
+    public static final String COUNTRY_REGION_HINT = "Expected format: region1,region2,region3 e.g. 123,456,789, max 255"; 
     
     public IdentifiedRegionCountryRegions() {
     }
@@ -30,8 +30,8 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
             } catch(NumberFormatException e) {
                 throw new IllegalArgumentException("Invalid region entry, see expected format: " + parts[i]);
             }
-            if(j<0 || j>0xffff) {
-                throw new IllegalArgumentException("Expected unsigned 16bit integer(0-65535) as region. " + parts[i]);
+            if(j<0 || j>0xff) {
+                throw new IllegalArgumentException("Expected unsigned 8bit integer(0-255) as region. " + parts[i]);
             }
             this.regions.add(j);
         }
