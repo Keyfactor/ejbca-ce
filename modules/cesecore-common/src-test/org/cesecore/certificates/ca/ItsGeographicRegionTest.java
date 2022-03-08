@@ -143,17 +143,17 @@ public class ItsGeographicRegionTest {
     public void testIdentifiedRegion() {
         ItsGeographicElement geoElement = 
                 ItsGeographicRegion.getItsGeographicElementFromString(
-                        "identifed:country:Denmark;country_region:Belgium,1234,456,342;"
-                        + "country:-Europe;country_region:Austria,4566;");
+                        "identifed:country:Denmark;country_region:Belgium,123,45,34;"
+                        + "country:-Europe;country_region:Austria,66;");
         
         assertEquals("Denmark", geoElement.getGuiDescription().get(0));
         
-        assertEquals("<b>Country:</b> Belgium<br><b>Regions:</b> 1234,456,342,", 
+        assertEquals("<b>Country:</b> Belgium<br><b>Regions:</b> 123,45,34,", 
                                                 geoElement.getGuiDescription().get(1));
         
         assertEquals("-Europe", geoElement.getGuiDescription().get(2));
         
-        assertEquals("<b>Country:</b> Austria<br><b>Regions:</b> 4566,", 
+        assertEquals("<b>Country:</b> Austria<br><b>Regions:</b> 66,", 
                 geoElement.getGuiDescription().get(3));
     }
     
@@ -161,10 +161,10 @@ public class ItsGeographicRegionTest {
     public void testIdentifiedRegionInvalid() {
         
         try {
-            new IdentifiedRegionCountryRegions("Belgium,1234,66000,342");
+            new IdentifiedRegionCountryRegions("Belgium,256");
             fail("too large region index.");
         } catch(Exception e) {
-            assertEquals(e.getMessage(), "Expected unsigned 16bit integer(0-65535) as region. 66000");
+            assertEquals(e.getMessage(), "Expected unsigned 8bit integer(0-255) as region. 256");
         }
     }
     
@@ -183,17 +183,17 @@ public class ItsGeographicRegionTest {
     
     @Test
     public void testConstructItsRegionFromBCCircle() {
-        roundTripBCtoEJBCA("circular:1234,5678,125");
+        roundTripBCtoEJBCA("circular:123,56,125");
     }
     
     @Test
     public void testConstructItsRegionFromBCIdentifedRegion() {
-        roundTripBCtoEJBCA("identifed:country:Denmark;country_region:Belgium,1234,456,342;country:-Europe;country_region:Austria,4566;");
+        roundTripBCtoEJBCA("identifed:country:Denmark;country_region:Belgium,12,45,34;country:-Europe;country_region:Austria,45;");
     }
     
     @Test
     public void testConstructItsRegionFromBCIdentifedRegion2() {
-        roundTripBCtoEJBCA("identifed:country_region:Belgium,1234,456,342;country_region:Austria,4566;");
+        roundTripBCtoEJBCA("identifed:country_region:Belgium,123,45,34;country_region:Austria,66;");
     }
 
 }

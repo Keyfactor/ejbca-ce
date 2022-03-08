@@ -7,7 +7,9 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryOnly;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Region;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfUint8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.UINT16;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.UINT8;
 
 public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
 
@@ -87,13 +89,13 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
 
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
-        List<Region> regions = new ArrayList<>();
+        List<UINT8> regions = new ArrayList<>();
         for(Integer r: this.regions) {
-            regions.add(new Region(r));
+            regions.add(new UINT8(r));
         }
         return new IdentifiedRegion(IdentifiedRegion.countryAndRegions, 
                 new CountryAndRegions(new CountryOnly(country.getM49Code()),
-                        regions ));
+                      new SequenceOfUint8(regions) ));
     }
 
     @Override

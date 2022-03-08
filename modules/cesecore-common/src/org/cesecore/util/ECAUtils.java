@@ -17,12 +17,13 @@ import org.bouncycastle.its.jcajce.JcaITSPublicVerificationKey;
 import org.bouncycastle.its.jcajce.JceITSPublicEncryptionKey;
 import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
-import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Encrypted;
-import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Signed;
+import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataEncrypted;
+import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataSigned;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
 import org.bouncycastle.oer.its.ieee1609dot2.EncryptedData;
 import org.bouncycastle.oer.its.ieee1609dot2.HashedData;
 import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
+import org.bouncycastle.oer.its.ieee1609dot2.Opaque;
 import org.bouncycastle.oer.its.ieee1609dot2.SignedData;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Duration;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
@@ -71,14 +72,14 @@ public class ECAUtils {
     public static PublicKey getVerificationKeyFromCertificate(ITSCertificate certificate) {
         PublicVerificationKey publicVerificationKey =
                 (PublicVerificationKey) certificate.toASN1Structure()
-                    .getToBeSignedCertificate().getVerificationKeyIndicator().getValue();
+                    .getToBeSigned().getVerifyKeyIndicator().getVerificationKeyIndicator();
         return new JcaITSPublicVerificationKey.Builder().build(publicVerificationKey).getKey();
     }
     
     public static PublicKey getEncryptionKeyFromCertificate(ITSCertificate certificate) {
         PublicEncryptionKey publicEncryptionKey =
                 (PublicEncryptionKey) certificate.toASN1Structure()
-                    .getToBeSignedCertificate().getEncryptionKey();
+                    .getToBeSigned().getEncryptionKey();
         return new JceITSPublicEncryptionKey.Builder().build(publicEncryptionKey).getKey();
     }
     
@@ -137,13 +138,13 @@ public class ECAUtils {
     public static SignedData parseOerEncodedWrappedSignedData(byte[] oerEncodedSignedData) {
         OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedData));
         try {
-            Ieee1609Dot2Content content = EtsiTs103097Data_Signed.getInstance(
+            Ieee1609Dot2Content content = EtsiTs103097DataSigned.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_Signed.build())).getContent();
             if (content.getChoice() != Ieee1609Dot2Content.signedData)
             {
                 throw new IllegalStateException("EtsiTs103097Data-Signed did not have signed data content");
             }
-            return SignedData.getInstance(content.getContent());
+            return SignedData.getInstance(content.getIeee1609Dot2Content());
         } catch (IOException e) {
             throw new IllegalStateException("Wrapped SignedData is malformed: " + e);
         }
@@ -152,14 +153,14 @@ public class ECAUtils {
     public static SignedData parseOerEncodedWrappedSignedExtenalData(byte[] oerEncodedSignedExtData) {
         OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedExtData));
         try {
-            Ieee1609Dot2Content content = EtsiTs103097Data_Signed.getInstance(
+            Ieee1609Dot2Content content = EtsiTs103097DataSigned.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_SignedExternalPayload.build())).getContent();
             if (content.getChoice() != Ieee1609Dot2Content.signedData)
             {
                 throw new IllegalStateException(
                         "EtsiTs103097Data-SignedExternalPayload did not have signed data content");
             }
-            return SignedData.getInstance(content.getContent());
+            return SignedData.getInstance(content.getIeee1609Dot2Content());
         } catch (IOException e) {
             throw new IllegalStateException("Wrapped SignedExternalPayload is malformed: " + e);
         }
@@ -168,13 +169,13 @@ public class ECAUtils {
     public static EncryptedData parseOerEncodedWrappedEncryptedData(byte[] oerEncodedEncryptedData) {
         OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedEncryptedData));
         try {
-            Ieee1609Dot2Content content = EtsiTs103097Data_Encrypted.getInstance(
+            Ieee1609Dot2Content content = EtsiTs103097DataEncrypted.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_Encrypted.build())).getContent();
             if (content.getChoice() != Ieee1609Dot2Content.encryptedData)
             {
-                throw new IllegalStateException("EtsiTs103097Data_Encrypted did not have encrypted data content");
+                throw new IllegalStateException("EtsiTs103097DataEncrypted did not have encrypted data content");
             }
-            return EncryptedData.getInstance(content.getContent());
+            return EncryptedData.getInstance(content.getIeee1609Dot2Content());
         } catch (IOException e) {
             throw new IllegalStateException("Wrapped EncryptedData is malformed: " + e);
         }
@@ -183,13 +184,13 @@ public class ECAUtils {
     public static DEROctetString parseOerEncodedWrappedUnsecuredData(byte[] oerEncodedUnsecuredData) {
         OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedUnsecuredData));
         try {
-            Ieee1609Dot2Content content = EtsiTs103097Data_Signed.getInstance(
+            Ieee1609Dot2Content content = EtsiTs103097DataSigned.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_Unsecured.build())).getContent();
             if (content.getChoice() != Ieee1609Dot2Content.unsecuredData)
             {
                 throw new IllegalStateException("Wrong data content in Ieee1609Dot2Content.");
-            }
-            return (DEROctetString) content.getContent();
+            } 
+            return new DEROctetString(((Opaque) content.getIeee1609Dot2Content()).getContent());
         } catch (IOException e) {
             throw new IllegalStateException("Wrapped Ieee1609Dot2Content is malformed: " + e);
         }
@@ -212,17 +213,17 @@ public class ECAUtils {
     }
     
     public static Date getExpiryDate(ITSCertificate certificate) {
-        return getExpiryDate(certificate.toASN1Structure().getToBeSignedCertificate().getValidityPeriod());
+        return getExpiryDate(certificate.toASN1Structure().getToBeSigned().getValidityPeriod());
     }
     
     public static Date getExpiryDate(ValidityPeriod validityPeriod) {
         long validity = getValidityInSeconds(validityPeriod);
-        long startTime = validityPeriod.getTime32().toUnixMillis();
+        long startTime = validityPeriod.getStart().toUnixMillis();
         return new Date(startTime + validity*1000);
     }
     
     public static long getValidityInSeconds(ValidityPeriod validity) {
-        long result = validity.getDuration().getValue();
+        long result = validity.getDuration().getDuration().getValue().longValue();
         switch(validity.getDuration().getChoice()) {
             case Duration.microseconds:
                 return result/1000_000; 
@@ -270,7 +271,7 @@ public class ECAUtils {
             return false;
         }
         return Hex.toHexString(hashResult).equalsIgnoreCase(
-                Hex.toHexString(((DEROctetString)extDataHash.getValue()).getOctets()));
+                Hex.toHexString(((DEROctetString)extDataHash.getHashedData()).getOctets()));
     }
     
 }
