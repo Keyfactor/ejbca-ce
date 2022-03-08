@@ -75,6 +75,9 @@ public class CACertReqServlet extends BaseAdminServlet {
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
     private static final String COMMAND_CERTLINK = "linkcert";
     private static final String FORMAT_PROPERTY_NAME = "format";
+    
+    private static final String COMMAND_ITS_ECA_CSR = "itsecacsr";
+    private static final String PARAM_CA_NAME = "caname";
 
     @EJB
     private CAAdminSessionLocal caAdminSession;
@@ -240,6 +243,23 @@ public class CACertReqServlet extends BaseAdminServlet {
                 log.error(errMsg, e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
             }
+        }
+        if (command.equalsIgnoreCase(COMMAND_ITS_ECA_CSR)) {
+            byte[] request = caBean.getRequestData();
+            String filename = null;
+            int length = request.length;
+            byte[] outbytes = request;
+            String caname = req.getParameter(PARAM_CA_NAME);
+            
+            filename = caname + "_csr.oer";
+            // We must remove cache headers for IE
+            ServletUtils.removeCacheHeaders(res);
+            res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
+            res.setContentType("application/octet-stream");
+            res.setContentLength(length);
+            res.getOutputStream().write(outbytes);
+            String iMsg = intres.getLocalizedMessage("certreq.sentlatestcertreq", remoteAddr);
+            log.info(iMsg);
         }
     }
 
