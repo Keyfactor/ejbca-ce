@@ -78,7 +78,11 @@ public class CAData extends ProtectedData implements Serializable {
 	        final Certificate cacert = ca.getCACertificate();
 	        setExpireTime(CertTools.getNotAfter(cacert).getTime());  
 	        ca.setExpireTime(CertTools.getNotAfter(cacert)); 
-	    }  
+	    }
+	    
+	    if(ca.getCAType()==CAInfo.CATYPE_CITS) {
+	        //TODO: save hex encoded certificate or do it via data
+	    }
 	    // Set status, because it can occur in the ca object as well, but we think the one passed as argument here is what
 	    // is desired primarily, so make sure we set that
 	    ca.setStatus(status);        
