@@ -18,6 +18,7 @@ import java.util.Date;
 
 import javax.ejb.Local;
 
+import org.bouncycastle.its.ETSISignedDataBuilder;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
 import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate;
@@ -267,5 +268,8 @@ public interface SignSessionLocal extends SignSession {
       * @throws SignRequestSignatureException
       */
      byte[] signItsPayload(byte[] data, ECA eca)
+            throws CryptoTokenOfflineException, SignRequestSignatureException;
+
+    byte[] signItsPayload(ETSISignedDataBuilder signedDataBuilder, ECA eca) 
             throws CryptoTokenOfflineException, SignRequestSignatureException;
 }
