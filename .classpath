@@ -210,7 +210,7 @@
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-171b16.jar" sourcepath="/home/tanmoy/Downloads/bcsources171b16/bcpkix-jdk18on-171b16/src"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk18on-171b16.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk18on-171b16.jar" sourcepath="/home/tanmoy/Downloads/bcsources171b16/bcprov-jdk18on-171b16/src"/>
 	<classpathentry kind="lib" path="lib/bctls-jdk18on-171b16.jar"/>
 	<classpathentry kind="lib" path="lib/bcutil-jdk18on-171b16.jar" sourcepath="/home/tanmoy/Downloads/bcsources171b16/bcutil-jdk18on-171b16/src"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.4.1.Final.jar"/>
