@@ -1578,10 +1578,11 @@ public interface RaMasterApi {
      * @param authenticationToken
      * @param ecaCertificateId - certiifcateId of ECA, not CA name
      * @param requestBody - enrollment request serialized as byte array from figure 14
+     * @param operationCode - placeholder to indicate operation (EC enroll or validation)
      * @return - signed and encrypted response from figure 15
      * @throws AuthorizationDeniedException
      * @throws EjbcaException 
      */
     byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
-                                                byte[] requestBody) throws AuthorizationDeniedException, EjbcaException;
+                                                byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException;
 }

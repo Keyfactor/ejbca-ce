@@ -17,6 +17,8 @@ import org.bouncycastle.its.jcajce.JcaITSPublicVerificationKey;
 import org.bouncycastle.its.jcajce.JceITSPublicEncryptionKey;
 import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
+import org.bouncycastle.oer.its.etsi102941.EtsiTs102941Data;
+import org.bouncycastle.oer.its.etsi102941.EtsiTs102941DataContent;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataEncrypted;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataSigned;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
@@ -25,11 +27,21 @@ import org.bouncycastle.oer.its.ieee1609dot2.HashedData;
 import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
 import org.bouncycastle.oer.its.ieee1609dot2.Opaque;
 import org.bouncycastle.oer.its.ieee1609dot2.SignedData;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedData;
+import org.bouncycastle.oer.its.ieee1609dot2.VerificationKeyIndicator;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Duration;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.EccP256CurvePoint;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.EccP384CurvePoint;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.EcdsaP256Signature;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.EcdsaP384Signature;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Point256;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Point384;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicEncryptionKey;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Signature;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.ValidityPeriod;
+import org.bouncycastle.oer.its.template.etsi102941.EtsiTs102941MessagesCa;
 import org.bouncycastle.oer.its.template.etsi103097.EtsiTs103097Module;
 import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
@@ -55,7 +67,7 @@ public class ECAUtils {
     public static HashedId8 generateHashedId8(byte[] input) {
         //HashedId is always calculated using SHA256
         byte[] output = new byte[8];
-        System.arraycopy(generateHash("SHA256", input), 0, output, 0, 8);
+        System.arraycopy(generateHash("SHA256", input), 24, output, 0, 8); // low order 8 bytes
         return new HashedId8(output);
     }
     
@@ -65,7 +77,7 @@ public class ECAUtils {
     
     public static byte[] caculateRequestHash(byte[] input) {
         byte result[] = new byte[16];
-        System.arraycopy(generateHash("SHA256", input), 0, result, 0, 16);
+        System.arraycopy(generateHash("SHA256", input), 0, result, 0, 16); // left most 16 bytes
         return result;
     }
     
@@ -181,7 +193,7 @@ public class ECAUtils {
         }
     }
     
-    public static DEROctetString parseOerEncodedWrappedUnsecuredData(byte[] oerEncodedUnsecuredData) {
+    public static byte[] parseOerEncodedWrappedUnsecuredData(byte[] oerEncodedUnsecuredData) {
         OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedUnsecuredData));
         try {
             Ieee1609Dot2Content content = EtsiTs103097DataSigned.getInstance(
@@ -190,26 +202,143 @@ public class ECAUtils {
             {
                 throw new IllegalStateException("Wrong data content in Ieee1609Dot2Content.");
             } 
-            return new DEROctetString(((Opaque) content.getIeee1609Dot2Content()).getContent());
+            return ((Opaque) content.getIeee1609Dot2Content()).getContent();
         } catch (IOException e) {
             throw new IllegalStateException("Wrapped Ieee1609Dot2Content is malformed: " + e);
         }
     }
+    
+    public static EtsiTs102941DataContent parseOerEncodedWrapped102941Data(byte[] oerEncoded102941Data) {
+        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncoded102941Data));
+        try {
+            EtsiTs102941DataContent content = EtsiTs102941Data.getInstance(
+                    oerIn.parse(EtsiTs102941MessagesCa.EtsiTs102941Data.build())).getContent();
+            return content;
+        } catch (IOException e) {
+            throw new IllegalStateException("Wrapped EtsiTs102941DataContent is malformed: " + e);
+        }
+    }
 
-    public static HashedId8 generateHashedId8(ITSCertificate caCertificate) {
-        // TODO properly encode certificate
-        // tbsCertificate -> compressed-y-0 or 1 -> multiple HashedId8? -> no +/- y coord, unique hash
-        // signature -> r or x-only
-        return generateHashedId8(OEREncoder.toByteArray(caCertificate.toASN1Structure(), 
+    public static HashedId8 generateHashedId8(ITSCertificate certificate) {
+        ITSCertificate hashableCertificate = getHashableCertificate(certificate);
+        return generateHashedId8(OEREncoder.toByteArray(hashableCertificate.toASN1Structure(), 
                                         IEEE1609dot2.ExplicitCertificate.build()));
     }
     
-    public static byte[] generateHash(ITSCertificate caCertificate) {
-        // TODO properly encode certificate
-        // tbsCertificate -> compressed-y-0 or 1 -> multiple HashedId8? -> no +/- y coord, unique hash
-        // signature -> r or x-only
-        return generateHash(OEREncoder.toByteArray(caCertificate.toASN1Structure(), 
+    public static byte[] generateHash(ITSCertificate certificate) {
+        ITSCertificate hashableCertificate = getHashableCertificate(certificate);
+        return generateHash(OEREncoder.toByteArray(hashableCertificate.toASN1Structure(), 
                                         IEEE1609dot2.ExplicitCertificate.build()));
+    }
+    
+    /**
+     * Encoding consideration: section 6.4.3 in IEEE 1609.2-2016, page 60
+     * properly encode certificate
+     * tbsCertificate -> compressed-y-0 or 1 -> multiple HashedId8? -> no +/- y coord, unique hash
+     * signature -> r or x-only
+     * 
+     * @param certificate
+     * @return
+     */
+    public static ITSCertificate getHashableCertificate(ITSCertificate certificate) {
+        Signature signature = certificate.toASN1Structure().getSignature();
+        Signature modifiedSignature = null;
+        if(signature.getChoice()<Signature.ecdsaBrainpoolP384r1Signature) {
+            EcdsaP256Signature signP256 = (EcdsaP256Signature)signature.getSignature();
+            EccP256CurvePoint pointSignP256 = signP256.getRSig();
+            
+            EccP256CurvePoint xonlySignP256 = null;
+            if(pointSignP256.getChoice()==EccP256CurvePoint.xonly) {
+                modifiedSignature = signature; // no change
+            } else {
+                // getEncodedPoint has x-only unimplemented
+                if(pointSignP256.getChoice()==EccP256CurvePoint.uncompressedP256) {
+                    Point256 point256 = (Point256) pointSignP256.getEccp256CurvePoint();
+                    xonlySignP256 = EccP256CurvePoint.xOnly(point256.getX().getOctets());
+                } else {
+                    // does not matter y-0 or y-1, leading 0x02 or 0x03 is not included
+                    xonlySignP256 = EccP256CurvePoint.xOnly(
+                            ((DEROctetString) pointSignP256.getEccp256CurvePoint()).getOctets());
+                }
+                modifiedSignature = new Signature(signature.getChoice(), EcdsaP256Signature.builder()
+                        .setRSig(xonlySignP256).setSSig(signP256.getSSig()).createEcdsaP256Signature());
+            }
+        } else {
+            EcdsaP384Signature signP384 = (EcdsaP384Signature)signature.getSignature();
+            EccP384CurvePoint pointSignP384 = signP384.getRSig();
+            
+            EccP384CurvePoint xonlySignP384 = null;
+            if(pointSignP384.getChoice()==EccP256CurvePoint.xonly) {
+                modifiedSignature = signature; // no change
+            } else {
+                // getEncodedPoint has x-only unimplemented
+                if(pointSignP384.getChoice()==EccP384CurvePoint.uncompressedP384) {
+                    Point384 point384 = (Point384) pointSignP384.getEccP384CurvePoint();
+                    xonlySignP384 = EccP384CurvePoint.xOnly(point384.getX().getOctets());
+                } else {
+                    // does not matter y-0 or y-1, leading 0x02 or 0x03 is not included
+                    xonlySignP384 = EccP384CurvePoint.xOnly(
+                            ((DEROctetString) pointSignP384.getEccP384CurvePoint()).getOctets());
+                }
+                modifiedSignature = new Signature(signature.getChoice(), EcdsaP384Signature.builder()
+                        .setRSig(xonlySignP384).setSSig(signP384.getSSig()).createEcdsaP384Signature());
+            }
+        }
+        
+        PublicVerificationKey verificationKey = (PublicVerificationKey) certificate.toASN1Structure()
+                                        .getToBeSigned().getVerifyKeyIndicator().getVerificationKeyIndicator();
+        PublicVerificationKey modifiedVerificationKey = null;
+        if(verificationKey.getChoice()<PublicVerificationKey.ecdsaBrainpoolP384r1) {
+            EccP256CurvePoint pointVKeyP256 = (EccP256CurvePoint) verificationKey.getPublicVerificationKey();
+            
+            EccP256CurvePoint xonlyVKeyP256 = null;
+            if(pointVKeyP256.getChoice()==EccP256CurvePoint.xonly) {
+                modifiedVerificationKey = verificationKey; // no change
+            } else {
+                // getEncodedPoint has x-only unimplemented
+                if(pointVKeyP256.getChoice()==EccP256CurvePoint.uncompressedP256) {
+                    Point256 point256 = (Point256) pointVKeyP256.getEccp256CurvePoint();
+                    xonlyVKeyP256 = EccP256CurvePoint.xOnly(point256.getX().getOctets());
+                } else {
+                    // does not matter y-0 or y-1, leading 0x02 or 0x03 is not included
+                    xonlyVKeyP256 = EccP256CurvePoint.xOnly(
+                            ((DEROctetString) pointVKeyP256.getEccp256CurvePoint()).getOctets());
+                }
+                modifiedVerificationKey = new PublicVerificationKey(verificationKey.getChoice(), xonlyVKeyP256);
+            }
+        } else {
+            EccP384CurvePoint pointVKeyP384 = (EccP384CurvePoint) verificationKey.getPublicVerificationKey();
+            
+            EccP384CurvePoint xonlyVKeyP384 = null;
+            if(pointVKeyP384.getChoice()==EccP256CurvePoint.xonly) {
+                modifiedSignature = signature; // no change
+            } else {
+                // getEncodedPoint has x-only unimplemented
+                if(pointVKeyP384.getChoice()==EccP384CurvePoint.uncompressedP384) {
+                    Point384 point384 = (Point384) pointVKeyP384.getEccP384CurvePoint();
+                    xonlyVKeyP384 = EccP384CurvePoint.xOnly(point384.getX().getOctets());
+                } else {
+                    // does not matter y-0 or y-1, leading 0x02 or 0x03 is not included
+                    xonlyVKeyP384 = EccP384CurvePoint.xOnly(
+                            ((DEROctetString) pointVKeyP384.getEccP384CurvePoint()).getOctets());
+                }
+                modifiedVerificationKey = new PublicVerificationKey(verificationKey.getChoice(), xonlyVKeyP384);
+            }
+        }
+        
+        ToBeSignedCertificate toBeSignedCert = new ToBeSignedCertificate
+                                                    .Builder(certificate.toASN1Structure().getToBeSigned())
+                                                    .setVerifyKeyIndicator(
+                                                       VerificationKeyIndicator.verificationKey(modifiedVerificationKey))
+                                                    .createToBeSignedCertificate();
+        
+        CertificateBase modfiedCertificateBase =  new CertificateBase(
+                            certificate.toASN1Structure().getVersion(),
+                            certificate.toASN1Structure().getType(),
+                            certificate.toASN1Structure().getIssuer(),
+                            toBeSignedCert, modifiedSignature);
+        
+        return new ITSCertificate(modfiedCertificateBase);
     }
     
     public static Date getExpiryDate(ITSCertificate certificate) {
