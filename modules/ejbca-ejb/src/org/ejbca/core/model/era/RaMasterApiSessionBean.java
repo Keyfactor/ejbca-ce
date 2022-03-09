@@ -3035,14 +3035,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean isClearPwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
-        //Authorization
-        if (!endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, endEntity.getEndEntityProfileId(),
-                AccessRulesConstants.DELETE_END_ENTITY)) {
-            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
-                    + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
-            return null;
-        }
-
         try {
             endEntity = endEntityManagementSession.addUser(authenticationToken, endEntity, isClearPwd);
         } catch (CesecoreException e) {
