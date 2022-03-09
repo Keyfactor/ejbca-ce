@@ -117,6 +117,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -197,7 +198,6 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -3084,6 +3084,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
                 | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
                 | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
+            cleanupAfterFailure(endEntity);
             throw new KeyStoreGeneralRaException(e);
         }
         if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM) {
@@ -3101,6 +3102,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.error(e); //should never happen if keyStore is valid object
             }
         }
+        cleanupAfterFailure(endEntity);
         return null;
     }
 
@@ -3110,13 +3112,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
             throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
-        }
-        //Authorization
-        if (!endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, endEntityInformation.getEndEntityProfileId(),
-                AccessRulesConstants.DELETE_END_ENTITY)) {
-            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
-                    + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
-            return null;
         }
 
         try {
@@ -3142,9 +3137,23 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CADoesntExistsException | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
                 | InvalidAlgorithmException | CertificateExtensionException e) {
+            cleanupAfterFailure(endEntityInformation);
             throw new EjbcaException(e);
         } catch (CertificateParsingException | CertificateEncodingException | IOException e) {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage", e);
+        }
+    }
+
+    private void cleanupAfterFailure(final EndEntityInformation endEntityInformation) {
+        try {
+            // We don't want to roll back certificate enrollment if a post-issuance step failed.
+            // So we delete the end-entity only, rather than triggering a rollback.
+            endEntityManagementSession.revokeAndDeleteUser(new AlwaysAllowLocalAuthenticationToken("Failed Enrollment Cleanup"), endEntityInformation.getUsername(), RevocationReasons.UNSPECIFIED.getDatabaseValue());
+        } catch (ApprovalException | NoSuchEndEntityException | AuthorizationDeniedException | WaitingForApprovalException
+                | CouldNotRemoveEndEntityException | RuntimeException e) {
+            // We don't want the admin to focus on this error, so we use lower log levels than normal
+            log.info("End entity could not be deleted after issuance failure: " + e.getMessage());
+            log.trace("Stack trace from cleanup", e);
         }
     }
 
