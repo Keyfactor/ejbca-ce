@@ -6,7 +6,7 @@ import org.ejbca.core.EjbcaException;
 
 public interface EtsiEcaOperationsSession {
     
-    byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, byte[] requestBody)
+    byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, byte[] requestBody, int operationCode)
             throws AuthorizationDeniedException, EjbcaException;
 
 }
