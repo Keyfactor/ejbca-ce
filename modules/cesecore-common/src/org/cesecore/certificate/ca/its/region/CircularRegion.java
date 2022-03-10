@@ -103,5 +103,11 @@ public class CircularRegion implements ItsGeographicElement {
         guiStrings.add(sb.toString());
         return guiStrings;
     }
+
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        // TODO Auto-generated method stub
+        return false;
+    }
     
 }
