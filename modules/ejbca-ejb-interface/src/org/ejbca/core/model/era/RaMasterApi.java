@@ -378,6 +378,13 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
+    
+    /**
+     * Searches for certificates V2. Data (e.g. revocation status) of remote certificates take precedence over local ones.
+     * @return list of certificates from the specified search criteria and order plus pagination summary.
+     * @since Initial RA Master API version (EJBCA 7.8.0)
+     */
+    RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequestV2 raCertificateSearchRequest);
 
     /**
      * Searches for end entities. Remote end entities take precedence over local ones.
@@ -546,6 +553,25 @@ public interface RaMasterApi {
      */
     byte[] generateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
+     * <p>Generates keystore for the specified end entity. Only for use in the RA Web when view end entity access rule should not be checked. 
+     * Used for server side generated key pairs. The keystore can be one of the following types:
+     * <ul>
+     *     <li>PKCS12</li>
+     *     <li>BCFKS</li>
+     *     <li>JKS</li>
+     * </ul>
+     *
+     * @param authenticationToken authentication token
+     * @param endEntityInformation holds end entity information (including user's password)
+     * @return generated keystore
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
+     * @since Initial RA Master API version (EJBCA 7.9.0)
+     */
+    byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EjbcaException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
@@ -668,6 +694,15 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username);
+    
+    /**
+     * Finds end entity by its username for the explicit purpose of creating a certificate for an existing end entity via the Ra Web.
+     * @param authenticationToken authentication token
+     * @param username username of the end entity
+     * @return end entity as EndEntityInformation
+     * @since Initial RA Master API version (EJBCA 7.9.0)
+     */
+    EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username);
 
     /**
      * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.

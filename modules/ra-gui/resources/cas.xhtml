@@ -42,9 +42,13 @@
 	                <h:column rendered="#{raCasPageBean.atLeastOneCrlLinkPresent}">
 	                    <f:facet name="header"><h:outputText value="#{msg.cas_page_colhead_crls}"/></f:facet>
 	                    <h:panelGrid columns="2" styleClass="nopadding noborder" rendered="#{caAndCrls.caId!=0}">
-	                        <h:outputLink rendered="#{caAndCrls.crlLink !=null}" value="#{caAndCrls.crlLink}">
-	                            <h:outputText value="#{msg.cas_page_link_download_crlfull_der}"/>
-	                        </h:outputLink>
+							<ui:repeat value="#{caAndCrls.crlLinks}" var="crlLink">
+								<h:outputLink value="#{crlLink.link}">
+									<h:outputText value="#{msg.cas_page_link_download_crlfull_der}" rendered="#{!caAndCrls.partitionedCrl}"/>
+									<h:outputText value="Partition #{crlLink.partitionIndex}" rendered="#{caAndCrls.partitionedCrl}"/>
+								</h:outputLink>
+								<br/>
+							</ui:repeat>
 	                        <h:outputLink rendered="#{caAndCrls.deltaCrlLink !=null}" value="#{caAndCrls.deltaCrlLink}" style="margin-#{raLocaleBean.indentionDirection}: 16px;">
 	                            <h:outputText value="#{msg.cas_page_link_download_crldelta_der}"/>
 	                        </h:outputLink>

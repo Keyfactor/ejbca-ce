@@ -639,30 +639,30 @@ public class EndEntityManagementTest extends CaTestCase {
         assertEquals(1000, cachetime);
         // Make sure profile has the right value from the beginning
         EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        eep.setAllowMergeDnWebServices(false);
+        eep.setAllowMergeDn(false);
         endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
         // Read profile
         eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        boolean value = eep.getAllowMergeDnWebServices();
+        boolean value = eep.getAllowMergeDn();
         assertFalse(value);
 
         // Flush caches to reset cache timeout
         endEntityProfileSession.flushProfileCache();
         // Change profile, not flushing cache
-        eep.setAllowMergeDnWebServices(true);
+        eep.setAllowMergeDn(true);
         endEntityProfileSession.internalChangeEndEntityProfileNoFlushCache(admin, PROFILE_CACHE_NAME_2, eep);
 
         // Wait 2 seconds and try again, now the cache should have been updated
         Thread.sleep(2000);
         eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        value = eep.getAllowMergeDnWebServices();
+        value = eep.getAllowMergeDn();
         assertTrue(value);
 
         // Changing using the regular method however should immediately flush the cache
-        eep.setAllowMergeDnWebServices(false);
+        eep.setAllowMergeDn(false);
         endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
         eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
-        value = eep.getAllowMergeDnWebServices();
+        value = eep.getAllowMergeDn();
         assertFalse(value);
     }
 

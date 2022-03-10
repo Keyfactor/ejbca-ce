@@ -29,7 +29,7 @@ import java.util.Map;
  *
  * @version $Id$
  */
-public class ConfigdumpItem<T> implements Comparable<ConfigdumpItem>, Serializable {
+public class ConfigdumpItem<T> implements Comparable<ConfigdumpItem<?>>, Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String name;
@@ -111,7 +111,7 @@ public class ConfigdumpItem<T> implements Comparable<ConfigdumpItem>, Serializab
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof ConfigdumpItem && compareTo((ConfigdumpItem) other) == 0;
+        return other instanceof ConfigdumpItem && compareTo((ConfigdumpItem<?>) other) == 0;
     }
 
     @Override
@@ -120,7 +120,7 @@ public class ConfigdumpItem<T> implements Comparable<ConfigdumpItem>, Serializab
     }
 
     @Override
-    public int compareTo(final ConfigdumpItem o) {
+    public int compareTo(final ConfigdumpItem<?> o) {
         if (o == this) {
             return 0;
         } else if (type != o.type) {

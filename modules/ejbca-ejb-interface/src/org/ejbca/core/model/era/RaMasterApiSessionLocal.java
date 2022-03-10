@@ -16,8 +16,6 @@ import javax.ejb.Local;
 
 /**
  * Interface for EJB access to the RaMasterApi local bean
- * 
- * @version $Id$
  */
 @Local
 public interface RaMasterApiSessionLocal extends RaMasterApi {

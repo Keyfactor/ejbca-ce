@@ -9,21 +9,21 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11ng.provider;
 
-import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
 import java.security.Provider;
 import java.security.Security;
 import java.util.HashMap;
+
+import com.sun.jna.Native;
+import com.sun.jna.NativeLibrary;
+
 import org.apache.log4j.Logger;
-import org.pkcs11.jacknji11.CEi;
-import org.pkcs11.jacknji11.Ci;
-import org.pkcs11.jacknji11.jna.JNAi;
-import org.pkcs11.jacknji11.jna.JNAiNative;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptoki;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedJNA;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedJNANativeI;
 
 /**
  * Singleton managing the various cryptoki devices available.
- *
- * @version $Id$
  */
 public class CryptokiManager {
 
@@ -39,15 +39,16 @@ public class CryptokiManager {
 
     private CryptokiManager() {}
 
-
-    public synchronized CryptokiDevice getDevice(final String libName, final String libDir) {
-        LOG.debug(">getDevice(" + libName + ", " + libDir + ")");
+    public synchronized CryptokiDevice getDevice(final String libName, final String libDir, final boolean withCache) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(">getDevice(" + libName + ", " + libDir + ", " + withCache + ")");
+        }
         CryptokiDevice result = devices.get(getId(libName, libDir));
         if (result == null) {
             NativeLibrary.addSearchPath(libName, libDir);
-            JNAiNative jnaiNative = (JNAiNative) Native.loadLibrary(libName, JNAiNative.class);
-            CEi ce = new CEi(new Ci(new JNAi(jnaiNative)));
-            result = new CryptokiDevice(ce, getInstallOrReInstallProvider(), libName);
+            final ExtendedJNANativeI jnaiNative = (ExtendedJNANativeI) Native.loadLibrary(libName, ExtendedJNANativeI.class);
+            final ExtendedCryptokiE ce = new ExtendedCryptokiE(new ExtendedCryptoki(new ExtendedJNA(jnaiNative)));
+            result = new CryptokiDevice(ce, withCache, getInstallOrReInstallProvider(), libName);
             devices.put(getId(libName, libDir), result);
         }
         return result;

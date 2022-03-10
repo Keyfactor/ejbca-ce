@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.revoke;
 
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -30,6 +31,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
@@ -46,9 +48,14 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.IncompleteIssuanceJournalDataSessionLocal;
+import org.cesecore.certificates.certificate.IncompletelyIssuedCertificateInfo;
 import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
@@ -58,6 +65,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
@@ -78,9 +86,13 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @EJB
     private CaSessionLocal caSession;
     @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
+    @EJB
+    private IncompleteIssuanceJournalDataSessionLocal incompleteIssuanceJournalDataSession;
     @EJB
     private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
     @EJB
@@ -131,37 +143,48 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         		if (published) {
         			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
         		} else {
-        		    final String serialNumber = certificateData.getSerialNumberHex();
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
-        			final String msg = "Unrevoked cert:" + serialNumber + " reason: " + reason + " Could not be republished.";
-        			final Map<String, Object> details = new LinkedHashMap<>();
-                	details.put("msg", msg);
-                	final int caid = certificateData.getIssuerDN().hashCode();
-                	auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+                    Map<Integer, BasePublisher> all = publisherSession.getAllPublishers();
+                    boolean anySafeDirect = publishers.stream().anyMatch(id -> all.get(id).getSafeDirectPublishing());
+                    if (!anySafeDirect) {
+                        final String serialNumber = certificateData.getSerialNumberHex();
+                        final Map<String, Object> details = new LinkedHashMap<>();
+                        final int caid = certificateData.getIssuerDN().hashCode();
+                        final String msg = "Unrevoked cert:" + serialNumber + " reason: " + reason + " Could not be republished.";
+                        details.put("msg", msg);
+                        auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+                    }
         		}    			
     		} else {
     			// revocation
                 publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
     		}
-    		final int caId = cdw.getBaseCertificateData().getIssuerDN().hashCode();
-            final CAInfo caInfo = caSession.getCAInfo(admin, caId);
-            // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking 
-            // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity) 
-            if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
-                log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
-                try {
-                    publishCrlSession.forceCRL(admin, caId);
-                    publishCrlSession.forceDeltaCRL(admin, caId);
-                } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
-                    log.error("Failed to sign new CRL upon revocation: " + e.getMessage());
-                } catch (AuthorizationDeniedException e) {
-                    // Should never happen.
-                    log.error("Failed to sign new CRL upon revocation because not authorized to CA: " + e.getMessage());
-                }
-            }
+            postRevokeCertificate(admin, cdw);
     	}
     }
-    
+
+    /**
+     * Performs post-revocation actions. Currently, it only generates a new CRL, if CRL generation on revocation is configured.
+     */
+    private void postRevokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw) throws AuthorizationDeniedException {
+        final int caId = cdw.getBaseCertificateData().getIssuerDN().hashCode();
+        final CAInfo caInfo = caSession.getCAInfo(admin, caId);
+        // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking
+        // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity)
+        if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
+            log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
+            try {
+                publishCrlSession.forceCRL(admin, caId);
+                publishCrlSession.forceDeltaCRL(admin, caId);
+            } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
+                log.error("Failed to sign new CRL upon revocation: " + e.getMessage());
+            } catch (AuthorizationDeniedException e) {
+                // Should never happen.
+                log.error("Failed to sign new CRL upon revocation because not authorized to CA: " + e.getMessage());
+            }
+        }
+    }
+
     @Override
     public void revokeCertificates(AuthenticationToken admin, List<CertificateDataWrapper> cdws, Collection<Integer> publishers, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
@@ -236,6 +259,36 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 }
             }
         }
+    }
+
+    @Override
+    public int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin, final long maxIssuanceTimeMillis) throws AuthorizationDeniedException {
+        // Fetch a list of up to 100 "half-issued" certificates
+        final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
+        final Date now = new Date();
+        final RevocationReasons revocationReason = RevocationReasons.CERTIFICATEHOLD;
+        for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
+            final List<Integer> publishers = certProfile.getPublisherList();
+            try {
+                // Add certificate in revoked state
+                final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
+                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
+                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED, certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(),
+                        incompleteIssuedCert.getEndEntityProfileId(), incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
+                        incompleteIssuedCert.getAccountBindingId(), revocationReason, now);
+                // Publish revocation information
+                final BaseCertificateData certificateData = cdw.getBaseCertificateData();
+                final String password = null;
+                publisherSession.storeCertificate(admin, publishers, cdw, password, certificateData.getSubjectDN(), null);
+                postRevokeCertificate(admin, cdw);
+                // The certificate is now in a meaningful state, so it can be removed from IncompleteIssuanceJournalData
+                incompleteIssuanceJournalDataSession.removeFromJournal(incompleteIssuedCert.getCaId(), incompleteIssuedCert.getSerialNumber());
+            } catch (CertificateParsingException e) {
+                log.error("Failed to revoke incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial " + incompleteIssuedCert.getSerialNumber().toString(16));
+            }
+        }
+        return incompleteIssuedCerts.size();
     }
 
     /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */

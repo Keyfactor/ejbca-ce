@@ -8,8 +8,6 @@
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/admin-gui/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-p11/src"/>
-	<classpathentry kind="src" path="modules/appserver-ext/src"/>
-	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
 	<classpathentry kind="src" path="modules/caa/src"/>
 	<classpathentry kind="src" path="modules/caa/src-cli"/>
 	<classpathentry kind="src" path="modules/caa/src-test"/>
@@ -43,7 +41,6 @@
 	<classpathentry kind="src" path="modules/edition-specific/src-ejb"/>
 	<classpathentry kind="src" path="modules/edition-specific/src-interface"/>
 	<classpathentry kind="src" path="modules/edition-specific-ee/src-ejb"/>
-	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-common/src-test"/>
@@ -74,14 +71,12 @@
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-test"/>
 	<classpathentry kind="src" path="modules/est/src-war"/>
-	<classpathentry kind="src" path="modules/externalra-gui/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
 	<classpathentry kind="src" path="modules/externalra/src"/>
 	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
-	<classpathentry kind="src" path="modules/oldlogexport-cli/src"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-cli"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-ejb"/>
@@ -115,8 +110,6 @@
 	<classpathentry kind="src" path="modules/msae/src"/>
 	<classpathentry kind="lib" path="lib/xstream/xmlpull-1.1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xpp3_min-1.1.4c.jar"/>
-	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
-	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/adsddl-1.9.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.14.jar"/>
@@ -126,22 +119,27 @@
 	<classpathentry kind="lib" path="lib/batik/xml-apis-ext-1.3.04.jar"/>
 	<classpathentry kind="lib" path="lib/batik/xmlgraphics-commons-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/ext/mailapi.jar"/>
-	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
-	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.13.jar"/>
-	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/jacknji11-1.3-20210609.jar"/>
+	<classpathentry kind="lib" path="lib/jacknji11-1.2-pk2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/javax.ws.rs-api-2.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/json-patch-1.9.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-3.13.2.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jaxrs-3.13.2.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/tjws-3.13.2.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-3.13.2.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/json-patch-1.13.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-4.7.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-api-4.7.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-4.7.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-4.7.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-4.7.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.2.7.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.2.7.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-4.7.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-threads-2.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/geronimo-osgi-locator-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-api-3.141.59.jar"/>
@@ -156,7 +154,7 @@
 	<classpathentry kind="lib" path="lib/dnsjava-2.1.8.jar"/>
 	<classpathentry kind="lib" path="lib/dnssecjava-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
-	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.17.jar"/>
+	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.18.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="lib/intune/csr-validation-20210507.jar"/>
 	<classpathentry kind="lib" path="lib/intune/json-20201115.jar"/>
@@ -179,32 +177,31 @@
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.30.jar"/>
-	<classpathentry kind="lib" path="lib/ext/slf4j-log4j12-1.7.30.jar"/>
+	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.35.jar"/>
+	<classpathentry kind="lib" path="lib/ext/slf4j-reload4j-1.7.35.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-2.3.9.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jaxb-api-2.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections4-4.4.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-1.27.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-1.5.22.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.5.22.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.5.22.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.5.22.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/guava-28.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.11.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.11.3.jar"/>
-	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.5.jar"/>
+	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-168.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-168.jar"/>
-	<classpathentry kind="lib" path="lib/bctls-jdk15on-168.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-170.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-170.jar"/>
+	<classpathentry kind="lib" path="lib/bctls-jdk15on-170.jar"/>
+	<classpathentry kind="lib" path="lib/bcutil-jdk15on-170.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.4.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-5.1.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/classmate-1.5.1.jar"/>
@@ -233,20 +230,20 @@
 	<classpathentry kind="lib" path="lib/intune/adal4j-1.6.7.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.14.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.4.2.jar"/>
-	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/intune/accessors-smart-2.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/intune/asm-8.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/intune/lang-tag-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
 	<classpathentry kind="lib" path="lib/intune/oauth2-oidc-sdk-9.4.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.10.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-3.3.10.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-3.3.12.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-3.3.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/istack-commons-runtime-3.0.11.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jakarta.xml.bind-api-2.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jaxb-runtime-2.3.3.jar"/>
@@ -254,5 +251,12 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/woodstox-core-5.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/wsdl4j-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/xmlschema-core-2.2.5.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.17.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.17.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.17.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-digester-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
+	<classpathentry kind="lib" path="lib/jee/javaee-api-7.0-1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>

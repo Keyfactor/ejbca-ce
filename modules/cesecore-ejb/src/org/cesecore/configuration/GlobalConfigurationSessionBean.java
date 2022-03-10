@@ -33,6 +33,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -41,6 +42,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
@@ -142,7 +144,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                 // Skip this because it can be too long in the case of a long EAB ID file.
-                if (!"changed:eabmap".equals(entry.getKey().toString())) {
+                if (!"changed:eabmap".equals(entry.getKey().toString())
+                    && !"changed:oauthkeys".equals(entry.getKey().toString())
+                ){
                     details.put(entry.getKey().toString(), entry.getValue().toString());
                 }
             }
@@ -150,6 +154,12 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             if (conf != null && conf.getClass().equals(EABConfiguration.class)) {
                 for (Map.Entry<String,Set<String>> entry : ((EABConfiguration) conf).getEABMap().entrySet()) {
                     details.put("eabnamespace:" + entry.getKey(), entry.getValue().size());
+                }
+            }
+            // If applicable log all of the OAuth providers
+            if (conf != null && conf.getClass().equals(OAuthConfiguration.class)) {
+                for (Map.Entry<String,OAuthKeyInfo> entry : ((OAuthConfiguration) conf).getOauthKeys().entrySet()) {
+                    details.put("oauthkey_" + entry.getKey(), entry.getValue().createLogString());
                 }
             }
             auditSession.log(EventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,

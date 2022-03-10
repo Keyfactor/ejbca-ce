@@ -58,6 +58,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -836,7 +837,7 @@ public abstract class CmpTestCase extends CaTestCase {
         if (signed) {
             // Verify the signature
             byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
-            DERBitString bs = respObject.getProtection();
+            ASN1BitString bs = respObject.getProtection();
             try {
                 final Signature signature = Signature.getInstance(expectedSignAlg, BouncyCastleProvider.PROVIDER_NAME);
                 signature.initVerify(cacert);
@@ -870,7 +871,7 @@ public abstract class CmpTestCase extends CaTestCase {
             }
             // Verify the PasswordBased protection of the message
             byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
-            DERBitString protection = respObject.getProtection();
+            ASN1BitString protection = respObject.getProtection();
             AlgorithmIdentifier pAlg = header.getProtectionAlg();
             log.debug("Protection type is: " + pAlg.getAlgorithm().getId());
             PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
