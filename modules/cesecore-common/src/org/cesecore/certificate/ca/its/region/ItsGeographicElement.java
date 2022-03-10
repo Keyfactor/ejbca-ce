@@ -29,6 +29,6 @@ public interface ItsGeographicElement {
      * may use any(any/all) logic while validating against sequence. 
      * @return
      */
-    //public boolean isSubregion(ItsGeographicElement requestedRegion);
+    public boolean isSubregion(ItsGeographicElement requestedRegion);
     
 }
