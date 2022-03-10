@@ -51,6 +51,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
@@ -111,6 +112,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -136,6 +138,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -476,6 +479,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     } else {
                         endEntityInformation = suppliedUserData;
                     }
+                    
                     // We need to make sure we use the users registered CA here
                     if (endEntityInformation.getCAId() != ca.getCAId()) {
                         final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()),
@@ -488,20 +492,20 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
                         singleActiveCertificateConstraint(admin, endEntityInformation);
                         // Issue the certificate from the request
+                        final CertificateGenerationParams certGenParams = fetchCertGenParams();
                         try {
-                            ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, fetchCertGenParams(),
-                                    updateTime);
+                            ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, certGenParams, updateTime);
                         } catch (CTLogException e) {
                             if (e.getPreCertificate() != null) {
                                 CertificateDataWrapper certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                                 // Publish pre-certificate and abort issuance
                                 postCreateCertificate(admin, endEntityInformation, ca,
-                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()), true);
+                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()), true, certGenParams);
                             }
                             throw new CertificateCreateException(e);
                         }
                         postCreateCertificate(admin, endEntityInformation, ca,
-                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false);
+                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
                     }
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
@@ -1130,7 +1134,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
             final String dn = certificateStoreSession.getCADnFromRequest(req);
-            final String keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            final String keySequence; 
+            
+            if(req instanceof ScepRequestMessage) {
+                keySequence = new BigInteger(req.getCASequence()).toString(16).toUpperCase(); // BigInteger string to uppercase for scep case
+            } else {
+                keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            }
+            
             if (log.isDebugEnabled()) {
                 log.debug(">getCAFromRequest, dn: " + dn + ": " + keySequence);
             }
@@ -1303,18 +1314,19 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         singleActiveCertificateConstraint(admin, endEntityInformation);
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         CertificateDataWrapper certWrapper;
+        final CertificateGenerationParams certGenParams = fetchCertGenParams();
         try {
             certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
-                    notBefore, notAfter, extensions, sequence, fetchCertGenParams(), updateTime);
+                    notBefore, notAfter, extensions, sequence, certGenParams, updateTime);
         } catch (CTLogException e) {
             if (e.getPreCertificate() != null) {
                 certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                 // Publish pre-certificate and abort issuance
-                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true);
+                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true, certGenParams);
             }
             throw new CertificateCreateException(e);
         }
-        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false);
+        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
@@ -1379,10 +1391,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param endEntity the end entity involved
      * @param ca the relevant CA
      * @param certificateWrapper the newly created Certificate
+     * @param certGenParams Used to add certificate to IncompleteIssuanceJournalData
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
     private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
-            final CertificateDataWrapper certificateWrapper, final boolean storePreCert) throws AuthorizationDeniedException {
+            final CertificateDataWrapper certificateWrapper, final boolean storePreCert, final CertificateGenerationParams certGenParams) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificateWrapper.getCertificate(), endEntity);
@@ -1399,6 +1412,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(),
                         endEntity.getCertificateDN(), endEntity.getExtendedInformation());
             }
+        }
+        // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
+        final BaseCertificateData certData = certificateWrapper.getBaseCertificateData();
+        if (certData != null) {
+            certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()), storePreCert);
         }
     }
 

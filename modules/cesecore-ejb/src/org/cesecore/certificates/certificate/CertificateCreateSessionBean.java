@@ -141,6 +141,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SctDataSessionLocal sctDataSession;
+    @EJB
+    private IncompleteIssuanceJournalDataSessionLocal incompleteIssuanceJournalDataSession;
 
     /** Default create for SessionBean without any creation Arguments. */
     @PostConstruct
@@ -410,6 +412,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 return sctDataSession.getThreadPool();
             }
         });
+        certGenParams.setIncompleteIssuanceJournalCallbacks(incompleteIssuanceJournalDataSession);
 
         try {
             CertificateDataWrapper result = null;

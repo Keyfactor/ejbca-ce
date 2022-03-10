@@ -67,6 +67,7 @@ public enum CaCertificateCache  {
 
 	public X509Certificate[] findLatestByIssuerDN(final HashID id) {	    
         final Set<X509Certificate> sCert = certsFromIssuerDN.get(id.getKey());
+        
         if (sCert == null || sCert.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("Certificate not found from IssuerDN HashId in certsFromIssuerDN map. HashID=" + id.getB64());

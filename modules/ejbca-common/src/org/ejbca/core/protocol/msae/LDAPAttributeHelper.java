@@ -49,8 +49,6 @@ public class LDAPAttributeHelper {
     
     // Certificate Template Name Flags
     // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-crtd/1192823c-d839-4bc3-9b6b-fa8c53507ae1
-    private static final int CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT = 1;
-    private static final int CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT_ALT_NAME = 65536;
     private static final int CT_FLAG_SUBJECT_ALT_REQUIRE_DOMAIN_DNS =  4194304;
     private static final int CT_FLAG_SUBJECT_ALT_REQUIRE_DIRECTORY_GUID = 16777216;
     private static final int CT_FLAG_SUBJECT_ALT_REQUIRE_UPN = 33554432;
@@ -61,7 +59,6 @@ public class LDAPAttributeHelper {
     private static final int CT_FLAG_SUBJECT_REQUIRE_EMAIL = 536870912;
     private static final int CT_FLAG_SUBJECT_REQUIRE_COMMON_NAME = 1073741824;
     private static final int CT_FLAG_SUBJECT_REQUIRE_DIRECTORY_PATH = -2147483648;
-    private static final int CT_FLAG_OLD_CERT_SUPPLIES_SUBJECT_AND_ALT_NAME = 8;
 
     public static MSAutoEnrollmentSettingsTemplate getMSAutoEnrollmentSettingTemplate(final javax.naming.directory.Attributes attributes) {
         final MSAutoEnrollmentSettingsTemplate msaeTemplate = new MSAutoEnrollmentSettingsTemplate();

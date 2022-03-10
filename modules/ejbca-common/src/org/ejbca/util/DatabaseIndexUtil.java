@@ -38,6 +38,9 @@ public abstract class DatabaseIndexUtil {
 
     private static final Logger log = Logger.getLogger(DatabaseIndexUtil.class);
 
+    private static final String ORACLE = "oracle";
+    private static final int ORACLE_VERSION = 19;
+
     /** Private helper class to help sorting the columns in the right order even if the database would return them in a different order than the ordinal */
     private static class OrdinalColumn implements Comparable<OrdinalColumn> {
         final short ordinalPosition;
@@ -145,7 +148,19 @@ public abstract class DatabaseIndexUtil {
             // If this failed, try the searching for the table as returned by the database meta data
             if (tableIndexMap.isEmpty()) {
                 log.trace("Looking up all available tables available in the datasource to find a matching table.");
-                try (final ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, null, null)) {
+
+                // ECA-10120: Appserver timeouts with OracleDB if no tablePattern is provided to getTables
+                // and supplying a tablePattern doesn't play nice with other supported databases (postgresql for example)
+                // due to different case sensitivity rules when comparing table names.
+                String tablePattern = null;
+                String[] tableTypes = null;
+                if (databaseMetaData.getDatabaseProductName().equalsIgnoreCase(ORACLE) &&
+                    databaseMetaData.getDatabaseMajorVersion() >= ORACLE_VERSION) {
+                    tablePattern = tableName.toUpperCase();
+                    tableTypes = new String[] { "TABLE" };
+                }
+
+                try (ResultSet resultSetSchemas = databaseMetaData.getTables(null, null, tablePattern, tableTypes)) {
                     while (resultSetSchemas.next()) {
                         final String tableCatalog = resultSetSchemas.getString("TABLE_CAT");
                         final String tableSchema = resultSetSchemas.getString("TABLE_SCHEM");
@@ -175,6 +190,7 @@ public abstract class DatabaseIndexUtil {
         }
         return ret;
     }
+
 
     /** @return a Map of index name and the index representations of each database index present for a schema and table */
     private static Map<String, DatabaseIndex> getDatabaseIndexMap(final DatabaseMetaData databaseMetaData, final String catalog, final String schemaName, final String tableName, final boolean requireUnique) throws SQLException {
