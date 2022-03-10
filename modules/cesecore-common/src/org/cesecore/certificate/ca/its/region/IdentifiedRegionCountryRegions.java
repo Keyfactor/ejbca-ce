@@ -118,4 +118,22 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
         return guiStrings;
     }
 
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        if(requestedRegion instanceof IdentifiedRegionCountryRegions) {
+            // ignore even if whole country 
+            IdentifiedRegionCountryRegions anotherRegion = (IdentifiedRegionCountryRegions) requestedRegion;
+            if(anotherRegion.getCountry()!=country) {
+                return false;
+            }
+            for(int region: anotherRegion.getRegions()) {
+                if(!regions.contains(region)){
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
 }
