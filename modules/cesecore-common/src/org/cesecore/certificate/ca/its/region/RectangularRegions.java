@@ -22,8 +22,30 @@ public class RectangularRegions implements ItsGeographicElement {
                 throw new IllegalArgumentException(RECTANGLE_FORMAT_HINT);
             }
             try {
-                Point2D pointNW = new Point2D(coord[0], coord[1]);
-                Point2D pointSE = new Point2D(coord[2], coord[3]);
+                long northMostLatitude;
+                long southMostLatitude;
+                
+                long eastMostLongitude;
+                long westMostLongitude;
+                
+                if(coord[0] > coord[2]) {
+                    northMostLatitude = coord[0];
+                    southMostLatitude = coord[2];
+                } else {
+                    northMostLatitude = coord[2];
+                    southMostLatitude = coord[0];
+                }
+                
+                if(coord[1] > coord[3]) {
+                    eastMostLongitude = coord[1];
+                    westMostLongitude = coord[3];
+                } else {
+                    eastMostLongitude = coord[1];
+                    westMostLongitude = coord[3];
+                }
+                
+                Point2D pointNW = new Point2D(northMostLatitude, westMostLongitude);
+                Point2D pointSE = new Point2D(southMostLatitude, eastMostLongitude);
                 this.rectangles.add(new Point2D[] {pointNW, pointSE});
             } catch(Exception e) {
                 throw new IllegalArgumentException("Error processing: " + coord + ", " + e.getMessage());
@@ -103,13 +125,16 @@ public class RectangularRegions implements ItsGeographicElement {
 
     @Override
     public void validateArgs() {
-        // TODO: is north east point in north and east of the other point?
         // nothing to do
     }
 
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
         return null;
+    }
+    
+    public List<Point2D[]> getRectangles() {
+        return rectangles;
     }
 
     @Override
@@ -124,6 +149,57 @@ public class RectangularRegions implements ItsGeographicElement {
             guiStrings.add(sb.toString());
         }
         return guiStrings;
+    }
+
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        if(requestedRegion instanceof CircularRegion) {
+            CircularRegion circle = (CircularRegion) requestedRegion;
+            long centerLatitude = circle.getCenter().getLatitude();
+            long centerLongitude = circle.getCenter().getLongitude();
+            double radianLatitude = centerLatitude;
+            radianLatitude *= ItsGeographicRegion.RADIAN_FROM_TENTH_MICRODEGREE;
+            
+            double radiusLatitude = circle.getRadius() * ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE;
+            double radiusLongitude = circle.getRadius() 
+                    * ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE * Math.cos(radianLatitude);
+            
+            // convert to an rectangle
+            long northMostLattitude = centerLatitude + (long)radiusLatitude;
+            long southMostLattitude = centerLatitude - (long)radiusLatitude;
+            
+            long eastMostLongitude = centerLongitude + (long)radiusLongitude;
+            long westMostLongitude = centerLongitude - (long)radiusLongitude;
+            
+            return isSubregion(new RectangularRegions(
+                    "" + northMostLattitude + ItsGeographicRegion.SEPARATOR +
+                    westMostLongitude + ItsGeographicRegion.SEPARATOR +
+                    southMostLattitude + ItsGeographicRegion.SEPARATOR +
+                    eastMostLongitude + ItsGeographicRegion.SEQUENCE_SEPARATOR ));
+            }
+        
+        if(requestedRegion instanceof RectangularRegions) {
+            boolean result;
+            
+            // each rectangle should be in another rectangle
+            for(Point2D[] requestedRectangle: ((RectangularRegions) requestedRegion).getRectangles()) {
+                result = false;
+                for(Point2D[] rectangle: rectangles) {
+                    if(rectangle[0].getLatitude() > requestedRectangle[0].getLatitude() &&
+                        rectangle[1].getLatitude() < requestedRectangle[1].getLatitude() && 
+                        rectangle[0].getLongitude() < requestedRectangle[0].getLongitude() &&
+                        rectangle[1].getLongitude() > requestedRectangle[1].getLongitude()) {
+                        result = true;
+                        break;
+                    }
+                }
+                if(!result) {
+                    return false;
+                }
+            }
+        }
+        
+        return false;
     }
     
 }

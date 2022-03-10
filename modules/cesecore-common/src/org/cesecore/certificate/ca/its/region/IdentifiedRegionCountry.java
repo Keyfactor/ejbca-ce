@@ -66,5 +66,24 @@ public class IdentifiedRegionCountry implements ItsGeographicElement {
     public List<String> getGuiDescription() {
         return Arrays.asList(country.getDisplayName());
     }
+
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        if(requestedRegion instanceof IdentifiedRegionCountryRegions || 
+                requestedRegion instanceof IdentifiedRegionCountry) {
+            IdentifiedRegionCountryRegions anotherRegion = (IdentifiedRegionCountryRegions) requestedRegion;
+            if(anotherRegion.getCountry()==country) {
+                return true;
+            }
+        }
+        
+        if(requestedRegion instanceof IdentifiedRegionCountry) {
+            IdentifiedRegionCountry anotherRegion = (IdentifiedRegionCountry) requestedRegion;
+            if(anotherRegion.getCountry()==country) {
+                return true;
+            }
+        }
+        return false;
+    }
     
 }

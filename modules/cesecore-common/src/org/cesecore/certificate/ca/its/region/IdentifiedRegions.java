@@ -73,5 +73,15 @@ public class IdentifiedRegions implements ItsGeographicElement {
         }
         return guiStrings;
     }
+
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        for(ItsGeographicElement region: this.identifiedRegions) {
+            if(region.isSubregion(requestedRegion)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
 }

@@ -115,5 +115,10 @@ public class Point2D implements ItsGeographicElement {
         guiStrings.add(sb.toString());
         return guiStrings;
     }
+
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        return false; // irrelevant
+    }
     
 }
