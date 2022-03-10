@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.config.oauth;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
@@ -40,8 +41,11 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String NEW_LABEL = "--new-label";
     private static final String NEW_CLIENT = "--new-client";
     private static final String NEW_CLIENT_SECRET = "--new-clientsecret";
+    private static final String NEW_KEYBINDING = "--new-keybinding";
     private static final String NEW_REALM = "--new-realm";
     private static final String NEW_SCOPE = "--new-scope";
+    private static final String NEW_AUDIENCE = "--new-audience";
+    private static final String NEW_AUDIENCECHECKDISABLED = "--new-audiencecheckdisabled";
 
     {
         registerParameter(new Parameter(LABEL, "Label", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -60,10 +64,16 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "New Realm/Tenant name."));
         registerParameter(new Parameter(NEW_SCOPE, "Scope", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Scope."));
+        registerParameter(new Parameter(NEW_AUDIENCE, "Audience", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Audience."));
+        registerParameter(new Parameter(NEW_AUDIENCECHECKDISABLED, "Audience Check Disabled", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Audience check disabled."));
         registerParameter(new Parameter(NEW_CLIENT, "Client Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Client Name."));
         registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client Secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Client Secret."));
+        registerParameter(new Parameter(NEW_KEYBINDING, "Key Binding", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Key Binding."));
     }
 
     @Override
@@ -131,6 +141,9 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         final String newClientSecret = parameters.get(NEW_CLIENT_SECRET);
         final String newRealm = parameters.get(NEW_REALM);
         final String newScope = parameters.get(NEW_SCOPE);
+        final String newAudience = parameters.get(NEW_AUDIENCE);
+        final String newKeyBinding = parameters.get(NEW_KEYBINDING);
+        final String newDisableAudienceCheck = parameters.get(NEW_AUDIENCECHECKDISABLED);
 
         if (newSkewLimit != null) {
             if (validateSkewLimit(newSkewLimit) >= 0) {
@@ -169,6 +182,20 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         if (newScope != null) {
             keyInfoToBeEdited.setScope(newScope);
+        }
+        if (newAudience != null) {
+            keyInfoToBeEdited.setAudience(newAudience);
+        }
+        if (newDisableAudienceCheck != null) {
+            keyInfoToBeEdited.setAudienceCheckDisabled(Boolean.valueOf(newDisableAudienceCheck));
+        }
+        if (newKeyBinding != null) {
+            final Optional<Integer> maybeKeyBindingId = keyBindingNameToId(newKeyBinding);
+            if (!maybeKeyBindingId.isPresent()) {
+                log.info("Key binding '" + newKeyBinding + "' not found");
+                return false;
+            }
+            keyInfoToBeEdited.setKeyBinding(maybeKeyBindingId.get());
         }
             
         return true;
