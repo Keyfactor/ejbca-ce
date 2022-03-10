@@ -19,6 +19,7 @@ import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
 import org.bouncycastle.oer.its.etsi102941.EtsiTs102941Data;
 import org.bouncycastle.oer.its.etsi102941.EtsiTs102941DataContent;
+import org.bouncycastle.oer.its.etsi102941.basetypes.Version;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataEncrypted;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataSigned;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
@@ -93,6 +94,21 @@ public class ECAUtils {
                 (PublicEncryptionKey) certificate.toASN1Structure()
                     .getToBeSigned().getEncryptionKey();
         return new JceITSPublicEncryptionKey.Builder().build(publicEncryptionKey).getKey();
+    }
+    
+    public static PublicVerificationKey createVerificationKey(PublicKey publicKey) {
+        return new JcaITSPublicVerificationKey.Builder().build(publicKey).toASN1Structure();
+    }
+    
+    public static PublicEncryptionKey createEncryptionKey(PublicKey publicKey) {
+        return new JceITSPublicEncryptionKey.Builder().build(publicKey).toASN1Structure();
+    }
+    
+    public static byte[] encodeWrappedData102941(EtsiTs102941DataContent data102941) {
+        EtsiTs102941Data wrappedData102941 = new EtsiTs102941Data(new Version(1), data102941);
+        byte[] encodedData102941 = OEREncoder.toByteArray(wrappedData102941, 
+                EtsiTs102941MessagesCa.EtsiTs102941Data.build());
+        return encodedData102941;
     }
     
     public static byte[] generateHash(String algorithm, byte[] input) {
