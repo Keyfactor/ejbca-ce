@@ -41,6 +41,7 @@ import org.cesecore.certificates.certificate.certextensions.BasicCertificateExte
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
+import org.cesecore.certificates.certificatetransparency.PolicyBreakpoint;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.config.RaStyleInfo;
@@ -72,6 +73,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             CertificateExtension.class,
             CTLogInfo.class,
             Enum.class,
+            PolicyBreakpoint.class,
             GoogleCtPolicy.class,
             HashMap.class,
             HashSet.class,
@@ -91,7 +93,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
             if (!StringUtils.isEmpty(StringTools.stripWhitespace(customClassName))) {
                 Class<? extends Serializable> customClass;
                 try {
-                    customClass = (Class<? extends Serializable>) Class.forName(customClassName);
+                    customClass = Class.forName(customClassName).asSubclass(Serializable.class);
                     ACCEPTED_SERIALIZATION_CLASSES_SET.add(customClass);
                 } catch (ClassNotFoundException e) {
                     log.info("Class '" + customClassName + "' was not found on classpath.");
