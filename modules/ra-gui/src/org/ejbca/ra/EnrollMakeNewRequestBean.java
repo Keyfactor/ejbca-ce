@@ -68,7 +68,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -125,10 +127,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
+    
     private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
-    public static int MAX_CSR_LENGTH = 10240;
+    public static int MAX_CSR_LENGTH = 250000;
+    private static final int MIN_OPTIONAL_FIELDS_TO_SHOW = 2;
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -199,16 +203,99 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private int requestId;
     private boolean requestPreviewMoreDetails;
     private boolean setCustomValidity;
+    private Boolean useKeyRecoverable = null;
     private UIComponent subjectDnMessagesComponent;
     private UIComponent userCredentialsMessagesComponent;
     private UIComponent confirmPasswordComponent;
     private UIComponent validityInputComponent;
+    private String nameConstraintPermitted;
+    private String nameConstraintExcluded;
+    private Boolean sendNotification;
 
+    private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    private int numberOfOptionalSdaFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
+    
     @PostConstruct
     private void postContruct() {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
         this.authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
         this.authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
+    }
+    
+    /**
+     * @return current number of optional subject dn fields to show in the GUI
+     */
+    public int getNumberOfOptionalSdnFieldsToShow() {
+        return numberOfOptionalSdnFieldsToShow;
+    }
+
+    /**
+     * @return current number of optional subject alternative name fields to show in the GUI
+     */
+    public int getNumberOfOptionalSanFieldsToShow() {
+        return numberOfOptionalSanFieldsToShow;
+    }
+    
+    /**
+     * @return current number of optional subject directory attribute fields to show in the GUI
+     */
+    public int getNumberOfOptionalSdaFieldsToShow() {
+        return numberOfOptionalSdaFieldsToShow;
+    }
+    
+    /**
+     * Toggles between showing full optional fields or minimum optional fields for subject dn fields
+     */
+    public void showFullOptionalSdnFieldsToggle() {
+        if(numberOfOptionalSdnFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSdnFieldsToShow = subjectDn.getOptionalFieldInstances().size();
+        }
+    }
+
+    /**
+     * Toggles between showing full optional fields or minimum optional fields for subject alternative name fields
+     */
+    public void showFullOptionalSanFieldsToggle() {
+        if(numberOfOptionalSanFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSanFieldsToShow = subjectAlternativeName.getOptionalFieldInstances().size();
+        }
+    }
+    
+    /**
+     * Toggles between showing full optional fields or minimum optional fields for subject directory attribute fields
+     */
+    public void showFullOptionalSdaFieldsToggle() {
+        if(numberOfOptionalSdaFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+            numberOfOptionalSdaFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+        } else {
+            numberOfOptionalSdaFieldsToShow = subjectDirectoryAttributes.getOptionalFieldInstances().size();
+        }
+    }
+
+    /**
+     * @return true when the size of optional subject dn fields becomes bigger than current value 
+     */
+    public boolean isShowMoreOptionalSdnFields() {
+        return subjectDn.getOptionalFieldInstances().size() > numberOfOptionalSdnFieldsToShow;
+    }
+    
+    /**
+     * @return true when the size of optional subject alternative name fields becomes bigger than current value 
+     */
+    public boolean isShowMoreOptionalSanFields() {
+        return subjectAlternativeName.getOptionalFieldInstances().size() > numberOfOptionalSanFieldsToShow;
+    }
+    
+    /**
+     * @return true when the size of optional subject directory attribute fields becomes bigger than current value 
+     */
+    public boolean isShowMoreOptionalSdaFields() {
+        return subjectDirectoryAttributes.getOptionalFieldInstances().size() > numberOfOptionalSdaFieldsToShow;
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -235,8 +322,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isEmailRequired() {
-        return getEndEntityProfile().isRequired(EndEntityProfile.SENDNOTIFICATION, 0) ||
+        return getSendNotification() ||
                 getEndEntityProfile().isRequired(EndEntityProfile.EMAIL, 0);
+    }
+
+    public boolean isDnEmail(EndEntityProfile.FieldInstance instance) {
+        return instance.getName().equals(DnComponents.DNEMAILADDRESS);
     }
 
     /**
@@ -410,17 +501,38 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (validity == null || validity.isEmpty()) {
             return raLocaleBean.getMessage("enroll_validity_help_empty");
         }
-        final Date now = new Date();
-        final Date validityDate = ValidityDate.getDate(validity, now, true);
+        
+        final Date validityDate = parseValidity();
         if (validityDate == null) {
             return raLocaleBean.getMessage("enroll_validity_help_unparsable");
         }
+        
+        final Date now = new Date();
         final Date maxDate = ValidityDate.getDate(getCertificateProfile().getEncodedValidity(), now, true);
         if (validityDate.after(maxDate)) {
             return raLocaleBean.getMessage("enroll_validity_help_too_long");
         }
+        
         // No help needed
         return StringUtils.EMPTY;
+    }
+    
+    private Date parseValidity() {
+        
+        if(!ValidityDate.isAbsoluteTimeOrDaysHoursMinutes(validity))
+            return null;
+        
+        final Date now = new Date();
+        Date validityDate = ValidityDate.getDateFromRelativeTime(validity, now, true);
+        if (validityDate == null) {
+            try {
+                validityDate = ValidityDate.parseAsIso8601(validity);
+            } catch (ParseException e) {
+                log.error("Validity date parsing failed " + validity);
+                return null;
+            }
+        }
+        return validityDate;
     }
 
     /**
@@ -508,7 +620,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * <li>The validity exceeds the maximum validity as specified by the certificate profile</li>
      * <ul>
      *
-     * @return The validity as a string or null
+     * @return The validity as a UTC date formatted string(yyyy-MM-dd HH:mm:ss) or null
      */
     private String getUserDefinedValidityIfSpecified() {
         if (!isValidityOverrideEnabled()) {
@@ -518,8 +630,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return null;
         }
         final Date anchorDate = new Date();
-        final String validityToCheck = validity;
-        final Date userDate = ValidityDate.getDate(validityToCheck, anchorDate, true);
+        final Date userDate = parseValidity();
         if (userDate == null) {
             return null;
         }
@@ -527,7 +638,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (userDate.after(maxDate)) {
             return null;
         }
-        return validityToCheck;
+        
+        return ValidityDate.formatAsUTCSecondsGranularity(userDate);
     }
 
     /**
@@ -541,16 +653,37 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (renderNonModifiableFields) {
             return true;
         }
-        if (getSubjectDn() != null && !isAllFieldInstancesRendered(getSubjectDn().getFieldInstances())) {
+        if (getSubjectDn() != null && !isAllFieldInstancesRendered(getSubjectDn().getRequiredFieldInstances())) {
             return true;
         }
-        if (getSubjectAlternativeName() != null && !isAllFieldInstancesRendered(getSubjectAlternativeName().getFieldInstances())) {
+        if (getSubjectAlternativeName() != null && !isAllFieldInstancesRendered(getSubjectAlternativeName().getRequiredFieldInstances())) {
             return true;
         }
-        if (getSubjectDirectoryAttributes() != null && !isAllFieldInstancesRendered(getSubjectDirectoryAttributes().getFieldInstances())) {
+        if (getSubjectDirectoryAttributes() != null && !isAllFieldInstancesRendered(getSubjectDirectoryAttributes().getRequiredFieldInstances())) {
             return true;
         }
         return false;
+    }
+    
+    /** 
+     * @return true if number of optional subject dn fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
+     */
+    public boolean isRenderOptionalSdnFieldToggler() {
+        return subjectDn.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
+    }
+
+    /**
+     * @return true if number of optional subject alternative name fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
+     */
+    public boolean isRenderOptionalSanFieldToggler() {
+        return subjectAlternativeName.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
+    }
+    
+    /**
+     * @return true if number of optional subject directory attribute fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
+     */
+    public boolean isRenderOptionalSdaFieldToggler() {
+        return subjectDirectoryAttributes.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
     }
 
     private boolean isAllFieldInstancesRendered(final Collection<FieldInstance> fieldInstances) {
@@ -563,7 +696,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isEABrendered(){
-        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (getCertificateProfile() != null
+        final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (getCertificateProfile() != null
                 && getCertificateProfile().getEabNamespaces() != null && !getCertificateProfile().getEabNamespaces().isEmpty());
         if (result && eabConfiguration == null) {
             eabConfiguration = raMasterApiProxyBean.getGlobalConfiguration(EABConfiguration.class);
@@ -571,31 +704,42 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return result;
     }
 
+    public boolean isOtherDataRendered(){
+        return (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && isSendNotificationRendered();
+    }
+
+    public boolean isSendNotificationRendered(){
+        return getEndEntityProfile().isSendNotificationUsed();
+    }
+    public boolean isSendNotificationDisabled(){
+        return getEndEntityProfile().isSendNotificationRequired();
+    }
+
     /**
      * @return the provideRequestMetadataRendered
      */
     public boolean isProvideUserCredentialsRendered() {
-        return (isKeyAlgorithmAvailable() || isTokenTypeAvilable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
+        return (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
     }
 
     /**
      * @return the confirmRequestRendered
      */
     public boolean isConfirmRequestRendered() {
-        return isKeyAlgorithmAvailable() || isTokenTypeAvilable();
+        return isKeyAlgorithmAvailable() || isTokenTypeAvailable();
     }
 
     /**
      * @return the provideRequestInfoRendered
      */
     public boolean isProvideRequestInfoRendered() {
-        return isKeyAlgorithmAvailable() || isTokenTypeAvilable();
+        return isKeyAlgorithmAvailable() || isTokenTypeAvailable();
     }
 
     /**
      * @return true if a token type has been selected
      */
-    private boolean isTokenTypeAvilable() {
+    private boolean isTokenTypeAvailable() {
         return selectedTokenType > 0;
     }
 
@@ -637,6 +781,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private void setProfileDefaults() {
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         cabfOrganizationIdentifier = endEntityProfile != null ? endEntityProfile.getCabfOrganizationIdentifier() : null;
+        sendNotification = endEntityProfile != null && endEntityProfile.isSendNotificationDefault();
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -661,6 +806,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
 
+    public boolean isRenderOtherData() {
+        return getEndEntityProfile().isKeyRecoverableUsed();
+    }
+    
     public boolean isRenderCertExtensionDataField() {
         return getEndEntityProfile().getUseExtensiondata();
     }
@@ -712,12 +861,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr != null) {
             final PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
             if (pkcs10CertificateRequest.getSubject() != null) {
-                populateRequestFields(RequestFieldType.DN, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getFieldInstances());
+                populateRequestFields(RequestFieldType.DN, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getRequiredFieldInstances());
                 getSubjectDn().update();
             }
             final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
             if (sanExtension != null) {
-                populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getRequiredFieldInstances());
                 getSubjectAlternativeName().update();
             } else {
                 // If an updated CSR did not have any AN, make sure we clean the fields
@@ -728,7 +877,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
                 try {
                     final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
-                    populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
+                    populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getRequiredFieldInstances());
                     getSubjectDirectoryAttributes().update();
                 } catch (ParseException | IllegalArgumentException e) {
                     log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
@@ -833,7 +982,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, username);
         }
     }
-
+    
     /**
      * Calculate the summary of holders from the current state for the certificate Subjects
      */
@@ -887,7 +1036,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         downloadToken(token, APPLICATION_OCTET_STREAM, ".pem");
     }
 
-    private ExtendedInformation getProcessedExtendedInformation() {
+    private ExtendedInformation getProcessedExtendedInformation() throws CertificateExtensionException {
         final ExtendedInformation extendedInformation = new ExtendedInformation();
         final Properties properties = new Properties();
         
@@ -944,6 +1093,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
         
+
+        if(nameConstraintPermitted!=null && !StringUtils.isBlank(nameConstraintPermitted)) {
+            extendedInformation.setNameConstraintsPermitted(
+                    NameConstraint.parseNameConstraintsList(nameConstraintPermitted));
+        }
+        
+        if(nameConstraintExcluded!=null && !StringUtils.isBlank(nameConstraintExcluded)) {
+            extendedInformation.setNameConstraintsExcluded(
+                    NameConstraint.parseNameConstraintsList(nameConstraintExcluded));
+        }
+        
         return extendedInformation;
     }
     
@@ -955,6 +1115,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return generated token as byte array or null if token could not be generated
      */
     private byte[] addEndEntityAndGenerateToken(int tokenType, TokenDownloadType tokenDownloadType) {
+        // Fill subjectDn email fields
+        for(EndEntityProfile.FieldInstance instance: getSubjectDn().getFieldInstances()) {
+            if (instance.isUseDataFromEmailField()) {
+                instance.setValue(getEndEntityInformation().getEmail());
+            }
+        }
+
         //Update the EndEntityInformation data
         getSubjectDn().update();
         getSubjectAlternativeName().update();
@@ -968,15 +1135,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile())).getId());
         endEntityInformation.setDN(getSubjectDn().toString());
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile())).getId());
-        endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
+        
+        try {
+            endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
+        } catch(CertificateExtensionException e) {
+            reportGenericError(null, e);
+            return null;
+        }
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
         endEntityInformation.setTimeCreated(new Date());
         endEntityInformation.setTimeModified(new Date());
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
-        endEntityInformation.setSendNotification(getEndEntityProfile().isSendNotificationUsed() && getEndEntityProfile().isSendNotificationDefault() && !endEntityInformation.getSendNotification());
-        endEntityInformation.setKeyRecoverable(getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault() && !endEntityInformation.getKeyRecoverable());
+        endEntityInformation.setKeyRecoverable(getKeyRecoverableUse());
+        endEntityInformation.setSendNotification(getSendNotification());
         endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
         
@@ -1029,6 +1202,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Add end-entity
             // Generates a keystore token if user has specified "ON SERVER" key pair generation.
             // Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
+            boolean isClearPwd = isClearPassword();
+
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 ret = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 if (ret == null) {
@@ -1060,7 +1235,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             } else if (KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
                 endEntityInformation.setTokenType(selectedTokenType);
-                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
+                raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, isClearPwd);
                 if (!isRequestIdInfoRendered()) {
                     raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
                 }
@@ -1313,28 +1488,32 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String fileName = uploadFile.getName();
 
         csrFileName = fileName;
-
-        String fileContents;
+        byte[] fileContents;
+        String pemEncodedCsr;
         try {
-            fileContents = new String(uploadFile.getBytes());
+            fileContents = uploadFile.getBytes();
+            if (new String(fileContents).startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)) {
+                pemEncodedCsr = new String(uploadFile.getBytes());
+            } else {
+                pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
+            }
         } catch (IOException e) {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
 
-        validateCsr(fileContents);
+        validateCsr(pemEncodedCsr);
         if (algorithmFromCsr != null) { // valid CSR
             uploadCsr();
         }
     }
-
     /**
      * Validate an uploaded CSR and store the extracted key algorithm and CSR for later use.
      */
     public final void validateCsr(String csrValue) throws ValidatorException {
         algorithmFromCsr = null;
-        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
-            log.info("CSR uploaded was too large: " + csrValue.length());
+        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) { 
+           log.info("CSR uploaded was too large: " + csrValue.length());
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
@@ -1343,7 +1522,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-
+        
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
         final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {
@@ -1418,6 +1597,58 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return null;
     }
 
+    public boolean isNameConstraintPermittedRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsPermittedUsed();
+    }
+    
+    public boolean isNameConstraintPermittedRequired() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsPermittedRequired();
+    }    
+
+    public String getNameConstraintPermitted() {
+        return nameConstraintPermitted;
+    }
+
+    public void setNameConstraintPermitted(String nameConstraintPermitted) {
+        this.nameConstraintPermitted = nameConstraintPermitted;
+    }
+    
+    public boolean isNameConstraintExcludedRendered() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsExcludedUsed();
+    }
+    
+    public boolean isNameConstraintExcludedRequired() {
+        EndEntityProfile endEntityProfile = getEndEntityProfile();
+        if(endEntityProfile == null) {
+            return false;
+        }
+        
+        return endEntityProfile.isNameConstraintsExcludedRequired();
+    }    
+
+    public String getNameConstraintExcluded() {
+        return nameConstraintExcluded;
+    }
+
+    public void setNameConstraintExcluded(String nameConstraintExcluded) {
+        this.nameConstraintExcluded = nameConstraintExcluded;
+    }
+    
     /**
      * @return The user-defined validity for the private key.
      */
@@ -1945,6 +2176,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.accountBindingId = accountBindingId;
     }
 
+    public Boolean getSendNotification() {
+        return sendNotification;
+    }
+
+    public void setSendNotification(Boolean sendNotification) {
+        this.sendNotification = sendNotification;
+    }
+
     public String getPsd2NcaName() {
         return psd2NcaName;
     }
@@ -2010,6 +2249,26 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public String getCabfOrganizationIdentifierRegex() {
         return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+    
+    public boolean isUseKeyRecoverable() {
+        if (getEndEntityProfile()!= null) {
+            return getEndEntityProfile().isKeyRecoverableUsed();
+        }
+        return false;
+    }
+    
+    public boolean getKeyRecoverableUse() {
+        if (useKeyRecoverable != null) {
+            return useKeyRecoverable;
+        } else if (getEndEntityProfile() != null) {
+            return (getEndEntityProfile().isKeyRecoverableUsed() && getEndEntityProfile().isKeyRecoverableDefault());
+        }
+        return false;
+    }
+    
+    public void setKeyRecoverableUse(boolean keyRecoverable) {
+        useKeyRecoverable = keyRecoverable;
     }
 
     /**
@@ -2091,7 +2350,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public boolean isSubjectDnRendered() {
         if (getSubjectDn() != null) {
-            for (final FieldInstance fieldInstance : getSubjectDn().getFieldInstances()) {
+            for (final FieldInstance fieldInstance : getSubjectDn().getRequiredFieldInstances()) {
                 if (isFieldInstanceRendered(fieldInstance)) {
                     return true;
                 }
@@ -2112,6 +2371,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 subjectDn = new SubjectDn(endEntityProfile);
                 subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
                 subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
+                for (EndEntityProfile.FieldInstance instance: subjectDn.getRequiredFieldInstances()) {
+                    if (isDnEmail(instance)) {
+                        instance.setUseDataFromEmailField(true);
+                    }
+                }
             }
         }
         return subjectDn;
@@ -2122,7 +2386,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public boolean isSubjectAlternativeNameRendered() {
         if (getSubjectAlternativeName() != null) {
-            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getFieldInstances()) {
+            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getRequiredFieldInstances()) {
+                if (isFieldInstanceRendered(fieldInstance)) {
+                    return true;
+                }
+            }
+            for (final FieldInstance fieldInstance : getSubjectAlternativeName().getOptionalFieldInstances()) {
                 if (isFieldInstanceRendered(fieldInstance)) {
                     return true;
                 }
@@ -2144,12 +2413,27 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return subjectAlternativeName;
     }
 
+    public boolean isClearPassword() {
+        EndEntityProfile profile = getEndEntityProfile();
+
+        if (profile != null) {
+            return profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+        }
+
+        return false;
+    }
+
     /**
-     * @return the if there is at least one field in subject directory attributes that should be rendered
+     * @return the if there is at least one field (required or optional) in subject directory attributes that should be rendered
      */
     public boolean isSubjectDirectoryAttributesRendered() {
         if (getSubjectDirectoryAttributes()!=null) {
-            for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getFieldInstances()) {
+            for (final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getRequiredFieldInstances()) {
+                if (isFieldInstanceRendered(fieldInstance)) {
+                    return true;
+                }
+            }
+            for(final FieldInstance fieldInstance : getSubjectDirectoryAttributes().getOptionalFieldInstances()) {
                 if (isFieldInstanceRendered(fieldInstance)) {
                     return true;
                 }
@@ -2175,6 +2459,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return true if the field instance should be rendered
      */
     public boolean isFieldInstanceRendered(final FieldInstance fieldInstance) {
+        
+        if(fieldInstance == null) {
+            return false;
+        }
         if (log.isTraceEnabled()) {
             log.trace("isFieldInstanceRendered name=" + fieldInstance.getName() + " used=" + fieldInstance.isUsed() + " selectable=" + fieldInstance.isSelectable() +
                     " modifiable=" + fieldInstance.isModifiable() + " selectableValues.size=" + (fieldInstance.getSelectableValues() == null ? 0 : fieldInstance.getSelectableValues().size()));
@@ -2363,7 +2651,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
             concatenated = email + "@" + domain;
         }
-        List<EndEntityProfile.FieldInstance> fieldInstances = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getFieldInstances();
+        List<EndEntityProfile.FieldInstance> fieldInstances = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
         if (index >= 0 && index < fieldInstances.size()) {
             fieldInstances.get(index).setValue(concatenated);
         }

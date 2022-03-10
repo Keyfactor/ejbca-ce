@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +90,14 @@ import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.services.actions.NoAction;
+import org.ejbca.core.model.services.intervals.PeriodicalInterval;
+import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
@@ -141,6 +148,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
         private int sessionTimeoutTime;
+        private boolean hidePublicWeb;
         private int vaStatusTimeConstraint;
 
         // Settings for the cleanup job for removing old OCSP responses created by the presigners.
@@ -187,6 +195,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
+                this.hidePublicWeb = globalConfig.getHidePublicWeb();
                 this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
@@ -258,6 +267,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setPublicWebCertChainOrderRootFirst(boolean publicWebCertChainOrderRootFirst) { this.publicWebCertChainOrderRootFirst=publicWebCertChainOrderRootFirst; }
         public boolean isEnableSessionTimeout() { return enableSessionTimeout; }
         public void setEnableSessionTimeout(boolean enableSessionTimeout) { this.enableSessionTimeout = enableSessionTimeout;}
+        public boolean getHidePublicWeb() { return this.hidePublicWeb; }
+        public void setHidePublicWeb(final boolean hidePublicWeb) { this.hidePublicWeb = hidePublicWeb; }
         public int getSessionTimeoutTime() {return sessionTimeoutTime;}
         public void setSessionTimeoutTime(int sessionTimeoutTime) {this.sessionTimeoutTime = sessionTimeoutTime;}
         public int getVaStatusTimeConstraint() { return vaStatusTimeConstraint; }
@@ -353,6 +364,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private SystemConfigurationCtLogManager ctLogManager;
     private EABConfigManager eabConfigManager;
     private GoogleCtPolicy googleCtPolicy;
+    private boolean incompleteIssuanceServiceCheckDone = false;
+    private boolean incompleteIssuanceServiceAvailable;
 
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
@@ -363,6 +376,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
@@ -574,6 +588,49 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             googleCtPolicy = getGlobalConfiguration().getGoogleCtPolicy();
         }
         return googleCtPolicy;
+    }
+
+    public boolean isIncompleteIssuanceServiceAvailable() {
+        if (!incompleteIssuanceServiceCheckDone) {
+            incompleteIssuanceServiceCheckDone = true;
+            final HashMap<Integer,String> services = serviceSession.getServiceIdToNameMap();
+            incompleteIssuanceServiceAvailable = false;
+            for (final int serviceId : services.keySet()) {
+                final ServiceConfiguration service = serviceSession.getServiceConfiguration(serviceId);
+                if (PreCertificateRevocationWorkerConstants.WORKER_CLASS.equals(service.getWorkerClassPath())) {
+                    incompleteIssuanceServiceAvailable = true;
+                }
+            }
+        }
+        return incompleteIssuanceServiceAvailable;
+    }
+
+    public void addIncompleteIssuanceService() {
+        final ServiceConfiguration serviceConf = new ServiceConfiguration();
+        serviceConf.setActive(true);
+        serviceConf.setDescription("This service revokes certificates where issuance has failed, but pre-certificates have been submitted to CT logs.");
+        serviceConf.setActionClassPath(NoAction.class.getName());
+        serviceConf.setIntervalClassPath(PeriodicalInterval.class.getName());
+        final Properties intervalProperties = new Properties();
+        intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, "5");
+        intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
+        serviceConf.setIntervalProperties(intervalProperties);
+        serviceConf.setWorkerClassPath(PreCertificateRevocationWorkerConstants.WORKER_CLASS);
+        final Properties workerProperties = new Properties();
+        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIME);
+        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
+        serviceConf.setWorkerProperties(workerProperties);
+        serviceConf.setPinToNodes(new String[0]);
+        try {
+            final String serviceName = "Pre-Certificate Revocation Service";
+            serviceSession.addService(getAdmin(), serviceName, serviceConf);
+            addInfoMessage("CTLOGCONFIGURATION_SERVICEADDED", serviceName);
+        } catch (ServiceExistsException e) {
+            final String msg = "Service already exists.";
+            log.info(msg + e.getLocalizedMessage());
+            addNonTranslatedErrorMessage(msg);
+        }
+        incompleteIssuanceServiceCheckDone = false; // trigger a new check
     }
 
     public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
@@ -979,6 +1036,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableExternalScripts(currentConfig.getEnableExternalScripts());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
+                globalConfig.setHidePublicWeb(currentConfig.getHidePublicWeb());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
@@ -1085,6 +1143,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         selectedCustomCertExtensionID = 0;
         googleCtPolicy = null;
         validatorSettings = null;
+        incompleteIssuanceServiceCheckDone = false;
     }
 
     public void toggleUseAutoEnrollment() { getCurrentConfig().setUseAutoEnrollment(!getCurrentConfig().getUseAutoEnrollment()); }
@@ -1313,6 +1372,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRestAvailable()) {
                 available = false;
             }
+            if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRestAvailable()) {
+                available = false;
+            }
             if (protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) && !isRestAvailable()) {
                 available = false;
             }
@@ -1320,6 +1382,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) && !isRestAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName()) && !isRestAvailable()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.ACME.getName()) && !isAcmeAvailable()) {

@@ -207,9 +207,12 @@ public class RaCertificateDetails {
             } else if(certificate.getPublicKey() instanceof ECPublicKey) {
                 this.publicKeyParameter = ((ECPublicKey)publicKey).getW().getAffineX().toString(16) + " " + ((ECPublicKey)publicKey).getW().getAffineY().toString(16);
             }
-            this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
             this.signatureAlgorithm = AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
+            this.expireDate = certificateData.getExpireDate();
+
             if (certificate instanceof X509Certificate) {
+                this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
+
                 final X509Certificate x509Certificate = (X509Certificate)certificate;
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
                 this.subjectAn = CertTools.getSubjectAlternativeName(certificate);
@@ -248,12 +251,14 @@ public class RaCertificateDetails {
                         log.debug("Failed to parse Extended Key Usage extension: " + e.getMessage());
                     }
                 }
-                this.hasNameConstraints = x509Certificate.getExtensionValue(Extension.nameConstraints.getId())!=null;
+                this.hasNameConstraints = x509Certificate.getExtensionValue(Extension.nameConstraints.getId()) != null;
                 final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
                 this.hasCertificateTransparencyScts = ct != null ? ct.hasSCTs(certificate) : false;
                 this.hasQcStatements = QCStatementExtension.hasQcStatement(certificate);
-                isPreCertificate = x509Certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID) == null ? false : true;
+                isPreCertificate = x509Certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID) != null;
+                this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
             } else if (certificate instanceof CardVerifiableCertificate) {
+                this.created = ValidityDate.formatAsUTCSecondsGranularity(CertTools.getNotBefore(certificate).getTime());
                 final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate)certificate;
                 this.typeVersion = String.valueOf(CVCertificateBody.CVC_VERSION);
                 // Role and access rights
@@ -268,10 +273,10 @@ public class RaCertificateDetails {
                         log.debug("Failed to parse CVC AuthorizationTemplate's AuthorizationField: " + e.getMessage());
                     }
                 }
+                this.expires = ValidityDate.formatAsUTCSecondsGranularity(expireDate);
             }
         }
-        this.expireDate = certificateData.getExpireDate();
-        this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
+
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
             this.revocationDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
@@ -352,7 +357,13 @@ public class RaCertificateDetails {
         switch (status) {
         case CertificateConstants.CERT_ACTIVE:
         case CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION:
-            return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_active");
+        {
+            if(isExpired()) {
+                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_expired");
+            } else {
+                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_active");
+            }
+        }
         case CertificateConstants.CERT_ARCHIVED:
         case CertificateConstants.CERT_REVOKED:
             return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_"+revocationReason);

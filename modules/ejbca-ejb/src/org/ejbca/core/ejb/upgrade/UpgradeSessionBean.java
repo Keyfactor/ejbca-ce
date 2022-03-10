@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -42,6 +43,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
@@ -50,8 +52,10 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
@@ -105,6 +109,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
@@ -142,6 +147,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -344,7 +350,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.4.0");
+                setLastPostUpgradedToVersion("7.8.1");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -574,13 +580,22 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             upgradeSession.migrateDatabase730();
             setLastUpgradedToVersion("7.3.0");
         }
-        if (isLesserThan(oldVersion, "7.7.1")) {
+        if (isLesserThan(oldVersion, "7.8.0")) {
             try {
-                upgradeSession.migrateDatabase771();
+                upgradeSession.migrateDatabase780();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-            setLastUpgradedToVersion("7.7.1");
+            setLastUpgradedToVersion("7.8.0");
+        }
+
+        if (isLesserThan(oldVersion, "7.8.1")) {
+            try {
+                upgradeSession.migrateDatabase781();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("7.8.1");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -623,15 +638,79 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.4.0");
         }
+        if (isLesserThan(oldVersion, "7.8.0")) {
+            if (!postMigrateDatabase780()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.8.0");
+        }
+        if (isLesserThan(oldVersion, "7.8.1")) {
+            if (!postMigrateDatabase781()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.8.1");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
 
+    /**
+     * Update all EndEntityProfiles.
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    private boolean postMigrateDatabase781() {
+        log.info("Starting post upgrade to 7.8.1");
+        List<Integer> ids;
+        try {
+            Query query = entityManager.createQuery("SELECT eepd.id FROM EndEntityProfileData eepd");
+            ids = query.getResultList();
+        } catch (Exception e) {
+            log.error("An error occurred when updating data in database table 'EndEntityProfileData': " + e);
+            return false;
+        }
+
+        for(Integer id: ids) {
+            final String eepName = endEntityProfileSession.getEndEntityProfileName(id);
+            try {
+                EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(id);
+                if (EeProfileUpdgaderFor781.shouldUpdate(eep)) {
+                    EeProfileUpdgaderFor781.update(eep);
+                    endEntityProfileSession.changeEndEntityProfile(authenticationToken, eepName, eep);
+                }
+            } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
+                log.error("An error occurred when updating end entity profile '"+ eepName + "': " + e);
+                return false;
+            }
+        }
+        log.info("Post upgrade to 7.8.1 complete.");
+        return true;
+    }
+
+    private boolean postMigrateDatabase780() {
+        // post upgrade is only allowed when all OAuth providers have audience values.
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        boolean missingAudienceFound = false;
+        for (OAuthKeyInfo oAuthKeyInfo : oAuthConfiguration.getOauthKeys().values()) {
+            if (!oAuthKeyInfo.isAudienceCheckDisabled() && (oAuthKeyInfo.getAudience() == null || oAuthKeyInfo.getAudience().trim().isEmpty())) {
+                log.info("OAuth configuration " + oAuthKeyInfo.getLabel()
+                        + " has an empty Audience value.  This is less secure and should be set."
+                        + "  Go to \"System Configuration / Trusted OAuth Providers\" and configure Audience for "
+                        + oAuthKeyInfo.getLabel() + " or de-select Enable Audience Check (not recommended).");
+                missingAudienceFound = true;
+            }
+        }
+
+        return !missingAudienceFound;
+    }
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.4.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.1");
     }
 
     /**
@@ -1923,7 +2002,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if the configuration could not be migrated
      */
     @Override
-    public void migrateDatabase771() throws UpgradeFailedException {
+    public void migrateDatabase780() throws UpgradeFailedException {
         try {
             final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -2021,6 +2100,96 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException e) {
             log.error(e.getMessage());
             throw new UpgradeFailedException(e);
+        }
+    }
+
+    /**
+     * Update GoogleCtPolicy.
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     *
+     * @throws UpgradeFailedException if upgrade fails
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase781() throws UpgradeFailedException {
+        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GoogleCtPolicy ctPolicy = globalConfig.getGoogleCtPolicy();
+        ctPolicy.setBreakpoints(ctPolicy.getBreakpoints());
+        for (int i = 0; i < 4; i++) {
+            ctPolicy.getBreakpoints().get(i).setMinSct(ctPolicy.getMinScts()[i]);
+        }
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
+        } catch (AuthorizationDeniedException e) {
+            log.error("An error occurred when updating GoogleCtPolicy: " + e);
+            throw new UpgradeFailedException(e);
+        }
+    }
+
+    static class EeProfileUpdgaderFor781 {
+        private static final int OLDFIELDBOUNDRARY  = 10000; // 7.8.0 and earlier
+
+        // Private Constants in EndEntityProfile in version 7.8.1
+        private static final int FIELDBOUNDRARY  = 1000000; // Changed in 7.8.1
+        private static final int NUMBERBOUNDRARY = 100; // Field identifier number boundary
+        private static final int FIELDORDERINGBASE = FIELDBOUNDRARY / NUMBERBOUNDRARY; //Introduced in 7.8.1 as SDN, SAN, SDA and SSH Field ordering base
+        private static final String SUBJECTDNFIELDORDER       = "SUBJECTDNFIELDORDER";
+        private static final String SUBJECTALTNAMEFIELDORDER  = "SUBJECTALTNAMEFIELDORDER";
+        private static final String SUBJECTDIRATTRFIELDORDER  = "SUBJECTDIRATTRFIELDORDER";
+        private static final String SSH_FIELD_ORDER = "SSH_FIELD_ORDER";
+
+        private EeProfileUpdgaderFor781() {}
+
+        static boolean shouldUpdate(EndEntityProfile eep) {
+            LinkedHashMap<Object, Object> data = eep.getRawData();
+            // check if the EEP already upgraded by checking existence of the key 1000000, in older EEP, username was saved with key 10000
+            return !data.keySet().contains(FIELDBOUNDRARY);
+        }
+
+        static void update(EndEntityProfile eep) {
+            LinkedHashMap<Object, Object> data = eep.getRawData();
+            LinkedHashMap<Object, Object> upgradedData = new LinkedHashMap<>();
+            ArrayList<Integer> upgradedSdnFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSanFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSdaFieldOrder = new ArrayList<>();
+            ArrayList<Integer> upgradedSshFieldOrder = new ArrayList<>();
+
+            data.forEach((key, value) -> {
+                if (key instanceof Integer) {
+                    final Integer oldKey = (Integer) key;
+                    final Integer fieldType = oldKey / OLDFIELDBOUNDRARY;
+                    final Integer newKey = fieldType * FIELDBOUNDRARY + (oldKey % OLDFIELDBOUNDRARY);
+
+                    upgradedData.put(newKey, value);
+                } else if (SUBJECTDNFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSdnFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SUBJECTALTNAMEFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSanFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SUBJECTDIRATTRFIELDORDER.contains(String.valueOf(key))) {
+                    upgradedSdaFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else if (SSH_FIELD_ORDER.contains(String.valueOf(key))) {
+                    upgradedSshFieldOrder.addAll(getFieldOrderWithUpgradedValues((List<Integer>)value));
+                } else {
+                    upgradedData.put(key, value);
+                }
+            });
+            data.clear();
+            data.put(SUBJECTDNFIELDORDER, upgradedSdnFieldOrder);
+            data.put(SUBJECTALTNAMEFIELDORDER, upgradedSanFieldOrder);
+            data.put(SUBJECTDIRATTRFIELDORDER, upgradedSdaFieldOrder);
+            data.put(SSH_FIELD_ORDER, upgradedSshFieldOrder);
+            data.putAll(upgradedData);
+
+        }
+
+        private static List<Integer> getFieldOrderWithUpgradedValues(List<Integer> fieldOrder) {
+            return fieldOrder.stream()
+                .map(value -> {
+                    final Integer fieldNumber = value / NUMBERBOUNDRARY;
+                    final Integer index = value % NUMBERBOUNDRARY;
+                    return FIELDORDERINGBASE * fieldNumber + index;
+                }).collect(Collectors.toList());
         }
     }
 

@@ -14,7 +14,8 @@
 package org.cesecore.certificates.certificatetransparency;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class contains Google's CT policy as specified in "Certificate Transparency in Chrome" from May 2016.
@@ -24,15 +25,33 @@ import java.util.Arrays;
 public final class GoogleCtPolicy implements Serializable {
     private static final long serialVersionUID = 1337L;
 
-    /* Constants representing rows from Table 1 */
-    private static final int LESS_THAN_15_MONTHS = 0;
-    private static final int BETWEEN_15_AND_27_MONTHS = 1;
-    private static final int BETWEEN_27_AND_39_MONTHS = 2;
-    private static final int MORE_THAN_39_MONTHS = 3;
+    private List<PolicyBreakpoint> breakpoints = new ArrayList<>();
 
     /* Default policy values. Should not be changed unless the policy changes. */
+    /* Need to keep this variable from previous version of this class to retrieve saved SCTs from database.
+    Otherwise, these saved 'Number of SCTs From Distinct Logs' values will be lost at the time of upgrading EJBCA to version 7.8.1 */
     private final int[] minScts = new int[] { 2, 3, 4, 5, };
-    private final int[] lessThanMonths = new int[] { 15, 27, 39, Integer.MAX_VALUE };
+
+    public List<PolicyBreakpoint> getBreakpoints() {
+        if (breakpoints == null) {
+            breakpoints = new ArrayList<>();
+        }
+        if (breakpoints.size() == 0) {
+            breakpoints.add(new PolicyBreakpoint(0, 15, minScts[0]));
+            breakpoints.add(new PolicyBreakpoint(15, 27, minScts[1]));
+            breakpoints.add(new PolicyBreakpoint(27, 39, minScts[2]));
+            breakpoints.add(new PolicyBreakpoint(39, Integer.MAX_VALUE, minScts[3]));
+        }
+        return breakpoints;
+    }
+
+    public void setBreakpoints(List<PolicyBreakpoint> breakpoints) {
+        this.breakpoints = breakpoints;
+    }
+
+    public int[] getMinScts() {
+        return minScts;
+    }
 
     /**
      * Validate the CT policy stored in this object. Currently checking the following:
@@ -41,84 +60,12 @@ public final class GoogleCtPolicy implements Serializable {
      * </ul>
      */
     public boolean isValid() {
-        for (int i = 0; i < minScts.length; i++) {
-            if (minScts[i] <= 0) {
+        for (int i = 0; i < breakpoints.size(); i++) {
+            if (breakpoints.get(i).getMinSct() <= 0) {
                 return false;
             }
         }
         return true;
-    }
-
-    /**
-     * Set the minimum number of SCTs required for certificates with a lifetime
-     * of less than 15 Months.
-     * @param value a number of SCTs
-     */
-    public void setLessThan15Months(final int value) {
-        this.minScts[LESS_THAN_15_MONTHS] = value;
-    }
-
-    /**
-     * Set the minimum number of SCTs required for certificates with a lifetime
-     * of ≥15 Months but ≤27 Months.
-     * @param value a number of SCTs
-     */
-    public void setBetween15And27Months(final int value) {
-        this.minScts[BETWEEN_15_AND_27_MONTHS] = value;
-    }
-
-    /**
-     * Set the minimum number of SCTs required for certificates with a lifetime
-     * of >27 Months but ≤39 Months.
-     * @param value a number of SCTs
-     */
-    public void setBetween27And39Months(final int value) {
-        this.minScts[BETWEEN_27_AND_39_MONTHS] = value;
-    }
-
-    /**
-     * Set the minimum number of SCTs required for non EV-certificates with a lifetime
-     * of more than 39 Months.
-     * @param value a number of SCTs
-     */
-    public void setMoreThan39Months(final int value) {
-        this.minScts[MORE_THAN_39_MONTHS] = value;
-    }
-
-    /**
-     * Get the minimum number of SCTs required for certificates with a lifetime
-     * of less than 15 Months.
-     * @return a number of SCTs
-     */
-    public int getLessThan15Months() {
-        return minScts[LESS_THAN_15_MONTHS];
-    }
-
-    /**
-     * Get the minimum number of SCTs required for certificates with a lifetime
-     * of ≥15 Months but ≤27 Months.
-     * @return a number of SCTs
-     */
-    public int getBetween15And27Months() {
-        return minScts[BETWEEN_15_AND_27_MONTHS];
-    }
-
-    /**
-     * Get the minimum number of SCTs required for certificates with a lifetime
-     * of >27 Months but ≤39 Months.
-     * @return a number of SCTs
-     */
-    public int getBetween27And39Months() {
-        return minScts[BETWEEN_27_AND_39_MONTHS];
-    }
-
-    /**
-     * Get the minimum number of SCTs required for non EV-certificates with a lifetime
-     * of more than 39 Months.
-     * return a number of SCTs
-     */
-    public int getMoreThan39Months() {
-        return minScts[MORE_THAN_39_MONTHS];
     }
     
     /**
@@ -129,7 +76,7 @@ public final class GoogleCtPolicy implements Serializable {
      * @see #getNumberOfBreakpoints
      */
     public int getMinSctsByIndex(int breakpointIndex) {
-        return minScts[breakpointIndex];
+        return breakpoints.get(breakpointIndex).getMinSct();
     }
     
     /**
@@ -140,14 +87,14 @@ public final class GoogleCtPolicy implements Serializable {
      * @see #getNumberOfBreakpoints
      */
     public int getLessThanMonthsByIndex(int breakpointIndex) {
-        return lessThanMonths[breakpointIndex];
+        return breakpoints.get(breakpointIndex).getLessThan();
     }
     
     /**
-     * Returns the number of breakpoints (i.e. indices to getMinSctsByIndex/getLessThanMonthsByIndex)
+     * Returns the number of breakpoints
      */
     public int getNumberOfBreakpoints() {
-        return minScts.length;
+        return breakpoints.size();
     }
 
     @Override
@@ -156,32 +103,39 @@ public final class GoogleCtPolicy implements Serializable {
             return false;
         }
         final GoogleCtPolicy other = (GoogleCtPolicy) obj;
-        return Arrays.equals(minScts, other.minScts) && Arrays.equals(lessThanMonths, other.lessThanMonths);
+        if (other.breakpoints == null ^ breakpoints == null) {
+            return false;
+        }
+        if (other.breakpoints == null && breakpoints == null) {
+            return true;
+        }
+        if (other.breakpoints.size() != breakpoints.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < breakpoints.size(); i++) {
+            if (!breakpoints.get(i).equals(other.getBreakpoints().get(i))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        // We use a sum of the fields hashcodes. The second hashcode is multiplied by some prime number. This is common practice in Java (see String.hashCode)
-        return Arrays.hashCode(minScts) + 311*Arrays.hashCode(lessThanMonths); 
+        return breakpoints.stream().reduce(0, (acc, breakpoint) -> breakpoint.hashCode(), Integer::sum);
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("GoogleCtPolicy{");
-        for (int i = 0; i < minScts.length; i++) {
+        for (int i = 0; i < breakpoints.size(); i++) {
             if (i != 0) {
                 sb.append(',');
             }
             // Validity
-            if (lessThanMonths[i] != Integer.MAX_VALUE) {
-                sb.append(lessThanMonths[i]);
-                sb.append("mo");
-            } else {
-                sb.append("longer");
-            }
-            // 
-            sb.append('=');
-                sb.append(minScts[i]);
+            sb.append(breakpoints.get(i).toString());
         }
         sb.append('}');
         return sb.toString();
