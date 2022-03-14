@@ -13,38 +13,7 @@
 
 package org.cesecore.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
+import com.novell.ldap.LDAPDN;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -101,7 +70,37 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.novell.ldap.LDAPDN;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the CertTools class
@@ -2822,13 +2821,13 @@ public class CertToolsUnitTest {
         try {
             CertTools.verify(null, null);
             fail(errorMessage);
-        } catch (NullPointerException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
             CertTools.verify(null, new ArrayList<X509Certificate>());
             fail(errorMessage);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
@@ -2841,13 +2840,13 @@ public class CertToolsUnitTest {
         try {
             CertTools.verify(x509Certificate, null);
             fail(errorMessage);
-        } catch (NullPointerException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
             CertTools.verify(x509Certificate, new ArrayList<X509Certificate>());
             fail(errorMessage);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
