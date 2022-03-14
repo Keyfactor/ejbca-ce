@@ -138,6 +138,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -485,10 +486,17 @@ public class ProtocolScepHttpTest {
         createScepUser(userName1, userDN1);
 
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
-        // Send message with GET
+        // Send message with POST
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC);
+        
+        // Send a message that is larger than LimitLengthASN1Reader.MAX_REQUEST_SIZE with POST
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // add the real message first, so it will parse OK if the message would be received and give a SC_OK unless there is a limit in place
+        baos.write(msgBytes);
+        baos.write(new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE + 1]);
+        sendScep(true, baos.toByteArray(), HttpServletResponse.SC_BAD_REQUEST);
         
     }
 
