@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -47,6 +48,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -1476,49 +1478,51 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // If we don't have a serialNumber, or CA Sequence, we take a chance that it was actually the subjectDN (for example a RootCA)
         final BigInteger sernoBigInt = req.getSerialNo();
         final String sernoString;
-        
+
         if (sernoBigInt == null) {
             sernoString = req.getCASequence();
         } else {
             sernoString = sernoBigInt.toString();
         }
-        
         if (sernoString != null) {
-            final String dn = lookupCACert(issuerDn, sernoBigInt, sernoString);
-
-            if (log.isDebugEnabled()) {
-                log.debug("Using CA DN: " + dn);
+            Optional<String> optionalDn = lookupCACert(issuerDn, sernoBigInt, sernoString);
+            if (optionalDn.isPresent()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Using CA DN: " + optionalDn.get());
+                }
+                return optionalDn.get();
             }
-            return dn;
         }
 
         return issuerDn;
     }
 
-    private String lookupCACert(final String issuerDn, final BigInteger sernoBigInt, final String sernoString) {
+    private Optional<String> lookupCACert(final String issuerDn, final BigInteger sernoBigInt, final String sernoString) {
         if (log.isDebugEnabled()) {
             log.debug("Got a serialNumber: " + sernoString);
         }
 
         // First lookup cache for potential CA certs.
         final X509Certificate[] caCert = CaCertificateCache.INSTANCE.findLatestByIssuerDN(HashID.getFromDNString(issuerDn));
-        for (final X509Certificate cert : caCert) {
-            if (cert.getSerialNumber().equals(sernoBigInt)) {
-                return CertTools.getSubjectDN(cert);
+        if (ArrayUtils.isNotEmpty(caCert)) {
+            for (final X509Certificate cert : caCert) {
+                if (cert.getSerialNumber().equals(sernoBigInt)) {
+                    return Optional.of(CertTools.getSubjectDN(cert));
+                }
             }
         }
-
+        
         // If no cache hit go for db lookup
         final Certificate cert = findCertificateByIssuerAndSerno(issuerDn, sernoString);
         if (cert != null) {
-            return CertTools.getSubjectDN(cert);
+            return Optional.of(CertTools.getSubjectDN(cert));
         }
         
         // No cache or DB hit, return empty 
         if (log.isDebugEnabled()) {
             log.debug("Returning empty DN since no cert found in cache or DB!");
         }
-        return StringUtils.EMPTY;
+        return Optional.empty();
     }
 
     //
