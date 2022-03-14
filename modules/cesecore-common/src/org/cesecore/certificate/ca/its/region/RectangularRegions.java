@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.cesecore.certificate.ca.its.region;
 
 import java.util.ArrayList;
@@ -21,35 +33,39 @@ public class RectangularRegions implements ItsGeographicElement {
             if(coord.length!=4) {
                 throw new IllegalArgumentException(RECTANGLE_FORMAT_HINT);
             }
-            try {
-                long northMostLatitude;
-                long southMostLatitude;
-                
-                long eastMostLongitude;
-                long westMostLongitude;
-                
-                if(coord[0] > coord[2]) {
-                    northMostLatitude = coord[0];
-                    southMostLatitude = coord[2];
-                } else {
-                    northMostLatitude = coord[2];
-                    southMostLatitude = coord[0];
-                }
-                
-                if(coord[1] > coord[3]) {
-                    eastMostLongitude = coord[1];
-                    westMostLongitude = coord[3];
-                } else {
-                    eastMostLongitude = coord[1];
-                    westMostLongitude = coord[3];
-                }
-                
-                Point2D pointNW = new Point2D(northMostLatitude, westMostLongitude);
-                Point2D pointSE = new Point2D(southMostLatitude, eastMostLongitude);
-                this.rectangles.add(new Point2D[] {pointNW, pointSE});
-            } catch(Exception e) {
-                throw new IllegalArgumentException("Error processing: " + coord + ", " + e.getMessage());
+            this.rectangles.add(reorderGeographicPoints(coord));
+        }
+    }
+    
+    private Point2D[] reorderGeographicPoints(Long[] coord) {
+        try {
+            long northMostLatitude;
+            long southMostLatitude;
+            
+            long eastMostLongitude;
+            long westMostLongitude;
+            
+            if(coord[0] > coord[2]) {
+                northMostLatitude = coord[0];
+                southMostLatitude = coord[2];
+            } else {
+                northMostLatitude = coord[2];
+                southMostLatitude = coord[0];
             }
+            
+            if(coord[1] > coord[3]) {
+                eastMostLongitude = coord[1];
+                westMostLongitude = coord[3];
+            } else {
+                eastMostLongitude = coord[3];
+                westMostLongitude = coord[1];
+            }
+            
+            Point2D pointNW = new Point2D(northMostLatitude, westMostLongitude);
+            Point2D pointSE = new Point2D(southMostLatitude, eastMostLongitude);
+            return new Point2D[] {pointNW, pointSE};
+        } catch(Exception e) {
+            throw new IllegalArgumentException("Error processing: " + coord + ", " + e.getMessage());
         }
     }
     
@@ -74,9 +90,7 @@ public class RectangularRegions implements ItsGeographicElement {
                 coordinates[i] = Long.parseLong(coords[i]);
             }
             try {
-                Point2D pointNW = new Point2D(coordinates[0], coordinates[1]);
-                Point2D pointSE = new Point2D(coordinates[2], coordinates[3]);
-                this.rectangles.add(new Point2D[] {pointNW, pointSE});
+                this.rectangles.add(reorderGeographicPoints(coordinates));
             } catch(Exception e) {
                 throw new IllegalArgumentException("Error processing: " + rectangle + ", " + e.getMessage());
             }
