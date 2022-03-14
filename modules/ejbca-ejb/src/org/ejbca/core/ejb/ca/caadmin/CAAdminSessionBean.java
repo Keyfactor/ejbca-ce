@@ -3994,7 +3994,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             
             // create hashedId8 and update subjectDn/certificate id
             // not overwriting id
-            ca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash("SHA256", certificate.getEncoded())));
+            ca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash(certificate)));
        
             // Save CA
             caSession.editCA(authenticationToken, ca, true);
@@ -4006,7 +4006,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
             
         } catch (AuthorizationDeniedException|CryptoTokenOfflineException|
-                InvalidAlgorithmException|InvalidKeyException | IOException e) {
+                InvalidAlgorithmException|InvalidKeyException e) {
             throw new EJBException(e);
         } 
         
