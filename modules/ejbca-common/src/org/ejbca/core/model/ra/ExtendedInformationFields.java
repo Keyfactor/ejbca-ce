@@ -31,6 +31,10 @@ public class ExtendedInformationFields {
 
     public static final String CUSTOM_CANONICAL_PUBLICKEY = "CANONICALPUBLICKEY";
     
+    public static final String CUSTOM_ITS_REGION = "ITSREGION";
+    
+    public static final String CUSTOM_ITS_VALIDITY = "ITSCALIDITY";
+    
     public static final String CUSTOM_LATEST_ENROLL_REQUEST_HASH = "LATESTREQUESTHASH";
     
     public static final String CUSTOM_CURRENT_ENROLL_CREDENTIAL = "CURRENTENROLLCREDENTIAL";
