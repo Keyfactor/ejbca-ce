@@ -1,3 +1,12 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           * 
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
 package org.cesecore.util;
 
 import java.io.ByteArrayInputStream;
@@ -17,8 +26,6 @@ import org.bouncycastle.its.jcajce.JcaITSPublicVerificationKey;
 import org.bouncycastle.its.jcajce.JceITSPublicEncryptionKey;
 import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
-import org.cesecore.util.EtsiTs102941Data;
-import org.cesecore.util.EtsiTs102941DataContent;
 import org.bouncycastle.oer.its.etsi102941.basetypes.Version;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataEncrypted;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataSigned;
@@ -29,7 +36,6 @@ import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
 import org.bouncycastle.oer.its.ieee1609dot2.Opaque;
 import org.bouncycastle.oer.its.ieee1609dot2.SignedData;
 import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate;
-import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedData;
 import org.bouncycastle.oer.its.ieee1609dot2.VerificationKeyIndicator;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Duration;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.EccP256CurvePoint;
@@ -40,12 +46,12 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Point256;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Point384;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicEncryptionKey;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Signature;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.ValidityPeriod;
 import org.bouncycastle.oer.its.template.etsi102941.EtsiTs102941MessagesCa;
 import org.bouncycastle.oer.its.template.etsi103097.EtsiTs103097Module;
 import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.util.encoders.Hex;
 
 public class ECAUtils {

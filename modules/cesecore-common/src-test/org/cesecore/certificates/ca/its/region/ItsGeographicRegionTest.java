@@ -1,6 +1,7 @@
-package org.cesecore.certificates.ca;
+package org.cesecore.certificates.ca.its.region;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -86,26 +87,26 @@ public class ItsGeographicRegionTest {
     
     @Test
     public void testRectangularRegion() {
-        List<Long[]> rectangles = Arrays.asList(new Long[]{1234l, 5678l, 125l, 1234l}, 
-                                                new Long[]{898l, 578l, 99005l, 3499l});
+        List<Long[]> rectangles = Arrays.asList(new Long[]{1234l, 5678l, 125l, 1750l}, 
+                                                new Long[]{898l, 578l, 99005l, 349l});
         RectangularRegions region = new RectangularRegions(rectangles);
-        assertEquals("rectangle:1234,5678,125,1234;898,578,99005,3499;", region.toStringFormat());
+        assertEquals("rectangle:1234,1750,125,5678;99005,349,898,578;", region.toStringFormat());
         
         region = new RectangularRegions(rectangles.subList(0, 1));
-        assertEquals("rectangle:1234,5678,125,1234;", region.toStringFormat());
+        assertEquals("rectangle:1234,1750,125,5678;", region.toStringFormat());
         
         ItsGeographicElement geoElement = 
-                ItsGeographicRegion.getItsGeographicElementFromString("rectangle:1234,5678,125,1234;898,578,99005,3499;");
+                ItsGeographicRegion.getItsGeographicElementFromString("rectangle:1234,1750,125,5678;99005,349,898,578;");
         
         assertEquals("<b>North-West point:</b> "
-                + "<em>latitude:</em> 1234;&nbsp;<em>longitude:</em> 5678<br>"
+                + "<em>latitude:</em> 1234;&nbsp;<em>longitude:</em> 1750<br>"
                 + "<b>South-East point:</b> "
-                + "<em>latitude:</em> 125;&nbsp;<em>longitude:</em> 1234", geoElement.getGuiDescription().get(0));
+                + "<em>latitude:</em> 125;&nbsp;<em>longitude:</em> 5678", geoElement.getGuiDescription().get(0));
         
         assertEquals("<b>North-West point:</b> "
-                + "<em>latitude:</em> 898;&nbsp;<em>longitude:</em> 578<br>"
+                + "<em>latitude:</em> 99005;&nbsp;<em>longitude:</em> 349<br>"
                 + "<b>South-East point:</b> "
-                + "<em>latitude:</em> 99005;&nbsp;<em>longitude:</em> 3499", geoElement.getGuiDescription().get(1));
+                + "<em>latitude:</em> 898;&nbsp;<em>longitude:</em> 578", geoElement.getGuiDescription().get(1));
     }
     
     @Test
@@ -144,17 +145,54 @@ public class ItsGeographicRegionTest {
         ItsGeographicElement geoElement = 
                 ItsGeographicRegion.getItsGeographicElementFromString(
                         "identifed:country:Denmark;country_region:Belgium,123,45,34;"
-                        + "country:-Europe;country_region:Austria,66;");
+                        + "country:Italy;country_region:Austria,66;");
         
         assertEquals("Denmark", geoElement.getGuiDescription().get(0));
         
         assertEquals("<b>Country:</b> Belgium<br><b>Regions:</b> 123,45,34,", 
                                                 geoElement.getGuiDescription().get(1));
         
-        assertEquals("-Europe", geoElement.getGuiDescription().get(2));
+        assertEquals("Italy", geoElement.getGuiDescription().get(2));
         
         assertEquals("<b>Country:</b> Austria<br><b>Regions:</b> 66,", 
                 geoElement.getGuiDescription().get(3));
+        
+        ItsGeographicElement subElement1 = 
+                ItsGeographicRegion.getItsGeographicElementFromString(
+                        "identifed:country:Denmark;country_region:Belgium,123,45,34;");
+        assertTrue(geoElement.isSubregion(subElement1));
+        
+        ItsGeographicElement subElement2 = 
+                ItsGeographicRegion.getItsGeographicElementFromString(
+                        "identifed:country_region:Denmark,123,45;country_region:Belgium,123,45,34;");
+        assertTrue(geoElement.isSubregion(subElement2));
+        
+        ItsGeographicElement subElement3 = 
+                ItsGeographicRegion.getItsGeographicElementFromString(
+                        "identifed:country:Denmark;country_region:Belgium,123,45,34;country:Latvia;");
+        assertFalse(geoElement.isSubregion(subElement3));
+        
+        ItsGeographicElement subElement4 = 
+                ItsGeographicRegion.getItsGeographicElementFromString(
+                        "identifed:country_region:Belgium,123,99;");
+        assertFalse(geoElement.isSubregion(subElement4));
+        
+        ItsGeographicElement subElement5 = 
+                ItsGeographicRegion.getItsGeographicElementFromString(
+                        "identifed:country:Latvia;");
+        assertFalse(geoElement.isSubregion(subElement5));
+        
+        ItsGeographicElement geoElement2 = 
+                ItsGeographicRegion.getItsGeographicElementFromString(
+                        "identifed:country:Denmark;"
+                        + "country:-Europe;country_region:Austria,66;");
+        assertEquals("-Europe", geoElement2.getGuiDescription().get(1));
+        assertTrue(geoElement2.isSubregion(subElement1));
+        assertTrue(geoElement2.isSubregion(subElement2));
+        assertTrue(geoElement2.isSubregion(subElement3));
+        assertTrue(geoElement2.isSubregion(subElement4));
+        assertTrue(geoElement2.isSubregion(subElement5));
+        
     }
     
     @Test
@@ -178,7 +216,7 @@ public class ItsGeographicRegionTest {
     
     @Test
     public void testConstructItsRegionFromBCRectangle() {
-        roundTripBCtoEJBCA("rectangle:12,23,34,56;78,90,76,65;");
+        roundTripBCtoEJBCA("rectangle:34,23,12,56;78,65,76,90;");
     }
     
     @Test
