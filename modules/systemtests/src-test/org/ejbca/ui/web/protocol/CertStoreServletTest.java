@@ -13,6 +13,9 @@
 
 package org.ejbca.ui.web.protocol;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -46,18 +49,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 
 /**
  * Testing of CertStoreServlet
  * 
- * @version $Id$
  * 
  */
 public class CertStoreServletTest extends CaTestCase {
-    private final static Logger log = Logger.getLogger(CertStoreServletTest.class);
+    private static final Logger log = Logger.getLogger(CertStoreServletTest.class);
     
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -78,16 +77,16 @@ public class CertStoreServletTest extends CaTestCase {
     @Test
     public void testIt() throws Exception {
         final CAInHierarchy ca1 = new CAInHierarchy("root", this);
-        final CAInHierarchy ca1_1 = new CAInHierarchy("1 from root", this);
-        ca1.subs.add(ca1_1);
-        final CAInHierarchy ca2_1 = new CAInHierarchy("2 from root at" + new Date(), this);
-        ca1.subs.add(ca2_1);
-        final CAInHierarchy ca1_1_1 = new CAInHierarchy("1 from 1 from root", this);
-        ca1_1.subs.add(ca1_1_1);
-        final CAInHierarchy ca2_1_1 = new CAInHierarchy("2 from 1 from root at " + new Date(), this);
-        ca1_1.subs.add(ca2_1_1);
-        final CAInHierarchy ca3_1_1 = new CAInHierarchy("3 from 1 from root", this);
-        ca1_1.subs.add(ca3_1_1);
+        final CAInHierarchy ca11 = new CAInHierarchy("1 from root", this);
+        ca1.subs.add(ca11);
+        final CAInHierarchy ca21 = new CAInHierarchy("2 from root at" + new Date(), this);
+        ca1.subs.add(ca21);
+        final CAInHierarchy ca111 = new CAInHierarchy("1 from 1 from root", this);
+        ca11.subs.add(ca111);
+        final CAInHierarchy ca211 = new CAInHierarchy("2 from 1 from root at " + new Date(), this);
+        ca11.subs.add(ca211);
+        final CAInHierarchy ca311 = new CAInHierarchy("3 from 1 from root", this);
+        ca11.subs.add(ca311);
         try {
             final Set<Integer> setOfSubjectKeyIDs = new HashSet<>();
             final X509Certificate rootCert = ca1.createCA(setOfSubjectKeyIDs);
@@ -107,25 +106,29 @@ public class CertStoreServletTest extends CaTestCase {
         final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
         connection.connect();
         Assert.assertTrue( "Fetching CRL with '"+sURI+"' is not working.", HttpURLConnection.HTTP_OK==connection.getResponseCode() );
-        {
-            final Map<String, List<String>> mheaders = connection.getHeaderFields();
-            Assert.assertNotNull(mheaders);
-            final StringWriter sw = new StringWriter();
-            final PrintWriter pw = new PrintWriter(sw);
-            pw.println("Header of page with valid links to certificates");
-            for ( Entry<String, List<String>> e : mheaders.entrySet() ) {
-                Assert.assertNotNull(e);
-                Assert.assertNotNull(e.getValue());
-                pw.println("\t"+e.getKey());
-                for ( String s : e.getValue()) {
-                    pw.println("\t\t"+s);
-                }
-            }
-            pw.close();
-            log.debug(sw);
-        }
+        displayPage(connection);
         assertEquals("text/html;charset=UTF-8", connection.getContentType());
     }
+
+    private void displayPage(final HttpURLConnection connection) {
+        final Map<String, List<String>> mheaders = connection.getHeaderFields();
+        Assert.assertNotNull(mheaders);
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        pw.println("Header of page with valid links to certificates");
+        for (Entry<String, List<String>> e : mheaders.entrySet()) {
+            Assert.assertNotNull(e);
+            Assert.assertNotNull(e.getValue());
+            pw.println("\t" + e.getKey());
+            for (String s : e.getValue()) {
+                pw.println("\t\t" + s);
+            }
+        }
+        pw.close();
+        log.debug(sw);
+
+    }
+    
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
@@ -133,7 +136,7 @@ public class CertStoreServletTest extends CaTestCase {
 }
 
 class CAInHierarchy {
-    private final static AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertStoreServletTest"));
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertStoreServletTest"));
     private final String name;
     final Set<CAInHierarchy> subs;
     private final CaTestCase testCase;
@@ -141,10 +144,10 @@ class CAInHierarchy {
     private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
-    CAInHierarchy(String _name, CaTestCase _testCase) {
-        this.name = _name;
+    CAInHierarchy(final String name, final CaTestCase testCase) {
+        this.name = name;
         this.subs = new HashSet<>();
-        this.testCase = _testCase;
+        this.testCase = testCase;
     }
 
     X509Certificate createCA(Set<Integer> setOfSubjectKeyIDs) throws Exception {
