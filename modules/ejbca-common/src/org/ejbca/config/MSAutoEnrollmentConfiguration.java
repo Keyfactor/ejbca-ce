@@ -44,31 +44,31 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
     
     // MSAE Kerberos
-    private static final String MSAE_FOREST_ROOT = "msaeForestRoot";
-    private static final String MSAE_DOMAIN = "msaeDomain";
-    private static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
-    private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
-    private static final String POLICY_NAME = "policyName";
-    private static final String POLICY_UID = "policyUid";
-    private static final String SPN = "servicePrincipalName";
+    public static final String MSAE_FOREST_ROOT = "msaeForestRoot";
+    public static final String MSAE_DOMAIN = "msaeDomain";
+    public static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
+    public static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
+    public static final String POLICY_NAME = "policyName";
+    public static final String POLICY_UID = "policyUid";
+    public static final String SPN = "servicePrincipalName";
 
     
     // MSAE Krb5Conf
-    private static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
-    private static final Object MSAE_KRB5_CONF_FILENAME = "msaeKrb5ConfFilename";
+    public static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
+    public static final Object MSAE_KRB5_CONF_FILENAME = "msaeKrb5ConfFilename";
 
     // MSAE Settings
-    private static final String IS_USE_SSL = "isUseSSL";
-    private static final String AD_CONNECTION_PORT = "adConnectionPort";
-    private static final String AD_LOGIN_DN = "adLoginDN";
-    private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
-    private static final String AUTH_KEY_BINDING = "authKeyBinding";
+    public static final String IS_USE_SSL = "isUseSSL";
+    public static final String AD_CONNECTION_PORT = "adConnectionPort";
+    public static final String AD_LOGIN_DN = "adLoginDN";
+    public static final String AD_LOGIN_PASSWORD = "adLoginPassword";
+    public static final String AUTH_KEY_BINDING = "authKeyBinding";
 
     // MS Enrollment Servlet Settings
-    private static final String CA_NAME = "caName";
+    public static final String CA_NAME = "caName";
 
     // Template to Settings
-    private static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
+    public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
 
     private static int DEFAULT_AD_CONNECTION_PORT = 389;
@@ -98,7 +98,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         }
     }
 
-    private void initWithDefaults(String alias) {
+    public void initWithDefaults(String alias) {
         if(StringUtils.isNotEmpty(alias)) {
             alias = alias + ".";
             data.put(alias + MSAE_FOREST_ROOT, "");
