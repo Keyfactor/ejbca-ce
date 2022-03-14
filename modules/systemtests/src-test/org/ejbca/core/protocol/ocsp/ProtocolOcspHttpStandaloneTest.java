@@ -232,7 +232,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test04OcspUnknown() throws Exception {
-        loadUserCert(caid);
+        loadUserCert(this.caid);
         super.test04OcspUnknown();
     }
 
