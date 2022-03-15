@@ -28,7 +28,7 @@ public class CircularRegion implements ItsGeographicElement {
     public static final String CIRCLE_FORMAT_HINT = "Expected format: centerLatitude,centerLongitude,radius "
                                             + "e.g. 12892199,994123,13222. max radius: 65535";
     
-    public CircularRegion(int centerLatitude,  int centerLongitude, int radius) {
+    public CircularRegion(long centerLatitude, long centerLongitude, int radius) {
         this.center = new Point2D(centerLatitude, centerLongitude);
         this.radius = radius;
         validateArgs();
@@ -160,7 +160,7 @@ public class CircularRegion implements ItsGeographicElement {
         double distanceLatitude = latitudeDiffCenters * ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE;
         double distanceLongitude = longitudeDiffCenters
                 * ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE 
-                * Math.cos(center.getLatitude() * ItsGeographicRegion.RADIAN_FROM_TENTH_MICRODEGREE);
+                * Math.cos(ItsGeographicRegion.getRadianFromItsLatitude(center.getLatitude()));
         
         return Math.sqrt(distanceLatitude*distanceLatitude + distanceLongitude*distanceLongitude);
     }
