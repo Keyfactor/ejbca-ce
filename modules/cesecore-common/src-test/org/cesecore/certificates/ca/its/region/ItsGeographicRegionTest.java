@@ -110,6 +110,68 @@ public class ItsGeographicRegionTest {
     }
     
     @Test
+    public void testRectangularRegionSubregion() {
+        List<Long[]> rectangles = Arrays.asList(new Long[]{10000l, 5000l, 9000l, 6000l}, 
+                                                new Long[]{10500l, 5500l, 10000l, 6250l});
+        RectangularRegions region = new RectangularRegions(rectangles);
+        assertEquals("rectangle:10000,5000,9000,6000;10500,5500,10000,6250;", region.toStringFormat());
+        
+        RectangularRegions subregion = new RectangularRegions(rectangles.subList(0, 1));
+        assertTrue(region.isSubregion(subregion));
+        
+        subregion = new RectangularRegions("10350,5800,10100,6100;");
+        assertTrue(region.isSubregion(subregion));
+
+        subregion = new RectangularRegions("10000,5000,9000,6000;10350,5800,10100,6100;");
+        assertTrue(region.isSubregion(subregion));
+        
+        // actually subregion but currently not supported
+        subregion = new RectangularRegions("10250,5500,9750,6000;");
+        assertFalse(region.isSubregion(subregion));
+    }
+    
+    @Test
+    public void testGeometricSubregion() {
+//        Rönninge - 59.189708, 17.744815
+//        Åkersberga - 59.463282, 18.316104
+//        Södermalm - 59.315384, 18.068912
+//        Norra Botkyrka - 59.238834, 17.849437
+//        
+        RectangularRegions region = new RectangularRegions(
+                "" + 591_897_080 + "," + 177_448_150 + "," // Rönninge
+                   + 594_632_820 + "," + 183_161_040 + ";"); // Åkersberga
+        
+        CircularRegion circle = new CircularRegion(593_153_840, 180_689_120, 10000);// Södermalm
+        
+        assertTrue(region.isSubregion(circle)); // 594062930,178907679,592244750,182470561;
+        
+        circle = new CircularRegion(592_388_340, 178_494_370, 20000);// Botkyrka
+        
+        assertFalse(region.isSubregion(circle)); // 594206521,174939489,590570159,182049251;
+        
+        circle = new CircularRegion(592_388_340, 178_494_370, 10000);// Botkyrka
+        
+        assertFalse(region.isSubregion(circle)); // 593297430,176716930,591479250,180271810;
+
+        CircularRegion circle2 = new CircularRegion(592_388_340, 178_494_370, 3000);// Botkyrka
+        
+        assertTrue(region.isSubregion(circle2)); // 592661067,177961138,592115613,179027602
+        
+        assertTrue(circle.isSubregion(circle2)); // concentric
+        
+        circle = new CircularRegion(593_153_840, 180_689_120, 25000);// Södermalm
+        
+        assertTrue(circle.isSubregion(circle2)); // non concentric - road distance 19.5km, calculated ~15km
+        
+        assertTrue(circle.isSubregion(region)); // ~24.5km
+        
+        region = new RectangularRegions("592661067,177961138,592115613,179027602");// Botkyrka, 3000m
+        
+        assertTrue(circle.isSubregion(region)); // 19km (3 * 1.414 + 15km)
+         
+    }
+    
+    @Test
     public void testRectangularRegionInvalid() {
         try {
             new RectangularRegions("rectangle:1234,5678,125,1234;");
