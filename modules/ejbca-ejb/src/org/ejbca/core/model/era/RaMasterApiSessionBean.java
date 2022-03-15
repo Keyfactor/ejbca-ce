@@ -117,7 +117,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -3140,9 +3139,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             // We don't want to roll back certificate enrollment if a post-issuance step failed.
             // So we delete the end-entity only, rather than triggering a rollback.
-            endEntityManagementSession.revokeAndDeleteUser(new AlwaysAllowLocalAuthenticationToken("Failed Enrollment Cleanup"), endEntityInformation.getUsername(), RevocationReasons.UNSPECIFIED.getDatabaseValue());
-        } catch (ApprovalException | NoSuchEndEntityException | AuthorizationDeniedException | WaitingForApprovalException
-                | CouldNotRemoveEndEntityException | RuntimeException e) {
+            //
+            // We only delete the end entity here. The createCertificate/generateOrKeyRecoverToken calls
+            // are responsible for revocation is the certificate is issued half-way.
+            endEntityManagementSession.deleteUser(new AlwaysAllowLocalAuthenticationToken("Failed Enrollment Cleanup"), endEntityInformation.getUsername());
+        } catch (NoSuchEndEntityException | AuthorizationDeniedException | CouldNotRemoveEndEntityException | RuntimeException e) {
             // We don't want the admin to focus on this error, so we use lower log levels than normal
             log.info("End entity could not be deleted after issuance failure: " + e.getMessage());
             log.trace("Stack trace from cleanup", e);
