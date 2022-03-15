@@ -40,8 +40,7 @@ public class ItsGeographicRegion implements Serializable {
     public static final String REGION_TYPE_IDENTIFIED_COUNTRY_REGION = "country_region:";
     public static final String REGION_TYPE_IDENTIFIED = "identifed:";
     
-    public static final double METER_PER_TENTH_MICRODEGREE_LATITUDE = 0.11;
-    public static final double RADIAN_FROM_TENTH_MICRODEGREE = 174_533;
+    public static final double METER_PER_TENTH_MICRODEGREE_LATITUDE = 0.011;
     
     public enum RegionType {
         // not supporting extension and polygonal for now
@@ -214,4 +213,8 @@ public class ItsGeographicRegion implements Serializable {
         }
     }
 
+    public static double getRadianFromItsLatitude(double latitude) {
+        latitude /= 100_000_00;
+        return (Math.PI/ 180.0) * latitude;
+    }
 }

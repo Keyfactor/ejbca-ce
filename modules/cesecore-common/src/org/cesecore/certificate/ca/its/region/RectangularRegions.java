@@ -171,12 +171,11 @@ public class RectangularRegions implements ItsGeographicElement {
             CircularRegion circle = (CircularRegion) requestedRegion;
             long centerLatitude = circle.getCenter().getLatitude();
             long centerLongitude = circle.getCenter().getLongitude();
-            double radianLatitude = centerLatitude;
-            radianLatitude *= ItsGeographicRegion.RADIAN_FROM_TENTH_MICRODEGREE;
+            double radianLatitude = ItsGeographicRegion.getRadianFromItsLatitude(centerLatitude);
             
-            double radiusLatitude = circle.getRadius() * ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE;
+            double radiusLatitude = circle.getRadius() / ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE;
             double radiusLongitude = circle.getRadius() 
-                    * ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE * Math.cos(radianLatitude);
+                    / (ItsGeographicRegion.METER_PER_TENTH_MICRODEGREE_LATITUDE * Math.cos(radianLatitude));
             
             // convert to an rectangle
             long northMostLattitude = centerLatitude + (long)radiusLatitude;
@@ -199,10 +198,10 @@ public class RectangularRegions implements ItsGeographicElement {
             for(Point2D[] requestedRectangle: ((RectangularRegions) requestedRegion).getRectangles()) {
                 result = false;
                 for(Point2D[] rectangle: rectangles) {
-                    if(rectangle[0].getLatitude() > requestedRectangle[0].getLatitude() &&
-                        rectangle[1].getLatitude() < requestedRectangle[1].getLatitude() && 
-                        rectangle[0].getLongitude() < requestedRectangle[0].getLongitude() &&
-                        rectangle[1].getLongitude() > requestedRectangle[1].getLongitude()) {
+                    if(rectangle[0].getLatitude() >= requestedRectangle[0].getLatitude() &&
+                        rectangle[1].getLatitude() <= requestedRectangle[1].getLatitude() && 
+                        rectangle[0].getLongitude() <= requestedRectangle[0].getLongitude() &&
+                        rectangle[1].getLongitude() >= requestedRectangle[1].getLongitude()) {
                         result = true;
                         break;
                     }
@@ -211,6 +210,7 @@ public class RectangularRegions implements ItsGeographicElement {
                     return false;
                 }
             }
+            return true;
         }
         
         return false;

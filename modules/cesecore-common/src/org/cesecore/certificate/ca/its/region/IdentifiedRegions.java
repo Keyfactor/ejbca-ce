@@ -89,14 +89,14 @@ public class IdentifiedRegions implements ItsGeographicElement {
     @Override
     public boolean isSubregion(ItsGeographicElement requestedRegion) {
         
+        if(toStringFormat().contains(ItsSupportedCountries.WHOLE_EUROPE.getDisplayName())) {
+            return true;
+        }
         if(requestedRegion instanceof IdentifiedRegions) {
             for(ItsGeographicElement region: ((IdentifiedRegions)requestedRegion).identifiedRegions) {
                 boolean result = false;
                 for(ItsGeographicElement superRegion: this.identifiedRegions) {
-                    if(superRegion instanceof IdentifiedRegionCountry && 
-                            ((IdentifiedRegionCountry) superRegion).getCountry().equals(ItsSupportedCountries.WHOLE_EUROPE)) {
-                        return true;
-                    }
+                    
                     if(superRegion.isSubregion(region)) {
                         result = true; // each identified region is sub-region to one
                         break;
