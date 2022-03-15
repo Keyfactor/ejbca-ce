@@ -36,7 +36,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
-import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -206,10 +205,9 @@ public class RaMasterApiSessionUnitTest {
                 .andThrow(new CertificateSerialNumberException("Simulated exception"));
         // Expect cleanup after error
         expect(endEntityMock.getUsername()).andReturn(MOCKED_USERNAME);
-        endEntityManagementSessionMock.revokeAndDeleteUser(
+        endEntityManagementSessionMock.deleteUser(
                 eq(new AlwaysAllowLocalAuthenticationToken("Failed Enrollment Cleanup")),
-                eq(MOCKED_USERNAME),
-                eq(RevocationReasons.UNSPECIFIED.getDatabaseValue()));
+                eq(MOCKED_USERNAME));
         expectLastCall().andVoid();
         replay(allMocks);
         try {
