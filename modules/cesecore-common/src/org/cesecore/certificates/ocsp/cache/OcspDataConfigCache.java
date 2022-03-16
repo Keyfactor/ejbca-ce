@@ -46,7 +46,8 @@ public enum OcspDataConfigCache {
     
     private Map<Integer, OcspDataConfigCacheEntry> cache = new HashMap<>();
     private Map<Integer, OcspDataConfigCacheEntry> staging = new HashMap<>();
-    
+    private Boolean isCaModeCompatiblePresent = false;
+
     /**
      * @param certID CertificateId to lookup in cache
      * @return Cache entry related to the given CertificateId
@@ -117,4 +118,11 @@ public enum OcspDataConfigCache {
         return new BigInteger(bytes);
     }
 
+    public Boolean getCaModeCompatiblePresent() {
+        return isCaModeCompatiblePresent;
+    }
+
+    public void setCaModeCompatiblePresent(Boolean caModeCompatiblePresent) {
+        isCaModeCompatiblePresent = caModeCompatiblePresent;
+    }
 }

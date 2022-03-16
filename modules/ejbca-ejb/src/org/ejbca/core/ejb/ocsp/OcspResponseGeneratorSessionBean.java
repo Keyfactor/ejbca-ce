@@ -345,6 +345,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                         
                         if (isMsCaCompatible) {
+                            OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
                             List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(caInfo.getSubjectDN(),
                                     caInfo.getLatestSubjectDN(), true);
 
@@ -574,17 +575,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
                 signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
-
+        checkWarnings(caCertificateStatus, caCertificate);
     }
 
     private void generateOcspConfigCacheEntry(X509Certificate caCertificate, int caId, boolean preProduceOcspResponse, boolean storeOcspResponseOnDemand, boolean isMsCaCompatible) {
-        
-        final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
 
         // Build OcspPreProductionConfigCache
         OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificate, caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible));
-        
-        checkWarnings(caCertificateStatus, caCertificate);
 
     }
     
@@ -1424,7 +1421,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 
                 ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                 OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
-                
                 // Locate the CA which gave out the certificate
                 if (Objects.isNull(ocspSigningCacheEntry)) {
 
@@ -1432,7 +1428,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
 
                     // An extra cache reload in case we are on an MS compatible CA
-                    reloadOcspSigningCache();
+                    if (Objects.isNull(ocspDataConfig) && OcspDataConfigCache.INSTANCE.getCaModeCompatiblePresent() ||
+                            !Objects.isNull(ocspDataConfig) && ocspDataConfig.isMsCaCompatible()) {
+                        reloadOcspSigningCache();
+                    }
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                     ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
 
