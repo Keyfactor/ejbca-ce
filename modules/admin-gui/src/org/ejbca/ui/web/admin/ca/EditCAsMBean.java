@@ -60,6 +60,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -108,6 +109,7 @@ import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -274,6 +276,35 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public void updateGeographicRegions() {
         EditCaUtil.updateGeographicRegions(geographicElementsInGui);
+    }
+    
+    public String getExpiryTime() {
+        Date expireTime = cainfo.getExpireTime();
+        if(expireTime==null) {
+            return "Certificate unavailable"; // TODO: resources
+        }
+        return caBean.getExpiryTime(expireTime);
+    }
+    
+    public String getCitsHexCertificate() {
+        String caCertificate = ((CitsCaInfo)cainfo).getHexEncodedCert();
+        if(caCertificate==null) {
+            return "Certificate unavailable"; // TODO: resources
+        }
+        StringBuilder formattedCert = new StringBuilder();
+        for(int i=0; i<caCertificate.length(); i+=64) {
+            formattedCert.append(caCertificate.substring(i, Math.min(i+64, caCertificate.length())));
+            formattedCert.append("<br>");
+        }
+        return formattedCert.toString();
+    }
+    
+    public String getCitsHexCertificateHash() {
+        String caCertificateHash = ((CitsCaInfo)cainfo).getHexEncodedCertHash();
+        if(caCertificateHash==null) {
+            return "Certificate unavailable"; // TODO: resources
+        }
+        return caCertificateHash;
     }
 
     public UploadedFile getFileRecieveFileImportRenewal() {

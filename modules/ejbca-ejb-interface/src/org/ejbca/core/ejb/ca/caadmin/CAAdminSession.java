@@ -687,4 +687,7 @@ public interface CAAdminSession {
      */
     void customLog(AuthenticationToken authenticationToken, String type, String caName, String username, String certificateSn, String msg, EventType event)
             throws AuthorizationDeniedException, CADoesntExistsException;
+
+    void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
+            throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException;
 }
