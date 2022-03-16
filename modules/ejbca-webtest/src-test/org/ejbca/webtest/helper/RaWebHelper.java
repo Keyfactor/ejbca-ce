@@ -54,6 +54,7 @@ public class RaWebHelper extends BaseHelper {
         static final By SELECT_KEY_ALGORITHM = By.id("requestInfoForm:selectAlgorithmOneMenu");
         static final By RADIO_BUTTON_KEY_PAIR_ON_SERVER = By.id("requestTemplateForm:selectKeyPairGeneration:0");
         static final By RADIO_BUTTON_KEY_PAIR_PROVIDED = By.id("requestTemplateForm:selectKeyPairGeneration:1");
+        static final By RADIO_BUTTON_KEY_PAIR_POSTPONE = By.id("requestTemplateForm:selectKeyPairGeneration:2");
         static final By LABELS_GROUP_PROVIDE_REQUEST_INFO = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
         static final By LABEL_COMMON_NAME = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
         static final By LABELS_GROUP_PROVIDE_USER_CREDENTIALS = By.xpath("//div[@id='requestInfoForm:userCredentialsOuterPanel']//label");
@@ -85,6 +86,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
         static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
         static final By TEXT_REQUEST_FORM_APPROVE_MESSAGE = By.id("manageRequestForm:requestApproveMessage");
+        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
@@ -200,6 +202,11 @@ public class RaWebHelper extends BaseHelper {
         TimeUnit.SECONDS.sleep(2);
     }
 
+   // 
+    public void selectKeyPairGenerationPostpone() throws InterruptedException {
+        clickLink(Page.RADIO_BUTTON_KEY_PAIR_POSTPONE);
+        TimeUnit.SECONDS.sleep(2);
+    }
     
     public void selectKeyPairGenerationProvided() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_PROVIDED);
@@ -516,6 +523,11 @@ public class RaWebHelper extends BaseHelper {
         fillInput(Page.INPUT_ENROLLMENTCODE, enrollmentCode);
         fillInput(Page.INPUT_ENROLLMENTCODE_CONFIRM, enrollmentCode);
     }
+    
+    public void fillRequiredSubjectDNAttributes(String commonName) {
+        fillInput(Page.INPUT_COMMON_NAME, commonName);
+    }
+    
     
     /**
      * Fills the username 
