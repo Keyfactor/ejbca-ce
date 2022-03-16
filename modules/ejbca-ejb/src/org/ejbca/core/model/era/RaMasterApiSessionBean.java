@@ -3066,7 +3066,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final String encodedValidity = endEntity.getExtendedInformation().getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                 ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntity));
-            keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(authenticationToken,
+            keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(authenticationToken,
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
