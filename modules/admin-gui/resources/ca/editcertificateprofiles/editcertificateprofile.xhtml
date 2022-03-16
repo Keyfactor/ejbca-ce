@@ -193,7 +193,7 @@
 
                 <!-- Validity offset (ECA-3554) -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeIts}">
                     <h:outputLabel
                         for="checkusecertificatevalidityoffsetgroup"
                         value="#{web.text.CERT_VALIDITY_OFFSET}" />
@@ -202,7 +202,7 @@
                         escape="false" />
                 </h:panelGroup>
                 <h:panelGrid id="certificatevalidityoffsetgrid"
-                    columns="1">
+                    columns="1" rendered="#{!certProfileBean.typeIts}">
                     <h:panelGroup
                         id="checkusecertificatevalidityoffsetgroup">
                         <h:selectBooleanCheckbox
@@ -241,7 +241,7 @@
 
                 <!-- Expiration restriction for weekdays (ECA-5330) -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeIts}">
                     <h:outputLabel
                         for="checkuseexpirationtrestrictionforweekdaysgroup"
                         value="#{web.text.CERT_EXPIRATION_RESTRICTIONS}" />
@@ -249,7 +249,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Expiration_Restrictions')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGrid id="expirationtrestrictionforweekdaysgrid" columns="1">
+                <h:panelGrid id="expirationtrestrictionforweekdaysgrid" columns="1" rendered="#{!certProfileBean.typeIts}">
                     <h:panelGroup
                         id="checkuseexpirationtrestrictionforweekdaysgroup">
                         <h:selectBooleanCheckbox
