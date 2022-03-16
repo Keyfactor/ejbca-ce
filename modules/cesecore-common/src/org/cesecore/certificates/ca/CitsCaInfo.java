@@ -354,14 +354,6 @@ public class CitsCaInfo extends CAInfo {
             return this;
         }
         
-//        public void setHexEncodedCertHash(String hexEncodedCertHash) {
-//            this.hexEncodedCertHash = hexEncodedCertHash;
-//        }
-//
-//        public void setHexEncodedCert(String hexEncodedCert) {
-//            this.hexEncodedCert = hexEncodedCert;
-//        }
-
         /**
          * @param certificateId CITS specific field. Unique identifier for the CA.
          */
@@ -419,10 +411,7 @@ public class CitsCaInfo extends CAInfo {
             // May be done differently
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(new Date());
-            caInfo.setRegion(region);
-//            caInfo.setHexEncodedCert(hexEncodedCert);
-//            caInfo.setHexEncodedCertHash(hexEncodedCertHash);
-            
+            caInfo.setRegion(region);            
             return caInfo;
         }
 
