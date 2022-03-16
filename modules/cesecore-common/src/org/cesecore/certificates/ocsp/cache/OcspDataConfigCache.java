@@ -47,6 +47,7 @@ public enum OcspDataConfigCache {
     private Map<Integer, OcspDataConfigCacheEntry> cache = new HashMap<>();
     private Map<Integer, OcspDataConfigCacheEntry> staging = new HashMap<>();
     private Boolean isCaModeCompatiblePresent = false;
+    private Boolean isCaModeCompatibleStagingValue = false;
 
     /**
      * @param certID CertificateId to lookup in cache
@@ -72,12 +73,15 @@ public enum OcspDataConfigCache {
     /** Clears the staging cache from old entries. Invoke before populating the staging cache */
     public void stagingStart() {
         staging = new HashMap<>();
+        isCaModeCompatibleStagingValue = false;
     }
     
     /** Commits the staged cache to the live one. Invoke when staging cache is considered ready. */
     public void stagingCommit() {
         cache = staging;
         staging = new HashMap<>();
+        isCaModeCompatiblePresent = isCaModeCompatibleStagingValue;
+        isCaModeCompatibleStagingValue = false;
     }
     
     /**
@@ -123,6 +127,6 @@ public enum OcspDataConfigCache {
     }
 
     public void setCaModeCompatiblePresent(Boolean caModeCompatiblePresent) {
-        isCaModeCompatiblePresent = caModeCompatiblePresent;
+        isCaModeCompatibleStagingValue = caModeCompatiblePresent;
     }
 }
