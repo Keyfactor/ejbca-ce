@@ -584,6 +584,15 @@ public class EndEntityProfileHelper extends BaseHelper {
     public void setNotificationSender(final int inputIndex, String sender) {
         fillInput(Page.getNotificationSenderByIndex(inputIndex), sender);
     }
+    
+    /**
+     * Fills Notification Recipient
+     *
+     * @param inputIndex the index of notification to check
+     */
+    public void setNotificationRecipiet(final int inputIndex, String recipient ) {
+        fillInput(Page.getNotificationRecipientByIndex(inputIndex), recipient);
+    }
 
     public void setSubjectAlternativeName(final String subjectAltName) {
         selectOptionByName(Page.SELECT_SUBJECT_ALTERNATIVE_NAME, subjectAltName);
