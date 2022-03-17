@@ -143,7 +143,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     private static final String INVALID_KEK_ERROR_MESSAGE = "Key encryption key must be set to RSA key to allow key export.";
     private static final HashSet<String> ALLOWED_KEK_TYPES = new HashSet<String>(Arrays.asList(new String[] {"RSA"}));
-
+    private static final String CERTIFICATE_UNAVAILABLE = "Certificate unavailable";
+    
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -281,7 +282,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getExpiryTime() {
         Date expireTime = cainfo.getExpireTime();
         if(expireTime==null) {
-            return "Certificate unavailable"; // TODO: resources
+            return CERTIFICATE_UNAVAILABLE; // TODO: resources
         }
         return caBean.getExpiryTime(expireTime);
     }
@@ -289,7 +290,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getCitsHexCertificate() {
         String caCertificate = ((CitsCaInfo)cainfo).getHexEncodedCert();
         if(caCertificate==null) {
-            return "Certificate unavailable"; // TODO: resources
+            return CERTIFICATE_UNAVAILABLE; // TODO: resources
         }
         StringBuilder formattedCert = new StringBuilder();
         for(int i=0; i<caCertificate.length(); i+=64) {
@@ -302,7 +303,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getCitsHexCertificateHash() {
         String caCertificateHash = ((CitsCaInfo)cainfo).getHexEncodedCertHash();
         if(caCertificateHash==null) {
-            return "Certificate unavailable"; // TODO: resources
+            return CERTIFICATE_UNAVAILABLE; // TODO: resources
         }
         return caCertificateHash;
     }
@@ -1917,8 +1918,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         byte[] certreq = null;
         try {
             if (isCaTypeCits()) {
-                certreq = caAdminSession.makeCitsRequest(administrator, caid, fileBuffer, 
+                if(getCitsHexCertificateHash().equals(CERTIFICATE_UNAVAILABLE)) {
+                    // same as initial CSR
+                    certreq = caAdminSession.makeCitsRequest(administrator, caid, fileBuffer, 
+                            getCurrentCaCryptoTokenCertSignKey(), getCurrentCaCryptoTokenCertSignKey(), 
+                            getCurrentCaCryptoTokenDefaultKey());
+                } else {
+                    certreq = caAdminSession.makeCitsRequest(administrator, caid, fileBuffer, 
                                                     getCurrentCaCryptoTokenCertSignKey(), null, null);
+                }
             } else {
                 certreq = caAdminSession.makeRequest(administrator, caid, fileBuffer, this.certExtrSignKeyReNewValue);
             }
