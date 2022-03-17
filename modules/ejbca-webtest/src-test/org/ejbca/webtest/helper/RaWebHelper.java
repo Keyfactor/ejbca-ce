@@ -90,6 +90,7 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
+        static final By BUTTON_ADD_END_ENDTITY = By.id("requestInfoForm:addEndEntity");
         
         // Search End Entities
         static final By BUTTON_MENU_SEARCH_END_ENTITIES = By.xpath(".//a[@href=\"search_ees.xhtml\"]");
@@ -250,6 +251,13 @@ public class RaWebHelper extends BaseHelper {
         assertNotNull("Key Algorithm selection was not found.", keyAlgorithmSelectionWebElement);
         assertEquals("Key Algorithm selection is wrong", keyAlgorithmValue, keyAlgorithmSelectionWebElement.getText());
         assertEquals("Key Algorithm selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, keyAlgorithmSelectionWebElement.isEnabled());
+    }
+    
+    /**
+     * Click to add endEndtity
+     */
+    public void clickAddEndEntityButton() {
+        clickLink(Page.BUTTON_ADD_END_ENDTITY);
     }
 
     /**
