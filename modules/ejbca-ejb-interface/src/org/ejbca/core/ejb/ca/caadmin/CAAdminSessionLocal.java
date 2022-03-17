@@ -20,9 +20,12 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.ejbca.core.EjbcaException;
 
 @Local
@@ -90,10 +93,36 @@ public interface CAAdminSessionLocal extends CAAdminSession {
     public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) 
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
     
+    /**
+     * 
+     * @param administrator
+     * @param caid
+     * @param caChainBytes - for support in later releases
+     * @param signKeyAlias - current signing key which is used to sign the certificate request
+     * @param verificationKeyAlias - sign or verification key to be certified, if null a new key pair will be generated
+     * @param encryptKeyAlias - encryption key to be certified, if null a new key pair will be generated
+     * @return
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     */
     public byte[] makeCitsRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, 
             String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
     
     public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
             byte[] signedCertificate) throws CADoesntExistsException, EjbcaException;
+    
+    /**
+     * 
+     * @param admin                                    the authentication token.
+     * @param caname                                   name to be given to the CA
+     * @param certificate                              bytes of certificate in OER encoded format
+     * @throws AuthorizationDeniedException
+     * @throws CAExistsException
+     * @throws CertificateImportException
+     * @throws IllegalCryptoTokenException
+     */
+    void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
+            throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException;
 }
