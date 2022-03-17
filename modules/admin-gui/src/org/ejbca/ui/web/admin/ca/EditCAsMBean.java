@@ -1818,6 +1818,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
 
         try {
+            if(isCaTypeCits()) {
+                addNonTranslatedErrorMessage("CITS CA updating imported certificate is not supported yet.");
+                return EditCaUtil.MANAGE_CA_NAV;
+            }
             importCACertUpdate(caid, fileBuffer);
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
             return EditCaUtil.MANAGE_CA_NAV;
