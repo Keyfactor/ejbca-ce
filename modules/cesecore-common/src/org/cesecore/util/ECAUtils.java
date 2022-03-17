@@ -26,6 +26,8 @@ import org.bouncycastle.its.jcajce.JcaITSPublicVerificationKey;
 import org.bouncycastle.its.jcajce.JceITSPublicEncryptionKey;
 import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
+import org.bouncycastle.oer.its.etsi102941.EtsiTs102941Data;
+import org.bouncycastle.oer.its.etsi102941.EtsiTs102941DataContent;
 import org.bouncycastle.oer.its.etsi102941.basetypes.Version;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataEncrypted;
 import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataSigned;
