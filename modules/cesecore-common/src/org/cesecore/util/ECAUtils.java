@@ -334,12 +334,12 @@ public class ECAUtils {
             EccP384CurvePoint pointVKeyP384 = (EccP384CurvePoint) verificationKey.getPublicVerificationKey();
             
             EccP384CurvePoint xonlyVKeyP384 = null;
-            if(pointVKeyP384.getChoice()==EccP256CurvePoint.xonly) {
+            if(pointVKeyP384.getChoice()==EccP384CurvePoint.xonly) {
                 modifiedSignature = signature; // no change
             } else {
                 // getEncodedPoint has x-only unimplemented
                 if(pointVKeyP384.getChoice()==EccP384CurvePoint.uncompressedP384) {
-                    Point384 point384 = (Point384) pointVKeyP384.getEccP384CurvePoint();
+                    Point384 point384 = Point384.getInstance(pointVKeyP384.getEccP384CurvePoint());
                     xonlyVKeyP384 = EccP384CurvePoint.xOnly(point384.getX().getOctets());
                 } else {
                     // does not matter y-0 or y-1, leading 0x02 or 0x03 is not included
