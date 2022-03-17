@@ -13,6 +13,13 @@
 
 package org.ejbca.core.protocol.scep;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -50,9 +57,9 @@ import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1PrintableString;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
@@ -131,6 +138,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -151,17 +159,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
 /**
  * Tests http pages of scep
  * 
- *  @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(CryptoTokenTestRunner.class)
@@ -214,16 +214,18 @@ public class ProtocolScepHttpTest {
     private String httpReqPath;
     private ScepConfiguration scepConfiguration;
 
-    private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final EndEntityAccessSessionRemote endEntityAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
+   
 
     @ClassRule
     public static CryptoTokenRule cryptoTokenRule = new CryptoTokenRule();
@@ -920,6 +922,37 @@ public class ProtocolScepHttpTest {
        }
     }
     
+    /**
+     * Regression test as part of ECA-10620, where it was found that enrolling a key over SCEP to the wrong CA led to that EE changing status.
+     */
+    @Test
+    public void testInvalidRequestDoesNotChangeStatus() throws Exception {
+        final String username = "testInvalidRequestDoesNotChangeStatus";
+        final String subjectDn = "CN=" + username;
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);
+        final String differentCaName = "testInvalidRequestDoesNotChangeStatus_ca";
+        final String differentCaSubjectDn = "CN=" + differentCaName;
+
+        X509CA differentCa = cryptoTokenRule.createX509Ca(differentCaSubjectDn, differentCaName);
+
+        // Create a user from a different CA than the one called from genScepRequest below
+        createScepUser(username, subjectDn, differentCa.getCAId());
+        try {
+            byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, subjectDn, SMIMECapability.dES_CBC);
+            // Send message with GET, we're expecting a 400 back since the CA's were mismatched.
+            byte[] retMsg = sendScep(false, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
+            assertNotNull("Response message was null", retMsg);
+            // Verify that the end entity's status hasn't changed
+            assertEquals("End Entity status changed in spite of request failing.", EndEntityConstants.STATUS_NEW,
+                    endEntityAccessSessionRemote.findUser(admin, username).getStatus());
+        } finally {
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityManagementSession.deleteUser(admin, username);
+            //CA's are cleaned by the crypto token rule
+        }
+    }
+    
     //
     // Private helper methods
     //
@@ -1145,7 +1178,7 @@ public class ProtocolScepHttpTest {
         assertNotNull(attr);
         ASN1Set values = attr.getAttrValues();
         assertEquals(values.size(), 1);
-        ASN1String str = DERPrintableString.getInstance((values.getObjectAt(0)));
+        ASN1String str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
         String messageType = str.getString();
         assertEquals("3", messageType);
         // --Success status
@@ -1153,7 +1186,7 @@ public class ProtocolScepHttpTest {
         assertNotNull(attr);
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);
-        str = DERPrintableString.getInstance((values.getObjectAt(0)));
+        str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
         assertEquals(ResponseStatus.SUCCESS.getStringValue(), str.getString());
         // --SenderNonce
         attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce));
@@ -1177,7 +1210,7 @@ public class ProtocolScepHttpTest {
         assertNotNull(attr);
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);
-        str = DERPrintableString.getInstance((values.getObjectAt(0)));
+        str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
         // transid should be the same as the one we sent
         assertEquals(_transId, str.getString());
 
