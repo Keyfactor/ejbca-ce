@@ -49,7 +49,7 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         caHelper = new CaHelper(webDriver);
         commandLineHelper = new CommandLineHelper();
-        cleanup();
+       
     }
 
     @AfterClass
@@ -130,8 +130,11 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
         Thread.sleep(1000);        
         raWebHelper.fillCredentials(TestData.USER_NAME, TestData.ENROLLMENT_CODE);        
         Thread.sleep(1000);
-        raWebHelper.clickDownloadKeystorePem();
-        Thread.sleep(3000); 
+        //(raWebHelper.clickDownloadKeystorePem();
+        raWebHelper.clickAddEndEntityButton();
+        Thread.sleep(1000); 
+        caHelper.openPage("http://192.168.33.113/cgi-bin/mail.sh");
+        Thread.sleep(3000);
 
         
     }
