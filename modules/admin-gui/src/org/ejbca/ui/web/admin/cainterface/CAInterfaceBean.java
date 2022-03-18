@@ -394,8 +394,9 @@ public class CAInterfaceBean implements Serializable {
                     cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), AlgorithmConstants.KEYALGORITHM_RSA + "2048");
                     cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), AlgorithmConstants.KEYALGORITHM_RSA + "1024");
                 } else {
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), caSignKeySpec);
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), caSignKeySpec);
+                    // encryption key is only 256bit for now
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), "secp256r1");
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), "secp256r1");
                 }
             }
             return actionCreateCaMakeRequestInternal(caInfoDto, approvals, availablePublisherValues, availableKeyValidatorValues,

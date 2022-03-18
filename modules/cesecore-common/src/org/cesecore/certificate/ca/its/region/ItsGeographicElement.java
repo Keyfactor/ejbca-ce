@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.cesecore.certificate.ca.its.region;
 
 import java.util.List;
@@ -29,6 +41,6 @@ public interface ItsGeographicElement {
      * may use any(any/all) logic while validating against sequence. 
      * @return
      */
-    //public boolean isSubregion(ItsGeographicElement requestedRegion);
+    public boolean isSubregion(ItsGeographicElement requestedRegion);
     
 }
