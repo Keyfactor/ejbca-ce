@@ -164,7 +164,7 @@ public class RaMasterApiSessionUnitTest {
     @Test
     public void addUserAndGenerateKeyStoreNormal() throws Exception {
         expectAddUserAndGenerateKeystorePreparations();
-        expect(keyStoreCreateSessionMock.generateOrKeyRecoverToken(same(adminMock),
+        expect(keyStoreCreateSessionMock.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(same(adminMock),
                     eq(MOCKED_USERNAME), // Username
                     eq(MOCKED_PASSWORD),
                     eq(MOCKED_CAID),
@@ -189,7 +189,7 @@ public class RaMasterApiSessionUnitTest {
     @Test
     public void addUserAndGenerateKeyStoreErrorHandling() throws Exception {
         expectAddUserAndGenerateKeystorePreparations();
-        expect(keyStoreCreateSessionMock.generateOrKeyRecoverToken(same(adminMock),
+        expect(keyStoreCreateSessionMock.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(same(adminMock),
                     eq(MOCKED_USERNAME), // Username
                     eq(MOCKED_PASSWORD),
                     eq(MOCKED_CAID),
