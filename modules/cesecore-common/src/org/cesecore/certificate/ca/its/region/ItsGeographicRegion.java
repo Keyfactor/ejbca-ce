@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Region;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.UINT8;
 
 /**
  * Intermediate representation of GeographicRegion region object for GUI and persistence.
@@ -39,6 +39,8 @@ public class ItsGeographicRegion implements Serializable {
     public static final String REGION_TYPE_IDENTIFIED_COUNTRY = "country:";
     public static final String REGION_TYPE_IDENTIFIED_COUNTRY_REGION = "country_region:";
     public static final String REGION_TYPE_IDENTIFIED = "identifed:";
+    
+    public static final double METER_PER_TENTH_MICRODEGREE_LATITUDE = 0.011;
     
     public enum RegionType {
         // not supporting extension and polygonal for now
@@ -158,12 +160,12 @@ public class ItsGeographicRegion implements Serializable {
         switch(region.getChoice()) {
             case GeographicRegion.circularRegion:
                 org.bouncycastle.oer.its.ieee1609dot2.basetypes.CircularRegion circular = 
-                                (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CircularRegion)region.getRegion();
+                                (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CircularRegion)region.getGeographicRegion();
                 return new CircularRegion(circular.getCenter().getLatitude().getValue().intValue(), 
                         circular.getCenter().getLongitude().getValue().intValue(), circular.getRadius().getValue().intValue());
             case GeographicRegion.rectangularRegion:
                 org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfRectangularRegion rectangularRegions = 
-                    (org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfRectangularRegion)region.getRegion();
+                    (org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfRectangularRegion)region.getGeographicRegion();
                 List<Long[]> rectangles = new ArrayList<>();
                 for(org.bouncycastle.oer.its.ieee1609dot2.basetypes.RectangularRegion rectangle: 
                                             rectangularRegions.getRectangularRegions()) {
@@ -175,7 +177,7 @@ public class ItsGeographicRegion implements Serializable {
                 return new RectangularRegions(rectangles);
             case GeographicRegion.identifiedRegion:
                 org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfIdentifiedRegion identifiedRegions = 
-                    (org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfIdentifiedRegion)region.getRegion();
+                    (org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfIdentifiedRegion)region.getGeographicRegion();
                 StringBuilder sb = new StringBuilder();
                 for(org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion identifiedRegion: 
                                                                     identifiedRegions.getIdentifiedRegions()) {
@@ -184,17 +186,17 @@ public class ItsGeographicRegion implements Serializable {
                         sb.append(REGION_TYPE_IDENTIFIED_COUNTRY);
                         sb.append(
                                 ItsSupportedCountries.fromCountryCode((
-                                        (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryOnly)identifiedRegion.getRegion())
+                                        (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryOnly)identifiedRegion.getIdentifiedRegion())
                                         .getValue().intValue()).getDisplayName());
                     } else if(identifiedRegion.getChoice()==
                                 org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion.countryAndRegions){
                         sb.append(REGION_TYPE_IDENTIFIED_COUNTRY_REGION);
                         org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions countryAndRegion =
-                                (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions) identifiedRegion.getRegion();
+                                (org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions) identifiedRegion.getIdentifiedRegion();
                         sb.append(ItsSupportedCountries.fromCountryCode(
                                 countryAndRegion.getCountryOnly().getValue().intValue()).getDisplayName());
                         sb.append(SEPARATOR);
-                        for(Region r: countryAndRegion.getRegions()) {
+                        for(UINT8 r: countryAndRegion.getRegions().getUint8s()) {
                             sb.append(r.getValue().intValue());
                             sb.append(SEPARATOR);
                         }
@@ -211,4 +213,8 @@ public class ItsGeographicRegion implements Serializable {
         }
     }
 
+    public static double getRadianFromItsLatitude(double latitude) {
+        latitude /= 100_000_00;
+        return (Math.PI/ 180.0) * latitude;
+    }
 }
