@@ -1,18 +1,11 @@
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collections;
 
-import org.apache.commons.lang.StringUtils;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
-import org.ejbca.webtest.scenario.EcaQa125_RaCpRestrictions.TestData;
 import org.ejbca.webtest.util.TestFileResource;
 import org.ejbca.webtest.utils.CommandLineHelper;
 import org.junit.AfterClass;
@@ -28,7 +21,6 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECA-10582">ECA-10582</a>
  * 
- * @version $Id$
  */
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -38,8 +30,7 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
     private static CertificateProfileHelper certificateProfileHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
     private static RaWebHelper raWebHelper;
-    private static CommandLineHelper commandLineHelper;
-    
+       
     //Test Data
     public static class TestData {
         static final String CERTIFICATE_PROFILE_NAME = "RestrictCP";
