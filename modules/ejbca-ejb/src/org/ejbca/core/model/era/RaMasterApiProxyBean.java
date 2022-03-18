@@ -3564,13 +3564,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
-                            byte[] requestBody) 
+                            byte[] requestBody, int operationCode) 
             throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 13) {
                 try {
-                    return raMasterApi.doEtsiOperation(authenticationToken, ecaCertificateId, requestBody);
+                    return raMasterApi.doEtsiOperation(authenticationToken, ecaCertificateId, 
+                                        requestBody, operationCode);
                 } catch (AuthorizationDeniedException e) {
                     if (authorizationDeniedException == null) {
                         authorizationDeniedException = e;
