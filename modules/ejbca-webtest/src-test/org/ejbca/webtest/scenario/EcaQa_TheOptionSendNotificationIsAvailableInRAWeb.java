@@ -134,10 +134,10 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
         //(raWebHelper.clickDownloadKeystorePem();
         raWebHelper.clickAddEndEntityButton();
         Thread.sleep(1000); 
-        mailHelper.navigateToMail();
+        //mailHelper.navigateToMail();
         //caHelper.openPage("http://192.168.33.113/cgi-bin/mail.sh");
         Thread.sleep(3000);
-        mailHelper.getAllMailSubjects();
+       // mailHelper.getAllMailSubjects();
 
         
     }
