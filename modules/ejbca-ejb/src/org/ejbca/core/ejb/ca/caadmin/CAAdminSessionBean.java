@@ -71,7 +71,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.oer.OEREncoder;
 import org.bouncycastle.oer.OERInputStream;
-import org.bouncycastle.oer.its.etsi103097.EtsiTs103097Data_Signed;
+import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataSigned;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
 import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
@@ -3944,12 +3944,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
             }
             
-            CertificateId receievedCertificateId = certificate.toASN1Structure().getToBeSignedCertificate()
-                    .getCertificateId();
+            CertificateId receievedCertificateId = certificate.toASN1Structure().getToBeSigned().getId();
             if(receievedCertificateId.getChoice()!=CertificateId.name) {
                 throw new EjbcaException("CertificateId should be NAME instance.");
             } else {
-                Hostname certificateId = ((Hostname)receievedCertificateId.getValue());
+                Hostname certificateId = ((Hostname)receievedCertificateId.getCertificateId());
                 if(!certificateId.getHostName().equalsIgnoreCase(
                                         ((CitsCaInfo)ca.getCAInfo()).getCertificateId())) {
                     throw new EjbcaException("CertificateId did not match.");
@@ -3995,7 +3994,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             
             // create hashedId8 and update subjectDn/certificate id
             // not overwriting id
-            ca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash("SHA256", certificate.getEncoded())));
+            ca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash(certificate)));
        
             // Save CA
             caSession.editCA(authenticationToken, ca, true);
@@ -4007,7 +4006,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
             
         } catch (AuthorizationDeniedException|CryptoTokenOfflineException|
-                InvalidAlgorithmException|InvalidKeyException | IOException e) {
+                InvalidAlgorithmException|InvalidKeyException e) {
             throw new EJBException(e);
         } 
         

@@ -3074,7 +3074,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final String encodedValidity = endEntity.getExtendedInformation().getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                 ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntity));
-            keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(authenticationToken,
+            keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(authenticationToken,
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
@@ -3198,8 +3198,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
-                                byte[] requestBody) throws AuthorizationDeniedException, EjbcaException {
+                                byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException {
         log.info("requestBody: " + Hex.toHexString(requestBody));
-        return ecaOperationsSession.doEtsiOperation(authenticationToken, ecaCertificateId, requestBody);
+        return ecaOperationsSession.doEtsiOperation(authenticationToken, ecaCertificateId, requestBody, operationCode);
     }
 }

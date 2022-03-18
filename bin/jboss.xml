@@ -97,9 +97,4 @@
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/scepraserver.war"/>
 	</target>
 
-	<target name="jee:deploy-externalragui-war" depends="jee:check">
-		<chmod dir="dist/externalra-gui" includes="externalra-gui.war" perm="600"/>
-		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/externalra-gui/externalra-gui.war"/>
-	</target>
-
 </project>

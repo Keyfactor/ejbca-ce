@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.cesecore.certificate.ca.its.region;
 
 import java.util.ArrayList;
@@ -7,7 +19,8 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryAndRegions;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CountryOnly;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Region;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfUint8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.UINT8;
 
 public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
 
@@ -87,13 +100,13 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
 
     @Override
     public IdentifiedRegion getIdentifiedRegion() {
-        List<Region> regions = new ArrayList<>();
+        List<UINT8> regions = new ArrayList<>();
         for(Integer r: this.regions) {
-            regions.add(new Region(r));
+            regions.add(new UINT8(r));
         }
         return new IdentifiedRegion(IdentifiedRegion.countryAndRegions, 
                 new CountryAndRegions(new CountryOnly(country.getM49Code()),
-                        regions ));
+                      new SequenceOfUint8(regions) ));
     }
 
     @Override
@@ -114,6 +127,24 @@ public class IdentifiedRegionCountryRegions implements ItsGeographicElement {
         }
         guiStrings.add(sb.toString());
         return guiStrings;
+    }
+
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        if(requestedRegion instanceof IdentifiedRegionCountryRegions) {
+            // ignore even if whole country 
+            IdentifiedRegionCountryRegions anotherRegion = (IdentifiedRegionCountryRegions) requestedRegion;
+            if(anotherRegion.getCountry()!=country) {
+                return false;
+            }
+            for(int region: anotherRegion.getRegions()) {
+                if(!regions.contains(region)){
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
 }

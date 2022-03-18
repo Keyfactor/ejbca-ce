@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.cesecore.certificate.ca.its.region;
 
 import java.util.ArrayList;
@@ -72,6 +84,32 @@ public class IdentifiedRegions implements ItsGeographicElement {
             guiStrings.addAll(region.getGuiDescription());
         }
         return guiStrings;
+    }
+
+    @Override
+    public boolean isSubregion(ItsGeographicElement requestedRegion) {
+        
+        if(toStringFormat().contains(ItsSupportedCountries.WHOLE_EUROPE.getDisplayName())) {
+            return true;
+        }
+        if(requestedRegion instanceof IdentifiedRegions) {
+            for(ItsGeographicElement region: ((IdentifiedRegions)requestedRegion).identifiedRegions) {
+                boolean result = false;
+                for(ItsGeographicElement superRegion: this.identifiedRegions) {
+                    
+                    if(superRegion.isSubregion(region)) {
+                        result = true; // each identified region is sub-region to one
+                        break;
+                    }
+                }
+                if(result==false) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        return false;
     }
     
 }

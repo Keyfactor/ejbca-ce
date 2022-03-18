@@ -13,30 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -45,6 +21,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -129,6 +106,29 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import javax.security.auth.x500.X500Principal;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -381,6 +381,58 @@ public class AuthenticationModulesTest extends CmpTestCase {
             removeAuthenticationToken(admToken, admCert, testUsername); // also removes testUsername
             this.internalCertStoreSession.removeCertificate(fingerprint);
             this.internalCertStoreSession.removeCertificate(fingerprint2);
+        }
+    }
+
+    @Test
+    public void testCrmfReqFailWhenCertRequiredButNoCertInDb() throws Exception {
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final X500Name testUserDN = new X500Name("CN=cmptestuser5,C=SE");
+        final String testUsername = "cmptestuser5";
+        String fingerprint = null;
+        AuthenticationToken admToken = null;
+        Certificate admCert = null;
+        try {
+            CmpTestCase.updatePropertyOnServer("web.reqcertindb", "true");
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, this.cacert, this.nonce, this.transid,
+                    false, null, null, null, null, pAlg,
+                    new DEROctetString(this.nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+
+            KeyPair admkeys = KeyTools.genKeys("512", "RSA");
+            admToken = createAdminToken(admkeys, testUsername, testUserDN.toString(), this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            admCert = getCertFromCredentials(admToken);
+            fingerprint = CertTools.getFingerprintAsString(admCert);
+            this.internalCertStoreSession.removeCertificate(fingerprint);
+
+            CMPCertificate[] extraCert = getCMPCert(admCert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(),
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
+            assertNotNull(msg);
+            //******************************************''''''
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+            sig.initVerify(admCert.getPublicKey());
+            sig.update(CmpMessageHelper.getProtectedBytes(msg));
+            boolean verified = sig.verify(msg.getProtection().getBytes());
+            assertTrue("Signing the message failed.", verified);
+            //***************************************************
+            final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(msg);
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpFailMessage(resp,  "The certificate attached to the PKIMessage in the extraCert field could not be " +
+                    "found in the database. Start EJBCA with 'web.reqcertindb=false' to disable this check.", PKIBody.TYPE_ERROR,
+                    0, PKIFailureInfo.badRequest);
+        } finally {
+            removeAuthenticationToken(admToken, admCert, testUsername); // also removes testUsername
+            this.internalCertStoreSession.removeCertificate(fingerprint);
         }
     }
 
