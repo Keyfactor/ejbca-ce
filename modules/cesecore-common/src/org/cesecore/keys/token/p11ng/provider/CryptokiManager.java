@@ -17,10 +17,10 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 
 import org.apache.log4j.Logger;
-import org.pkcs11.jacknji11.CEi;
-import org.pkcs11.jacknji11.Ci;
-import org.pkcs11.jacknji11.jna.JNAi;
-import org.pkcs11.jacknji11.jna.JNAiNative;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptoki;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedJNA;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedJNANativeI;
 
 /**
  * Singleton managing the various cryptoki devices available.
@@ -46,8 +46,8 @@ public class CryptokiManager {
         CryptokiDevice result = devices.get(getId(libName, libDir));
         if (result == null) {
             NativeLibrary.addSearchPath(libName, libDir);
-            final JNAiNative jnaiNative = (JNAiNative) Native.loadLibrary(libName, JNAiNative.class);
-            final CEi ce = new CEi(new Ci(new JNAi(jnaiNative)));
+            final ExtendedJNANativeI jnaiNative = (ExtendedJNANativeI) Native.loadLibrary(libName, ExtendedJNANativeI.class);
+            final ExtendedCryptokiE ce = new ExtendedCryptokiE(new ExtendedCryptoki(new ExtendedJNA(jnaiNative)));
             result = new CryptokiDevice(ce, withCache, getInstallOrReInstallProvider(), libName);
             devices.put(getId(libName, libDir), result);
         }

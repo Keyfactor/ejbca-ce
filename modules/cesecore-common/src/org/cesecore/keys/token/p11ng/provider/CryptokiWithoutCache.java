@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.pkcs11.jacknji11.CEi;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.LongRef;
@@ -28,12 +28,12 @@ import static java.util.stream.Collectors.toList;
  * @see <a href="https://github.com/joelhockey/jacknji11">JackNJI on GitHub</a>
  */
 class CryptokiWithoutCache implements CryptokiFacade {
-    private final CEi api;
+    private final ExtendedCryptokiE api;
 
     /**
      * @param api the underlying PKCS#11 API
      */
-    CryptokiWithoutCache(final CEi api) {
+    CryptokiWithoutCache(final ExtendedCryptokiE api) {
         this.api = api;
     }
 
