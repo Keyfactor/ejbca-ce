@@ -1533,12 +1533,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
         }
 
-        log.info("fetching ca certificate");
         final ITSCertificate ecaCertificate = eca.getItsCACertificate();
         if(ecaCertificate==null) {
             throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
         }
-        log.info("fetched ca certificate");
+        log.info("fetched signing ca certificate");
 
         try {
             ITSContentSigner itsContentSigner = new JcaITSContentSigner.Builder()
