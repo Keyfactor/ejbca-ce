@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
 import static org.junit.Assert.assertEquals;
 
 /**
