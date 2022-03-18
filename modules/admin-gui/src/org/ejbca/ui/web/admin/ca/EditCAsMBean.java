@@ -1501,10 +1501,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     encKeySpec = keyPairInfo.getKeySpecification();
                 }
             }
-            
-            if(!encKeySpec.equals(signKeySpec)) {
-                addErrorMessage("CITS_KEYS_CURVE_MISMATCH");
-            }
+
         }
         
     }
