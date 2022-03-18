@@ -1274,7 +1274,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } catch (Exception e) {
             reportGenericError(null, e);
         } finally {
-            cleanUpEndEntities(errorCode, ret);
             endEntityInformation.setUsername(StringUtils.EMPTY);
         }
         return ret;
@@ -1336,28 +1335,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
             message = message.replaceFirst("^[^:]*Exception: ", "");
         }
         return message;
-    }
-
-    /**
-     * End entity clean-up must be done if enrollment could not be completed (but end-entity has been added and wasn't already existing)
-     */
-    private void cleanUpEndEntities(final ErrorCode errorCode, final byte[] certificate) {
-        if (certificate == null) {
-            if ((errorCode == null || !errorCode.equals(ErrorCode.USER_ALREADY_EXISTS))
-                    && !KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
-                EndEntityInformation endEntityInfoFromCA = raMasterApiProxyBean.searchUserWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(),
-                        endEntityInformation.getUsername());
-                try {
-                    if (endEntityInfoFromCA != null && endEntityInfoFromCA.getStatus() != EndEntityConstants.STATUS_GENERATED) {
-                        raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
-                    }
-                } catch (AuthorizationDeniedException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-        } else {
-            return; // We simply return since certificate is generated and EE must not be deleted.
-        }
     }
 
     /**
@@ -2688,7 +2665,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 for (String namespace : eabNamespaces) {
                     ids.addAll(eabConfiguration.getEABMap().get(namespace));
                 }
-                if (ids != null && !ids.isEmpty()) {
+                if (!ids.isEmpty()) {
                     eabIdAutoCompleteSelectItems.add(new SelectItem("..."));
                     ids.stream().filter(e -> e.toLowerCase().startsWith(value.toLowerCase())).sorted()
                             .limit(32).forEach(v -> eabIdAutoCompleteSelectItems.add(new SelectItem(v)));
