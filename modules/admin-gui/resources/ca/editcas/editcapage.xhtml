@@ -447,7 +447,7 @@
 					</h:selectOneMenu>
 				</h:panelGroup>
 				
-				<h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputLabel value="#{web.text.CERT_VALIDITY}"
 						style="font-weight: bold;" />
 					<h:outputLabel
@@ -456,7 +456,7 @@
 						value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#validity')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
-				<h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:inputText name="textfieldcitsvalidity" id="textfieldcitsvalidity"
 						size="25" maxlength="225"
 						value="#{editCAsMBean.caEncodedValidity}"
@@ -473,6 +473,36 @@
 				</h:panelGroup>
 				
 				<h:panelGroup>
+					<h:outputLabel for="citsexpirytime" rendered="#{editCAsMBean.editCA}"
+						value="#{web.text.CITS_CA_EXPIRY_TIME}" />
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText id="citsexpirytime" value="#{editCAsMBean.expiryTime}"
+													rendered="#{editCAsMBean.editCA}" />
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputLabel for="citshexencodedcert" rendered="#{editCAsMBean.editCA}"
+						value="#{web.text.CITS_CA_HEX_ENCODED_CERT}" />
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText id="citshexencodedcert" value="#{editCAsMBean.citsHexCertificate}"
+										escape="false"	rendered="#{editCAsMBean.editCA}" />
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputLabel for="citshexencodedcerthash" rendered="#{editCAsMBean.editCA}"
+						value="#{web.text.CITS_CA_HEX_ENCODED_CERT_HASH}" />
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText id="citshexencodedcerthash" value="#{editCAsMBean.citsHexCertificateHash}"
+													rendered="#{editCAsMBean.editCA}" />
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputLabel for="citscheckboxuseuserstorage"
 						value="#{web.text.USEUSERSTORAGE}" />
 					<h:outputText
@@ -480,7 +510,7 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 
-				<h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="citscheckboxuseuserstorage"
 						value="#{editCAsMBean.caInfoDto.useUserStorage}"
 						disabled="#{not editCAsMBean.hasEditRight}" >
@@ -488,7 +518,7 @@
 					<h:outputLabel for="checkboxuseuserstorage" value="#{web.text.USE}" />
 				</h:panelGroup>
 				
-				<h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputLabel for="citscheckboxusecertificatestorage"
 						value="#{web.text.USECERTIFICATESTORAGE}" />
 					<h:outputText
@@ -496,7 +526,7 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				
-				<h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="citscheckboxusecertificatestorage"
 						value="#{editCAsMBean.caInfoDto.useCertificateStorage}"
 						disabled="#{not editCAsMBean.hasEditRight}">
@@ -587,13 +617,15 @@
                     </h:selectOneMenu>
                     <h:commandButton id="addGeographicRegion"
                         value="#{web.text.ADD}"
-                        action="#{editCAsMBean.addGeographicRegion()}">
+                        action="#{editCAsMBean.addGeographicRegion()}"
+                        rendered="#{not editCAsMBean.caExternal}">
                         <f:ajax onerror="function(data){ejbca.adminweb.showAlertOnError(data);}"
                             render="geographicRegionType geographicregions " />
                     </h:commandButton>
 	                 <h:commandButton id="updateGeographicRegions"
 	                        value="#{web.text.PREVIEW_REMOVE_SELECTED}"
-	                        action="#{editCAsMBean.updateGeographicRegions()}">
+	                        action="#{editCAsMBean.updateGeographicRegions()}"
+	                        rendered="#{not editCAsMBean.caExternal}">
 	                        <f:ajax render="geographicRegionType geographicregions" />
 	                 </h:commandButton>
                 </h:panelGrid>

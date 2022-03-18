@@ -29,6 +29,9 @@ public class CitsCaInfo extends CAInfo {
     
     private String certificateId;
     private ItsGeographicRegion region;
+    
+    private String hexEncodedCert;
+    private String hexEncodedCertHash;
         
     public static final String CERTIFICATE_ID = "certificateid";
     public static final String GEOGRAPHIC_REGION = "geographicregion";
@@ -148,6 +151,22 @@ public class CitsCaInfo extends CAInfo {
         this.region = region;
     }
 
+    public String getHexEncodedCertHash() {
+        return hexEncodedCertHash;
+    }
+
+    public void setHexEncodedCertHash(String hexEncodedCertHash) {
+        this.hexEncodedCertHash = hexEncodedCertHash;
+    }
+    
+    public String getHexEncodedCert() {
+        return hexEncodedCert;
+    }
+
+    public void setHexEncodedCert(String hexEncodedCert) {
+        this.hexEncodedCert = hexEncodedCert;
+    }
+
     public static class CitsCaInfoBuilder {
         // Common Field from CAINFO.
         private int caId;
@@ -182,6 +201,8 @@ public class CitsCaInfo extends CAInfo {
         private String certificateId;
         private ItsGeographicRegion region;
         private String subjectDN; // Built based on certificateID (prefix + certificateId)
+        private String hexEncodedCert;
+        private String hexEncodedCertHash;
 
         public CitsCaInfoBuilder setCaId(int caId) {
             this.caId = caId;
@@ -332,7 +353,7 @@ public class CitsCaInfo extends CAInfo {
             this.useCertificateStorage = useCertificateStorage;
             return this;
         }
-
+        
         /**
          * @param certificateId CITS specific field. Unique identifier for the CA.
          */
@@ -390,8 +411,7 @@ public class CitsCaInfo extends CAInfo {
             // May be done differently
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(new Date());
-            caInfo.setRegion(region);
-            
+            caInfo.setRegion(region);            
             return caInfo;
         }
 

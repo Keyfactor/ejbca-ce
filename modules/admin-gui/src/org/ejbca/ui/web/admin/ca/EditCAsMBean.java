@@ -60,6 +60,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -108,6 +109,7 @@ import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -141,7 +143,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     private static final String INVALID_KEK_ERROR_MESSAGE = "Key encryption key must be set to RSA key to allow key export.";
     private static final HashSet<String> ALLOWED_KEK_TYPES = new HashSet<String>(Arrays.asList(new String[] {"RSA"}));
-
+    private static final String CERTIFICATE_UNAVAILABLE = "Certificate unavailable";
+    
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -274,6 +277,35 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public void updateGeographicRegions() {
         EditCaUtil.updateGeographicRegions(geographicElementsInGui);
+    }
+    
+    public String getExpiryTime() {
+        Date expireTime = cainfo.getExpireTime();
+        if(expireTime==null) {
+            return CERTIFICATE_UNAVAILABLE; // TODO: resources
+        }
+        return caBean.getExpiryTime(expireTime);
+    }
+    
+    public String getCitsHexCertificate() {
+        String caCertificate = ((CitsCaInfo)cainfo).getHexEncodedCert();
+        if(caCertificate==null) {
+            return CERTIFICATE_UNAVAILABLE; // TODO: resources
+        }
+        StringBuilder formattedCert = new StringBuilder();
+        for(int i=0; i<caCertificate.length(); i+=64) {
+            formattedCert.append(caCertificate.substring(i, Math.min(i+64, caCertificate.length())));
+            formattedCert.append("<br>");
+        }
+        return formattedCert.toString();
+    }
+    
+    public String getCitsHexCertificateHash() {
+        String caCertificateHash = ((CitsCaInfo)cainfo).getHexEncodedCertHash();
+        if(caCertificateHash==null) {
+            return CERTIFICATE_UNAVAILABLE; // TODO: resources
+        }
+        return caCertificateHash;
     }
 
     public UploadedFile getFileRecieveFileImportRenewal() {
@@ -1469,10 +1501,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     encKeySpec = keyPairInfo.getKeySpecification();
                 }
             }
-            
-            if(!encKeySpec.equals(signKeySpec)) {
-                addErrorMessage("CITS_KEYS_CURVE_MISMATCH");
-            }
+
         }
         
     }
@@ -1712,14 +1741,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
         try {
             if(isCaTypeCits()) {
-                byte[] certificateBytes = null;
-                if(fileRecieveFileRecieveRequest.getName().endsWith(".txt")) {
-                    // TODO: remove later, only for test
-                    certificateBytes = Hex.decode(new String(fileBuffer));
-                } else {
-                    certificateBytes = fileBuffer; // .oer or OER format, NOT pem, der etc
+                if(!fileRecieveFileRecieveRequest.getName().endsWith(".oer")) {
+                    throw new EjbcaException("CITS certificate needs to be OER encoded.");
                 }
-                caAdminSession.receiveCitsResponse(administrator, caid, certificateBytes); 
+                caAdminSession.receiveCitsResponse(administrator, caid, fileBuffer); 
             } else {
                 receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
                 try {
@@ -1787,6 +1812,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
 
         try {
+            if(isCaTypeCits()) {
+                addNonTranslatedErrorMessage("CITS CA updating imported certificate is not supported yet.");
+                return EditCaUtil.MANAGE_CA_NAV;
+            }
             importCACertUpdate(caid, fileBuffer);
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
             return EditCaUtil.MANAGE_CA_NAV;
@@ -1886,8 +1915,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         byte[] certreq = null;
         try {
             if (isCaTypeCits()) {
-                certreq = caAdminSession.makeCitsRequest(administrator, caid, fileBuffer, 
+                if(getCitsHexCertificateHash().equals(CERTIFICATE_UNAVAILABLE)) {
+                    // same as initial CSR
+                    certreq = caAdminSession.makeCitsRequest(administrator, caid, fileBuffer, 
+                            getCurrentCaCryptoTokenCertSignKey(), getCurrentCaCryptoTokenCertSignKey(), 
+                            getCurrentCaCryptoTokenDefaultKey());
+                } else {
+                    certreq = caAdminSession.makeCitsRequest(administrator, caid, fileBuffer, 
                                                     getCurrentCaCryptoTokenCertSignKey(), null, null);
+                }
             } else {
                 certreq = caAdminSession.makeRequest(administrator, caid, fileBuffer, this.certExtrSignKeyReNewValue);
             }

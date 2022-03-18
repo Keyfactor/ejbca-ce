@@ -66,19 +66,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.bouncycastle.its.ITSCertificate;
-import org.bouncycastle.its.ITSCertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.oer.OEREncoder;
-import org.bouncycastle.oer.OERInputStream;
-import org.bouncycastle.oer.its.etsi103097.EtsiTs103097DataSigned;
-import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
-import org.bouncycastle.oer.its.ieee1609dot2.Ieee1609Dot2Content;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
-import org.bouncycastle.oer.its.template.etsi103097.EtsiTs103097Module;
-import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
-import org.bouncycastle.oer.its.template.ieee1609dot2.basetypes.Ieee1609Dot2BaseTypes;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -100,6 +92,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
@@ -3859,7 +3852,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     try {
                         cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, signKeyAlias,
                                 verificationKeyAlias);
-                        cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, signKeyAlias,
+                        cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId,
+                                caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT),
                                 encryptKeyAlias);
                         // Audit log CA key generation
                         final Properties oldprop = caToken.getProperties();
@@ -4009,6 +4003,70 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 InvalidAlgorithmException|InvalidKeyException e) {
             throw new EJBException(e);
         } 
+        
+    }
+    
+    @Override
+    public void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
+            throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException {
+
+        ITSCertificate caCertificate = ECAUtils.parseItsCertificate(certificate);
+        String errorMessage = null;
+        //TODO: validate with certificates from ECTL
+        
+        // using child implementations to avoid casts later on
+        // other values are populated to default
+        CitsCaInfo cainfo = CitsCaInfo.getDefaultCitsCaInfo(caname, 
+                "ITS CA created by certificate import.", "0d", null, 
+                CertificateProfileConstants.CERTPROFILE_FIXED_ITS, 
+                CertificateProfileConstants.CERTPROFILE_FIXED_ITS, null);
+        
+        cainfo.setSubjectDN(CitsCaInfo.CITS_SUBJECTDN_PREFIX); // otherwise search will fail
+        CertificateId caCertificateId = caCertificate.toASN1Structure().getToBeSigned().getId();
+        if(caCertificateId==null) {
+            errorMessage = "CertificateId is absent";
+            log.info(errorMessage);
+            throw new CertificateImportException(errorMessage);
+        }
+        if(caCertificateId.getChoice()==CertificateId.name) {
+            cainfo.setCertificateId(((Hostname)caCertificateId.getCertificateId()).getHostName());
+        } else if(caCertificateId.getChoice()==CertificateId.none){
+            // only allowed other type is none, root CA should take care of other validations
+            cainfo.setCertificateId(Hex.toHexString(ECAUtils.generateHash(caCertificate)));
+        } else {
+            errorMessage = "Certificate id type is unexpected: " + caCertificateId.getChoice();
+            log.info(errorMessage);
+            throw new CertificateImportException(errorMessage);
+        }
+        
+        cainfo.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        cainfo.setCAId(cainfo.getSubjectDN().hashCode());
+        cainfo.setStatus(CAConstants.CA_EXTERNAL);
+        log.info("Preparing to import of CA with Subject DN " + cainfo.getSubjectDN());
+        // ignoring certificate policies.
+        cainfo.setName(caname);
+        
+        GeographicRegion region = caCertificate.toASN1Structure().getToBeSigned().getRegion();
+        if(region!=null) { // else global/europe - 65535? 
+            ItsGeographicRegion georegion = new ItsGeographicRegion();
+            georegion.setGeographicElement(ItsGeographicRegion.fromGeographicRegion(region));
+            cainfo.setRegion(georegion);
+        }
+                
+        // TODO: app/issue permissions, later release
+        ECA eca = (ECA) CAFactory.INSTANCE.getCitsCaImpl(cainfo);
+        CAToken token = new CAToken(eca.getCAId(), new NullCryptoToken().getProperties());
+        try {
+            eca.setCAToken(token);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalCryptoTokenException(e);
+        }
+        eca.setItsCaCertificate(caCertificate);
+        eca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash(caCertificate)));
+        eca.setExpireTime(ECAUtils.getExpiryDate(caCertificate));
+        // Add CA
+        caSession.addCA(admin, eca);
+        //TODO: Persist ("Publish") the CA certificates to the local CertificateData database.
         
     }
 }
