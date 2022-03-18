@@ -24,6 +24,7 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
     private static EndEntityProfileHelper endEntityProfileHelper;
     private static CommandLineHelper commandLineHelper;
     private static EndEntityProfileHelper eeProfileHelper;
+    private static MailHelper mailHelper;
 
     //private static BaseHelper baseHelper;
     public static class TestData {
@@ -133,8 +134,10 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
         //(raWebHelper.clickDownloadKeystorePem();
         raWebHelper.clickAddEndEntityButton();
         Thread.sleep(1000); 
-        caHelper.openPage("http://192.168.33.113/cgi-bin/mail.sh");
+        mailHelper.navigateToMail();
+        //caHelper.openPage("http://192.168.33.113/cgi-bin/mail.sh");
         Thread.sleep(3000);
+        mailHelper.getAllMailSubjects();
 
         
     }
