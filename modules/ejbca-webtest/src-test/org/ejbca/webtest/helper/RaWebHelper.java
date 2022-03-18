@@ -12,20 +12,16 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.ejbca.webtest.helper.OauthProvidersHelper.Page;
-import org.ejbca.webtest.scenario.EcaQa_MakeRequestUsingCSRDER.TestData;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -252,13 +248,6 @@ public class RaWebHelper extends BaseHelper {
         assertEquals("Key Algorithm selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, keyAlgorithmSelectionWebElement.isEnabled());
     }
 
-//    /**
-//     * Selects a CSR file
-//     */
-//    public void fillCsrFilename(final File inputFile) {
-//        fillInput(Page.CSR_FILE_INPUT_FIELD, inputFile.toString());
-//    }
-    
     public void fillCsrFilename(final String inputFilename) {
         fillInput(Page.CSR_FILE_INPUT_FIELD, inputFilename);
     }
