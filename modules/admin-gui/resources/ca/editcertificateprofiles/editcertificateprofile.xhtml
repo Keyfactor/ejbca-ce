@@ -98,14 +98,15 @@
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
-                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
                     <h:outputLabel for="selectavailablekeyalgorithms"
                         value="#{web.text.AVAILABLEKEYALGORITHMS}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableKeyAlgorithms')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:selectManyListbox styleClass="select-list" rendered="#{!certProfileBean.typeSsh}"
+                <h:selectManyListbox styleClass="select-list" rendered="#{!certProfileBean.typeSsh 
+                															and !certProfileBean.typeIts}"
                     id="selectavailablekeyalgorithms"
                     value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}"
                     size="#{certProfileBean.availableKeyAlgorithmsSize}" disabled="#{certProfileBean.viewOnly}">
@@ -113,14 +114,14 @@
                     <f:ajax event="change" execute="@this" render="@form"/>
                 </h:selectManyListbox>
 
-                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
                     <h:outputLabel for="selectavailableeccurves"
                         value="#{web.text.AVAILABLEECDSACURVES}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableEcdsaCurves')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:selectManyListbox styleClass="select-list" rendered="#{!certProfileBean.typeSsh}"
+                <h:selectManyListbox styleClass="select-list" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
                     id="selectavailableeccurves"
                     value="#{certProfileBean.certificateProfile.availableEcCurves}"
                     size="5" disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsECType }">
@@ -128,14 +129,14 @@
                     <f:ajax event="change" execute="@this" render="@form"/>
                 </h:selectManyListbox>
 
-                <h:panelGroup rendered="#{!certProfileBean.typeSsh}">
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
                     <h:outputLabel for="selectavailablebitlengths"
                         value="#{web.text.AVAILABLEBITLENGTHS}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableBitLengths')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:selectManyListbox id="selectavailablebitlengths" rendered="#{!certProfileBean.typeSsh}"
+                <h:selectManyListbox id="selectavailablebitlengths" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"
                     size="5" styleClass="number select-list"
                     disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsRequireKeySizes}">
@@ -192,7 +193,7 @@
 
                 <!-- Validity offset (ECA-3554) -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeIts}">
                     <h:outputLabel
                         for="checkusecertificatevalidityoffsetgroup"
                         value="#{web.text.CERT_VALIDITY_OFFSET}" />
@@ -201,7 +202,7 @@
                         escape="false" />
                 </h:panelGroup>
                 <h:panelGrid id="certificatevalidityoffsetgrid"
-                    columns="1">
+                    columns="1" rendered="#{!certProfileBean.typeIts}">
                     <h:panelGroup
                         id="checkusecertificatevalidityoffsetgroup">
                         <h:selectBooleanCheckbox
@@ -240,7 +241,7 @@
 
                 <!-- Expiration restriction for weekdays (ECA-5330) -->
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!certProfileBean.typeIts}">
                     <h:outputLabel
                         for="checkuseexpirationtrestrictionforweekdaysgroup"
                         value="#{web.text.CERT_EXPIRATION_RESTRICTIONS}" />
@@ -248,7 +249,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Expiration_Restrictions')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGrid id="expirationtrestrictionforweekdaysgrid" columns="1">
+                <h:panelGrid id="expirationtrestrictionforweekdaysgrid" columns="1" rendered="#{!certProfileBean.typeIts}">
                     <h:panelGroup
                         id="checkuseexpirationtrestrictionforweekdaysgroup">
                         <h:selectBooleanCheckbox
@@ -441,7 +442,7 @@
                 <h:panelGroup id="itsCertificatetType">
 	                <h:selectOneMenu id="selectitsCertificatetType"
 	                    value="#{certProfileBean.certificateProfile.itsCertificateType}"
-	                    disabled="#{certProfileBean.viewOnly}">
+	                    disabled="true">
 	                    <f:ajax event="change" execute="@this" render="@form"/>
 	                    <f:selectItems
 	                        value="#{certProfileBean.itsCertificateTypes}" />
@@ -465,9 +466,11 @@
 	                </h:panelGrid>
 	             </h:panelGroup>
                  <h:panelGroup>
-                    <h:outputLabel for="itsCertIssuingPermissions" value="#{web.text.ITS_CERTISSUING_PERMISSIONS}" />               
+                    <h:outputLabel for="itsCertIssuingPermissions" 
+                    		value="#{web.text.ITS_CERTISSUING_PERMISSIONS}" 
+                    		rendered="false"/>               
                 </h:panelGroup>
-				<h:panelGroup id="itsCertIssuingPermissions">
+				<h:panelGroup id="itsCertIssuingPermissions" rendered="false">
 					<h:panelGrid id="itsCertIssuingPermissionsGrid" columns="1">                    
 	                    <h:selectManyListbox styleClass="select-list"
 	                        id="selectItsCertIssuingPermissions"
