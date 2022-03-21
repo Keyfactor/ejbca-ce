@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 import java.util.Collections;
 import java.util.List;
 
+import org.ejbca.webtest.helper.CaHelper.CaType;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -65,6 +66,24 @@ public class CertificateProfileHelper extends BaseHelper {
             return index;
         }
     }
+    
+    
+    /**
+     * Enum of available TerminalType with corresponding locator
+     */
+    public enum TerminalType {
+        IS(By.id("content:cvcTerminalTypeInspectionSystem")),
+        AT(By.id("content:cvcTerminalTypeAuthenticationTerminal")),
+        ST(By.id("content:cvcTerminalTypeSignatureTerminal"));
+        private final By typeLocator;
+        TerminalType(By name) {
+            this.typeLocator = name;
+        }
+        public By getLocatorId() {
+            return this.typeLocator;
+        }
+    }
+    
 
     /**
      * Contains constants and references of the 'Certificate Profiles' page.
@@ -1469,7 +1488,15 @@ public class CertificateProfileHelper extends BaseHelper {
         deselectOptions(Page.SELECT_AVAILABLE_CA);
         selectOptionsByName(Page.SELECT_AVAILABLE_CA,listOfSelectedCAs);
     }
-
+        
+    /**
+     * Selects the CVC Terminal type by clicking the specified CVC Terminal type button.
+     *
+     * @param Terminal type to set. TerminalType.IS, TerminalType.AT or TerminalType.ST
+     */
+    public void setCvcTerminalType(final  TerminalType type) {
+        clickLink(type.getLocatorId());
+    }
 
     /**
      * Asserts the name is selected in the select f Approval Setting by ApprovalSetting type.
