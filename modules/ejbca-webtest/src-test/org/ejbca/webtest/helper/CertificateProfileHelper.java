@@ -21,7 +21,6 @@ import static org.junit.Assert.fail;
 import java.util.Collections;
 import java.util.List;
 
-import org.ejbca.webtest.helper.CaHelper.CaType;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
