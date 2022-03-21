@@ -34,7 +34,7 @@ public enum ITSApplicationIds {
     // Infrastructure service is specified in ETSI TS 103 301 
     TLC_REQUEST_SERVICE(140, "TLC Request Service", 1, "02FFFFE0", "FF00001F", true),
     // GeoNetworking Management Communications as specified in ETSI EN 302 636-4-1 
-    GN_MGMT(141, "GeoNetworking Management Communications", 1, null, null, true),
+    GN_MGMT(141, "GeoNetworking Management Communications", 1, "", "", true),
     // CRL service as specified in ETSI TS 102 941 
     CRL_SERVICE(622, "CRL Service", -1, null, null, false),
     // Secure certificate request service as specified in ETSI TS 102 941 - only need certIssuePermision to issue EC
