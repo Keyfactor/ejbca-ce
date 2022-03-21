@@ -46,7 +46,6 @@ public enum ITSApplicationIds {
     // VRU basic service is specified in ETSI TS 103 300-3 
     VRU_SERVICE(638, "VRU Service", -1, null, null, false);
 
-
     private final int psId;
     private final String applicationName;
     private final int minChainLength; // not set if -1
