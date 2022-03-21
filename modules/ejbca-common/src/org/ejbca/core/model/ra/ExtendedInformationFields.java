@@ -33,7 +33,9 @@ public class ExtendedInformationFields {
     
     public static final String CUSTOM_ITS_REGION = "ITSREGION";
     
-    public static final String CUSTOM_ITS_VALIDITY = "ITSCALIDITY";
+    public static final String CUSTOM_ITS_VALIDITY_PERIOD = "ITSVALIDITYPERIOD";
+    
+    public static final String CUSTOM_ITS_ASSURANCE_LEVEL = "ITSASSURANCELEVEL";
     
     public static final String CUSTOM_LATEST_ENROLL_REQUEST_HASH = "LATESTREQUESTHASH";
     
