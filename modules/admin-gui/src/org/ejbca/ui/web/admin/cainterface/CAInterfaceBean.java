@@ -1460,5 +1460,9 @@ public class CAInterfaceBean implements Serializable {
     public boolean isCaTypeCits() {
         return cainfo.getCAType()==CAInfo.CATYPE_CITS;
     }
+    
+    public String getExpiryTime(Date expireTime) {
+        return ejbcawebbean.formatAsISO8601(expireTime);
+    }
 
 }
