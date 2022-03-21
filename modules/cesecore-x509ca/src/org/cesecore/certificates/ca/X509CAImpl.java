@@ -1843,23 +1843,28 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return pkinfo;
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int)
-     */
+
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
-            IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert);
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            Certificate partitionCaCert) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert, new Date());
+    }
+    
+    @Override
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            Certificate partitionCaCert, final Date validFrom) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert, validFrom);
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateDeltaCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int, int)
-     */
+
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws CryptoTokenOfflineException,
-            IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
-            NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, latestCaCertForParition);
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            int basecrlnumber, Certificate latestCaCertForParition) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, latestCaCertForParition,
+                new Date());
     }
 
     @Override
@@ -1956,13 +1961,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @param isDeltaCRL true if we should generate a DeltaCRL
      * @param basecrlnumber caseCRLNumber for a delta CRL, use 0 for full CRLs
      * @param partitionCaCert CA certificate to verify CRL against (mainly used for MS compatible CAs)
+     * @param validFrom When this CRL is valid from
      * @return X509CRLHolder with the generated CRL
      * @throws CryptoTokenOfflineException
      * @throws IOException
      * @throws SignatureException
      */
     private X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, 
-            boolean isDeltaCRL, int basecrlnumber, Certificate partitionCaCert) throws CryptoTokenOfflineException, IOException, SignatureException {
+            boolean isDeltaCRL, int basecrlnumber, Certificate partitionCaCert, final Date validFrom) throws CryptoTokenOfflineException, IOException, SignatureException {
         final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
@@ -1991,8 +1997,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } else {
             issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }
-        final Date thisUpdate = new Date();
+        final Date thisUpdate = (validFrom != null ? validFrom : new Date());
         final Date nextUpdate = new Date();
+        nextUpdate.setTime( thisUpdate.getTime() );
         // Set standard nextUpdate time
         long nextUpdateTime = nextUpdate.getTime() + crlPeriod - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
         nextUpdate.setTime(nextUpdateTime);
