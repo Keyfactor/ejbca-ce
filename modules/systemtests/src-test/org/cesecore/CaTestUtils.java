@@ -12,9 +12,12 @@
  *************************************************************************/
 package org.cesecore;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -24,6 +27,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -35,9 +39,38 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.its.ITSExplicitCertificateBuilder;
+import org.bouncycastle.its.ITSPublicEncryptionKey;
+import org.bouncycastle.its.ITSPublicVerificationKey;
+import org.bouncycastle.its.jcajce.JcaITSContentSigner;
+import org.bouncycastle.its.jcajce.JcaITSContentVerifierProvider;
+import org.bouncycastle.its.jcajce.JcaITSExplicitCertificateBuilder;
+import org.bouncycastle.its.operator.ECDSAEncoder;
+import org.bouncycastle.its.operator.ITSContentSigner;
+import org.bouncycastle.oer.OEREncoder;
+import org.bouncycastle.oer.OERInputStream;
+import org.bouncycastle.oer.its.etsi102941.CaCertificateRequest;
+import org.bouncycastle.oer.its.etsi102941.EtsiTs102941DataContent;
+import org.bouncycastle.oer.its.etsi102941.basetypes.CertificateSubjectAttributes;
+import org.bouncycastle.oer.its.etsi102941.basetypes.PublicKeys;
+import org.bouncycastle.oer.its.ieee1609dot2.SignedData;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.VerificationKeyIndicator;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CrlSeries;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId3;
+import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
+import org.bouncycastle.operator.ContentVerifier;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.region.CircularRegion;
+import org.cesecore.certificate.ca.its.region.ItsGeographicElement;
+import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -47,6 +80,7 @@ import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
@@ -69,6 +103,7 @@ import org.cesecore.keys.token.KeyGenParams;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -82,6 +117,10 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
+// import org.ejbca.its.ca.oer.CaCertificateRequest;
+// import org.ejbca.its.ca.oer.CertificateSubjectAttributes;
+// import org.ejbca.its.ca.oer.EtsiTs102941DataContent;
+// import org.ejbca.its.ca.oer.PublicKeys;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -95,7 +134,16 @@ import static org.junit.Assert.assertNotNull;
 public abstract class CaTestUtils {
     
     private static final Logger log = Logger.getLogger(CaTestUtils.class);
-
+    
+    public static final String HEX_ENCODED_ECA_ROOT_CERT = "800300810038811B455453492054657374205243"
+    + "41204320636572746966696361746500000000001A5617008466A8C001028002026E81020101800"
+    + "2027081030201380102A080010E80012482080301FFFC03FF0003800125820A0401FFFFFF04FF00"
+    + "000080018982060201E002FF1F80018A82060201C002FF3F80018B820E0601000000FFF806FF000"
+    + "000000780018C820A0401FFFFE004FF00001F00018D000160000161000162000163000164000165"
+    + "0001660102C0208001018002026F82060201FE02FF01C0808082A4C29A1DDE0E1AEA8D36858B590"
+    + "16A45DB4A4968A2D5A1073B8EABC842C1D5948080B58B1A7CE9848D3EC315C70183D08E6E8B21C0F"
+    + "DA15A7839445AEEA636C794BA4ED59903EADC60372A542D21D77BFFB3E65B5B8BA3FB14BCE7CDA9"
+    + "1268B177BC";
     /**
      * Creates and stores a simple X509 Root CA with an ACTIVE state
      *
@@ -293,6 +341,160 @@ public abstract class CaTestUtils {
         return x509ca;
     }
 
+    private static ToBeSignedCertificate.Builder createToBeSignedCertificate(CertificateSubjectAttributes subjectAttributes, PublicKeys publicKeys) {
+        ToBeSignedCertificate.Builder tbsBuilder = new ToBeSignedCertificate.Builder();
+        tbsBuilder.setId(subjectAttributes.getId());
+        tbsBuilder.setValidityPeriod(subjectAttributes.getValidityPeriod());
+        tbsBuilder.setRegion(subjectAttributes.getRegion());
+        tbsBuilder.setCrlSeries(new CrlSeries(0));
+        tbsBuilder.setCracaId(new HashedId3(Hex.decode("000000")));
+        tbsBuilder.setAppPermissions(subjectAttributes.getAppPermissions());
+        tbsBuilder.setCertIssuePermissions(subjectAttributes.getCertIssuePermissions());  // remove for EC enroll
+        tbsBuilder.setEncryptionKey(publicKeys.getEncryptionKey()); // remove for EC enroll
+        tbsBuilder.setVerifyKeyIndicator(new VerificationKeyIndicator(VerificationKeyIndicator.verificationKey, publicKeys.getVerificationKey()));
+        return tbsBuilder;
+    }
+    
+    public static ITSCertificate loadCertificate(byte[] data) throws Exception {
+        ByteArrayInputStream fin = new ByteArrayInputStream(data);
+        try (OERInputStream oi = new OERInputStream(fin)) {
+            ASN1Object obj = oi.parse(IEEE1609dot2.Certificate.build());
+            ITSCertificate certificate = new ITSCertificate(org.bouncycastle.oer.its.ieee1609dot2.Certificate.getInstance(obj));
+            fin.close();
+            return certificate;
+        }
+    }  
+
+    public static byte[] signEcaCsrWithMockRoot(SignedData signedCsr) throws Exception {
+        //TODO: not rekey
+                
+        byte[] signedContent = OEREncoder.toByteArray(
+                signedCsr.getTbsData().getPayload().getData(), IEEE1609dot2.Ieee1609Dot2Data.build());
+        
+        CaCertificateRequest csrContent = (CaCertificateRequest) 
+                                    ECAUtils.parseOerEncodedWrapped102941Data(
+                                            ECAUtils.parseOerEncodedWrappedUnsecuredData(signedContent))
+                                        .getEtsiTs102941DataContent();
+        
+        log.info(ItsGeographicRegion.fromGeographicRegion(
+                csrContent.getRequestedSubjectAttributes().getRegion()).toStringFormat());
+        
+        JcaITSContentVerifierProvider verifierProvider = 
+                                new JcaITSContentVerifierProvider.Builder()
+                                .build(new ITSPublicVerificationKey(csrContent.getPublicKeys().getVerificationKey()));
+        ContentVerifier verifier = verifierProvider
+            .get(csrContent.getPublicKeys().getVerificationKey().getChoice());
+        
+        verifier.getOutputStream().write(OEREncoder.toByteArray(
+                signedCsr.getTbsData(), IEEE1609dot2.ToBeSignedData.build()));
+        
+        ToBeSignedCertificate.Builder tbsBuilder = 
+                    createToBeSignedCertificate(
+                            csrContent.getRequestedSubjectAttributes(), csrContent.getPublicKeys());
+        
+        log.info("certificate id: " + ((Hostname)csrContent.getRequestedSubjectAttributes().getId().getCertificateId()).getHostName());
+        
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("ECDSA", "BC");
+        kpg.initialize(new ECGenParameterSpec("secp256r1"));
+        KeyPair rcaKeyPair = kpg.generateKeyPair();
+        
+        ITSCertificate rootCertificate = loadCertificate(Hex.decode(HEX_ENCODED_ECA_ROOT_CERT));
+        
+        ITSContentSigner itsContentSigner = new JcaITSContentSigner.Builder().build(
+                                                    rcaKeyPair.getPrivate(), rootCertificate);
+        ITSExplicitCertificateBuilder itsCertificateBuilder = 
+                new JcaITSExplicitCertificateBuilder(itsContentSigner, tbsBuilder);
+
+        CertificateSubjectAttributes subjectAttributes = csrContent.getRequestedSubjectAttributes();
+        ITSCertificate ecaCertificate = itsCertificateBuilder.build(subjectAttributes.getId(), 
+                new ITSPublicVerificationKey(csrContent.getPublicKeys().getVerificationKey()), 
+                new ITSPublicEncryptionKey(csrContent.getPublicKeys().getEncryptionKey()));
+        
+        log.info("ecaCertificate: " + Hex.toHexString(ecaCertificate.getEncoded()));
+        return ecaCertificate.getEncoded();
+    }
+
+    /** Creates a ECA object, but does not actually add the CA to EJBCA. 
+     * @throws Exception
+     **/
+    public static ECA createTestECAOptionalGenKeys(AuthenticationToken admin, String cadn, char[] tokenpin, boolean pkcs11, final String keyspec) throws Exception {
+        // Create catoken
+        // CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+        //         CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, false, pkcs11, cadn, keyspec);
+        cryptoTokenManagementSession.createKeyPair(admin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder(keyspec).build());
+        
+        // Create CAToken (what key in the CryptoToken should be used for what)
+        final Properties caTokenProperties = new Properties();
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        // caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT , CAToken.SOFTPRIVATESIGNKEYALIAS);
+        final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
+        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+
+
+        final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
+        extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        // TODO Replace profile Ids with ITS CP Generated by test
+        CitsCaInfo ecaInfo = CitsCaInfo.getDefaultCitsCaInfo(cadn, "Test ECA", "5y", "ECA-TEST-1", 300599291, 300599291, catoken);
+        ecaInfo.setRegion(ItsGeographicRegion.getDefaultRegion());
+        
+        ECA eca = (ECA) CAFactory.INSTANCE.getCitsCaImpl(ecaInfo);
+        try {
+            eca.setCAToken(catoken);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    
+        caAdminSession.createCA(admin, ecaInfo);
+        //TODO fileBuffer null?
+        byte[] ecaCsr = caAdminSession.makeCitsRequest(admin, ecaInfo.getCAId(), null, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
+            catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
+        SignedData signedCsr = ECAUtils.parseOerEncodedWrappedSignedData(ecaCsr);
+        byte[] signedEcaCert = signEcaCsrWithMockRoot(signedCsr);
+        caAdminSession.receiveCitsResponse(admin, eca.getCAId(), signedEcaCert); 
+
+
+        // CA certificate
+        // List<Certificate> cachain = new ArrayList<>();
+        // if (genKeys) {
+        //     final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(cryptoTokenId,
+        //             catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
+        //     final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(cryptoTokenId,
+        //             catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        //     final String keyalg = AlgorithmTools.getKeyAlgorithm(publicKey);
+        //     String sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        //     if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
+        //         sigalg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+        //     } else if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+        //         sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+        //     }
+        //     X509Certificate cacert;
+        //     if (keyusage == -1) {
+        //         cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true,
+        //                 cryptoTokenManagementProxySession.getSignProviderName(cryptoTokenId), ldapOrder);
+        //     } else {
+        //         cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, keyusage, ldapOrder);
+        //     }
+        //     assertNotNull(cacert);
+        //     cachain.add(cacert);
+        // }
+        // eca.setCertificateChain(cachain);
+        // Now our CA should be operational, if we generated keys, otherwise we will have to generate it, and a CA certificate later.
+        return eca;
+    }
+
+
+
+    
     /** Creates and adds a Sub CA to EJBCA. */
     public static CAInfo createTestX509SubCAGenKeys(AuthenticationToken admin, String cadn, char[] tokenpin, int signedBy, final String keyspec) throws CryptoTokenOfflineException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException {
         // Create catoken
