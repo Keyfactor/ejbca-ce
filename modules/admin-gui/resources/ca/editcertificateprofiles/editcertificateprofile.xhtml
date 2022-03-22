@@ -2252,6 +2252,7 @@
                 <h:panelGroup id="selectcvctermtype"
                     rendered="#{certProfileBean.cvcAvailable}">
                     <h:commandButton
+                        id="cvcTerminalTypeInspectionSystem"
                         value="#{certProfileBean.cvcTerminalTypeIs?'✓':' '}#{web.text.CVCINSPECTIONSYSTEM}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeIs?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeIs or certProfileBean.viewOnly}"
@@ -2259,6 +2260,7 @@
                         <f:ajax render=":content:epassportgrid" />
                     </h:commandButton>                        
                     <h:commandButton
+                        id="cvcTerminalTypeAuthenticationTerminal"
                         value="#{certProfileBean.cvcTerminalTypeAt?'✓':' '}#{web.text.CVCAUTHENTICATIONTERMINAL}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeAt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeAt or certProfileBean.viewOnly}"
@@ -2266,6 +2268,7 @@
                         <f:ajax render=":content:epassportgrid" />
                     </h:commandButton>
                     <h:commandButton
+                    	id="cvcTerminalTypeSignatureTerminal"
                         value="#{certProfileBean.cvcTerminalTypeSt?'✓':' '}#{web.text.CVCSIGNATURETERMINAL}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeSt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeSt or certProfileBean.viewOnly}"
