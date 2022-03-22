@@ -537,7 +537,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getItsCertIssuingPermissionsAvailable() {
         final List<SelectItem> ret = new ArrayList<>();
         for(ITSApplicationIds certIssuingAppPermission : ITSApplicationIds.values()) {
-            ret.add(new SelectItem(certIssuingAppPermission.getPsId(), certIssuingAppPermission.getApplicationName()));
+            if(certIssuingAppPermission.isAddToCertIssuePermissions()) {
+                ret.add(new SelectItem(certIssuingAppPermission.getPsId(), certIssuingAppPermission.getApplicationName()));
+            }
         }
         return ret;
     }
