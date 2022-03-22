@@ -892,8 +892,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "The certificate attached to the PKI message in the extraCert field could not be validated.";
-            assertEquals(expectedErrMsg, errMsg);
+            final String expectedErrMsg = "No issuer certificate for certificate in certification path found";
+            assertTrue(errMsg.contains(expectedErrMsg));
         } finally {
             removeTestCA(differentX509ca.getCAId());
             removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
