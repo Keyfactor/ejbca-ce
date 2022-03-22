@@ -80,12 +80,16 @@ public class RaWebUseUsernameRequestHelper extends BaseHelper {
         clickLink(Page.BUTTON_CHECK);
     }
     
+    /**
+     * Paste CSR to textarea for upload
+     * @param csr the request to be uploded
+     */
     public void fillClearCsrText(final String csr) {
         fillTextarea(Page.TEXTAREA_CERTIFICATE_REQUEST, csr);
     }
     
     /**
-     * Click to upload Csr
+     * Click to upload CSR
      */
     public void clickUploadCsrButton() {
         clickLink(Page.BUTTON_UPLOAD_CSR);
@@ -99,7 +103,12 @@ public class RaWebUseUsernameRequestHelper extends BaseHelper {
     public void clickEnrollDownloadPKCS12Button() {
         clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PKCS12);
     }
-    
+
+    /**
+     * Clicks the 'Download PEM' button.
+     * <p>
+     * This method works in the 'Enroll - Use Username' workflow.
+     * */
     public void clickEnrollDownloadPemButton() {
         clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PEM);
     }
