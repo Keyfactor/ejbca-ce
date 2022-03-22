@@ -100,7 +100,6 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_SEARCH_END_ENTITES = By.id("contentForm:genericSearchString");
         static final By BUTTON_VIEW_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:viewButton");
         static final By BUTTON_EDIT_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:editButton");
-        static final By TABLE_SEARCH_END_ENTITY_RESULT = By.id("contentForm:searchEntityTable");
         static final By TABLE_SEARCH_END_ENTITY_RESULT_ROW = By.xpath("//*[@id=\"contentForm:searchEntityTable\"]/tbody/tr");
 
         // View End Entity
