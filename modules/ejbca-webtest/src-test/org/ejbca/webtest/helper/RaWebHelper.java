@@ -53,8 +53,10 @@ public class RaWebHelper extends BaseHelper {
         static final By SELECT_CERTIFICATE_SUBTYPE = By.id("requestTemplateForm:selectCPOneMenu");
         static final By SELECT_CA_TYPE = By.id("requestTemplateForm:selectCAOneMenu");
         static final By SELECT_KEY_ALGORITHM = By.id("requestInfoForm:selectAlgorithmOneMenu");
+        static final By SELECT_TOKEN_TYPE = By.id("requestInfoForm:selectTokenOneMenu");
         static final By RADIO_BUTTON_KEY_PAIR_ON_SERVER = By.id("requestTemplateForm:selectKeyPairGeneration:0");
         static final By RADIO_BUTTON_KEY_PAIR_PROVIDED = By.id("requestTemplateForm:selectKeyPairGeneration:1");
+        static final By RADIO_BUTTON_KEY_PAIR_POSTPONE = By.id("requestTemplateForm:selectKeyPairGeneration:2");
         static final By LABELS_GROUP_PROVIDE_REQUEST_INFO = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
         static final By LABEL_COMMON_NAME = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
         static final By LABELS_GROUP_PROVIDE_USER_CREDENTIALS = By.xpath("//div[@id='requestInfoForm:userCredentialsOuterPanel']//label");
@@ -62,6 +64,7 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("keyPairForm:certificateRequest");
         static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
+        static final By TEXT_INFO_MESSAGE = By.xpath("//li[@class='infoMessage']");
         static final By INPUT_NAME_CONSTRAINT_PERMITTED = By.id("requestInfoForm:nameConstraintPermitted");
         static final By INPUT_NAME_CONSTRAINT_EXCLUDED = By.id("requestInfoForm:nameConstraintExcluded");
         static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");       
@@ -75,6 +78,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_DOWNLOAD_P12 = By.id("requestInfoForm:generateP12");
         static final By BUTTON_DOWNLOAD_JKS = By.id("requestInfoForm:generateJks");
         static final By BUTTON_RESET = By.id("requestInfoForm:resetButton");
+        static final By BUTTON_ADD_END_ENTITY = By.id("requestInfoForm:addEndEntity");
         static final By TABLE_REQUESTS = By.id("manageRequestsForm:manageRequestTable");
         static final By TABLE_REQUEST_ROWS = By.xpath("//tbody/tr");
         static final By TABLE_REQUEST_ROW_CELLS = By.xpath(".//td");
@@ -96,7 +100,8 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_SEARCH_END_ENTITES = By.id("contentForm:genericSearchString");
         static final By BUTTON_VIEW_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:viewButton");
         static final By BUTTON_EDIT_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:editButton");
-        
+        static final By TABLE_SEARCH_END_ENTITY_RESULT_ROW = By.xpath("//*[@id=\"contentForm:searchEntityTable\"]/tbody/tr");
+
         // View End Entity
         static final By SECTION_PERMITTED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsPermitted')]");
         static final By SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsExcluded')]");
@@ -197,9 +202,18 @@ public class RaWebHelper extends BaseHelper {
     public void selectKeyAlgorithm(final String keyAlgorithm) {
         selectOptionByName(Page.SELECT_KEY_ALGORITHM, keyAlgorithm);
     }
+
+    public void selectTokenType(final String tokenType) {
+        selectOptionByName(Page.SELECT_TOKEN_TYPE, tokenType);
+    }
     
     public void selectKeyPairGenerationOnServer() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_ON_SERVER);
+        TimeUnit.SECONDS.sleep(2);
+    }
+
+    public void selectKeyPairGenerationPostpone() throws InterruptedException {
+        clickLink(Page.RADIO_BUTTON_KEY_PAIR_POSTPONE);
         TimeUnit.SECONDS.sleep(2);
     }
 
@@ -241,6 +255,12 @@ public class RaWebHelper extends BaseHelper {
         assertEquals("Certificate Profile selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, certificateProfileSelectionWebElement.isEnabled());
     }
 
+    public void assertTokenTypeSelection(final boolean isEnabled) {
+        final WebElement tokenTypeSelectionWebElement = findElement(Page.SELECT_TOKEN_TYPE);
+        assertNotNull("Token type selection was not found.", tokenTypeSelectionWebElement);
+        assertEquals("Token type selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, tokenTypeSelectionWebElement.isEnabled());
+    }
+
     public void assertKeyAlgorithmSelection(final String keyAlgorithmValue, final boolean isEnabled) {
         final WebElement keyAlgorithmSelectionWebElement = findElement(Page.SELECT_KEY_ALGORITHM);
         assertNotNull("Key Algorithm selection was not found.", keyAlgorithmSelectionWebElement);
@@ -266,6 +286,15 @@ public class RaWebHelper extends BaseHelper {
         // Add a timeout to load enroll buttons pane before click
         findElement(Page.CONTAINER_ENROLL_BUTTONS);
         clickLink(Page.BUTTON_DOWNLOAD_PEM);
+    }
+
+    /**
+     * Click add end entity for postponed requests
+     */
+    public void clickAddEndEntity() {
+        // Add a timeout to load enroll buttons pane before click
+        findElement(Page.CONTAINER_ENROLL_BUTTONS);
+        clickLink(Page.BUTTON_ADD_END_ENTITY);
     }
 
     /**
@@ -327,6 +356,18 @@ public class RaWebHelper extends BaseHelper {
         assertNotNull(noErrorMessage, errorMessageWebElement);
         assertTrue("Error message does not match. Should contains '" + errorMessage + "', but was '" + errorMessageWebElement.getText() + "'",
                 errorMessageWebElement.getText().contains(errorMessage));
+    }
+
+    public void assertInfoMessageContains(final String noInfoMessage, final String infoMessage) {
+        final WebElement infoMessageWebElement = findElement(Page.TEXT_INFO_MESSAGE);
+        assertNotNull(noInfoMessage, infoMessageWebElement);
+        assertTrue("Info message does not match. Should contains '" + infoMessage + "', but was '" + infoMessageWebElement.getText() + "'",
+                infoMessageWebElement.getText().contains(infoMessage));
+    }
+
+    public void assertSearchTableResult(int number){
+        final List<WebElement> searchResultRows = findElements(Page.TABLE_SEARCH_END_ENTITY_RESULT_ROW);
+        assertEquals("Wrong number of search results in end entity search: ", number, searchResultRows.size());
     }
 
     /**
