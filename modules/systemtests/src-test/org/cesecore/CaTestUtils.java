@@ -409,7 +409,8 @@ public abstract class CaTestUtils {
     /** Creates a ECA object and persists it in the database
      * @throws Exception
      **/
-    public static ECA createTestECAOptionalGenKeys(AuthenticationToken admin, String cadn, int caCertProfileId,char[] tokenpin, final String keyspec) throws Exception {
+    public static ECA createTestECAOptionalGenKeys(AuthenticationToken admin, String cadn, int caCertProfileId,
+             String caCertificateId, char[] tokenpin, final String keyspec) throws Exception {
         // Create catoken
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -433,7 +434,7 @@ public abstract class CaTestUtils {
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
         // Create CA Info
-        CitsCaInfo ecaInfo = CitsCaInfo.getDefaultCitsCaInfo(cadn, "Test ECA", "5y", "ECA-TEST-1", caCertProfileId, caCertProfileId, catoken);
+        CitsCaInfo ecaInfo = CitsCaInfo.getDefaultCitsCaInfo(cadn, "Test ECA", "5y", caCertificateId, caCertProfileId, caCertProfileId, catoken);
         
         ECA eca = (ECA) CAFactory.INSTANCE.getCitsCaImpl(ecaInfo);
         try {
@@ -441,7 +442,7 @@ public abstract class CaTestUtils {
         } catch (InvalidAlgorithmException e) {
             throw new IllegalStateException(e);
         }
-    
+        
         caAdminSession.createCA(admin, ecaInfo);
         //TODO fileBuffer null?
         byte[] ecaCsr = caAdminSession.makeCitsRequest(admin, ecaInfo.getCAId(), null, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
