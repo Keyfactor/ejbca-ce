@@ -66,7 +66,6 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificate.ca.its.ECA;
-import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -362,8 +361,6 @@ public abstract class CaTestUtils {
     }  
 
     public static byte[] signEcaCsrWithMockRoot(SignedData signedCsr) throws Exception {
-        //TODO: not rekey
-                
         byte[] signedContent = OEREncoder.toByteArray(
                 signedCsr.getTbsData().getPayload().getData(), IEEE1609dot2.Ieee1609Dot2Data.build());
         
@@ -384,8 +381,6 @@ public abstract class CaTestUtils {
                     createToBeSignedCertificate(
                             csrContent.getRequestedSubjectAttributes(), csrContent.getPublicKeys());
         
-        log.info("certificate id: " + ((Hostname)csrContent.getRequestedSubjectAttributes().getId().getCertificateId()).getHostName());
-        
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("ECDSA", "BC");
         kpg.initialize(new ECGenParameterSpec("secp256r1"));
         KeyPair rcaKeyPair = kpg.generateKeyPair();
@@ -402,7 +397,6 @@ public abstract class CaTestUtils {
                 new ITSPublicVerificationKey(csrContent.getPublicKeys().getVerificationKey()), 
                 new ITSPublicEncryptionKey(csrContent.getPublicKeys().getEncryptionKey()));
         
-        log.info("ecaCertificate: " + Hex.toHexString(ecaCertificate.getEncoded()));
         return ecaCertificate.getEncoded();
     }
 
@@ -444,7 +438,6 @@ public abstract class CaTestUtils {
         }
         
         caAdminSession.createCA(admin, ecaInfo);
-        //TODO fileBuffer null?
         byte[] ecaCsr = caAdminSession.makeCitsRequest(admin, ecaInfo.getCAId(), null, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
             catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
         SignedData signedCsr = ECAUtils.parseOerEncodedWrappedSignedData(ecaCsr);
