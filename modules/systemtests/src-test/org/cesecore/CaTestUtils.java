@@ -411,6 +411,7 @@ public abstract class CaTestUtils {
      **/
     public static ECA createTestECAOptionalGenKeys(AuthenticationToken admin, String cadn, int caCertProfileId,char[] tokenpin, final String keyspec) throws Exception {
         // Create catoken
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, false, false, cadn, keyspec);
@@ -449,6 +450,7 @@ public abstract class CaTestUtils {
         byte[] signedEcaCert = signEcaCsrWithMockRoot(signedCsr);
         caAdminSession.receiveCitsResponse(admin, eca.getCAId(), signedEcaCert); 
 
+        eca = (ECA) CAFactory.INSTANCE.getCitsCaImpl((CitsCaInfo) caSession.getCAInfo(admin, eca.getCAId()));
         return eca;
     }
 
