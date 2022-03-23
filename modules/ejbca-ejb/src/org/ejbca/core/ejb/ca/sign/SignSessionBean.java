@@ -1564,11 +1564,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         
         final CAToken catoken = eca.getCAToken();
-        log.info("catoken: " + catoken);
-        log.info("cryptoToken id: " + catoken.getCryptoTokenId());
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
-        log.info("cryptoToken: " + cryptoToken);
-        log.info("sign key alias: " + catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         if (privateKey == null) {
             throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
