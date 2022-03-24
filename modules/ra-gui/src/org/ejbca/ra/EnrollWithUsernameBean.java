@@ -242,11 +242,14 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     }
 
     /**
-     * The selection for the key specification is rendered always to indicate the user the available key specification(s). 
+     * The selection for the key specification is rendered if key algorithm is not taken from uploaded CSR.
      * 
      * @return true if the selectKeyAlgorithm should be rendered.
      */
     public boolean isSelectKeyAlgorithmRendered() {
+        if (isUserGeneratedToken()){
+            return false;
+        }
         return true;
     }
     
