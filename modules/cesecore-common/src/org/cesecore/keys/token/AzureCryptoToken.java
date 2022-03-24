@@ -350,7 +350,10 @@ public class AzureCryptoToken extends BaseCryptoToken {
             if (log.isDebugEnabled()) {
                 log.debug("Cache is expired or empty, re-reading aliases: " + aliasCache.getAllNames().size());
             }
-            final HttpGet request = new HttpGet(createFullKeyURL(null, getKeyVaultName()) + "?api-version=7.2");
+            // Get keys have a parameter for max results, this here means that a keyvault can only have 200 keys usable by EJBCA
+            // https://docs.microsoft.com/en-us/rest/api/keyvault/keys/get-keys/get-keys
+            // Resulting URL: https://keyvault-name.vault.azure.net/keys?maxresults=200&api-version=7.2
+            final HttpGet request = new HttpGet(createFullKeyURL(null, getKeyVaultName()) + "?maxresults=200&api-version=7.2");
             try (final CloseableHttpResponse response = azureHttpRequest(request)) {
                 // Connect to Azure Key Vault and get the list of keys there.
                 final InputStream is = response.getEntity().getContent();
