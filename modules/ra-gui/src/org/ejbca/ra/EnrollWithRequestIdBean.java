@@ -47,8 +47,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -630,15 +628,17 @@ public class EnrollWithRequestIdBean implements Serializable {
     protected void selectKeyAlgorithmFromCsr() {
         if (endEntityInformation.getExtendedInformation() != null) {
             try {
-                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedInformation().getCertificateRequest());
-                final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
-                final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-                final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+                final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+                if (certRequest == null) {
+                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
+                }
+                final String keySpecification = AlgorithmTools.getKeySpecification(certRequest.getRequestPublicKey());
+                final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(certRequest.getRequestPublicKey());
                 selectedAlgorithm = keyAlgorithm + " " + keySpecification; // Save for later use
-            } catch (IOException e) {
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
             } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+            } catch (NoSuchProviderException e) {
+                throw new IllegalStateException(e);
             }
         }
     }
