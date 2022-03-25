@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.integrated;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -26,7 +20,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
@@ -88,8 +81,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
-import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -102,8 +93,6 @@ import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRule;
 import org.cesecore.junit.util.CryptoTokenTestRunner;
-import org.cesecore.keybind.impl.OcspKeyBinding;
-import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -129,6 +118,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  */
@@ -419,7 +414,7 @@ public class IntegratedOcspResponseTest {
         // this as a chosen-prefix attack on hash collisions.
         // https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
         // https://www.rfc-editor.org/rfc/rfc8954.txt
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[33]));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[33]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq reqnonce = gen.build();
 
@@ -431,7 +426,7 @@ public class IntegratedOcspResponseTest {
                 errResponse.getStatus());
 
         // Go on now with a nonce that is too short (0 bytes)
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("".getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         reqnonce = gen.build();
 
@@ -443,7 +438,7 @@ public class IntegratedOcspResponseTest {
                 errResponse.getStatus());
 
         // Go on now with a nonce that is not too long, exactly 1 byte
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[1]));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[1]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         byte[] responseBytes = ocspResponseGeneratorSession
@@ -451,7 +446,7 @@ public class IntegratedOcspResponseTest {
         assertNotNull("OCSP responder replied null", responseBytes);
 
         // Go on now with a nonce that is not too long, exactly 32 bytes
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[32]));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[32]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
         responseBytes = ocspResponseGeneratorSession
@@ -474,7 +469,7 @@ public class IntegratedOcspResponseTest {
         gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
                 caCertificate, caCertificate.getSerialNumber()));
         extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
         responseBytes = ocspResponseGeneratorSession
@@ -496,7 +491,7 @@ public class IntegratedOcspResponseTest {
         gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha224)),
                 caCertificate, caCertificate.getSerialNumber()));
         extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
         responseBytes = ocspResponseGeneratorSession
@@ -524,7 +519,7 @@ public class IntegratedOcspResponseTest {
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, randomSerialNumber));
             Extension[] extensions = new Extension[1];
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
 
             OCSPReq req = gen.build();
@@ -611,7 +606,7 @@ public class IntegratedOcspResponseTest {
             //Add a "random" serial number
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, BigInteger.valueOf(9)));
             Extension[] extensions = new Extension[1];
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -638,7 +633,7 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
@@ -688,7 +683,7 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
@@ -710,7 +705,7 @@ public class IntegratedOcspResponseTest {
         gen.addRequest(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
                 caCertificate, ocspCertificate.getSerialNumber()));
         extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
         responseBytes = ocspResponseGeneratorSession
@@ -745,7 +740,7 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
@@ -823,7 +818,7 @@ public class IntegratedOcspResponseTest {
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
             Extension[] extensions = new Extension[1];
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
             byte[] responseBytes;
@@ -886,7 +881,7 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -925,7 +920,7 @@ public class IntegratedOcspResponseTest {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspCertificate, ocspCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
@@ -1062,7 +1057,7 @@ public class IntegratedOcspResponseTest {
                     gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) externalCaCertificate,
                             importedCertificate.getSerialNumber()));
                     Extension[] extensions = new Extension[1];
-                    extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+                    extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
                     gen.setRequestExtensions(new Extensions(extensions));
                     OCSPReq ocspRequest = gen.build();
                     final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -1126,7 +1121,7 @@ public class IntegratedOcspResponseTest {
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
             Extension[] extensions = new Extension[1];
             ASN1OctetString nonce = new DEROctetString(PKIX_OCSP_NONCE.getBytes());
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce);
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce.getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
             byte[] responseBytes = ocspResponseGeneratorSession
@@ -1137,7 +1132,7 @@ public class IntegratedOcspResponseTest {
             BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
             Extension retrievedNonce = basicOcspResponse.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
             assertNotNull("No nonce was received in spite of being globally enabled and in the request", retrievedNonce);
-            assertEquals("Correct nonce was not retrieved", nonce, retrievedNonce.getExtnValue());
+            assertEquals("Correct nonce was not retrieved", nonce, retrievedNonce.getParsedValue());
             //First test with NONCE disabled
             globalOcspConfiguration.setNonceEnabled(false);
             globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
