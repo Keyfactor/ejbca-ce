@@ -31,7 +31,6 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
@@ -74,7 +73,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoToken;
@@ -306,6 +304,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     public void getOCSPResponseWichExistingMsCompatibleCA() throws Exception {
         log.trace(">getOCSPResponseWichExistingMsCompatibleCA");
         OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
+        OcspDataConfigCache.INSTANCE.stagingCommit();
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1);
         expectLoggerChecks();
         expectOcspConfigRead();
@@ -388,7 +387,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         expect(timerServiceMock.createSingleActionTimer(anyLong(), anyObject())).andReturn(dummyTimer).once(); // return value is only used by EJBCA for trace logging
         expect(dummyTimer.getNextTimeout()).andReturn(new Date(System.currentTimeMillis() + 3600));
         replay(dummyTimer);
-        expect(caSessionMock.getAllCaIds()).andReturn(Arrays.asList(ISSUER_CAID)).once();
+        expect(caSessionMock.getAllCaIds()).andReturn(Collections.singletonList(ISSUER_CAID)).once();
         final Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, OCSP_SIGN_KEY_ALIAS);
         final X509CAInfo caInfo = new X509CAInfoBuilder()
@@ -396,7 +395,7 @@ public class OcspResponseGeneratorSessionUnitTest {
                 .setCaId(ISSUER_CAID)
                 .setStatus(CAConstants.CA_ACTIVE)
                 .setCaToken(new CAToken(CRYPTOTOKEN_ID, caTokenProperties))
-                .setCertificateChain(Arrays.asList(getIssuerCert()))
+                .setCertificateChain(Collections.singletonList(getIssuerCert()))
                 .build();
         expect(caSessionMock.getCAInfoInternal(ISSUER_CAID)).andReturn(caInfo).once();
         final CryptoToken cryptoTokenMock = EasyMock.createStrictMock(CryptoToken.class);
