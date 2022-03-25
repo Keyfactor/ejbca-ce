@@ -217,7 +217,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         
         KeyPair caKeyPair = KeyTools.genKeys("2048", "RSA");
         externalCaInfo = OcspTestUtils.createExternalCa(authenticationToken, caKeyPair, "CN=testOcspExtCa", "testOcspExtCa", 86400);
-        externalCaUserCert = (X509Certificate) OcspTestUtils.createCertByExternalCa(authenticationToken, caKeyPair, "CN=testOcspExtCaUser", 3600);
+        externalCaUserCert = (X509Certificate) OcspTestUtils.createCertByExternalCa(caKeyPair, "CN=testOcspExtCaUser", 3600);
         
         List<InternalKeyBindingTrustEntry> signOnBehalfEntry = new ArrayList<>();
         signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(x509CaSignBehalf.getCAId(), null, "behalf entry1"));

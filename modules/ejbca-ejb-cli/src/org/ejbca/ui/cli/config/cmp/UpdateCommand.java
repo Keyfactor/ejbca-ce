@@ -76,7 +76,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         //Check before updating defaultCA 
         if (key.equals(alias + ".defaultca")){
             String defaultCa;
-                if (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(value)) {
+                if (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(value)){
                     try {
                         defaultCa = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), value).getSubjectDN();
                     } catch (AuthorizationDeniedException e) {
@@ -84,16 +84,11 @@ public class UpdateCommand extends BaseCmpConfigCommand {
                         throw new IllegalStateException(e);
                     }
                     getCmpConfiguration().setValue(key, defaultCa, alias);
-                }else if (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(CertTools.getPartFromDN(value, "CN"))){
-                    try {
-                        defaultCa = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),CertTools.getPartFromDN(value, "CN")).getSubjectDN();
-                   } catch (AuthorizationDeniedException e) {
-                        log.error("Permission to update CMP Default CA denied");
-                        throw new IllegalStateException(e);
-                    }
+               }else if ( EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(CertTools.getCommonNameFromSubjectDn(value))){
+                    defaultCa = value;
                     getCmpConfiguration().setValue(key, defaultCa, alias);
-            
-                }else {
+                    
+               }else {
                     log.error("CMP default CA name does not exist");
         }
         }else {
