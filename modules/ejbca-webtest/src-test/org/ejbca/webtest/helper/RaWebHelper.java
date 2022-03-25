@@ -90,6 +90,7 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
+        static final By INPUT_EMAIL = By.id("requestInfoForm:emailField");
         static final By BUTTON_ADD_END_ENDTITY = By.id("requestInfoForm:addEndEntity");
         
         // Search End Entities
@@ -531,6 +532,11 @@ public class RaWebHelper extends BaseHelper {
         fillInput(Page.INPUT_ENROLLMENTCODE, enrollmentCode);
         fillInput(Page.INPUT_ENROLLMENTCODE_CONFIRM, enrollmentCode);
     }
+    
+    public void fillCredentialEmail(final String email) {
+        fillInput(Page.INPUT_EMAIL, email);
+    }
+    //requestInfoForm:emailField
     
     public void fillRequiredSubjectDNAttributes(String commonName) {
         fillInput(Page.INPUT_COMMON_NAME, commonName);

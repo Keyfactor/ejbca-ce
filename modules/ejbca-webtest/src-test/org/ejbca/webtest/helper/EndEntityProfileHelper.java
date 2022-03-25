@@ -544,10 +544,11 @@ public class EndEntityProfileHelper extends BaseHelper {
     }
 
     /**
-     * Triggers the checkbox 'Use' for 'Send Notification'.
+     * Triggers the checkbox 'Use'and 'Default' for 'Send Notification'.
      */
     public void triggerSendNotification() {
         clickLink(Page.INPUT_USE_SEND_NOTIFICATION);
+        clickLink(Page.INPUT_DEFAULT_SEND_NOTIFICATION);        
         // Add a timeout to load button 'Add' after click
         findElement(Page.BUTTON_ADD_NOTIFICATION);
     }
