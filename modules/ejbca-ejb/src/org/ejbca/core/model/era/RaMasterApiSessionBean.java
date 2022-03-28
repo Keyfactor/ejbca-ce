@@ -15,6 +15,7 @@ package org.ejbca.core.model.era;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -85,11 +86,13 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
@@ -1869,6 +1872,23 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EjbcaException {
         EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS);
+        //Perform any request pre-processing on the end entity
+        CAInfo cainfo = caSession.getCAInfoInternal(endEntityInformation.getCAId());
+        if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
+            String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
+            if (!StringUtils.isEmpty(preProcessorClass)) {
+                try {
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass)
+                            .getDeclaredConstructor().newInstance();
+                    endEntityInformation = extendedUserDataHandler.processEndEntityInformation(endEntityInformation,
+                            certificateProfileSession.getCertificateProfileName(endEntityInformation.getCertificateProfileId()));
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
+                }
+            }
+        }
+        
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, isClearPwd);
         return endEntityAccessSession.findUser(endEntityInformation.getUsername()) != null;
     }
