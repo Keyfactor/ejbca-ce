@@ -39,6 +39,9 @@ public class RaWebUseUsernameRequestHelper extends BaseHelper {
         static final By INPUT_ENROLLMENTCODE = By.id("enrollWithUsernameForm:enrollmentCode");
         static final By BUTTON_CHECK = By.id("enrollWithUsernameForm:checkButton");
         static final By BUTTON_ENROLL_DOWNLOAD_PKCS12 = By.id("enrollWithUsernameForm:generatePkcs12");
+        static final By BUTTON_ENROLL_DOWNLOAD_PEM = By.id("enrollWithUsernameForm:generatePem");
+        static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("enrollWithUsernameForm:certificateRequest");
+        static final By BUTTON_UPLOAD_CSR = By.id("enrollWithUsernameForm:uploadCsrButton");
         static final By SELECT_KEY_ALGORITHM = By.id("enrollWithUsernameForm:selectAlgorithmOneMenu");
     }
 
@@ -76,6 +79,21 @@ public class RaWebUseUsernameRequestHelper extends BaseHelper {
     public void clickCheckButton() {
         clickLink(Page.BUTTON_CHECK);
     }
+    
+    /**
+     * Paste CSR to textarea for upload
+     * @param csr the request to be uploded
+     */
+    public void fillClearCsrText(final String csr) {
+        fillTextarea(Page.TEXTAREA_CERTIFICATE_REQUEST, csr);
+    }
+    
+    /**
+     * Click to upload CSR
+     */
+    public void clickUploadCsrButton() {
+        clickLink(Page.BUTTON_UPLOAD_CSR);
+    }
 
     /**
      * Clicks the 'Download PKCS#12' button.
@@ -84,6 +102,15 @@ public class RaWebUseUsernameRequestHelper extends BaseHelper {
      * */
     public void clickEnrollDownloadPKCS12Button() {
         clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PKCS12);
+    }
+
+    /**
+     * Clicks the 'Download PEM' button.
+     * <p>
+     * This method works in the 'Enroll - Use Username' workflow.
+     * */
+    public void clickEnrollDownloadPemButton() {
+        clickLink(Page.BUTTON_ENROLL_DOWNLOAD_PEM);
     }
 
     public void selectKeyAlgorithm(final String keyAlgorithm) {
