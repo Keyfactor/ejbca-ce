@@ -23,6 +23,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -36,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -56,6 +58,7 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
+import org.cesecore.keys.util.KeyTools;
 
 /** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
@@ -421,6 +424,21 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             }
         }
         return ret;
+    }
+    
+    public PublicKey importEcPublicKey(BCECPublicKey publicKey, byte[] encodedParams, String alias) {
+        slot.importEcPublicKey(publicKey, encodedParams, alias);
+        PublicKey itsPubKey = slot.getPublicKey(alias+"-public");
+        try {
+            log.info("encoded itsPubKey as pem: " + KeyTools.getAsPem(publicKey));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            log.info("did not work with public");
+        }
+        return itsPubKey;
+        //look at CryptokiDevice
+        //private PublicKey getPublicKeyFromRef(Long session, final Long publicKeyRef, final String aliasForLogging)
+        //throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
     }
 
 }
