@@ -1520,6 +1520,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     ItsGeographicElement geoElement = 
                             EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
                     if(geoElement!=null) {
+                        log.info("Region: '" + geoElement.toStringFormat() + "'");
                         caInfoDto.setRegion(geoElement.toStringFormat());
                     }
                 } catch (final Exception e) {
