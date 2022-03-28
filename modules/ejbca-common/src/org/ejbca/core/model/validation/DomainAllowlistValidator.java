@@ -29,9 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
@@ -47,7 +46,6 @@ import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
@@ -270,7 +268,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
             return new AbstractMap.SimpleEntry<>(false, Arrays.asList("Allowed domain list is not initialized."));
         }
         
-        boolean result=true, match;
+        boolean result=true;
         final List<String> messages = new ArrayList<>();
         
         outer: 

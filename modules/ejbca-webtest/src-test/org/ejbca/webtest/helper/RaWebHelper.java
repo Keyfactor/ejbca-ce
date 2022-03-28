@@ -12,15 +12,19 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.ejbca.webtest.helper.OauthProvidersHelper.Page;
+import org.ejbca.webtest.scenario.EcaQa_MakeRequestUsingCSRDER.TestData;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -63,6 +67,7 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
         static final By INPUT_NAME_CONSTRAINT_PERMITTED = By.id("requestInfoForm:nameConstraintPermitted");
         static final By INPUT_NAME_CONSTRAINT_EXCLUDED = By.id("requestInfoForm:nameConstraintExcluded");
+        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");       
 
         // Manage Requests
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
@@ -107,6 +112,7 @@ public class RaWebHelper extends BaseHelper {
         
         // Containers
         static final By CONTAINER_ENROLL_BUTTONS = By.id("requestInfoForm:enrollButtons");
+        static final By CSR_FILE_INPUT_FIELD = By.id("keyPairForm:certificateUploadInput");
 
         static By getRequestInfoFormSubjectDnSubjectDnField(final int index) {
             return By.id("requestInfoForm:subjectDn:" + index + ":subjectDnField");
@@ -245,6 +251,17 @@ public class RaWebHelper extends BaseHelper {
         assertEquals("Key Algorithm selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, keyAlgorithmSelectionWebElement.isEnabled());
     }
 
+//    /**
+//     * Selects a CSR file
+//     */
+//    public void fillCsrFilename(final File inputFile) {
+//        fillInput(Page.CSR_FILE_INPUT_FIELD, inputFile.toString());
+//    }
+    
+    public void fillCsrFilename(final String inputFilename) {
+        fillInput(Page.CSR_FILE_INPUT_FIELD, inputFilename);
+    }
+    
     /**
      * Click to upload Csr
      */
@@ -453,6 +470,15 @@ public class RaWebHelper extends BaseHelper {
     public void triggerRequestEditLink() {
         clickLink(Page.BUTTON_REQUEST_EDIT);
     }
+    
+    public void fillRequiredSubjectDNAttributes(String CN) {
+        fillTextarea(Page.INPUT_COMMON_NAME,CN );
+    };
+    
+    public void fillUsernameProvodeUserCredentials(String userName) {
+        fillTextarea(Page.INPUT_USERNAME,userName);
+        
+    }
 
     public void fillClearCsrText(final String csr) {
         fillTextarea(Page.TEXTAREA_CERTIFICATE_REQUEST, csr);
@@ -600,6 +626,15 @@ public class RaWebHelper extends BaseHelper {
     
     public void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
         assertAllErrorMessagesAppear(new String[]{expectedErrorMessage}, noElementMessage, assertMessage);
+    }
+    
+    /**
+     * Assert the existence of a file at a specific location
+     *
+     * @param filePath
+     */
+    public void assertDownloadedFileExits(final String filePath) {        
+        assertTrue(filePath, Files.exists(Paths.get(filePath)));
     }
     
 }

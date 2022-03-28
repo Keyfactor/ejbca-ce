@@ -111,6 +111,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
@@ -4654,6 +4655,7 @@ public abstract class CertTools {
                     return;
                 }
             }
+          
             
             final PKIXNameConstraintValidator validator = new PKIXNameConstraintValidator();
             
@@ -4716,24 +4718,28 @@ public abstract class CertTools {
                     }
                 }
             }
-
+            
             if (subjectAltName != null) {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
                         validator.checkPermitted(sangn);
                         if (isAllDNSNamesExcluded(excluded)) {
-                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
+                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
+                                    NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
                             throw new IllegalNameException(msg);
                         }
                         validator.checkExcluded(sangn);
                     } catch (PKIXNameConstraintValidatorException e) {
-                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
+                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
+                                NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
                         throw new IllegalNameException(msg, e);
                     }
                 }
             }
         }
     }
+    
+
 
     // Check if we should exclude all dns names
     private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
