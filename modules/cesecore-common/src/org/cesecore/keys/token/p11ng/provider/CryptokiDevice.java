@@ -41,6 +41,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.MGF1ParameterSpec;
@@ -86,6 +87,7 @@ import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.ECPointUtil;
@@ -108,6 +110,7 @@ import org.cesecore.keys.token.p11ng.jacknji11.CP5Constants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
+import org.pkcs11.jacknji11.CE;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKC;
 import org.pkcs11.jacknji11.CKK;
@@ -1140,7 +1143,7 @@ public class CryptokiDevice {
 
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
-                privateKeyTemplate.put(CKA.DERIVE, false);
+                privateKeyTemplate.put(CKA.DERIVE, true);
                 /* CK_TRUE if key supports decryption */
                 privateKeyTemplate.put(CKA.DECRYPT, false);
                 /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
@@ -1703,6 +1706,37 @@ public class CryptokiDevice {
                 }
             } catch (CKRException ex) {
                 throw new EJBException("Failed to remove certificate chain.", ex);
+            }
+        }
+        
+        public void importEcPublicKey(BCECPublicKey publicKey, byte[] encodedParams, String alias) {
+            Long session = null;
+            try {
+                // TODO: Make some sanity checks on the certificates
+                
+                session = aquireSession();
+                                
+                CKA[] pubTempl = new CKA[] {
+                        new CKA(CKA.CLASS, CKO.PUBLIC_KEY),
+                        new CKA(CKA.KEY_TYPE, CKK.EC),
+                        new CKA(CKA.EC_PARAMS, encodedParams), // secp256 06082a8648ce3d030107
+                        new CKA(CKA.EC_POINT, publicKey.getEncoded()),
+                        new CKA(CKA.WRAP, false),
+                        new CKA(CKA.ENCRYPT, false),
+                        new CKA(CKA.VERIFY, true),
+                        new CKA(CKA.VERIFY_RECOVER, false),
+                        new CKA(CKA.TOKEN, true),
+                        new CKA(CKA.LABEL, alias + "-public"),
+                        new CKA(CKA.ID, alias),
+                    };
+                 long importedKeyHandle = c.CreateObject(session, pubTempl);
+                 LOG.debug("imported EC public key with alias '" + alias + "': " +  importedKeyHandle);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to import public key.", ex);
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
             }
         }
 
