@@ -80,6 +80,7 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -1709,7 +1710,7 @@ public class CryptokiDevice {
             }
         }
         
-        public void importEcPublicKey(BCECPublicKey publicKey, byte[] encodedParams, String alias) {
+        public long importEcPublicKey(BCECPublicKey publicKey, byte[] encodedParams, String alias) {
             Long session = null;
             try {
                 // TODO: Make some sanity checks on the certificates
@@ -1720,9 +1721,10 @@ public class CryptokiDevice {
                         new CKA(CKA.CLASS, CKO.PUBLIC_KEY),
                         new CKA(CKA.KEY_TYPE, CKK.EC),
                         new CKA(CKA.EC_PARAMS, encodedParams), // secp256 06082a8648ce3d030107
-                        new CKA(CKA.EC_POINT, publicKey.getEncoded()),
+                        new CKA(CKA.EC_POINT, new DEROctetString(publicKey.getQ().getEncoded(false)).getEncoded()),
                         new CKA(CKA.WRAP, false),
                         new CKA(CKA.ENCRYPT, false),
+                        //new CKA(CKA.DERIVE, true),
                         new CKA(CKA.VERIFY, true),
                         new CKA(CKA.VERIFY_RECOVER, false),
                         new CKA(CKA.TOKEN, true),
@@ -1731,13 +1733,17 @@ public class CryptokiDevice {
                     };
                  long importedKeyHandle = c.CreateObject(session, pubTempl);
                  LOG.debug("imported EC public key with alias '" + alias + "': " +  importedKeyHandle);
+                 return importedKeyHandle;
             } catch (CKRException ex) {
                 throw new EJBException("Failed to import public key.", ex);
+            } catch (IOException e) {
+                // should not happen
             } finally {
                 if (session != null) {
                     releaseSession(session);
                 }
             }
+            return 0;
         }
 
         /**
