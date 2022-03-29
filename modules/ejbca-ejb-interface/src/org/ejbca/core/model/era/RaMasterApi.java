@@ -382,7 +382,7 @@ public interface RaMasterApi {
     /**
      * Searches for certificates V2. Data (e.g. revocation status) of remote certificates take precedence over local ones.
      * @return list of certificates from the specified search criteria and order plus pagination summary.
-     * @since Initial RA Master API version (EJBCA 7.8.0)
+     * @since Added between Master RA API version 12 and 13 (EJBCA 7.8.0), lacks an exact API version
      */
     RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequestV2 raCertificateSearchRequest);
 
@@ -568,7 +568,7 @@ public interface RaMasterApi {
      * @return generated keystore
      * @throws AuthorizationDeniedException if not authorized
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
-     * @since Initial RA Master API version (EJBCA 7.9.0)
+     * @since RA Master API version 13 (EJBCA 7.9.0)
      */
     byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;
@@ -700,7 +700,7 @@ public interface RaMasterApi {
      * @param authenticationToken authentication token
      * @param username username of the end entity
      * @return end entity as EndEntityInformation
-     * @since Initial RA Master API version (EJBCA 7.9.0)
+     * @since RA Master API version 13 (EJBCA 7.9.0)
      */
     EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username);
 
@@ -1571,4 +1571,18 @@ public interface RaMasterApi {
     SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
     IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
     CertificateExtensionException, CertificateRenewalException;
+    
+    /**
+     * Enrolls or re-enroll credential of an ITS-S as per as per section 6.2.3.2.1 in ETSI 102 941 v2.1.1.
+     * 
+     * @param authenticationToken
+     * @param ecaCertificateId - certiifcateId of ECA, not CA name
+     * @param requestBody - enrollment request serialized as byte array from figure 14
+     * @param operationCode - placeholder to indicate operation (EC enroll or validation)
+     * @return - signed and encrypted response from figure 15
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException 
+     */
+    byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                                                byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException;
 }
