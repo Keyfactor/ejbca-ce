@@ -432,6 +432,7 @@ public class KeyStoreTools {
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException(this.providerName+ " was not found as a provider.", e);
         }
+        System.out.println("kpg instance: " + kpg.getClass());
         try {
             if ( keyParams instanceof SizeAlgorithmParameterSpec ) {
                 kpg.initialize(((SizeAlgorithmParameterSpec)keyParams).keySize);
