@@ -1104,6 +1104,7 @@ public class CryptokiDevice {
         public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias,
                 final Map<Long, Object> overridePublic, final Map<Long, Object> overridePrivate) {
             Long session = null;
+            System.out.println("generating cryptoki ecc key pair");
             try {
                 session = aquireSession();
                 if (isAliasUsed(session, alias)) {
@@ -1724,7 +1725,7 @@ public class CryptokiDevice {
                         new CKA(CKA.EC_POINT, new DEROctetString(publicKey.getQ().getEncoded(false)).getEncoded()),
                         new CKA(CKA.WRAP, false),
                         new CKA(CKA.ENCRYPT, false),
-                        //new CKA(CKA.DERIVE, true),
+                        new CKA(CKA.DERIVE, true),
                         new CKA(CKA.VERIFY, true),
                         new CKA(CKA.VERIFY_RECOVER, false),
                         new CKA(CKA.TOKEN, true),
