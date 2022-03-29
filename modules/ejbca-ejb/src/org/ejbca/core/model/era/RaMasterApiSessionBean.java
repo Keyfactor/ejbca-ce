@@ -62,6 +62,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventType;
@@ -166,6 +167,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
+import org.ejbca.core.ejb.its.EtsiEcaOperationsSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
@@ -321,6 +323,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeAuthorizationDataSessionLocal acmeAuthorizationDataSession;
     @EJB
     private AcmeChallengeDataSessionLocal acmeChallengeDataSession;
+    @EJB
+    private EtsiEcaOperationsSessionLocal ecaOperationsSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -346,7 +350,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>13<td>=<td>7.9.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 13;
+    private static final int RA_MASTER_API_VERSION = 13; 
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1039,7 +1043,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final List<String> issuerDns = new ArrayList<>();
         for (final int caId : authorizedLocalCaIds) {
-            final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
+            final String caInfoIssuerDn = StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN());
+            if(caInfoIssuerDn.startsWith(CAInfo.CITS_SUBJECTDN_PREFIX)) {
+                continue; // skip CITS CAs
+            }
+            final String issuerDn = CertTools.stringToBCDNString(caInfoIssuerDn);
             issuerDns.add(issuerDn);
         }
         if (issuerDns.isEmpty()) {
@@ -3208,5 +3216,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
         return scepMessageDispatcherSession.dispatchRequestIntune(authenticationToken, operation, message, scepConfigurationAlias);
+    }
+
+    @Override
+    public byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                                byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException {
+        log.info("requestBody: " + Hex.toHexString(requestBody));
+        return ecaOperationsSession.doEtsiOperation(authenticationToken, ecaCertificateId, requestBody, operationCode);
     }
 }
