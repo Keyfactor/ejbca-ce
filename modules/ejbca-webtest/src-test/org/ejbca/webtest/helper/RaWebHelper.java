@@ -87,7 +87,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_REJECT = By.id("manageRequestForm:commandReject");
         static final By BUTTON_REQUEST_EDIT = By.id("manageRequestForm:commandEditData");
         static final By INPUT_MANAGE_REQUEST_EDIT_FORM_CN = By.id("manageRequestForm:eeDetails:subjectDistinguishedName:2:subjectDistinguishedNameField");
-        static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeName:0:subjectAltNameField");
+        static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeNameOptional:0:subjectAltNameOptionalField");
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
         static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
         static final By TEXT_REQUEST_FORM_APPROVE_MESSAGE = By.id("manageRequestForm:requestApproveMessage");
@@ -237,11 +237,12 @@ public class RaWebHelper extends BaseHelper {
 
     public void assertCorrectProvideUserCredentialsBlock() {
         final List<WebElement> provideUserCredentialsWebElements = findElements(Page.LABELS_GROUP_PROVIDE_USER_CREDENTIALS);
-        assertEquals("Unexpected number of fields under 'Provide User Credentials'", 4, provideUserCredentialsWebElements.size());
+        assertEquals("Unexpected number of fields under 'Provide User Credentials'", 5, provideUserCredentialsWebElements.size());
         assertEquals("Expected the label to have the value 'Username *'", "Username *", provideUserCredentialsWebElements.get(0).getText());
         assertEquals("Expected the label to have the value 'Enrollment code *'", "Enrollment code *", provideUserCredentialsWebElements.get(1).getText());
         assertEquals("Expected the label to have the value 'Confirm enrollment code *'", "Confirm enrollment code *", provideUserCredentialsWebElements.get(2).getText());
-        assertEquals("Expected the label to have the value 'Email'", "Email", provideUserCredentialsWebElements.get(3).getText());
+        assertEquals("Expected the label to have the value 'Batch generation'", "Batch generation", provideUserCredentialsWebElements.get(3).getText());
+        assertEquals("Expected the label to have the value 'Email'", "Email", provideUserCredentialsWebElements.get(4).getText());
     }
 
     public void clickShowDetailsButton() {
