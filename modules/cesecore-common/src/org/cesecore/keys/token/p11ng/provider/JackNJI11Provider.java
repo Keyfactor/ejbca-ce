@@ -767,28 +767,7 @@ public class JackNJI11Provider extends Provider {
             }
         }
     }
-    
-    private static class MyEcdhParameters extends Structure {
-        public NativeLong kdf;
-        public NativeLong shared_data_len;
-        public Pointer shared_data;
-        public NativeLong public_data_len;
-        public Pointer public_data;
         
-        protected MyEcdhParameters(Memory pubKeyEncoded) {
-            kdf = new NativeLong(0);
-            shared_data_len = new NativeLong(0);
-            shared_data = Pointer.NULL;
-            public_data_len = new NativeLong(pubKeyEncoded.size());
-            public_data = pubKeyEncoded;
-        }
-        
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("kdf", "shared_data_len", "shared_data", "public_data_len", "public_data");
-        }
-    }
-    
     private static class MyKeyAgreement extends KeyAgreementSpi {
         private static final Logger log = Logger.getLogger(MyKeyAgreement.class);
 
@@ -852,6 +831,8 @@ public class JackNJI11Provider extends Provider {
             
             Memory pubKeyEncoded = new Memory(65); // assume 256 bit only
             pubKeyEncoded.write(0, pubKey.getQ().getEncoded(false), 0, 65);
+            
+            
             MyEcdhParameters ecdhParams = new MyEcdhParameters(pubKeyEncoded);
             ecdhParams.write();
             //PointerByReference pubKeyPointer = new PointerByReference(pubKeyEncoded);
@@ -866,9 +847,22 @@ public class JackNJI11Provider extends Provider {
 //            }
             
             log.info("created derive template");
-            privateBaseKey.getSlot().getCryptoki().DeriveKey(session, mecahnism,
+            long keyRef = privateBaseKey.getSlot().getCryptoki().DeriveKey(session, mecahnism,
                     privateBaseKey.getObject(), pubTempl);
-            log.info("done derive");
+            log.info("done derive: " + keyRef);
+            
+            CKA[] privKeyAttributes = ((NJI11ReleasebleSessionPrivateKey) privateBaseKey).getSlot().getCryptoki()
+                    .GetAttributeValue(session, keyRef, 
+                            CKA.CLASS, CKA.KEY_TYPE, CKA.DECRYPT, CKA.ENCRYPT,
+                            CKA.SENSITIVE, CKA.EXTRACTABLE, CKA.VALUE, CKA.VALUE_BITS);
+            log.info("printing keyRef tempaltes");
+            StringBuilder sb = new StringBuilder();
+            for(CKA attr: privKeyAttributes) {
+                log.info("printing");
+                attr.dump(sb);
+                sb.append("\n----------------\n");
+            }
+            log.info("printed keyRef tempaltes:" + sb.toString());
             return null;
         }
 
