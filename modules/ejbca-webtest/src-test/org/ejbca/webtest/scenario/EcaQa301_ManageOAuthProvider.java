@@ -115,9 +115,9 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
     }
     
     @Test
-    public void stepD_deleteOauthProvider() {
+    public void stepD_deleteOauthProvider() throws InterruptedException {
         oauthProvidersHelper.pressRemoveOauthProviderButton(LABEL_EDITED);
-        
+        Thread.sleep(5000);
         oauthProvidersHelper.assertElementDoesNotExistInTable(LABEL_EDITED);
     }
 
