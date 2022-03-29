@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAData;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -74,6 +75,9 @@ public class CACertReqServlet extends BaseAdminServlet {
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
     private static final String COMMAND_CERTLINK = "linkcert";
     private static final String FORMAT_PROPERTY_NAME = "format";
+    
+    private static final String COMMAND_ITS_ECA_CSR = "itsecacsr";
+    private static final String PARAM_CA_NAME = "caname";
 
     @EJB
     private CAAdminSessionLocal caAdminSession;
@@ -106,42 +110,45 @@ public class CACertReqServlet extends BaseAdminServlet {
         if (command.equalsIgnoreCase(COMMAND_CERTREQ)) {
             try {
             	byte[] request = caBean.getRequestData();
-                String filename = null;
+            	log.info("current request: " + org.apache.commons.codec.binary.Base64.encodeBase64String(request));                
+            	String filename = null;
                 CVCertificate cvccert = null;
                 boolean isx509cert = false;
-                try {
-                    CVCObject parsedObject = CertificateParser.parseCVCObject(request);
-                    // We will handle both the case if the request is an
-                    // authenticated request, i.e. with an outer signature
-                    // and when the request is missing the (optional) outer
-                    // signature.
-                    if (parsedObject instanceof CVCAuthenticatedRequest) {
-                        CVCAuthenticatedRequest cvcreq = (CVCAuthenticatedRequest) parsedObject;
-                        cvccert = cvcreq.getRequest();
-                    } else {
-                        cvccert = (CVCertificate) parsedObject;
-                    }
-                    HolderReferenceField chrf = cvccert.getCertificateBody().getHolderReference();
-                    if (chrf != null) {
-                    	filename = chrf.getConcatenated();
-                    }
-                } catch (ParseException ex) {
-                    // Apparently it wasn't a CVC certificate, was it a certificate request?
+                if(caBean.getRequestInfo().getCAType()!=CAInfo.CATYPE_CITS) {
                     try {
-                        PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
-                        filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
-                        String subjectDN = p10.getRequestDN();
-                        isAuthorizedToCABySubjectDN(caBean, subjectDN);
-                    } catch (AuthorizationDeniedException e) {
-                        throw e;
-                    } catch (Exception e) { // NOPMD
-                        // Nope, not a certificate request either, see if it was an X.509 certificate
-                        Certificate cert = CertTools.getCertfromByteArray(request, Certificate.class);
-                        filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-                        if (filename == null) {
-                            filename = "cert";
+                        CVCObject parsedObject = CertificateParser.parseCVCObject(request);
+                        // We will handle both the case if the request is an
+                        // authenticated request, i.e. with an outer signature
+                        // and when the request is missing the (optional) outer
+                        // signature.
+                        if (parsedObject instanceof CVCAuthenticatedRequest) {
+                            CVCAuthenticatedRequest cvcreq = (CVCAuthenticatedRequest) parsedObject;
+                            cvccert = cvcreq.getRequest();
+                        } else {
+                            cvccert = (CVCertificate) parsedObject;
                         }
-                        isx509cert = true;
+                        HolderReferenceField chrf = cvccert.getCertificateBody().getHolderReference();
+                        if (chrf != null) {
+                        	filename = chrf.getConcatenated();
+                        }
+                    } catch (ParseException ex) {
+                        // Apparently it wasn't a CVC certificate, was it a certificate request?
+                        try {
+                            PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
+                            filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
+                            String subjectDN = p10.getRequestDN();
+                            isAuthorizedToCABySubjectDN(caBean, subjectDN);
+                        } catch (AuthorizationDeniedException e) {
+                            throw e;
+                        } catch (Exception e) { // NOPMD
+                            // Nope, not a certificate request either, see if it was an X.509 certificate
+                            Certificate cert = CertTools.getCertfromByteArray(request, Certificate.class);
+                            filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+                            if (filename == null) {
+                                filename = "cert";
+                            }
+                            isx509cert = true;
+                        }
                     }
                 }
                 int length = request.length;
@@ -236,6 +243,23 @@ public class CACertReqServlet extends BaseAdminServlet {
                 log.error(errMsg, e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
             }
+        }
+        if (command.equalsIgnoreCase(COMMAND_ITS_ECA_CSR)) {
+            byte[] request = caBean.getRequestData();
+            String filename = null;
+            int length = request.length;
+            byte[] outbytes = request;
+            String caname = req.getParameter(PARAM_CA_NAME);
+            
+            filename = caname + "_csr.oer";
+            // We must remove cache headers for IE
+            ServletUtils.removeCacheHeaders(res);
+            res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
+            res.setContentType("application/octet-stream");
+            res.setContentLength(length);
+            res.getOutputStream().write(outbytes);
+            String iMsg = intres.getLocalizedMessage("certreq.sentlatestcertreq", remoteAddr);
+            log.info(iMsg);
         }
     }
 
