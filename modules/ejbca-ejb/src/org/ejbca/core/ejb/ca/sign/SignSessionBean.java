@@ -1218,7 +1218,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws CADoesntExistsException, AuthorizationDeniedException {
         // See if we can get username and password directly from request
         final String username = req.getUsername();
-        final EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
+        final EndEntityInformation data = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(admin, username);
         if (data == null) {
             throw new CADoesntExistsException("Could not find username, and hence no CA for user '" + username + "'.");
         }

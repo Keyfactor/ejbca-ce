@@ -2315,6 +2315,7 @@
                 <h:panelGroup id="selectcvctermtype"
                     rendered="#{certProfileBean.cvcAvailable}">
                     <h:commandButton
+                        id="cvcTerminalTypeInspectionSystem"
                         value="#{certProfileBean.cvcTerminalTypeIs?'✓':' '}#{web.text.CVCINSPECTIONSYSTEM}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeIs?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeIs or certProfileBean.viewOnly}"
@@ -2322,6 +2323,7 @@
                         <f:ajax render=":content:epassportgrid" />
                     </h:commandButton>                        
                     <h:commandButton
+                        id="cvcTerminalTypeAuthenticationTerminal"
                         value="#{certProfileBean.cvcTerminalTypeAt?'✓':' '}#{web.text.CVCAUTHENTICATIONTERMINAL}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeAt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeAt or certProfileBean.viewOnly}"
@@ -2329,6 +2331,7 @@
                         <f:ajax render=":content:epassportgrid" />
                     </h:commandButton>
                     <h:commandButton
+                    	id="cvcTerminalTypeSignatureTerminal"
                         value="#{certProfileBean.cvcTerminalTypeSt?'✓':' '}#{web.text.CVCSIGNATURETERMINAL}"
                         styleClass="selectButton #{certProfileBean.cvcTerminalTypeSt?'selected':'notSelected'} #{certProfileBean.viewOnly?'disabled':'enabled'}"
                         disabled="#{certProfileBean.cvcTerminalTypeSt or certProfileBean.viewOnly}"
@@ -2378,6 +2381,26 @@
                             disabled="#{certProfileBean.viewOnly}" />
                         <h:outputLabel for="cvcAccessRightDg4"
                             value="#{web.text.CVCACCESSDG4}" />
+                        <h:selectBooleanCheckbox id="cvcAccessRightRfu1"
+                                                 value="#{certProfileBean.cvcAccessRightRfu1}"
+                                                 disabled="#{certProfileBean.viewOnly}" />
+                        <h:outputLabel for="cvcAccessRightRfu1"
+                                       value="#{web.text.CVCACCESSRFU1}" />
+                        <h:selectBooleanCheckbox id="cvcAccessRightRfu2"
+                                                 value="#{certProfileBean.cvcAccessRightRfu2}"
+                                                 disabled="#{certProfileBean.viewOnly}" />
+                        <h:outputLabel for="cvcAccessRightRfu2"
+                                       value="#{web.text.CVCACCESSRFU2}" />
+                        <h:selectBooleanCheckbox id="cvcAccessRightRfu3"
+                                                 value="#{certProfileBean.cvcAccessRightRfu3}"
+                                                 disabled="#{certProfileBean.viewOnly}" />
+                        <h:outputLabel for="cvcAccessRightRfu3"
+                                       value="#{web.text.CVCACCESSRFU3}" />
+                        <h:selectBooleanCheckbox id="cvcAccessRightRfu4"
+                                                 value="#{certProfileBean.cvcAccessRightRfu4}"
+                                                 disabled="#{certProfileBean.viewOnly}" />
+                        <h:outputLabel for="cvcAccessRightRfu4"
+                                       value="#{web.text.CVCACCESSRFU4}" />
                     </h:panelGrid>
                     <h:selectManyListbox styleClass="select-list"
                         id="selectcvcaccessrights_at"
