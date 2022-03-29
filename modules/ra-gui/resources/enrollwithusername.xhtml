@@ -121,7 +121,7 @@
 								</h:panelGroup>
 								    <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithUsernameBean.uploadCsrDoneRendered}">
 									<h:panelGroup layout="block" styleClass="pure-control-group">
-									    <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}" style="width:auto; text-align:left"/>
+									    <h:outputLabel id="uploadedKeyAlgorithm" for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
 									    <h:outputText id="certificateRequestNode" value="#{enrollWithUsernameBean.selectedAlgorithm}"/>
 									</h:panelGroup>
 									<br/>
