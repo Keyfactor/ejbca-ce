@@ -34,6 +34,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -50,6 +51,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequenceGenerator;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
@@ -61,9 +63,19 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11ng.MechanismNames;
 import org.cesecore.util.StringTools;
+import org.pkcs11.jacknji11.CKA;
+import org.pkcs11.jacknji11.CKK;
 import org.pkcs11.jacknji11.CKM;
+import org.pkcs11.jacknji11.CKO;
 import org.pkcs11.jacknji11.CKRException;
+import org.pkcs11.jacknji11.CK_INFO;
 import org.pkcs11.jacknji11.LongRef;
+
+import com.sun.jna.Memory;
+import com.sun.jna.Pointer;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Structure;
+import com.sun.jna.ptr.PointerByReference;
 
 /**
  * Provider using JackNJI11.
@@ -756,6 +768,27 @@ public class JackNJI11Provider extends Provider {
         }
     }
     
+    private static class MyEcdhParameters extends Structure {
+        public NativeLong kdf;
+        public NativeLong shared_data_len;
+        public Pointer shared_data;
+        public NativeLong public_data_len;
+        public Pointer public_data;
+        
+        protected MyEcdhParameters(Memory pubKeyEncoded) {
+            kdf = new NativeLong(0);
+            shared_data_len = new NativeLong(0);
+            shared_data = Pointer.NULL;
+            public_data_len = new NativeLong(pubKeyEncoded.size());
+            public_data = pubKeyEncoded;
+        }
+        
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("kdf", "shared_data_len", "shared_data", "public_data_len", "public_data");
+        }
+    }
+    
     private static class MyKeyAgreement extends KeyAgreementSpi {
         private static final Logger log = Logger.getLogger(MyKeyAgreement.class);
 
@@ -766,6 +799,7 @@ public class JackNJI11Provider extends Provider {
         private long pubKeyRef;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
+        private BCECPublicKey pubKey;
         
         public MyKeyAgreement(Provider provider, String algorithm) {
             super();
@@ -783,14 +817,57 @@ public class JackNJI11Provider extends Provider {
             pubKeyRef = privateBaseKey.getSlot().importEcPublicKey(
                     new BCECPublicKey((ECPublicKey)importEcPublicKey, null), 
                     Hex.decode("06082a8648ce3d030107"), "importedEC-" + System.currentTimeMillis()); 
+            pubKey = new BCECPublicKey((ECPublicKey)importEcPublicKey, null);
+            // brainpool 256r1 06092b2403030208010107
+            // 384 06092b240303020801010b
             return null;
         }
 
         @Override
         protected byte[] engineGenerateSecret() throws IllegalStateException {
             log.info("engineGenerateSecret0: " + this.getClass().getName());
-            privateBaseKey.getSlot().getCryptoki().DeriveKey(session, new CKM(CKM.ECDH1_DERIVE),
-                    privateBaseKey.getObject(), null, new LongRef(pubKeyRef));
+            CKA[] pubTempl;
+//            try {
+                pubTempl = new CKA[] {
+                        new CKA(CKA.TOKEN, false),
+                        new CKA(CKA.CLASS, CKO.SECRET_KEY),
+                        new CKA(CKA.SENSITIVE, false),
+                        new CKA(CKA.EXTRACTABLE, true),
+//                        new CKA(CKA.LABEL, "secret" + pubKeyAlias),
+                        new CKA(CKA.KEY_TYPE, CKK.GENERIC_SECRET),
+//                        new CKA(CKA.VALUE_LEN, 521),
+                        new CKA(CKA.WRAP, true),
+                        new CKA(CKA.UNWRAP, true),
+                        new CKA(CKA.ENCRYPT, true),
+                        new CKA(CKA.DECRYPT, true),
+//                        new CKA(CKA.EC_PARAMS, Hex.decode("06082a8648ce3d030107")), // secp256 06082a8648ce3d030107
+//                        new CKA(CKA.EC_POINT, pubKey.getQ().getEncoded(false)),
+                    };
+//            } catch (IOException e) {
+//                throw new IllegalStateException(e);
+//            }
+                
+            CKM mecahnism;
+            Pointer mechanismParam = new Memory(5 * NativeLong.SIZE); // 5 * sizeof(long) TODO: fix it use structure
+            
+            Memory pubKeyEncoded = new Memory(65); // assume 256 bit only
+            pubKeyEncoded.write(0, pubKey.getQ().getEncoded(false), 0, 65);
+            MyEcdhParameters ecdhParams = new MyEcdhParameters(pubKeyEncoded);
+            ecdhParams.write();
+            //PointerByReference pubKeyPointer = new PointerByReference(pubKeyEncoded);
+
+//            try {
+                mecahnism = new CKM(CKM.ECDH1_DERIVE);
+                mecahnism.pParameter = ecdhParams.getPointer();
+                mecahnism.ulParameterLen = ecdhParams.size();
+//            } catch (IOException e) {
+//                // TODO Auto-generated catch block
+//                throw new IllegalStateException(e);
+//            }
+            
+            log.info("created derive template");
+            privateBaseKey.getSlot().getCryptoki().DeriveKey(session, mecahnism,
+                    privateBaseKey.getObject(), pubTempl);
             log.info("done derive");
             return null;
         }
@@ -817,8 +894,57 @@ public class JackNJI11Provider extends Provider {
             session = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().aquireSession();
             hasActiveSession = true;
             
-            log.info("got key session");
+//            try {
+//            privateBaseKey.getSlot().getCryptoki().SignInit(session, new CKM(CKM.ECDH1_DERIVE),
+//                    privateBaseKey.getObject());
+//            log.info("sign init successfull");
+//            ((NJI11ReleasebleSessionPrivateKey) key).getSlot().releaseSession(session);
+//
+//            } catch (Exception e) {
+//                log.info("sign init: " + e);
+//               log.info("sign init failed");
+//            }
+//            
+//
+//            try {
+//            privateBaseKey.getSlot().getCryptoki().DecryptInit(session, new CKM(CKM.ECDH1_DERIVE),
+//                    privateBaseKey.getObject());
+//            log.info("decrypt init successfull");
+//            ((NJI11ReleasebleSessionPrivateKey) key).getSlot().releaseSession(session);
+//
+//            } catch (Exception e) {
+//                log.info("decrypt init: " + e);
+//               log.info("decrypt init failed");
+//            }
             
+            log.info("got key session");
+            CKA[] privKeyAttributes;  
+//                    new CKA[]{
+//                    new CKA(CKA.CLASS, CKO.PRIVATE_KEY),
+//                    new CKA(CKA.KEY_TYPE, CKK.EC),
+//                    new CKA(CKA.PRIVATE, null),
+//                    new CKA(CKA.DECRYPT, null),
+//                    new CKA(CKA.DERIVE, null),
+//                    new CKA(CKA.SIGN, null),
+//                    new CKA(CKA.SENSITIVE, null),
+//                    new CKA(CKA.EXTRACTABLE, null),
+//                };
+            CK_INFO ckInfo = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().getCryptoki().GetInfo();
+            log.info("ckInfo: " + ckInfo.toString());
+            
+            privKeyAttributes = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().getCryptoki()
+                        .GetAttributeValue(session, 
+                                ((NJI11ReleasebleSessionPrivateKey) key).getObject(), 
+                                CKA.CLASS, CKA.KEY_TYPE, CKA.PRIVATE, CKA.DECRYPT, CKA.DERIVE, CKA.SIGN,
+                                CKA.SENSITIVE, CKA.EXTRACTABLE);
+            log.info("printing tempaltes");
+            StringBuilder sb = new StringBuilder();
+            for(CKA attr: privKeyAttributes) {
+                log.info("printing");
+                attr.dump(sb);
+                sb.append("\n----------------\n");
+            }
+            log.info("printed tempaltes:" + sb.toString());
             
         }
 
