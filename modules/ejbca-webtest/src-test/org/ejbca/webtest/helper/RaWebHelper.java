@@ -91,7 +91,6 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
         static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
         static final By TEXT_REQUEST_FORM_APPROVE_MESSAGE = By.id("manageRequestForm:requestApproveMessage");
-        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
@@ -215,18 +214,10 @@ public class RaWebHelper extends BaseHelper {
         TimeUnit.SECONDS.sleep(2);
     }
 
-<<<<<<< modules/ejbca-webtest/src-test/org/ejbca/webtest/helper/RaWebHelper.java
-   // 
-=======
->>>>>>> modules/ejbca-webtest/src-test/org/ejbca/webtest/helper/RaWebHelper.java
     public void selectKeyPairGenerationPostpone() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_POSTPONE);
         TimeUnit.SECONDS.sleep(2);
     }
-<<<<<<< modules/ejbca-webtest/src-test/org/ejbca/webtest/helper/RaWebHelper.java
-=======
-
->>>>>>> modules/ejbca-webtest/src-test/org/ejbca/webtest/helper/RaWebHelper.java
     
     public void selectKeyPairGenerationProvided() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_PROVIDED);
@@ -517,12 +508,8 @@ public class RaWebHelper extends BaseHelper {
      */
     public void triggerRequestEditLink() {
         clickLink(Page.BUTTON_REQUEST_EDIT);
-    }
-    
-    public void fillRequiredSubjectDNAttributes(String CN) {
-        fillTextarea(Page.INPUT_COMMON_NAME,CN );
-    };
-    
+    }    
+  
     public void fillUsernameProvodeUserCredentials(String userName) {
         fillTextarea(Page.INPUT_USERNAME,userName);
         
