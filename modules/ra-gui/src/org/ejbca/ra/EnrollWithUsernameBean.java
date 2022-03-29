@@ -247,10 +247,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
      * @return true if the selectKeyAlgorithm should be rendered.
      */
     public boolean isSelectKeyAlgorithmRendered() {
-        if (isUserGeneratedToken()){
-            return false;
-        }
-        return true;
+        return !isUserGeneratedToken();
     }
     
     /**
