@@ -13,15 +13,6 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -177,11 +168,18 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * Tests http pages of ocsp
- * 
- *
  */
 public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
@@ -434,7 +432,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
             Extension[] extensions = new Extension[1];
-            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
             gen.setRequestExtensions(new Extensions(extensions));
             
             X509CertificateHolder[] chain = new X509CertificateHolder[2];
@@ -655,7 +653,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
 
@@ -861,7 +859,6 @@ Content-Type: text/html; charset=iso-8859-1
      * Verify OCSP response for a malicious request where the POST data starts
      * with a proper OCSP request.
      */
-    @Test
     public void test20MaliciousOcspRequest() throws Exception {
         log.trace(">test20MaliciousOcspRequest");
         // Start by sending a valid OCSP requests so we know the helpers work
@@ -1448,7 +1445,7 @@ Content-Type: text/html; charset=iso-8859-1
         gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, BigInteger.valueOf(1) ));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();        
         b64 = new String(Base64.encode(req.getEncoded(), false));
@@ -1462,14 +1459,12 @@ Content-Type: text/html; charset=iso-8859-1
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
         OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
+        Extension ext = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
         // Make sure we have a nonce in the response, we should have since we sent one in the request
-        assertNotNull("Response should have nonce since we sent a nonce in the request", noncerep);
-        try(ASN1InputStream ain = new ASN1InputStream(noncerep)) {
-            ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
-            assertEquals("Response Nonce was not the same as the request Nonce, it must be", PKIX_OCSP_NONCE, new String(oct.getOctets()));
-            assertNull("Cache-Control in reply although we used Nonce in the request. Responses with Nonce should not have a Cache-control header.", con.getHeaderField("Cache-Control"));
-        }
+        assertNotNull("Response should have nonce since we sent a nonce in the request", ext);
+        ASN1OctetString oct = ASN1OctetString.getInstance(ext.getParsedValue());
+        assertEquals("Response Nonce was not the same as the request Nonce, it must be", PKIX_OCSP_NONCE, new String(oct.getOctets()));
+        assertNull("Cache-Control in reply although we used Nonce in the request. Responses with Nonce should not have a Cache-control header.", con.getHeaderField("Cache-Control"));
     }
     
     /**
@@ -1824,7 +1819,7 @@ Content-Type: text/html; charset=iso-8859-1
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(PKIX_OCSP_NONCE.getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq req = gen.build();
         return req.getEncoded();
