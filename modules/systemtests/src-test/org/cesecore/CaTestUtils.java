@@ -59,7 +59,6 @@ import org.bouncycastle.oer.its.ieee1609dot2.VerificationKeyIndicator;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CrlSeries;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId3;
 import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
 import org.bouncycastle.operator.ContentVerifier;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
@@ -104,7 +103,7 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.cvc.AccessRightEnum;
+import org.ejbca.cvc.AccessRightsIS;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCertificate;
@@ -112,10 +111,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
-// import org.ejbca.its.ca.oer.CaCertificateRequest;
-// import org.ejbca.its.ca.oer.CertificateSubjectAttributes;
-// import org.ejbca.its.ca.oer.EtsiTs102941DataContent;
-// import org.ejbca.its.ca.oer.PublicKeys;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -542,7 +537,7 @@ public abstract class CaTestUtils {
         cal2.add(Calendar.MONTH, 3);
         Date validTo = cal2.getTime();
         return CertificateGenerator.createCertificate(publicKey, privateKey, algorithm, caRef, holderRef, role,
-                AccessRightEnum.READ_ACCESS_DG3_AND_DG4, validFrom, validTo, provider);
+                AccessRightsIS.DG3_AND_DG4(), validFrom, validTo, provider);
     }
 
     /** Creates a CA object, but does not actually add the CA to EJBCA. */

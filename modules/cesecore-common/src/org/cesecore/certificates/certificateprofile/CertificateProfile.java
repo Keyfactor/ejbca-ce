@@ -110,6 +110,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int CVC_ACCESS_DG3 = 1;
     public static final int CVC_ACCESS_DG4 = 2;
     public static final int CVC_ACCESS_DG3DG4 = 3;
+    public static final int CVC_ACCESS_RFU1 = 0x04;
+    public static final int CVC_ACCESS_RFU2 = 0x08;
+    public static final int CVC_ACCESS_RFU3 = 0x10;
+    public static final int CVC_ACCESS_RFU4 = 0x20;
     // For signature terminals (defined in version 2.10 of the EAC specification)
     public static final int CVC_ACCESS_SIGN = 16;
     public static final int CVC_ACCESS_QUALSIGN = 32;
