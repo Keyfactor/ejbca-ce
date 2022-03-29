@@ -431,10 +431,17 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
 
+        boolean isClearPwd = false;
+        if (eep.getUse(EndEntityProfile.CLEARTEXTPASSWORD, 0)) {
+            if (eep.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || StringUtils.isNotEmpty(endEntityInformation.getPassword())) {
+                isClearPwd = true;
+            }
+        }
+
         if (changed) {
             // Edit the End Entity if changes were made
             try {
-                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false, newUsername);
+                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, isClearPwd, newUsername);
                 if (result) {
                     raLocaleBean.addMessageError("editendentity_success");
                 } else {
