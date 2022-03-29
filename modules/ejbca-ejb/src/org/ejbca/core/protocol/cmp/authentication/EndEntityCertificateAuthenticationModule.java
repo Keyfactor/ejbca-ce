@@ -354,7 +354,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
 
             // More extraCert verifications
             if(!isCertListValidAndIssuedByCA(extraCertPath, cainfo)) {
-                this.errorMessage = "The certificate attached to the PKI message in the extraCert field could not be validated.";
                 return false;
             }
 
