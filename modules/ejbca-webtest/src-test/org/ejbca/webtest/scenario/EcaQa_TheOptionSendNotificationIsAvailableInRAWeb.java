@@ -36,9 +36,9 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
         private static final String CERTIFICATE_PROFILE_NAME = "Notifacation_EndUser";
         private static final int NOTIFICATION_INDEX = 0;
         private static final String EMAIL_SENDER = "test@mail.primekey.test";
-        private static final String EMAIL_RECIPIET = "mailtest@mail.primekey.test";
+        private static final String EMAIL_RECIPIENT = "mailtest@mail.primekey.test";
         private static final String EMAIL_SUBJECT = "TestSubject_"+ randomNumber.generateNumbers(100);
-        private static final String EMAIL_MASSAGE = "Test message";
+        private static final String EMAIL_MESSAGE = "Test message";
     }
 
     @BeforeClass
@@ -105,9 +105,9 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
         endEntityProfileHelper.addNotification();
         Thread.sleep(3000); 
         endEntityProfileHelper.setNotificationSender(TestData.NOTIFICATION_INDEX,TestData.EMAIL_SENDER );
-        endEntityProfileHelper.setNotificationRecipiet(TestData.NOTIFICATION_INDEX,TestData.EMAIL_RECIPIET );
+        endEntityProfileHelper.setNotificationRecipient(TestData.NOTIFICATION_INDEX,TestData.EMAIL_RECIPIENT );
         endEntityProfileHelper.setNotificationSubject(TestData.NOTIFICATION_INDEX,TestData.EMAIL_SUBJECT);
-        endEntityProfileHelper.setNotificationMessage(TestData.NOTIFICATION_INDEX,TestData.EMAIL_MASSAGE );
+        endEntityProfileHelper.setNotificationMessage(TestData.NOTIFICATION_INDEX,TestData.EMAIL_MESSAGE );
         Thread.sleep(3000); 
         
         endEntityProfileHelper.saveEndEntityProfile();
@@ -129,7 +129,7 @@ public class EcaQa_TheOptionSendNotificationIsAvailableInRAWeb extends WebTestBa
         raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME);
         Thread.sleep(1000);        
         raWebHelper.fillCredentials(TestData.USER_NAME, TestData.ENROLLMENT_CODE);
-        raWebHelper.fillCredentialEmail(TestData.EMAIL_RECIPIET);
+        raWebHelper.fillCredentialEmail(TestData.EMAIL_RECIPIENT);
         Thread.sleep(1000);
         raWebHelper.clickDownloadKeystorePem();
         Thread.sleep(2000);
