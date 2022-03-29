@@ -160,4 +160,10 @@ public class EcaQa9_EndEntityManagement extends WebTestBase {
         auditLogHelper.reloadView();
         auditLogHelper.assertRemoveEndEntityLogExists(TestData.END_ENTITY_NAME);
     }
+
+    @Test
+    public void emty(){
+        //empty test to avoid java.lang.Exception: No runnable methods
+        //remove when test fixed
+    }
 }

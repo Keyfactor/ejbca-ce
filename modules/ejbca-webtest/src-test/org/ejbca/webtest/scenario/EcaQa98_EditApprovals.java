@@ -199,7 +199,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         raWebHelperRaAdmin.triggerRequestEditLink();
         raWebHelperRaAdmin.fillManageRequestEditCommonName(TestData.END_ENTITY_NAME_MODIFIED);
         raWebHelperRaAdmin.triggerRequestEditSaveForm();
-        raWebHelperRaAdmin.assertSubjectDistinguishedNameHasText("CN=" + TestData.END_ENTITY_NAME_MODIFIED);
+        raWebHelperRaAdmin.assertSubjectDistinguishedNameHasText( "UID="+TestData.END_ENTITY_NAME_MODIFIED+",CN="+TestData.END_ENTITY_NAME);
         raWebHelperRaAdmin.assertApproveMessageHasText(TestData.APPROVE_MESSAGE_CANNOT_EDIT);
         raWebHelperRaAdmin.assertRequestApproveButtonDoesNotExist();
         raWebHelperRaAdmin.assertRequestRejectButtonDoesNotExist();
@@ -211,13 +211,13 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         raWebHelperRaAdmin1.clickMenuManageRequests();
         raWebHelperRaAdmin1.clickTabApproveRequests();
         // Get rows
-        final List<WebElement> approveRequestRow = raWebHelperRaAdmin1.getRequestsTableRow(TestData.CA_NAME, TestData.RA_PENDING_APPROVAL_TYPE, TestData.END_ENTITY_NAME_MODIFIED, TestData.RA_PENDING_APPROVAL_STATUS);
+        final List<WebElement> approveRequestRow = raWebHelperRaAdmin1.getRequestsTableRow(TestData.CA_NAME, TestData.RA_PENDING_APPROVAL_TYPE, TestData.END_ENTITY_NAME, TestData.RA_PENDING_APPROVAL_STATUS);
         raWebHelperRaAdmin1.assertHasRequestRow(approveRequestRow);
         raWebHelperRaAdmin1.triggerRequestReviewLinkFromRequestRow(approveRequestRow);
         raWebHelperRaAdmin1.assertRequestApproveButtonExists();
         raWebHelperRaAdmin1.assertRequestRejectButtonExists();
         raWebHelperRaAdmin1.triggerRequestApproveButton();
-        raWebHelperRaAdmin1.assertSubjectDistinguishedNameHasText("CN=" + TestData.END_ENTITY_NAME_MODIFIED);
+        raWebHelperRaAdmin1.assertSubjectDistinguishedNameHasText("UID="+TestData.END_ENTITY_NAME_MODIFIED+",CN="+TestData.END_ENTITY_NAME);
         raWebHelperRaAdmin1.assertApproveMessageHasText(TestData.APPROVE_MESSAGE_APPROVED_AND_EXECUTED);
     }
 }
