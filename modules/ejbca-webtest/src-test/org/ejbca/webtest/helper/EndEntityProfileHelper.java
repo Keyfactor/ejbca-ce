@@ -591,7 +591,7 @@ public class EndEntityProfileHelper extends BaseHelper {
      *
      * @param inputIndex the index of notification to check
      */
-    public void setNotificationRecipiet(final int inputIndex, String recipient ) {
+    public void setNotificationRecipient(final int inputIndex, String recipient ) {
         fillInput(Page.getNotificationRecipientByIndex(inputIndex), recipient);
     }
 
