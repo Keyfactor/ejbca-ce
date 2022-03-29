@@ -84,10 +84,18 @@ import org.bouncycastle.cms.CMSAbsentContent;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
+import org.bouncycastle.oer.OEREncoder;
+import org.bouncycastle.oer.OERInputStream;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateBase;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Duration;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.ValidityPeriod;
+import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -103,6 +111,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
@@ -4646,6 +4655,7 @@ public abstract class CertTools {
                     return;
                 }
             }
+          
             
             final PKIXNameConstraintValidator validator = new PKIXNameConstraintValidator();
             
@@ -4708,24 +4718,28 @@ public abstract class CertTools {
                     }
                 }
             }
-
+            
             if (subjectAltName != null) {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
                         validator.checkPermitted(sangn);
                         if (isAllDNSNamesExcluded(excluded)) {
-                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
+                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
+                                    NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
                             throw new IllegalNameException(msg);
                         }
                         validator.checkExcluded(sangn);
                     } catch (PKIXNameConstraintValidatorException e) {
-                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname", sangn);
+                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
+                                NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
                         throw new IllegalNameException(msg, e);
                     }
                 }
             }
         }
     }
+    
+
 
     // Check if we should exclude all dns names
     private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
@@ -4873,4 +4887,5 @@ public abstract class CertTools {
 
         return firstCertificate;
     }
+    
 }

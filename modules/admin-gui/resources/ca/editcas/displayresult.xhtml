@@ -58,7 +58,8 @@
 			columnClasses="editColumn1,editColumn2">
 			<h:panelGroup />
 			<h:panelGroup>
-				<h:outputLink value="#{displayResultMBean.pemlink}">
+				<h:outputLink value="#{displayResultMBean.pemlink}" 
+					rendered="#{displayResultMBean.renderPemLink}">
 					<h:outputText value="#{web.text.DOWNLOADPEM}" />
 				</h:outputLink>
 				<br />

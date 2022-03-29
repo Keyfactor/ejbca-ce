@@ -170,6 +170,7 @@
                     <include name="modules/ejbca-ejb-cli/src-test/**/${test.runone}.java" />
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
+                    <include name="modules/cits/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -268,6 +269,9 @@
         <condition property="module" value="modules/msae">
             <matches string="${test-fullname}" pattern="^modules/msae/.*$"/>
         </condition>
+        <condition property="module" value="modules/cits">
+            <matches string="${test-fullname}" pattern="^modules/cits/.*$"/>
+        </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
 		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -342,6 +346,13 @@
 
     <target name="test:msae" description="run JUnit MSAE test." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/msae" inheritall="true" inheritrefs="true">
+            <target name="test:unit" />
+        </ant>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+    
+    <target name="test:cits" description="run JUnit CITS test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/cits" inheritall="true" inheritrefs="true">
             <target name="test:unit" />
         </ant>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>

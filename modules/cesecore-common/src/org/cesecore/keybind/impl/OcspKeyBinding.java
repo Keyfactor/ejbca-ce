@@ -106,6 +106,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
     public static final String PROPERTY_MAX_AGE = "maxAge";
     public static final String PROPERTY_ENABLE_NONCE = "enableNonce";
+    public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
     public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
     
@@ -121,6 +122,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new DynamicUiProperty<>(PROPERTY_UNTIL_NEXT_UPDATE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
+        addProperty(new DynamicUiProperty<>(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, Boolean.TRUE));
+
     }
 
     
@@ -218,6 +221,18 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
      *  */
     public void setNonceEnabled(boolean enabled) {
         setProperty(PROPERTY_ENABLE_NONCE, enabled);
+    }
+    
+    /** @return true if the revocation reason to be omitted if specified */
+    public boolean isOmitReasonCodeEnabled() {
+        if(getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED) == null) {
+            setNonceEnabled(true);
+        }
+        return (Boolean) getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED).getValue();
+    }
+
+    public void setOmitReasonCodeEnabled(boolean enabled) {
+        setProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, enabled);
     }
     
     /** Helper method to check if the OCSP Archive CutOff extension is enabled. Used by Configdump */

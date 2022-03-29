@@ -1216,8 +1216,8 @@ public abstract class AlgorithmTools {
             final X9ECParameters x9ecParameters = X962NamedCurves.getByOID(oid);
             return new org.bouncycastle.jce.spec.ECParameterSpec(x9ecParameters.getCurve(), x9ecParameters.getG(), x9ecParameters.getN());
         }
-        if (ECGOST3410NamedCurves.getByOID(oid) != null) {
-            final ECDomainParameters ecDomainParameters = ECGOST3410NamedCurves.getByOID(oid);
+        if (ECGOST3410NamedCurves.getByOIDLazy(oid) != null) {
+            final X9ECParameters ecDomainParameters = ECGOST3410NamedCurves.getByOIDLazy(oid).getParameters();
             return new org.bouncycastle.jce.spec.ECParameterSpec(ecDomainParameters.getCurve(), ecDomainParameters.getG(),
                     ecDomainParameters.getN());
         }
