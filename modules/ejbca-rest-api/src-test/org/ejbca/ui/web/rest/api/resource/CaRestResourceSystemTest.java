@@ -28,7 +28,7 @@ import org.junit.Test;
  * A set of system tests for CaRestResource ('').
  */
 public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
-
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
@@ -60,7 +60,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals(Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
-    }
+    }    
 
     /**
      * Disables REST and then runs a simple REST access test which will expect status 403 when
