@@ -21,7 +21,7 @@ import java.util.Collections;
  * WebTest class for testing RA/Make New Request with public access user.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa_MakeRequestRublicUser extends WebTestBase {
+public class EcaQa_MakeRequestPublicUser extends WebTestBase {
 
 
     //helpers
@@ -33,15 +33,14 @@ public class EcaQa_MakeRequestRublicUser extends WebTestBase {
     private static CommandLineHelper commandLineHelper;
 
     public static class TestData {
-        private static final String END_ENTITY_PROFILE_NAME = "EcaRaPublicUser_EndEntity";
+        private static final String END_ENTITY_PROFILE_NAME = "EcaRaPublicUser_EEP";
         private static final String CA_NAME = "EcaRaPublicUser_CA";
         private static final String CERTIFICATE_PROFILE_NAME = "EcaRaPublicUser_CP";
-        private static final String END_ENTITY_NAME = "EcaRaPublicUser_EE_name";
-        private static final String ROLE_NAME = "EcaRaPublicUser_role";
+        private static final String END_ENTITY_NAME = "EcaRaPublicUser_EE";
+        private static final String ROLE_NAME = "EcaRaPublicUser_Role";
         private static final String MATCH_WITH = "PublicAccessAuthenticationToken: Any transport (HTTP or HTTPS)";
 
         private static final String SELECT_KEY_ALGORITHM = "RSA 2048 bits";
-        private static final String SUCCESS_MESSAGE = "End Entity with username '" + END_ENTITY_NAME + "' has been added successfully";
     }
 
     @BeforeClass
@@ -61,7 +60,7 @@ public class EcaQa_MakeRequestRublicUser extends WebTestBase {
 
     @AfterClass
     public static void exit() {
-//        cleanup();
+        cleanup();
         afterClass();
     }
 
@@ -91,6 +90,7 @@ public class EcaQa_MakeRequestRublicUser extends WebTestBase {
         certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.addCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
         certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.selectAvailableCa(TestData.CA_NAME);
         certificateProfileHelper.saveCertificateProfile();
     }
 
@@ -128,7 +128,6 @@ public class EcaQa_MakeRequestRublicUser extends WebTestBase {
         adminRolesHelperDefault.clickAddMember();
     }
 
-
     @Test
     public void stepF_openRAAsPublicUser() throws InterruptedException {
         raWebHelper.openPage(getRaWebPublicUrl());
@@ -150,6 +149,5 @@ public class EcaQa_MakeRequestRublicUser extends WebTestBase {
         //Assert the existence of the downloaded certificate
         commandLineHelper.assertFileExists(getDownloadDir() + "/" + TestData.END_ENTITY_NAME + ".p12");
     }
-
 
 }
