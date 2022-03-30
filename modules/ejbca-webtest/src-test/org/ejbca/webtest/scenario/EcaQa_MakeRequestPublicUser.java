@@ -135,7 +135,7 @@ public class EcaQa_MakeRequestPublicUser extends WebTestBase {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationOnServer();
         //Wait for screen update
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
         //Wait for screen update
         Thread.sleep(5000);
