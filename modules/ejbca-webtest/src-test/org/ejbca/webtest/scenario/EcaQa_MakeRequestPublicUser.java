@@ -39,7 +39,8 @@ public class EcaQa_MakeRequestPublicUser extends WebTestBase {
         private static final String END_ENTITY_NAME = "EcaRaPublicUser_EE";
         private static final String ROLE_NAME = "EcaRaPublicUser_Role";
         private static final String MATCH_WITH = "PublicAccessAuthenticationToken: Any transport (HTTP or HTTPS)";
-
+        static final String CERTIFICATE_PROFILE_KEY_ALGORITHM = "RSA";
+        static final String CERTIFICATE_PROFILE_KEY_BIT_LENGTH = "2048 bits";
         private static final String SELECT_KEY_ALGORITHM = "RSA 2048 bits";
     }
 
@@ -90,6 +91,10 @@ public class EcaQa_MakeRequestPublicUser extends WebTestBase {
         certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.addCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
         certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.editCertificateProfile(
+                Collections.singletonList(TestData.CERTIFICATE_PROFILE_KEY_ALGORITHM),
+                Collections.singletonList(TestData.CERTIFICATE_PROFILE_KEY_BIT_LENGTH)
+        );
         certificateProfileHelper.selectAvailableCa(TestData.CA_NAME);
         certificateProfileHelper.saveCertificateProfile();
     }
@@ -134,9 +139,6 @@ public class EcaQa_MakeRequestPublicUser extends WebTestBase {
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationOnServer();
-        //Wait for screen update
-        Thread.sleep(10000);
-        raWebHelper.selectKeyAlgorithm(TestData.SELECT_KEY_ALGORITHM);
         //Wait for screen update
         Thread.sleep(5000);
         //Enter common name
