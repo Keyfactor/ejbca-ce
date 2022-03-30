@@ -426,10 +426,13 @@ public class AzureCryptoToken extends BaseCryptoToken {
                                         log.debug("Found a nextLink, there are more entries available (bar=" + bar + "): " + nextLink);
                                     }
                                     nextLink = (String) nextLinkObj;
+                                } else {
+                                    nextLink = null;
+                                    bar = 0; // no nextLink, break out of the loop
                                 }
 
                             } else if (nextLink == null) {
-                                // Flush cache if we don't have any keys, if hasMore == true it means we listed keys but the last round didn't return any value
+                                // Flush cache if we don't have any keys, no value and no nextLink
                                 aliasCache.flush();
                                 if (log.isDebugEnabled()) {
                                     log.debug("No key aliases in key vault");
