@@ -94,6 +94,8 @@ public class RaWebHelper extends BaseHelper {
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
+        static final By INPUT_EMAIL = By.id("requestInfoForm:emailField");
+        static final By BUTTON_ADD_END_ENDTITY = By.id("requestInfoForm:addEndEntity");
         
         // Search End Entities
         static final By BUTTON_MENU_SEARCH_END_ENTITIES = By.xpath(".//a[@href=\"search_ees.xhtml\"]");
@@ -216,7 +218,6 @@ public class RaWebHelper extends BaseHelper {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_POSTPONE);
         TimeUnit.SECONDS.sleep(2);
     }
-
     
     public void selectKeyPairGenerationProvided() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_PROVIDED);
@@ -266,6 +267,13 @@ public class RaWebHelper extends BaseHelper {
         assertNotNull("Key Algorithm selection was not found.", keyAlgorithmSelectionWebElement);
         assertEquals("Key Algorithm selection is wrong", keyAlgorithmValue, keyAlgorithmSelectionWebElement.getText());
         assertEquals("Key Algorithm selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, keyAlgorithmSelectionWebElement.isEnabled());
+    }
+    
+    /**
+     * Click to add endEndtity
+     */
+    public void clickAddEndEntityButton() {
+        clickLink(Page.BUTTON_ADD_END_ENDTITY);
     }
 
     public void fillCsrFilename(final String inputFilename) {
@@ -500,12 +508,8 @@ public class RaWebHelper extends BaseHelper {
      */
     public void triggerRequestEditLink() {
         clickLink(Page.BUTTON_REQUEST_EDIT);
-    }
-    
-    public void fillRequiredSubjectDNAttributes(String CN) {
-        fillTextarea(Page.INPUT_COMMON_NAME,CN );
-    };
-    
+    }    
+  
     public void fillUsernameProvodeUserCredentials(String userName) {
         fillTextarea(Page.INPUT_USERNAME,userName);
         
@@ -573,6 +577,16 @@ public class RaWebHelper extends BaseHelper {
         fillInput(Page.INPUT_ENROLLMENTCODE, enrollmentCode);
         fillInput(Page.INPUT_ENROLLMENTCODE_CONFIRM, enrollmentCode);
     }
+    
+    public void fillCredentialEmail(final String email) {
+        fillInput(Page.INPUT_EMAIL, email);
+    }
+    //requestInfoForm:emailField
+    
+    public void fillRequiredSubjectDNAttributes(String commonName) {
+        fillInput(Page.INPUT_COMMON_NAME, commonName);
+    }
+    
     
     /**
      * Fills the username 

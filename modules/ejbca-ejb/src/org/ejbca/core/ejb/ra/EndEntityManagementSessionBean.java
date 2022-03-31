@@ -1354,7 +1354,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         setUserStatus(admin, data, status, approvalRequestID, lastApprovingAdmin);
     }
 
-    private void setUserStatus(
+    @Override
+    public void setUserStatus(
             final AuthenticationToken authenticationToken, final UserData data1, final int status,
             final int approvalRequestID, final AuthenticationToken lastApprovingAdmin
     ) throws ApprovalException, WaitingForApprovalException {

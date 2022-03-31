@@ -115,7 +115,7 @@ public interface CA extends CACommon {
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException,
             CertificateException, OperatorCreationException;
 
-    HashMap<?, ?> getExtendedCAServiceData(int type);
+    HashMap<?,?> getExtendedCAServiceData(int type);
 
     void setExtendedCAServiceData(int type, HashMap<?, ?> serviceData);
 
@@ -220,7 +220,9 @@ public interface CA extends CACommon {
    
    X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert, final Date validFrom) throws Exception;
 
-   X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws Exception;
+   default X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws Exception {
+      throw new UnsupportedOperationException("This operation is not supported in this CA type!"); 
+   }
 
    /**
     * Create a signed PKCS#7 / CMS message.
