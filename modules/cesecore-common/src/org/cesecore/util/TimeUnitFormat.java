@@ -101,6 +101,10 @@ public final class TimeUnitFormat {
 
         return result;
     }
+    
+    public long parseSeconds(String formattedString) throws NumberFormatException {
+        return parseMillis(formattedString);
+    }
 
     /**
      * Formats the given period in milliseconds to a readable string.   
