@@ -53,7 +53,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         REST_CERTIFICATE_MANAGEMENT_V2("REST Certificate Management V2", "/ejbca/ejbca-rest-api/v2/certificate"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws"),
-        ITS("CITS Certificate Management", "/ejbca/its");
+        ITS("ITS Certificate Management", "/ejbca/its");
 
         private final String name;
         private final String url;
