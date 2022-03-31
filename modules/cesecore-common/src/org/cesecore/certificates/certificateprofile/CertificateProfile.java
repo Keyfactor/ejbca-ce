@@ -18,6 +18,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
+import org.cesecore.certificate.ca.its.ITSCertificateType;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -69,6 +71,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
     public static final String SSHPROFILENAME = "SSH";
+    public static final String ITSPROFILENAME = "ITS";
 
     public static final List<String> FIXED_PROFILENAMES = new ArrayList<>();
     static {
@@ -78,6 +81,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
         FIXED_PROFILENAMES.add(SSHPROFILENAME);
+        FIXED_PROFILENAMES.add(ITSPROFILENAME);
     }
 
     /**
@@ -349,11 +353,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String OVERRIDABLEEXTENSIONOIDS = "overridableextensionoids";
     protected static final String NONOVERRIDABLEEXTENSIONOIDS = "nonoverridableextensionoids";
 
-    //SSH Certificate specific values
+    // SSH Certificate specific values
     protected static final String SSH_CERTIFICATE_TYPE = "sshcertificatetype";
     protected static final String SSH_EXTENSIONS = "sshextensions";
     protected static final String SSH_ALLOW_EXTERNAL_EXTENSIONS = "allowExternalSshExtensions";
     protected static final String SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED = "requireExternalSshExtensionsDefined";
+
+    // ITS Certificate specific values
+    protected static final String ITS_CERTIFICATE_TYPE = "itscertificatetype";
+    protected static final String ITS_APP_PERMISSIONS = "itsapplicationpermissions";
+    protected static final String ITS_CERT_ISSUNG_PERMISSIONS = "itscertissuingpermissions";
 
 
     /**
@@ -2951,6 +2960,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CTMAXRETRIES, numRetries);
     }
 
+    /** SSH Getters & Setters */
     public SshCertificateType getSshCertificateType() {
         data.putIfAbsent(SSH_CERTIFICATE_TYPE, SshCertificateType.USER);
         return (SshCertificateType) data.get(SSH_CERTIFICATE_TYPE);
@@ -3008,6 +3018,62 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setRequireExternalSshExtensionsDefined(boolean allow) {
         data.put(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED, allow);
+    }
+
+    /** ITS Getters & Setters */
+    public ITSCertificateType getItsCertificateType() {
+        data.putIfAbsent(ITS_CERTIFICATE_TYPE, ITSCertificateType.EXPLICIT);
+        return (ITSCertificateType) data.get(ITS_CERTIFICATE_TYPE);
+    }
+
+    public void setItsCertificateType(final ITSCertificateType certificateType) {
+        data.put(ITS_CERTIFICATE_TYPE, certificateType);
+    }
+
+    /**
+     * Get a list of List of appPermission PsIds indicating which ITS application permissions the profile should allow.
+     *
+     * @return a list of List of appPermission PsIds, never null.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> getItsApplicationPermissions() {
+        return data.get(ITS_APP_PERMISSIONS) == null
+                ? Collections.emptyList()
+                : (List<Integer>) data.get(ITS_APP_PERMISSIONS);
+    }
+
+    /**
+     * Saves the CertificateProfile's list of ITS appPermissions the cert profile is applicable to.
+     *
+     * @param applicationPermissions List of appPermission PsIds (Integer)
+     * @see ITSApplicationIds
+     */
+
+    public void setItsApplicationPermissions(List<Integer> applicationPermissions) {
+        data.put(ITS_APP_PERMISSIONS, applicationPermissions);
+    }
+
+    /**
+     * Get a list of List of certIssuingPermissions PsIds indicating which ITS certificate issuing permissions the profile should allow.
+     *
+     * @return a list of List of certIssuingPermission PsIds, never null.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> getItsCertIssuingPermissions() {
+        return data.get(ITS_CERT_ISSUNG_PERMISSIONS) == null
+                ? Collections.emptyList()
+                : (List<Integer>) data.get(ITS_CERT_ISSUNG_PERMISSIONS);
+    }
+
+    /**
+     * Saves the CertificateProfile's list of ITS certIssuingPermissions the cert profile is applicable to.
+     *
+     * @param certIssuingPermissions List of certIssuingPermissions PsIds (Integer)
+     * @see ITSApplicationIds
+     */
+
+    public void setItsCertIssuingPermissions(List<Integer> certIssuingPermissions) {
+        data.put(ITS_CERT_ISSUNG_PERMISSIONS, certIssuingPermissions);
     }
 
     /**
