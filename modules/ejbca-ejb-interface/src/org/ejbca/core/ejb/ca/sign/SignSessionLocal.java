@@ -253,10 +253,11 @@ public interface SignSessionLocal extends SignSession {
       * @return
       * @throws AuthorizationDeniedException
       * @throws CryptoTokenOfflineException
+     * @throws CertificateCreateException
       */
      ITSCertificate createEnrollCredential(AuthenticationToken admin, ToBeSignedCertificate.Builder certificateBuilder,
              CertificateId certifcateId, PublicVerificationKey verificationKey, 
-             ECA eca, EndEntityInformation endEntity) throws AuthorizationDeniedException, CryptoTokenOfflineException;
+             ECA eca, EndEntityInformation endEntity) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException;
 
      /**
       * Signs data as per IEEE 1609.2 section 5.3.1 by a crypto-token corresponding to an ECA.
