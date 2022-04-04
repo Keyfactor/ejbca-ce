@@ -819,7 +819,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 builder.withGraphResourceUrl(scepConfig.getIntuneGraphResourceUrl(alias));
             }
             if (isNotBlank(scepConfig.getIntuneGraphApiVersion(alias))) {
-                builder.withGraphResourceUrl(scepConfig.getIntuneGraphApiVersion(alias));
+                builder.withGraphResourceVersion(scepConfig.getIntuneGraphApiVersion(alias));
+            }
+            if (isNotBlank(scepConfig.getIntuneResourceUrl(alias))) {
+                builder.withIntuneResourceUrl(scepConfig.getIntuneResourceUrl(alias));
             }
 
             return builder.build();
