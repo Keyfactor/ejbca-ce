@@ -518,6 +518,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                         postCreateCertificate(admin, endEntityInformation, ca,
                                 new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
+                        // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
+                        if (ca.isUseUserStorage() && endEntityInformation != null) {
+                            finishUser(ca, endEntityInformation);
+                        }
                     }
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
@@ -526,11 +530,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     throw new NoSuchEndEntityException(failText, e);
                 }
             }
-            ret.create();
-            // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-            if (ca.isUseUserStorage() && endEntityInformation != null) {
-                finishUser(ca, endEntityInformation);
-            }
+            ret.create();         
         } catch (CustomCertificateSerialNumberException e) {
             cleanUserCertDataSN(endEntityInformation);
             throw e;
@@ -629,6 +629,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return cert;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CertificateWrapper> createCardVerifiableCertificateWS(final AuthenticationToken authenticationToken, final String username,
             String password, final String cvcreq)
