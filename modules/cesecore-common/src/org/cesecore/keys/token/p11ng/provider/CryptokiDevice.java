@@ -1145,7 +1145,7 @@ public class CryptokiDevice {
 
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
-                privateKeyTemplate.put(CKA.DERIVE, true);
+                privateKeyTemplate.put(CKA.DERIVE, false);
                 /* CK_TRUE if key supports decryption */
                 privateKeyTemplate.put(CKA.DECRYPT, false);
                 /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
