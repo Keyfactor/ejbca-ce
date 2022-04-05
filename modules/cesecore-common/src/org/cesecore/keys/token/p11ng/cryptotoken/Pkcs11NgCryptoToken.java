@@ -28,6 +28,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.crypto.IllegalBlockSizeException;
@@ -59,6 +60,7 @@ import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
 import org.cesecore.keys.util.KeyTools;
+import org.pkcs11.jacknji11.CKA;
 
 /** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
@@ -299,7 +301,11 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
                 if (!StringUtils.equals(oidString, keySpec)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                    Map<Long, Object> privateKeyAttributes = keyGenParams.getPrivateAttributesMap();
+//                    if((boolean) privateKeyAttributes.get(CKA.ENCRYPT)) {
+//                        privateKeyAttributes.put(CKA.DERIVE, true);
+//                    }
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, keyGenParams.getPublicAttributesMap(), privateKeyAttributes);
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
                     slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
