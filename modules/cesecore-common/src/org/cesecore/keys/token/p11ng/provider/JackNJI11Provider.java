@@ -789,14 +789,7 @@ public class JackNJI11Provider extends Provider {
         @Override
         protected Key engineDoPhase(Key publicKey, boolean arg1) throws InvalidKeyException, IllegalStateException {
             log.trace("engineDoPhase: " + this.getClass().getName());
-//            log.info("otherKey" + importEcPublicKey.getClass());
-//            pubKeyAlias = "importedEC-" + System.currentTimeMillis();
-//            pubKeyRef = privateBaseKey.getSlot().importEcPublicKey(
-//                    new BCECPublicKey((ECPublicKey)importEcPublicKey, null), 
-//                    Hex.decode("06082a8648ce3d030107"), "importedEC-" + System.currentTimeMillis()); 
             pubKey = new BCECPublicKey((ECPublicKey)publicKey, null);
-            // brainpool 256r1 06092b2403030208010107
-            // 384 06092b240303020801010b
             return null;
         }
 
@@ -804,74 +797,42 @@ public class JackNJI11Provider extends Provider {
         protected byte[] engineGenerateSecret() throws IllegalStateException {
             log.trace("engineGenerateSecret0: " + this.getClass().getName());
             CKA[] pubTempl;
-//            try {
-                pubTempl = new CKA[] {
-                        new CKA(CKA.TOKEN, false),
-                        new CKA(CKA.CLASS, CKO.SECRET_KEY),
-                        new CKA(CKA.SENSITIVE, false),
-                        new CKA(CKA.EXTRACTABLE, true),
-//                        new CKA(CKA.LABEL, "secret" + pubKeyAlias),
-                        new CKA(CKA.KEY_TYPE, CKK.GENERIC_SECRET),
-//                        new CKA(CKA.VALUE_LEN, 521),
-                        new CKA(CKA.WRAP, true),
-                        new CKA(CKA.UNWRAP, true),
-                        new CKA(CKA.ENCRYPT, true),
-                        new CKA(CKA.DECRYPT, true),
-//                        new CKA(CKA.EC_PARAMS, Hex.decode("06082a8648ce3d030107")), // secp256 06082a8648ce3d030107
-//                        new CKA(CKA.EC_POINT, pubKey.getQ().getEncoded(false)),
-                    };
-//            } catch (IOException e) {
-//                throw new IllegalStateException(e);
-//            }
+            pubTempl = new CKA[] {
+                    new CKA(CKA.TOKEN, false),
+                    new CKA(CKA.CLASS, CKO.SECRET_KEY),
+                    new CKA(CKA.SENSITIVE, false),
+                    new CKA(CKA.EXTRACTABLE, true),
+                    new CKA(CKA.KEY_TYPE, CKK.GENERIC_SECRET),
+                    new CKA(CKA.WRAP, true),
+                    new CKA(CKA.UNWRAP, true),
+                    new CKA(CKA.ENCRYPT, true),
+                    new CKA(CKA.DECRYPT, true)
+                };
                 
-            CKM mechanism;
-//            Pointer mechanismParam = new Memory(5 * NativeLong.SIZE); // 5 * sizeof(long) TODO: fix it use structure
-            
+            CKM mechanism;            
             Memory pubKeyEncoded = new Memory(65); // assume 256 bit only
             pubKeyEncoded.write(0, pubKey.getQ().getEncoded(false), 0, 65);
             
             MyEcdhParameters ecdhParams = new MyEcdhParameters(pubKeyEncoded);
             ecdhParams.write();
-            //PointerByReference pubKeyPointer = new PointerByReference(pubKeyEncoded);
 
-//            try {
-                mechanism = new CKM(CKM.ECDH1_DERIVE);
-                mechanism.pParameter = ecdhParams.getPointer();
-                mechanism.ulParameterLen = ecdhParams.size();
-//            } catch (IOException e) {
-//                // TODO Auto-generated catch block
-//                throw new IllegalStateException(e);
-//            }
-            
-            log.info("created derive template");
+            mechanism = new CKM(CKM.ECDH1_DERIVE);
+            mechanism.pParameter = ecdhParams.getPointer();
+            mechanism.ulParameterLen = ecdhParams.size();
+
             long keyRef = 0;
             try {
-            keyRef = privateBaseKey.getSlot().getCryptoki().DeriveKey(session, mechanism,
-                    privateBaseKey.getObject(), pubTempl);
+                keyRef = privateBaseKey.getSlot().getCryptoki().DeriveKey(session, mechanism,
+                            privateBaseKey.getObject(), pubTempl);
             } catch(CKRException e) {
                 log.warn("PKCS#11 exception while trying to ecdh: ", e);
                 privateBaseKey.getSlot().closeSession(session);
                 hasActiveSession = false;
                 throw new IllegalStateException("PKCS#11 exception while trying to ecdh: ", e);
             }
-            log.info("done derive: " + keyRef);
-            
-            CKA[] privKeyAttributes = ((NJI11ReleasebleSessionPrivateKey) privateBaseKey).getSlot().getCryptoki()
-                    .GetAttributeValue(session, keyRef, 
-                            CKA.CLASS, CKA.KEY_TYPE, CKA.DECRYPT, CKA.ENCRYPT,
-                            CKA.SENSITIVE, CKA.EXTRACTABLE, CKA.VALUE, CKA.VALUE_BITS);
-            log.info("printing keyRef tempaltes");
-            StringBuilder sb = new StringBuilder();
-            for(CKA attr: privKeyAttributes) {
-                log.info("printing");
-                attr.dump(sb);
-                sb.append("\n----------------\n");
-            }
-            log.info("printed keyRef tempaltes:" + sb.toString());
             
             CKA privKeyAttribute = ((NJI11ReleasebleSessionPrivateKey) privateBaseKey).getSlot().getCryptoki()
                     .GetAttributeValue(session, keyRef, CKA.VALUE);
-            log.info("ecdh value:" + privKeyAttribute.toString());
             
             privateBaseKey.getSlot().closeSession(session);
             hasActiveSession = false;
@@ -893,32 +854,23 @@ public class JackNJI11Provider extends Provider {
         @Override
         protected void engineInit(Key key, SecureRandom arg1) throws InvalidKeyException {
             log.trace("engineInit1: " + this.getClass().getName());
-//            log.info("random:" + arg1);
-//            log.info("Key:" + key.getClass());
             
             privateBaseKey = (NJI11Object) key;
             session = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().aquireSession();
             hasActiveSession = true;
             
-//            log.info("got key session");
-//            CKA[] privKeyAttributes;  
-//            CK_INFO ckInfo = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().getCryptoki().GetInfo();
-//            log.info("ckInfo: " + ckInfo.toString());
-//            
-//            privKeyAttributes = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().getCryptoki()
-//                        .GetAttributeValue(session, 
-//                                ((NJI11ReleasebleSessionPrivateKey) key).getObject(), 
-//                                CKA.CLASS, CKA.KEY_TYPE, CKA.PRIVATE, CKA.DECRYPT, CKA.DERIVE, CKA.SIGN,
-//                                CKA.SENSITIVE, CKA.EXTRACTABLE);
-//            log.info("printing tempaltes");
-//            StringBuilder sb = new StringBuilder();
-//            for(CKA attr: privKeyAttributes) {
-//                log.info("printing");
-//                attr.dump(sb);
-//                sb.append("\n----------------\n");
+            CKA caKeySupportsDerive = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().getCryptoki()
+                    .GetAttributeValue(session, 
+                            ((NJI11ReleasebleSessionPrivateKey) key).getObject(), 
+                            CKA.DERIVE);
+
+            log.debug("caKeySupportsDerive:" + caKeySupportsDerive.toString());
+
+//            if(!caKeySupportsDerive.getValueBool()) {
+//                privateBaseKey.getSlot().closeSession(session);
+//                hasActiveSession = false;
+//                throw new InvalidKeyException("CA key does not support derive operation.");
 //            }
-//            log.info("printed tempaltes:" + sb.toString());
-            
         }
 
         @Override
@@ -934,7 +886,6 @@ public class JackNJI11Provider extends Provider {
                     log.warn("Keyagreement object was not de-initialized. Enable debug logging to see init stack trace", debugStacktrace);
                     try {
                         final CryptokiDevice.Slot slot = privateBaseKey.getSlot();
-//                        slot.removeKey(pubKeyAlias);
                         if (slot != null) {
                             slot.releaseSession(session);
                         }
