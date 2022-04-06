@@ -32,7 +32,6 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-214">ECAQA-214</a>
  *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa214_EditCaGenerateButtons extends WebTestBase {
@@ -47,8 +46,8 @@ public class EcaQa214_EditCaGenerateButtons extends WebTestBase {
         static final String SUBJECT_DN_2 = "CN=DEF";
         static final String SUBJECT_DN_3 = "CN=GHI";
         static final String EXPECTED_1ST_ERROR = "Ca Validity: Validation Error: Value is required.";
-        static final String EXPECTED_2ND_ERROR = "Partitioned CRLs are not allowed without 'Issuing Distribution Point on CRL'.";
-        static final String EXPECTED_3RD_ERROR = "Partitioned CRLs are not allowed without a 'Default CRL Distribution Point' filled in, which must contain an asterisk (*) as a placeholder for the partition number.";
+        static final String EXPECTED_2ND_ERROR = "Microsoft CA Compatibility Mode or Partitioned CRLs are not allowed without 'Issuing Distribution Point on CRL'.";
+        static final String EXPECTED_3RD_ERROR = "Microsoft CA Compatibility Mode or Partitioned CRLs are not allowed without a 'Default CRL Distribution Point' filled in, which must contain an asterisk (*) as a placeholder for the partition number.";
         static final String SUBJECT_DN_EXISTING_CA = "CN=JKL";
     }
 
