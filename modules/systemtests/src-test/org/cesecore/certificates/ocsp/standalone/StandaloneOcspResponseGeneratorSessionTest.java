@@ -135,9 +135,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Functional tests for StandaloneOcspResponseGeneratorSessionBean
- * 
- * @version $Id$
- * 
  */
 @RunWith(CryptoTokenTestRunner.class)
 public class StandaloneOcspResponseGeneratorSessionTest {
@@ -1435,7 +1432,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspSigningCertificate, ocspSigningCertificate
                 .getSerialNumber()));
         Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         //Create a signed request in order to test all aspects 
         KeyPair keys = KeyTools.genKeys("512", "RSA");
@@ -1601,7 +1598,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             ocspReqBuilder.setRequestorName(new X500Name(ocspAuthenticationCertificate.getSubjectDN().getName()));
         }
         ocspReqBuilder.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, certificateSerialnumber));
-        ocspReqBuilder.setRequestExtensions(new Extensions(new Extension[] {new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce)}));
+        ocspReqBuilder.setRequestExtensions(new Extensions(new Extension[] {new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce.getEncoded())}));
         if (ocspAuthenticationCertificate != null && ocspAuthenticationPrivateKey != null) {
             // Create a signed request
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(

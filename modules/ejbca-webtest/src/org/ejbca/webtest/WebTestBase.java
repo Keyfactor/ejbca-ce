@@ -202,6 +202,9 @@ public abstract class WebTestBase extends ExtentReportCreator {
     protected static String getRaWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/ra/";
     }
+    protected static String getRaWebPublicUrl() {
+        return "http://" + ejbcaDomain + ":" + ejbcaPublicPort + "/ejbca/ra/";
+    }
 
     protected static String getSwaggerWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/swagger-ui#/";

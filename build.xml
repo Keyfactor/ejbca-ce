@@ -499,6 +499,13 @@
 				replacement-context-root="/ejbca/msae"
 		/>
 		<war-replacement-in-module
+               	replacement-tag="!--@cits.war@-->"
+              	replacement-file="${eardd.src}/META-INF/application.xml"
+                replacement-enabled="${mod.cits.exists}"
+       	        replacement-web-uri="cits.war"
+				replacement-context-root="/ejbca/its"
+		/>
+		<war-replacement-in-module
                 	replacement-tag="!--@est.war@-->"
                 	replacement-file="${eardd.src}/META-INF/application.xml"
 	                replacement-enabled="${mod.est.exists}"
@@ -559,10 +566,10 @@
         	<!-- The place where to find plugins -->
 		    <zipfileset dir="${ejbca.plugin.gen.path}" erroronmissingdir="false"/>
             <zipfileset prefix="lib" dir="${lib}">
-                <include name="bcpkix-jdk15on-*.jar"/>
-                <include name="bcprov-jdk15on-*.jar"/>
-                <include name="bctls-jdk15on-*.jar"/>
-				<include name="bcutil-jdk15on-*.jar"/>
+                <include name="bcpkix-jdk18on-*.jar"/>
+                <include name="bcprov-jdk18on-*.jar"/>
+                <include name="bctls-jdk18on-*.jar"/>
+				<include name="bcutil-jdk18on-*.jar"/>
                 <include name="cert-cvc-*.jar" />
             	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-*.jar" unless="jbosseap6-specials"/>
@@ -641,6 +648,7 @@
         		<include name="${in-test-mode-include}systemtests-common.jar"/>
             	<include name="ssh.war" />
             	<include name="msae.war" />
+            	<include name="cits.war" />
             </fileset>
         	
         	<fileset dir="${ejbca.home}/lib/swagger">
@@ -684,6 +692,7 @@
         		<include name="ejbca-rest-camanagement.jar" />
         		<include name="ejbca-rest-endentity.jar" />
         		<include name="ejbca-ssh.jar" />
+        		<include name="ejbca-cits.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
@@ -1113,6 +1122,7 @@
 		    	<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/cryptotoken/CryptoTokenChangeAuthDataCommand.java"/>
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/keys/token/p11ng/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/msae/**"/>
+		    	<exclude unless="edition.is.ee" name="modules/cits/**"/>
                 <!-- List of modules to exclude from non-eIDAS editions -->
 		    	<!-- Exclude standard values if eIDAS edition for which we will include the updated version below -->
                 <exclude if="build.contains.eidas" name="src/java/defaultvalues.properties"/> 
@@ -1534,6 +1544,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
 
     <target name="msae.war">
         <ant dir="modules" target="msae" />
+    </target>
+	
+    <target name="cits.war">
+        <ant dir="modules" target="cits" />
     </target>
 
     <target name="healthcheck.war">
