@@ -81,7 +81,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         static final String USER_NAME = "SeleniumRaAdmin";
         static final String USER_NAME1 = "SeleniumRaAdmin1";
         static final String ROLE_NAME = "SeleniumRaAdminRoleECAQA98";
-        static final String MATCH_WITH = "X509: CN, Common name";
+        static final String MATCH_WITH = "PublicAccessAuthenticationToken : Any transport (HTTP or HTTPS)";
         static final String APPROVE_MESSAGE_CANNOT_EDIT = "You have edited this request and cannot approve it";
         static final String APPROVE_MESSAGE_APPROVED_AND_EXECUTED = "This request has been approved and executed already";
     }
@@ -199,7 +199,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         raWebHelperRaAdmin.triggerRequestEditLink();
         raWebHelperRaAdmin.fillManageRequestEditCommonName(TestData.END_ENTITY_NAME_MODIFIED);
         raWebHelperRaAdmin.triggerRequestEditSaveForm();
-        raWebHelperRaAdmin.assertSubjectDistinguishedNameHasText("CN=" + TestData.END_ENTITY_NAME_MODIFIED);
+        raWebHelperRaAdmin.assertSubjectDistinguishedNameHasText( "UID="+TestData.END_ENTITY_NAME_MODIFIED+",CN="+TestData.END_ENTITY_NAME);
         raWebHelperRaAdmin.assertApproveMessageHasText(TestData.APPROVE_MESSAGE_CANNOT_EDIT);
         raWebHelperRaAdmin.assertRequestApproveButtonDoesNotExist();
         raWebHelperRaAdmin.assertRequestRejectButtonDoesNotExist();
@@ -211,13 +211,13 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         raWebHelperRaAdmin1.clickMenuManageRequests();
         raWebHelperRaAdmin1.clickTabApproveRequests();
         // Get rows
-        final List<WebElement> approveRequestRow = raWebHelperRaAdmin1.getRequestsTableRow(TestData.CA_NAME, TestData.RA_PENDING_APPROVAL_TYPE, TestData.END_ENTITY_NAME_MODIFIED, TestData.RA_PENDING_APPROVAL_STATUS);
+        final List<WebElement> approveRequestRow = raWebHelperRaAdmin1.getRequestsTableRow(TestData.CA_NAME, TestData.RA_PENDING_APPROVAL_TYPE, TestData.END_ENTITY_NAME, TestData.RA_PENDING_APPROVAL_STATUS);
         raWebHelperRaAdmin1.assertHasRequestRow(approveRequestRow);
         raWebHelperRaAdmin1.triggerRequestReviewLinkFromRequestRow(approveRequestRow);
         raWebHelperRaAdmin1.assertRequestApproveButtonExists();
         raWebHelperRaAdmin1.assertRequestRejectButtonExists();
         raWebHelperRaAdmin1.triggerRequestApproveButton();
-        raWebHelperRaAdmin1.assertSubjectDistinguishedNameHasText("CN=" + TestData.END_ENTITY_NAME_MODIFIED);
+        raWebHelperRaAdmin1.assertSubjectDistinguishedNameHasText("UID="+TestData.END_ENTITY_NAME_MODIFIED+",CN="+TestData.END_ENTITY_NAME);
         raWebHelperRaAdmin1.assertApproveMessageHasText(TestData.APPROVE_MESSAGE_APPROVED_AND_EXECUTED);
     }
 }

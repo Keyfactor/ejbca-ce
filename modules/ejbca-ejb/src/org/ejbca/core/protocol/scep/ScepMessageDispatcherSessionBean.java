@@ -14,6 +14,8 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -166,30 +168,26 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             @SuppressWarnings("unchecked")
             Class<? extends ScepOperationPlugin> extensionClass = (Class<? extends ScepOperationPlugin>) Class
                     .forName(SCEP_RA_MODE_EXTENSION_CLASSNAME);
-            scepRaModeExtension = extensionClass.newInstance();
+            Constructor<? extends ScepOperationPlugin> extensionConstructor = extensionClass.getDeclaredConstructor();
+            scepRaModeExtension = extensionConstructor.newInstance();
         } catch (ClassNotFoundException e) {
             scepRaModeExtension = null;
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             scepRaModeExtension = null;
             log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            scepRaModeExtension = null;
-            log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        }
+        } 
 
         try {
             @SuppressWarnings("unchecked")
             Class<ScepResponsePlugin> extensionClass = (Class<ScepResponsePlugin>) Class.forName(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME);
-            scepClientCertificateRenewal = extensionClass.newInstance();
+            Constructor<? extends ScepResponsePlugin> extensionConstructor = extensionClass.getDeclaredConstructor();
+            scepClientCertificateRenewal = extensionConstructor.newInstance();
         } catch (ClassNotFoundException e) {
             scepClientCertificateRenewal = null;
-        } catch (InstantiationException e) {
-            scepClientCertificateRenewal = null;
-            log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            scepClientCertificateRenewal = null;
-            log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            scepRaModeExtension = null;
+            log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
+        } 
     }
 
     @Override
@@ -819,7 +817,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 builder.withGraphResourceUrl(scepConfig.getIntuneGraphResourceUrl(alias));
             }
             if (isNotBlank(scepConfig.getIntuneGraphApiVersion(alias))) {
-                builder.withGraphResourceUrl(scepConfig.getIntuneGraphApiVersion(alias));
+                builder.withGraphResourceVersion(scepConfig.getIntuneGraphApiVersion(alias));
+            }
+            if (isNotBlank(scepConfig.getIntuneResourceUrl(alias))) {
+                builder.withIntuneResourceUrl(scepConfig.getIntuneResourceUrl(alias));
             }
 
             return builder.build();

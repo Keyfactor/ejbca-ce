@@ -49,7 +49,7 @@
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, plugins-ee-clean, 
-		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean"/>
+		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean, cits-clean"/>
 
   <target name="cesecore-p11-clean" if="build.cesecore.p11.jar">
        <ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -160,6 +160,10 @@
 	
 	<target name="msae-clean" if="${mod.msae.exists}">
 	    <ant antfile="${mod.msae.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="cits-clean" if="${mod.cits.exists}">
+	    <ant antfile="${mod.cits.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<condition property="mod.plugins-ee.exists">
@@ -438,6 +442,10 @@
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 	
+    <target name="cits" if="${mod.cits.exists}" depends="ejbca-rest-common" description="Build EJBCA CITS">
+        <ant antfile="${mod.cits.path}/build.xml" target="build-cits" inheritall="true" inheritrefs="true"/>
+    </target>
+	
     <target name="ejbca-rest-cryptotoken" if="${mod.ejbca-rest-cryptotoken.exists}" depends="ejbca-rest-common" description="Build EJBCA REST Crypto Token module">
         <ant antfile="${mod.ejbca-rest-cryptotoken.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
@@ -473,6 +481,8 @@
 	<target name="msae" if="${mod.msae.exists}" depends="ejbca-common-web" description="Build the MSAE WAR">
 		<ant antfile="${mod.msae.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
+	
+
 	
 	<target name="healthcheck-ejbca-war" depends="ejbca-common-web" description="Build the EJBCA Helthcheck WAR">
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
@@ -518,7 +528,7 @@
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca.clients,
 					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, 
-					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae">
+					ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae, cits">
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
@@ -545,7 +555,7 @@
 		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme" if="${mod.edition-specific-ee.exists}">
+	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme, cits" if="${mod.edition-specific-ee.exists}">
 		<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	

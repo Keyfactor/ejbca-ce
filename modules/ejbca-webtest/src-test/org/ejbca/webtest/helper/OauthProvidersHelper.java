@@ -53,6 +53,7 @@ public class OauthProvidersHelper extends BaseHelper {
         static final By SKEWLIMIT_INPUT_FIELD = By.id("editOAuthKeyForm:editedProviderSkewLimit");
         static final By REALM_INPUT_FIELD = By.id("editOAuthKeyForm:realm");
         static final By TENANT_INPUT_FIELD = By.id("editOAuthKeyForm:realm");
+        static final By AUDIENCE_INPUT_FIELD = By.id("editOAuthKeyForm:audience");
         static final By SCOPE_INPUT_FIELD = By.id("editOAuthKeyForm:scope");
         static final By CLIENT_INPUT_FIELD = By.id("editOAuthKeyForm:client");
         static final By CLIENT_SECRET_INPUT_FIELD = By.id("editOAuthKeyForm:clientSecret");
@@ -107,6 +108,10 @@ public class OauthProvidersHelper extends BaseHelper {
     
     public void fillTenantField(final String inputText) {
         fillInput(Page.TENANT_INPUT_FIELD, inputText);
+    }
+
+    public void fillAudienceField(final String inputText) {
+        fillInput(Page.AUDIENCE_INPUT_FIELD, inputText);
     }
     
     public void fillRealmField(final String inputText) {
@@ -190,6 +195,7 @@ public class OauthProvidersHelper extends BaseHelper {
     
     public void pressRemoveOauthProviderButton(final String label) {
         clickLink(Page.getRemoveOauthProviderButton(label));
+        assertAndConfirmAlertPopUp("Are you sure you want to remove this OAuth trusted provider: " + label + "?", true);
     }
     
     public void pressSaveOauthProviderButton() {

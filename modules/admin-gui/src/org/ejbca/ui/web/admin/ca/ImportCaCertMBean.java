@@ -79,6 +79,10 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     public String importCaCertificate() {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
         try {
+            if(uploadedFile.getName().endsWith(".oer")) {
+                caAdminSession.importItsCACertificate(getAdmin(), importCaCertName, fileBuffer);
+                return EditCaUtil.MANAGE_CA_NAV;
+            }
             Collection<Certificate> certs = null;
             try {
                 certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(fileBuffer), Certificate.class);
