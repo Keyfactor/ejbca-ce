@@ -47,8 +47,8 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     }
     
     private static final Logger log = Logger.getLogger(CommonCacheBase.class);
-    private Map<Integer, CacheEntry> cache = new HashMap<>();
-    private Map<String, Integer> nameToIdMap = new HashMap<>();
+    protected Map<Integer, CacheEntry> cache = new HashMap<>();
+    protected Map<String, Integer> nameToIdMap = new HashMap<>();
 
     /** @return how long to cache objects in milliseconds. */
     protected abstract long getCacheTime();
