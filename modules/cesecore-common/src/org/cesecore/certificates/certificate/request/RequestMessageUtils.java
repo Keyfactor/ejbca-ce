@@ -67,7 +67,7 @@ public abstract class RequestMessageUtils {
 			// instead of a P10, it will create a PKCS10RequestMessage, but not fill it
 			if (ret == null || ((PKCS10RequestMessage)ret).getCertificationRequest() == null) {
 	            log.debug("Can not parse PKCS10 request, trying CVC instead: P10 is parsed to null");
-	            ret = genCVCRequestMessage(request);			    
+	            ret = genCVCRequestMessage(request);
 			}
 		} catch (IllegalArgumentException | IOException e) {
 		    if (log.isDebugEnabled()) {
@@ -80,7 +80,7 @@ public abstract class RequestMessageUtils {
 	                log.debug("Can not parse CVC request, this is no request that we know, returning null: "+ e1.getMessage());
 	            }
 	            ret = null;
-	        }			
+	        }
 		}
 		return ret;
 	}

@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,6 +49,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -59,6 +61,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.CvcPlugin;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -233,9 +236,13 @@ public class CAInterfaceBean implements Serializable {
 	public String getRequestDataAsString() throws Exception{
 		String returnval = null;
 		if(request != null ){
-			returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
-			+ new String(Base64.encode(request, true))
-			+ RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
+		    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
+		    if(cainfo.getCAType()==CAInfo.CATYPE_CITS) {
+		        returnval += Hex.toHexString(request);
+		    } else {
+		        returnval += new String(Base64.encode(request, true));
+		    }
+			returnval += RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
 		}
 		return returnval;
 	}
@@ -359,22 +366,38 @@ public class CAInterfaceBean implements Serializable {
                     cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caInfoDto.getCaName() + postfix, SoftCryptoToken.class.getName(),
                             cryptoTokenProperties, null, null);
                 }
-                // Next generate recommended RSA key pairs for decryption and test
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), AlgorithmConstants.KEYALGORITHM_RSA + "2048");
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), AlgorithmConstants.KEYALGORITHM_RSA + "1024");
                 // Next, create a CA signing key
                 final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(caInfoDto.getSignatureAlgorithmParam());
                 String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + EditCaUtil.DEFAULT_KEY_SIZE;
                 if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
                     caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
                 } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
-                    caSignKeySpec = "prime256v1";
+                    // ECDSA curves can only sign compatible digest sizes
+                    if(caInfoDto.getSignatureAlgorithmParam().contains("384")) {
+                        // for SHA384withECDSA
+                        caSignKeySpec = "brainpoolP384R1";
+                    } else if(caInfoDto.getSignatureAlgorithmParam().contains("256")){
+                        // for SHA256withECDSA
+                        caSignKeySpec = "secp256r1";
+                    } else {
+                        log.error("No matching curve for signing algorithm: " + caInfoDto.getSignatureAlgorithmParam());
+                        throw new Exception("No matching curve for ECDSA signing algorithm.");
+                    }
                 } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
                 } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
                     caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
                 }
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), caSignKeySpec);
+                if(caInfoDto.getCaType()!=CAInfo.CATYPE_CITS) {
+                    // Next generate recommended RSA key pairs for decryption and test
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), AlgorithmConstants.KEYALGORITHM_RSA + "2048");
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), AlgorithmConstants.KEYALGORITHM_RSA + "1024");
+                } else {
+                    // encryption key is only 256bit for now
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), "secp256r1");
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), "secp256r1");
+                }
             }
             return actionCreateCaMakeRequestInternal(caInfoDto, approvals, availablePublisherValues, availableKeyValidatorValues,
                     buttonCreateCa, buttonMakeRequest, cryptoTokenId, fileBuffer);
@@ -415,10 +438,10 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getCryptoTokenCertSignKey().length() > 0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
-        if (caInfoDto.getCryptoTokenCertSignKey().length() > 0) {
+        if (caInfoDto.getCryptoTokenCertSignKey().length() > 0 && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
-        if (caInfoDto.getSelectedKeyEncryptKey().length() > 0) {
+        if (caInfoDto.getSelectedKeyEncryptKey().length() > 0 && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caInfoDto.getSelectedKeyEncryptKey());
         }
         if (caInfoDto.getTestKey().length() > 0) {
@@ -444,10 +467,12 @@ public class CAInterfaceBean implements Serializable {
         } else {
             caToken.setKeySequence(caInfoDto.getKeySequence());
         }
-	    try {
-	        CertTools.stringToBcX500Name(caInfoDto.getCaSubjectDN());
-	    } catch (IllegalArgumentException e) {
-	        illegaldnoraltname = true;
+        if(!caInfoDto.isCaTypeX509() && !caInfoDto.isCaTypeCits()) {
+    	    try {
+    	        CertTools.stringToBcX500Name(caInfoDto.getCaSubjectDN());
+    	    } catch (IllegalArgumentException e) {
+    	        illegaldnoraltname = true;
+    	    }
 	    }
         int certprofileid = (caInfoDto.getCurrentCertProfile()==null ? 0 : Integer.parseInt(caInfoDto.getCurrentCertProfile()));
         int defaultCertProfileId = (caInfoDto.getDefaultCertificateProfile() == null ? 0 : Integer.parseInt(caInfoDto.getDefaultCertificateProfile()));
@@ -458,10 +483,11 @@ public class CAInterfaceBean implements Serializable {
 	    }
 
 	    // If 'buttonMakeRequest' set encodedValidity to zero days, otherwise perform validation if it's an absolute date or a relative time.
-	    if (buttonMakeRequest) {
+	    if (buttonMakeRequest && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
 	        caInfoDto.setCaEncodedValidity("0d"); // not applicable
         } else {
-            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity());
+            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity(), 
+                                        caInfoDto.getCaType()==CAInfo.CATYPE_CITS);
             if(!StringUtils.isEmpty(errorMessage)) {
                 throw new ParameterException(errorMessage);
             }
@@ -726,17 +752,63 @@ public class CAInterfaceBean implements Serializable {
                         saveRequestInfo(sshCaInfo);
                     }
                 }
+            } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
+                // TODO: Validations on CaInfoDTO
+
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
+                CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder()
+                                           .setName(caInfoDto.getCaName())
+                                           .setDescription(caInfoDto.getDescription())
+                                           .setCertificateProfileId(certprofileid)
+                                           .setEncodedValidity(caInfoDto.getCaEncodedValidity())
+                                           .setCaType(caInfoDto.getCaType())
+                                           .setStatus(CAConstants.CA_ACTIVE)
+                                           .setSignedBy(signedBy)
+                                           .setUpdateTime(new Date())
+                                           .setExpireTime(null)
+                                           .setCertificateChain(null)
+                                           .setCaToken(caToken)
+                                           .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
+                                           .setExtendedCAServiceInfos(extendedCaServiceInfos)
+                                           .setValidators(keyValidators)
+                                           .setFinishUser(caInfoDto.isFinishUser())
+                                           .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
+                                           .setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
+                                           .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
+                                           .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
+                                           .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                                           .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
+                                           .setUseUserStorage(caInfoDto.isUseUserStorage())
+                                           .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
+                                           .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                           .setDefaultCertProfileId(defaultCertProfileId)
+                                           .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                                           .setCertificateId(caInfoDto.getCertificateId())
+                                           .setRegion(caInfoDto.getRegion());
+
+                CitsCaInfo citsCaInfo =  citsCaInfoBuilder.build();
+
+                saveRequestInfo(citsCaInfo);
             } else {
                 throw new IllegalStateException("Unknown CA type with identifier " + caInfoDto.getCaType() + " was encountered.");
             }
-	    }
+	    } 
         if (buttonMakeRequest && !illegaldnoraltname) {
             CAInfo cainfo = getRequestInfo();
             caadminsession.createCA(authenticationToken, cainfo);
             int caid = cainfo.getCAId();
             try {
-                byte[] certreq = caadminsession.makeRequest(authenticationToken, caid, 
+                byte[] certreq = null;
+                if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
+                    certreq = caadminsession.makeCitsRequest(authenticationToken, caid, 
+                            fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
+                            caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
+                            caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
+                } else {
+                    certreq = caadminsession.makeRequest(authenticationToken, caid, 
                                        fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                }
                 saveRequestData(certreq);
             } catch (CryptoTokenOfflineException e) {
                 casession.removeCA(authenticationToken, caid);
@@ -754,9 +826,22 @@ public class CAInterfaceBean implements Serializable {
 
     }
 
-    public String isValidityTimeValid(String validityString) {
+    public String isValidityTimeValid(String validityString, boolean isCitsCa) {
+        
+        if(isCitsCa) {
+            if(StringUtils.isEmpty(validityString)) {
+                return ""; // during edit CA
+            }
+            try {
+                if (SimpleTime.parseItsValidity(validityString) <= 0) {
+                    return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND");
+                }
+            } catch (NumberFormatException e) {
+                return ejbcawebbean.getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage();
+            }
+        }
         // Fixed end dates are not limited
-        if (ValidityDate.isValidIso8601Date(validityString)) {
+        else if (ValidityDate.isValidIso8601Date(validityString)) {
             //We have a valid date, let's just check that it's in the future as well.
             Date validityDate;
             try {
@@ -862,7 +947,22 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getDescription() == null) {
             caInfoDto.setDescription("");
         }
-        if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+        
+        if(caInfoDto.isCaTypeCits()) {
+            if(StringUtils.isEmpty(caInfoDto.getCaEncodedValidity())){
+                // only needed if remote bean is used i.e. non CA GUI
+                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+            }
+            try {
+                if (SimpleTime.parseItsValidity(caInfoDto.getCaEncodedValidity()) <= 0) {
+                    throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                }
+            } catch (NumberFormatException e) {
+                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage());
+            }
+            // no need to convert to hours(not days like other cases) here
+        } else if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) 
+                && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
             // A validityString of null is allowed, when using a validity is not applicable
             caInfoDto.setCaEncodedValidity("0d");
         } else {
@@ -1024,7 +1124,42 @@ public class CAInterfaceBean implements Serializable {
                         // TODO ECA-9293: SSH, add approvals here
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
+            } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+                CitsCaInfo.CitsCaInfoBuilder citsCaInfoBuilder = new CitsCaInfo.CitsCaInfoBuilder().setCaId(caid)
+                                                                                                   .setName(caInfoDto.getCaName())
+                                                                                                   .setDescription(caInfoDto.getDescription())
+                                                                                                   .setEncodedValidity(caInfoDto.getCaEncodedValidity())
+                                                                                                   .setCaType(caInfoDto.getCaType())
+                                                                                                   .setSignedBy(caInfoDto.getSignedBy())
+                                                                                                   .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                                                                                   .setUpdateTime(new Date())
+                                                                                                   .setExpireTime(null)
+                                                                                                   .setCertificateChain(null)
+                                                                                                   .setCaToken(catoken)
+                                                                                                   .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
+                                                                                                   .setExtendedCAServiceInfos(extendedCaServiceInfos)
+                                                                                                   .setValidators(keyValidators)
+                                                                                                   .setFinishUser(caInfoDto.isFinishUser())
+                                                                                                   .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                                                                                                   .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
+                                                                                                   .setDoEnforceUniquePublicKeys(caInfoDto.isDoEnforceUniquePublickeys())
+                                                                                                   .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
+                                                                                                   .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
+                                                                                                   .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                                                                                                   .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
+                                                                                                   .setUseUserStorage(caInfoDto.isUseUserStorage())
+                                                                                                   .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
+                                                                                                   .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
+                                                                                                   .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
+                                                                                                   .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
+                                                                                                   .setCertificateId(caInfoDto.getCertificateId())
+                                                                                                   .setRegion(caInfoDto.getRegion());
+
+
+                cainfo = citsCaInfoBuilder.buildForUpdate();
             }
+           
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(caInfo.getStatus());
             cainfo.setName(caInfo.getName());
@@ -1032,12 +1167,20 @@ public class CAInterfaceBean implements Serializable {
         }
         return null;
 	}
+    
+    public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA)
+            throws AuthorizationDeniedException {
+        return getAvailableCryptoTokens(isEditingCA, false);
+    }
 
-	public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA)
+	public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA, boolean citsElligibleTokensOnly)
             throws AuthorizationDeniedException {
         final List<Entry<String, String>> availableCryptoTokens = new ArrayList<>();
         final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
-
+        
+        Set<String> eccKeysForCurvePresent = new HashSet<String>();
+        boolean citsElligible = false;
+        String keySpec;
         for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
             // Make sure we may use it
             if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
@@ -1048,7 +1191,28 @@ public class CAInterfaceBean implements Serializable {
                     final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
                     // Only allow tokens with at least one keypair
                     if (!cryptoTokenKeyPairInfos.isEmpty()) {
-                        availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+                        if(citsElligibleTokensOnly) {
+                            eccKeysForCurvePresent.clear();
+                            citsElligible = false;
+                            for(KeyPairInfo keyPairInfo: cryptoTokenKeyPairInfos) {
+                                keySpec = keyPairInfo.getKeySpecification();
+                                if(!keyPairInfo.getKeyAlgorithm().contains("EC")) {
+                                    continue;
+                                }
+                                if(!eccKeysForCurvePresent.contains(keySpec)) {
+                                    eccKeysForCurvePresent.add(keySpec);
+                                } else {
+                                    // at least one EC key of same key spec is already present
+                                    citsElligible = true;
+                                    break;
+                                }
+                            }
+                        }
+                        // we expect two key pairs of same curve family in EC family to be useful i.e. sign and encryption key
+                        // there can be two keys with same size but different curve family
+                        if(!citsElligibleTokensOnly || citsElligible) {
+                            availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+                        }
                     }
                 } catch (CryptoTokenOfflineException ctoe) {
                     // The CryptoToken might have timed out
@@ -1139,7 +1303,8 @@ public class CAInterfaceBean implements Serializable {
 	public boolean isCaExportable(CAInfo caInfo) {
 	    boolean ret = false;
 	    final int caInfoStatus = caInfo.getStatus();
-	    if (caInfoStatus != CAConstants.CA_EXTERNAL && caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+	    if ((caInfoStatus != CAConstants.CA_EXTERNAL && caInfo.getCAType()!=CAInfo.CATYPE_CITS) && 
+	                                    caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
 	        final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
 	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
 	        if (cryptoTokenInfo!=null) {
@@ -1290,6 +1455,14 @@ public class CAInterfaceBean implements Serializable {
     public Date getCANotAfter(int caid) throws AuthorizationDeniedException {
         final Collection<Certificate> chain = casession.getCAInfo(authenticationToken, caid).getCertificateChain();
         return CollectionUtils.isNotEmpty(chain) ? CertTools.getNotAfter(chain.iterator().next()) : null;
+    }
+
+    public boolean isCaTypeCits() {
+        return cainfo.getCAType()==CAInfo.CATYPE_CITS;
+    }
+    
+    public String getExpiryTime(Date expireTime) {
+        return ejbcawebbean.formatAsISO8601(expireTime);
     }
 
 }
