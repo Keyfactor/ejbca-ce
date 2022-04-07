@@ -1540,8 +1540,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         log.info("fetched signing ca certificate");
 
         try {
-            ITSContentSigner itsContentSigner = new JcaITSContentSigner.Builder()
-                                                        .build(privateKey, ecaCertificate);
+            ITSContentSigner itsContentSigner = eca.getITSContentSigner(privateKey, ecaCertificate); 
+                                                        
             ITSExplicitCertificateBuilder itsCertificateBuilder = 
             new JcaITSExplicitCertificateBuilder(itsContentSigner, certificateBuilder);
             
@@ -1577,8 +1577,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
         try {
             // Psid is same for EC enroll and authorization validation
-            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
-                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
+            ITSContentSigner dataSigner = eca.getITSContentSigner(privateKey, ecaCertificate); 
+
             HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
             ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
 
