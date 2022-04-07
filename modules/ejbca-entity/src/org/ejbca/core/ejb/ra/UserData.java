@@ -176,7 +176,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     public void setUsername(String username) {
-        this.username = StringTools.stripUsername(username);
+        this.username = StringTools.stripUsername(StringTools.trim(username));
     }
 
     /** @return the current Subject DN of the EE, never null */
