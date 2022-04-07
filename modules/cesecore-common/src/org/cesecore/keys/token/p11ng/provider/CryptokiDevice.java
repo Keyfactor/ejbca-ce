@@ -1104,7 +1104,6 @@ public class CryptokiDevice {
         public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias,
                 final Map<Long, Object> overridePublic, final Map<Long, Object> overridePrivate) {
             Long session = null;
-            System.out.println("generating cryptoki ecc key pair");
             try {
                 session = aquireSession();
                 if (isAliasUsed(session, alias)) {
@@ -1145,7 +1144,7 @@ public class CryptokiDevice {
 
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
-                privateKeyTemplate.put(CKA.DERIVE, false);
+                privateKeyTemplate.put(CKA.DERIVE, true);
                 /* CK_TRUE if key supports decryption */
                 privateKeyTemplate.put(CKA.DECRYPT, false);
                 /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
