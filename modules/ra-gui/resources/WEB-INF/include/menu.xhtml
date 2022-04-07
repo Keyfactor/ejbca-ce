@@ -157,7 +157,7 @@
                             </li>
                         </ui:fragment>
 
-                        <ui:fragment>
+                        <ui:fragment rendered="#{!raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item">
                             <h:outputLink
                                     value="preferences.xhtml"
