@@ -1329,5 +1329,13 @@ public final class StringTools {
         return Pattern.matches(whiteList, value);
     }
 
-
+    /**
+     * Trims whitespace from the beginning and end of a string.
+     *
+     * @param str the string
+     * @return the string with any leading and trailing white space removed
+     */
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
 }

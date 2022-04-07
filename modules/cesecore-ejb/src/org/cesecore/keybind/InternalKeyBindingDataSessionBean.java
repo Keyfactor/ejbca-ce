@@ -214,7 +214,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isNameUsed(final String name) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE a.name=:name");
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = TRIM(LOWER(:name))");
         query.setParameter("name", name);
         return !query.getResultList().isEmpty();
     }
@@ -222,7 +222,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isNameUsedByIdOnly(final String name, final int id) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE a.name=:name");
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = TRIM(LOWER(:name))");
         query.setParameter("name", name);
         @SuppressWarnings("unchecked")
         final List<InternalKeyBindingData> internalKeyBindingDatas = query.getResultList();
