@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.security.InvalidKeyException;
 import java.security.Security;
 import java.util.Properties;
 
@@ -138,15 +139,33 @@ public class CryptoTokenTestUtils {
             cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
         }
 
-        System.out.println(cryptoTokenClassName);
         // Create the cryptotoken
         int cryptoTokenId = 0;
         try {
             cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName,
                     cryptoTokenProperties, null, pin);
             if (genenrateKeys) {
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder(signKeySpec).build());
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder(encKeySpec).build());
+                try {
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, 
+                            CAToken.SOFTPRIVATESIGNKEYALIAS, 
+                            KeyGenParams.builder(signKeySpec).build());
+                } catch (InvalidKeyException e) {
+                    if(pkcs11ng && e.getMessage().contains("is in use")) {
+                        // do nothing and use the existing key pair
+                    } else {
+                        throw e;
+                    }
+                }
+                try {
+                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, 
+                            CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder(encKeySpec).build());
+                } catch (InvalidKeyException e) {
+                    if(pkcs11ng && e.getMessage().contains("is in use")) {
+                        // do nothing and use the existing key pair
+                    } else {
+                        throw e;
+                    }
+                }
             }
         } catch (Exception e) {
             // Cleanup token if we failed during the key creation stage
