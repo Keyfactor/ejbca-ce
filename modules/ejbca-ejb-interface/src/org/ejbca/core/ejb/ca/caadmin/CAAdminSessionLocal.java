@@ -20,9 +20,13 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.ejbca.core.EjbcaException;
 
 @Local
 public interface CAAdminSessionLocal extends CAAdminSession {
@@ -88,4 +92,5 @@ public interface CAAdminSessionLocal extends CAAdminSession {
     
     public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) 
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
 }
