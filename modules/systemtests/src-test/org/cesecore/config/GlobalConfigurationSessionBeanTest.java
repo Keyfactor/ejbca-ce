@@ -236,21 +236,6 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         assertTrue("AuthorizationDeniedException was not caught", caught);
     }
 
-    /**   
-     * Tests reading and writing some values that are of special interest.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testReadingWritingValues() throws Exception {
-        GlobalConfiguration gc = new GlobalConfiguration();
-        assertEquals("Default value should be used in an empty created config", "foo123", gc.getAutoEnrollConnectionPwd());
-        gc.setAutoEnrollConnectionPwd("bar123");
-        assertEquals("We could not set value as we wanted", "bar123", gc.getAutoEnrollConnectionPwd());
-        gc.setAutoEnrollConnectionPwd("");
-        assertEquals("Autoenroll pwd should be possible to blank", "", gc.getAutoEnrollConnectionPwd());
-    }
-
     /**
      * Enables/disables CLI and flushes caches unless the property does not
      * already have the right value.
