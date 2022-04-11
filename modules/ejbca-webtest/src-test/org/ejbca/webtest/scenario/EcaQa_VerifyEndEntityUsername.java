@@ -108,7 +108,7 @@ public class EcaQa_VerifyEndEntityUsername extends WebTestBase {
     }
 
     @Test
-    public void stepC_AttemptToCreateEndEntityWithWhitespaceInUsername() {
+    public void stepC_AttemptToCreateDuplicateEndEntityWithWhitespaceInUsername() {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
 
