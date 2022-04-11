@@ -62,15 +62,6 @@
         <servlet-name>CertReqServlet</servlet-name>
         <url-pattern>/certreq</url-pattern>
     </servlet-mapping>
-
-    <servlet>
-        <servlet-name>AutoEnrollServlet</servlet-name>
-        <servlet-class>org.ejbca.ui.web.pub.AutoEnrollServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AutoEnrollServlet</servlet-name>
-        <url-pattern>/autoenroll</url-pattern>
-    </servlet-mapping>
     
     <session-config>
         <session-timeout>15</session-timeout>
