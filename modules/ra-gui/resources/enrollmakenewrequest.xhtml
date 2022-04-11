@@ -175,7 +175,7 @@
 								<h:outputText value="#{enrollMakeNewRequestBean.sha256Fingerprint}" styleClass="ra-csrDetailsLongText" />
 							</h:panelGroup>
 							
-							<h:panelGroup styleClass="pure-control-group">
+							<h:panelGroup styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.signature != null}">
 								<h:outputLabel value="#{msg.enroll_signature}"/>
 								<h:outputText value="#{enrollMakeNewRequestBean.signature}" styleClass="ra-csrDetailsLongText" />
 							</h:panelGroup>

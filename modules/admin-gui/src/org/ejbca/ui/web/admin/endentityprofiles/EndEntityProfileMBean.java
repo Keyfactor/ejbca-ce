@@ -775,10 +775,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
         final TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
         final TreeMap<String, Integer> sshcertificateprofilenames = ejbcaWebBean.getAuthorizedSshCertificateProfileNames();
+        final TreeMap<String, Integer> itscertificateprofilenames = ejbcaWebBean.getAuthorizedItsCertificateProfileNames();
         final TreeMap<String, Integer> mergedMap = new TreeMap<>();
         mergedMap.putAll(eecertificateprofilenames);
         mergedMap.putAll(subcacertificateprofilenames);
         mergedMap.putAll(sshcertificateprofilenames);
+        mergedMap.putAll(itscertificateprofilenames);
         for (final Entry<String,Integer> entry : mergedMap.entrySet()) {
             final int certProfileId = entry.getValue(); // map is inverted
             final String certProfileName = entry.getKey();

@@ -332,6 +332,7 @@ CREATE TABLE UserData (
     clearPassword TEXT,
     endEntityProfileId INT4 NOT NULL,
     extendedInformationData TEXT,
+    hardTokenIssuerId INT4 NOT NULL,
     keyStorePassword TEXT,
     passwordHash TEXT,
     rowProtection TEXT,

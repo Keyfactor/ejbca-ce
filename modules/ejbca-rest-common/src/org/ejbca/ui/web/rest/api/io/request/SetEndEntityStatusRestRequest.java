@@ -111,7 +111,7 @@ public class SetEndEntityStatusRestRequest {
     	P12(EndEntityConstants.TOKEN_SOFT_P12),
         BCFKS(EndEntityConstants.TOKEN_SOFT_BCFKS),
     	JKS(EndEntityConstants.TOKEN_SOFT_JKS),
-    	PEM(EndEntityConstants.TOKEN_SOFT);
+    	PEM(EndEntityConstants.TOKEN_SOFT_PEM);
 
         private final int tokenValue;
 

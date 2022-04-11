@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * WebTest class for testing RA/Make New Request.
@@ -63,6 +63,7 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
     @AfterClass
     public static void exit(){
         cleanup();
+        afterClass();
     }
 
     /**
@@ -104,9 +105,9 @@ public class EcaQa161_MakeRequestRaWeb extends WebTestBase {
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
         endEntityProfileHelper.editEndEntityProfile(
             TestData.CERTIFICATE_PROFILE_NAME,
-            Arrays.asList(TestData.CERTIFICATE_PROFILE_NAME),
+                Collections.singletonList(TestData.CERTIFICATE_PROFILE_NAME),
             TestData.CA_NAME,
-            Arrays.asList(TestData.CA_NAME)
+                Collections.singletonList(TestData.CA_NAME)
         );
         endEntityProfileHelper.saveEndEntityProfile();
     }

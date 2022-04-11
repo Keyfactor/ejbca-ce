@@ -240,7 +240,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     /** Creates a CRL for a CRL partition. The CA is assumed to be active (no checks are performed) */
-    private boolean createCrlForActiveCa(final AuthenticationToken admin, final CA ca, final Certificate cacert, final int crlPartitionIndex, final Date now, final long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
+    private boolean createCrlForActiveCa(final AuthenticationToken admin, final CA ca, final Certificate cacert, final int crlPartitionIndex,
+            final Date now, final long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
         final CAInfo cainfo = ca.getCAInfo();
         if (log.isDebugEnabled()) {
             log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
@@ -300,13 +301,14 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             if (log.isDebugEnabled()) {
                 log.debug("Creating CRL for CA, because:"+(now.getTime()+overlap)+" >= "+nextScheduledUpdate);
             }
-            return (internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null);
+            return (internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo, new Date()) != null);
         }
         return false;
     }
 
     @Override
-    public boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long addToCrlOverlapTime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
+    public boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long addToCrlOverlapTime)
+            throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
         boolean ret = false;
         final Date now = new Date();
         final CA ca = (CA) caSession.getCA(admin, caid);
@@ -390,10 +392,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
-    public boolean forceCRL(final AuthenticationToken admin, final int caid, final int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
+    public boolean forceCRL(final AuthenticationToken admin, final int caid, final int crlPartitionIndex, final Date validFrom) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         final CA ca = (CA) caSession.getCA(admin, caid);
         final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(CertTools.getSubjectDN(getCaCertificate(ca.getCAInfo())), crlPartitionIndex, false);
-        return publishingCrlSession.internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null;
+        return publishingCrlSession.internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo, validFrom) != null;
     }
 
     @Override
@@ -427,11 +429,11 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             return false;
         }
         
-        result &= forceCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
+        result &= forceCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION, new Date()); // Always generate a main CRL
         final IntRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
         if (crlPartitions != null) {
             for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
-                result &= forceCRL(admin, caId, crlPartitionIndex);
+                result &= forceCRL(admin, caId, crlPartitionIndex, new Date());
             }
         }
         return result;
@@ -453,23 +455,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         return result;
     }
 
-    /**
-     * Generates a new CRL by looking in the database for revoked certificates
-     * and generating a CRL. This method also "archives" certificates when after
-     * they are no longer needed in the CRL.
-     * Generates the CRL and stores it in the database.
-     * <p>
-     *
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param lastBaseCrlInfo CRLInfo on the last base CRL created by this CA, or null, if no base CRL has been created before
-     * @return fingerprint (primary key) of the generated CRL or null if
-     *            generation failed
-     * @throws AuthorizationDeniedException
-     * @throws javax.ejb.EJBException if a communications- or system error occurs
-     */
     @Override
-    public String internalCreateCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException {
+    public String internalCreateCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo, final Date validFrom)
+            throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">internalCreateCRL()");
         }
@@ -574,7 +562,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     }
                 }
                 // a full CRL
-                final byte[] crlBytes = generateAndStoreCRL(admin, ca, crlPartitionIndex, revokedCertificates, lastBaseCrlInfo, false);
+                final byte[] crlBytes = generateAndStoreCRL(admin, ca, crlPartitionIndex, revokedCertificates, lastBaseCrlInfo, false, validFrom);
                 if (crlBytes != null) {
                     ret = CertTools.getFingerprintAsString(crlBytes);
                 }
@@ -630,7 +618,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * @throws javax.ejb.EJBException if a communications- or system error occurs
      */
     @Override
-    public byte[] internalCreateDeltaCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo) throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
+    public byte[] internalCreateDeltaCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo)
+            throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException {
         if (ca == null) {
             throw new EJBException("No CA specified.");
         }
@@ -707,7 +696,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 }
                 revcertinfos.clear();  // Release unused resources
                 // create a delta CRL
-                crlBytes = generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, lastBaseCrlInfo, true);
+                crlBytes = generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, lastBaseCrlInfo, true, new Date());
                 if (log.isDebugEnabled()) {
                     X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
                     log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());
@@ -736,7 +725,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         return crlBytes;
     }
 
-    private byte[] generateAndStoreCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final Collection<RevokedCertInfo> certs, final CRLInfo lastBaseCrlInfo, final boolean delta) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    private byte[] generateAndStoreCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex,
+            final Collection<RevokedCertInfo> certs, final CRLInfo lastBaseCrlInfo, final boolean delta, final Date validFrom)
+            throws CryptoTokenOfflineException, AuthorizationDeniedException {
          // Hard and error-prone to do that.
         if (log.isDebugEnabled()) {
             log.debug("Storing CRL in database and publishers. CA Subject DN '" + ca.getSubjectDN() + "'." +
@@ -775,7 +766,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         final int deltacrlnumber = crlSession.getLastCRLNumber(certSubjectDN, crlPartitionIndex, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
         final int nextCrlNumber = ( fullcrlnumber > deltacrlnumber ? fullcrlnumber : deltacrlnumber ) +1;
-        final byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, delta?fullcrlnumber:-1, nextCrlNumber);
+        final byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, delta?fullcrlnumber:-1, nextCrlNumber, validFrom);
         this.publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, cafp, nextCrlNumber, certSubjectDN);
         return crlBytes;
     }
