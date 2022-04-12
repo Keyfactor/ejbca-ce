@@ -23,12 +23,10 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.crypto.IllegalBlockSizeException;
@@ -38,7 +36,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -59,8 +56,6 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
 import org.cesecore.keys.token.p11ng.provider.SlotEntry;
-import org.cesecore.keys.util.KeyTools;
-import org.pkcs11.jacknji11.CKA;
 
 /** CESeCore Crypto token implementation using the JackNJI11 PKCS#11 to access PKCS#11 tokens 
  */
@@ -296,16 +291,14 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
                 // ECDSA also handled generation of EdDSA keys, because this is done in PKCS#11 v3 with CKA.EC_PARAMS, but with CKM.EC_EDWARDS_KEY_PAIR_GEN
             }
+            // TODO: keySpec of ECC keys of PKCS11NG starts with OID as string, starts with number but has '.'
+            // now they resolve to RSA
             if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_RSA)) {
                 slot.generateRsaKeyPair(keySpec, alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
             } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
                 if (!StringUtils.equals(oidString, keySpec)) {
-                    Map<Long, Object> privateKeyAttributes = keyGenParams.getPrivateAttributesMap();
-//                    if((boolean) privateKeyAttributes.get(CKA.ENCRYPT)) {
-//                        privateKeyAttributes.put(CKA.DERIVE, true);
-//                    }
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, keyGenParams.getPublicAttributesMap(), privateKeyAttributes);
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
                     slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
