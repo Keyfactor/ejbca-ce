@@ -864,13 +864,8 @@ public class JackNJI11Provider extends Provider {
                             ((NJI11ReleasebleSessionPrivateKey) key).getObject(), 
                             CKA.DERIVE);
 
-            log.debug("caKeySupportsDerive:" + caKeySupportsDerive.toString());
+            log.debug("EC private key supports derive operation:" + caKeySupportsDerive.toString());
 
-//            if(!caKeySupportsDerive.getValueBool()) {
-//                privateBaseKey.getSlot().closeSession(session);
-//                hasActiveSession = false;
-//                throw new InvalidKeyException("CA key does not support derive operation.");
-//            }
         }
 
         @Override
