@@ -24,11 +24,11 @@ import org.openqa.selenium.WebDriver;
 import java.util.HashMap;
 
 /**
- * The purpose of this test is to verify that duplicate End Entities cannot be created
- * using different uppercase/lowercase letters or whitespaces in usernames.
+ * The purpose of this test is to verify that End Entity usernames can't contain whitespace and
+ * two different users can be created with the same name, but in different case.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa_NegativeCreateDuplicateEndEntity extends WebTestBase {
+public class EcaQa_VerifyEndEntityUsername extends WebTestBase {
 
     // Helpers
     private static AddEndEntityHelper addEndEntityHelper;
@@ -40,8 +40,8 @@ public class EcaQa_NegativeCreateDuplicateEndEntity extends WebTestBase {
         private static final String END_ENTITY_PROFILE_NAME = "EMPTY";
         private static final String END_ENTITY_TOKEN = "User Generated";
         private static final String CERTIFICATE_PROFILE_NAME = "ENDUSER";
-        private static final String DUPLICATE_END_ENTITY_NAME_1 = "ecaQaTestEndEntity";
-        private static final String DUPLICATE_END_ENTITY_NAME_2 = "EcaQaTestEndEntity ";
+        private static final String END_ENTITY_NAME_IN_DIFFERENT_CASE = "ecaQaTestEndEntity";
+        private static final String END_ENTITY_NAME_WITH_WHITESPACE = "EcaQaTestEndEntity ";
     }
 
     @BeforeClass
@@ -60,13 +60,13 @@ public class EcaQa_NegativeCreateDuplicateEndEntity extends WebTestBase {
 
     private static void cleanup() {
         // Remove generated artifacts
-        removeEndEntityByUsername(EcaQa_NegativeCreateDuplicateEndEntity.TestData.END_ENTITY_NAME);
-        removeEndEntityByUsername(EcaQa_NegativeCreateDuplicateEndEntity.TestData.DUPLICATE_END_ENTITY_NAME_1);
-        removeEndEntityByUsername(EcaQa_NegativeCreateDuplicateEndEntity.TestData.DUPLICATE_END_ENTITY_NAME_2);
+        removeEndEntityByUsername(EcaQa_VerifyEndEntityUsername.TestData.END_ENTITY_NAME);
+        removeEndEntityByUsername(EcaQa_VerifyEndEntityUsername.TestData.END_ENTITY_NAME_IN_DIFFERENT_CASE);
+        removeEndEntityByUsername(EcaQa_VerifyEndEntityUsername.TestData.END_ENTITY_NAME_WITH_WHITESPACE);
     }
 
     @Test
-    public void stepA_CreateOriginalEndEntity() {
+    public void stepA_CreateEndEntity() {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
 
@@ -87,12 +87,12 @@ public class EcaQa_NegativeCreateDuplicateEndEntity extends WebTestBase {
     }
 
     @Test
-    public void stepB_AttemptToCreateEndEntityWithDifferentCaseUsername() {
+    public void stepB_CreateEndEntityWithDifferentCaseUsername() {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
 
         HashMap<String, String> fields = new HashMap<>();
-        fields.put("Username", TestData.DUPLICATE_END_ENTITY_NAME_1);
+        fields.put("Username", TestData.END_ENTITY_NAME_IN_DIFFERENT_CASE);
         fields.put("Password (or Enrollment Code)", TestData.END_ENTITY_PASSWORD);
         fields.put("Confirm Password", TestData.END_ENTITY_PASSWORD);
         fields.put("CN, Common name", TestData.END_ENTITY_COMMON_NAME);
@@ -103,17 +103,17 @@ public class EcaQa_NegativeCreateDuplicateEndEntity extends WebTestBase {
         addEndEntityHelper.setToken(TestData.END_ENTITY_TOKEN);
         addEndEntityHelper.addEndEntity();
 
-        // Verify that existing end entity was found
-        addEndEntityHelper.assertEndEntityExistsAlertMessageDisplayed();
+        // Verify that we have added the end entity
+        addEndEntityHelper.assertEndEntityAddedMessageDisplayed(TestData.END_ENTITY_NAME_IN_DIFFERENT_CASE);
     }
 
     @Test
-    public void stepC_AttemptToCreateEndEntityWithWhitespaceInUsername() {
+    public void stepC_AttemptToCreateDuplicateEndEntityWithWhitespaceInUsername() {
         addEndEntityHelper.openPage(getAdminWebUrl());
         addEndEntityHelper.setEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
 
         HashMap<String, String> fields = new HashMap<>();
-        fields.put("Username", TestData.DUPLICATE_END_ENTITY_NAME_2);
+        fields.put("Username", TestData.END_ENTITY_NAME_WITH_WHITESPACE);
         fields.put("Password (or Enrollment Code)", TestData.END_ENTITY_PASSWORD);
         fields.put("Confirm Password", TestData.END_ENTITY_PASSWORD);
         fields.put("CN, Common name", TestData.END_ENTITY_COMMON_NAME);
