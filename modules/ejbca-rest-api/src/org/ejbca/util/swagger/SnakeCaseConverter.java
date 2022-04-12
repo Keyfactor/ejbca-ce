@@ -13,6 +13,7 @@ import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import io.swagger.converter.ModelConverter;
 import io.swagger.converter.ModelConverterContext;
@@ -22,7 +23,6 @@ import io.swagger.models.properties.Property;
 /**
  * Converter for Swagger to be able to accept input parameters in snake_case format
  *
- * @version $Id: SnakeCaseConverter.java 29080 2018-05-31 11:12:13Z tarmor_r_helmes $
  */
 public class SnakeCaseConverter implements ModelConverter {
 
@@ -43,8 +43,8 @@ public class SnakeCaseConverter implements ModelConverter {
             if (model != null) {
                 final Map<String, Property> properties = model.getProperties();
                 final Map<String, Property> newProperties = new LinkedHashMap<>();
-                for (String key : properties.keySet()) {
-                    newProperties.put(toSnakeCase(key), properties.get(key));
+                for (Entry<String, Property> entry : properties.entrySet()) {
+                    newProperties.put(toSnakeCase(entry.getKey()), entry.getValue());
                 }
                 model.getProperties().clear();
                 model.setProperties(newProperties);

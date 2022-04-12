@@ -926,6 +926,11 @@ span.approvalStep {
   color: #fff;
   font-style: italic; }
 
+#enrollWithUsernameForm\:uploadedKeyAlgorithm {
+  width: auto;
+  text-align: left;
+}
+
 .footer {
   height: 100px;
   display: flex;

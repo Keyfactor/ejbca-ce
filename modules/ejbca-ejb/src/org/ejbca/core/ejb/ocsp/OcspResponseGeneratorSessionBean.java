@@ -313,7 +313,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final List<X509Certificate> caCertificateChain = new ArrayList<>();
 
                     final CAInfo caInfo = caSession.getCAInfoInternal(caId);
-                    if (caInfo == null || caInfo.getCAType() == CAInfo.CATYPE_CVC) {
+                    if (caInfo == null || caInfo.getCAType() == CAInfo.CATYPE_CVC
+                            || caInfo.getCAType() == CAInfo.CATYPE_CITS) {
                         // Bravely ignore OCSP for CVC CAs
                         continue;
                     }
@@ -2157,9 +2158,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 // If we have a nonce, limit Nonce to 32 bytes to avoid chosen-prefix attack on hash collisions.
                 // See https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
                 // https://www.rfc-editor.org/rfc/rfc8954.txt
-                if ( (noncestr != null) && (noncestr.getOctets() != null) && (noncestr.getOctets().length > 32 || noncestr.getOctets().length < 1) ) {
-                    log.info("Received OCSP request with Nonce larger than 32 bytes, rejecting.");
-                    throw new IllegalNonceException("Nonce too large");
+                if ( (noncestr != null) && (noncestr.getOctets() != null)) {
+                    byte[] nonceoctets;
+                    try {
+                        // An extensions is wrapped in an octet string, this means that the nonce which is an octet string
+                        // is also wrapped in the extension octet string, the parsedValue is hence an octet string
+                        nonceoctets = ASN1OctetString.getInstance(ext.getParsedValue()).getOctets();
+                    } catch (IllegalArgumentException e) {
+                        // It seems nonce is not properly encoded as an ASN1 Octet String. We believe this happens when wrongly not wrapped
+                        // A proper Nonce extension value is an OctetString wrapped in an OctetString, Nonce is an OctetString and the Extension
+                        // wraps the value in an OctetString.
+                        // Anyhow, let this pass by (let broken clients work), but check the value of the invalid bytes
+                        log.info("Non-parseable Nonce Octet String, invalid OCSP extension from client, letting is pass but checking the number of bytes raw");
+                        nonceoctets = noncestr.getOctets();
+                    }
+                    if (nonceoctets != null && (nonceoctets.length > 32 || nonceoctets.length < 1)) {
+                        log.info("Received OCSP request with Nonce larger than 32 bytes, rejecting.");
+                        throw new IllegalNonceException("Nonce too large");
+                    }
                 }
                 result.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             }
