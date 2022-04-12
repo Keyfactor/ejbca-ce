@@ -187,9 +187,10 @@ public class RaRoleBean implements Serializable {
             }
         }
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRulesConstants.REGULAR_VIEWAPPROVALS), "role_page_access_approveendentity"));
-        endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRulesConstants.REGULAR_DELETEENDENTITY), "role_page_access_createdeleteendentity"));
+        endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_CREATEENDENTITY), "role_page_access_createendentity"));
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_CREATECERTIFICATE), "role_page_access_create_certificate"));
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_EDITENDENTITY), "role_page_access_editendentity"));
+        endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_DELETEENDENTITY), "role_page_access_deleteendentity"));
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_REVOKEENDENTITY), "role_page_access_revokeendentity"));
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRulesConstants.REGULAR_VIEWCERTIFICATE), "role_page_access_viewendentity_and_certificates"));
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY), "role_page_access_viewendentityhistory"));

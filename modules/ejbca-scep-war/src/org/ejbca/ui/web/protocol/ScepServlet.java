@@ -51,6 +51,7 @@ import org.ejbca.core.model.era.ScepResponseInfo;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
+import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
@@ -147,7 +148,15 @@ public class ScepServlet extends HttpServlet {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
         int n = 0;
+        int bytesRead = 0;
         while (-1 != (n = sin.read(buf))) {
+            bytesRead += n;
+            if (bytesRead > LimitLengthASN1Reader.MAX_REQUEST_SIZE) {
+                final String errmsg = "SCEP request is larger than "+LimitLengthASN1Reader.MAX_REQUEST_SIZE+" bytes.";
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, errmsg);
+                log.info(intres.getLocalizedMessage("scep.errorgeneral") + errmsg);
+                return;
+            }
             output.write(buf, 0, n);
         }
         String message = new String(Base64.encode(output.toByteArray()));
