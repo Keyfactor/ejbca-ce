@@ -13,38 +13,7 @@
 
 package org.cesecore.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
+import com.novell.ldap.LDAPDN;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -101,7 +70,37 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.novell.ldap.LDAPDN;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the CertTools class
@@ -2260,19 +2259,14 @@ public class CertToolsUnitTest {
                                  "example.com\n" +
                                  "@mail.example\n" +
                                  "user@host.com\n" +
-                                 "http://karsten:password@abc.test.com:8080\n" +
-                                 "http://.abc.test.com:8080\n" +
-                                 "http://abc.test.com:8080\n" +
-                                 "http://abc123.test.com:8080/path/subpath/\n" +
-                                 "urn:oasis:names:specification:docbook:dtd:xml:4.1.2\n" +
+                                 "uri:example.com\n" +
+                                 "uri:.example.com\n" +
                                  "10.0.0.0/8\n" +
                                  "www.example.com\n" +
                                  "   C=SE,  CN=spacing    \n";
         final String excluded = "forbidden.example.com\n" +
                                 "postmaster@mail.example\n" +
-                                "ldap://def123.test.com:8080/path/subpath/\n" +
-                                "ldap://[2001:db8::7]/c=GB?objectClass?one\n" +
-                                "news:comp.infosystems.www.servers.unix\n" +
+                                "uri:def123.test.com\n" +
                                 "10.1.0.0/16\n" +
                                 "::/0"; // IPv6
         
@@ -2321,10 +2315,8 @@ public class CertToolsUnitTest {
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.0.0.1").getAddress()))));
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.255.255.255").getAddress()))));
         
-        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "https://abc.test.com/")));
-        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "http://karsten:password@abc.test.com:8080")));
-        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "https://xyz.abc.test.com/")));
-        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "http://abc123.test.com:8080/path/subpath/")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "example.com/")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "host.example.com")));
 
 
         // Disallowed subject DN
@@ -2332,7 +2324,6 @@ public class CertToolsUnitTest {
         checkNCException(cacert, new X500Name("C=SE,O=Company,CN=example.com"), null, "Disallowed DN (extra field) was accepted");
         
         // Disallowed SAN
-        // The commented out lines are allowed by BouncyCastle but disallowed by the RFC
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "bad.com"), "Disallowed SAN (wrong DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "forbidden.example.com"), "Disallowed SAN (excluded DNS subdomain) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.rfc822Name, "wronguser@host.com"), "Disallowed SAN (wrong e-mail) was accepted");
@@ -2822,13 +2813,13 @@ public class CertToolsUnitTest {
         try {
             CertTools.verify(null, null);
             fail(errorMessage);
-        } catch (NullPointerException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
             CertTools.verify(null, new ArrayList<X509Certificate>());
             fail(errorMessage);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
@@ -2841,13 +2832,13 @@ public class CertToolsUnitTest {
         try {
             CertTools.verify(x509Certificate, null);
             fail(errorMessage);
-        } catch (NullPointerException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
             CertTools.verify(x509Certificate, new ArrayList<X509Certificate>());
             fail(errorMessage);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {

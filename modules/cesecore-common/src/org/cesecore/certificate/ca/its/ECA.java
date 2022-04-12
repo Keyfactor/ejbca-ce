@@ -15,15 +15,15 @@ package org.cesecore.certificate.ca.its;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.its.operator.ITSContentSigner;
+
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -73,11 +73,9 @@ public interface ECA extends CA {
      * @throws SignatureException
      * @throws IllegalKeyException
      */
-    ITSCertificate generateExplicitItsCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
-            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
-            CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
-            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException;
+    ITSCertificate generateExplicitItsCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicVerificationKey publicKey,
+        Date notBefore, Date notAfter, CertificateProfile certProfile, Builder certificateBuilder, CertificateId certifcateId, String sequence)
+        throws CryptoTokenOfflineException;
     
     
     /**

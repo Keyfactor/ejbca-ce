@@ -378,7 +378,13 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 log.info("Admin " + admin.toString() + " was not authorized to resource " + StandardRules.ROLE_ROOT);
             }
         } else {
-            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);
+            // We need to have access to the profile, but not any specific access.
+            // With only "AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid", it would require full access.
+            // So we accept any of /endentityprofilerules/.../(create|view|edit)_end_entity/
+            // (The access rules /ra_functions/(create|view|edit)_end_entity/ are NOT required)
+            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.CREATE_END_ENTITY) ||
+                    authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.VIEW_END_ENTITY) ||
+                    authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.EDIT_END_ENTITY);;
         }
         return returnval;
     }

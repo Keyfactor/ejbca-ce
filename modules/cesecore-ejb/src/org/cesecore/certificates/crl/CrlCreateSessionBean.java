@@ -13,8 +13,8 @@
 package org.cesecore.certificates.crl;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -78,10 +78,19 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     	// Install BouncyCastle provider if not available
     	CryptoProviderTools.installBCProviderIfNotAvailable();
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
+    @Override
+    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber,
+            int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+        return generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, basecrlnumber, nextCrlNumber, null);
+    }
+ 
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
     @Override
-    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber,
+            int nextCrlNumber, final Date validFrom) throws CryptoTokenOfflineException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">createCRL(Collection)");
     	}
@@ -135,7 +144,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			}
     			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber, latestCaCertForPartition);       
     		} else {
-    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForPartition);
+    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForPartition, validFrom);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back
