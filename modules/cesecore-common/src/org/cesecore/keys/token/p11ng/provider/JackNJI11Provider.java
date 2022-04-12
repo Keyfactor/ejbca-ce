@@ -34,7 +34,6 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -51,14 +50,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequenceGenerator;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11ng.MechanismNames;
@@ -68,14 +65,9 @@ import org.pkcs11.jacknji11.CKK;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.CKO;
 import org.pkcs11.jacknji11.CKRException;
-import org.pkcs11.jacknji11.CK_INFO;
 import org.pkcs11.jacknji11.LongRef;
 
 import com.sun.jna.Memory;
-import com.sun.jna.Pointer;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Structure;
-import com.sun.jna.ptr.PointerByReference;
 
 /**
  * Provider using JackNJI11.

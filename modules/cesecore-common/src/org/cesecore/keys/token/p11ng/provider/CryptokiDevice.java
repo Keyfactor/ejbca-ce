@@ -41,7 +41,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.MGF1ParameterSpec;
@@ -65,11 +64,6 @@ import javax.crypto.SecretKey;
 import javax.ejb.EJBException;
 import javax.security.auth.x500.X500Principal;
 
-import com.sun.jna.Memory;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.LongByReference;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -80,7 +74,6 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -88,7 +81,6 @@ import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.ECPointUtil;
@@ -108,10 +100,9 @@ import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
 import org.cesecore.keys.token.p11ng.PToPBackupObj;
 import org.cesecore.keys.token.p11ng.TokenEntry;
 import org.cesecore.keys.token.p11ng.jacknji11.CP5Constants;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
-import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
-import org.pkcs11.jacknji11.CE;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKC;
 import org.pkcs11.jacknji11.CKK;
@@ -123,6 +114,11 @@ import org.pkcs11.jacknji11.CKU;
 import org.pkcs11.jacknji11.CK_SESSION_INFO;
 import org.pkcs11.jacknji11.CK_TOKEN_INFO;
 import org.pkcs11.jacknji11.LongRef;
+
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.LongByReference;
 
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
