@@ -425,19 +425,4 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         return ret;
     }
     
-//    public PublicKey importEcPublicKey(BCECPublicKey publicKey, byte[] encodedParams, String alias) {
-//        slot.importEcPublicKey(publicKey, encodedParams, alias);
-//        PublicKey itsPubKey = slot.getPublicKey(alias);
-//        try {
-//            log.info("encoded itsPubKey as pem: " + KeyTools.getAsPem(itsPubKey));
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            log.info("did not work without public");
-//        }
-//        return itsPubKey;
-//        //look at CryptokiDevice
-//        //private PublicKey getPublicKeyFromRef(Long session, final Long publicKeyRef, final String aliasForLogging)
-//        //throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-//    }
-
 }
