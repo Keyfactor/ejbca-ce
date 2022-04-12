@@ -53,7 +53,7 @@ public abstract class BaseProtocolsUpdateCommand extends BaseProtocolsConfigComm
         } catch (AuthorizationDeniedException e) {
             return CommandResult.AUTHORIZATION_FAILURE;
         } finally {
-            final LinkedHashMap<String, Boolean> availableProtocolStatusMap = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+            final LinkedHashMap<String, Boolean> availableProtocolStatusMap = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
             showProtocolStatus(availableProtocolStatusMap, availableProtocol.getName(), 0);
         }
         return CommandResult.SUCCESS;

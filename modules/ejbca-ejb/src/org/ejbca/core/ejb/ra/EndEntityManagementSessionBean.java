@@ -468,7 +468,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), extendedInformation);
                 // Since persist will not commit and fail if the user already exists, we need to check for this
                 // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
-                if (endEntityAccessSession.findByUsername(userData.getUsername()) != null) {
+                if (existsUser(userData.getUsername())){
                     throw new EndEntityExistsException("User " + userData.getUsername() + " already exists.");
                 }
                 entityManager.persist(userData);
@@ -1354,7 +1354,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         setUserStatus(admin, data, status, approvalRequestID, lastApprovingAdmin);
     }
 
-    private void setUserStatus(
+    @Override
+    public void setUserStatus(
             final AuthenticationToken authenticationToken, final UserData data1, final int status,
             final int approvalRequestID, final AuthenticationToken lastApprovingAdmin
     ) throws ApprovalException, WaitingForApprovalException {
@@ -2172,7 +2173,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public boolean existsUser(String username) {
         // Selecting 1 column is optimal speed
-        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE a.username=:username");
+        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE TRIM(a.username) = TRIM(:username)");
         query.setParameter("username", username);
         return !query.getResultList().isEmpty();
     }

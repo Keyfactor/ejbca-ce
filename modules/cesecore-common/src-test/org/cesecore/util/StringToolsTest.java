@@ -663,4 +663,13 @@ public class StringToolsTest {
         // Not handled case, should also be very rare (==never seen) using both DC=com and C
         assertEquals("CN=foo,O=bar, DC=test, DC=com,C=se", StringTools.capitalizeCountryCodeInSubjectDN("CN=foo,O=bar, DC=test, DC=com,C=se"));
     }
+
+    @Test
+    public void testTrim() {
+        assertNull(StringTools.trim(null));
+        assertEquals("noSpaces", StringTools.trim("noSpaces"));
+        assertEquals("string with spaces", StringTools.trim("string with spaces"));
+        assertEquals("trailingWhitespace", StringTools.trim("trailingWhitespace "));
+        assertEquals("leadingWhitespace", StringTools.trim("   leadingWhitespace"));
+    }
 }
