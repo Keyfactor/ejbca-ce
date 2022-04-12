@@ -43,6 +43,7 @@
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.p11ng.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -371,7 +372,7 @@
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="dist" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-ejb-interface">
+	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-ejb-interface, p11ng">
 		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -596,8 +597,12 @@
 		</fail>
 		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
+	
+	<target name="p11ng" description="Build P11NG library" depends="cesecore-common">
+		<ant antfile="${mod.p11ng.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>
 
-	<target name="p11ng-cli" depends="ejbca-ejb-interface, ejbca-ejb-cli">
+	<target name="p11ng-cli" depends="ejbca-ejb-interface, ejbca-ejb-cli, p11ng">
 		<echo  message="${mod.p11ng-cli.path}/build.xml" />
 		<fail message="P11Ng Cli is not distributed with this version of EJBCA">
 		    <condition>

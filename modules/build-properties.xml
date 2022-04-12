@@ -183,6 +183,8 @@
 	<property name="mod.cits.path" location="${mod.path}/cits" />
 	<property name="mod.cits.lib" location="${mod.dist.path}/ejbca-cits.jar" />
 	<property name="mod.cits.war" location="${mod.dist.path}/cits.war" />
+	<property name="mod.p11ng.path" location="${mod.path}/p11ng" />
+	<property name="mod.p11ng.lib" location="${mod.dist.path}/p11ng.jar" />
 	
 	
     <!-- Variables of global interest -->
