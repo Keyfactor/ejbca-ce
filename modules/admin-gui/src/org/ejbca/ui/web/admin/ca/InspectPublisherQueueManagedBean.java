@@ -164,7 +164,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         }
 
         public String getTimeCreated() {
-            return new SimpleDateFormat("dd MMMM yyyy hh:mm:ss").format(publisherQueueData.getTimeCreated());
+            return new SimpleDateFormat("dd MMMM yyyy HH:mm:ss").format(publisherQueueData.getTimeCreated());
         }
 
         public String getTimeLastUpdated() {

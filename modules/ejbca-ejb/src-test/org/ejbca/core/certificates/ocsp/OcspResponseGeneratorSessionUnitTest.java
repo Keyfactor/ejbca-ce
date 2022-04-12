@@ -12,15 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.certificates.ocsp;
 
-import static org.easymock.EasyMock.anyLong;
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -31,7 +22,6 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
@@ -41,13 +31,16 @@ import javax.ejb.TimerService;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPException;
-import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.SingleResp;
@@ -63,6 +56,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
@@ -73,7 +67,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoToken;
@@ -85,6 +78,15 @@ import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionBean;
 import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.easymock.EasyMock.anyLong;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the OcspResponseGenerator that don't involve creating a CA.
@@ -301,6 +303,23 @@ public class OcspResponseGeneratorSessionUnitTest {
         log.trace("<testWithRandomBytes");
     }
 
+    @Test
+    public void getOCSPResponseWichExistingMsCompatibleCA() throws Exception {
+        log.trace(">getOCSPResponseWichExistingMsCompatibleCA");
+        OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
+        OcspDataConfigCache.INSTANCE.stagingCommit();
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
+        expectLoggerChecks();
+        expectOcspConfigRead();
+        expectCacheReload();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
+        replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
+                internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<getOCSPResponseWichExistingMsCompatibleCA");
+    }
+
     @Test(expected = MalformedRequestException.class)
     public void emptyRequest() throws Exception {
         log.trace(">emptyRequest");
@@ -311,7 +330,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     @Test
     public void basicCachedRequest() throws Exception {
         log.trace(">basicRequest");
-        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1);
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
         replay(auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock);
@@ -324,14 +343,13 @@ public class OcspResponseGeneratorSessionUnitTest {
     @Test
     public void uncachedRequest() throws Exception {
         log.trace(">uncachedRequest");
-        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1);
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expectOcspConfigRead();
-        // The cache reload is done as a workaround for MS CAs... Could we avoid it if we only have CAs?
-        expectCacheReload(true);
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
         assertGoodResponse(respInfo);
         log.trace("<uncachedRequest");
@@ -340,18 +358,79 @@ public class OcspResponseGeneratorSessionUnitTest {
     @Test
     public void uncachedIkbRequestWithSameSubjectDn() throws Exception {
         log.trace(">uncachedIkbRequestWithSameSubjectDn");
-        final byte[] req = makeOcspRequest(getSameDnSubCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1);
+        final byte[] req = makeOcspRequest(getSameDnSubCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expectOcspConfigRead();
-        expectCacheReload(false);
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
         replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
                 internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
         assertGoodResponse(respInfo);
         log.trace("<uncachedIkbRequestWithSameSubjectDn");
     }
+    
+    @Test
+    public void nonceOk() throws Exception {
+        log.trace(">nonceOk");
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new DEROctetString(new byte[32]).getEncoded());
+        expectLoggerChecks();
+        expectOcspConfigRead();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
+        replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
+                internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<nonceOk");
+    }
 
+    @Test
+    public void tooLargeNonce() throws Exception {
+        log.trace(">tooLargeNonce");
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new DEROctetString(new byte[33]).getEncoded());
+        expectLoggerChecks();
+        expectOcspConfigRead();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
+        replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
+                internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        assertEquals(OCSPResp.MALFORMED_REQUEST, respInfo.getStatus());
+        log.trace("<tooLargeNonce");
+    }
+
+    @Test
+    public void badNonceEncodingOk() throws Exception {
+        log.trace(">badNonceEncodingOk");
+        // A Nonce extension that is not an OctetString 
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new byte[32]);
+        expectLoggerChecks();
+        expectOcspConfigRead();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
+        replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
+                internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        assertGoodResponse(respInfo);
+        log.trace("<badNonceEncodingOk");
+    }
+
+    @Test
+    public void badNonceEncodingTooLarge() throws Exception {
+        log.trace(">badNonceEncodingTooLarge");
+        // A Nonce extension that is not an OctetString 
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new byte[33]);
+        expectLoggerChecks();
+        expectOcspConfigRead();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(CertificateStatus.OK).once();
+        replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
+                internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false);
+        assertEquals(OCSPResp.MALFORMED_REQUEST, respInfo.getStatus());
+        log.trace("<badNonceEncodingTooLarge");
+    }
 
     // Helper methods
 
@@ -366,64 +445,34 @@ public class OcspResponseGeneratorSessionUnitTest {
         expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(mockedOcspConfig).anyTimes();
     }
 
-    // FIXME Cache reload is always being done if there is a request with a missing CA (ECA-10497)
-    // When ECA-10497 is fixed, then we need to update the tests to run the init method, which forces a cache reload.
-    private void expectCacheReload(final boolean withLocalCa) throws Exception {
+    private void expectCacheReload() throws Exception {
         final Timer dummyTimer = EasyMock.createNiceMock(Timer.class);
         expect(timerServiceMock.getTimers()).andReturn(Collections.emptyList()).once();
         expect(timerServiceMock.createSingleActionTimer(anyLong(), anyObject())).andReturn(dummyTimer).once(); // return value is only used by EJBCA for trace logging
         expect(dummyTimer.getNextTimeout()).andReturn(new Date(System.currentTimeMillis() + 3600));
         replay(dummyTimer);
-        if (withLocalCa) {
-            expect(caSessionMock.getAllCaIds()).andReturn(Arrays.asList(ISSUER_CAID)).once();
-            final Properties caTokenProperties = new Properties();
-            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, OCSP_SIGN_KEY_ALIAS);
-            final X509CAInfo caInfo = new X509CAInfoBuilder()
-                    .setSubjectDn(ISSUER_CERT_DN)
-                    .setCaId(ISSUER_CAID)
-                    .setStatus(CAConstants.CA_ACTIVE)
-                    .setCaToken(new CAToken(CRYPTOTOKEN_ID, caTokenProperties))
-                    .setCertificateChain(Arrays.asList(getIssuerCert()))
-                    .build();
-            expect(caSessionMock.getCAInfoInternal(ISSUER_CAID)).andReturn(caInfo).once();
-            final CryptoToken cryptoTokenMock = EasyMock.createStrictMock(CryptoToken.class);
-            expect(cryptoTokenSessionMock.getCryptoToken(CRYPTOTOKEN_ID)).andReturn(cryptoTokenMock).once();
-            expect(cryptoTokenMock.getPrivateKey(OCSP_SIGN_KEY_ALIAS)).andReturn(getIssuerPrivKey()).once();
-            expect(cryptoTokenMock.getSignProviderName()).andReturn(BouncyCastleProvider.PROVIDER_NAME).once();
-            replay(cryptoTokenMock);
-            // Status check of CA itself
-            // Note: getRevocationStatusWhenCasPrivateKeyIsCompromised gets called twice. That is inefficient, and could be improved.
-            expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, getIssuerCert().getSerialNumber())).andReturn(CertificateStatus.OK).atLeastOnce();
-            // Don't return any OCSP keybindings
-            expect(internalKeyBindingDataSessionMock.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)).andReturn(Collections.emptyList()).once();
-        } else {
-            // With key binding instead of CA
-            final X509Certificate rootca = getSameDnRootCert();
-            final X509Certificate subca = getSameDnSubCert();
-            final X509Certificate signerCert = getSameDnOcspSignerCert();
-            final String signerFingerprint = CertTools.getFingerprintAsString(signerCert);
-            expect(caSessionMock.getAllCaIds()).andReturn(Collections.emptyList()).once();
-            expect(internalKeyBindingDataSessionMock.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)).andReturn(Arrays.asList(KEYBINDING_ID)).once();
-            OcspKeyBinding ocspKeyBinding = new OcspKeyBinding();
-            ocspKeyBinding.setName("OCSP Key Binding");
-            ocspKeyBinding.setMaxAge(3600);
-            ocspKeyBinding.setCertificateId(signerFingerprint);
-            ocspKeyBinding.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-            ocspKeyBinding.setCryptoTokenId(CRYPTOTOKEN_ID);
-            ocspKeyBinding.setKeyPairAlias(OCSP_SIGN_KEY_ALIAS);
-            ocspKeyBinding.setStatus(InternalKeyBindingStatus.ACTIVE);
-            expect(internalKeyBindingDataSessionMock.getInternalKeyBinding(KEYBINDING_ID)).andReturn(ocspKeyBinding).once();
-            expect(certificateStoreSessionMock.findCertificateByFingerprint(signerFingerprint)).andReturn(signerCert).once();
-            expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, signerCert.getSerialNumber())).andReturn(CertificateStatus.OK).once();
-            expect(certificateStoreSessionMock.findCertificatesBySubject(ISSUER_CERT_DN)).andReturn(Arrays.asList(signerCert, subca, rootca)).atLeastOnce(); // gets called multiple times
-            final CryptoToken cryptoTokenMock = EasyMock.createStrictMock(CryptoToken.class);
-            expect(cryptoTokenSessionMock.getCryptoToken(CRYPTOTOKEN_ID)).andReturn(cryptoTokenMock).once();
-            expect(cryptoTokenMock.getPrivateKey(OCSP_SIGN_KEY_ALIAS)).andReturn(getSameDnOcspSignerPrivKey()).once();
-            expect(cryptoTokenMock.getSignProviderName()).andReturn(BouncyCastleProvider.PROVIDER_NAME).once();
-            replay(cryptoTokenMock);
-            // Status check of CA itself
-            expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, subca.getSerialNumber())).andReturn(CertificateStatus.OK).once();
-        }
+        expect(caSessionMock.getAllCaIds()).andReturn(Collections.singletonList(ISSUER_CAID)).once();
+        final Properties caTokenProperties = new Properties();
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, OCSP_SIGN_KEY_ALIAS);
+        final X509CAInfo caInfo = new X509CAInfoBuilder()
+                .setSubjectDn(ISSUER_CERT_DN)
+                .setCaId(ISSUER_CAID)
+                .setStatus(CAConstants.CA_ACTIVE)
+                .setCaToken(new CAToken(CRYPTOTOKEN_ID, caTokenProperties))
+                .setCertificateChain(Collections.singletonList(getIssuerCert()))
+                .build();
+        expect(caSessionMock.getCAInfoInternal(ISSUER_CAID)).andReturn(caInfo).once();
+        final CryptoToken cryptoTokenMock = EasyMock.createStrictMock(CryptoToken.class);
+        expect(cryptoTokenSessionMock.getCryptoToken(CRYPTOTOKEN_ID)).andReturn(cryptoTokenMock).once();
+        expect(cryptoTokenMock.getPrivateKey(OCSP_SIGN_KEY_ALIAS)).andReturn(getIssuerPrivKey()).once();
+        expect(cryptoTokenMock.getSignProviderName()).andReturn(BouncyCastleProvider.PROVIDER_NAME).once();
+        replay(cryptoTokenMock);
+        // Status check of CA itself
+        // Note: getRevocationStatusWhenCasPrivateKeyIsCompromised gets called twice. That is inefficient, and could be improved.
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, getIssuerCert().getSerialNumber())).andReturn(CertificateStatus.OK).once();
+        // Don't return any OCSP keybindings
+        expect(internalKeyBindingDataSessionMock.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)).andReturn(Collections.emptyList()).once();
+
     }
 
     private Object extractStatus(final OcspResponseInformation respInfo) throws Exception {
@@ -450,13 +499,20 @@ public class OcspResponseGeneratorSessionUnitTest {
                 getIssuerPrivKey(), BouncyCastleProvider.PROVIDER_NAME, ocspKeyBinding, ResponderIdType.KEYHASH));
     }
 
-    private byte[] makeOcspRequest(final X509Certificate issuerCert, final BigInteger serialNumber, final ASN1ObjectIdentifier digestAlgo) {
+    private byte[] makeOcspRequest(final X509Certificate issuerCert, final BigInteger serialNumber, final ASN1ObjectIdentifier digestAlgo, byte[] nonce) {
         try {
             final X509CertificateHolder issuerCertHolder = new X509CertificateHolder(issuerCert.getEncoded());
             final DigestCalculator digestCalc = new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(digestAlgo));
             final CertificateID certId = new CertificateID(digestCalc, issuerCertHolder, serialNumber);
-            final OCSPReq ocspReq = new OCSPReqBuilder().addRequest(certId).build();
-            return ocspReq.getEncoded();
+            final OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(certId).build();
+            if (nonce != null) {
+                Extension[] extensions = new Extension[1];
+                // Max size of nonce is 32 bytes
+                extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce);
+                gen.setRequestExtensions(new Extensions(extensions));
+            }
+            return gen.build().getEncoded();
         } catch (IOException | GeneralSecurityException | OperatorCreationException | OCSPException e) {
             throw new IllegalStateException(e);
         }

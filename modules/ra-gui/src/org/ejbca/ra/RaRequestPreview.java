@@ -59,7 +59,7 @@ public class RaRequestPreview {
         }
         extendedKeyUsages.clear();
         final List<String> extendedKeyUsages = certificateProfile.getExtendedKeyUsageOids();
-        if (extendedKeyUsages != null) {
+        if (extendedKeyUsages != null && certificateProfile.getUseExtendedKeyUsage()) {
             this.extendedKeyUsages.addAll(extendedKeyUsages);
         }
     }
