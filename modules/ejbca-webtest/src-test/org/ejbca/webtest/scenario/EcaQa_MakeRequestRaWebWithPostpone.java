@@ -15,7 +15,7 @@ import org.openqa.selenium.WebDriver;
 import java.util.Collections;
 
 /**
- * WebTest class for testing RA/Make New Request.
+ * WebTest class for testing RA/Make New Request Postpone option.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa_MakeRequestRaWebWithPostpone extends WebTestBase {
@@ -26,7 +26,6 @@ public class EcaQa_MakeRequestRaWebWithPostpone extends WebTestBase {
     private static CaHelper caHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
 
-    //private static BaseHelper baseHelper;
     public static class TestData {
         private static final String END_ENTITY_PROFILE_NAME = "EcaRaPostpone_EndEntity";
         private static final String CA_NAME = "EcaRaPostpone_CA";
@@ -35,7 +34,6 @@ public class EcaQa_MakeRequestRaWebWithPostpone extends WebTestBase {
         private static final String SELECT_TOKEN_TYPE = "PKCS#12 keystore (P12 or PFX)";
         private static final String SUCCESS_MESSAGE = "End Entity with username '" + END_ENTITY_NAME + "' has been added successfully";
     }
-
 
     @BeforeClass
     public static void init() {

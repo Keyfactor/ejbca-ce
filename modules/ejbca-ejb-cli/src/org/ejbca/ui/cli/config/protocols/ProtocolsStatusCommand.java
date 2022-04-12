@@ -47,7 +47,7 @@ public class ProtocolsStatusCommand extends BaseProtocolsConfigCommand {
     @Override
     protected CommandResult execute(final ParameterContainer parameters) {
         final String requestedProtocolName = parameters.get(KEY_NAME);
-        final LinkedHashMap<String, Boolean> availableProtocolStatusMap = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> availableProtocolStatusMap = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         if (requestedProtocolName==null) {
             final int padding = getMaxStringLength(availableProtocolStatusMap.keySet());
             for (final String protocolName : availableProtocolStatusMap.keySet()) {

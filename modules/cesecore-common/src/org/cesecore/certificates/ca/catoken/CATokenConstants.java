@@ -41,6 +41,10 @@ public final class CATokenConstants {
 	public static final int CAKEYPURPOSE_CERTSIGN_PREVIOUS   = 6;
 	/** The CAs next signing key, if any exists */
 	public static final int CAKEYPURPOSE_CERTSIGN_NEXT       = 7;
+	
+	/** The CAs previous/next default key, if any exists - relevant only for ITS */
+	public static final int CAKEYPURPOSE_DEFAULT_PREVIOUS   = 8;
+    public static final int CAKEYPURPOSE_DEFAULT_NEXT       = 9;
 
     public final static int[] ALL_KEY_PURPOSES = new int[] {
         CATokenConstants.CAKEYPURPOSE_CERTSIGN,
@@ -49,7 +53,8 @@ public final class CATokenConstants {
         CATokenConstants.CAKEYPURPOSE_KEYTEST,
         CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT,
         CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS,
-        CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT
+        CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT,
+        CATokenConstants.CAKEYPURPOSE_DEFAULT_NEXT
     };
 
 	/** Key strings for token properties matching the above constants, i.e. when doing getPrivateKey(1)
@@ -74,6 +79,10 @@ public final class CATokenConstants {
 	
 	final static public String CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS = "previousCertSignKey";
 	final static public String CAKEYPURPOSE_CERTSIGN_STRING_NEXT = "nextCertSignKey";
+	
+	// relevant only for ITS
+	final static public String CAKEYPURPOSE_DEFAULT_STRING_PREVIOUS = "previousDefaultKey";
+	final static public String CAKEYPURPOSE_DEFAULT_STRING_NEXT = "nextDefaultKey";
 
     /** Previous sequence (matching CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS key) that can be set in CA token properties */
     public static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";

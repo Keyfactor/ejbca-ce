@@ -17,6 +17,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
+import org.cesecore.certificate.ca.its.ITSCertificateType;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CvcCABase;
@@ -343,7 +346,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public boolean isTypeRootCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
     public boolean isTypeSshAvailable() { return CAFactory.INSTANCE.existsCaType(SshCa.CA_TYPE); }
-
+    public boolean isTypeItsAvailable() { return CAFactory.INSTANCE.existsCaType(ECA.CA_TYPE); }
 
     public boolean isTypeEndEntity() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_ENDENTITY; }
 
@@ -351,6 +354,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public boolean isTypeRootCa() { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_ROOTCA; }
     public boolean isTypeSsh() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_SSH; }
+    public boolean isTypeIts() { return getCertificateProfile().getType() == CertificateConstants.CERTTYPE_ITS; }
 
     public void setTypeEndEntity() {
         getCertificateProfile().setType(CertificateConstants.CERTTYPE_ENDENTITY);
@@ -378,6 +382,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_SSH);
         getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_SSH);
         getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_SSH);
+    }
+
+    public void setTypeIts() {
+        getCertificateProfile().setType(CertificateConstants.CERTTYPE_ITS);
+        getCertificateProfile().setDefaultEncodedValidity(CertificateProfileConstants.CERTPROFILE_FIXED_ITS);
+        getCertificateProfile().setDefaultKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ITS);
+        getCertificateProfile().setDefaultExtendedKeyUsage(CertificateProfileConstants.CERTPROFILE_FIXED_ITS);
     }
 
     public boolean isUniqueCertificateSerialNumberIndex() {
@@ -502,6 +513,32 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         for(SshExtension sshExtension : SshExtension.values()) {
             ret.add(new SelectItem(sshExtension.getLabel(), sshExtension.getLabel()));
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getItsCertificateTypes() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(ITSCertificateType itsCertificateType : ITSCertificateType.values()) {
+            ret.add(new SelectItem(itsCertificateType, itsCertificateType.getLabel()));
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getItsAppPermissionsAvailable() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(ITSApplicationIds itsAppPermission : ITSApplicationIds.values()) {
+            ret.add(new SelectItem(itsAppPermission.getPsId(), itsAppPermission.getApplicationName()));
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getItsCertIssuingPermissionsAvailable() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(ITSApplicationIds certIssuingAppPermission : ITSApplicationIds.values()) {
+            if(certIssuingAppPermission.isAddToCertIssuePermissions()) {
+                ret.add(new SelectItem(certIssuingAppPermission.getPsId(), certIssuingAppPermission.getApplicationName()));
+            }
         }
         return ret;
     }
