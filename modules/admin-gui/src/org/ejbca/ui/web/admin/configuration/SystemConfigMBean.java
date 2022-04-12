@@ -132,14 +132,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private String localKeyRecoveryKeyAlias;
         private boolean enableIcaoCANameChange;
         private boolean issueHardwareToken;
-        private boolean useAutoEnrollment;
-        private int autoEnrollmentCA;
-        private boolean autoEnrollUseSSLConnection;
-        private String autoEnrollAdServer;
-        private int autoEnrollAdServerPort;
-        private String autoEnrollConnectionDN;
-        private String autoEnrollUserBaseDN;
-        private String autoEnrollConnectionPassword;
+
         private Set<String> nodesInCluster;
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
@@ -180,14 +173,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.localKeyRecovery = globalConfig.getLocalKeyRecovery();
                 this.localKeyRecoveryCryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId() != null ? globalConfig.getLocalKeyRecoveryCryptoTokenId() : 0;
                 this.localKeyRecoveryKeyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
-                this.useAutoEnrollment = globalConfig.getAutoEnrollUse();
-                this.autoEnrollmentCA = globalConfig.getAutoEnrollCA();
-                this.autoEnrollUseSSLConnection = globalConfig.getAutoEnrollSSLConnection();
-                this.autoEnrollAdServer = globalConfig.getAutoEnrollADServer();
-                this.autoEnrollAdServerPort = globalConfig.getAutoEnrollADPort();
-                this.autoEnrollConnectionDN = globalConfig.getAutoEnrollConnectionDN();
-                this.autoEnrollUserBaseDN = globalConfig.getAutoEnrollBaseDNUser();
-                this.autoEnrollConnectionPassword = globalConfig.getAutoEnrollConnectionPwd();
                 this.nodesInCluster = globalConfig.getNodesInCluster();
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
@@ -237,22 +222,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setLocalKeyRecoveryKeyAlias(String localKeyRecoveryKeyAlias) { this.localKeyRecoveryKeyAlias=localKeyRecoveryKeyAlias; }
         public boolean getIssueHardwareToken() { return this.issueHardwareToken; }
         public void setIssueHardwareToken(boolean issueHWtoken) { this.issueHardwareToken=issueHWtoken; }
-        public boolean getUseAutoEnrollment() { return this.useAutoEnrollment; }
-        public void setUseAutoEnrollment(boolean useAutoEnrollment) { this.useAutoEnrollment=useAutoEnrollment; }
-        public int getAutoEnrollmentCA() { return this.autoEnrollmentCA; }
-        public void setAutoEnrollmentCA(int caid) {this.autoEnrollmentCA=caid; }
-        public boolean getAutoEnrollUseSSLConnection() { return autoEnrollUseSSLConnection; }
-        public void setAutoEnrollUseSSLConnection(boolean useSSLConnection) { this.autoEnrollUseSSLConnection=useSSLConnection; }
-        public String getAutoEnrollAdServer() { return this.autoEnrollAdServer; }
-        public void setAutoEnrollAdServer(String server) { this.autoEnrollAdServer=server; }
-        public int getAutoEnrollAdServerPort() { return this.autoEnrollAdServerPort; }
-        public void setAutoEnrollAdServerPort(int port) { this.autoEnrollAdServerPort=port; }
-        public String getAutoEnrollConnectionDN() { return this.autoEnrollConnectionDN; }
-        public void setAutoEnrollConnectionDN(String dn) { this.autoEnrollConnectionDN=dn; }
-        public String getAutoEnrollUserBaseDN() { return this.autoEnrollUserBaseDN; }
-        public void setAutoEnrollUserBaseDN(String dn) { this.autoEnrollUserBaseDN=dn; }
-        public String getAutoEnrollConnectionPassword() { return this.autoEnrollConnectionPassword; }
-        public void setAutoEnrollConnectionPassword(String password) { this.autoEnrollConnectionPassword=password; }
         public Set<String> getNodesInCluster() { return this.nodesInCluster; }
         public void setNodesInCluster(Set<String> nodes) { this.nodesInCluster=nodes; }
         public boolean getEnableCommandLine() { return this.enableCommandLine; }
@@ -1022,14 +991,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
                 globalConfig.setLocalKeyRecoveryCryptoTokenId(zeroToNull(currentConfig.getLocalKeyRecoveryCryptoTokenId()));
                 globalConfig.setLocalKeyRecoveryKeyAlias(currentConfig.getLocalKeyRecoveryKeyAlias());
-                globalConfig.setAutoEnrollUse(currentConfig.getUseAutoEnrollment());
-                globalConfig.setAutoEnrollCA(currentConfig.getAutoEnrollmentCA());
-                globalConfig.setAutoEnrollSSLConnection(currentConfig.getAutoEnrollUseSSLConnection());
-                globalConfig.setAutoEnrollADServer(currentConfig.getAutoEnrollAdServer());
-                globalConfig.setAutoEnrollADPort(currentConfig.getAutoEnrollAdServerPort());
-                globalConfig.setAutoEnrollConnectionDN(currentConfig.getAutoEnrollConnectionDN());
-                globalConfig.setAutoEnrollBaseDNUser(currentConfig.getAutoEnrollUserBaseDN());
-                globalConfig.setAutoEnrollConnectionPwd(currentConfig.getAutoEnrollConnectionPassword());
                 globalConfig.setNodesInCluster(currentConfig.getNodesInCluster());
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
@@ -1146,7 +1107,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         incompleteIssuanceServiceCheckDone = false;
     }
 
-    public void toggleUseAutoEnrollment() { getCurrentConfig().setUseAutoEnrollment(!getCurrentConfig().getUseAutoEnrollment()); }
     public void toggleEnableKeyRecovery() { getCurrentConfig().setEnableKeyRecovery(!getCurrentConfig().getEnableKeyRecovery()); }
     public void toggleLocalKeyRecovery() { getCurrentConfig().setLocalKeyRecovery(!getCurrentConfig().getLocalKeyRecovery()); }
 
@@ -1304,9 +1264,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public ArrayList<ProtocolGuiInfo> getAvailableProtocolInfos() {
+    public List<ProtocolGuiInfo> getAvailableProtocolInfos() {
         ArrayList<ProtocolGuiInfo> protocolInfos = new ArrayList<>();
-        LinkedHashMap<String, Boolean> allPC = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        LinkedHashMap<String, Boolean> allPC = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         for (Entry<String, Boolean> entry : allPC.entrySet()) {
             protocolInfos.add(new ProtocolGuiInfo(entry.getKey(), entry.getValue()));
         }

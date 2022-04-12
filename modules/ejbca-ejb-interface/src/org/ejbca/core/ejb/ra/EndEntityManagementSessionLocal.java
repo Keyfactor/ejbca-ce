@@ -120,4 +120,19 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
 
+    /**
+     * Used to set user status and log audit event where userdata is 
+     * updated also outside the function in same transaction.
+     * 
+     * @param authenticationToken
+     * @param data1
+     * @param status
+     * @param approvalRequestID
+     * @param lastApprovingAdmin
+     * @throws ApprovalException
+     * @throws WaitingForApprovalException
+     */
+    void setUserStatus(AuthenticationToken authenticationToken, UserData data1, int status, int approvalRequestID,
+            AuthenticationToken lastApprovingAdmin) throws ApprovalException, WaitingForApprovalException;
+
 }

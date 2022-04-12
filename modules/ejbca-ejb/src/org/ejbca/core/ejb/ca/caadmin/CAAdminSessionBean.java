@@ -65,8 +65,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
+import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.GeographicRegion;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -87,6 +91,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
@@ -101,6 +107,7 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -168,6 +175,7 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
@@ -500,18 +508,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
 
-        // Update System Configuration
-        GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (globalConfig != null) {
-            if (CAIdTools.updateCAIds(globalConfig, fromId, toId, toDN)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in System Configuration");
-                }
-                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
-            }
-        }
-
         // Update CMP Configuration
         // Only "Default CA" contains a reference to the Subject DN. All other fields reference the CAs by CA name.
         CmpConfiguration cmpConfig = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
@@ -578,6 +574,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
             mergeCertificatePoliciesFromCAAndProfile(sshCainfo, certprofile);
+        } else if (cainfo.getCAType() == X509CAInfo.CATYPE_CITS) {
+            log.info("Creating an CITS CA: " + cainfo.getName());
+            CitsCaInfo citsCainfo = (CitsCaInfo) cainfo;
+            
+            ca = (CA) CAFactory.INSTANCE.getCitsCaImpl(citsCainfo);
+            ca.setCAToken(catoken);
+            // Set certificate policies in profile object
+            mergeCertificatePoliciesFromCAAndProfile(citsCainfo, certprofile);
         } else {
             throw new IllegalStateException("CA of unknown type " + cainfo.getCAType() + " was encountered.");
         }
@@ -3785,5 +3789,272 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (CertPathValidatorException e) {
             throw new IllegalStateException("Unexpected outcome.", e);
         }
+    }
+    
+    public byte[] makeCitsRequest(AuthenticationToken authenticationToken, int caid, byte[] caChainBytes, 
+            String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
+        // TODO: currently ignoring cert chain
+        if (log.isTraceEnabled()) {
+            log.trace(">makeCItsRequest: " + caid + ", caid=" + caid);
+        }
+        byte[] returnval;
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CARENEW.resource())) {
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", caid);
+            logAuditEvent(
+                    EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    detailsMsg
+            );
+            throw new AuthorizationDeniedException(detailsMsg);
+        }
+        
+        if(StringUtils.isEmpty(signKeyAlias)) {
+            //TODO: support via resource files
+            log.debug("ECA CSR can not have empty signKeyAlias.");
+            throw new EJBException("ECA CSR can not have empty signKeyAlias.");
+        }
+        
+        try {
+            final ECA ca = (ECA) caSession.getCAForEdit(authenticationToken, caid);
+
+            // Generate new certificate signing request.
+            final CAToken caToken = ca.getCAToken();
+            final int cryptoTokenId = caToken.getCryptoTokenId();
+            try {
+                // Test if key already exists
+                cryptoTokenManagementSession.testKeyPair(authenticationToken, cryptoTokenId, signKeyAlias);
+            } catch (Exception e) {
+                throw new EJBException("ECA crypto token test failed.");
+            }
+            
+            // compulsory re-keying: page 21 in 102 941, 3 paragraph below note 1 -> ETSI
+            // also canRequestRollover in certificate is absent always as per 103 097 in section 6
+            // so change during IEEE
+            if(StringUtils.isEmpty(verificationKeyAlias)) {
+                boolean generateNewKeys = caToken.generateNextKeysEcaToken();
+                verificationKeyAlias = caToken.getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT);
+                encryptKeyAlias = caToken.getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT);
+                
+                if(generateNewKeys && ca.getItsCACertificate()!=null) {
+                    try {
+                        cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, signKeyAlias,
+                                verificationKeyAlias);
+                        cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId,
+                                caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT),
+                                encryptKeyAlias);
+                        // Audit log CA key generation
+                        final Properties oldprop = caToken.getProperties();
+                        final String oldsequence = caToken.getKeySequence();
+                        logAuditEvent(
+                                EventTypes.CA_KEYGEN, EventStatus.SUCCESS,
+                                authenticationToken, caid,
+                                SecurityEventProperties.builder()
+                                        .withMsg(intres.getLocalizedMessage("catoken.generatedkeys", caid, true, false))
+                                        .withOldproperties(oldprop)
+                                        .withOldsequence(oldsequence)
+                                        .withProperties(caToken.getProperties())
+                                        .withSequence(caToken.getKeySequence())
+                                        .build()
+                        );
+                    } catch (AuthorizationDeniedException | CryptoTokenOfflineException e2) {
+                        throw e2;
+                    } catch (Exception e2) {
+                        throw new RuntimeException(e2);
+                    }
+                } 
+            }
+            
+            ca.setCAToken(caToken);
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+            
+            final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
+            returnval = ca.createRequest(cryptoToken, signKeyAlias, verificationKeyAlias, encryptKeyAlias, certificateProfile);
+            
+            caSession.editCA(authenticationToken, ca, true);
+            // Log information about the event
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.SUCCESS,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.certreqcreated", ca.getName(), caid)
+            );
+        } catch (CryptoTokenOfflineException e) {
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.errorcertreq", caid)
+            );
+            throw e;
+        } catch (Exception e) {
+            log.debug("Exception during Cits CSR creation: ", e);
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.errorcertreq", caid)
+            );
+            throw new EJBException(e);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<makeCitsRequest: " + caid);
+        }
+        return returnval;
+        
+    }
+    
+    public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
+                        byte[] signedCertificate) throws CADoesntExistsException, EjbcaException {
+        // TODO: later support certificate chain
+        
+        if (log.isTraceEnabled()) {
+            log.trace(">receiveCitsResponse: " + caid);
+        }
+        
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CARENEW.resource())) {
+            logAuditEvent(
+                    EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", caid)
+            );
+        }
+        
+        // validate signedCertificate is properly formatted
+        ITSCertificate certificate =  ECAUtils.parseItsCertificate(signedCertificate);
+        
+        try {
+            ECA ca = (ECA) caSession.getCAForEdit(authenticationToken, caid);
+            if (ca == null) {
+                throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
+            }
+            
+            CertificateId receievedCertificateId = certificate.toASN1Structure().getToBeSigned().getId();
+            if(receievedCertificateId.getChoice()!=CertificateId.name) {
+                throw new EjbcaException("CertificateId should be NAME instance.");
+            } else {
+                Hostname certificateId = ((Hostname)receievedCertificateId.getCertificateId());
+                if(!certificateId.getHostName().equalsIgnoreCase(
+                                        ((CitsCaInfo)ca.getCAInfo()).getCertificateId())) {
+                    throw new EjbcaException("CertificateId did not match.");
+                }
+            }
+            
+            final CAToken catoken = ca.getCAToken();
+            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+            PublicKey caCertPublicVerificationKey = ECAUtils.getVerificationKeyFromCertificate(certificate);
+            PublicKey caCertPublicEncryptionKey = ECAUtils.getEncryptionKeyFromCertificate(certificate);
+            
+            String nextVerificationKeyAlias = catoken.getNextEcaSignKeyAlias();
+            log.debug("nextVerificationKeyAlias: " + nextVerificationKeyAlias);
+            KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
+                    caCertPublicVerificationKey, cryptoToken.getSignProviderName());
+            
+            String nextDefaultKeyAlias = catoken.getNextEcaDefaultKeyAlias();
+            log.debug("nextDefaultKeyAlias: " + nextDefaultKeyAlias);
+            KeyTools.testKey(cryptoToken.getPrivateKey(nextDefaultKeyAlias), 
+                    caCertPublicEncryptionKey, cryptoToken.getSignProviderName());
+            catoken.activateNextKeysEcaToken();
+            
+            // Activated the next signing key(s) so generate audit log
+            logAuditEvent(
+                    EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS,
+                    authenticationToken, caid,
+                    SecurityEventProperties.builder()
+                            .withMsg(intres.getLocalizedMessage("catoken.activatednextkey", caid))
+                            .withCertSignKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN))
+                            .withSequence(catoken.getKeySequence())
+                            .build()
+            );
+            ca.setCAToken(catoken);
+            ca.setItsCaCertificate(certificate);
+    
+            // Set status to active, so we can sign certificates for the external services below.
+            ca.setStatus(CAConstants.CA_ACTIVE);
+    
+            // TODO: also add expiry time to CA GUI
+            ca.setExpireTime(ECAUtils.getExpiryDate(certificate));
+            
+            // TODO: update geographic region, app/issue permission and SSP family
+            
+            // create hashedId8 and update subjectDn/certificate id
+            // not overwriting id
+            ca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash(certificate)));
+       
+            // Save CA
+            caSession.editCA(authenticationToken, ca, true);
+    
+            logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.SUCCESS,
+                    authenticationToken, caid,
+                    intres.getLocalizedMessage("caadmin.certrespreceived", caid)
+            );
+            
+        } catch (AuthorizationDeniedException|CryptoTokenOfflineException|
+                InvalidAlgorithmException|InvalidKeyException e) {
+            throw new EJBException(e);
+        } 
+        
+    }
+    
+    @Override
+    public void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
+            throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException {
+
+        ITSCertificate caCertificate = ECAUtils.parseItsCertificate(certificate);
+        String errorMessage = null;
+        //TODO: validate with certificates from ECTL
+        
+        // using child implementations to avoid casts later on
+        // other values are populated to default
+        CitsCaInfo cainfo = CitsCaInfo.getDefaultCitsCaInfo(caname, 
+                "ITS CA created by certificate import.", "0d", null, 
+                CertificateProfileConstants.CERTPROFILE_FIXED_ITS, 
+                CertificateProfileConstants.CERTPROFILE_FIXED_ITS, null);
+        
+        cainfo.setSubjectDN(CitsCaInfo.CITS_SUBJECTDN_PREFIX); // otherwise search will fail
+        CertificateId caCertificateId = caCertificate.toASN1Structure().getToBeSigned().getId();
+        if(caCertificateId==null) {
+            errorMessage = "CertificateId is absent";
+            log.info(errorMessage);
+            throw new CertificateImportException(errorMessage);
+        }
+        if(caCertificateId.getChoice()==CertificateId.name) {
+            cainfo.setCertificateId(((Hostname)caCertificateId.getCertificateId()).getHostName());
+        } else if(caCertificateId.getChoice()==CertificateId.none){
+            // only allowed other type is none, root CA should take care of other validations
+            cainfo.setCertificateId(Hex.toHexString(ECAUtils.generateHash(caCertificate)));
+        } else {
+            errorMessage = "Certificate id type is unexpected: " + caCertificateId.getChoice();
+            log.info(errorMessage);
+            throw new CertificateImportException(errorMessage);
+        }
+        
+        cainfo.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        cainfo.setCAId(cainfo.getSubjectDN().hashCode());
+        cainfo.setStatus(CAConstants.CA_EXTERNAL);
+        log.info("Preparing to import of CA with Subject DN " + cainfo.getSubjectDN());
+        // ignoring certificate policies.
+        cainfo.setName(caname);
+        
+        GeographicRegion region = caCertificate.toASN1Structure().getToBeSigned().getRegion();
+        if(region!=null) { // else global/europe - 65535? 
+            ItsGeographicRegion georegion = new ItsGeographicRegion();
+            georegion.setGeographicElement(ItsGeographicRegion.fromGeographicRegion(region));
+            cainfo.setRegion(georegion);
+        }
+                
+        // TODO: app/issue permissions, later release
+        ECA eca = (ECA) CAFactory.INSTANCE.getCitsCaImpl(cainfo);
+        CAToken token = new CAToken(eca.getCAId(), new NullCryptoToken().getProperties());
+        try {
+            eca.setCAToken(token);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalCryptoTokenException(e);
+        }
+        eca.setItsCaCertificate(caCertificate);
+        eca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash(caCertificate)));
+        eca.setExpireTime(ECAUtils.getExpiryDate(caCertificate));
+        // Add CA
+        caSession.addCA(admin, eca);
+        //TODO: Persist ("Publish") the CA certificates to the local CertificateData database.
+        
     }
 }
