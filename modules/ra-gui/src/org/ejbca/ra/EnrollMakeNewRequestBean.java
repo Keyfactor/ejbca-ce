@@ -16,12 +16,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +65,8 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.ErrorCode;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
@@ -72,6 +75,9 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -857,36 +863,34 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void uploadCsr() {
         subjectDn = null;
         validateCsr(certificateRequest);
-        //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR (Overwrite the fields set by previous CSR upload if any)
+        // If "Provided by User" key generation is selected, try fill Subject DN fields from CSR (Overwrite the fields set by previous CSR upload if any)
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr != null) {
-            final PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
-            if (pkcs10CertificateRequest.getSubject() != null) {
-                populateRequestFields(RequestFieldType.DN, pkcs10CertificateRequest.getSubject().toString(), getSubjectDn().getRequiredFieldInstances());
+            final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(getCertificateRequest().getBytes(StandardCharsets.UTF_8));
+            if (certRequest.getRequestX500Name() != null) {
+                populateRequestFields(RequestFieldType.DN, certRequest.getRequestX500Name().toString(), getSubjectDn().getFieldInstances());
                 getSubjectDn().update();
             }
-            final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
-            if (sanExtension != null) {
-                populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getRequiredFieldInstances());
-                getSubjectAlternativeName().update();
-            } else {
-                // If an updated CSR did not have any AN, make sure we clean the fields
-                this.subjectAlternativeName = null;
-            }
-            final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
-            if (subjectDirectoryAttributes != null) {
-                ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
-                try {
-                    final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
-                    populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getRequiredFieldInstances());
-                    getSubjectDirectoryAttributes().update();
-                } catch (ParseException | IllegalArgumentException e) {
-                    log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
-                    // If an updated CSR did not have any Directory attributes, make sure we clean the fields
-                    this.subjectDirectoryAttributes = null;
+            this.subjectAlternativeName = null;
+            this.subjectDirectoryAttributes = null;
+            // Populate SAN and Subject Directory Attributes, but only if it is a PKCS#10 (X.509) request
+            final PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
+            if (pkcs10CertificateRequest != null) {
+                final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
+                if (sanExtension != null) {
+                    populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                    getSubjectAlternativeName().update();
                 }
-            } else {
-                // If an updated CSR did not have any Directory attributes, make sure we clean the fields
-                this.subjectDirectoryAttributes = null;
+                final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
+                if (subjectDirectoryAttributes != null) {
+                    ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
+                    try {
+                        final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
+                        populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
+                        getSubjectDirectoryAttributes().update();
+                    } catch (ParseException | IllegalArgumentException e) {
+                        log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
+                    }
+                }
             }
 
             uploadCsrDoneRendered = true;
@@ -1189,7 +1193,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
             try {
-                endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
+                endEntityInformation.getExtendedInformation().setCertificateRequest(getCertificateRequestBytes());
             } catch (IOException e) {
                 raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
                 return null;
@@ -1211,25 +1215,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername());
                 }
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
-                endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
+                endEntityInformation.getExtendedInformation().setCertificateRequest(getCertificateRequestBytes());
                 final byte[] certificateDataToDownload = raMasterApiProxyBean.addUserAndCreateCertificate(raAuthenticationBean.getAuthenticationToken(),
                         endEntityInformation, false);
                 if (certificateDataToDownload == null) {
                     raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), "Check server log");
                     log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername());
                 } else if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
-                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                    final Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, Certificate.class);
                     LinkedList<Certificate> chain = new LinkedList<>(getCAInfo().getCertificateChain());
                     chain.addFirst(certificate);
                     ret = CertTools.getPemFromCertificateChain(chain);
                 } else if (tokenDownloadType == TokenDownloadType.PKCS7) {
-                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
+                    final Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, Certificate.class);
                     LinkedList<Certificate> chain = new LinkedList<>(getCAInfo().getCertificateChain());
                     chain.addFirst(certificate);
                     ret = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
                 } else if (tokenDownloadType == TokenDownloadType.PEM) {
-                    X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
-                    ret = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+                    final Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, Certificate.class);
+                    ret = CertTools.getPemFromCertificateChain(Arrays.asList(certificate));
                 } else {
                     ret = certificateDataToDownload;
                 }
@@ -1494,22 +1498,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public final void validateCsr(String csrValue) throws ValidatorException {
         algorithmFromCsr = null;
-        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) { 
-           log.info("CSR uploaded was too large: " + csrValue.length());
+        if (csrValue == null || csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
+            if (csrValue == null) {
+                log.info("CSR uploaded was null");
+            } else {
+                log.info("CSR uploaded was too large: " + csrValue.length());
+            }
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csrValue);
-        if (pkcs10CertificateRequest == null) {
+        final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(csrValue.getBytes(StandardCharsets.UTF_8));
+        if (certRequest == null) {
             raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST)));
         }
-        
         //Get public key algorithm from CSR and check if it's allowed in certificate profile
-        final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificateRequest);
         try {
-            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+            final PublicKey publicKey = certRequest.getRequestPublicKey();
+            final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
+            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
 
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
@@ -1518,21 +1525,31 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
 
-            certificateRequest = csrValue;
-
-            PublicKey publicKey = jcaPKCS10CertificationRequest.getPublicKey();
             publicKeyModulus = KeyTools.getKeyModulus(publicKey);
 
             publicKeyExponent = KeyTools.getKeyPublicExponent(publicKey);
-            sha256Fingerprint = KeyTools.getSha256Fingerprint(certificateRequest);
-            signature = KeyTools.getCertificateRequestSignature(jcaPKCS10CertificationRequest);
-
+            sha256Fingerprint = KeyTools.getSha256Fingerprint(csrValue);
+            signature = extractSignatureFromCsr(certRequest);
+            certificateRequest = csrValue;
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             raLocaleBean.addMessageError("enroll_unknown_key_algorithm");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException(e);
         }
     }
 
+    private String extractSignatureFromCsr(final RequestMessage certRequest) {
+        if (certRequest instanceof PKCS10RequestMessage) {
+            final PKCS10CertificationRequest p10 = ((PKCS10RequestMessage) certRequest).getCertificationRequest();
+            final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(p10);
+            return KeyTools.getCertificateRequestSignature(jcaPKCS10CertificationRequest);
+        } else {
+            // CVC requests can have multiple signatures. SSH requests don't have a signature.
+            log.debug("Not showing signature field for this type of CSR");
+            return null;
+        }
+    }
 
     //-----------------------------------------------------------------------------------------------
     // Getters and setters
@@ -1794,7 +1811,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return a List of available end entity profile identifiers
      */
     private List<Integer> getAvailableEndEntityProfiles() {
-        return new ArrayList<>(authorizedEndEntityProfiles.idKeySet());
+        AuthenticationToken authToken = raAuthenticationBean.getAuthenticationToken();
+        List<Integer> ret = new ArrayList<>(authorizedEndEntityProfiles.idKeySet());
+        Integer emptyProfileInteger = 1;
+        if (authToken instanceof PublicAccessAuthenticationToken && ret.contains(emptyProfileInteger)) {
+            ret.remove(emptyProfileInteger);
+        }
+        return ret;
     }
 
     /**
@@ -2348,11 +2371,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (subjectDn == null) {
             final EndEntityProfile endEntityProfile = getEndEntityProfile();
             final CertificateProfile certificateProfile = getCertificateProfile();
-            final X509CAInfo x509cainfo = (X509CAInfo) getCAInfo();
-            if (endEntityProfile != null && certificateProfile != null && x509cainfo != null) {
+            final CAInfo cainfo = getCAInfo();
+            if (endEntityProfile != null && certificateProfile != null && cainfo != null) {
                 subjectDn = new SubjectDn(endEntityProfile);
-                subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
-                subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
+                if (cainfo instanceof X509CAInfo) {
+                    final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+                    subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
+                    subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
+                }
                 for (EndEntityProfile.FieldInstance instance: subjectDn.getRequiredFieldInstances()) {
                     if (isDnEmail(instance)) {
                         instance.setUseDataFromEmailField(true);
@@ -2524,6 +2550,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
         return certificateRequest;
+    }
+
+    private byte[] getCertificateRequestBytes() throws IOException {
+        return RequestMessageUtils.getRequestBytes(getCertificateRequest().getBytes(StandardCharsets.UTF_8));
     }
 
     /**

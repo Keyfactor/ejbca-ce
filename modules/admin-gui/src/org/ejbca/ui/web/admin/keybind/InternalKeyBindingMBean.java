@@ -1829,7 +1829,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                             Certificate caCert = caInfo.getCertificateChain().get(0);
                             if (caCert.equals(caCertificate) && ((X509CAInfo)caInfo).isDoPreProduceOcspResponses()) {
                                 throw new InternalKeyBindingNonceConflictException("Can not save OCSP Key Binding with nonce enabled in response when"
-                                        + "the associated CA has pre-production of OCSP responses enabled.");
+                                        + " the associated CA has pre-production of OCSP responses enabled.");
                             }                            
                         }
                     }

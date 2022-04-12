@@ -98,4 +98,18 @@ public class IntuneRestApiTest {
                 .build();
         intune.downloadRevocationRequests(50, null);
     }
+    
+    @Test(expected = AzureException.class)
+    public void badIntuneResourseUrlFails() throws IOException, AzureException {
+        assumeNotNull(System.getProperty("CURRENT_INTUNE_SECRET"));
+
+        String tenantId = "8375a5cc-74ce-45e8-abc1-00a87441a554";
+        String applicationId = "c002d28b-f0de-4f59-82dd-f68df79fbf5b";
+        String secret = System.getProperty("CURRENT_INTUNE_SECRET");
+
+        Builder builder = new IntuneRestApi.Builder(tenantId, applicationId, "unittest");
+        IntuneRestApi intune = builder.withClientSecret(secret).withIntuneResourceUrl("https://api2.manage.microsoft.com/")
+                .build();
+        intune.downloadRevocationRequests(50, null);
+    }
 }

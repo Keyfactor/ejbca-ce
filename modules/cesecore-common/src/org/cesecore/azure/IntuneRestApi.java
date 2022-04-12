@@ -116,8 +116,7 @@ public class IntuneRestApi {
     private static final String DEFAULT_GRAPH_VERSION = "v1.0";
     private static final String DEFAULT_GRAPH_URL = "https://graph.microsoft.com";
     private static final String INTUNE_API_VERSION = "5019-05-05";
-    // Not a typo. There are *two* forward slashes here.
-    private final static String INTUNE_SCOPE = "https://api.manage.microsoft.com//.default";
+    private final static String DEFAULT_INTUNE_URL = "https://api.manage.microsoft.com/";
 
     /**
      * Single revocation request from Inune
@@ -187,6 +186,7 @@ public class IntuneRestApi {
     private AzureAuthenticator.BearerToken lastToken = null; // set before API is called and cached
     private String graphResourceUrl;
     private String graphResourceVersion;
+    private String intuneResourceUrl;
 
     /**
      * It's expected that clients will use the Builder class to build this.
@@ -198,14 +198,16 @@ public class IntuneRestApi {
      * @param graphResourceUrl 
      */
     IntuneRestApi(final AzureAuthenticator azureCredentials, final String clientIdAndVersion, HttpClientWithProxySupport client,
-            String graphResourceUrl, String graphResourceVersion) {
+            String graphResourceUrl, String graphResourceVersion, String intuneResourceUrl) {
         this.azureCredentials = azureCredentials;
         this.client = client;
         this.clientIdAndVersion = clientIdAndVersion;
         this.graphResourceUrl = graphResourceUrl;
         this.graphResourceVersion = graphResourceVersion;
-        logger.info(
-                "Intune client created.  Credentials = " + azureCredentials + " clientIdAndVersion = " + clientIdAndVersion + " client = " + client);
+        this.intuneResourceUrl = intuneResourceUrl;
+        logger.info("Intune client created.  Credentials = " + azureCredentials + " clientIdAndVersion = " + clientIdAndVersion + " client = "
+                + client + " graphResourceUrl = " + graphResourceUrl + " graphResourceVersion = " + graphResourceVersion + " intuneResourceUrl = "
+                + intuneResourceUrl);
     }
 
     /**
@@ -224,9 +226,9 @@ public class IntuneRestApi {
         }
         String graphScope = new URL(new URL(graphResourceUrlWithProtocol), "/.default").toString();
         final AzureAuthenticator.BearerToken token = azureCredentials.getBearerTokenForResource(graphScope);
-        
-        String graphQueryUrl = (graphResourceUrlWithProtocol.endsWith("/") ? graphResourceUrlWithProtocol : graphResourceUrlWithProtocol + "/") + graphResourceVersion
-                + "/servicePrincipals/appId=0000000a-0000-0000-c000-000000000000/endpoints";
+
+        String graphQueryUrl = (graphResourceUrlWithProtocol.endsWith("/") ? graphResourceUrlWithProtocol : graphResourceUrlWithProtocol + "/")
+                + graphResourceVersion + "/servicePrincipals/appId=0000000a-0000-0000-c000-000000000000/endpoints";
 
         // get the URL for intune by querying graph API
         try (CloseableHttpClient httpClient = client.getClient()) {
@@ -306,7 +308,7 @@ public class IntuneRestApi {
         writeJSONString(Collections.singletonMap("downloadParameters", downloadParameters), downloadParametersString);
 
         if (lastToken == null || lastToken.isExpired()) {
-            lastToken = azureCredentials.getBearerTokenForResource(INTUNE_SCOPE);
+            lastToken = azureCredentials.getBearerTokenForResource(getIntuneScope());
         }
 
         // get the list of revocation requests
@@ -373,7 +375,7 @@ public class IntuneRestApi {
         }
 
         if (lastToken == null || lastToken.isExpired()) {
-            lastToken = azureCredentials.getBearerTokenForResource(INTUNE_SCOPE);
+            lastToken = azureCredentials.getBearerTokenForResource(getIntuneScope());
         }
 
         // get the list of revocation requests
@@ -410,7 +412,7 @@ public class IntuneRestApi {
         writeJSONString(Collections.singletonMap("request", requestInfo), jsonString);
 
         if (lastToken == null || lastToken.isExpired()) {
-            lastToken = azureCredentials.getBearerTokenForResource(INTUNE_SCOPE);
+            lastToken = azureCredentials.getBearerTokenForResource(getIntuneScope());
         }
 
         // get the list of revocation requests
@@ -461,7 +463,7 @@ public class IntuneRestApi {
         writeJSONString(Collections.singletonMap("notification", requestInfo), jsonString);
 
         if (lastToken == null || lastToken.isExpired()) {
-            lastToken = azureCredentials.getBearerTokenForResource(INTUNE_SCOPE);
+            lastToken = azureCredentials.getBearerTokenForResource(getIntuneScope());
         }
 
         // get the list of revocation requests
@@ -521,7 +523,7 @@ public class IntuneRestApi {
         writeJSONString(Collections.singletonMap("notification", requestInfo), jsonString);
 
         if (lastToken == null || lastToken.isExpired()) {
-            lastToken = azureCredentials.getBearerTokenForResource(INTUNE_SCOPE);
+            lastToken = azureCredentials.getBearerTokenForResource(getIntuneScope());
         }
 
         // get the list of revocation requests
@@ -565,6 +567,14 @@ public class IntuneRestApi {
         //@formatter:on
     }
 
+    public String getIntuneScope() {
+        return getIntuneResourceUrl() + "/.default";
+    }
+
+    private String getIntuneResourceUrl() {
+        return intuneResourceUrl;
+    }
+
     /**
      * Builder class for IntuneRestApi
      */
@@ -583,6 +593,7 @@ public class IntuneRestApi {
         private X509Certificate clientCertificate = null;
         private String graphResourceUrl = DEFAULT_GRAPH_URL;
         private String graphResourceVersion = DEFAULT_GRAPH_VERSION;
+        private String intuneResourceUrl = DEFAULT_INTUNE_URL;
 
         /**
          * Create a builder for constructing an IntuneRestApi.  These fields are always needed.  
@@ -626,7 +637,7 @@ public class IntuneRestApi {
                 credentials = new AzureCertificateAuthenticator(azureLoginUrl, tenantId, clientId, clientCertificate, clientKey, client);
             }
 
-            return new IntuneRestApi(credentials, clientIdAndVersion, client, graphResourceUrl, graphResourceVersion);
+            return new IntuneRestApi(credentials, clientIdAndVersion, client, graphResourceUrl, graphResourceVersion, intuneResourceUrl);
         };
 
         public Builder withGraphResourceUrl(String graphResourceUrl) {
@@ -676,6 +687,11 @@ public class IntuneRestApi {
 
         public Builder withClientCertificate(X509Certificate clientCertificate) {
             this.clientCertificate = clientCertificate;
+            return this;
+        }
+
+        public Builder withIntuneResourceUrl(String intuneUrl) {
+            this.intuneResourceUrl = intuneUrl;
             return this;
         }
     };
