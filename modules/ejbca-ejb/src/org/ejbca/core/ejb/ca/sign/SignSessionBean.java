@@ -25,10 +25,7 @@ import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.its.ETSISignedData;
 import org.bouncycastle.its.ETSISignedDataBuilder;
 import org.bouncycastle.its.ITSCertificate;
-import org.bouncycastle.its.ITSExplicitCertificateBuilder;
-import org.bouncycastle.its.ITSPublicVerificationKey;
 import org.bouncycastle.its.jcajce.JcaITSContentSigner;
-import org.bouncycastle.its.jcajce.JcaITSExplicitCertificateBuilder;
 import org.bouncycastle.its.operator.ITSContentSigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
@@ -522,6 +519,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                         postCreateCertificate(admin, endEntityInformation, ca,
                                 new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
+                        // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
+                        if (ca.isUseUserStorage() && endEntityInformation != null) {
+                            finishUser(ca, endEntityInformation);
+                        }
                     }
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
@@ -530,11 +531,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     throw new NoSuchEndEntityException(failText, e);
                 }
             }
-            ret.create();
-            // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-            if (ca.isUseUserStorage() && endEntityInformation != null) {
-                finishUser(ca, endEntityInformation);
-            }
+            ret.create();         
         } catch (CustomCertificateSerialNumberException e) {
             cleanUserCertDataSN(endEntityInformation);
             throw e;
@@ -633,6 +630,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return cert;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CertificateWrapper> createCardVerifiableCertificateWS(final AuthenticationToken authenticationToken, final String username,
             String password, final String cvcreq)
@@ -1218,7 +1216,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws CADoesntExistsException, AuthorizationDeniedException {
         // See if we can get username and password directly from request
         final String username = req.getUsername();
-        final EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
+        final EndEntityInformation data = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(admin, username);
         if (data == null) {
             throw new CADoesntExistsException("Could not find username, and hence no CA for user '" + username + "'.");
         }
@@ -1521,39 +1519,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     public ITSCertificate createEnrollCredential(AuthenticationToken admin, Builder certificateBuilder, 
             CertificateId certifcateId, PublicVerificationKey verificationKey, 
             ECA eca, EndEntityInformation endEntity)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException {
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException {
         if (log.isDebugEnabled()) {
             log.debug("Attempting to generate EC from CA with ID " + eca.getCAId());
         }
-        
-        final CAToken catoken = eca.getCAToken();
-        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
-        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        if (privateKey == null) {
-            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
-        }
 
-        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
-        if(ecaCertificate==null) {
-            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
-        }
-        log.info("fetched signing ca certificate");
-
-        try {
-            ITSContentSigner itsContentSigner = eca.getITSContentSigner(privateKey, ecaCertificate); 
-                                                        
-            ITSExplicitCertificateBuilder itsCertificateBuilder = 
-            new JcaITSExplicitCertificateBuilder(itsContentSigner, certificateBuilder);
-            
-            ITSCertificate enrolledCredential = itsCertificateBuilder.build(certifcateId, 
-                                new ITSPublicVerificationKey(verificationKey));
-            
-            return enrolledCredential;
-        } catch (Exception e) {
-            // high level catch block
-            log.debug("Enroll credential could not be generated.", e);
-            throw new EJBException("Enroll credential could not be generated.", e);
-        }
+        return certificateCreateSession.createItsCertificate(admin, endEntity, eca, certificateBuilder, certifcateId, verificationKey);
     }
 
     @Override

@@ -346,6 +346,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                         
                         if (isMsCaCompatible) {
+                            OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
                             List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(caInfo.getSubjectDN(),
                                     caInfo.getLatestSubjectDN(), true);
 
@@ -575,17 +576,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
                 signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
-
+        checkWarnings(caCertificateStatus, caCertificate);
     }
 
     private void generateOcspConfigCacheEntry(X509Certificate caCertificate, int caId, boolean preProduceOcspResponse, boolean storeOcspResponseOnDemand, boolean isMsCaCompatible) {
-        
-        final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
 
         // Build OcspPreProductionConfigCache
         OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificate, caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible));
-        
-        checkWarnings(caCertificateStatus, caCertificate);
 
     }
     
@@ -1425,7 +1422,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 
                 ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                 OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
-                
                 // Locate the CA which gave out the certificate
                 if (Objects.isNull(ocspSigningCacheEntry)) {
 
@@ -1433,7 +1429,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
 
                     // An extra cache reload in case we are on an MS compatible CA
-                    reloadOcspSigningCache();
+                    if (Objects.isNull(ocspDataConfig) && OcspDataConfigCache.INSTANCE.getCaModeCompatiblePresent() ||
+                            !Objects.isNull(ocspDataConfig) && ocspDataConfig.isMsCaCompatible()) {
+                        reloadOcspSigningCache();
+                    }
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                     ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
 
@@ -2159,9 +2158,24 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 // If we have a nonce, limit Nonce to 32 bytes to avoid chosen-prefix attack on hash collisions.
                 // See https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
                 // https://www.rfc-editor.org/rfc/rfc8954.txt
-                if ( (noncestr != null) && (noncestr.getOctets() != null) && (noncestr.getOctets().length > 32 || noncestr.getOctets().length < 1) ) {
-                    log.info("Received OCSP request with Nonce larger than 32 bytes, rejecting.");
-                    throw new IllegalNonceException("Nonce too large");
+                if ( (noncestr != null) && (noncestr.getOctets() != null)) {
+                    byte[] nonceoctets;
+                    try {
+                        // An extensions is wrapped in an octet string, this means that the nonce which is an octet string
+                        // is also wrapped in the extension octet string, the parsedValue is hence an octet string
+                        nonceoctets = ASN1OctetString.getInstance(ext.getParsedValue()).getOctets();
+                    } catch (IllegalArgumentException e) {
+                        // It seems nonce is not properly encoded as an ASN1 Octet String. We believe this happens when wrongly not wrapped
+                        // A proper Nonce extension value is an OctetString wrapped in an OctetString, Nonce is an OctetString and the Extension
+                        // wraps the value in an OctetString.
+                        // Anyhow, let this pass by (let broken clients work), but check the value of the invalid bytes
+                        log.info("Non-parseable Nonce Octet String, invalid OCSP extension from client, letting is pass but checking the number of bytes raw");
+                        nonceoctets = noncestr.getOctets();
+                    }
+                    if (nonceoctets != null && (nonceoctets.length > 32 || nonceoctets.length < 1)) {
+                        log.info("Received OCSP request with Nonce larger than 32 bytes, rejecting.");
+                        throw new IllegalNonceException("Nonce too large");
+                    }
                 }
                 result.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             }

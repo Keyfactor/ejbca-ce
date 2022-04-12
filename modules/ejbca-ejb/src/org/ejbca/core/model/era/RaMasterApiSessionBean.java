@@ -15,6 +15,7 @@ package org.ejbca.core.model.era;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -85,11 +86,13 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
@@ -104,10 +107,10 @@ import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLo
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
-import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.SshResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
@@ -199,7 +202,6 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -1870,6 +1872,23 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EjbcaException {
         EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS);
+        //Perform any request pre-processing on the end entity
+        CAInfo cainfo = caSession.getCAInfoInternal(endEntityInformation.getCAId());
+        if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
+            String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
+            if (!StringUtils.isEmpty(preProcessorClass)) {
+                try {
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass)
+                            .getDeclaredConstructor().newInstance();
+                    endEntityInformation = extendedUserDataHandler.processEndEntityInformation(endEntityInformation,
+                            certificateProfileSession.getCertificateProfileName(endEntityInformation.getCertificateProfileId()));
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
+                }
+            }
+        }
+        
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, isClearPwd);
         return endEntityAccessSession.findUser(endEntityInformation.getUsername()) != null;
     }
@@ -3043,14 +3062,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean isClearPwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
-        //Authorization
-        if (!endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, endEntity.getEndEntityProfileId(),
-                AccessRulesConstants.DELETE_END_ENTITY)) {
-            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
-                    + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
-            return null;
-        }
-
         try {
             endEntity = endEntityManagementSession.addUser(authenticationToken, endEntity, isClearPwd);
         } catch (CesecoreException e) {
@@ -3092,6 +3103,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
                 | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
                 | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
+            cleanupAfterFailure(endEntity);
             throw new KeyStoreGeneralRaException(e);
         }
         if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM) {
@@ -3109,6 +3121,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.error(e); //should never happen if keyStore is valid object
             }
         }
+        cleanupAfterFailure(endEntity);
         return null;
     }
 
@@ -3118,13 +3131,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
             throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
-        }
-        //Authorization
-        if (!endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, endEntityInformation.getEndEntityProfileId(),
-                AccessRulesConstants.DELETE_END_ENTITY)) {
-            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
-                    + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
-            return null;
         }
 
         try {
@@ -3137,22 +3143,46 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EndEntityProfileValidationRaException(e);
         }
         try {
-            PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+            final RequestMessage req = RequestMessageUtils.parseRequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+            if (req == null) {
+                cleanupAfterFailure(endEntityInformation);
+                throw new IllegalStateException("Failed to parse certificate request");
+            }
             req.setUsername(endEntityInformation.getUsername());
             req.setPassword(endEntityInformation.getPassword());
             final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
             req.setRequestValidityNotAfter(encodedValidity == null ? null :
                     ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
-            ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
-            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null); // works for CVC also
+            if (resp.getStatus() == ResponseStatus.FAILURE) {
+                cleanupAfterFailure(endEntityInformation);
+                throw new EjbcaException(resp.getFailText());
+            }
+            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
             return cert.getEncoded();
         } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
                 | CADoesntExistsException | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
                 | InvalidAlgorithmException | CertificateExtensionException e) {
+            cleanupAfterFailure(endEntityInformation);
             throw new EjbcaException(e);
-        } catch (CertificateParsingException | CertificateEncodingException | IOException e) {
+        } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage", e);
+        }
+    }
+
+    private void cleanupAfterFailure(final EndEntityInformation endEntityInformation) {
+        try {
+            // We don't want to roll back certificate enrollment if a post-issuance step failed.
+            // So we delete the end-entity only, rather than triggering a rollback.
+            //
+            // We only delete the end entity here. The createCertificate/generateOrKeyRecoverToken calls
+            // are responsible for revocation is the certificate is issued half-way.
+            endEntityManagementSession.deleteUser(new AlwaysAllowLocalAuthenticationToken("Failed Enrollment Cleanup"), endEntityInformation.getUsername());
+        } catch (NoSuchEndEntityException | AuthorizationDeniedException | CouldNotRemoveEndEntityException | RuntimeException e) {
+            // We don't want the admin to focus on this error, so we use lower log levels than normal
+            log.info("End entity could not be deleted after issuance failure: " + e.getMessage());
+            log.trace("Stack trace from cleanup", e);
         }
     }
 

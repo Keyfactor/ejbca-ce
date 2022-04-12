@@ -14,6 +14,7 @@ package org.cesecore;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -60,12 +61,14 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.CrlSeries;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId3;
 import org.bouncycastle.oer.its.template.ieee1609dot2.IEEE1609dot2;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Hostname;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.SubjectAssurance;
 import org.bouncycastle.operator.ContentVerifier;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -104,7 +107,7 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.cvc.AccessRightEnum;
+import org.ejbca.cvc.AccessRightsIS;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCertificate;
@@ -112,10 +115,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
-// import org.ejbca.its.ca.oer.CaCertificateRequest;
-// import org.ejbca.its.ca.oer.CertificateSubjectAttributes;
-// import org.ejbca.its.ca.oer.EtsiTs102941DataContent;
-// import org.ejbca.its.ca.oer.PublicKeys;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -347,6 +346,11 @@ public abstract class CaTestUtils {
         tbsBuilder.setCertIssuePermissions(subjectAttributes.getCertIssuePermissions());  // remove for EC enroll
         tbsBuilder.setEncryptionKey(publicKeys.getEncryptionKey()); // remove for EC enroll
         tbsBuilder.setVerifyKeyIndicator(new VerificationKeyIndicator(VerificationKeyIndicator.verificationKey, publicKeys.getVerificationKey()));
+        // Sample assurance level for testing
+        String str = "1";
+        byte[] bytes = str.getBytes();
+        
+        tbsBuilder.setAssuranceLevel(new SubjectAssurance(bytes));
         return tbsBuilder;
     }
     
@@ -368,6 +372,7 @@ public abstract class CaTestUtils {
                                     ECAUtils.parseOerEncodedWrapped102941Data(
                                             ECAUtils.parseOerEncodedWrappedUnsecuredData(signedContent))
                                         .getEtsiTs102941DataContent();
+       
 
         JcaITSContentVerifierProvider verifierProvider = new JcaITSContentVerifierProvider.Builder()
             .build(new ITSPublicVerificationKey(csrContent.getPublicKeys().getVerificationKey()));
@@ -386,6 +391,8 @@ public abstract class CaTestUtils {
         KeyPair rcaKeyPair = kpg.generateKeyPair();
         
         ITSCertificate rootCertificate = loadCertificate(Hex.decode(HEX_ENCODED_ECA_ROOT_CERT));
+        
+       
         
         ITSContentSigner itsContentSigner = new JcaITSContentSigner.Builder().build(
                                                     rcaKeyPair.getPrivate(), rootCertificate);
@@ -457,11 +464,15 @@ public abstract class CaTestUtils {
             throw new IllegalStateException(e);
         }
         
+        // Setting sample region used by some tests
+        ecaInfo.setRegion(ItsGeographicRegion.fromString("circular:12892200,994254,13799"));
+        
         caAdminSession.createCA(admin, ecaInfo);
         byte[] ecaCsr = caAdminSession.makeCitsRequest(admin, ecaInfo.getCAId(), null, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
             catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
         SignedData signedCsr = ECAUtils.parseOerEncodedWrappedSignedData(ecaCsr);
         byte[] signedEcaCert = signEcaCsrWithMockRoot(signedCsr);
+        
         caAdminSession.receiveCitsResponse(admin, eca.getCAId(), signedEcaCert); 
 
         eca = (ECA) CAFactory.INSTANCE.getCitsCaImpl((CitsCaInfo) caSession.getCAInfo(admin, eca.getCAId()));
@@ -562,7 +573,7 @@ public abstract class CaTestUtils {
         cal2.add(Calendar.MONTH, 3);
         Date validTo = cal2.getTime();
         return CertificateGenerator.createCertificate(publicKey, privateKey, algorithm, caRef, holderRef, role,
-                AccessRightEnum.READ_ACCESS_DG3_AND_DG4, validFrom, validTo, provider);
+                AccessRightsIS.DG3_AND_DG4(), validFrom, validTo, provider);
     }
 
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
