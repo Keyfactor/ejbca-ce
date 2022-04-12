@@ -36,7 +36,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -62,8 +61,7 @@ import io.swagger.annotations.ApiParam;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CaRestResource extends BaseRestResource {
 
-    @EJB
-    private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
+
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
 

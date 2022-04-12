@@ -128,6 +128,11 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						sequence = RandomStringUtils.randomNumeric(5);
 						getPrintStream().println("No sequence given, using random 5 number sequence: "+sequence);
 					}
+					if (country == null) {
+					    throw new ErrorAdminCommandException("Missing country (\"C=...\") in Subject DN");
+					} else if (mnemonic == null) {
+					    throw new ErrorAdminCommandException("Missing mnemonic (\"CN=...\") in Subject DN");
+					}
 					//CAReferenceField caRef = new CAReferenceField(country,mnemonic,sequence);
 					CAReferenceField caRef = null; // Don't create a caRef in the self signed request
 					// We are making a self signed request, so holder ref is same as ca ref
