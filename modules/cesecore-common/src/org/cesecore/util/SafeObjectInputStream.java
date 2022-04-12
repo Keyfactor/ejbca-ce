@@ -40,17 +40,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class SafeObjectInputStream extends ObjectInputStream {
     private final static Logger log = Logger.getLogger(SafeObjectInputStream.class);
-    private final List<Class> allowedClasses;
+    private final List<Class<?>> allowedClasses;
     private final List<String> allowedPackagePrefixes;
     private final int maxNumberOfObjects;
     private final AtomicInteger objectCount = new AtomicInteger();
 
     public static class Builder {
-        private List<Class> allowedClasses = new ArrayList<>();
+        private List<Class<?>> allowedClasses = new ArrayList<>();
         private List<String> allowedPackagePrefixes = new ArrayList<>();
         private int maxNumberOfObjects = Integer.MAX_VALUE;
 
-        public Builder allowClass(final Class clazz) {
+        public Builder allowClass(final Class<?> clazz) {
             allowedClasses.add(clazz);
             return this;
         }

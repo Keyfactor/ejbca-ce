@@ -431,10 +431,17 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
 
+        boolean isClearPwd = false;
+        if (eep.getUse(EndEntityProfile.CLEARTEXTPASSWORD, 0)) {
+            if (eep.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || StringUtils.isNotEmpty(endEntityInformation.getPassword())) {
+                isClearPwd = true;
+            }
+        }
+
         if (changed) {
             // Edit the End Entity if changes were made
             try {
-                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false, newUsername);
+                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, isClearPwd, newUsername);
                 if (result) {
                     raLocaleBean.addMessageError("editendentity_success");
                 } else {
@@ -944,9 +951,9 @@ public class RaEndEntityBean implements Serializable {
      * @return a map with certificate authority id as key and certificate authority name as value (for certificate authority select options)
      */
     public Map<Integer, String> getCertificateAuthorities() {
-        List<Integer> eepCAs = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs();
+        List<Integer> eepCAs = filterAuthorizedCas(authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs());
         CertificateProfile cp = authorizedCertificateProfiles.get(cpId).getValue();
-        List<Integer> cpCAs = authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs();
+        List<Integer> cpCAs = filterAuthorizedCas(authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs());
         List<Integer> allCAs = new ArrayList<>(authorizedCAInfos.idKeySet());
         List<Integer> usableCAs;
         if (eepCAs.contains(EndEntityConstants.EEP_ANY_CA)) {
@@ -967,6 +974,10 @@ public class RaEndEntityBean implements Serializable {
 
         return usableCAs.stream()
             .collect(Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
+    }
+
+    private List<Integer> filterAuthorizedCas(final List<Integer> availableCAs) {
+        return availableCAs.stream().filter(authorizedCAInfos.idKeySet()::contains).collect(Collectors.toList());
     }
 
     private void handleNullSubjectDistinguishNames() {
