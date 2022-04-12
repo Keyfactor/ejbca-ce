@@ -3850,12 +3850,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 
                 if(generateNewKeys && ca.getItsCACertificate()!=null) {
                     try {
-                        log.info("verificationKeyAlias: " + verificationKeyAlias);
-                        log.info("signKeyAlias: " + signKeyAlias);
                         cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, signKeyAlias,
                                 verificationKeyAlias);
-                        log.info("encryptKeyAlias: " + encryptKeyAlias);
-                        log.info("defaulttKeyAlias: " + caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
                         cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId,
                                 caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT),
                                 encryptKeyAlias);
