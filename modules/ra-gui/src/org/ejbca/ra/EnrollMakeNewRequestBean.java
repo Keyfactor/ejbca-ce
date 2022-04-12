@@ -867,7 +867,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr != null) {
             final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(getCertificateRequest().getBytes(StandardCharsets.UTF_8));
             if (certRequest.getRequestX500Name() != null) {
-                populateRequestFields(RequestFieldType.DN, certRequest.getRequestX500Name().toString(), getSubjectDn().getRequiredFieldInstances());
+                populateRequestFields(RequestFieldType.DN, certRequest.getRequestX500Name().toString(), getSubjectDn().getFieldInstances());
                 getSubjectDn().update();
             }
             this.subjectAlternativeName = null;
@@ -877,7 +877,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (pkcs10CertificateRequest != null) {
                 final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
                 if (sanExtension != null) {
-                    populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getRequiredFieldInstances());
+                    populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
                     getSubjectAlternativeName().update();
                 }
                 final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
@@ -885,7 +885,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
                     try {
                         final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
-                        populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getRequiredFieldInstances());
+                        populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
                         getSubjectDirectoryAttributes().update();
                     } catch (ParseException | IllegalArgumentException e) {
                         log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
