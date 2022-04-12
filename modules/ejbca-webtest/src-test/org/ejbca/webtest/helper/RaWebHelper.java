@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +22,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,8 +53,10 @@ public class RaWebHelper extends BaseHelper {
         static final By SELECT_CERTIFICATE_SUBTYPE = By.id("requestTemplateForm:selectCPOneMenu");
         static final By SELECT_CA_TYPE = By.id("requestTemplateForm:selectCAOneMenu");
         static final By SELECT_KEY_ALGORITHM = By.id("requestInfoForm:selectAlgorithmOneMenu");
+        static final By SELECT_TOKEN_TYPE = By.id("requestInfoForm:selectTokenOneMenu");
         static final By RADIO_BUTTON_KEY_PAIR_ON_SERVER = By.id("requestTemplateForm:selectKeyPairGeneration:0");
         static final By RADIO_BUTTON_KEY_PAIR_PROVIDED = By.id("requestTemplateForm:selectKeyPairGeneration:1");
+        static final By RADIO_BUTTON_KEY_PAIR_POSTPONE = By.id("requestTemplateForm:selectKeyPairGeneration:2");
         static final By LABELS_GROUP_PROVIDE_REQUEST_INFO = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
         static final By LABEL_COMMON_NAME = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
         static final By LABELS_GROUP_PROVIDE_USER_CREDENTIALS = By.xpath("//div[@id='requestInfoForm:userCredentialsOuterPanel']//label");
@@ -61,8 +64,10 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("keyPairForm:certificateRequest");
         static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
+        static final By TEXT_INFO_MESSAGE = By.xpath("//li[@class='infoMessage']");
         static final By INPUT_NAME_CONSTRAINT_PERMITTED = By.id("requestInfoForm:nameConstraintPermitted");
         static final By INPUT_NAME_CONSTRAINT_EXCLUDED = By.id("requestInfoForm:nameConstraintExcluded");
+        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");       
 
         // Manage Requests
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
@@ -73,6 +78,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_DOWNLOAD_P12 = By.id("requestInfoForm:generateP12");
         static final By BUTTON_DOWNLOAD_JKS = By.id("requestInfoForm:generateJks");
         static final By BUTTON_RESET = By.id("requestInfoForm:resetButton");
+        static final By BUTTON_ADD_END_ENTITY = By.id("requestInfoForm:addEndEntity");
         static final By TABLE_REQUESTS = By.id("manageRequestsForm:manageRequestTable");
         static final By TABLE_REQUEST_ROWS = By.xpath("//tbody/tr");
         static final By TABLE_REQUEST_ROW_CELLS = By.xpath(".//td");
@@ -81,20 +87,23 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_REQUEST_REJECT = By.id("manageRequestForm:commandReject");
         static final By BUTTON_REQUEST_EDIT = By.id("manageRequestForm:commandEditData");
         static final By INPUT_MANAGE_REQUEST_EDIT_FORM_CN = By.id("manageRequestForm:eeDetails:subjectDistinguishedName:2:subjectDistinguishedNameField");
-        static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeName:0:subjectAltNameField");
+        static final By INPUT_DNS_NAME = By.id("requestInfoForm:subjectAlternativeNameOptional:0:subjectAltNameOptionalField");
         static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
         static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
         static final By TEXT_REQUEST_FORM_APPROVE_MESSAGE = By.id("manageRequestForm:requestApproveMessage");
         static final By INPUT_USERNAME = By.id("requestInfoForm:usernameField");
         static final By INPUT_ENROLLMENTCODE = By.id("requestInfoForm:passwordField");
         static final By INPUT_ENROLLMENTCODE_CONFIRM = By.id("requestInfoForm:passwordConfirmField");
+        static final By INPUT_EMAIL = By.id("requestInfoForm:emailField");
+        static final By BUTTON_ADD_END_ENDTITY = By.id("requestInfoForm:addEndEntity");
         
         // Search End Entities
         static final By BUTTON_MENU_SEARCH_END_ENTITIES = By.xpath(".//a[@href=\"search_ees.xhtml\"]");
         static final By INPUT_SEARCH_END_ENTITES = By.id("contentForm:genericSearchString");
         static final By BUTTON_VIEW_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:viewButton");
         static final By BUTTON_EDIT_END_ENTITY_SINGLE_RESULT = By.id("contentForm:searchEntityTable:0:editButton");
-        
+        static final By TABLE_SEARCH_END_ENTITY_RESULT_ROW = By.xpath("//*[@id=\"contentForm:searchEntityTable\"]/tbody/tr");
+
         // View End Entity
         static final By SECTION_PERMITTED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsPermitted')]");
         static final By SECTION_EXCLUDED_NAME_CONSTRAINT_VIEW_ENTITY = By.xpath("//*[contains(@id, 'nameConstraintsExcluded')]");
@@ -107,6 +116,7 @@ public class RaWebHelper extends BaseHelper {
         
         // Containers
         static final By CONTAINER_ENROLL_BUTTONS = By.id("requestInfoForm:enrollButtons");
+        static final By CSR_FILE_INPUT_FIELD = By.id("keyPairForm:certificateUploadInput");
 
         static By getRequestInfoFormSubjectDnSubjectDnField(final int index) {
             return By.id("requestInfoForm:subjectDn:" + index + ":subjectDnField");
@@ -194,12 +204,20 @@ public class RaWebHelper extends BaseHelper {
     public void selectKeyAlgorithm(final String keyAlgorithm) {
         selectOptionByName(Page.SELECT_KEY_ALGORITHM, keyAlgorithm);
     }
+
+    public void selectTokenType(final String tokenType) {
+        selectOptionByName(Page.SELECT_TOKEN_TYPE, tokenType);
+    }
     
     public void selectKeyPairGenerationOnServer() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_ON_SERVER);
         TimeUnit.SECONDS.sleep(2);
     }
 
+    public void selectKeyPairGenerationPostpone() throws InterruptedException {
+        clickLink(Page.RADIO_BUTTON_KEY_PAIR_POSTPONE);
+        TimeUnit.SECONDS.sleep(2);
+    }
     
     public void selectKeyPairGenerationProvided() throws InterruptedException {
         clickLink(Page.RADIO_BUTTON_KEY_PAIR_PROVIDED);
@@ -220,11 +238,12 @@ public class RaWebHelper extends BaseHelper {
 
     public void assertCorrectProvideUserCredentialsBlock() {
         final List<WebElement> provideUserCredentialsWebElements = findElements(Page.LABELS_GROUP_PROVIDE_USER_CREDENTIALS);
-        assertEquals("Unexpected number of fields under 'Provide User Credentials'", 4, provideUserCredentialsWebElements.size());
+        assertEquals("Unexpected number of fields under 'Provide User Credentials'", 5, provideUserCredentialsWebElements.size());
         assertEquals("Expected the label to have the value 'Username *'", "Username *", provideUserCredentialsWebElements.get(0).getText());
         assertEquals("Expected the label to have the value 'Enrollment code *'", "Enrollment code *", provideUserCredentialsWebElements.get(1).getText());
         assertEquals("Expected the label to have the value 'Confirm enrollment code *'", "Confirm enrollment code *", provideUserCredentialsWebElements.get(2).getText());
-        assertEquals("Expected the label to have the value 'Email'", "Email", provideUserCredentialsWebElements.get(3).getText());
+        assertEquals("Expected the label to have the value 'Batch generation'", "Batch generation", provideUserCredentialsWebElements.get(3).getText());
+        assertEquals("Expected the label to have the value 'Email'", "Email", provideUserCredentialsWebElements.get(4).getText());
     }
 
     public void clickShowDetailsButton() {
@@ -238,13 +257,30 @@ public class RaWebHelper extends BaseHelper {
         assertEquals("Certificate Profile selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, certificateProfileSelectionWebElement.isEnabled());
     }
 
+    public void assertTokenTypeSelection(final boolean isEnabled) {
+        final WebElement tokenTypeSelectionWebElement = findElement(Page.SELECT_TOKEN_TYPE);
+        assertNotNull("Token type selection was not found.", tokenTypeSelectionWebElement);
+        assertEquals("Token type selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, tokenTypeSelectionWebElement.isEnabled());
+    }
+
     public void assertKeyAlgorithmSelection(final String keyAlgorithmValue, final boolean isEnabled) {
         final WebElement keyAlgorithmSelectionWebElement = findElement(Page.SELECT_KEY_ALGORITHM);
         assertNotNull("Key Algorithm selection was not found.", keyAlgorithmSelectionWebElement);
         assertEquals("Key Algorithm selection is wrong", keyAlgorithmValue, keyAlgorithmSelectionWebElement.getText());
         assertEquals("Key Algorithm selection was not restricted (enabled = [" + isEnabled + "])", isEnabled, keyAlgorithmSelectionWebElement.isEnabled());
     }
+    
+    /**
+     * Click to add endEndtity
+     */
+    public void clickAddEndEntityButton() {
+        clickLink(Page.BUTTON_ADD_END_ENDTITY);
+    }
 
+    public void fillCsrFilename(final String inputFilename) {
+        fillInput(Page.CSR_FILE_INPUT_FIELD, inputFilename);
+    }
+    
     /**
      * Click to upload Csr
      */
@@ -259,6 +295,15 @@ public class RaWebHelper extends BaseHelper {
         // Add a timeout to load enroll buttons pane before click
         findElement(Page.CONTAINER_ENROLL_BUTTONS);
         clickLink(Page.BUTTON_DOWNLOAD_PEM);
+    }
+
+    /**
+     * Click add end entity for postponed requests
+     */
+    public void clickAddEndEntity() {
+        // Add a timeout to load enroll buttons pane before click
+        findElement(Page.CONTAINER_ENROLL_BUTTONS);
+        clickLink(Page.BUTTON_ADD_END_ENTITY);
     }
 
     /**
@@ -320,6 +365,18 @@ public class RaWebHelper extends BaseHelper {
         assertNotNull(noErrorMessage, errorMessageWebElement);
         assertTrue("Error message does not match. Should contains '" + errorMessage + "', but was '" + errorMessageWebElement.getText() + "'",
                 errorMessageWebElement.getText().contains(errorMessage));
+    }
+
+    public void assertInfoMessageContains(final String noInfoMessage, final String infoMessage) {
+        final WebElement infoMessageWebElement = findElement(Page.TEXT_INFO_MESSAGE);
+        assertNotNull(noInfoMessage, infoMessageWebElement);
+        assertTrue("Info message does not match. Should contains '" + infoMessage + "', but was '" + infoMessageWebElement.getText() + "'",
+                infoMessageWebElement.getText().contains(infoMessage));
+    }
+
+    public void assertSearchTableResult(int number){
+        final List<WebElement> searchResultRows = findElements(Page.TABLE_SEARCH_END_ENTITY_RESULT_ROW);
+        assertEquals("Wrong number of search results in end entity search: ", number, searchResultRows.size());
     }
 
     /**
@@ -452,6 +509,11 @@ public class RaWebHelper extends BaseHelper {
      */
     public void triggerRequestEditLink() {
         clickLink(Page.BUTTON_REQUEST_EDIT);
+    }    
+  
+    public void fillUsernameProvodeUserCredentials(String userName) {
+        fillTextarea(Page.INPUT_USERNAME,userName);
+        
     }
 
     public void fillClearCsrText(final String csr) {
@@ -516,6 +578,16 @@ public class RaWebHelper extends BaseHelper {
         fillInput(Page.INPUT_ENROLLMENTCODE, enrollmentCode);
         fillInput(Page.INPUT_ENROLLMENTCODE_CONFIRM, enrollmentCode);
     }
+    
+    public void fillCredentialEmail(final String email) {
+        fillInput(Page.INPUT_EMAIL, email);
+    }
+    //requestInfoForm:emailField
+    
+    public void fillRequiredSubjectDNAttributes(String commonName) {
+        fillInput(Page.INPUT_COMMON_NAME, commonName);
+    }
+    
     
     /**
      * Fills the username 
@@ -600,6 +672,15 @@ public class RaWebHelper extends BaseHelper {
     
     public void assertErrorMessageAppears(final String expectedErrorMessage, final String noElementMessage, final String assertMessage) {
         assertAllErrorMessagesAppear(new String[]{expectedErrorMessage}, noElementMessage, assertMessage);
+    }
+    
+    /**
+     * Assert the existence of a file at a specific location
+     *
+     * @param filePath
+     */
+    public void assertDownloadedFileExits(final String filePath) {        
+        assertTrue(filePath, Files.exists(Paths.get(filePath)));
     }
     
 }
