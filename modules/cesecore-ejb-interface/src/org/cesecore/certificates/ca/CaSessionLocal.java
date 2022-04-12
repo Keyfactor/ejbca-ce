@@ -290,5 +290,6 @@ public interface CaSessionLocal extends CaSession {
      */
     boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException;
 
+    List<CAData> findAllCitsCa();
 
 }

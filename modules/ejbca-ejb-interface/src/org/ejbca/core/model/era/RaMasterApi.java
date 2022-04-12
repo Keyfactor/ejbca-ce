@@ -1571,4 +1571,18 @@ public interface RaMasterApi {
     SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
     IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
     CertificateExtensionException, CertificateRenewalException;
+    
+    /**
+     * Enrolls or re-enroll credential of an ITS-S as per as per section 6.2.3.2.1 in ETSI 102 941 v2.1.1.
+     * 
+     * @param authenticationToken
+     * @param ecaCertificateId - certiifcateId of ECA, not CA name
+     * @param requestBody - enrollment request serialized as byte array from figure 14
+     * @param operationCode - placeholder to indicate operation (EC enroll or validation)
+     * @return - signed and encrypted response from figure 15
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException 
+     */
+    byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                                                byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException;
 }
