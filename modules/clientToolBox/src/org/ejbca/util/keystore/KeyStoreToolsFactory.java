@@ -39,7 +39,6 @@ public class KeyStoreToolsFactory {
         final Provider provider = Pkcs11SlotLabel.getP11Provider(slot, slotLabelType, libName, attributesFile, privateKeyLabel);
         final String providerName = provider.getName();
         log.debug("Adding provider with name: " + providerName);
-        System.out.println("Adding provider with name: " + providerName);
         if (Security.getProvider(providerName) == null) {
             Security.addProvider(provider);
         } else {
