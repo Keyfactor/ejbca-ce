@@ -16,6 +16,7 @@
     	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestssh-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestcits-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     	<!-- The name of the output from the profiling result will vary slightly -->
 		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/test/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
@@ -59,6 +60,7 @@
     	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
@@ -128,7 +130,13 @@
     <target name="optionaltestssh-system" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
-
+    <condition property="cits.exists"><available file="modules/cits/build.xml" /></condition>
+    <target name="optionaltestcits-unit" if="${cits.exists}">
+        <ant antfile="build.xml" dir="modules/cits" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optionaltestcits-system" if="${cits.exists}">
+        <ant antfile="build.xml" dir="modules/cits" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
