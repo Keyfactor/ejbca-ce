@@ -67,7 +67,9 @@ public class RaWebHelper extends BaseHelper {
         static final By TEXT_INFO_MESSAGE = By.xpath("//li[@class='infoMessage']");
         static final By INPUT_NAME_CONSTRAINT_PERMITTED = By.id("requestInfoForm:nameConstraintPermitted");
         static final By INPUT_NAME_CONSTRAINT_EXCLUDED = By.id("requestInfoForm:nameConstraintExcluded");
-        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");       
+        static final By INPUT_COMMON_NAME = By.id("requestInfoForm:subjectDn:0:subjectDnField");
+        static final By INPUT_ORGANIZATION = By.id("requestInfoForm:subjectDnOptionalFields:0:subjectDnFieldOptional");
+        static final By INPUT_COUNTRY = By.id("requestInfoForm:subjectDnOptionalFields:1:subjectDnFieldOptional");
 
         // Manage Requests
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
@@ -511,7 +513,7 @@ public class RaWebHelper extends BaseHelper {
         clickLink(Page.BUTTON_REQUEST_EDIT);
     }    
   
-    public void fillUsernameProvodeUserCredentials(String userName) {
+    public void fillUsernameProvideUserCredentials(String userName) {
         fillTextarea(Page.INPUT_USERNAME,userName);
         
     }
@@ -587,7 +589,26 @@ public class RaWebHelper extends BaseHelper {
     public void fillRequiredSubjectDNAttributes(String commonName) {
         fillInput(Page.INPUT_COMMON_NAME, commonName);
     }
-    
+
+    public void  verifyCommonNameValue(String commonName, String errorMessage) {
+        verifyInputValue(Page.INPUT_COMMON_NAME, commonName, errorMessage);
+    }
+
+    public void  verifyOrganizationValue(String organization, String errorMessage) {
+        verifyInputValue(Page.INPUT_ORGANIZATION, organization, errorMessage);
+    }
+
+    public void  verifyCountryValue(String country, String errorMessage) {
+        verifyInputValue(Page.INPUT_COUNTRY, country, errorMessage);
+    }
+
+    public void  verifyInputValue(final By inputId, String value, String errorMessage) {
+        assertEquals(
+                errorMessage,
+                value,
+                getElementValue(inputId)
+        );
+    }
     
     /**
      * Fills the username 
