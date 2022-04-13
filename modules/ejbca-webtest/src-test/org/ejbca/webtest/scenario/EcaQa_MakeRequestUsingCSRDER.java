@@ -7,7 +7,6 @@ import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
 import org.ejbca.webtest.util.TestFileResource;
-import org.ejbca.webtest.utils.CommandLineHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -37,12 +36,18 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         static final String CERTIFICATE_PROFILE_KEY_ALGORITHM = "RSA";
         static final String CERTIFICATE_PROFILE_KEY_BIT_LENGTH = "2048 bits";
         static final String END_ENTITY_PROFILE_NAME = "RestrictEEP";
+        static final String END_ENTITY_PROFILE_COUNTRY_FIELD = "C, Country (ISO 3166)";
+        static final String END_ENTITY_PROFILE_ORGANIZATION_FIELD = "O, Organization";
+
         static final String CA_TYPE = "ManagementCA";
         static final String COMMON_NAME = "ComonName";
         static final String USER_NAME = "UserName";
         static final String COMMON_NAME_1 = "CommonName1";
         static final String USER_NAME_1 = "UserName1";
-        static final String CERTIFICATE_REQUEST_CSR = "Restrict_CN.csr";
+        static final String COMMON_NAME_FROM_CSR = "Restrict_CN";
+        static final String COUNTRY = "US";
+        static final String ORGANIZATION = "Primekey webTest Inc";
+        static final String CERTIFICATE_REQUEST_CSR = "SomeCN.csr";
         static final String CERTIFICATE_REQUEST_DER = "Restrict_CN.der"; 
    }  
     
@@ -107,6 +112,8 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
                 getCaName(),
                 Collections.singletonList(getCaName())
         );
+        endEntityProfileHelper.setSubjectDNName(TestData.END_ENTITY_PROFILE_COUNTRY_FIELD);
+        endEntityProfileHelper.setSubjectDNName(TestData.END_ENTITY_PROFILE_ORGANIZATION_FIELD);
         endEntityProfileHelper.saveEndEntityProfile();
     }  
         
@@ -123,7 +130,7 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         //Upload RestrictCN.der
         raWebHelper.fillCsrFilename(new TestFileResource(TestData.CERTIFICATE_REQUEST_DER).getFileAbsolutePath());             
         raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME);     
-        raWebHelper.fillUsernameProvodeUserCredentials(TestData.USER_NAME); 
+        raWebHelper.fillUsernameProvideUserCredentials(TestData.USER_NAME);
         //Download PEM
         raWebHelper.clickDownloadPem();    
         Thread.sleep(2000);        
@@ -142,9 +149,13 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         raWebHelper.selectKeyPairGenerationProvided();
         Thread.sleep(3000);        
         //Upload RestrictCN.der
-        raWebHelper.fillCsrFilename(new TestFileResource(TestData.CERTIFICATE_REQUEST_CSR).getFileAbsolutePath());               
-        raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME_1);        
-        raWebHelper.fillUsernameProvodeUserCredentials(TestData.USER_NAME_1); 
+        raWebHelper.fillCsrFilename(new TestFileResource(TestData.CERTIFICATE_REQUEST_CSR).getFileAbsolutePath());
+        raWebHelper.verifyCommonNameValue(TestData.COMMON_NAME_FROM_CSR,"Common name value was not parsed from csr");
+        raWebHelper.verifyCountryValue(TestData.COUNTRY,"Country value was not parsed from csr");
+        raWebHelper.verifyOrganizationValue(TestData.ORGANIZATION,"Organization value was not parsed from csr");
+        raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME_1);
+        raWebHelper.fillUsernameProvideUserCredentials(TestData.USER_NAME_1);
+
         //Download PEM
         raWebHelper.clickDownloadPem();      
         Thread.sleep(2000);
