@@ -43,7 +43,8 @@ public abstract class CAInfo implements Serializable {
     public static final int CATYPE_CVC = 2;
     public static final int CATYPE_SSH = 3;
     public static final int CATYPE_CITS = 4;
-    
+    public static final int CATYPE_PROXY = 5;
+
     // Used to indicate CITS certificateId in database in subjectDN column
     public static final String CITS_SUBJECTDN_PREFIX = "cits:";
 

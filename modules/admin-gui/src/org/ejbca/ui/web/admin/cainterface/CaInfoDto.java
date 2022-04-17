@@ -124,6 +124,10 @@ public class CaInfoDto {
         return caType == CAInfo.CATYPE_CITS;
     }
 
+    public boolean isCaTypeProxy() {
+        return caType == CAInfo.CATYPE_PROXY;
+    }
+
 
     String getKeySequenceFormatAsString() {
         return String.valueOf(this.keySequenceFormat);
