@@ -421,6 +421,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setCaType(CAInfo.CATYPE_CITS);
     }
 
+    public void setCaTypeProxy() {
+        caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
+    }
+
     public String getCurrentCaType() {
         switch (caInfoDto.getCaType()) {
         case CAInfo.CATYPE_X509:
@@ -701,6 +705,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public boolean isCaTypeCits() {
         return caInfoDto.getCaType() == CAInfo.CATYPE_CITS;
+    }
+
+    public boolean isCaTypeProxy() {
+        return caInfoDto.getCaType() == CAInfo.CATYPE_PROXY;
     }
 
     public String getCaSubjectAltName() {
@@ -1427,6 +1435,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         updateAvailableSigningAlgorithmList();
         getCertificateProfiles();
         geographicElementsInGui = new ArrayList<>();
+    }
+
+    public void renderProxyCaFields() {
+        caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
+        caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        updateAvailableCryptoTokenList(true); //TODO: Not sure if necessary
+        updateAvailableSigningAlgorithmList(); //TODO: Not sure if necessary
+        getCertificateProfiles(); //TODO: Not sure if necessary
+        geographicElementsInGui = new ArrayList<>(); //TODO: Not sure if necessary
     }
 
     public boolean isCreateLinkCertificate() {
