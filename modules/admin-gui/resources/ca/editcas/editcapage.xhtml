@@ -99,6 +99,13 @@
 						rendered="#{editCAsMBean.renderCitsAvailable}">
 						<f:ajax listener="#{editCAsMBean.renderCitsFields()}" render="@form" />
 					</h:commandButton>
+					<h:commandButton
+							id="catypeproxy"
+							styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeProxy?'selected':''}"
+							action="#{editCAsMBean.setCaTypeProxy}"
+							value="#{editCAsMBean.caTypeProxy?'✓':' '}#{web.text.PROXY}">
+						<f:ajax listener="#{editCAsMBean.renderProxyCaFields()}" render="@form" />
+					</h:commandButton>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.editCA}">
@@ -1038,7 +1045,7 @@
 						value="#{editCAsMBean.caEncodedValidity}"
 						title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}"
 						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.signByExternal}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal}"
+						disabled="#{not editCAsMBean.hasEditRight or (editCAsMBean.signedByExternal and not editCAsMBean.caTypeProxy)}"
 						label="Ca Validity" styleClass="mandatory"
 						required="true" >
 					</h:inputText>	
@@ -2211,7 +2218,7 @@
 						value="#{web.text.CREATE}"
 						action="#{editCAsMBean.createCa}"
 						rendered="#{not editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
-						disabled="#{editCAsMBean.signedByExternal}" />
+						disabled="#{editCAsMBean.signedByExternal and not editCAsMBean.caTypeProxy}" />
         	    &nbsp;&nbsp;&nbsp;
 				<h:button 
 						name="buttoncancel"
