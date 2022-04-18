@@ -47,7 +47,7 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         static final String COMMON_NAME_FROM_CSR = "Restrict_CN";
         static final String COUNTRY = "US";
         static final String ORGANIZATION = "Primekey webTest Inc";
-        static final String CERTIFICATE_REQUEST_CSR = "SomeCN.csr";
+        static final String CERTIFICATE_REQUEST_CSR = "Restrict_CN.csr";
         static final String CERTIFICATE_REQUEST_DER = "Restrict_CN.der"; 
    }  
     
