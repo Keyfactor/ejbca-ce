@@ -1360,6 +1360,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         X509Certificate signerCert = null;
         String serialNrForResponseStore = null;
         int caIdForResponseStore = 0;
+        boolean certificateNotExpired = false;
         try {
             req = translateRequestFromByteArray(request, remoteAddress, transactionLogger);
             // Get the certificate status requests that are inside this OCSP req
@@ -1515,6 +1516,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             ocspResponseData.getNextUpdate() != finalResponseTime.getTimeInMillis()) {
                             serialNrForResponseStore = certId.getSerialNumber().toString();
                             caIdForResponseStore = ocspDataConfig.getCaId();
+                            certificateNotExpired = true;
                         } else {
                             if (log.isDebugEnabled()) {
                                 log.debug("Not storing OCSP response for certificate with serialNr '" + certId.getSerialNumber() + 
@@ -1711,11 +1713,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         issuerDnOcspRequest = signedBehalfOfCaSubjectDn;
                         // we will also use certificate profile settings for issuing certificate
                     }
+                    certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(issuerDnOcspRequest, certId.getSerialNumber());
+                    status = certificateStatusHolder.getCertificateStatus();
+                    try {
+                        // disable response caching if certificate is expired
+                        CertTools.checkValidity(certificateStatusHolder.getCertificate(), new Date());
+                    } catch (Exception e) {
+                        log.debug("certificate possibly expired or not yet valid" + certId.getSerialNumber());
+                        certificateNotExpired = false;
+                    }
                     if (extensionOids.isEmpty()) {
-                        status = certificateStoreSession.getStatus(issuerDnOcspRequest, certId.getSerialNumber());
-                    } else {
-                        certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(issuerDnOcspRequest, certId.getSerialNumber());
-                        status = certificateStatusHolder.getCertificateStatus();
+                        certificateStatusHolder = null; // to conform to existing implementation
                     }
                     if (!isPreSigning && transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, String.valueOf(status.certificateProfileId));
@@ -2053,7 +2061,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         
         if (serialNrForResponseStore != null && caIdForResponseStore != 0 && 
-                ocspResponse.getStatus() == OCSPRespBuilder.SUCCESSFUL) {
+                ocspResponse.getStatus() == OCSPRespBuilder.SUCCESSFUL && certificateNotExpired) {
             try {
                 storeOcspResponse(caIdForResponseStore, serialNrForResponseStore, ocspResponse);
             } catch (OCSPException | IOException e) {
