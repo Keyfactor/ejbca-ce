@@ -1054,15 +1054,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.debug("scep thumbprint = " + thumbprint);
                 final String hexSerialNumber = response.getSerialNumber().toString(16);
                 log.debug("scep hexSerialNumber = " + hexSerialNumber);
+                
+                // note that the ca id sent here has to match the ca id sent when polling for revocations.  
+                // We're sending the issuer DN, as encoded in the certificate, as the identifier of the issuing CA.  
                 final String issuer = response.getIssuer().getName();
                 log.debug("scep issuer = " + issuer);
                 
-                // issuer may be in non RFC order.  Normalize it so it matches the order from the database so
-                // it matches the value sent by IntuneRestApi::downloadRevocationRequests
-                final String normalizedIssuer = CertTools.stringToBCDNString(issuer);
-                log.debug("normalized scep issuer = " + normalizedIssuer);
                 intuneScepServiceClient.sendSuccessNotification(transactionId, base64Message, thumbprint, hexSerialNumber,
-                        response.getNotAfter().toString(), normalizedIssuer, normalizedIssuer, normalizedIssuer);
+                        response.getNotAfter().toString(), issuer, issuer, issuer);
             }
             log.info("MS Intune status update succeeded for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
         } catch (AzureException e) {
