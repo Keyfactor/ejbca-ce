@@ -1,4 +1,4 @@
-package org.ejbca.ui.web.rest.api.resource;
+package org.ejbca.ui.web.rest.api.exception;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
