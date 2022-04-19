@@ -22,7 +22,7 @@
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
-	<description><![CDATA[External interface for the EJBCA rest api]]></description>
+	<description><![CDATA[External interface for the EJBCA REST API]]></description>
 	<display-name>ejbca-rest-api</display-name>
 
     <filter>
