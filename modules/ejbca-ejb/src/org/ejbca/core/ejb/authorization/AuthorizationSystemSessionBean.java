@@ -33,6 +33,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
+import org.cesecore.authentication.tokens.PublicAccessMatchValue;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -68,7 +70,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 /**
  * This session bean handles high level authorization system tasks.
  *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AuthorizationSystemSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -297,6 +298,8 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             if (entityManager.find(UserData.class, username)==null) {
                 entityManager.persist(userData);
             }
+            // add public access role on fresh installation
+            initPublicAccessRoleOnFreshInstallation();
             return true;
         }
         log.info("Roles or CAs exist, not intializing " + SUPERADMIN_ROLE);
@@ -336,5 +339,15 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         allResources.add(StandardRules.CAADD.resource());
         allResources.add(StandardRules.CAREMOVE.resource());
         return AccessSet.fromAccessRules(accessRules, allResources);
+    }
+
+    private void initPublicAccessRoleOnFreshInstallation(){
+        log.info("Initialazing public access role with confidential role member.");
+        final Role roleToPersist = new Role(null, PUBLUIIC_ACCESS_ROLE, Arrays.asList(StandardRules.CREATECERT.resource()), null);
+        final Role role = roleDataSession.persistRole(roleToPersist);
+        roleMemberDataSession.persistRoleMember(new RoleMember(PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE,
+                RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, PublicAccessMatchValue.TRANSPORT_CONFIDENTIAL.getNumericValue(),
+                AccessMatchType.TYPE_UNUSED.getNumericValue(),
+                "", role.getRoleId(), null));
     }
 }
