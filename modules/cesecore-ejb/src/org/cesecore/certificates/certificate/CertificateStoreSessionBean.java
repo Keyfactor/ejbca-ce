@@ -1344,6 +1344,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 if (log.isTraceEnabled()) {
                     log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
                 }
+                result.setExpirationDate(data.getExpireDate());
                 return result;
             }
             if (log.isTraceEnabled()) {
@@ -1372,6 +1373,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (log.isTraceEnabled()) {
                 log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
             }
+            result.setExpirationDate(data.getExpireDate());
             return new CertificateStatusHolder(data.getCertificate(entityManager), result);
         }
         if (log.isTraceEnabled()) {
