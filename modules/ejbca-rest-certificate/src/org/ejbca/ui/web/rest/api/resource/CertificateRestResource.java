@@ -1,13 +1,15 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.resource;
 
 import static org.ejbca.ui.web.rest.api.resource.CertificateRestResourceUtil.authorizeSearchCertificatesRestRequestReferences;
@@ -107,27 +109,12 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.SwaggerDefinition.Scheme;
 
 /**
  * JAX-RS resource handling certificate-related requests.
  */
-@Api(tags = {"v1/certificate"}, value = "Certificate REST Management API")
-@SwaggerDefinition(
-    /* @Info annotation seems to work properly only when it is configured only once. Must not specify it on any other RestResources in this module! */
-    info = @Info(
-        title = "EJBCA REST Interface",
-        version = BaseRestResource.RESOURCE_VERSION,
-        description = "API reference documentation."
-    ),
-    basePath="/ejbca/ejbca-rest-api",
-    schemes={Scheme.HTTPS}
-)
 @Path("v1/certificate")
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
