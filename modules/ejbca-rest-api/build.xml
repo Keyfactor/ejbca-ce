@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ejbca-rest-api" default="build">
     <description>
-            Build files for the EJBCA rest api module
+            Build files for the EJBCA REST API module
     </description>
 
 	<dirname property="ejbca-rest-api.dir" file="${ant.file.ejbca-rest-api}"/>
@@ -37,6 +37,9 @@
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path location="${mod.ejbca-rest-common.lib}"/>
+        <path location="${mod.ejbca-rest-certificate.lib}"/>
+        <path location="${mod.ejbca-rest-configdump.lib}"/>
+        <path location="${mod.ejbca-rest-ca.lib}"/>
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
         <path location="${mod.ejbca-rest-camanagement.lib}"/>
         <path location="${mod.ejbca-rest-endentity.lib}"/>
