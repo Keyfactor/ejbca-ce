@@ -885,11 +885,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     public List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, long expireDate, int limit, int offset) {
         if (log.isTraceEnabled()) {
-            log.trace(">findCertificatesByIssuerWithLimit()");
+            log.trace(">findSerialNrByIssuerAndExpireDateWithLimitAndOffset()");
         }
         final List<String> ret = certificateDataSession.findSerialNrByIssuerAndExpireDateWithLimitAndOffset(issuerDN, expireDate, limit, offset);
         if (log.isTraceEnabled()) {
-            log.trace("<findCertificatesByIssuerWithLimit()");
+            log.trace("<findSerialNrByIssuerAndExpireDateWithLimitAndOffset()");
         }
         return ret;
     }
