@@ -637,6 +637,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int id) {
+        if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID)) {
+            log.info("Authorization denied to "+ AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID + " for '" + authenticationToken + "'.");
+            return null;
+        }
         final ApprovalDataVO approvalDataVO = getApprovalDataNoAuth(id);
         if (approvalDataVO == null) {
             return null;

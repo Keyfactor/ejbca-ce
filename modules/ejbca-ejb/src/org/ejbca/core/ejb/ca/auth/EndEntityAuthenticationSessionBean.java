@@ -76,16 +76,23 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private GlobalConfiguration getGlobalConfiguration() {
         return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
-    
+
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    
+
     @Override
     public EndEntityInformation authenticateUser(final AuthenticationToken admin, final String username, final String password)
         throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
+        if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_USEUSERNAME)) {
+            final String msg = intres.getLocalizedMessage("authentication.notallowedtousepassword", admin.toString(), username);
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, username, details);
+            throw new AuthLoginException(ErrorCode.NOT_AUTHORIZED, msg);
+        }
     	boolean eichange = false;
         try {
             // Find the user with username username, or throw ObjectNotFoundException
