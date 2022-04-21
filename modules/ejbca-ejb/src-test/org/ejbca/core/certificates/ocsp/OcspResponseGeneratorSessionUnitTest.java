@@ -89,6 +89,7 @@ import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -373,7 +374,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     }
     
     @Test
-    public void zzzzbasicCachedRequestWithPresigning() throws Exception {
+    public void zzza_basicCachedRequestWithPresigning() throws Exception {
         log.trace(">basicRequest");
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
@@ -384,6 +385,23 @@ public class OcspResponseGeneratorSessionUnitTest {
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false);
         assertGoodResponse(respInfo);
+        verify(ocspDataSessionMock);
+        log.trace("<basicRequest");
+    }
+    
+    @Test
+    public void zzzb_basicCachedRequestWithPresigningExpiredCert() throws Exception {
+        log.trace(">basicRequest");
+        final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
+        expectLoggerChecks();
+        status.setExpirationDate(System.currentTimeMillis() - 3600 * 1000); // expired
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        
+        setupOcspResponseCache();
+        replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, true, false);
+        assertNull(respInfo);
         log.trace("<basicRequest");
     }
 
