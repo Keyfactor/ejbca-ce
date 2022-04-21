@@ -664,7 +664,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         if (adLoginPassword.equals(HIDDEN_PWD)) {
             // If password field has been reset in GUI, test connection with persisted password
-            log.debug("Hidden password in GUI. Replacing with db value..."); //TODO Remove
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                 globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
             adLoginPassword = autoEnrollmentConfiguration.getAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias());
