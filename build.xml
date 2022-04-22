@@ -688,6 +688,9 @@
 	            <include name="ejbca-ejb.jar" />
 				<include name="acme-common.jar" />
         		<include name="ejbca-rest-common.jar" />
+        		<include name="ejbca-rest-certificate.jar" />
+        		<include name="ejbca-rest-configdump.jar" />
+        		<include name="ejbca-rest-ca.jar" />
         		<include name="ejbca-rest-cryptotoken.jar" />
         		<include name="ejbca-rest-camanagement.jar" />
         		<include name="ejbca-rest-endentity.jar" />
@@ -1107,16 +1110,21 @@
                 <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/certificate/certextensions/BasicCVCertificateExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/configdump/**"/>
                 <exclude unless="edition.is.ee" name="modules/unidfnr/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-common/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-cryptotoken/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-camanagement/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/ejbca-rest-endentity/**"/>
-                <exclude unless="edition.is.ee" name="modules/ejbca-common/src/org/ejbca/util/swagger/SnakeCaseConverter.java"/>
-                <exclude unless="edition.is.ee" name="lib/ext/jackson2/**"/>
-                <exclude unless="edition.is.ee" name="lib/ext/resteasy-jaxrs-lib/**"/>
-                <exclude unless="edition.is.ee" name="lib/ext/swagger docs/**"/>
-                <exclude unless="edition.is.ee" name="lib/ext/swagger/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-ca/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-camanagement/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-configdump/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-cryptotoken/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-endentity/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CaRestResourceSwagger.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CaManagementRestResourceSwagger.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/ConfigdumpRestResourceSwagger.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CryptoTokenRestResourceSwagger.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/EndEntityRestResourceSwagger.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaRestResourceUnitTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaRestResourceSystemTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaManagementRestResourceSystemTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CryptoTokenRestResourceSystemTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ssh/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>

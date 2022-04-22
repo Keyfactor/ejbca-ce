@@ -2173,7 +2173,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public boolean existsUser(String username) {
         // Selecting 1 column is optimal speed
-        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE TRIM(LOWER(a.username)) = TRIM(LOWER(:username))");
+        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE TRIM(a.username) = TRIM(:username)");
         query.setParameter("username", username);
         return !query.getResultList().isEmpty();
     }
