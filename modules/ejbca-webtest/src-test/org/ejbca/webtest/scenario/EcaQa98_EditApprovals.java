@@ -81,7 +81,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         static final String USER_NAME = "SeleniumRaAdmin";
         static final String USER_NAME1 = "SeleniumRaAdmin1";
         static final String ROLE_NAME = "SeleniumRaAdminRoleECAQA98";
-        static final String MATCH_WITH = "PublicAccessAuthenticationToken : Any transport (HTTP or HTTPS)";
+        static final String MATCH_WITH = "X509: CN, Common name";
         static final String APPROVE_MESSAGE_CANNOT_EDIT = "You have edited this request and cannot approve it";
         static final String APPROVE_MESSAGE_APPROVED_AND_EXECUTED = "This request has been approved and executed already";
     }
