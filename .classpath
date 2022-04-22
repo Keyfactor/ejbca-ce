@@ -59,6 +59,9 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-api/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-common/src-test"/>
+	<classpathentry kind="src" path="modules/ejbca-rest-certificate/src"/>
+	<classpathentry kind="src" path="modules/ejbca-rest-configdump/src"/>
+	<classpathentry kind="src" path="modules/ejbca-rest-ca/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-cryptotoken/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-camanagement/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-endentity/src"/>
@@ -178,7 +181,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-cli-1.5.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-fileupload-1.3.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.35.jar"/>
@@ -230,7 +233,7 @@
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.14.jar"/>
-	<classpathentry kind="lib" path="lib/json-smart-2.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/json-smart-2.4.8.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
