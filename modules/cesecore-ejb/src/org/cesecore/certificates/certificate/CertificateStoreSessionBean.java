@@ -883,6 +883,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
     
     @Override
+    public List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, long expireDate, int limit, int offset) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findSerialNrByIssuerAndExpireDateWithLimitAndOffset()");
+        }
+        final List<String> ret = certificateDataSession.findSerialNrByIssuerAndExpireDateWithLimitAndOffset(issuerDN, expireDate, limit, offset);
+        if (log.isTraceEnabled()) {
+            log.trace("<findSerialNrByIssuerAndExpireDateWithLimitAndOffset()");
+        }
+        return ret;
+    }
+    
+    @Override
     public Collection<Certificate> findCertificatesByIssuerAndSernos(String issuerDN, Collection<BigInteger> sernos) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificateByIssuerAndSernos()");
@@ -1332,6 +1344,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 if (log.isTraceEnabled()) {
                     log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
                 }
+                result.setExpirationDate(data.getExpireDate());
                 return result;
             }
             if (log.isTraceEnabled()) {
@@ -1360,6 +1373,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             if (log.isTraceEnabled()) {
                 log.trace("<getStatus() returned " + result + " for cert number " + serno.toString(16));
             }
+            result.setExpirationDate(data.getExpireDate());
             return new CertificateStatusHolder(data.getCertificate(entityManager), result);
         }
         if (log.isTraceEnabled()) {
