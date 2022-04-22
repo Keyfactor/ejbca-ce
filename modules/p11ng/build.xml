@@ -33,6 +33,9 @@
 		<path location="${p11ng.build-test.dir}"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path refid="lib.easymock.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.slf4jlog4j.classpath"/>
+		<path refid="lib.slf4japi.classpath"/>
     </path>
 	
     <target name="clean" description="Clean up this module">
