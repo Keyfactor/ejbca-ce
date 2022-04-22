@@ -86,13 +86,6 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
-        if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_USEUSERNAME)) {
-            final String msg = intres.getLocalizedMessage("authentication.notallowedtousepassword", admin.toString(), username);
-            final Map<String, Object> details = new LinkedHashMap<>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, username, details);
-            throw new AuthLoginException(ErrorCode.NOT_AUTHORIZED, msg);
-        }
     	boolean eichange = false;
         try {
             // Find the user with username username, or throw ObjectNotFoundException
