@@ -1054,8 +1054,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.debug("scep thumbprint = " + thumbprint);
                 final String hexSerialNumber = response.getSerialNumber().toString(16);
                 log.debug("scep hexSerialNumber = " + hexSerialNumber);
+                
+                // note that the ca id sent here has to match the ca id sent when polling for revocations.  
+                // We're sending the issuer DN, as encoded in the certificate, as the identifier of the issuing CA.  
                 final String issuer = response.getIssuer().getName();
                 log.debug("scep issuer = " + issuer);
+                
                 intuneScepServiceClient.sendSuccessNotification(transactionId, base64Message, thumbprint, hexSerialNumber,
                         response.getNotAfter().toString(), issuer, issuer, issuer);
             }
