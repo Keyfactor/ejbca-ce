@@ -2208,7 +2208,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     @Override
     public void migrateDatabase7100() throws UpgradeFailedException {
-        final String ruleAdministrator = AccessRulesHelper.normalizeResource(AccessRulesConstants.ROLE_ADMINISTRATOR);
         final String ruleCreateCert = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
         final String ruleKeyRecovery = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY);
         final String ruleUsePassword = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_USEUSERNAME);
@@ -2217,26 +2216,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.debug("migrateDatabase7100: Checking if roles need added access rules added in 7.10.0");
             for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
                 final LinkedHashMap<String, Boolean> access = role.getAccessRules();
-                boolean changed = false;
                 if (Boolean.TRUE.equals(access.get(ruleCreateCert)) || Boolean.TRUE.equals(access.get(ruleKeyRecovery))) {
                     // Users that can create or recover certs should still be able to do so.
                     log.info("Adding new access rules to '" + role.getRoleNameFull() + "'");
                     access.put(ruleUsePassword, true);
                     access.put(ruleUseApprovalRequestId, true);
-                    changed = true;
-                }
-                if (Boolean.TRUE.equals(access.get(ruleAdministrator)) && !Boolean.TRUE.equals(access.get(ruleUsePassword))) {
-                    final List<RoleMember> members = roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId());
-                    final boolean hasCliAdmin = members.stream().anyMatch(
-                            m -> StringUtils.equals(m.getTokenType(), CliAuthenticationTokenMetaData.TOKEN_TYPE));
-                    if (hasCliAdmin) {
-                        // Make sure admins don't loose CLI access
-                        log.info("Adding " + ruleUsePassword + " access rule to '" + role.getRoleNameFull() + "'");
-                        access.put(ruleUsePassword, true);
-                        changed = true;
-                    }
-                }
-                if (changed) {
                     AccessRulesHelper.minimizeAccessRules(access);
                     roleSession.persistRole(authenticationToken, role);
                 }
