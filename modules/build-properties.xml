@@ -167,6 +167,12 @@
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
     <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
+    <property name="mod.ejbca-rest-certificate.path" location="${mod.path}/ejbca-rest-certificate" />
+    <property name="mod.ejbca-rest-certificate.lib" location="${mod.dist.path}/ejbca-rest-certificate.jar" />
+    <property name="mod.ejbca-rest-configdump.path" location="${mod.path}/ejbca-rest-configdump" />
+    <property name="mod.ejbca-rest-configdump.lib" location="${mod.dist.path}/ejbca-rest-configdump.jar" />
+    <property name="mod.ejbca-rest-ca.path" location="${mod.path}/ejbca-rest-ca" />
+    <property name="mod.ejbca-rest-ca.lib" location="${mod.dist.path}/ejbca-rest-ca.jar" />
     <property name="mod.ejbca-rest-cryptotoken.path" location="${mod.path}/ejbca-rest-cryptotoken" />
     <property name="mod.ejbca-rest-cryptotoken.lib" location="${mod.dist.path}/ejbca-rest-cryptotoken.jar" />
     <property name="mod.ejbca-rest-camanagement.path" location="${mod.path}/ejbca-rest-camanagement" />
@@ -183,6 +189,8 @@
 	<property name="mod.cits.path" location="${mod.path}/cits" />
 	<property name="mod.cits.lib" location="${mod.dist.path}/ejbca-cits.jar" />
 	<property name="mod.cits.war" location="${mod.dist.path}/cits.war" />
+	<property name="mod.p11ng.path" location="${mod.path}/p11ng" />
+	<property name="mod.p11ng.lib" location="${mod.dist.path}/p11ng.jar" />
 	
 	
     <!-- Variables of global interest -->
@@ -263,7 +271,6 @@
 		</fileset>
 	</path>
 
-    <mkdir dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="reactive-streams-1.*.jar"/>
@@ -566,6 +573,18 @@
 	
     <condition property="mod.ejbca-rest-common.exists">
         <available file="${mod.ejbca-rest-common.path}/build.xml"/>
+    </condition>
+
+    <condition property="mod.ejbca-rest-certificate.exists">
+        <available file="${mod.ejbca-rest-certificate.path}/build.xml"/>
+    </condition>
+
+    <condition property="mod.ejbca-rest-configdump.exists">
+        <available file="${mod.ejbca-rest-configdump.path}/build.xml"/>
+    </condition>
+
+    <condition property="mod.ejbca-rest-ca.exists">
+        <available file="${mod.ejbca-rest-ca.path}/build.xml"/>
     </condition>
 	
     <condition property="mod.ejbca-rest-cryptotoken.exists">
