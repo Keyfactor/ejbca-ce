@@ -39,6 +39,9 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
+      	<echo message="running acme"/>
+      	<antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
+      	<echo message="ran acme"/>
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -50,18 +53,29 @@
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/p11ng" target="test" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
+        <echo message="ran p11ng"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
+        <echo message="ran msae"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
+        <echo message="ran rest unit"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
+    	<echo message="ran ejbca-ejb unit"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <echo message="ran admin-gui unit"/>
         <antcall target="optionaltestconfigdump-unit" inheritall="true" inheritrefs="true"/>
+        <echo message="ran optionaltestconfigdump-unit unit"/>
     	<antcall target="optionaltestct" inheritall="true" inheritrefs="true"/>
+    	<echo message="ran optionaltestct unit"/>
     	<antcall target="optionaltestcaa" inheritall="true" inheritrefs="true"/>
+    	<echo message="ran optionaltestcaa unit"/>
     	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
+    	<echo message="ran optionaltestcmpproxy unit"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
+    	<echo message="ran ejbca-ejb-cli unit"/>
     	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
+    	<echo message="ran optionaltestssh unit unit"/>
     	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
+    	<echo message="ran optionaltestcits unit"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
