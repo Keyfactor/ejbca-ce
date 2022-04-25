@@ -508,18 +508,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
 
-        // Update System Configuration
-        GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (globalConfig != null) {
-            if (CAIdTools.updateCAIds(globalConfig, fromId, toId, toDN)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in System Configuration");
-                }
-                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
-            }
-        }
-
         // Update CMP Configuration
         // Only "Default CA" contains a reference to the Subject DN. All other fields reference the CAs by CA name.
         CmpConfiguration cmpConfig = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);

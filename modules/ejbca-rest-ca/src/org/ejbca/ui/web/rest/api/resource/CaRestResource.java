@@ -3,7 +3,7 @@
  *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
  *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
+ *  The use of the Proprietary Modules are subject to specific           *
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
@@ -44,7 +44,6 @@ import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CrlRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
@@ -53,22 +52,19 @@ import io.swagger.annotations.ApiParam;
  *
  * @version $Id$
  */
-@Api(tags = {"v1/ca"}, value = "Certificate Rest Management API")
-/* Swagger description etc is available in the CertificateRestResource */
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CaRestResource extends BaseRestResource {
 
-
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
 
     @GET
     @Path("/status")
-    @ApiOperation(value = "Get the status of this REST Resource", 
-                  notes = "Returns status, API version and EJBCA version.",  
+    @ApiOperation(value = "Get the status of this REST Resource",
+                  notes = "Returns status, API version and EJBCA version.",
                   response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
