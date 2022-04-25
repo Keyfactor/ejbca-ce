@@ -458,6 +458,12 @@
             replacement-ejb="cesecore-x509ca.jar"
         />
 		<jar-replacement-in-module
+				replacement-tag="!--@proxy-ca.jar@-->"
+				replacement-file="${eardd.src}/META-INF/application.xml"
+				replacement-enabled="${mod.proxy-ca.exists}"
+				replacement-ejb="proxy-ca.jar"
+		/>
+		<jar-replacement-in-module
 			replacement-tag="!--@unidfnr-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${mod.unidfnr.enabled}"
@@ -693,6 +699,7 @@
         		<include name="ejbca-rest-endentity.jar" />
         		<include name="ejbca-ssh.jar" />
         		<include name="ejbca-cits.jar" />
+        		<include name="proxy-ca.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
