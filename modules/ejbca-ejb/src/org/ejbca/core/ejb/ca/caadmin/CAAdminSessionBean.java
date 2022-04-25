@@ -594,6 +594,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
             mergeCertificatePoliciesFromCAAndProfile(citsCainfo, certprofile);
+        } else if (cainfo.getCAType() == X509CAInfo.CATYPE_PROXY) {
+            log.info("Creating a PROXY CA: " + cainfo.getName());
+            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+            // Create PROXY CA
+            ca = (CA) CAFactory.INSTANCE.getProxyCa(x509cainfo);
+            ca.setCAToken(catoken);
+            // Set certificate policies in profile object
+            mergeCertificatePoliciesFromCAAndProfile(x509cainfo, certprofile);
         } else {
             throw new IllegalStateException("CA of unknown type " + cainfo.getCAType() + " was encountered.");
         }

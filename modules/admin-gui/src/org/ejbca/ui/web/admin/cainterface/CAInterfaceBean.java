@@ -498,7 +498,7 @@ public class CAInterfaceBean implements Serializable {
 //	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
 
-	        if (caInfoDto.getCaType() == CAInfo.CATYPE_X509) {
+	        if (caInfoDto.getCaType() == CAInfo.CATYPE_X509 || caInfoDto.getCaType() == CAInfo.CATYPE_PROXY) { //TODO: make a separate clause for CATYPE_PROXY
 	            // Create a X509 CA
 	            if (caInfoDto.getCaSubjectAltName() == null) {
                     caInfoDto.setCaSubjectAltName("");
