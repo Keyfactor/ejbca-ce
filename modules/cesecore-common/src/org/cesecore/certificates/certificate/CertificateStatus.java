@@ -37,6 +37,9 @@ public class CertificateStatus implements Serializable {
     public final int revocationReason;
     public final int certificateProfileId;
     
+    // relevant as expired certificate OCSP responses are not stored
+    private long expirationDate;
+    
     public CertificateStatus(String name, long date, int reason, int certProfileId ) {
         this.name = name;
         this.revocationDate = new Date(date);
@@ -65,5 +68,13 @@ public class CertificateStatus implements Serializable {
     
     public boolean isRevoked() {
         return revocationReason != RevokedCertInfo.NOT_REVOKED && revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
+    }
+
+    public long getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(long expirationDate) {
+        this.expirationDate = expirationDate;
     }
 }

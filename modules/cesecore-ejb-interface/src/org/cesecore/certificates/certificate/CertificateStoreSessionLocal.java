@@ -325,4 +325,16 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return List of all found entries.
      */
     List<String> findSerialNumbersByIssuerWithLimit(String issuerDN, int limit, int offset);
+
+    /**
+     * Lists serial numbers of all certificates issued by the given issuer and earliest expire time of certificates
+     * within the offset / limit scope. The expireTime can be in future or past.
+     * 
+     * @param issuerDN of the issuing CA.
+     * @param expireDate earliest expireTime(in UTC milliseconds) of the certificates.
+     * @param limit Maximum number of results
+     * @param offset Index of first result
+     * @return List of all found entries.
+     */
+    List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, long expireDate, int limit, int offset);
 }
