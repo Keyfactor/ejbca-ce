@@ -230,7 +230,7 @@
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.9.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.14.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.4.8.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
