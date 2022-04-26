@@ -63,12 +63,12 @@
                                             <h:outputLink value="enrollmakenewrequest.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_make_new_request}"/></h:outputLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollCertificate}">
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollUsingApprovalRequestId}">
                                         <li class="pure-menu-item">
                                         	<h:outputLink value="enrollwithrequestid.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}"/></h:outputLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollCertificate}">
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollUsingUsername}">
                                         <li class="pure-menu-item">
                                         	<h:outputLink value="enrollwithusername.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_username}"/></h:outputLink>
                                         </li>
