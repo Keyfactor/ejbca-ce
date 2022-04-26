@@ -342,8 +342,10 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
     }
 
     private void initPublicAccessRoleOnFreshInstallation(){
-        log.info("Initialazing public access role with confidential role member.");
-        final Role roleToPersist = new Role(null, PUBLUIIC_ACCESS_ROLE, Arrays.asList(StandardRules.CREATECERT.resource()), null);
+        log.info("Initialising public access role with confidential role member.");
+        final Role roleToPersist = new Role(null, PUBLUIIC_ACCESS_ROLE,
+                Arrays.asList(StandardRules.CAVIEW.resource(), StandardRules.CREATECERT.resource(), AccessRulesConstants.REGULAR_USEUSERNAME),
+                null);
         final Role role = roleDataSession.persistRole(roleToPersist);
         roleMemberDataSession.persistRoleMember(new RoleMember(PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE,
                 RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, PublicAccessMatchValue.TRANSPORT_CONFIDENTIAL.getNumericValue(),
