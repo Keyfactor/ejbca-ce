@@ -223,7 +223,7 @@ httpserver.external.fqdn = ${httpserver.external.fqdn}
 web.contentencoding      = ${web.contentencoding}
 web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
-unidfnr.enabled                 = ${unidfnr.enabled}
+unidfnr.enabled          = ${unidfnr.enabled}
 
       </echo>
     </target>
