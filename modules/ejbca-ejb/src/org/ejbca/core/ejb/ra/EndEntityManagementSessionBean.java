@@ -1115,15 +1115,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void deleteUser(
-            final AuthenticationToken authenticationToken, final String username
-    ) throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+    public void deleteUser(final AuthenticationToken authenticationToken, final String username)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {  
+        final String trimmedUsername = StringTools.trim(username);
         if (log.isTraceEnabled()) {
-            log.trace(">deleteUser(" + username + ")");
+            log.trace(">deleteUser(" + trimmedUsername + ")");
         }
         // Check if administrator is authorized to delete user.
         Integer caId;
-        final UserData data1 = endEntityAccessSession.findByUsername(username);
+        final UserData data1 = endEntityAccessSession.findByUsername(trimmedUsername);
         if (data1 != null) {
             caId = data1.getCaId();
             endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
@@ -1131,7 +1131,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_END_ENTITY, caId);
             }
         } else {
-            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", trimmedUsername));
             // This exception message is used to not leak information to the user
             final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
@@ -1141,20 +1141,20 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             entityManager.remove(data1);
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.SUCCESS,
-                    authenticationToken, caId, null, username,
-                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.removedentity", username)).build()
+                    authenticationToken, caId, null, trimmedUsername,
+                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.removedentity", trimmedUsername)).build()
             );
         } catch (Exception e) {
-            final String msg = intres.getLocalizedMessage("ra.errorremoveentity", username);
+            final String msg = intres.getLocalizedMessage("ra.errorremoveentity", trimmedUsername);
             logAuditEvent(
                     EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE,
-                    authenticationToken, caId, null, username,
+                    authenticationToken, caId, null, trimmedUsername,
                     SecurityEventProperties.builder().withMsg(msg).withError(e.getMessage()).build()
             );
             throw new CouldNotRemoveEndEntityException(msg);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<deleteUser(" + username + ")");
+            log.trace("<deleteUser(" + trimmedUsername + ")");
         }
     }
 
