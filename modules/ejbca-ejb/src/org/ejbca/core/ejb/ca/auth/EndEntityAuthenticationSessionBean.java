@@ -76,10 +76,10 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private GlobalConfiguration getGlobalConfiguration() {
         return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
-    
+
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    
+
     @Override
     public EndEntityInformation authenticateUser(final AuthenticationToken admin, final String username, final String password)
         throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
