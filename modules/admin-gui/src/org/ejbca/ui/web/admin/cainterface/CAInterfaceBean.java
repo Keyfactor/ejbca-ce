@@ -498,7 +498,7 @@ public class CAInterfaceBean implements Serializable {
 //	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
 
-	        if (caInfoDto.getCaType() == CAInfo.CATYPE_X509 || caInfoDto.getCaType() == CAInfo.CATYPE_PROXY) { //TODO: make a separate clause for CATYPE_PROXY
+	        if (caInfoDto.getCaType() == CAInfo.CATYPE_X509) {
 	            // Create a X509 CA
 	            if (caInfoDto.getCaSubjectAltName() == null) {
                     caInfoDto.setCaSubjectAltName("");
@@ -790,6 +790,99 @@ public class CAInterfaceBean implements Serializable {
                 CitsCaInfo citsCaInfo =  citsCaInfoBuilder.build();
 
                 saveRequestInfo(citsCaInfo);
+            } else if (caInfoDto.getCaType() == CAInfo.CATYPE_PROXY) {
+                // Create a X509 CA
+                if (caInfoDto.getCaSubjectAltName() == null) {
+                    caInfoDto.setCaSubjectAltName("");
+                }
+
+                // Check for invalid or malformed SAN
+                String errorMessage = checkSubjectAltName(caInfoDto.getCaSubjectAltName());
+                if (!StringUtils.isEmpty(errorMessage)) {
+                    throw new ParameterException(errorMessage);
+                }
+
+                /* Process certificate policies. */
+                final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
+                for (CertificatePolicy certificatePolicy : policies) {
+                    if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
+                        throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));
+                    }
+                }
+                // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
+                final List<Integer> crlPublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
+                final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
+
+                List<String> authorityInformationAccess = new ArrayList<>();
+                if (StringUtils.isNotBlank(caInfoDto.getAuthorityInformationAccess())) {
+                    authorityInformationAccess = new ArrayList<>( Arrays.asList(caInfoDto.getAuthorityInformationAccess().split(LIST_SEPARATOR)));
+                }
+                List<String> certificateAiaDefaultCaIssuerUri = new ArrayList<>();
+                if (StringUtils.isNotBlank(caInfoDto.getCertificateAiaDefaultCaIssuerUri())) {
+                    certificateAiaDefaultCaIssuerUri = new ArrayList<>( Arrays.asList(caInfoDto.getCertificateAiaDefaultCaIssuerUri().split(LIST_SEPARATOR)));
+                }
+                String caDefinedFreshestCrl = "";
+                if (caInfoDto.getCaDefinedFreshestCRL() != null) {
+                    caDefinedFreshestCrl = caInfoDto.getCaDefinedFreshestCRL();
+                }
+                if (caInfoDto.isUsePartitionedCrl() && (caInfoDto.getSuspendedCrlPartitions() >= caInfoDto.getCrlPartitions())) {
+                    throw new ParameterException(ejbcawebbean.getText("CRLPARTITIONNUMBERINVALID"));
+                }
+
+                final List<String> nameConstraintsPermitted = parseNameConstraintsInput(caInfoDto.getNameConstraintsPermitted());
+                final List<String> nameConstraintsExcluded = parseNameConstraintsInput(caInfoDto.getNameConstraintsExcluded());
+                final boolean hasNameConstraints = !nameConstraintsPermitted.isEmpty() || !nameConstraintsExcluded.isEmpty();
+                if (hasNameConstraints && !isNameConstraintAllowedInProfile(certprofileid)) {
+                    throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
+                }
+
+                final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null) ?
+                    Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
+                List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(caInfoDto.getSignKeySpec(), caInfoDto.getCaSubjectDN(), caInfoDto.isServiceCmsActive());
+
+                if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
+                    X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = createX509CAInfoBuilder(caInfoDto);
+                    x509CAInfoBuilder.setCertificateProfileId(certprofileid)
+                        .setDefaultCertProfileId(defaultCertProfileId)
+                        .setCaToken(caToken)
+                        .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
+                        .setPolicies(policies)
+                        .setCrlPublishers(crlPublishers)
+                        .setValidators(keyValidators)
+                        .setAuthorityInformationAccess(authorityInformationAccess)
+                        .setCertificateAiaDefaultCaIssuerUri(certificateAiaDefaultCaIssuerUri)
+                        .setNameConstraintsPermitted(nameConstraintsPermitted)
+                        .setNameConstraintsExcluded(nameConstraintsExcluded)
+                        .setCaDefinedFreshestCrl(caDefinedFreshestCrl)
+                        .setExtendedCaServiceInfos(extendedCaServiceInfos)
+                        .setApprovals(approvals);
+
+                    if (buttonCreateCa) {
+                        X509CAInfo x509cainfo =  x509CAInfoBuilder
+                            .setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
+                            .setSignedBy(signedBy)
+                            .setCmpRaAuthSecret(caInfoDto.getSharedCmpRaSecret())
+                            .build();
+                        try {
+                            caadminsession.createCA(authenticationToken, x509cainfo);
+                        } catch (EJBException e) {
+                            if (e.getCausedByException() instanceof IllegalArgumentException) {
+                                //Couldn't create CA from the given parameters
+                                illegaldnoraltname = true;
+                            } else {
+                                throw e;
+                            }
+                        }
+                    }
+
+                    if (buttonMakeRequest) {
+                        X509CAInfo x509cainfo =  x509CAInfoBuilder
+                            .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
+                            .setIncludeInHealthCheck(false) // Do not automatically include new CAs in health-check because it's not active
+                            .build();
+                        saveRequestInfo(x509cainfo);
+                    }
+                }
             } else {
                 throw new IllegalStateException("Unknown CA type with identifier " + caInfoDto.getCaType() + " was encountered.");
             }
@@ -1463,6 +1556,54 @@ public class CAInterfaceBean implements Serializable {
     
     public String getExpiryTime(Date expireTime) {
         return ejbcawebbean.formatAsISO8601(expireTime);
+    }
+
+    private X509CAInfo.X509CAInfoBuilder createX509CAInfoBuilder(CaInfoDto ca) {
+        X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
+            .setSubjectDn(ca.getCaSubjectDN())
+            .setName(ca.getCaName())
+            .setStatus(CAConstants.CA_ACTIVE)
+            .setSubjectAltName(ca.getCaSubjectAltName())
+            .setUseNoConflictCertificateData(ca.isUseNoConflictCertificateData())
+            .setEncodedValidity(ca.getCaEncodedValidity())
+            .setCaType(ca.getCaType())
+            .setCertificateChain(null)
+            .setDescription(ca.getDescription())
+            .setCrlPeriod(ca.getCrlPeriod())
+            .setCrlIssueInterval(ca.getCrlIssueInterval())
+            .setCrlOverlapTime(ca.getcrlOverlapTime())
+            .setDeltaCrlPeriod(ca.getDeltaCrlPeriod())
+            .setGenerateCrlUponRevocation(ca.isGenerateCrlUponRevocation())
+            .setUseAuthorityKeyIdentifier(ca.isUseAuthorityKeyIdentifier())
+            .setAuthorityKeyIdentifierCritical(ca.isAuthorityKeyIdentifierCritical())
+            .setUseCrlNumber(ca.isUseCrlNumber())
+            .setCrlNumberCritical(ca.isCrlNumberCritical())
+            .setDefaultCrlDistPoint(ca.getDefaultCRLDistPoint())
+            .setDefaultCrlIssuer(ca.getDefaultCRLIssuer())
+            .setDefaultOcspCerviceLocator(ca.getDefaultOCSPServiceLocator())
+            .setFinishUser(ca.isFinishUser())
+            .setUseUtf8PolicyText(ca.isUseUtf8Policy())
+            .setUsePrintableStringSubjectDN(ca.isUsePrintableStringSubjectDN())
+            .setUseLdapDnOrder(ca.isUseLdapDNOrder())
+            .setUseCrlDistributionPointOnCrl(ca.isUseCrlDistributiOnPointOnCrl())
+            .setCrlDistributionPointOnCrlCritical(ca.isCrlDistributionPointOnCrlCritical())
+            .setDoEnforceUniquePublicKeys(ca.isDoEnforceUniquePublickeys())
+            .setDoEnforceKeyRenewal(ca.isDoEnforceKeyRenewal())
+            .setDoEnforceUniqueDistinguishedName(ca.isDoEnforceUniqueDN())
+            .setDoEnforceUniqueSubjectDNSerialnumber(ca.isDoEnforceUniqueSubjectDNSerialnumber())
+            .setUseCertReqHistory(ca.isUseCertReqHistory())
+            .setUseUserStorage(ca.isUseUserStorage())
+            .setUseCertificateStorage(ca.isUseCertificateStorage())
+            .setDoPreProduceOcspResponses(ca.isDoPreProduceOcspResponses())
+            .setDoStoreOcspResponsesOnDemand(ca.isDoStoreOcspResponsesOnDemand())
+            .setAcceptRevocationNonExistingEntry(ca.isAcceptRevocationsNonExistingEntry())
+            .setKeepExpiredCertsOnCRL(ca.isKeepExpiredOnCrl())
+            .setUsePartitionedCrl(ca.isUsePartitionedCrl())
+            .setCrlPartitions(ca.getCrlPartitions())
+            .setSuspendedCrlPartitions(ca.getSuspendedCrlPartitions())
+            .setMsCaCompatible(ca.isMsCaCompatible())
+            .setRequestPreProcessor(ca.getRequestPreProcessor());
+        return x509CAInfoBuilder;
     }
 
 }
