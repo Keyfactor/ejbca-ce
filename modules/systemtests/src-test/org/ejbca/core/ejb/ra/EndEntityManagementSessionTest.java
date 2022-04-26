@@ -220,7 +220,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
         endEntityInformation.setPassword(pwd);
         
-        endEntityManagementSession.addUser(admin, endEntityInformation, false);
+        endEntityManagementSession.addUser(admin, endEntityInformation, true);
         usernames.add(username);
         log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" + username);
         // Add the same user again
@@ -282,16 +282,20 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             String thisusername = genRandomUserName();
             String email = thisusername + "@anatom.se";
             try {
-                endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword("");
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
                 usernames.add(thisusername);
                 fail("User " + thisusername + " was added to the database although it should not have been.");
             } catch (EndEntityProfileValidationException e) {
-                assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+                assertTrue("Error message should be about password, was " + e.getMessage(), e.getMessage().contains("Password cannot be empty or null"));
             }
             try {
-                endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword(null);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);              
                 usernames.add(thisusername);
                 fail("User " + thisusername + " was added to the database although it should not have been.");
             } catch (EndEntityProfileValidationException e) {
@@ -301,17 +305,21 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.setPasswordRequired(false);
             endEntityProfileSession.changeEndEntityProfile(admin, eeprofileName, profile);
             try {
-                endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword("");
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);              
                 usernames.add(thisusername);
             } catch (EndEntityProfileValidationException e) {
-                fail("User " + thisusername + " was not added to the database although it should have been.");
+                fail("User " + thisusername + " was not added to the database although it should have been. " + e.getMessage());
             }
             thisusername = genRandomUserName();
             email = thisusername + "@anatom.se";
             try {
-                endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword(null);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);              
                 usernames.add(thisusername);
             } catch (EndEntityProfileValidationException e) {
                 fail("User " + thisusername + " was not added to the database although it should have been.");
@@ -371,8 +379,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         String thisusername = genRandomUserName();
         String email = thisusername + "@anatom.se";
         genRandomSerialnumber();
-        endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        
+        EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, caId, "rfc822name=" + email, email, 
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, endEntityInformation, false);
+       
         assertTrue("User " + thisusername + " was not added to the database.", endEntityManagementSession.existsUser(thisusername));
         usernames.add(thisusername);
 
@@ -385,8 +397,10 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         // Add another user with the same serialnumber
         thisusername = genRandomUserName();
         try {
-            endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
-                    false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+            EndEntityInformation anotherEndEntityInformation = new EndEntityInformation(thisusername, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, caId, "rfc822name=" + email, email, 
+                    EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+            anotherEndEntityInformation.setPassword(pwd);
+            endEntityManagementSession.addUser(admin, anotherEndEntityInformation, false);
             usernames.add(thisusername);
             fail("Should throw");
         } catch (CertificateSerialNumberException e) {
@@ -397,8 +411,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
         caAdminSession.editCA(admin, cainfo);
-        endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+
+        EndEntityInformation doNotRequireUniqueSN = new EndEntityInformation(thisusername, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, caId, "rfc822name=" + email, email, 
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        doNotRequireUniqueSN.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, doNotRequireUniqueSN, false);
         assertTrue(endEntityManagementSession.existsUser(thisusername));
         usernames.add(thisusername);
 
