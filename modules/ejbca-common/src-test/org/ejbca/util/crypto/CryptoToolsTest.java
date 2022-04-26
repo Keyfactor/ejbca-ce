@@ -100,6 +100,18 @@ public class CryptoToolsTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
+        
+        final String bCEdDSAPublicKey;
+        final String bCEdDSAPrivateKey;
+
+        if (getJavaVersion() >= 17) {
+            bCEdDSAPublicKey = "org.bouncycastle.jcajce.provider.asymmetric.edec.BC15EdDSAPublicKey";
+            bCEdDSAPrivateKey = "org.bouncycastle.jcajce.provider.asymmetric.edec.BC15EdDSAPrivateKey";
+        } else {
+            bCEdDSAPublicKey = "org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey";
+            bCEdDSAPrivateKey = "org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey";
+        }
+        
         {
             final KeyPair keypair = KeyTools.genKeys("1024",  AlgorithmConstants.KEYALGORITHM_RSA);
             byte[] encryptedBytes = CryptoTools.encryptKeys(cryptoToken, alias, keypair);
@@ -167,12 +179,12 @@ public class CryptoToolsTest {
             KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
 
             byte[] encodedPublicKey = keys.getPublic().getEncoded();
-            assertEquals("org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey", keys.getPublic().getClass().getName());
+            assertEquals(bCEdDSAPublicKey, keys.getPublic().getClass().getName());
             assertEquals("X.509", keys.getPublic().getFormat());
             assertEquals("Ed25519", keys.getPublic().getAlgorithm());
             assertNotNull("Encoded public key should not be null", encodedPublicKey);
             byte[] encodedPrivateKey = keys.getPrivate().getEncoded();
-            assertEquals("org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey", keys.getPrivate().getClass().getName());
+            assertEquals(bCEdDSAPrivateKey, keys.getPrivate().getClass().getName());
             assertEquals("PKCS#8", keys.getPrivate().getFormat());
             assertNotNull("Encoded private key should not be null", encodedPrivateKey);
         }
@@ -186,12 +198,12 @@ public class CryptoToolsTest {
             KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
 
             byte[] encodedPublicKey = keys.getPublic().getEncoded();
-            assertEquals("org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey", keys.getPublic().getClass().getName());
+            assertEquals(bCEdDSAPublicKey, keys.getPublic().getClass().getName());
             assertEquals("X.509", keys.getPublic().getFormat());
             assertEquals("Ed448", keys.getPublic().getAlgorithm());
             assertNotNull("Encoded public key should not be null", encodedPublicKey);
             byte[] encodedPrivateKey = keys.getPrivate().getEncoded();
-            assertEquals("org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey", keys.getPrivate().getClass().getName());
+            assertEquals(bCEdDSAPrivateKey, keys.getPrivate().getClass().getName());
             assertEquals("PKCS#8", keys.getPrivate().getFormat());
             assertNotNull("Encoded private key should not be null", encodedPrivateKey);
         }
@@ -215,5 +227,8 @@ public class CryptoToolsTest {
         //assertEquals("org.bouncycastle.jcajce.provider.symmetric.AES", decryptedKey.getClass().getName());
         assertEquals("javax.crypto.spec.SecretKeySpec", decryptedKey.getClass().getName());
     }
-
+    
+    private double getJavaVersion() {
+        return Double.parseDouble(System.getProperty("java.specification.version"));
+    }
 }
