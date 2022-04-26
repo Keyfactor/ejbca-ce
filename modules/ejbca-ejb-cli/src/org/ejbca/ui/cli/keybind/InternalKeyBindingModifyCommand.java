@@ -161,7 +161,18 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                 InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
         for (String propertyName : typesAndProperties.get(internalKeyBinding.getImplementationAlias()).keySet()) {
             if (parameters.containsKey("-"+propertyName)) {
-                propertyMap.put(propertyName, parameters.get("-"+propertyName));
+                // Special treatment for case sensitive ResponderID
+                if (propertyName.equals("responderidtype")) {
+                    final String responderIdType = parameters.get("-"+propertyName).toUpperCase();
+                    if (!responderIdType.equals("NAME") && !responderIdType.equals("KEYHASH")) {
+                        getLogger().info("Invalid responder id type. Must be either KEYHASH or NAME");
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    }
+                    propertyMap.put(propertyName, responderIdType);
+                } else {
+                    propertyMap.put(propertyName, parameters.get("-"+propertyName));
+                }
+
             }
         }
         List<InternalKeyBindingTrustEntry> removeSignOnBehalfList = new ArrayList<InternalKeyBindingTrustEntry>();
