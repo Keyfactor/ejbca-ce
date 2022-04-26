@@ -104,7 +104,7 @@ public class CryptoToolsTest {
         final String bCEdDSAPublicKey;
         final String bCEdDSAPrivateKey;
 
-        if (getJavaVersion() >= 17) {
+        if (getJavaVersion() >= 15) {
             bCEdDSAPublicKey = "org.bouncycastle.jcajce.provider.asymmetric.edec.BC15EdDSAPublicKey";
             bCEdDSAPrivateKey = "org.bouncycastle.jcajce.provider.asymmetric.edec.BC15EdDSAPrivateKey";
         } else {
