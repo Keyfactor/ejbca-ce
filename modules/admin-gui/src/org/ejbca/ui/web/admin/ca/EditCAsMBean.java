@@ -435,6 +435,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return SshCa.CA_TYPE;
         case CAInfo.CATYPE_CITS:
             return "ECA";
+        case CAInfo.CATYPE_PROXY:
+            return "PROXY CA";
         default:
             return "UNKNOWN";
         }
@@ -1439,11 +1441,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void renderProxyCaFields() {
         caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
-        caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
-        updateAvailableCryptoTokenList(true); //TODO: Not sure if necessary
-        updateAvailableSigningAlgorithmList(); //TODO: Not sure if necessary
-        getCertificateProfiles(); //TODO: Not sure if necessary
-        geographicElementsInGui = new ArrayList<>(); //TODO: Not sure if necessary
+        // caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        caInfoDto.setSignedBy(CAInfo.SELFSIGNED); // TODO: just for testing, it must be CAInfo.SIGNEDBYEXTERNALCA, details about the upstream CA will make things correctly implementable
+        updateAvailableCryptoTokenList(false); // TODO: Not sure if true or false. cryptoToken field has to disabled once we get details about the upstream CA
+        updateAvailableSigningAlgorithmList();
+        getCertificateProfiles();
+        geographicElementsInGui = new ArrayList<>(); // TODO: Not sure if necessary
     }
 
     public boolean isCreateLinkCertificate() {
