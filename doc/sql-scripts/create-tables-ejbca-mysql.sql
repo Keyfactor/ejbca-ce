@@ -332,6 +332,7 @@ CREATE TABLE UserData (
     clearPassword VARCHAR(250) BINARY,
     endEntityProfileId INT(11) NOT NULL,
     extendedInformationData LONGTEXT,
+    hardTokenIssuerId INT(11) NOT NULL,
     keyStorePassword VARCHAR(250) BINARY,
     passwordHash VARCHAR(250) BINARY,
     rowProtection LONGTEXT,
@@ -460,4 +461,13 @@ CREATE TABLE OcspResponseData (
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (id)
+);
+
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(250) BINARY NOT NULL,
+    startTime BIGINT(20) NOT NULL,
+    rawData LONGTEXT,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
 );

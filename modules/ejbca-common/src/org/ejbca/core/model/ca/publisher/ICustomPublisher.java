@@ -19,14 +19,12 @@ import java.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
 
 /**
  * Interface containing methods that need to be implemented in order 
  * to have a custom publisher. All Custom publishers must implement this interface.
- * 
- * @version $Id$
  */
-
 public interface ICustomPublisher {
 
     /**
@@ -70,6 +68,21 @@ public interface ICustomPublisher {
      */
     boolean willPublishCertificate(int status, int revocationReason);
     
+    /**
+     * Returns true if the publisher calls external scripts, in which case setScriptWhiteList will be called to set a whitelist of allowed scripts.
+     * 
+     * @return true if this publisher calls external scripts on the CA host
+     * @see BasePublisher#isCallingExternalScript()
+     */
+    boolean isCallingExternalScript();
+    
+    /** Set a list of scripts that are allowed for calling external scripts, if #isCallingExternalScript returns true.
+     * 
+     * @param allowList the list of allowed scripts to call, if null all scripts are allowed.
+     * @see BasePublisher#setExternalScriptsAllowlist(ExternalScriptsAllowlist)
+     */
+    void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList);
+
     /**
      * 
      * @return true if this publisher type shouldn't be editable

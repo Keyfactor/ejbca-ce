@@ -12,39 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -84,6 +56,37 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -135,6 +138,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<CAData> findAll() {
         final TypedQuery<CAData> query = entityManager.createQuery("SELECT a FROM CAData a", CAData.class);
+        return query.getResultList();
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<CAData> findAllCitsCa() {
+        final TypedQuery<CAData>  query = entityManager.createQuery("SELECT a FROM CAData a where a.subjectDN LIKE :prefix", CAData.class);
+        query.setParameter("prefix", CAInfo.CITS_SUBJECTDN_PREFIX + "%"); // to avoid issue with string quotes
         return query.getResultList();
     }
 
@@ -200,8 +211,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
             CAInfo cainfo = ca.getCAInfo();
             // The CA needs a name and a subject DN in order to store it
-            if ((ca.getName() == null) || (ca.getSubjectDN() == null)) {
-                throw new CAExistsException("Null CA name or SubjectDN. Name: '"+ca.getName()+"', SubjectDN: '"+ca.getSubjectDN()+"'.");
+            // C-ITS or ECA certificates do not have subject DN
+            if ((ca.getName() == null) || cainfo.getSubjectDN() == null) {
+                throw new CAExistsException("Null CA name or SubjectDN/CertificateId. Name: '"+ca.getName()+"', SubjectDN: '"+ca.getSubjectDN()+"'.");
             }
             if (findByName(cainfo.getName()) != null) {
                 String msg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());
@@ -211,6 +223,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 String msg = intres.getLocalizedMessage("caadmin.caexistsid", ca.getCAId());
                 throw new CAExistsException(msg);
             }
+            
             final CAData caData = new CAData(cainfo.getSubjectDN(), cainfo.getName(), cainfo.getStatus(), ca);
             entityManager.persist(caData);
             caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.
@@ -226,7 +239,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException {
+    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
         if (cainfo != null) {
         	if (log.isTraceEnabled()) {
         		log.trace(">editCA (CAInfo): "+cainfo.getName());
@@ -240,6 +253,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     			    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
     			}
                 assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
+
+                if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
+                    throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
+
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
                 AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
@@ -1155,5 +1172,43 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public int determineCrlPartitionIndex(final int caid, final CertificateWrapper cert) {
         final CACommon ca = getCa(caid, null);
         return ca.getCAInfo().determineCrlPartitionIndex(EJBTools.unwrap(cert));
+    }
+
+    @Override
+    public Optional<CAInfo> getIssuerFor(final AuthenticationToken authenticationToken, final X509Certificate certificate) {
+        if (CertTools.getAuthorityKeyId(certificate) == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot identify issuer '" + CertTools.getIssuerDN(certificate) +
+                        "' for certificate with serial number " + certificate.getSerialNumber() +
+                        ". The certificate does not contain an authorityKeyIdentifier.");
+            }
+            return Optional.empty();
+        }
+        for (final int id : getCAIdToNameMap().keySet()) {
+            try {
+                final CAInfo ca = getCAInfo(authenticationToken, id);
+                if (ca.getCertificateChain() == null || ca.getCertificateChain().isEmpty()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("The CA with id '" + id + "' does not have a certificate chain.");
+                    }
+                    continue;
+                }
+                if (Arrays.equals(CertTools.getSubjectKeyId(ca.getCertificateChain().get(0)),
+                        CertTools.getAuthorityKeyId(certificate))) {
+                    return Optional.of(ca);
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("The authorityKeyIdentifier 0x'" + Hex.encode(CertTools.getAuthorityKeyId(certificate))
+                                + " does not match subjectKeyIdentifier for issuer '"
+                                + CertTools.getSubjectDN(ca.getCertificateChain().get(0)) + "'.");
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug(e.getMessage());
+                }
+            }
+        }
+        return Optional.empty();
     }
 }

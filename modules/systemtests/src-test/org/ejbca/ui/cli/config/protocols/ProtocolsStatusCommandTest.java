@@ -49,7 +49,7 @@ public class ProtocolsStatusCommandTest {
 
     @Test
     public void statusForAllProtocols() {
-        final LinkedHashMap<String, Boolean> before = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> before = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         final CommandResult commandResult = new ProtocolsStatusCommand().execute();
         assertEquals(CommandResult.SUCCESS, commandResult);
         assertEquals("Operation should not change anything.", before, getAvailableProtocolsConfiguration().getAllProtocolsAndStatus());
@@ -57,7 +57,7 @@ public class ProtocolsStatusCommandTest {
 
     @Test
     public void statusForExistingProtocol() {
-        final LinkedHashMap<String, Boolean> before = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> before = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         final CommandResult commandResult1 = new ProtocolsStatusCommand().execute("SCEP");
         assertEquals(CommandResult.SUCCESS, commandResult1);
         final CommandResult commandResult2 = new ProtocolsStatusCommand().execute("scep");
@@ -71,7 +71,7 @@ public class ProtocolsStatusCommandTest {
 
     @Test
     public void statusForNonExistingProtocol() {
-        final LinkedHashMap<String, Boolean> before = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        final LinkedHashMap<String, Boolean> before = (LinkedHashMap<String, Boolean>) getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         final CommandResult commandResult1 = new ProtocolsStatusCommand().execute("PlainHttpCurlPipeToSudo");
         assertEquals(CommandResult.CLI_FAILURE, commandResult1);
         final CommandResult commandResult2 = new ProtocolsStatusCommand().execute("--name", "PlainHttpCurlPipeToSudo");

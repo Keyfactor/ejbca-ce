@@ -42,6 +42,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlImportException;
@@ -93,14 +94,14 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         private final int caId;
         private final String subjectdn;
         private final List<Certificate> certificatechain;
-        private final CRLInfo crlinfo;
+        private final List<CRLGuiInfo> crlinfo;
         private final CRLInfo deltacrlinfo;
         private final Boolean deltaPeriodEnabled;
         private final Boolean caStatusActive;
         private final boolean showJksDownloadForm[];
         private final String caType;
 
-        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final CRLInfo crlinfo,
+        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final List<CRLGuiInfo> crlinfo,
                 final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive, final String caType) {
             this.name = name;
             this.caId = caId;
@@ -139,7 +140,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return certificatechain;
         }
 
-        public CRLInfo getCrlinfo() {
+        public List<CRLGuiInfo> getCrlinfo() {
             return crlinfo;
         }
 
@@ -164,19 +165,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean isCrlInfoEmpty() {
-            return crlinfo == null;
-        }
-
-        public String getCrlCreateDate(){
-            return getEjbcaWebBean().formatAsISO8601(crlinfo.getCreateDate());
-        }
-
-        public String getCrlExpireDate(){
-            return getEjbcaWebBean().formatAsISO8601(crlinfo.getExpireDate());
-        }
-
-        public boolean isCrlExpired(){
-           return crlinfo.getExpireDate().compareTo(new Date()) < 0;
+            return crlinfo == null || crlinfo.isEmpty();
         }
 
         public boolean isDeltaCrlInfoEmpty() {
@@ -202,6 +191,55 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         public String getCaType() {
             return caType;
         }
+
+        public boolean isDisplayPartitions() {
+            return crlinfo.size() > 1;
+        }
+    }
+
+    public class CRLGuiInfo {
+        private final Date createDate;
+        private final Date expireDate;
+        private final String subjectDn;
+        private final int lastCrlNumber; 
+        private final int partitionIndex;
+
+        public CRLGuiInfo(CRLInfo crlInfo) {
+            createDate = crlInfo.getCreateDate();
+            expireDate = crlInfo.getExpireDate();
+            subjectDn = crlInfo.getSubjectDN();
+            lastCrlNumber = crlInfo.getLastCRLNumber();
+            partitionIndex = crlInfo.getCrlPartitionIndex();
+        }
+
+        public String getCrlCreateDate(){
+            return getEjbcaWebBean().formatAsISO8601(createDate);
+        }
+
+        public String getCrlExpireDate(){
+            return getEjbcaWebBean().formatAsISO8601(expireDate);
+        }
+
+        public boolean isCrlExpired(){
+           return expireDate.compareTo(new Date()) < 0;
+        }
+
+        public String getSubjectDn() {
+            return subjectDn;
+        }
+
+        public String getURLEncodedSubjectDn() throws UnsupportedEncodingException {
+            return URLEncoder.encode(subjectDn, StandardCharsets.UTF_8.toString());
+        }
+
+        public int getLastCrlNumber() {
+            return lastCrlNumber;
+        }
+
+        public int getPartitionIndex() {
+            return partitionIndex;
+        }
+
     }
 
     public List<CAGuiInfo> getCaInfos(){
@@ -222,11 +260,26 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
             }
-            // TODO GUI support for Partitioned CRLs (ECA-7961)
-            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+            
+            final List<CRLGuiInfo> crlInfos = new ArrayList<>();
+            if (cainfo instanceof X509CAInfo) {
+                final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null ? 1 : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
+                    final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
+                    if (currentCrlInfo != null) {
+                        crlInfos.add(new CRLGuiInfo(currentCrlInfo));
+                    }
+                }
+            } else {
+                final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+                if (crlinfo != null) {
+                    crlInfos.add(new CRLGuiInfo(crlinfo));
+                }
+            }
+
             final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
-            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
+            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlInfos, deltacrlinfo,
                     cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
             caGuiInfos.add(caGuiInfo);
         }

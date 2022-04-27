@@ -43,6 +43,7 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
     private static final String SKEWLIMIT = "40000";
     private static final String SKEWLIMIT_EDITED = "60000";
     private static final String TENANT = "tenant";
+    private static final String AUDIENCE = "audience";
     private static final String SCOPE = "scope";
     private static final String CLIENT = "client";
     private static final String SECRET = "secret";
@@ -77,6 +78,7 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
         oauthProvidersHelper.fillUrlField(URL);
         oauthProvidersHelper.fillSkewLimitField(SKEWLIMIT);
         oauthProvidersHelper.fillTenantField(TENANT);
+        oauthProvidersHelper.fillAudienceField(AUDIENCE);
         oauthProvidersHelper.fillScopeField(SCOPE);
         oauthProvidersHelper.fillClientField(CLIENT);
         oauthProvidersHelper.fillPublicKeyFileField(oauthProvidersHelper.createPublicKeyFile(folder, OauthProvidersHelper.PUBLIC_KEY));
@@ -113,9 +115,9 @@ public class EcaQa301_ManageOAuthProvider extends WebTestBase {
     }
     
     @Test
-    public void stepD_deleteOauthProvider() {
+    public void stepD_deleteOauthProvider() throws InterruptedException {
         oauthProvidersHelper.pressRemoveOauthProviderButton(LABEL_EDITED);
-        
+        Thread.sleep(5000);
         oauthProvidersHelper.assertElementDoesNotExistInTable(LABEL_EDITED);
     }
 

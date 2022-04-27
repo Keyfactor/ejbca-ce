@@ -13,24 +13,6 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.CertPathBuilderException;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -67,6 +49,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
@@ -83,6 +66,24 @@ import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.CertPathBuilderException;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Check the authentication of the PKIMessage by verifying the signature of the administrator who sent the message
@@ -101,6 +102,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private boolean authenticated;
 
     private AuthenticationToken admin;
+    /** authentication token representing the admin/user signing this CMP message */
+    private AuthenticationToken reqAuthToken;
     private CaSession caSession;
     private CertificateStoreSession certSession;
     private AuthorizationSession authSession;
@@ -330,7 +333,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 log.debug("Skipping some verification of the extraCert certificate in RA mode and an already authenticated CMP message, tex. through NestedMessageContent");
             }
         } else if(ramode) {
-
             // Get the CA to use for the authentication
             CAInfo cainfo = getCAInfoByName(authenticationparameter);
             if(cainfo == null) {
@@ -338,28 +340,36 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
 
             // Check that extraCert is in the Database
-            CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
-            if(certinfo == null) {
-                this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+            final CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
+            if (WebConfiguration.getRequireAdminCertificateInDatabase() && certinfo == null) {
+                this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be " +
+                            "found in the database. Start EJBCA with 'web.reqcertindb=false' to disable this check.";
+                return false;
+            }
+
+            if (certinfo != null && !isExtraCertActive(certinfo)) {
+                this.errorMessage = "The certificate attached to the PKI message in the extraCert field is revoked.";
                 return false;
             }
 
             // More extraCert verifications
-            if(!isCertListValidAndIssuedByCA(extraCertPath, cainfo) || !isExtraCertActive(certinfo)) {
+            if(!isCertListValidAndIssuedByCA(extraCertPath, cainfo)) {
                 return false;
-            } else {
-                if(log.isDebugEnabled()) {
-                    log.debug("Certificate in extraCerts field is issued by " + cainfo.getName() + ", is valid and active");
-                }
             }
 
             // Check that extraCert belong to an admin with sufficient access rights
-            if(!isAuthorizedAdmin(certinfo, msg, endentity)){
+            if(!isAuthorizedAdmin(msg, endentity)){
                 this.errorMessage = "'" + CertTools.getSubjectDN(extraCert) + "' is not an authorized administrator.";
                 return false;
             }
 
-        } else if(!ramode) { // client mode
+            if(log.isDebugEnabled()) {
+                log.debug("The certificate with serial number '" + CertTools.getSerialNumberAsString(extraCert)
+                        + "' in the extraCerts field, issued by '" + cainfo.getName()
+                        + "', has been used for authentication.");
+            }
+
+        } else { // client mode
 
             String extraCertUsername = null;
             if(vendormode) {
@@ -585,22 +595,30 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
     /**
+     * Returns an AuthenticationToken representing an admin that authenticates the message
+     * @return AuthenticationToken or null of there was no admin AuthenticationToken extracted from this module
+     */
+    @Override
+    public AuthenticationToken getAuthenticationToken() {
+        return reqAuthToken;
+    }
+
+    /**
      * Checks if cert belongs to an administrator who is authorized to process the request.
      *
-     * @param certInfo
      * @param msg
      * @param endentity Only used when the message received is a KeyUpdateRequest in RA mode. The administrator is authorized to handle a KeyUpdateRequest in RA mode if
      *                  it is authorized to the EndEntityProfile, CertificateProfile and the CA specified in this end entity.
      * @return true if the administrator is authorized to process the request and false otherwise.
      */
-    private boolean isAuthorizedAdmin(final CertificateInfo certInfo, final PKIMessage msg, final EndEntityInformation endentity) {
+    private boolean isAuthorizedAdmin(final PKIMessage msg, final EndEntityInformation endentity) {
 
         X509Certificate x509cert = (X509Certificate) extraCert;
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         credentials.add(x509cert);
 
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-        AuthenticationToken reqAuthToken = authenticationProviderSession.authenticate(subject);
+        reqAuthToken = authenticationProviderSession.authenticate(subject);
 
         final int tagnr = msg.getBody().getType();
         if( (tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) ) {
@@ -616,11 +634,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     eeprofid = Integer.parseInt(configuredId);
                     eepname = eeProfileSession.getEndEntityProfileName(eeprofid);
                 }
-                if(eepname == null) {
+                if (eepname == null) {
                     log.error("End Entity Profile with ID " + configuredId + " was not found");
                     return false;
                 }
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 log.error("End Entity Profile ID " + this.cmpConfiguration.getRAEEProfile(this.confAlias) +
                         " in CMP alias " + this.confAlias + " was not an integer");
                 return false;

@@ -87,8 +87,8 @@
                     <h:outputText id="deleteValidatorName" value="#{cmpConfigMBean.selectedCmpAlias}"/>
                     <h:panelGroup/>
                     <h:panelGroup>
-                        <h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{cmpConfigMBean.deleteCmpAlias}"/>
-                        <h:commandButton value="#{web.text.CANCEL}" action="#{cmpConfigMBean.actionCancel}"/>
+                        <h:commandButton id="buttonconfirmdeletecmpalias" value="#{web.text.DELETE_CONFIRM}" action="#{cmpConfigMBean.deleteCmpAlias}"/>
+                        <h:commandButton id="buttoncanceldeletecmpalias" value="#{web.text.CANCEL}" action="#{cmpConfigMBean.actionCancel}"/>
                     </h:panelGroup>
                 </h:panelGrid>
             </h:panelGroup>

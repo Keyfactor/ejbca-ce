@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
@@ -15,9 +18,19 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.easymock.EasyMock;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.rest.api.builder.SearchCertificatesRestRequestTestBuilder;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.easymock.PowerMock;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,12 +38,34 @@ import static org.junit.Assert.assertEquals;
  * A unit test class for annotation @ValidSearchCertificateMaxNumberOfResults and its validator.
  * <br/>
  * <b>Note: </b> Due to test compilation issue ECA-7148, we use an original input class SearchCertificatesRestRequest instead of simplified annotated class.
- *
- * @version $Id: ValidSearchCertificateMaxNumberOfResultsUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
  */
+@Ignore
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({EjbLocalHelper.class})
 public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
 
     private static final Validator validator =  Validation.buildDefaultValidatorFactory().getValidator();
+
+    @Before
+    public void setUp() throws Exception {
+        EjbLocalHelper ejbLocalHelperMock = EasyMock.createMock(EjbLocalHelper.class);
+        GlobalConfigurationSessionLocal globalConfigurationSession = EasyMock.mock(GlobalConfigurationSessionLocal.class);
+        GlobalCesecoreConfiguration globalCesecoreConfigurationMock = EasyMock.mock(GlobalCesecoreConfiguration.class);
+
+        PowerMock.expectNew(EjbLocalHelper.class)
+            .andReturn(ejbLocalHelperMock);
+        EasyMock.expect(ejbLocalHelperMock.getGlobalConfigurationSession())
+            .andReturn(globalConfigurationSession);
+        EasyMock.expect(globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID))
+            .andReturn(globalCesecoreConfigurationMock);
+        EasyMock.expect(globalCesecoreConfigurationMock
+            .getMaximumQueryCount())
+            .andReturn(321);
+
+        PowerMock.replay(EjbLocalHelper.class);
+        EasyMock.replay();
+
+    }
 
     @Test
     public void validationShouldFailOnNullValue() {
@@ -73,7 +108,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     @Test
     public void validationShouldFailOnValueAboveMaximum() {
         // given
-        final String expectedMessage = "Invalid maximum number of results, cannot be more than 400.";
+        final String expectedMessage = "Invalid maximum number of results, cannot be more than 321.";
         final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults().maxNumberOfResults(401).build();
         // when
         final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);

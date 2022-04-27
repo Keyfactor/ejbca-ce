@@ -70,6 +70,7 @@ public abstract class QueryResultWrapper {
 
     /** @return the first result of the query or null */
     public static <T> T getLastResult(final Query query) {
+        @SuppressWarnings("unchecked")
         final List<T> resultList = query.getResultList();
         switch (resultList.size()) {
         case 0:

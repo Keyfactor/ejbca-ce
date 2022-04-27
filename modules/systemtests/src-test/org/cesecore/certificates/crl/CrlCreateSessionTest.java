@@ -83,6 +83,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ValidityDate;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -128,6 +129,31 @@ public class CrlCreateSessionTest {
     @AfterClass
     public static void afterClass() throws Exception {
         CaTestUtils.removeCa(authenticationToken, className, className);
+    }
+
+    @Test
+    public void testCrlValidityInclusive() throws Exception { 
+        // Setup: Generate and store CRL
+        final int caid = caSession.getCAInfo(authenticationToken, className).getCAId();
+        final CA ca = (CA)caTestSessionRemote.getCA(authenticationToken, caid);
+        final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
+        final Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, CertificateConstants.NO_CRL_PARTITION, -1);
+        final int fullnumber = getLastCrlNumber(certSubjectDN, false);
+        final int deltanumber = getLastCrlNumber(certSubjectDN, true);
+        final int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
+        generateAndStoreCrl(ca, revcerts, -1, nextCrlNumber);
+
+        // Determine CRL validity and nextUpdate
+        final byte[] crl = getLastCrl(ca.getSubjectDN(), false);
+        final X509CRL x509Crl = CertTools.getCRLfromByteArray(crl);
+        final long crlValidity = ca.getCRLPeriod();
+        final Date producedAtDate = x509Crl.getThisUpdate();
+        final Date actualNextUpdateDate = x509Crl.getNextUpdate();
+
+        // Assert expected CRL validity
+        long expectedNextUpdate = producedAtDate.getTime() + crlValidity - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
+        assertEquals("Unexpected CRL nextUpdate. CRL was producedAt: " + producedAtDate + " with a validity of " + crlValidity/1000 + " seconds",
+            new Date(expectedNextUpdate), actualNextUpdateDate);
     }
 
     @Test

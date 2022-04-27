@@ -214,6 +214,8 @@ public class CertificateView implements Serializable {
     public String getValidFromString() {
         if (certificate==null) {
             return "-";
+        } else if(certificate instanceof CardVerifiableCertificate) {
+            return ValidityDate.formatAsUTCSecondsGranularity(CertTools.getNotBefore(certificate));
         }
         return ValidityDate.formatAsISO8601(CertTools.getNotBefore(certificate), ValidityDate.TIMEZONE_SERVER);
     }
@@ -226,6 +228,9 @@ public class CertificateView implements Serializable {
     }
 
     public String getValidToString() {
+        if(certificate instanceof CardVerifiableCertificate) {
+            return ValidityDate.formatAsUTCSecondsGranularity(getValidTo());
+        }
         return ValidityDate.formatAsISO8601(getValidTo(), ValidityDate.TIMEZONE_SERVER);
     }
 
@@ -532,5 +537,12 @@ public class CertificateView implements Serializable {
         }
         CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
         return (ct != null && ct.hasSCTs(certificate));
+    }
+    
+    public String getAccountBindingId() {
+        if (certificateData == null) {
+            return "";
+        }
+        return certificateData.getAccountBindingId();
     }
 }

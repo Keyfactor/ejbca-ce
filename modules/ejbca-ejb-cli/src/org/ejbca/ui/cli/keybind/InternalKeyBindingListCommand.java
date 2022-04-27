@@ -83,7 +83,11 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
             getLogger().info(" No InternalKeyBindings available or you are not authorized to view any.");
         } else {
             getLogger()
-                    .info(" Type\t\"Name\" (id), Status, \"IssuerDN\", SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, NextKeyPairAlias, SignatureAlgorithm, properties={Implementations specific properties}, trust={list of trusted CAs and certificates}");
+                    .info(" Type\t\"Name\" (id), Status, \"IssuerDN\", SerialNumber, \"CryptoTokenName\" (id), "
+                            + "KeyPairAlias, NextKeyPairAlias, SignatureAlgorithm, "
+                            + "properties={Implementations specific properties}, "
+                            + "trust={list of trusted CAs and certificates}, "
+                            + "signOcspResponsesOnBehalf={list of other CAs for which responses are signed}");
         }
         final Date now = new Date();
         for (final InternalKeyBindingInfo internalKeyBinding : internalKeyBindings) {
@@ -131,10 +135,10 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                 if (properties.size() > 0) {
                     sb.deleteCharAt(sb.length() - 1);
                 }
-                sb.append("\n }, trust={");
+                sb.append("\n }, \ttrust={");
                 final List<InternalKeyBindingTrustEntry> internalKeyBindingTrustEntries = internalKeyBinding.getTrustedCertificateReferences();
                 if (internalKeyBindingTrustEntries.isEmpty()) {
-                    sb.append("\n\tANY certificate issued by a known CA");
+                    sb.append("\n\t\tANY certificate issued by a known CA");
                 } else {
                     for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : internalKeyBindingTrustEntries) {
                         final String caSubject = caSession.getCAInfo(getAuthenticationToken(), internalKeyBindingTrustEntry.getCaId())
@@ -144,6 +148,19 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                             sb.append("ANY certificate");
                         } else {
                             sb.append(internalKeyBindingTrustEntry.fetchCertificateSerialNumber().toString(16));
+                        }
+                    }
+                }
+                if(internalKeyBinding.getImplementationAlias().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+                    sb.append("\n }, \tsignOnBehalfOfCas={");
+                    final List<InternalKeyBindingTrustEntry> internalKeyBindingSignOnBehalfEntries = internalKeyBinding.getSignOcspResponseOnBehalf();
+                    if (internalKeyBindingSignOnBehalfEntries.isEmpty()) {
+                        sb.append("\n\t\tOnly certificates issued by a current CA");
+                    } else {
+                        for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : internalKeyBindingSignOnBehalfEntries) {
+                            final String caSubject = caSession.getCAInfo(getAuthenticationToken(), internalKeyBindingTrustEntry.getCaId())
+                                    .getSubjectDN();
+                            sb.append("\n\t\t\"").append(caSubject).append("\", ");
                         }
                     }
                 }

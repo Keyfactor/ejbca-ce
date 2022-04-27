@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
@@ -118,6 +119,7 @@ import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.IncompletelyIssuedCertificateInfo;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -217,6 +219,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(SUBJECTALTNAME, cainfo.getSubjectAltName());
         data.put(CABase.CATYPE, CAInfo.CATYPE_X509);
         data.put(VERSION, LATEST_VERSION);
+        setMsCaCompatible(cainfo.isMsCaCompatible());
         setUseAuthorityKeyIdentifier(cainfo.getUseAuthorityKeyIdentifier());
         setAuthorityKeyIdentifierCritical(cainfo.getAuthorityKeyIdentifierCritical());
         setUseCRLNumber(cainfo.getUseCRLNumber());
@@ -331,6 +334,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCrlPartitions(getCrlPartitions())
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
                 .setRequestPreProcessor(getRequestPreProcessor())
+                .setMsCaCompatible(isMsCaCompatible())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -361,6 +365,22 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public void setPolicies(List<CertificatePolicy> policies) {
         data.put(POLICIES, policies);
+    }
+
+
+    @Override
+    public boolean isMsCaCompatible() {
+        Object isMsCaCompatible = data.get(MSCACOMPATIBLE);
+        if (isMsCaCompatible == null) {
+            return false;
+        }
+
+        return (Boolean) isMsCaCompatible;
+    }
+
+    @Override
+    public void setMsCaCompatible(boolean isMsCaCompatible) {
+        data.put(MSCACOMPATIBLE, isMsCaCompatible);
     }
 
     /* (non-Javadoc)
@@ -804,6 +824,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setDoStoreOcspResponsesOnDemand(info.isDoStoreOcspResponsesOnDemand());
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
+        setMsCaCompatible(info.isMsCaCompatible());
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
     }
@@ -1194,7 +1215,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             nameStyle = CeSecoreNameStyle.INSTANCE;
         }
 
-        String dn = subject.getCertificateDN();
+        // Make sure no forbidden characters exist in the DN, see ECA-9984 for more info.
+        String dn = StringTools.strip(subject.getCertificateDN());
         if (certProfile.getUseSubjectDNSubSet()) {
             dn = certProfile.createSubjectDNSubSet(dn);
         }
@@ -1313,8 +1335,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (ei != null) {
             final List<String> permittedNC = ei.getNameConstraintsPermitted();
             final List<String> excludedNC = ei.getNameConstraintsExcluded();
-            if (!certProfile.getUseNameConstraints() && (permittedNC != null && !permittedNC.isEmpty()) || (excludedNC != null && !excludedNC.isEmpty())) {
-                throw new CertificateCreateException("Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
+            if (!certProfile.getUseNameConstraints()
+                    && ((permittedNC != null && !permittedNC.isEmpty()) || (excludedNC != null && !excludedNC.isEmpty()))) {
+                throw new CertificateCreateException(
+                        "Tried to issue a certificate with Name Constraints without having enabled NC in the certificate profile.");
             }
         }
 
@@ -1534,7 +1558,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (certGenParams != null && certGenParams.getAuthenticationToken() != null && 
                     certGenParams.getCertificateValidationDomainService() != null && certGenParams.getCertificateValidationDomainService().willValidateInPhase(IssuancePhase.PRESIGN_CERTIFICATE_VALIDATION, this)) {
                 try {
-                    PrivateKey presignKey = CAConstants.getPreSignPrivateKey(sigAlg);
+                    PrivateKey presignKey = CAConstants.getPreSignPrivateKey(sigAlg, caPublicKey);
                     if (presignKey == null) {
                         throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
                     }
@@ -1552,7 +1576,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                         // Create a new authorityKeyIdentifier for the fake key
                         // SHA1 used here, but it's not security relevant here as this is the RFC5280 Key Identifier
                         JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                        AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg));
+                        AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg, caPublicKey));
                         certbuilder.replaceExtension(Extension.authorityKeyIdentifier, ext.isCritical(), aki.getEncoded());
                     }
                     X509CertificateHolder presignCertHolder = certbuilder.build(presignSigner);
@@ -1615,6 +1639,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 } else if (certGenParams.getSctDataCallback() == null) {
                     log.debug("Not logging to CT. No sctData persistance callback was passed.");
                 } else {
+                   // Commit certificate information in case of a rollback, power outage, or similar. This will be picked up by an IncompleteIssuanceServiceWorker (if enabled)
+                   final int crlPartitionIndex = getCAInfo().determineCrlPartitionIndex(cert);
+                   certGenParams.addToIncompleteIssuanceJournal(new IncompletelyIssuedCertificateInfo(getCAId(), serno, new Date(), subject, cert, cacert, crlPartitionIndex));
                    // Get certificate chain
                    final List<Certificate> chain = new ArrayList<>();
                    chain.add(cert);
@@ -1816,23 +1843,28 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return pkinfo;
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int)
-     */
+
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
-            IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0);
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            Certificate partitionCaCert) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert, new Date());
+    }
+    
+    @Override
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            Certificate partitionCaCert, final Date validFrom) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0, partitionCaCert, validFrom);
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateDeltaCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int, int)
-     */
+
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
-            IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
-            NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber,
+            int basecrlnumber, Certificate latestCaCertForParition) throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException,
+            SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber, latestCaCertForParition,
+                new Date());
     }
 
     @Override
@@ -1928,22 +1960,30 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @param crlnumber CRLNumber for this CRL
      * @param isDeltaCRL true if we should generate a DeltaCRL
      * @param basecrlnumber caseCRLNumber for a delta CRL, use 0 for full CRLs
+     * @param partitionCaCert CA certificate to verify CRL against (mainly used for MS compatible CAs)
+     * @param validFrom When this CRL is valid from
      * @return X509CRLHolder with the generated CRL
      * @throws CryptoTokenOfflineException
      * @throws IOException
      * @throws SignatureException
      */
-    private X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
-            throws CryptoTokenOfflineException, IOException, SignatureException {
+    private X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, 
+            boolean isDeltaCRL, int basecrlnumber, Certificate partitionCaCert, final Date validFrom) throws CryptoTokenOfflineException, IOException, SignatureException {
         final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
             log.debug("generateCRL(crlPartitionIndex=" + crlPartitionIndex + ", certs.size=" + certs.size() + ", crlPeriod=" + crlPeriod + ", crlNumber=" + crlnumber + ", isDeltaCRL=" + isDeltaCRL + ", baseCRLNumber=" + basecrlnumber);
         }
 
+        
         // Make DNs
-        final X509Certificate cacert = (X509Certificate) getCACertificate();
+        X509Certificate cacert = (X509Certificate) getCACertificate();
         final X500Name issuer;
+
+        if (isMsCaCompatible() && partitionCaCert != null) {
+            cacert = (X509Certificate) partitionCaCert;
+        }
+        
         if (cacert == null) {
             // This is an initial root CA, since no CA-certificate exists
             // (I don't think we can ever get here!!!)
@@ -1957,10 +1997,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } else {
             issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }
-        final Date thisUpdate = new Date();
+        final Date thisUpdate = (validFrom != null ? validFrom : new Date());
         final Date nextUpdate = new Date();
+        nextUpdate.setTime( thisUpdate.getTime() );
         // Set standard nextUpdate time
-        long nextUpdateTime = nextUpdate.getTime() + crlPeriod;
+        long nextUpdateTime = nextUpdate.getTime() + crlPeriod - ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
         nextUpdate.setTime(nextUpdateTime);
         // Check if the time is too large, then set time to "max/final" time according to RFC5280 section 4.1.2.5, 99991231235959Z
         TimeZone tz = TimeZone.getTimeZone("GMT");
@@ -2043,15 +2084,20 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
         boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
         if(keepexpiredcertsoncrl) {
-            SimpleDateFormat sdf = new SimpleDateFormat();
-            final String GMTdatePattern = "yyyyMMddHHmmss";
-            sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
-            sdf.applyPattern(GMTdatePattern);
             // For now force parameter with date equals NotBefore of CA certificate, or now
-            final Date keepDate = cacert != null ? cacert.getNotBefore() : new Date();
-            crlgen.addExtension(ExpiredCertsOnCRL, false, new DERGeneralizedTime(keepDate));
+            final DERGeneralizedTime keepDate;
+            if (cacert != null) {
+                keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+            } else {
+                // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)
+                SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
+                dateF.setTimeZone(new SimpleTimeZone(0, "Z"));
+                String d = dateF.format(new Date()) + "Z";
+                keepDate = new DERGeneralizedTime(d);
+            }
+            crlgen.addExtension(ExpiredCertsOnCRL, false, keepDate);
             if (log.isDebugEnabled()) {
-                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: "+keepDate);
+                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: " + keepDate.getTime());
             }
         }
 
@@ -2095,7 +2141,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (log.isDebugEnabled()) {
             log.debug("Signing CRL. Free memory="+Runtime.getRuntime().freeMemory());
         }
-        final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+        String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+        if (isMsCaCompatible() && partitionCaCert != null) {
+            alias = getSignKeyAliasFromSubjectKeyId(cryptoToken, CertTools.getSubjectKeyId(partitionCaCert));
+        }
+        
         try {
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
             crl = crlgen.build(signer);
@@ -2146,6 +2196,23 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return crl;
     }
 
+    private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] crlSubjectKeyIdentifier) throws CryptoTokenOfflineException {
+        try {
+            for (String keyAlias : cryptoToken.getAliases()) {
+                String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier()));
+                if (StringUtils.equals(subjectKeyId, new String(Hex.encode(crlSubjectKeyIdentifier)))) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using key alias: '" + keyAlias + "' to sign CRL");
+                    }
+                    return keyAlias;
+                }
+            }
+        } catch (KeyStoreException e) {
+            throw new CryptoTokenOfflineException(e);
+        }
+        throw new IllegalStateException("No key matching Subject Key Id '" + new String(Hex.encode(crlSubjectKeyIdentifier)) + "' found.");
+    }
+    
     /**
      * Generate a list of Distribution points.
      *

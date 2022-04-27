@@ -16,7 +16,9 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -111,12 +113,13 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private boolean qcStatement;
     private boolean certificateTransparencySCTs;
     private boolean isCvc;
+    private String accountBindingId;
     
     private String downloadCertificateLink;
     
     private String revokeReason;
-    private List<String> revokeReasons;
-    
+    private Map<Integer, String> revokeReasons;
+
     private String returnToLink = null;
     
     // Authentication check and audit log page access request
@@ -171,6 +174,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().replace("\\,", ",").split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
             subjectDirAttributes = (certificateData.getSubjectDirAttr() == null) ? ejbcaBean.getText("SDA_NONE") : certificateData.getSubjectDirAttr();
             publicKey = composePublicKeyValue();
+            accountBindingId = certificateData.getAccountBindingId();
             
             basicConstraints = certificateData.getBasicConstraints(ejbcaBean.getText("EXT_UNUSED"), 
                     ejbcaBean.getText("EXT_PKIX_BC_CANOLIMIT"), 
@@ -186,9 +190,9 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
 
             fingerPrint = composeFingerPrint();
             revoked = composeRevokedText();
-            
-            revokeReasons = fetchTexts(SecConst.reasontexts);
-            
+
+            revokeReasons = idToText(SecConst.reasontexts);
+
             isCvc = certificateData.getType().equalsIgnoreCase("CVC");
             hasNameConstraints = certificateData.hasNameConstraints();
             qcStatement = certificateData.hasQcStatement();
@@ -239,21 +243,21 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return returnToLink;
     }
 
-    private List<String> fetchTexts(final String[] keys) {
-        final List<String> texts= new ArrayList<>();
-        for (final String key : keys) {
-            if (key.equals("REV_UNUSED")) {
+    private Map<Integer, String> idToText(final String[] keys) {
+        final Map<Integer, String> idToText= new HashMap<>();
+        for (int i = 0; i < keys.length; i++) {
+            if (keys[i].equals("REV_UNUSED")) {
                 continue;
             }
-            if (certificateData.isRevokedAndOnHold() && key.equals("REV_CERTIFICATEHOLD")) {
+            if (certificateData.isRevokedAndOnHold() && keys[i].equals("REV_CERTIFICATEHOLD")) {
                 continue;
             }
-            if (key.equals("REV_REMOVEFROMCRL")) {
+            if (keys[i].equals("REV_REMOVEFROMCRL")) {
                 continue;
             }
-            texts.add(ejbcaBean.getText(key));
+            idToText.put(i, ejbcaBean.getText(keys[i]));
         }
-        return texts;
+        return idToText;
     }
 
     private String composeRevokedText() {
@@ -475,6 +479,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return publicKey;
     }
     
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+    
     public String getBasicConstraints() {
         return basicConstraints;
     }
@@ -544,7 +552,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         this.revokeReason = revokeReason;
     }
 
-    public List<String> getRevokeReasons() {
+    public Map<Integer, String> getRevokeReasons() {
         return revokeReasons;
     }
     
@@ -617,7 +625,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     
     public void actionRevoke() throws AuthorizationDeniedException {
-        final int reason = revokeReasons.indexOf(revokeReason);
+        final int reason = Integer.valueOf(revokeReason);
         if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
                 && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)
                 && (!certificateData.isRevoked() || certificateData.isRevokedAndOnHold())) {

@@ -43,7 +43,6 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      *
      */
 	private static final long serialVersionUID = -1766329888474901945L;
-
     // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
     protected LinkedHashMap<Object, Object> data;
     private boolean upgraded = false;
@@ -128,7 +127,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      * Puts the result in a new Map with keys:
      * <pre>
      * changed:key, changedvalue
-     * remove:key, removedvalue
+     * removed:key, removedvalue
      * added:key, addedvalue
      * </pre>
      *
@@ -174,6 +173,21 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     	}
     	return result;
 	}
+
+    /**
+     * Modifies a diff map obtained with {@link #diffMaps(Map, Map)} to replace values that should not be logged with the string 'hidden'.
+     */
+	public void filterDiffMapForLogging(Map<Object,Object> diff, String key) {
+	    if (diff.containsKey("changed:" + key)) {
+	        diff.put("changed:" + key, "hidden");            
+	    }
+	    if (diff.containsKey("removed:" + key)) {
+	        diff.put("removed:" + key, "hidden");            
+	    }
+	    if (diff.containsKey("added:" + key)) {
+	        diff.put("added:" + key, "hidden");            
+	    }
+	} 
 
 	/** helper method to get nice output from types that do
 	 * not work nicely with Object.toString()
