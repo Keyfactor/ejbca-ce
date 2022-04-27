@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.codec.binary.Base64;
@@ -48,7 +49,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
-import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -64,7 +64,6 @@ import org.junit.runner.RunWith;
  *
  * @see org.ejbca.ui.web.rest.api.InMemoryRestServer
  *
- * @version $Id: CaInfoConverterUnitTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 @RunWith(EasyMockRunner.class)
 public class CaRestResourceUnitTest {
@@ -106,8 +105,11 @@ public class CaRestResourceUnitTest {
         final String expectedVersion = "1.0";
         final String expectedRevision = GlobalConfiguration.EJBCA_VERSION;
         // when
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/status").get();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca/status")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -120,8 +122,11 @@ public class CaRestResourceUnitTest {
         expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(new IdNameHashMap<CAInfo>());
         replay(raMasterApiProxy);
         // when
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca").get();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
         // then
@@ -150,8 +155,11 @@ public class CaRestResourceUnitTest {
         expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(caInfosMap);
         replay(raMasterApiProxy);
         // when
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca").get();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
         // then
@@ -186,8 +194,11 @@ public class CaRestResourceUnitTest {
         // when
         expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andThrow(new CADoesntExistsException(expectedMessage));
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/CN=Ca name/certificate/download").get();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca/CN=Ca name/certificate/download")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
         // then
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -201,12 +212,15 @@ public class CaRestResourceUnitTest {
         final Certificate certificate = getCertificate();
         final CertificateWrapper certificateWrapper = EJBTools.wrap(certificate);
         final List<CertificateWrapper> certificates = Collections.singletonList(certificateWrapper);
-        
+
         // when
         expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andReturn(certificates);
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/CN=Ca name/certificate/download").get();
-        final String actualString = actualResponse.getEntity(String.class);
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca/CN=Ca name/certificate/download")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualString = actualResponse.readEntity(String.class);
         // then
         assertTrue(actualString.contains(CertTools.BEGIN_CERTIFICATE));
         assertTrue(actualString.contains(CertTools.END_CERTIFICATE));
@@ -222,8 +236,11 @@ public class CaRestResourceUnitTest {
         // when
         expect(raMasterApiProxy.getLatestCrlByRequest(eq(authenticationToken), anyObject(RaCrlSearchRequest.class))).andReturn(expectedCertificate.getBytes());
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
-        final String actualString = actualResponse.getEntity(String.class);
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca/Ca name/getLatestCrl")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualString);
         final String actualCertificate = (String)actualJsonObject.get("crl");
         final byte[] decoded = Base64.decodeBase64(actualCertificate);
@@ -245,8 +262,11 @@ public class CaRestResourceUnitTest {
         // when
         expect(raMasterApiProxy.getLatestCrlByRequest(eq(authenticationToken), anyObject(RaCrlSearchRequest.class))).andThrow(new CADoesntExistsException(expectedMessage));
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
-        final String actualJsonString = actualResponse.getEntity(String.class);
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca/Ca name/getLatestCrl")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
         // then
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);

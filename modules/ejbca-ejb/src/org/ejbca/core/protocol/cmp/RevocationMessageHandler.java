@@ -68,8 +68,6 @@ import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 
 /**
  * Message handler for the CMP revocation request messages
- * 
- * @version $Id$
  */
 public class RevocationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
 	
@@ -187,7 +185,21 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		    LOG.info(iMsg);
 		    try {
-		        endEntityManagementSession.revokeCert(admin, serno.getValue(), CertTools.stringToBCDNString(issuer.toString()), reason);
+		        // If it was a certificate authenticated admin, we want to use this admin token to pass down core layers which will make 
+		        // authorization checks on it
+		        final AuthenticationToken adminForEjb;
+		        if (authenticationModule.getAuthenticationToken() != null) {
+		            adminForEjb = authenticationModule.getAuthenticationToken();		                
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Using admin from AuthenticationModule to call EJB. AuthModule=" + authenticationModule.getName() + ", admin: " + adminForEjb.toString());
+                    }
+		        } else {
+	                adminForEjb = admin;		            
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Using AlwaysAllow admin to call EJB, admin: " + adminForEjb.toString());
+                    }               
+		        }
+		        endEntityManagementSession.revokeCert(adminForEjb, serno.getValue(), CertTools.stringToBCDNString(issuer.toString()), reason);
 		        status = ResponseStatus.SUCCESS;
 		    } catch (AuthorizationDeniedException e) {
 		        failInfo = FailInfo.NOT_AUTHORIZED;

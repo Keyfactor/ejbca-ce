@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -219,7 +220,7 @@ public interface CAAdminSession {
      * @throws InternalKeyBindingNonceConflictException An exception thrown when someone tries to create an InternalKeyBinding with a nonce setting that conflicts with the CA's OCSP response pre-production setting.
      */
     void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException,
-            CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException;
+        CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
     /**
      * Renews a existing CA certificate using the requested keys or by
@@ -523,10 +524,11 @@ public interface CAAdminSession {
      * @throws AuthorizationDeniedException             if the administrators isn't authorized
      * @throws CmsCertificatePathMissingException       An exception thrown when someone tries to activate the CMS Service for a CA that does not have a CMS certificate path
      * @throws InternalKeyBindingNonceConflictException An exception thrown when someone tries to create an InternalKeyBinding with a nonce setting that conflicts with the CA's OCSP response pre-production setting.
+     * @throws CaMsCompatibilityIrreversibleException An exception thrown when someone tries to change msCaCompatible from true to false.
      * @see org.cesecore.certificates.ca.CAInfo
      * @see org.cesecore.certificates.ca.X509CAInfo
      */
-    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException;
+    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
     /**
      * Method used to check if certificate profile id exists in any CA.
@@ -685,4 +687,37 @@ public interface CAAdminSession {
      */
     void customLog(AuthenticationToken authenticationToken, String type, String caName, String username, String certificateSn, String msg, EventType event)
             throws AuthorizationDeniedException, CADoesntExistsException;
+    
+    /**
+     * 
+     * @param administrator
+     * @param caid
+     * @param caChainBytes - for support in later releases
+     * @param signKeyAlias - current signing key which is used to sign the certificate request
+     * @param verificationKeyAlias - sign or verification key to be certified, if null a new key pair will be generated
+     * @param encryptKeyAlias - encryption key to be certified, if null a new key pair will be generated
+     * @return
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     */
+    public byte[] makeCitsRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, 
+            String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
+    
+    public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
+            byte[] signedCertificate) throws CADoesntExistsException, EjbcaException;
+    
+    /**
+     * 
+     * @param admin                                    the authentication token.
+     * @param caname                                   name to be given to the CA
+     * @param certificate                              bytes of certificate in OER encoded format
+     * @throws AuthorizationDeniedException
+     * @throws CAExistsException
+     * @throws CertificateImportException
+     * @throws IllegalCryptoTokenException
+     */
+    void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
+            throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException;
 }

@@ -124,9 +124,9 @@
         <h:panelGroup layout="block" styleClass="misc-section-content">
           <h:outputLink value="#{adminMenuBean.adminWebUrl}mypreferences.xhtml"><h:outputText value="#{web.text.NAV_MYPREFERENCES}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb" rel="noopener noreferer" rendered="#{adminMenuBean.authorizedToViewRaWeb}"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb and !adminMenuBean.publicWebHidden}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rel="noopener noreferer" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text.DOCUMENTATION}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top" rendered="#{adminMenuBean.logoutAvailable}"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
     </h:panelGroup>

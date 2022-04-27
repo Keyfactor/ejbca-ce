@@ -13,27 +13,6 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
@@ -81,6 +60,27 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
+
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -149,18 +149,22 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
                 try {
-                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
                     userdata.setDN(requestMessage.getRequestX500Name().toString());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
                 }
 
             }
         }
         
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+        boolean isClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
+
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
-        addOrEditUser(admin, userdata, false, true);
+        addOrEditUser(admin, userdata, isClearPwd, true);
         // Process request
         try {
             
@@ -197,10 +201,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
                 try {
-                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).newInstance();
+                    ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
                     userdata.setDN(req.getRequestX500Name().toString());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
                 }
 
@@ -260,7 +265,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     log.debug("New end entity '" + username + "', adding userdata. New status '" + userdata.getStatus() + "'.");
                 }
                 // addUserfromWS also checks useUserStorage internally, so don't duplicate the check
-                endEntityManagementSession.addUserFromWS(admin, userdata, clearpwd);
+                endEntityManagementSession.addUser(admin, userdata, clearpwd);
             }
         } catch (WaitingForApprovalException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
@@ -337,7 +342,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String username = userdata.getUsername();
             int caid = userdata.getCAId();
             KeyStore keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, null, null,
-                    createJKS, loadkeys, savekeys,
+                    createJKS ? SecConst.TOKEN_SOFT_JKS : SecConst.TOKEN_SOFT_P12, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keyStore.store(baos, password.toCharArray());

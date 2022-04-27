@@ -72,6 +72,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -165,17 +166,30 @@ public class OCSPStressCommandTest {
         exit.expectSystemExitWithStatus(0);
         createUsersWithP12(1);
         File caCertificateFile = saveCaToFile();
+        File serialsFile = createSerialsFile();
 
         int numberOfThreads = 30;
         int numberOfTests = 100;
         String waitTime = "1000";
         String httpReqPath = "http://" + httpHost + ":" + httpPort + "/ejbca/publicweb/status/ocsp";
 
-        //OCSP stress http://ca:8080/ejbca/publicweb/status/ocsp result.log CMPCA.cacert.pem 30:100 1000 GET keys/tester-0.p12 foo123
-        String[] args = new String[]{"OCSP", "stress", httpReqPath, "result.log", caCertificateFile.getCanonicalPath(),
+        //OCSP stress http://ca:8080/ejbca/publicweb/status/ocsp serials.txt CMPCA.cacert.pem 30:100 1000 GET keys/tester-0.p12 foo123
+        String[] args = new String[]{"OCSP", "stress", httpReqPath, serialsFile.getCanonicalPath(), caCertificateFile.getCanonicalPath(),
                 numberOfThreads + ":" + numberOfTests, waitTime, "GET",
                 p12CertsPath + "/" + USERNAME + 0 + ".p12", PASSWORD};
         command.execute(args);
+    }
+
+    /** Creates serials.txt with a hexadecimal and decimal serial (both non-existent */
+    private File createSerialsFile() throws IOException {
+        final String serials = "# This is a comment\n" +
+                "0x1234567890ABCDEF1234567890ABCDEF\n" +
+                "12345678901234567890\n";
+        File serialsFile = folder.newFile("serials.txt");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(serialsFile)) {
+            fileOutputStream.write(serials.getBytes(StandardCharsets.US_ASCII));
+        }
+        return serialsFile;
     }
 
     private File saveCaToFile() throws IOException, CertificateEncodingException {
@@ -202,7 +216,7 @@ public class OCSPStressCommandTest {
             eeinfo.setPassword(PASSWORD);
 
             final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(authToken,
-                    name, PASSWORD, x509ca.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, false,
+                    name, PASSWORD, x509ca.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12,
                     false, true,
                     true, endEntityProfileId);
 

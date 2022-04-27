@@ -23,7 +23,7 @@ import org.ejbca.ui.web.admin.ca.EditCaUtil;
  * Wrapper class for holding CaInfo properties.
  */
 public class CaInfoDto {
-
+    
     private String caName;
     private String signatureAlgorithmParam = StringUtils.EMPTY;
     private String signKeySpec = EditCaUtil.DEFAULT_KEY_SIZE;
@@ -48,6 +48,7 @@ public class CaInfoDto {
     private String caSubjectAltName;
     private String policyId;
     private boolean useAuthorityKeyIdentifier = true; // Default in create ca page
+    private boolean msCaCompatible;
     private boolean authorityKeyIdentifierCritical;
     private boolean useCrlNumber = true; // Default
     private boolean crlNumberCritical;
@@ -86,7 +87,11 @@ public class CaInfoDto {
     private String crlCaDeltaCrlPeriod;
     private boolean generateCrlUponRevocation = false;
     private String requestPreProcessor;
-
+    
+    //cits
+    private String certificateId;
+    private String region;
+    
     long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
@@ -113,6 +118,10 @@ public class CaInfoDto {
     
     public boolean isCaTypeSsh() {
         return caType == CAInfo.CATYPE_SSH;
+    }
+    
+    public boolean isCaTypeCits() {
+        return caType == CAInfo.CATYPE_CITS;
     }
 
 
@@ -324,6 +333,19 @@ public class CaInfoDto {
 
     public void setUseAuthorityKeyIdentifier(boolean useAuthorityKeyIdentifier) {
         this.useAuthorityKeyIdentifier = useAuthorityKeyIdentifier;
+    }
+
+    public boolean isMsCaCompatible() {
+        return msCaCompatible;
+    }
+
+    public void setMsCaCompatible(boolean msCaCompatible) {
+        if (msCaCompatible) {
+            // CRL Partitions for MS Compatible CA's are handled differently.
+            resetUseCrlPartitionsSettings();
+        }
+
+        this.msCaCompatible = msCaCompatible;
     }
 
     public boolean isAuthorityKeyIdentifierCritical() {
@@ -628,6 +650,28 @@ public class CaInfoDto {
 
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
+    }
+
+    private void resetUseCrlPartitionsSettings() {
+        this.usePartitionedCrl = false;
+        this.crlPartitions = 0;
+        this.suspendedCrlPartitions = 0;
+    }
+    
+    public String getCertificateId() {
+        return certificateId;
+    }
+
+    public void setCertificateId(String certificateId) {
+        this.certificateId = certificateId;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 }
 

@@ -128,8 +128,8 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
     private final String[] softtokennames = { UserDataVOWS.TOKEN_TYPE_USERGENERATED, UserDataVOWS.TOKEN_TYPE_P12, UserDataVOWS.TOKEN_TYPE_JKS,
-            UserDataVOWS.TOKEN_TYPE_PEM };
-    private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
+            UserDataVOWS.TOKEN_TYPE_PEM, UserDataVOWS.TOKEN_TYPE_BCFKS };
+    private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM, SecConst.TOKEN_SOFT_BCFKS };
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override

@@ -45,5 +45,5 @@ fi
 
 # Finally run java
 #set -x
-$JAVACMD -cp $CLASSES -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar NCipherHSMKeyTool "${@}"
+$JAVACMD -cp $CLASSES -Dlog4j1.compatibility=true -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar NCipherHSMKeyTool "${@}"
 

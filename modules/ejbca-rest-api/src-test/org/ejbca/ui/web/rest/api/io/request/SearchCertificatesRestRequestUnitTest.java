@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
@@ -58,6 +61,8 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isSubjectAnSearchExact());
         assertEquals("Should properly convert.", expectedSearchString, actualRaCertificateSearchRequest.getUsernameSearchString());
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
+        assertEquals("Should properly convert.", expectedSearchString, actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
+        assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isExternalAccountIdSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
@@ -100,6 +105,8 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isSubjectAnSearchExact());
         assertEquals("Should properly convert.", expectedSearchString, actualRaCertificateSearchRequest.getUsernameSearchString());
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
+        assertEquals("Should properly convert.", expectedSearchString, actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
+        assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isExternalAccountIdSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
@@ -147,6 +154,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -192,6 +200,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -237,6 +246,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -280,6 +290,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -324,6 +335,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -368,6 +380,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -412,6 +425,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", expectedDateLong, Long.valueOf(actualRaCertificateSearchRequest.getIssuedBefore()));
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -455,6 +469,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", expectedDateLong, Long.valueOf(actualRaCertificateSearchRequest.getIssuedAfter()));
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -569,6 +584,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -612,6 +628,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -655,6 +672,7 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getExpiresAfter());
@@ -698,9 +716,98 @@ public class SearchCertificatesRestRequestUnitTest {
         assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
         assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", expectedDateLong, Long.valueOf(actualRaCertificateSearchRequest.getExpiresAfter()));
+        assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getExpiresBefore());
+        assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getRevokedAfter());
+        assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getRevokedBefore());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getStatuses().size());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getRevocationReasons().size());
+    }
+    
+    @Test
+    public void shouldProperlyConvertSearchCertificatesRestRequestWithEXTERNAL_ACCOUNT_BINDING_IDPropertyAndEQUALOperationAndCorrectValue() throws RestException {
+        // given
+        final int expectedPageNumber = 0;
+        final int expectedMaxNumberOfResults = 10;
+        final String expectedSearchString = "0123456789";
+        final String externalAccountBindingIdString = "0123456789";
+        final boolean expectedSearchMatchExact = true;
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property(CriteriaProperty.EXTERNAL_ACCOUNT_BINDING_ID.name())
+                .value(expectedSearchString)
+                .operation(CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(expectedMaxNumberOfResults)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+        // when
+        final RaCertificateSearchRequest actualRaCertificateSearchRequest = SearchCertificatesRestRequest.converter().toEntity(searchCertificatesRestRequest);
+        // then
+        assertEquals("Should properly convert.", expectedMaxNumberOfResults, actualRaCertificateSearchRequest.getMaxResults());
+        assertEquals("Should properly convert.", expectedPageNumber, actualRaCertificateSearchRequest.getPageNumber());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getEepIds().size());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getCpIds().size());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getCaIds().size());
+        assertEquals("Should properly convert.", externalAccountBindingIdString, actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
+        assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isExternalAccountIdSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSubjectDnSearchString());
+        assertEquals("Should properly convert.", false, actualRaCertificateSearchRequest.isSubjectDnSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSubjectAnSearchString());
+        assertEquals("Should properly convert.", false, actualRaCertificateSearchRequest.isSubjectAnSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getUsernameSearchString());
+        assertEquals("Should properly convert.", false, actualRaCertificateSearchRequest.isUsernameSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
+        assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
+        assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getExpiresBefore());
+        assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getRevokedAfter());
+        assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getRevokedBefore());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getStatuses().size());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getRevocationReasons().size());
+    }
+    
+    @Test
+    public void shouldProperlyConvertSearchCertificatesRestRequestWithEXTERNAL_ACCOUNT_BINDING_IDPropertyAndLIKEOperationAndCorrectValue() throws RestException {
+        // given
+        final int expectedPageNumber = 0;
+        final int expectedMaxNumberOfResults = 10;
+        final String expectedSearchString = "0123456789";
+        final String externalAccountBindingIdString = "0123456789";
+        final boolean expectedSearchMatchExact = false;
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property(CriteriaProperty.EXTERNAL_ACCOUNT_BINDING_ID.name())
+                .value(expectedSearchString)
+                .operation(CriteriaOperation.LIKE.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(expectedMaxNumberOfResults)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+        // when
+        final RaCertificateSearchRequest actualRaCertificateSearchRequest = SearchCertificatesRestRequest.converter().toEntity(searchCertificatesRestRequest);
+        // then
+        assertEquals("Should properly convert.", expectedMaxNumberOfResults, actualRaCertificateSearchRequest.getMaxResults());
+        assertEquals("Should properly convert.", expectedPageNumber, actualRaCertificateSearchRequest.getPageNumber());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getEepIds().size());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getCpIds().size());
+        assertEquals("Should properly convert.", 0, actualRaCertificateSearchRequest.getCaIds().size());
+        assertEquals("Should properly convert.", externalAccountBindingIdString, actualRaCertificateSearchRequest.getExternalAccountIdSearchString());
+        assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isExternalAccountIdSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSubjectDnSearchString());
+        assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isSubjectDnSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSubjectAnSearchString());
+        assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isSubjectAnSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getUsernameSearchString());
+        assertEquals("Should properly convert.", expectedSearchMatchExact, actualRaCertificateSearchRequest.isUsernameSearchExact());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromDec());
+        assertEquals("Should properly convert.", "", actualRaCertificateSearchRequest.getSerialNumberSearchStringFromHex());
+        assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getIssuedAfter());
+        assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getIssuedBefore());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getExpiresBefore());
         assertEquals("Should properly convert.", 0L, actualRaCertificateSearchRequest.getRevokedAfter());
         assertEquals("Should properly convert.", Long.MAX_VALUE, actualRaCertificateSearchRequest.getRevokedBefore());

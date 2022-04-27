@@ -68,6 +68,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     protected static final String CERTIFICATE_PROFILE_IDS = "certificateProfileIds";
     protected static final String FAILED_ACTION = "failedAction";
     protected static final String NOT_APPLICABLE_ACTION = "notApplicableAction";
+    protected static final int MAX_LOG_DOMAINS = 100;
         
     static {
         APPLICABLE_PHASES = new ArrayList<>();

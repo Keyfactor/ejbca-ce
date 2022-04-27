@@ -24,6 +24,8 @@
         <composite:interface>
             <composite:attribute name="fieldInstances" required="true" />
             <composite:attribute name="msgPrefix" required="true" />
+            <composite:attribute name="dnEmailFieldName" required="true" />
+            <composite:attribute name="eeEmail" required="true" />
         </composite:interface>
 
         <composite:implementation>
@@ -32,7 +34,14 @@
                     value="#{msg[cc.attrs.msgPrefix.concat(fieldInstance.name)]}"
                     styleClass="pure-u-lg-1-3 row-even "/>
                 <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
-                    <h:inputText value="#{fieldInstance.value}" disabled="#{not fieldInstance.modifiable}"/>
+
+                    <h:selectBooleanCheckbox value="#{fieldInstance.useDataFromEmailField}"
+                                             id="#{'subject_dn_email_required'}"
+                                             onclick="#{fieldInstance.required ? 'return false;' : 'return true;'}"
+                                             rendered="#{fieldInstance.name.equals(cc.attrs.dnEmailFieldName)}"/>
+                    <h:outputLabel for="#{'subject_dn_email_required'}" value="#{msg.subject_dn_USESEMAILFIELDDATA}" rendered="#{fieldInstance.name.equals(cc.attrs.dnEmailFieldName)}"/>
+
+                    <h:inputText value="#{fieldInstance.value}" disabled="#{not fieldInstance.modifiable}" rendered="#{!fieldInstance.name.equals(cc.attrs.dnEmailFieldName)}"/>
                 </h:panelGroup>
             </ui:repeat>
         </composite:implementation>

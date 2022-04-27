@@ -514,7 +514,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             // NOPMD: ignore do nothing
         } catch (CesecoreException e) {
             if (e.getErrorCode().equals(ErrorCode.DOMAIN_BLACKLIST_FILE_PARSING_FAILED)) {
-            addNonTranslatedErrorMessage("Failed to save block list validator. " + e.getMessage());
+            addNonTranslatedErrorMessage("Failed to save domain list validator. " + e.getMessage());
             } else {
             addNonTranslatedErrorMessage("An exception occured: " + e.getMessage());
             }

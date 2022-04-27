@@ -30,7 +30,7 @@ import org.cesecore.internal.InternalResources;
  * @version $Id$
  */
 
-public class NoNegativeNumbersValidator implements Validator {
+public class NoNegativeNumbersValidator implements Validator<Object> {
     
     /** Localization of log and error messages. */
     private static final InternalResources intres = InternalResources.getInstance();

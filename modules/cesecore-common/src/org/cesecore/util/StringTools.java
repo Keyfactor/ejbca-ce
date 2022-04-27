@@ -763,9 +763,12 @@ public final class StringTools {
      *
      * @param in clear text string to encrypt
      * @param p encryption passphrase
-     * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files)
+     * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files), or null if null is input
      */
     public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) {
+        if (in == null) {
+            return in;
+        }
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Encryption not possible due to weak crypto policy.");
@@ -1233,8 +1236,8 @@ public final class StringTools {
                 secondString = "0";
             }
             if (StringUtils.isNumeric(firstString) && StringUtils.isNumeric(secondString)) {
-                final int firstNumber = Integer.valueOf(firstString);
-                final int secondNumber = Integer.valueOf(secondString);
+                final int firstNumber = Integer.parseInt(firstString);
+                final int secondNumber = Integer.parseInt(secondString);
                 if (firstNumber != secondNumber) {
                     return firstNumber < secondNumber;
                 }
@@ -1316,5 +1319,23 @@ public final class StringTools {
         return subjectDN;
     }
 
+    /**
+     * Checks a string for legal chars (alpha-numeric , including special chars (like . or -)).
+     * @param value the string value
+     * @return true if the string only contains legal characters.
+     */
+    public static boolean checkValueIsAlfaNumericWithSpecialChars(final String value) {
+        final String whiteList = "[a-zA-Z0-9-_\\s\\.]+";
+        return Pattern.matches(whiteList, value);
+    }
 
+    /**
+     * Trims whitespace from the beginning and end of a string.
+     *
+     * @param str the string
+     * @return the string with any leading and trailing white space removed
+     */
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
 }

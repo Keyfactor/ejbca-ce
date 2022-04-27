@@ -83,8 +83,6 @@ import org.junit.Test;
 /**
  * Verify that CMP functionality works in RA mode, when any combination of - useCertReqHistory (Store copy of UserData at the time of certificate
  * issuance.) - useUserStorage (Store current UserData.) - useCertificateStorage (Store issued certificates and related information.) are used.
- * 
- * @version $Id$
  */
 public class CmpRaThrowAwayTest extends CmpTestCase {
 
@@ -235,7 +233,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req);
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkCmpCertRepMessage(subjectDN, this.caCertificate, resp, reqId);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, subjectDN, this.caCertificate, resp, reqId);
         assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, (this.csrHistorySession.retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null));
         assertEquals("User data was or wasn't stored: ", useUserStorage, this.endEntityManagementSession.existsUser(username));
         assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, (this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null));
@@ -319,7 +317,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         final int requestId = initializationRequest.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         final byte[] reqBytes = req.getEncoded();
         final byte[] cmpResponse = sendCmpHttp(reqBytes, 200, configAlias);
-        final X509Certificate cert = checkCmpCertRepMessage(subjectX500Name, this.caCertificate, cmpResponse, requestId);
+        final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, subjectX500Name, this.caCertificate, cmpResponse, requestId);
         LOG.debug("Request:\n" + new String(CertTools.getPEMFromCertificateRequest(certRequest.getEncoded())));
         LOG.debug("Result:\n" + new String(CertTools.getPemFromCertificateChain(new ArrayList<>(Collections.singletonList(cert)))));
         final byte[] requestSubjectyX500Principal = cert.getSubjectX500Principal().getEncoded();

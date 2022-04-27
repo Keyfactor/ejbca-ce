@@ -1,16 +1,20 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequestList;
@@ -18,7 +22,9 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityMaxNumberOfResult
 
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -148,6 +154,26 @@ public class SearchEndEntitiesRestRequest {
                             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
                         }
                         raEndEntitySearchRequest.getStatuses().add(endEntityStatus.getStatusValue());
+                        break;
+                    }
+                    case MODIFIED_BEFORE: {
+                        Date modifiedBefore;
+                        try {
+                            modifiedBefore = ValidityDate.parseAsIso8601(criteriaValue);
+                        } catch (ParseException e) {
+                            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid date format for modifiedBefore value.");
+                        }
+                        raEndEntitySearchRequest.setModifiedBefore(modifiedBefore.getTime());
+                        break;
+                    }
+                    case MODIFIED_AFTER: {
+                        Date modifiedAfter;
+                        try {
+                            modifiedAfter = ValidityDate.parseAsIso8601(criteriaValue);
+                        } catch (ParseException e) {
+                            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid date format for modifiedAfter value.");
+                        }
+                        raEndEntitySearchRequest.setModifiedAfter(modifiedAfter.getTime());
                         break;
                     }
                     default:

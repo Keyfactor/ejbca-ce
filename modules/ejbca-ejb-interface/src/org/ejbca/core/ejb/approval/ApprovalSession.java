@@ -15,14 +15,15 @@ package org.ejbca.core.ejb.approval;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 
-/** Session bean to manage approval requests, i.e. add and find.
- * 
- * @version $Id$
+/** 
+ * Session bean to manage approval requests, i.e. add and find.
  */
 public interface ApprovalSession {
 
@@ -44,6 +45,19 @@ public interface ApprovalSession {
      */
      int addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
 
+     /**
+      * Adds an approval request (for ACME account registration or account key change).
+      * 
+      * @param admin the authentication token.
+      * @param approvalRequestType the approval Type ({@link ApprovalRequestType#ACMEACCOUNTREGISTRATION} and {@link ApprovalRequestType#ACMEACCOUNTKEYCHANGE}).
+      * @param approvalProfileId the approval profile ID.
+      * @param endEntityProfileId the end entity profile ID.
+      * @param acmeAccountId the ACME account ID (=public key fingerprint).
+      * @return the ID of the approval request or null, if no approval request could be created and stored.
+      * @throws ApprovalException if an approval request with this ID already exists.
+      */
+     Integer createApprovalRequest(AuthenticationToken admin, int approvalRequestType, int approvalProfileId, int endEntityProfileId, String acmeAccountId) throws ApprovalException;
+     
      /**
       * Checks if the approval request by the given identifier is approved or not. 
       * 
@@ -165,5 +179,14 @@ public interface ApprovalSession {
      */
     ApprovalDataVO findApprovalDataByRequestId(int requestId);
 
+    /**
+     * Update the approval/view rights of the Approval
+     * 
+     * @param admin administrator triggering the approval rights update
+     * @param roleId the affected role which needs an approval rights refresh
+     * @param roleName the name of the affected role
+     * @throws AuthorizationDeniedException if the user is not authorized to perform this action.
+     */    
+    void updateApprovalRights(AuthenticationToken admin, int roleId, String roleName) throws AuthorizationDeniedException;
 
 }

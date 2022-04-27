@@ -61,21 +61,40 @@
 
 		</h:panelGroup>
 		<h2><h:outputText value="#{web.text.BASICFUNCTIONS_TITLE}"/></h2>
-		<h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent">
-			<ui:repeat value="#{cAFunctionsMBean.getCaInfos()}" var="caGuiInfo">
-				<h5><h:outputText value="#{web.text.BASICFUNCTIONSFOR} : "/>
-					<h:outputText value="#{caGuiInfo.name}"/> &nbsp;
+		<h:dataTable layout="block" styleClass="collapsableSection jsSectionContent" rowClasses="Row0,Row1"
+				value="#{cAFunctionsMBean.getCaInfos()}" var="caGuiInfo" 
+				columnClasses="column1-cafunctions,column2-cafunctions,column3-cafunctions"
+				headerClass="actCaStructsCRLsHeader">
+				<h:column>
+					<f:facet name="header" >
+						<h:outputText value="#{web.text.ACTIVATECAS_NAME}"/>
+					</f:facet> 
+
+					<h3 style="text-align: center">
+						<h:outputText value="#{caGuiInfo.name}"/> 
+					</h3>
+					<br />
+					
+					<h:panelGroup>
 					<h:commandButton id="viewcacert"
 									 onclick="window.open('#{cAFunctionsMBean.getCertificatePopupLink(caGuiInfo.caId)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
 									 value="#{web.text.VIEW_CERTIFICATE}"
 									 title="#{web.text.VIEW_CACERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"/>
+					<br />
+					<br />				 
 					<h:commandButton id="viewcainfo" action="#{cAFunctionsMBean.openCertificateInfoPopup}"
 									 onclick="window.open('#{cAFunctionsMBean.openCertificateInfoPopup(caGuiInfo.caId)}', 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1').focus();"
 									 value="#{web.text.VIEW_INFORMATION}"
 									 title="#{web.text.VIEW_CAINFORMATION_TITLE} #{web.text.POPUP_WINDOW}"/>
-				</h5>
+					</h:panelGroup>
+				</h:column>
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="#{web.text.CERTIFICATECHAINDETAILS_TITLE}"/>
+					</f:facet> 
+				
 				<h:dataTable value="#{caGuiInfo.certificatechain}" var="certificatechain" binding="#{table}"
-							 styleClass="outline-buttons-table" rowClasses="Row0">
+							 styleClass="outline-buttons-table" rowClasses="RowAlt0,RowAlt1">
 					<h:column>
 						<h:panelGroup rendered="#{table.rowIndex == 0}">
 							<h:panelGrid columns="2">
@@ -144,47 +163,89 @@
 						</h:panelGroup>
 					</h:column>
 				</h:dataTable>
-				<br />
-				<!-- Full CRLs -->
-				<h:outputText value="#{web.text.NOCRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.isCrlInfoEmpty()}"/>
-				<h:panelGroup rendered="#{!caGuiInfo.isCrlInfoEmpty()}">
-					<h:outputText value="#{web.text.LATESTCRL}: #{web.text.CREATED} #{caGuiInfo.getCrlCreateDate()}"/>
-					<h:panelGroup rendered="#{caGuiInfo.isCrlExpired()}">
-						<span id="alert"><h:outputText value="#{web.text.EXPIRED} #{caGuiInfo.getCrlExpireDate()}" /></span>
+				</h:column>
+				
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="#{web.text.CRL_DETAILS}"/>
+					</f:facet>
+					
+					<!-- Full CRLs -->
+					<h:outputText value="#{web.text.NOCRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.isCrlInfoEmpty()}"/>
+					<h4 style="text-align: left">
+						<h:outputText value="#{web.text.LATESTCRL}:" rendered="#{!caGuiInfo.isCrlInfoEmpty()}"/> 
+					</h4>
+					<h:dataTable value="#{caGuiInfo.getCrlinfo()}" var="crlInfo" 
+						headerClass="actCaStructsCRLsHeader" rendered="#{!caGuiInfo.isCrlInfoEmpty()}">
+						<h:column>
+							<f:facet name="header" >
+								<h:outputText value="#{web.text.CREATED}"/>
+							</f:facet>
+							<h:outputText value="#{crlInfo.crlCreateDate}"/>
+						</h:column>
+						<h:column>
+							<f:facet name="header" >
+								<h:outputText value="#{web.text.EXPIRES}"/>
+							</f:facet>
+							<h:panelGroup rendered="#{crlInfo.crlExpired}">
+								<span id="alert"><h:outputText value=" #{crlInfo.crlExpireDate}" /></span>
+							</h:panelGroup>
+							<h:panelGroup rendered="#{!crlInfo.crlExpired}">
+								<span id="alert2"><h:outputText value=" #{crlInfo.crlExpireDate}" /></span>
+							</h:panelGroup>
+						</h:column>
+						<h:column>
+							<f:facet name="header" >
+								<h:outputText value="#{web.text.PARTITION}"/>
+							</f:facet>
+							<h:outputText value="#{crlInfo.partitionIndex}" />
+						</h:column>
+						<h:column>
+							<f:facet name="header" >
+								<h:outputText value="#{web.text.NUMBER}"/>
+							</f:facet>
+							<h:outputText value=" #{crlInfo.lastCrlNumber}" />
+						</h:column>
+						<h:column>
+							<h:outputLink rendered="#{!caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}">
+								<h:outputText value=" #{web.text.GETCRL}"/>
+							</h:outputLink>
+							<h:outputLink rendered="#{caGuiInfo.displayPartitions}" value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{crlInfo.URLEncodedSubjectDn}&amp;partition=#{crlInfo.partitionIndex}">
+								<h:outputText value=" #{web.text.GETCRL}"/>
+							</h:outputLink>
+						</h:column>
+						<br />
+					</h:dataTable>
+					
+					<!-- Delta CRLs-->
+					<br />
+					<h:panelGroup rendered="#{caGuiInfo.isDeltaCrlInfoEmpty()}">
+						<h:outputText value="#{web.text.NODELTACRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.getDeltaPeriodEnabled()}"/>
+						<h:outputText value="#{web.text.DELTACRLSNOTENABLED}" rendered="#{!caGuiInfo.getDeltaPeriodEnabled()}"/>
 					</h:panelGroup>
-					<h:panelGroup rendered="#{!caGuiInfo.isCrlExpired()}">
-					<span id="alert2"><h:outputText value="#{web.text.EXPIRES} #{caGuiInfo.getCrlExpireDate()}" /></span>
-					<h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.crlinfo.getLastCRLNumber()} " />
-					<h:outputLink
-							value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=crl&amp;issuer=#{caGuiInfo.subjectdn}">
-						<h:outputText value="#{web.text.GETCRL}"/>
-					</h:outputLink>
+					
+					<h4 style="text-align: left">
+						<h:outputText value="#{web.text.LATESTDELTACRL}:" rendered="#{!caGuiInfo.isDeltaCrlInfoEmpty()}"/> 
+					</h4>
+					
+					<h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlInfoEmpty()}">
+						<h:outputText value=" #{web.text.CREATED} #{caGuiInfo.getDeltaCrlCreateDate()}"/>
+						<h:panelGroup rendered="#{caGuiInfo.isDeltaCrlExpired()}">
+							<span id="alert3"><h:outputText value="#{web.text.EXPIRED} #{caGuiInfo.getDeltaCrlExpireDate()}" /></span>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlExpired()}">
+							<span id="alert4"><h:outputText value="#{web.text.EXPIRES} #{caGuiInfo.getDeltaCrlExpireDate()}" /></span>
+						<h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.deltacrlinfo.getLastCRLNumber()} " />
+						<h:outputLink
+								value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=deltacrl&amp;issuer=#{caGuiInfo.subjectdn}">
+							<h:outputText value="#{web.text.GETDELTACRL}"/>
+						</h:outputLink>
+						</h:panelGroup>
 					</h:panelGroup>
-				</h:panelGroup>
-				<br />
-				<!-- Delta CRLs-->
-				<h:panelGroup rendered="#{caGuiInfo.isDeltaCrlInfoEmpty()}">
-					<h:outputText value="#{web.text.NODELTACRLHAVEBEENGENERATED}" rendered="#{caGuiInfo.getDeltaPeriodEnabled()}"/>
-					<h:outputText value="#{web.text.DELTACRLSNOTENABLED}" rendered="#{!caGuiInfo.getDeltaPeriodEnabled()}"/>
-				</h:panelGroup>
-				<h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlInfoEmpty()}">
-					<h:outputText value="#{web.text.LATESTDELTACRL}: #{web.text.CREATED} #{caGuiInfo.getDeltaCrlCreateDate()}"/>
-					<h:panelGroup rendered="#{caGuiInfo.isDeltaCrlExpired()}">
-						<span id="alert3"><h:outputText value="#{web.text.EXPIRED} #{caGuiInfo.getDeltaCrlExpireDate()}" /></span>
-					</h:panelGroup>
-					<h:panelGroup rendered="#{!caGuiInfo.isDeltaCrlExpired()}">
-						<span id="alert4"><h:outputText value="#{web.text.EXPIRES} #{caGuiInfo.getDeltaCrlExpireDate()}" /></span>
-					<h:outputText value=" #{web.text.NUMBER} #{caGuiInfo.deltacrlinfo.getLastCRLNumber()} " />
-					<h:outputLink
-							value="#{cAFunctionsMBean.getDownloadCrlLink()}?cmd=deltacrl&amp;issuer=#{caGuiInfo.subjectdn}">
-						<h:outputText value="#{web.text.GETDELTACRL}"/>
-					</h:outputLink>
-					</h:panelGroup>
-				</h:panelGroup>
-				<br />
-				<br />
-				<!--Display createcrl if admin is authorized-->
-				<h:form>
+					<br />
+					<br />
+					<!--Display createcrl if admin is authorized-->
+					<h:form>
 					<h:panelGroup rendered="#{cAFunctionsMBean.hasCreatecrlrights()}">
 						<h:outputText value="#{web.text.CREATENEWCRL} : "/>
 						<h:commandButton name="buttoncreatecrl"
@@ -202,8 +263,8 @@
 						</h:panelGroup>
 					</h:panelGroup>
 				</h:form>
-			</ui:repeat>
-		</h:panelGroup>
+				</h:column>
+		</h:dataTable>
 	</ui:define>
 </ui:composition>
 </html>

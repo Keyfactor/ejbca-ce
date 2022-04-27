@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.logging;
 
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
+
+import java.text.SimpleDateFormat;
 
 /**
  * TODO: Document me!
@@ -32,16 +34,15 @@ public class AuditLogger extends PatternLogger {
      */
     public static final String OCSPRESPONSE = "OCSPRESPONSE";
 
-    public AuditLogger(String ocspRequest, Integer logId, String sessionId, String clientIp) {
-        super(OcspConfiguration.getAuditLog(), AuditLogger.class, OcspConfiguration.getAuditLogPattern(), OcspConfiguration.getAuditLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
+    public AuditLogger(String ocspRequest, Integer logId, String sessionId, String clientIp, GlobalOcspConfiguration ocspConfiguration) {
+        super(ocspConfiguration.getIsOcspAuditLoggingEnabled(), AuditLogger.class, ocspConfiguration.getOcspAuditLogPattern(),
+                ocspConfiguration.getOcspAuditLogValues(), ocspConfiguration.getOcspLoggingDateFormat(),
+                new SimpleDateFormat(ocspConfiguration.getOcspLoggingDateFormat()).getTimeZone().toString());
 
         paramPut(OCSPREQUEST, ocspRequest);
         paramPut(PatternLogger.LOG_ID, logId);
         paramPut(PatternLogger.SESSION_ID, sessionId);
         paramPut(PatternLogger.CLIENT_IP, clientIp);
-        
-     //   paramPut(PatternLogger.CLIENT_IP, "0");
-        paramPut(OCSPREQUEST, "0");
         paramPut(OCSPRESPONSE, "0");
         paramPut(PatternLogger.STATUS, "-1");
         paramPut(PatternLogger.PROCESS_TIME, "-1");

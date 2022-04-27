@@ -13,30 +13,6 @@
 
 package org.cesecore.keys.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
-import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.DSAParameterSpec;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.ECPublicKeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAKeyGenParameterSpec;
-import java.util.Enumeration;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -62,6 +38,30 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.DSAParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.Enumeration;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -242,6 +242,26 @@ public class KeyToolsTest {
         String str = new String(bytes);
         assertTrue(str.contains("-----BEGIN PRIVATE KEY-----"));
         assertTrue(str.contains("-----BEGIN CERTIFICATE-----"));
+    }
+
+    @Test
+    public void testCreateBcfks() throws Exception {
+        Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
+        PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PrivateKey pk = keyFactory.generatePrivate(pkKeySpec);
+        KeyStore ks = KeyTools.createBcfks("Foo", pk, cert, null);
+        assertNotNull("ks must not be null", ks);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // If password below is more than 7 chars, strong crypto is needed
+        ks.store(baos, "foo123".toCharArray());
+        assertTrue("baos size must not be 0", baos.size() > 0);
+        Certificate cert1 = ks.getCertificate("Foo");
+        assertNotNull(cert1);
+        KeyStore keyStore = KeyStore.getInstance("BCFKS", BouncyCastleProvider.PROVIDER_NAME);
+        keyStore.load(new ByteArrayInputStream(baos.toByteArray()), "foo123".toCharArray());
+        assertNotNull(keyStore);
+        log.info("Type of keystore: "  + keyStore.getType());
     }
 
     @Test

@@ -20,7 +20,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
       -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -117,16 +116,16 @@
 		</h:form>
 		<h:panelGroup rendered="#{not certProfilesBean.operationInProgress}" >
 		<h3>
-			<h:outputText value="#{web.text.IMPORT}/" rendered="#{certProfilesBean.authorizedToEdit}"/><h:outputText value="#{web.text.EXPORT}"/>
+			<h:outputText value="#{web.text.IMPORT} and " rendered="#{certProfilesBean.authorizedToEdit}"/><h:outputText value="#{web.text.EXPORT}"/>
 		</h3>
 		<h:form id="uploadCertificate" enctype="multipart/form-data">
-			<h:panelGrid columns="3" >
+			<h:panelGrid columns="1" >
 				<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORT}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-			</h:panelGrid>
-			<h:panelGrid columns="1">
-				<h:commandButton value="#{web.text.EXPORTROFILES}.." action="#{certProfilesBean.actionExportProfiles}" />
+				<h:panelGroup>
+					<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
+					<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORTPROFILE}" rendered="#{certProfilesBean.authorizedToEdit}"/>
+					<h:commandButton styleClass="commandButtonExport" value="#{web.text.EXPORTROFILES}" action="#{certProfilesBean.actionExportProfiles}" />
+				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>
 		</h:panelGroup>

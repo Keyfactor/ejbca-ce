@@ -31,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
  *
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.NewSubjectDNValidator")
-public class NewSubjectDNValidator implements Validator {
+public class NewSubjectDNValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {

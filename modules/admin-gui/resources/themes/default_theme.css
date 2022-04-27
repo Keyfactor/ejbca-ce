@@ -572,8 +572,23 @@ table.edit tr td {
 	width: 50%;
 	text-align: left;
 }
+.column1-cafunctions {
+	width: 15%;
+	text-align: center;
+	vertical-align: middle;
+} 
+.column2-cafunctions {
+	width: 30%;
+	text-align: center;
+	vertical-align: middle;
+}
+.column3-cafunctions {
+	width: 55%;
+	text-align: left;
+}
 .fixEditColumn1 {
 	width: 360px;
+	min-width: 360px;
 	text-align: left
 }
 .fixEditColumn2 {
@@ -960,6 +975,18 @@ div#code input[type="submit"] {
 	margin-left: 1em;
 }
 
+/* --- Page: CA > CA Structure & CRLs */
+.actCaStructsCRLsHeader {
+	padding-left: 4px;
+	padding-right: 8px;
+	text-align: center;
+	background-color: #EEE;
+	color: #284E81;
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+}
+
 /* --- Page: CA > Certificate Profiles */
 select option.cvcoption_header {
     background: #ffc;
@@ -968,6 +995,11 @@ select option.cvcoption_header {
     padding: 3px;
     color: #000;
 }
+.commandButtonExport  {margin-left: 10px;}
+
+/*---------Page CA > Publishers -------------------*/
+.cloneButton {margin-right: 10px;}
+.renameButton {margin-right: 10px;}
 
 /* --- Page: RA > End-Entity profile */
 table#endentityprofile.edit tr td:first-child {
@@ -1148,6 +1180,9 @@ table#config tr td:first-child {
 .Row0, #Row0 { color: black; font-size: 9pt; background-color: #F7F9FF; }
 .Row1, #Row1 { color: black; font-size: 9pt; background-color: #E5ECFF; }
 
+.RowAlt0, #RowAlt0 { color: black; font-size: 9pt; background-color: #F8F0FA; }
+.RowAlt1, #RowAlt1 { color: black; font-size: 9pt; background-color: #E6E6FA; }
+
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
 
@@ -1183,8 +1218,8 @@ table#config tr td:first-child {
 .listColumn1 { text-align: left; width: 40%; }
 .listColumn2 { text-align: left; width: 60%; }
 
-.subTableColumn1 { text-align: left; width: 50%; }
-.subTableColumn2 { text-align: right; width: 50%; }
+.subTableColumn1 { text-align: left; width: 40%; }
+.subTableColumn2 { text-align: right; width: 60%; }
 
 
 .ldapPublisherHeader {
@@ -1334,7 +1369,7 @@ body.popup {
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
-.commandButton { font-size: 9pt; margin-top: 2em; margin-bottom: 2em; vertical-align: bottom; }
+.commandButton { font-size: 9pt; margin-top: 2em; margin-bottom: 2em; vertical-align: bottom;}
 
 .commandLinkAudit { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-top: 1em; margin-right: 1em; margin-bottom: 0.5em; }
 
@@ -1422,6 +1457,12 @@ a.button:active {
 	background: #fcfcfc;
 	margin-bottom: 1em;
 }
+.hintBlock {
+	padding: 1em;
+	background: #eee;
+	border-radius: 0.5em;
+	max-width: 1000px;
+}
 .readablewidth {
     max-width: 1000px;
 }
@@ -1478,5 +1519,6 @@ a.button:active {
 .preformatted {
     white-space: pre-wrap;
 }
+
 /*--------------------------------------------------------------------------*/
 /* EOF */

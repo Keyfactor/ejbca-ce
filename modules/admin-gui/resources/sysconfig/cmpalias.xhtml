@@ -18,7 +18,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-     $Id$
      -->
 </ui:remove>
 
@@ -26,7 +25,7 @@
     <ui:param name="resourceBean" value="#{editCmpConfigMBean}" />
 	<ui:define name="content">
 
-		<h2><h:outputText value="#{cmpConfigMBean.authorizedToEdit ? web.text.CMPEDITALIAS : web.text.CMP_VIEW_ALIAS}" /></h2>
+		<h2><h:outputText value="#{cmpConfigMBean.authorizedToEdit and !editCmpConfigMBean.viewOnly ? web.text.CMPEDITALIAS : web.text.CMP_VIEW_ALIAS}" /></h2>
         <h3><h:outputText value="#{web.text.CMPALIAS}"/> : <h:outputText value="#{editCmpConfigMBean.selectedCmpAlias}"/></h3>
 		
 		 <h:form id="editcmpaliasform">
@@ -65,7 +64,7 @@
 	            	</h:selectBooleanCheckbox> 
 	            	<h:outputText value="HMAC"/>
 	            	<h:selectOneRadio id="selecthmacsecretmode" value="#{editCmpConfigMBean.hmacSecretMode}" 
-	            			disabled="#{!editCmpConfigMBean.hmacSelected} or editCmpConfigMBean.viewOnly"
+	            			disabled="#{!editCmpConfigMBean.hmacSelected or editCmpConfigMBean.viewOnly}"
 	            			rendered="#{editCmpConfigMBean.raMode}">
 	            		<f:selectItem itemLabel="#{web.text.CMPHMACCASECRET}" itemValue="shared"/>
 	            		<f:selectItem itemLabel="#{web.text.CMPHMACSPECIFYSECRET}" itemValue="specified"/>
@@ -75,7 +74,7 @@
 	            			disabled="#{editCmpConfigMBean.caSharedSecret or !editCmpConfigMBean.hmacSelected}"
 	            			rendered="#{editCmpConfigMBean.raMode and not editCmpConfigMBean.viewOnly}"
 	            			redisplay="true" autocomplete="off"/>
-           			<h:inputSecret id="inputsecretviewonlydummy" value="******" 
+           			<h:inputSecret id="inputsecretviewonlydummy" value="**********" 
            					disabled="true" 
            					rendered="#{editCmpConfigMBean.viewOnly}"
            					redisplay="true" autocomplete="off"/>
@@ -331,6 +330,8 @@
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPRESPONSECAPUBS_HELP}" styleClass="help"/>
+	      			<br/>
+	      			<h:outputText value="#{web.text.CMPRESPONSECAPUBS_ISSUER_AT_INDEX_0_HELP}" styleClass="help"/>
       			</h:panelGroup>
       			<h:panelGroup id="cmpresponseadditionalcacertsgroup">
 	      			<h:selectOneMenu value="#{editCmpConfigMBean.selectedCmpResponseAdditionalCaCert}" disabled="#{editCmpConfigMBean.viewOnly}">
@@ -347,6 +348,10 @@
 	            			disabled="#{editCmpConfigMBean.viewOnly}">
 	            		<f:ajax render="editcmpaliasform:cmpresponseadditionalcacertsgroup"/>
             		</h:commandButton>
+            		<br/>
+            		<br/>
+            		<h:selectBooleanCheckbox id="cmpIssuerCaChainAtIndex0checkbox" value="#{editCmpConfigMBean.cmpIssuerCaChainAtIndex0}" disabled="#{editCmpConfigMBean.viewOnly}" />
+            		    <h:outputText value="#{web.text.USE}"/>
             		<br/>
             		<h:outputText value="#{editCmpConfigMBean.selectedCmpResponseAdditionalCaCertList}"/>
       			</h:panelGroup>
@@ -390,7 +395,7 @@
 		        		<br/>
 		      			<h:outputText value="#{web.text.CMPDEFAULTCA_HELP}" styleClass="help"/>
 	      			</h:panelGroup>
-	      			<h:selectOneMenu value="#{editCmpConfigMBean.responseConfigDefaultCa}" disabled="#{editCmpConfigMBean.viewOnly}">
+	      			<h:selectOneMenu id="cmpdefaultca" value="#{editCmpConfigMBean.responseConfigDefaultCa}" disabled="#{editCmpConfigMBean.viewOnly}">
 	      				<f:selectItems value="#{editCmpConfigMBean.certConfirmCaSelectItems}"/>
 	      			</h:selectOneMenu>
 	    		</h:panelGrid>

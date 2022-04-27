@@ -13,8 +13,10 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.IncompletelyIssuedCertificateInfo;
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
 import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
 import org.cesecore.certificates.certificatetransparency.SctDataCallback;
@@ -46,10 +48,14 @@ public final class CertificateGenerationParams implements Serializable {
     private CTSubmissionConfigParams ctSubmissionConfigParams;
     private CTAuditLogCallback ctAuditLogCallback;
     private SctDataCallback sctDataCallback;
-    
+    private IncompleteIssuanceJournalCallbacks incompleteIssuanceJournalCallbacks;
+
     private AuthenticationToken authenticationToken;
     private CertificateValidationDomainService certificateValidationDomainService;
-    
+
+    private boolean wasAddedToIncompleteIssuanceJournal = false;
+
+
     /**
      * Sets CT parameters that are not specific to the certificate profile, for example list of available CT logs.
      */
@@ -83,6 +89,10 @@ public final class CertificateGenerationParams implements Serializable {
         this.sctDataCallback = sctDataCallback;
     }
 
+    public void setIncompleteIssuanceJournalCallbacks(final IncompleteIssuanceJournalCallbacks callbacks) {
+        incompleteIssuanceJournalCallbacks = callbacks;
+    }
+
     /**
      * Gets the validation domain service reference.
      * @return the domain service reference.
@@ -114,4 +124,27 @@ public final class CertificateGenerationParams implements Serializable {
     public void setAuthenticationToken(AuthenticationToken authenticationToken) {
         this.authenticationToken = authenticationToken;
     }
+
+    /** Adds the certificate to the incomplete issuance journal (if not added already) */
+    public void addToIncompleteIssuanceJournal(final IncompletelyIssuedCertificateInfo info) {
+        if (incompleteIssuanceJournalCallbacks != null && !wasAddedToIncompleteIssuanceJournal) {
+            wasAddedToIncompleteIssuanceJournal = true;
+            incompleteIssuanceJournalCallbacks.addToJournal(info);
+        }
+    }
+
+    /**
+     * Removes the certificate from the incomplete issuance journal. Optionally starts a new transaction
+     * (needed if an exception with rollback has occurred)
+     */
+    public void removeFromIncompleteIssuanceJournal(final int caId, final BigInteger serialNumber, final boolean newTransaction) {
+        if (incompleteIssuanceJournalCallbacks != null && wasAddedToIncompleteIssuanceJournal) {
+            if (newTransaction) {
+                incompleteIssuanceJournalCallbacks.removeFromJournalNewTransaction(caId, serialNumber);
+            } else {
+                incompleteIssuanceJournalCallbacks.removeFromJournal(caId, serialNumber);
+            }
+        }
+    }
+
 }

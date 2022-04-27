@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -67,7 +68,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -78,7 +78,6 @@ import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
-import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
@@ -88,12 +87,11 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
  * Handles management of Publishers.
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -131,6 +129,32 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
+    @Asynchronous
+    @Override
+    public void publishQueuedEntry(AuthenticationToken admin, int publisherId, PublisherQueueData entity) {
+        final BasePublisher publisher = getPublisher(publisherId);
+        final PublishingResult publisherResult = publisherQueueSession.doPublish(admin, publisher, entity);
+
+        boolean success = false;
+        success = publisherResult.getSuccesses() > 0;
+        if (success) {
+            final String msg = intres.getLocalizedMessage("publisher.store", entity.getVolatileData().getUserDN(), publisher.getName(), success);
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
+                    EjbcaServiceTypes.EJBCA, admin.toString(), null, entity.getFingerprint(), entity.getVolatileData().getUsername(), details);
+        } else {
+            final String msg = intres.getLocalizedMessage("publisher.errorstore", publisher.getName(), entity.getFingerprint());
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            if (publisherResult.getMessage(entity.getFingerprint()) != null) {
+                details.put("error", publisherResult.getMessage(entity.getFingerprint()));
+            }
+            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
+                    EjbcaServiceTypes.EJBCA, admin.toString(), null, entity.getFingerprint(), entity.getVolatileData().getUsername(), details);
+        }
+    }
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public boolean storeCertificateNewTransaction(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
@@ -141,6 +165,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
+        
         final BaseCertificateData certificateData = certWrapper.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
@@ -162,7 +187,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             if (publ != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
                 if (publ.willPublishCertificate(status, revocationReason)) {
-                    if (publ.getOnlyUseQueue()) {
+                    if (publ.getOnlyUseQueue() || publ.getSafeDirectPublishing()) {
                         if (publ.getUseQueueForCertificates()) {
                             publishersToQueuePending.add(publ);
                             // Publishing to the queue directly is not considered a successful write to the publisher (since we don't know that it will be)
@@ -250,7 +275,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             pqvd.setExtendedInformation(extendedInformation);
             pqvd.setUserDN(userDN);
             try {
-                publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fingerprint, pqvd, publisherStatus);
+                publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CERT, fingerprint, pqvd, publisherStatus, publ.getSafeDirectPublishing());
                 final String msg = intres.getLocalizedMessage("publisher.storequeue", name, fingerprint, status);
                 log.info(msg);
             } catch (CreateException e) {
@@ -324,7 +349,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     try {
                         // publishStatus can only be either STATUS_PENDING or STATUS_SUCCESS, for CRLs we want to store with the actual status, that may be
                         // STATUS_SUCCESS if it was published directly above (status is success, but useQueueForCRLS and keepPublishedInQueue is active)
-                        publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, publishStatus);
+                        publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, publishStatus, false);
                         String msg = intres.getLocalizedMessage("publisher.storequeue", name, fp, "CRL");
                         log.info(msg);
                     } catch (CreateException e) {
@@ -362,36 +387,35 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             int publishStatus = PublisherConst.STATUS_PENDING;
             BasePublisher publ = getPublisherInternal(id, null, true);
             if (publ != null) {
-                final String name = getPublisherName(id);
-                // If it should be published directly
-                if (!publ.getOnlyUseQueue()) {
-                    try {
-                        
-                        if (isOcspResponsePublisher(publ) && publisherQueueSession
-                                .publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
-                            
-                            publishStatus = PublisherConst.STATUS_SUCCESS;
-                            logSuccessPublish(admin, name, publishStatus);
+                if (isOcspResponsePublisher(publ)) {
+                    final String name = getPublisherName(id);
+                    // If it should be published directly
+                    if (!publ.getOnlyUseQueue()) {
+                        try {
+
+                            if (publisherQueueSession.publishOcspResponsesNonTransactional((CustomPublisherContainer) publ, admin, ocspResponseData)) {
+                                publishStatus = PublisherConst.STATUS_SUCCESS;
+                                logSuccessPublish(admin, name, publishStatus);
+                            }
+                        } catch (PublisherException e) {
+                            logFailPublish(admin, name, e);
+                        } catch (AuditRecordStorageException e) {
+                            log.error("Error when loging audit data ", e);
                         }
-                    } catch (PublisherException e) {
-                        logFailPublish(admin, name, e);
-                    } catch (AuditRecordStorageException e) {
-                        log.error("Error when loging audit data ", e);
+                    }
+
+                    if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
+                        addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
+                        if (log.isTraceEnabled()) {
+                            log.trace("<storeOCSPResponse");
+                        }
+                        continue;
+                    }
+
+                    if (publishStatus != PublisherConst.STATUS_SUCCESS) {
+                        return false;
                     }
                 }
-                
-                if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue()) && publ.getUseQueueForOcspResponses()) {
-                    addOcspResponseQueueData(id, name, publishStatus, ocspResponseData.getId());
-                    if (log.isTraceEnabled()) {
-                        log.trace("<storeOCSPResponse");
-                    }
-                    return false;
-                }
-                
-                if (publishStatus != PublisherConst.STATUS_SUCCESS) {
-                    return false;
-                }
-                
             } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
                 log.info(msg);
@@ -408,7 +432,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         try {
             // publishStatus can only be either STATUS_PENDING or STATUS_SUCCESS, for OCSP response we want to store with the actual status, that may be
             // STATUS_SUCCESS if it was published directly above (status is success, but useQueueForOcspResponse and keepPublishedInQueue is active)
-            publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_OCSP_RESPONSE, responseId, pqvd, publishStatus);
+            publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_OCSP_RESPONSE, responseId, pqvd, publishStatus, false);
             String msg = intres.getLocalizedMessage("publisher.storequeue", name, responseId, "OCSP Response");
             log.info(msg);
         } catch (CreateException e) {
@@ -772,11 +796,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public Map<Integer, BasePublisher> getAllPublishers() {
         final Map<Integer, BasePublisher> returnval = new HashMap<>();
-        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
         BasePublisher publisher = null;
         for (PublisherData publisherData : findAll()) {
             publisher = getPublisher(publisherData);
-            if (publisher != null && enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
+            if (publisher != null) {
                 returnval.put(publisherData.getId(), publisher);
             }
         }
@@ -787,13 +810,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public HashMap<Integer, String> getPublisherIdToNameMap() {
         final HashMap<Integer, String> returnval = new HashMap<>();
-        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
-        BasePublisher publisher = null;
         for (PublisherData publisherData : findAll()) {
-            publisher = getPublisher(publisherData);
-            if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
-                returnval.put(publisherData.getId(), publisherData.getName());
-            }
+            returnval.put(publisherData.getId(), publisherData.getName());
         }
         return returnval;
     }
@@ -801,13 +819,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public HashMap<String, Integer> getPublisherNameToIdMap() {
         final HashMap<String, Integer> returnval = new HashMap<>();
-        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
-        BasePublisher publisher;
         for (PublisherData publisherData : findAll()) {
-            publisher = getPublisher(publisherData);
-            if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
-                returnval.put(publisherData.getName(), publisherData.getId());
-            }
+            returnval.put(publisherData.getName(), publisherData.getId());
         }
         return returnval;
     }

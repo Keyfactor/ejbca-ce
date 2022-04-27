@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
+import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,6 +27,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -36,6 +39,9 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -47,7 +53,6 @@ import org.cesecore.util.CryptoProviderTools;
 /**
  * Business class for CRL actions, i.e. running CRLs. 
  * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -60,6 +65,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
     private CrlStoreSessionLocal crlSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
@@ -71,15 +78,23 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     	// Install BouncyCastle provider if not available
     	CryptoProviderTools.installBCProviderIfNotAvailable();
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
+    @Override
+    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber,
+            int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+        return generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, basecrlnumber, nextCrlNumber, null);
+    }
+ 
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
     @Override
-    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber,
+            int nextCrlNumber, final Date validFrom) throws CryptoTokenOfflineException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">createCRL(Collection)");
     	}
     	byte[] crlBytes = null; // return value
-
     	// Check that we are allowed to create CRLs
     	// Authorization for other things, that we have access to the CA has already been done
     	final int caid = ca.getCAId();
@@ -97,14 +112,39 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		if (cryptoToken==null) {
     		    throw new CryptoTokenOfflineException("Could not find CryptoToken with id " + ca.getCAToken().getCryptoTokenId());
     		}
+    		
+
+    		Certificate latestCaCertForPartition = null; 
+    		if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible()) {
+    		    CRLInfo crlInfo = crlSession.getLastCRLInfo(ca.getSubjectDN(), crlPartitionIndex, false);
+    		    if (crlInfo != null) {
+    		        byte[] lastCrlAuthorityKeyId = CertTools.getAuthorityKeyId(crlInfo.getCrl());
+    		        if (lastCrlAuthorityKeyId != null) {
+    		            if (log.isDebugEnabled()) {
+    		                log.debug("Authority key Id for last CRL in partition '" + crlPartitionIndex + "': " 
+    		                        + new String(Hex.encode(lastCrlAuthorityKeyId)));
+    		            }
+    		            latestCaCertForPartition = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(lastCrlAuthorityKeyId);
+    		        } else {
+    		            log.info("Last CRL for CA '" + ca.getSubjectDN() + "' partition '" + crlPartitionIndex +"' does not contain any Authority Key Identifier extension. "
+    		                    + "Next CRL will be signed by latest CRL sign key");
+    		        }
+    		    } else {
+    		        if (log.isDebugEnabled()) {
+    		            log.debug("No CRL for partition " + crlPartitionIndex + " exists. "
+    		                    + "Signing new CRL with '" + ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
+    		        }
+    		    }
+    		}
+    		
     		if (deltaCRL) {
     			// Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
     			if (nextCrlNumber == basecrlnumber) {
     				nextCrlNumber++;
     			}
-    			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber);       
+    			crl = ca.generateDeltaCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, basecrlnumber, latestCaCertForPartition);       
     		} else {
-    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber);
+    			crl = ca.generateCRL(cryptoToken, crlPartitionIndex, certs, nextCrlNumber, latestCaCertForPartition, validFrom);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back

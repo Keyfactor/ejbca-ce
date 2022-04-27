@@ -9,15 +9,15 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11ng;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.PKCS11SlotListWrapper;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice;
 import org.cesecore.keys.token.p11ng.provider.CryptokiDevice.Slot;
 import org.cesecore.keys.token.p11ng.provider.CryptokiManager;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * This class wraps C_GetSlotList call to P11 to get information about slots/tokens and their labels
@@ -63,7 +63,7 @@ public class P11NGSlotListWrapper implements PKCS11SlotListWrapper {
         final File lib = new File(fileName);
         final String libDir = lib.getParent();
         final String libName = lib.getName();
-        final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
+        final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir, true);
         final List<Slot> list = device.getSlots();
         long[] slots = new long[list.size()];
         for (int i = 0; i < list.size(); i++) {
@@ -80,7 +80,7 @@ public class P11NGSlotListWrapper implements PKCS11SlotListWrapper {
         final File lib = new File(fileName);
         final String libDir = lib.getParent();
         final String libName = lib.getName();
-        final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir);
+        final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libName, libDir, true);
         final Slot slot = device.getSlot(slotID);
         if (slot != null) {
             return slot.getLabel().toCharArray();

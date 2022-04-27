@@ -35,6 +35,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -132,8 +133,6 @@ import com.novell.ldap.LDAPSearchConstraints;
  * OpenLDAP implement very old escaping rules and will replace = with \3D and things like that. Better to use OpenDJ, easy to install and run, and works correctly.
  * 
  * Version: 0.9.2
- *
- * @version $Id$
  */
 public class CustomerLdapPublisher1 implements ICustomPublisher {
 
@@ -927,4 +926,15 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         // Method not applicable for this publisher type!
         return false;
     }
+    
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
+    }
+
 }

@@ -119,6 +119,12 @@ public interface InternalKeyBinding extends Serializable {
 
     /** Set the list of trusted certificates references. An undefined (null) serialnumber means ANY serialnumber. */
     void setTrustedCertificateReferences(List<InternalKeyBindingTrustEntry> trustedCertificateReferences);
+    
+    /** @return a list of CA or signing certificates for which key binding will sign OCSP responses. */
+    List<InternalKeyBindingTrustEntry> getSignOcspResponseOnBehalf();
+    
+    /** Set the list of CA or signing certificates for which key binding will sign OCSP responses. */
+    void setSignOcspResponseOnBehalf(List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf);
 
     /** @return the currently used signature algorithm */
     String getSignatureAlgorithm();

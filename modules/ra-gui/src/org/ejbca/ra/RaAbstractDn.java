@@ -30,15 +30,14 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  * Represents two APIs: list (needed for JSF) and map
  * for the DN fields of the specified end entity profile. It is
  * extended by Subject DN, SubjectAlternateName and Subject Directory Attributes
- * 
- * @version $Id$
- *
  */
 public abstract class RaAbstractDn {
 
     private static final Logger log = Logger.getLogger(RaAbstractDn.class);
     
-    private final Collection<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
+    private final Collection<EndEntityProfile.FieldInstance> requiredFieldInstances = new ArrayList<>();
+    private final Collection<EndEntityProfile.FieldInstance> optionalFieldInstances = new ArrayList<>();
+
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
     protected String value;
     protected X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
@@ -60,11 +59,11 @@ public abstract class RaAbstractDn {
      */
     protected abstract String reorder(String dnBeforeReordering);
     
-    public RaAbstractDn(final EndEntityProfile endEntityProfile) {
+    protected RaAbstractDn(final EndEntityProfile endEntityProfile) {
         this(endEntityProfile, null);
     }
 
-    public RaAbstractDn(final EndEntityProfile endEntityProfile, final String dn) {
+    protected RaAbstractDn(final EndEntityProfile endEntityProfile, final String dn) {
         DNFieldExtractor dnFieldExtractor = null;
         if (dn!=null) {
             dnFieldExtractor = new DNFieldExtractor(dn, getAbstractDnFieldExtractorType());
@@ -80,17 +79,39 @@ public abstract class RaAbstractDn {
                 if (dnFieldExtractor!=null) {
                     fieldInstance.setValue(dnFieldExtractor.getField(DnComponents.profileIdToDnId(fieldInstance.getProfileId()), fieldInstance.getNumber()));
                 }
-                fieldInstances.add(fieldInstance);
+                if (fieldInstance.isRequired()) {
+                    requiredFieldInstances.add(fieldInstance);
+                } else {
+                    optionalFieldInstances.add(fieldInstance);
+                }
                 fieldInstancesMap.get(key).put(fieldInstance.getNumber(), fieldInstance);
             }
         }
     }
     
     /**
-     * @return the list interface for the subject DN fields
+     * @return the list interface for the required subject DN fields
+     */
+    public Collection<EndEntityProfile.FieldInstance> getRequiredFieldInstances() {
+        return requiredFieldInstances;
+    }
+    
+    /**
+     * @return the list interface for the optional subject DN fields
+     */
+    public Collection<EndEntityProfile.FieldInstance> getOptionalFieldInstances() {
+        return optionalFieldInstances;
+    }
+    
+    /**
+     * @return the list interface for the required and optional subject DN fields
      */
     public Collection<EndEntityProfile.FieldInstance> getFieldInstances() {
-        return fieldInstances;
+        Collection<EndEntityProfile.FieldInstance> allFieldInstances = new ArrayList<>();
+        allFieldInstances.addAll(requiredFieldInstances);
+        allFieldInstances.addAll(optionalFieldInstances);
+        
+        return allFieldInstances;
     }
 
     /**
@@ -101,17 +122,21 @@ public abstract class RaAbstractDn {
     }
 
     /**
-     * Updates the the result string value of Subject DN.
+     * Updates the result string value of Subject DN.
      */
     public void update() {
         StringBuilder dn = new StringBuilder();
-        for (EndEntityProfile.FieldInstance fieldInstance : fieldInstances) {
+        Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
+        fullListOfInstances.addAll(requiredFieldInstances);
+        fullListOfInstances.addAll(optionalFieldInstances);
+        
+        for (EndEntityProfile.FieldInstance fieldInstance : fullListOfInstances) {
             if (fieldInstance != null) {
-                String value = fieldInstance.getValue();
-                if (!StringUtils.isBlank(value)) {
-                    value = value.trim();
+                String instanceValue = fieldInstance.getValue();
+                if (!StringUtils.isBlank(instanceValue)) {
+                    instanceValue = instanceValue.trim();
                     int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
-                    String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + value;
+                    String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + instanceValue;
                     nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
                     if (dn.length() != 0) {
                         dn.append(", ");

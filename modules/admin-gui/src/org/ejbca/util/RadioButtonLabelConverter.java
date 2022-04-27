@@ -28,7 +28,7 @@ import org.cesecore.util.ui.RadioButton;
  *
  */
 @FacesConverter("radioButtonLabelConverter")
-public class RadioButtonLabelConverter implements Converter{
+public class RadioButtonLabelConverter implements Converter<Object>{
     
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

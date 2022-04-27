@@ -270,5 +270,12 @@ public interface InternalKeyBindingMgmtSession {
      * @throws AuthorizationDeniedException of the authentication token is not authorized to this operation
      */
     boolean setStatus(AuthenticationToken authenticationToken, int internalKeyBindingId, InternalKeyBindingStatus status) throws AuthorizationDeniedException;
+
+    /**
+     * Get the iDs and names of CAs which are not signed on behalf of any OCSP key binding. 
+     * CAs which have issued an OCSP certificate are included in the map.
+     * returns an empty map if all CAs are bound. 
+     */
+    Map<Integer, String> getAllCaWithoutOcspKeyBinding();
 }
 

@@ -32,12 +32,12 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
-import org.cesecore.keys.validation.ExternalScriptsWhitelist;
 import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.keys.validation.Validator;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -425,7 +425,7 @@ public class ValidatorsBean extends BaseManagedBean {
 
     public void validateExternalCommand(final FacesContext facesContext, final UIComponent uiComponent, Object object) {
         final GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
-        final ExternalScriptsWhitelist externalScriptsWhitelist = ExternalScriptsWhitelist.fromText(globalConfiguration.getExternalScriptsWhitelist(),
+        final ExternalScriptsAllowlist externalScriptsWhitelist = ExternalScriptsAllowlist.fromText(globalConfiguration.getExternalScriptsWhitelist(),
                 globalConfiguration.getIsExternalScriptsWhitelistEnabled());
         final String[] arguments = ((String) object).split(" ");
         if (arguments.length < 1) {

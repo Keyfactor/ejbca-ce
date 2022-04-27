@@ -39,6 +39,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * This is the backing bean supporting the preferences.xhtml page in RA web.
  * Together with preferrences.xhtml it is used to produce the Preferences menu in RA web GUI.
  */
+@SuppressWarnings("rawtypes") // we can't parameterize this class - it confuses Weld 3.0.
 @ManagedBean
 @ViewScoped
 public class RaPreferencesBean implements Converter, Serializable {

@@ -60,6 +60,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.validation.IssuancePhase;
@@ -228,13 +229,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             )
     };
 
+    @Deprecated
     @Override
     public void addUserFromWS(final AuthenticationToken authenticationToken, EndEntityInformation userdata, final boolean clearPwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
         final int profileId = userdata.getEndEntityProfileId();
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-        if (profile.getAllowMergeDnWebServices()) {
+        if (profile.getAllowMergeDn()) {
             userdata = EndEntityInformationFiller.fillUserDataWithDefaultValues(userdata, profile);
         }
         addUser(authenticationToken, userdata, clearPwd);
@@ -308,7 +310,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         EndEntityInformation unCanonicalized = endEntity;
         endEntity = canonicalizeUser(endEntity);
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
-                endEntity.setSubjectAltName(getAddDnsFromCnToAltName(endEntity.getDN(), endEntity.getSubjectAltName(), profile));
+        endEntity.setSubjectAltName(getAddDnsFromCnToAltName(endEntity.getDN(), endEntity.getSubjectAltName(), profile));
+
+        if( profile.getAllowMergeDn()) {
+            endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile);
+        }
+        
         if (log.isTraceEnabled()) {
             log.trace(">addUser(" + endEntity.getUsername() + ", password, " + endEntity.getDN() + ", " + originalDN + ", " + endEntity.getSubjectAltName()
                     + ", " + endEntity.getEmail() + ", profileId: " + endEntityProfileId + ")");
@@ -366,10 +373,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             try {
                 final String dirAttrs = endEntity.getExtendedInformation() != null ? endEntity.getExtendedInformation()
                         .getSubjectDirectoryAttributes() : null;
+                final EABConfiguration eabConfiguration = (EABConfiguration) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
                 profile.doesUserFulfillEndEntityProfile(username, endEntity.getPassword(), dn, altName, dirAttrs, email,
                         endEntity.getCertificateProfileId(), clearPwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
                         type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), caId,
-                        endEntity.getExtendedInformation(), certProfile);
+                        endEntity.getExtendedInformation(), certProfile, eabConfiguration);
             } catch (EndEntityProfileValidationException e) {
                 logAuditEvent(
                         EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE,
@@ -460,7 +468,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), extendedInformation);
                 // Since persist will not commit and fail if the user already exists, we need to check for this
                 // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
-                if (endEntityAccessSession.findByUsername(userData.getUsername()) != null) {
+                if (existsUser(userData.getUsername())){
                     throw new EndEntityExistsException("User " + userData.getUsername() + " already exists.");
                 }
                 entityManager.persist(userData);
@@ -763,7 +771,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @throws CustomFieldException if the changes invalidae the EEP 
      */
     private void changeUser(
-            final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation,
+            final AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation,
             final boolean clearPwd, final boolean fromWebService, final int approvalRequestId,
             final AuthenticationToken lastApprovingAdmin, final String newUsername, final boolean force
     ) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException,
@@ -784,7 +792,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new EndEntityProfileValidationException("End Entity profile " + endEntityProfileId + " does not exist trying to change user: " + username);
         }
         FieldValidator.validate(endEntityInformation, endEntityProfileId, eeProfileName);
-
+        
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
         String altName = endEntityInformation.getSubjectAltName();
         if (log.isTraceEnabled()) {
@@ -806,43 +815,47 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new NoSuchEndEntityException(msg);
         }
         final EndEntityInformation originalCopy = userData.toEndEntityInformation();
-
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
-        // if required, we merge the existing user dn into the dn provided by the web service.
-        if (fromWebService && profile.getAllowMergeDnWebServices()) {
-            final Map<String, String> sdnMap = new HashMap<>();
-            if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
-                sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
-            }
+        
+        // Merge all DN and SAN values from previously saved end entity
+        if( profile.getAllowMergeDn()) {
             try {
                 // SubjectDN is not mandatory so
                 if (dn == null) {
                     dn = "";
                 }
+                final Map<String, String> sdnMap = new HashMap<>();
+                if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+                    sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
+                }
+                              
                 dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
+                dn = EndEntityInformationFiller.mergeDnString(dn, profile, EndEntityInformationFiller.SUBJECT_DN, null);
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
                 }
                 dn = "";
             }
-            final Map<String, String> sanMap = new HashMap<>();
-            if (profile.getUse(DnComponents.RFC822NAME, 0)) {
-                sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
-            }
             try {
                 // SubjectAltName is not mandatory so
                 if (altName == null) {
                     altName = "";
                 }
+                final Map<String, String> sanMap = new HashMap<>();
+                if (profile.getUse(DnComponents.RFC822NAME, 0)) {
+                    sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
+                }
                 altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
+                altName = EndEntityInformationFiller.mergeDnString(altName, profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);                
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
                 }
                 altName = "";
             }
+            
         }
+        
         altName = getAddDnsFromCnToAltName(dn, altName, profile);
         String newPassword = endEntityInformation.getPassword();
         if (profile.useAutoGeneratedPasswd() && newPassword != null) {
@@ -864,15 +877,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // User change might include a new username
                 final String usernameToValidate = StringUtils.isEmpty(newUsername) ? username : newUsername;
 
+                final EABConfiguration eabConfiguration = (EABConfiguration) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
+
                 // It is only meaningful to verify the password if we change it in some way, and if we are not autogenerating it
                 if (!profile.useAutoGeneratedPasswd() && StringUtils.isNotEmpty(newPassword)) {
                     profile.doesUserFulfillEndEntityProfile(usernameToValidate, endEntityInformation.getPassword(), dn, altName, dirAttrs, endEntityInformation.getEmail(),
                             endEntityInformation.getCertificateProfileId(), clearPwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
-                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caId, extendedInformation, certProfile);
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caId, extendedInformation, certProfile, eabConfiguration);
                 } else {
                     profile.doesUserFulfillEndEntityProfileWithoutPassword(usernameToValidate, dn, altName, dirAttrs, endEntityInformation.getEmail(),
                             endEntityInformation.getCertificateProfileId(), type.contains(EndEntityTypes.KEYRECOVERABLE),
-                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caId, extendedInformation, certProfile);
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), caId, extendedInformation, certProfile, eabConfiguration);
                 }
             } catch (EndEntityProfileValidationException e) {
                 logAuditEvent(
@@ -1339,7 +1354,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         setUserStatus(admin, data, status, approvalRequestID, lastApprovingAdmin);
     }
 
-    private void setUserStatus(
+    @Override
+    public void setUserStatus(
             final AuthenticationToken authenticationToken, final UserData data1, final int status,
             final int approvalRequestID, final AuthenticationToken lastApprovingAdmin
     ) throws ApprovalException, WaitingForApprovalException {
@@ -1818,12 +1834,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         String certificateSubjectDN = certificateData.getSubjectDnNeverNull();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certSerNo, issuerDn);
-        int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
+        int endEntityProfileId = certificateData.getEndEntityProfileIdOrZero();
         final EndEntityInformation endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
         if (certReqHistory == null) {
-            if (endEntityInformation!=null) {
+            if (endEntityInformation != null) {
+                // If for some reason the end entity profile ID was not set in the certificate data, try to get it from current userdata
                 // Get the EEP that is currently used as a fallback, if we can find it
-                endEntityProfileId = endEntityInformation.getEndEntityProfileId();
+                if (endEntityProfileId == EndEntityConstants.NO_END_ENTITY_PROFILE) {
+                    endEntityProfileId = endEntityInformation.getEndEntityProfileId();
+                }
                 // Republish with the same user DN that is currently used as a fallback, if we can find it
                 certificateSubjectDN = endEntityInformation.getCertificateDN();
                 // If for some reason the certificate profile ID was not set in the certificate data, try to get it from current userdata
@@ -1832,8 +1851,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
         } else {
+            // If for some reason the end entity profile ID was not set in the certificate data, try to get it from current userdata
             // Get the EEP that was used in the original issuance, if we can find it
-            endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
+            if (endEntityProfileId == EndEntityConstants.NO_END_ENTITY_PROFILE) {
+                endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
+            }
             // Republish with the same user DN that was used in the original publication, if we can find it
             certificateSubjectDN = certReqHistory.getEndEntityInformation().getCertificateDN();
             // If for some reason the certificate profile ID was not set in the certificate data, try to get it from the certreq history
@@ -1841,8 +1863,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 certificateProfileId = certReqHistory.getEndEntityInformation().getCertificateProfileId();
             }
         }
-        if (endEntityProfileId != -1) {
-            // We can only perform this check if we have a trail of what eep was used..
+        if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE) {
+            // We can only perform this check if we have a trail of what eep was used.
             if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.REVOKE_END_ENTITY, caId);
             }
@@ -1865,7 +1887,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw new AlreadyRevokedException(msg);
             }
         }
-        if (endEntityProfileId != -1 && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+        if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             // We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
             CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
@@ -1892,7 +1914,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
         if (certificateProfile != null) {
             publishers = certificateProfile.getPublisherList();
-            if (publishers == null || publishers.size() == 0) {
+            if (publishers == null || publishers.isEmpty()) {
                 if (log.isDebugEnabled()) {
                     log.debug("No publishers defined for certificate with serial #" + certSerNo.toString(16) + " issued by " + issuerDn);
                 }
@@ -1926,7 +1948,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new NoSuchEndEntityException(msg);
         }
         // In the case where this is an individual certificate revocation request, we still send a STATUS_REVOKED notification (since user state wont change)
-        if (endEntityProfileId != -1 && endEntityInformationParam==null) {
+        if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && endEntityInformationParam==null) {
             sendNotification(authenticationToken, endEntityInformation, EndEntityConstants.STATUS_REVOKED, 0, lastApprovingAdmin, cdw);
         }
         if (log.isTraceEnabled()) {
@@ -1969,22 +1991,22 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<EndEntityInformation> findUsers(List<Integer> caIds, long timeModified, int status) {
-        String queryString = "SELECT a FROM UserData a WHERE (a.timeModified <=:timeModified) AND (a.status=:status)";
-        if (caIds.size() > 0) {
-            queryString += " AND (a.caId=:caId0";
+        StringBuilder queryString = new StringBuilder("SELECT a FROM UserData a WHERE (a.timeModified <=:timeModified) AND (a.status=:status)");
+        if (!caIds.isEmpty()) {
+            queryString.append(" AND (a.caId=:caId0");
             for (int i = 1; i < caIds.size(); i++) {
-                queryString += " OR a.caId=:caId" + i;
+                queryString.append(" OR a.caId=:caId").append(i);
             }
-            queryString += ")";
+            queryString.append(")");
         }
         if (log.isDebugEnabled()) {
             log.debug("Checking for " + caIds.size() + " CAs");
             log.debug("Generated query string: " + queryString);
         }
-        TypedQuery<UserData> query = entityManager.createQuery(queryString, UserData.class);
+        TypedQuery<UserData> query = entityManager.createQuery(queryString.toString(), UserData.class);
         query.setParameter("timeModified", timeModified);
         query.setParameter("status", status);
-        if (caIds.size() > 0) {
+        if (!caIds.isEmpty()) {
             for (int i = 0; i < caIds.size(); i++) {
                 query.setParameter("caId" + i, caIds.get(i));
             }
@@ -2124,7 +2146,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         final String fromemail = paramGen.interpolate(userNotification.getNotificationSender());
                         final String subject = paramGen.interpolate(userNotification.getNotificationSubject());
                         final String message = paramGen.interpolate(userNotification.getNotificationMessage());
-                        MailSender.sendMailOrThrow(fromemail, Arrays.asList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
+                        MailSender.sendMailOrThrow(fromemail, Collections.singletonList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
                         final String logmsg = intres.getLocalizedMessage("ra.sentnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.info(logmsg);
                     } catch (MailException e) {
@@ -2151,9 +2173,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public boolean existsUser(String username) {
         // Selecting 1 column is optimal speed
-        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE a.username=:username");
+        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE TRIM(a.username) = TRIM(:username)");
         query.setParameter("username", username);
-        return query.getResultList().size() > 0;
+        return !query.getResultList().isEmpty();
     }
 
     @Override

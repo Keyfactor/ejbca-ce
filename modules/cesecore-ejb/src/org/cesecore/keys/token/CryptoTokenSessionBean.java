@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -28,9 +29,12 @@ import javax.persistence.Query;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.QueryResultWrapper;
@@ -43,6 +47,12 @@ import org.cesecore.util.QueryResultWrapper;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTokenSessionRemote {
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
     private static final InternalResources intres = InternalResources.getInstance();
@@ -103,7 +113,13 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     // 4. If database is different from cache, create the crypto token and replace it in the cache (while trying to keep activation)
                     //    (Invokes org.cesecore.keys.token.CryptoTokenFactory.createCryptoToken)
                     try {
-                        cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
+                        if (AzureCryptoToken.class.getName().equals(inClassname)) {
+                            // Key Vault may need to find a key pair for authentication
+                            cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
+                                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
+                        } else {
+                            cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
+                        }
                     } catch (NoSuchSlotException e) {
                         // This should never happen now, since the specify allowNonExistingSlot in the createCryptoToken call
                         throw new IllegalStateException("Attempted to find a slot for a PKCS#11 crypto token, but it did not exists. Perhaps the token was removed?");

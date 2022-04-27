@@ -79,12 +79,13 @@ public class EcaQa74_CpBackend extends WebTestBase {
     }
 
     @Test
-    public void stepB_overrideOptions() {
+    public void stepB_overrideOptions() throws InterruptedException {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
         // Set 'Available Key Algorithms', 'Available ECDSA curves', 'Available Bit Lengths' and 'Signature Algorithm'
+        Thread.sleep(20000);
         certificateProfileHelper.editCertificateProfile(
                 Arrays.asList("ECDSA", "RSA"),
                 Collections.singletonList("prime256v1 / secp256r1 / P-256"),
@@ -212,23 +213,26 @@ public class EcaQa74_CpBackend extends WebTestBase {
     }
 
     @Test
-    public void stepE_crlDistributionPointsOptions() {
+    public void stepE_crlDistributionPointsOptions() throws InterruptedException {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
         // Enable 'Use CA defined CRL Distribution Point' and check that fields become disabled
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseCaDefinedCrlDistributionPoint();
+        Thread.sleep(800);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataCrlDistributionPointUriIsEnabled(false);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataCrlIssuerIsEnabled(false);
         // Enable 'Freshest CRL' and check that new fields appeared
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseFreshCrl();
+        Thread.sleep(800);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataUseCaDefinedFreshestCrlUseIsSelected(false);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataFreshestCrlUriHasValue(
                 getPublicWebUrl() + "publicweb/webdist/certdist?cmd=deltacrl&issuer=CN=TestCA,O=AnaTom,C=SE"
         );
         // Enable 'Use CA Defined Freshest CRL' and 'Authority Information Access' and check that fields appear/are disabled
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseCaDefinedFreshestCrlUseIsSelected();
+        Thread.sleep(800);
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseAuthorityInformationAccess();
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataFreshestCrlUriIsEnabled(false);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataUseCaDefinedOcspLocatorIsSelected(false);
@@ -239,12 +243,14 @@ public class EcaQa74_CpBackend extends WebTestBase {
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataUseCaDefinedOcspLocator();
         // Enable 'Private Key Usage Period' and check that new fields become enabled
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataPrivateKeyUsagePeriodStartOffset();
+        Thread.sleep(800);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataPrivateKeyUsagePeriodStartOffsetIsEnabled(true);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataPrivateKeyUsagePeriodStartOffsetHasValue("0d");
         // Set 'Start offset'
         certificateProfileHelper.setX509v3ExtensionsNamesValidationDataPrivateKeyUsagePeriodStartOffset("1d");
         // Enable 'Period length' and check that new fields become enabled
         certificateProfileHelper.triggerX509v3ExtensionsNamesValidationDataPrivateKeyUsagePeriodPeriodLength();
+        Thread.sleep(800);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataPrivateKeyUsagePeriodPeriodLengthIsEnabled(true);
         certificateProfileHelper.assertX509v3ExtensionsNamesValidationDataPrivateKeyUsagePeriodPeriodLengthHasValue("2y");
         // Set 'Period length'
@@ -276,11 +282,12 @@ public class EcaQa74_CpBackend extends WebTestBase {
     }
 
     @Test
-    public void stepF_qcStatementsEnable() {
+    public void stepF_qcStatementsEnable() throws InterruptedException {
         certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
         // Enable 'Qualified Certificates Statements' and check that new fields appear
         certificateProfileHelper.triggerQcStatementsExtensionUseQualifiedCertificatesStatements();
+        Thread.sleep(800);
         certificateProfileHelper.assertQcStatementsExtensionPkixQcSyntaxV2IsSelected(false);
         certificateProfileHelper.assertQcStatementsExtensionSemanticsIdentifierOidHasValue("");
         certificateProfileHelper.assertQcStatementsExtensionNameRegistrationAuthoritiesHasValue("");
@@ -305,7 +312,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
     }
 
     @Test
-    public void stepG_qcStatementsEdit() {
+    public void stepG_qcStatementsEdit() throws InterruptedException {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         certificateProfileHelper.openPage(getAdminWebUrl());
@@ -313,16 +320,18 @@ public class EcaQa74_CpBackend extends WebTestBase {
         // Click boxes and fill text fields
         certificateProfileHelper.triggerQcStatementsExtensionUseQualifiedCertificatesStatements();
         certificateProfileHelper.triggerQcStatementsExtensionUsePkixQcSyntaxV2();
-        certificateProfileHelper.setQcStatementsExtensionSemanticsIdentifierOid("text");
+        certificateProfileHelper.setQcStatementsExtensionSemanticsIdentifierOid("0.0");
         certificateProfileHelper.setQcStatementsExtensionNameRegistrationAuthorities("text");
         certificateProfileHelper.triggerQcStatementsExtensionUseEtsiQualifiedCertificateCompliance();
         certificateProfileHelper.triggerQcStatementsExtensionUseEtsiQualifiedSignatureSealCreationDevice();
         certificateProfileHelper.triggerQcStatementsExtensionAddEtsiTransactionValueLimit();
+        Thread.sleep(800);
         certificateProfileHelper.setQcStatementsExtensionEtsiTransactionValueLimitCurrency("");
         certificateProfileHelper.setQcStatementsExtensionEtsiTransactionValueLimitAmount("1");
         certificateProfileHelper.setQcStatementsExtensionEtsiTransactionValueLimitExponent("3");
         certificateProfileHelper.triggerQcStatementsExtensionEtsiRetentionPeriodAdd();
         certificateProfileHelper.triggerQcStatementsExtensionAddCustomQcStatementsString();
+        Thread.sleep(800);
         certificateProfileHelper.setQcStatementsExtensionCustomQcStatementsText("text");
         // Save
         certificateProfileHelper.saveCertificateProfile();
@@ -337,7 +346,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
                         "useqcstatement=true",
                         "usepkixqcsyntaxv2=true",
                         "useqcstatementraname=text",
-                        "useqcsematicsid=text",
+                        "useqcsematicsid=0.0",
                         "useqcetsiqccompliance=true",
                         "useqcetsisignaturedevice=true",
                         "useqcetsivaluelimit=true",

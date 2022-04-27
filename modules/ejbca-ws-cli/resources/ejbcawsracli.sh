@@ -11,4 +11,4 @@ else
     echo Using JAVA_OPT: ${JAVA_OPT}
 fi
 
-java ${JAVA_OPT} -cp $MYCP org.ejbca.core.protocol.ws.client.ejbcawsracli "$@"
+java ${JAVA_OPT} -Dlog4j1.compatibility=true -cp $MYCP org.ejbca.core.protocol.ws.client.ejbcawsracli "$@"

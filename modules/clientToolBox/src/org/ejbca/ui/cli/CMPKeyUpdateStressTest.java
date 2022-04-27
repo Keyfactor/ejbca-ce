@@ -49,6 +49,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -388,7 +389,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			if (this.isSign) {
 				// Verify the signature
 				byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
-				final DERBitString bs = respObject.getProtection();
+				final ASN1BitString bs = respObject.getProtection();
 				final Signature sig;
 				try {
 					sig = Signature.getInstance(id);
@@ -435,7 +436,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 				mac.init(key);
 				mac.reset();
 				final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
-				final DERBitString protection = respObject.getProtection();
+				final ASN1BitString protection = respObject.getProtection();
 				mac.update(protectedBytes, 0, protectedBytes.length);
 				byte[] out = mac.doFinal();
 				// My out should now be the same as the protection bits

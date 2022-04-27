@@ -93,20 +93,27 @@
                         <h:outputText value="#{web.text.ESTAUTHENTICATIONMODULE_HELP}" styleClass="help"/>
                     </h:panelGroup>
 					<h:panelGroup id="authmodule">
+						<h:selectBooleanCheckbox id="httpBasicAuthCheckbox"
+												 value="#{editEstConfigMBean.estAlias.httpBasicAuthSelected}"
+												 rendered="#{!editEstConfigMBean.raMode}"
+												 disabled="#{editEstConfigMBean.viewOnly}">
+							<f:ajax render="authmodule vendormode" />
+						</h:selectBooleanCheckbox>
+						<h:outputText value="HttpBasicAuth" rendered="#{!editEstConfigMBean.raMode}" />
+						<br/>
 						<h:selectBooleanCheckbox id="challengepwdcheckbox"
 							value="#{editEstConfigMBean.estAlias.challengePwdSelected}"
 							rendered="#{!editEstConfigMBean.raMode}"
 							disabled="#{editEstConfigMBean.viewOnly}">
-						<f:ajax render="estconfiguration:authmodule dnpartpwdcheckbox dnpartselectmenu challengepwdcheckbox usevendorcertcheckbox" />
+						<f:ajax render="authmodule vendormode" />
 						</h:selectBooleanCheckbox>
-						<h:outputText value="ChallengePwd"
-							rendered="#{!editEstConfigMBean.raMode}" />
+						<h:outputText value="ChallengePwd" rendered="#{!editEstConfigMBean.raMode}" />
                         <br/>
     					<h:selectBooleanCheckbox id="dnpartpwdcheckbox"
 							value="#{editEstConfigMBean.estAlias.dnPartPwdSelected}"
 							rendered="#{!editEstConfigMBean.raMode}"
 							disabled="#{editEstConfigMBean.viewOnly}">
-							<f:ajax render="estconfiguration:dnpartpwdcheckbox dnpartselectmenu challengepwdcheckbox usevendorcertcheckbox" />
+							<f:ajax render="authmodule vendormode" />
 						</h:selectBooleanCheckbox>
                         <h:outputText value="DnPartPwd" rendered="#{!editEstConfigMBean.raMode}" />
                         &nbsp;
@@ -163,7 +170,7 @@
 					<h:selectBooleanCheckbox id="usevendorcertcheckbox"
 								value="#{editEstConfigMBean.estAlias.vendorMode}"
 								rendered="#{!editEstConfigMBean.raMode}"
-								disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected}">
+								disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected or editEstConfigMBean.estAlias.httpBasicAuthSelected}">
 								<f:ajax render="estconfiguration:vendorcas usevendorcertcheckbox allowchangesubjectnamecheckbox" />
 					</h:selectBooleanCheckbox>
 							<h:outputText value="#{web.text.USE}"
@@ -397,7 +404,7 @@
 							maxlength="150" redisplay="true"
 							value="#{editEstConfigMBean.estAlias.password}"
 							autocomplete="off" rendered="#{!editEstConfigMBean.viewOnly}" />
-						<h:outputText value="*****"
+						<h:outputText value="**********"
 							rendered="#{editEstConfigMBean.viewOnly}" />
 					</h:panelGroup>
 					<h:panelGroup>&nbsp;</h:panelGroup>

@@ -41,7 +41,6 @@ import org.cesecore.util.ValidityDate;
  * The model representation of Extended Information about a user. It's used for non-searchable data about a user,
  * like a image, in an effort to minimize the need for database alterations
  *
- * @version $Id$
  *
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements Serializable {
@@ -100,7 +99,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
     public static final int DEFAULT_REMAININGLOGINATTEMPTS = -1;
-
+    
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
@@ -129,20 +128,15 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
     /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
     private static String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
-
-    // ECA-9491 Tmp. transient attribute to bypass BasePublisher.storeCertificate(AuthenticationToken admin, Certificate incert, String username, 
-    // String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, 
-    // long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException; until refactored.
-    private String accountBindingId;
+    // ** External account binding id
+    private static String ACCOUNT_BINDING_ID = "ACCOUNT_BINDING_ID";
     
-    @Deprecated
     public String getAccountBindingId() {
-        return accountBindingId;
+        return (String) data.get(ACCOUNT_BINDING_ID);
     }
 
-    @Deprecated
     public void setAccountBindingId(final String accountBindingId) {
-        this.accountBindingId = accountBindingId;
+        data.put(ACCOUNT_BINDING_ID, accountBindingId);
     }
 
     /** Creates a new instance of ExtendedInformation */
@@ -264,7 +258,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @return The number of remaining allowed failed login attempts or -1 for unlimited
      */
     public int getRemainingLoginAttempts() {
-        return Integer.valueOf(data.get(REMAININGLOGINATTEMPTS).toString());
+        return Integer.parseInt(data.get(REMAININGLOGINATTEMPTS).toString());
     }
 
     /**
@@ -280,7 +274,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @return The maximum number of allowed failed login attempts or -1 for unlimited
      */
     public int getMaxLoginAttempts() {
-        return Integer.valueOf(data.get(MAXFAILEDLOGINATTEMPTS).toString());
+        return Integer.parseInt(data.get(MAXFAILEDLOGINATTEMPTS).toString());
     }
 
     /**
@@ -355,7 +349,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         int ret = RevokedCertInfo.NOT_REVOKED;
         final String revocationReason = getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
         if (revocationReason != null) {
-            ret = Integer.valueOf(revocationReason);
+            ret = Integer.parseInt(revocationReason);
         }
         if (log.isDebugEnabled()) {
             log.debug("User issuance revocation reason is " + ret);

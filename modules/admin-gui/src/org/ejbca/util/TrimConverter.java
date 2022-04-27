@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
  * @version $Id$
  */
 @FacesConverter("trimConverter")
-public class TrimConverter implements Converter {
+public class TrimConverter implements Converter<Object> {
 
     @Override
     public Object getAsObject(final FacesContext context, final UIComponent component, final String value) {

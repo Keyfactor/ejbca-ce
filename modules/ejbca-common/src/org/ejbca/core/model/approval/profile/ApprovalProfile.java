@@ -36,14 +36,14 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
     
     static final String TYPE_NAME = "APPROVAL_PROFILE";
 
-    final String PROPERTY_NOTIFICATION_EMAIL_RECIPIENT = "notification_email_recipient";
-    final String PROPERTY_NOTIFICATION_EMAIL_SENDER = "notification_email_sender";
-    final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "notification_email_msg_subject";
-    final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY = "notification_email_msg_body";
+    public static final String PROPERTY_NOTIFICATION_EMAIL_RECIPIENT = "notification_email_recipient";
+    public static final String PROPERTY_NOTIFICATION_EMAIL_SENDER = "notification_email_sender";
+    public static final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "notification_email_msg_subject";
+    public static final String PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY = "notification_email_msg_body";
 
-    final String PROPERTY_USER_NOTIFICATION_EMAIL_SENDER = "user_notification_email_sender";
-    final String PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "user_notification_email_msg_subject";
-    final String PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY = "user_notification_email_msg_body";
+    public static final String PROPERTY_USER_NOTIFICATION_EMAIL_SENDER = "user_notification_email_sender";
+    public static final String PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT = "user_notification_email_msg_subject";
+    public static final String PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY = "user_notification_email_msg_body";
 
     /** Key for the data value marking the number of approvals required. */
     final String PROPERTY_NUMBER_OF_REQUIRED_APPROVALS = "number_of_required_approvals";

@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.config.oauth;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthProviderCliHelper;
@@ -35,11 +36,16 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String LABEL = "--label";
     private static final String NEW_SKEW_LIMIT = "--new-skewlimit";
     private static final String NEW_URL = "--new-url";
+    private static final String NEW_TOKEN_URL = "--new-tokenurl";
+    private static final String NEW_LOGOUT_URL = "--new-logouturl";
     private static final String NEW_LABEL = "--new-label";
     private static final String NEW_CLIENT = "--new-client";
     private static final String NEW_CLIENT_SECRET = "--new-clientsecret";
+    private static final String NEW_KEYBINDING = "--new-keybinding";
     private static final String NEW_REALM = "--new-realm";
     private static final String NEW_SCOPE = "--new-scope";
+    private static final String NEW_AUDIENCE = "--new-audience";
+    private static final String NEW_AUDIENCECHECKDISABLED = "--new-audiencecheckdisabled";
 
     {
         registerParameter(new Parameter(LABEL, "Label", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -48,16 +54,26 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "New Skew Limit."));
         registerParameter(new Parameter(NEW_URL, "Provider URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New authorization endpoint URL."));
+        registerParameter(new Parameter(NEW_TOKEN_URL, "Provider Token URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New token endpoint URL."));
+        registerParameter(new Parameter(NEW_LOGOUT_URL, "Provider Logout URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New logout endpoint URL."));
         registerParameter(new Parameter(NEW_LABEL, "Provider name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Provider Label."));
         registerParameter(new Parameter(NEW_REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Realm/Tenant name."));
         registerParameter(new Parameter(NEW_SCOPE, "Scope", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Scope."));
+        registerParameter(new Parameter(NEW_AUDIENCE, "Audience", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Audience."));
+        registerParameter(new Parameter(NEW_AUDIENCECHECKDISABLED, "Audience Check Disabled", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Audience check disabled."));
         registerParameter(new Parameter(NEW_CLIENT, "Client Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Client Name."));
         registerParameter(new Parameter(NEW_CLIENT_SECRET, "Client Secret", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "New Client Secret."));
+        registerParameter(new Parameter(NEW_KEYBINDING, "Key Binding", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "New Key Binding."));
     }
 
     @Override
@@ -118,11 +134,16 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
             final OAuthKeyInfo keyInfoToBeEdited) {
         final String newSkewLimit= parameters.get(NEW_SKEW_LIMIT);
         final String newUrl = parameters.get(NEW_URL);
+        final String newTokenUrl = parameters.get(NEW_TOKEN_URL);
+        final String newLogoutUrl = parameters.get(NEW_LOGOUT_URL);
         final String newLabel = parameters.get(NEW_LABEL);
         final String newClient = parameters.get(NEW_CLIENT);
         final String newClientSecret = parameters.get(NEW_CLIENT_SECRET);
         final String newRealm = parameters.get(NEW_REALM);
         final String newScope = parameters.get(NEW_SCOPE);
+        final String newAudience = parameters.get(NEW_AUDIENCE);
+        final String newKeyBinding = parameters.get(NEW_KEYBINDING);
+        final String newDisableAudienceCheck = parameters.get(NEW_AUDIENCECHECKDISABLED);
 
         if (newSkewLimit != null) {
             if (validateSkewLimit(newSkewLimit) >= 0) {
@@ -144,6 +165,12 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         if (newUrl != null) {
             keyInfoToBeEdited.setUrl(keyInfoToBeEdited.fixUrl(newUrl));
         }
+        if (newTokenUrl != null) {
+            keyInfoToBeEdited.setTokenUrl(keyInfoToBeEdited.fixUrl(newTokenUrl));
+        }
+        if (newLogoutUrl != null) {
+            keyInfoToBeEdited.setLogoutUrl(keyInfoToBeEdited.fixUrl(newLogoutUrl));
+        }
         if (newClient != null) {
             keyInfoToBeEdited.setClient(newClient);
         }
@@ -155,6 +182,20 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         if (newScope != null) {
             keyInfoToBeEdited.setScope(newScope);
+        }
+        if (newAudience != null) {
+            keyInfoToBeEdited.setAudience(newAudience);
+        }
+        if (newDisableAudienceCheck != null) {
+            keyInfoToBeEdited.setAudienceCheckDisabled(Boolean.valueOf(newDisableAudienceCheck));
+        }
+        if (newKeyBinding != null) {
+            final Optional<Integer> maybeKeyBindingId = keyBindingNameToId(newKeyBinding);
+            if (!maybeKeyBindingId.isPresent()) {
+                log.info("Key binding '" + newKeyBinding + "' not found");
+                return false;
+            }
+            keyInfoToBeEdited.setKeyBinding(maybeKeyBindingId.get());
         }
             
         return true;

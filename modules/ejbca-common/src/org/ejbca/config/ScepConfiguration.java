@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -29,8 +30,6 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
 /**
  * Configuration of the SCEP protocol.
- * 
- * @version $Id$
  */
 public class ScepConfiguration extends ConfigurationBase implements Serializable {
     
@@ -62,6 +61,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RAMODE_OLD = "ra.createOrEditUser";
     public static final String SCEP_OPERATIONMODE = "operationmode";
     public static final String SCEP_INCLUDE_CA = "includeca";
+    public static final String SCEP_RETURN_CA_CHAIN_IN_GETCACERT = "returnCaChainInGetCaCert";
+    public static final String SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM = "allowLegacyDigestAlgorithm";
     public static final String SCEP_RA_CERTPROFILE = "ra.certificateProfile";
     public static final String SCEP_RA_ENTITYPROFILE = "ra.entityProfile";
     public static final String SCEP_RA_AUTHPWD = "ra.authPwd";
@@ -75,17 +76,22 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     //Intune configuration values
     public static final String SCEP_USE_INTUNE = "useIntune";
+    public static final String AUTH_AUTHORITY = "intuneAuthority";
     public static final String AAD_APP_ID = "intuneAadAppId";
     public static final String AAD_APP_KEY = "intuneAadAppKey";
+    public static final String AAD_USE_KEY_BINDING = "intuneAadUseKeyBinding";
+    public static final String AAD_APP_KEY_BINDING = "intuneAadKeyBinding";
     public static final String TENANT = "intuneTenant";
-    
+    public static final String INTUNE_RESOURCE_URL = "intuneResourceUrl";
+    public static final String GRAPH_API_VERSION = "intuneGraphApiVersion";
+    public static final String GRAPH_RESOURCE_URL = "intuneGraphResourceUrl";
     public static final String PROXY_HOST = "intuneProxyHost";
     public static final String PROXY_PORT = "intuneProxyPort";
     public static final String PROXY_USER = "intuneProxyUser";
     public static final String PROXY_PASS = "intuneProxyPass";
        
     // This List is used in the command line handling of updating a config value to insure a correct value.
-    public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA);
+    public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA, SCEP_RETURN_CA_CHAIN_IN_GETCACERT);
     
     public static final String SCEP_CONFIGURATION_ID = "2";
     
@@ -93,13 +99,14 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
  
     // Default Values
-    public static final float LATEST_VERSION = 4f;
+    public static final float LATEST_VERSION = 6f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
     public static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
     public static final String DEFAULT_OPERATION_MODE = Mode.CA.getResource();
     public static final String DEFAULT_INCLUDE_CA = Boolean.TRUE.toString();
+    public static final String DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM = Boolean.FALSE.toString();
     public static final String DEFAULT_CLIENT_CERTIFICATE_RENEWAL = Boolean.FALSE.toString();
     public static final String DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = Boolean.FALSE.toString();
     public static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
@@ -110,6 +117,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
     public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
+    public static final String DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT = Boolean.TRUE.toString();
+
     
     /** Creates a new instance of ScepConfiguration */
     public ScepConfiguration()  {
@@ -126,30 +135,35 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     /** Initializes a new scep configuration with default values. */
     public void initialize(String alias){
         alias += ".";
-        if(StringUtils.isNotEmpty(alias)) {
-            data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
-            data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
-            data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
-            data.put(alias + SCEP_RA_ENTITYPROFILE, DEFAULT_RA_ENTITYPROFILE);
-            data.put(alias + SCEP_RA_DEFAULTCA, DEFAULT_RA_DEFAULTCA);
-            data.put(alias + SCEP_RA_AUTHPWD, DEFAULT_RA_AUTHPWD);
-            data.put(alias + SCEP_RA_NAME_GENERATION_SCHEME, DEFAULT_RA_NAME_GENERATION_SCHEME);
-            data.put(alias + SCEP_RA_NAME_GENERATION_PARAMETERS, DEFAULT_RA_NAME_GENERATION_PARAMETERS);
-            data.put(alias + SCEP_RA_NAME_GENERATION_PREFIX, DEFAULT_RA_NAME_GENERATION_PREFIX);
-            data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
-            data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
-            data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
-            
-            data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
-            data.put(alias + AAD_APP_ID, "");
-            data.put(alias + AAD_APP_KEY, "");
-            data.put(alias + TENANT, "");
-            data.put(alias + PROXY_HOST, "");
-            data.put(alias + PROXY_PORT, "");
-            data.put(alias + PROXY_USER, "");
-            data.put(alias + PROXY_PASS, "");
-               
-        }
+        data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
+        data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
+        data.put(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT, DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT);
+        data.put(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
+        data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
+        data.put(alias + SCEP_RA_ENTITYPROFILE, DEFAULT_RA_ENTITYPROFILE);
+        data.put(alias + SCEP_RA_DEFAULTCA, DEFAULT_RA_DEFAULTCA);
+        data.put(alias + SCEP_RA_AUTHPWD, DEFAULT_RA_AUTHPWD);
+        data.put(alias + SCEP_RA_NAME_GENERATION_SCHEME, DEFAULT_RA_NAME_GENERATION_SCHEME);
+        data.put(alias + SCEP_RA_NAME_GENERATION_PARAMETERS, DEFAULT_RA_NAME_GENERATION_PARAMETERS);
+        data.put(alias + SCEP_RA_NAME_GENERATION_PREFIX, DEFAULT_RA_NAME_GENERATION_PREFIX);
+        data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
+        data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+        data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        
+        data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
+        data.put(alias + AUTH_AUTHORITY, "");
+        data.put(alias + AAD_APP_ID, "");
+        data.put(alias + AAD_APP_KEY, "");
+        data.put(alias + AAD_USE_KEY_BINDING, Boolean.FALSE.toString());
+        data.put(alias + AAD_APP_KEY_BINDING, "");
+        data.put(alias + TENANT, "");
+        data.put(alias + INTUNE_RESOURCE_URL, "");
+        data.put(alias + GRAPH_API_VERSION, "");
+        data.put(alias + GRAPH_RESOURCE_URL, "");
+        data.put(alias + PROXY_HOST, "");
+        data.put(alias + PROXY_PORT, "");
+        data.put(alias + PROXY_USER, "");
+        data.put(alias + PROXY_PASS, "");
     }
     
     // return all the key with an alias
@@ -158,6 +172,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         Set<String> keys = new LinkedHashSet<String>();
         keys.add(alias + SCEP_OPERATIONMODE);
         keys.add(alias + SCEP_INCLUDE_CA);
+        keys.add(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT);
+        keys.add(alias + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM);
         keys.add(alias + SCEP_RA_CERTPROFILE);
         keys.add(alias + SCEP_RA_ENTITYPROFILE);
         keys.add(alias + SCEP_RA_DEFAULTCA);
@@ -170,9 +186,15 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
         
         keys.add(alias + SCEP_USE_INTUNE);
+        keys.add(alias + AUTH_AUTHORITY);
         keys.add(alias + AAD_APP_ID);
+        keys.add(alias + AAD_USE_KEY_BINDING);
         keys.add(alias + AAD_APP_KEY);
+        keys.add(alias + AAD_APP_KEY_BINDING);
         keys.add(alias + TENANT);
+        keys.add(alias + INTUNE_RESOURCE_URL);
+        keys.add(alias + GRAPH_API_VERSION);
+        keys.add(alias + GRAPH_RESOURCE_URL);
         keys.add(alias + PROXY_HOST);
         keys.add(alias + PROXY_PORT);
         keys.add(alias + PROXY_USER);
@@ -260,11 +282,40 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
+    
     public void setIncludeCA(String alias, boolean includeca) {
         String key = alias + "." + SCEP_INCLUDE_CA;
         setValue(key, Boolean.toString(includeca), alias);
     }
+    
+    public boolean getReturnCaChainInGetCaCert(String alias) {
+        String key = alias + "." + SCEP_RETURN_CA_CHAIN_IN_GETCACERT;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
 
+    public void setReturnCaChainInGetCaCert(String alias, boolean returnCaChainInGetCaCert) {
+        String key = alias + "." + SCEP_RETURN_CA_CHAIN_IN_GETCACERT;
+        setValue(key, Boolean.toString(returnCaChainInGetCaCert), alias);
+    } 
+
+    
+    public boolean getAllowLegacyDigestAlgorithm(String alias) {
+        String key = alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM;
+        String value = getValue(key, alias);
+        // Allow for SCEP configurations older than 7.5.1 to use SHA-1 in responses by default
+        if(value == null) {
+            data.put(alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, "true");
+            return Boolean.getBoolean("true");
+        }
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+        
+    public void setAllowLegacyDigestAlgorithm(String alias, boolean allowLegacyDigestAlgorithm) {
+        String key = alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM;
+        setValue(key, Boolean.toString(allowLegacyDigestAlgorithm), alias);
+    }
+    
     public String getRACertProfile(String alias) {
         String key = alias + "." + SCEP_RA_CERTPROFILE;
         return getValue(key, alias);
@@ -294,11 +345,11 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     public String getRAAuthPassword(String alias) {
         String key = alias + "." + SCEP_RA_AUTHPWD;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
     public void setRAAuthpassword(String alias, String pwd) {
         String key = alias + "." + SCEP_RA_AUTHPWD;
-        setValue(key, pwd, alias);
+        setValue(key, getEncryptedValue(pwd), alias);
     }
 
     public String getRANameGenerationScheme(String alias) {
@@ -348,6 +399,16 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
     }
     
+    public void setIntuneAuthority(final String alias, final String value) {
+        String key = alias + "." + AUTH_AUTHORITY;
+        setValue(key, value, alias);
+    }
+
+    public String getIntuneAuthority(final String alias) {
+        String key = alias + "." + AUTH_AUTHORITY;
+        return getValue(key, alias);
+    }
+    
     public void setIntuneAadAppId(final String alias, final String value) {
         String key = alias + "." + AAD_APP_ID;
         setValue(key, value, alias);
@@ -358,16 +419,36 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return getValue(key, alias);
     }
     
+    public boolean getIntuneAadUseKeyBinding(final String alias) {
+        final String key = alias + "." + AAD_USE_KEY_BINDING;
+        return Boolean.valueOf(getValue(key, alias));
+    }
+    
+    public void setIntuneAadUseKeyBinding(final String alias, final boolean value) {
+        String key = alias + "." + AAD_USE_KEY_BINDING;
+        setValue(key, Boolean.toString(value), alias);
+    }
+
     public void setIntuneAadAppKey(final String alias, final String value) {
         String key = alias + "." + AAD_APP_KEY;
-        setValue(key, value, alias);
+        setValue(key, getEncryptedValue(value), alias);
     }
     
     public String getIntuneAadAppKey(final String alias) {
         String key = alias + "." + AAD_APP_KEY;
+        return getDecryptedValue(getValue(key, alias));
+    }
+
+    public String getIntuneAadAppKeyBinding(final String alias) {
+        String key = alias + "." + AAD_APP_KEY_BINDING;
         return getValue(key, alias);
     }
-    
+
+    public void setIntuneAadAppKeyBinding(final String alias, final String value) {
+        String key = alias + "." + AAD_APP_KEY_BINDING;
+        setValue(key, value, alias);
+    }
+
     public void setIntuneTenant(final String alias, final String value) {
         String key = alias + "." + TENANT;
         setValue(key, value, alias);
@@ -378,6 +459,36 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return getValue(key, alias);
     }
     
+    public void setIntuneResourceUrl(final String alias, final String value) {
+        String key = alias + "." + INTUNE_RESOURCE_URL;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneResourceUrl(final String alias) {
+        String key = alias + "." + INTUNE_RESOURCE_URL;
+        return getValue(key, alias);
+    }
+    
+    public void setIntuneGraphApiVersion(final String alias, final String value) {
+        String key = alias + "." + GRAPH_API_VERSION;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneGraphApiVersion(final String alias) {
+        String key = alias + "." + GRAPH_API_VERSION;
+        return getValue(key, alias);
+    }
+
+    public void setIntuneGraphResourceUrl(final String alias, final String value) {
+        String key = alias + "." + GRAPH_RESOURCE_URL;
+        setValue(key, value, alias);
+    }
+    
+    public String getIntuneGraphResourceUrl(final String alias) {
+        String key = alias + "." + GRAPH_RESOURCE_URL;
+        return getValue(key, alias);
+    }
+        
     public void setIntuneProxyHost(final String alias, final String value) {
         String key = alias + "." + PROXY_HOST;
         setValue(key, value, alias);
@@ -410,27 +521,42 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     
     public void setIntuneProxyPass(final String alias, final String value) {
         String key = alias + "." + PROXY_PASS;
-        setValue(key, value, alias);
+        setValue(key, getEncryptedValue(value), alias);
     }
     
     public String getIntuneProxyPass(final String alias) {
         String key = alias + "." + PROXY_PASS;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
 
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
         intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
+        if (StringUtils.isNotBlank(getIntuneAuthority(alias))) {
+            intuneProperties.put("AUTH_AUTHORITY", getIntuneAuthority(alias));
+        }
         if (StringUtils.isNotBlank(getIntuneAadAppId(alias))) {
             intuneProperties.put("AAD_APP_ID", getIntuneAadAppId(alias));
         }
-        if (StringUtils.isNotBlank(getIntuneAadAppKey(alias))) {
+        intuneProperties.put("AAD_USE_KEY_BINDING", Boolean.toString(getIntuneAadUseKeyBinding(alias)));
+        if (!getIntuneAadUseKeyBinding(alias) && StringUtils.isNotBlank(getIntuneAadAppKey(alias))) {
             intuneProperties.put("AAD_APP_KEY", getIntuneAadAppKey(alias));
+        }
+        if (getIntuneAadUseKeyBinding(alias) && StringUtils.isNotBlank(getIntuneAadAppKeyBinding(alias))) {
+            intuneProperties.put("AAD_APP_KEY_BINDING", getIntuneAadAppKeyBinding(alias));
         }
         if (StringUtils.isNotBlank(getIntuneTenant(alias))) {
             intuneProperties.put("TENANT", getIntuneTenant(alias));
         }
-     
+        if (StringUtils.isNotBlank(getIntuneResourceUrl(alias))) {
+            intuneProperties.put("INTUNE_RESOURCE_URL", getIntuneResourceUrl(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneGraphApiVersion(alias))) {
+            intuneProperties.put("GRAPH_API_VERSION", getIntuneGraphApiVersion(alias));
+        }
+        if (StringUtils.isNotBlank(getIntuneGraphResourceUrl(alias))) {
+            intuneProperties.put("GRAPH_RESOURCE_URL", getIntuneGraphResourceUrl(alias));
+        }
         if (StringUtils.isNotBlank(getIntuneProxyHost(alias))) {
             intuneProperties.put("PROXY_HOST", getIntuneProxyHost(alias));
         }
@@ -449,12 +575,15 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public String getValue(String key, String alias) {
         if(aliasExists(alias)) {
             if(data.containsKey(key)) {
+                if (data.get(key) instanceof Boolean) {
+                    return Boolean.toString((Boolean) data.get(key));
+                }
                 return (String) data.get(key);
             } else {
-                log.error("Could not find key '" + key + "' in the SCEP configuration data");
+                log.info("Could not find key '" + key + "' in the SCEP configuration data");
             }
         } else {
-            log.error("SCEP alias '" + alias + "' does not exist");
+            log.info("SCEP alias '" + alias + "' does not exist trying to get value for '" + key + "'");
         }
         return null;
     }
@@ -466,10 +595,10 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                     log.debug("Added '" + key + "=" + value + "' to the SCEP configuration data");
                 }
             } else {
-                log.error("Key '" + key + "' does not exist in the SCEP configuration data");
+                log.info("Key '" + key + "' does not exist in the SCEP configuration data");
             }
         } else {
-            log.error("SCEP alias '" + alias + "' does not exist");
+            log.info("SCEP alias '" + alias + "' does not exist trying to set value for '" + key + "'");
         }
     }
     
@@ -610,8 +739,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(ALIAS_LIST, aliases);
     }
     
-    
-    
     /**
      * @return the configuration as a regular Properties object
      */
@@ -654,17 +781,56 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     @Override
     public void upgrade(){
-        if(Float.compare(LATEST_VERSION, getVersion()) != 0) {    
-            //V4.0 
+        if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
+            log.info("Upgrading ScepConfiguration from version " + getVersion() + " to " + LATEST_VERSION);
+            //V4.0
             for (String alias : getAliasList()) {
-                data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
-                data.put(alias + AAD_APP_ID, "");
-                data.put(alias + AAD_APP_KEY, "");
-                data.put(alias + TENANT, "");
-                data.put(alias + PROXY_HOST, "");
-                data.put(alias + PROXY_PORT, "");
-                data.put(alias + PROXY_USER, "");
-                data.put(alias + PROXY_PASS, "");
+                alias += ".";
+                if (data.get(alias + SCEP_USE_INTUNE) == null) {
+                    data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
+                }
+                if (data.get(alias + AUTH_AUTHORITY) == null) {
+                    data.put(alias + AUTH_AUTHORITY, "");
+                }
+                if (data.get(alias + AAD_APP_ID) == null) {
+                    data.put(alias + AAD_APP_ID, "");
+                }
+                if (data.get(alias + AAD_APP_KEY) == null) {
+                    data.put(alias + AAD_APP_KEY, "");
+                }
+                if (data.get(alias + AAD_USE_KEY_BINDING) == null) {
+                    data.put(alias + AAD_USE_KEY_BINDING, Boolean.FALSE.toString());
+                }
+                if (data.get(alias + AAD_APP_KEY_BINDING) == null) {
+                    data.put(alias + AAD_APP_KEY_BINDING, "");
+                }
+                if (data.get(alias + TENANT) == null) {
+                    data.put(alias + TENANT, "");
+                }
+                if (data.get(alias + INTUNE_RESOURCE_URL) == null) {
+                    data.put(alias + INTUNE_RESOURCE_URL, "");
+                }
+                if (data.get(alias + GRAPH_API_VERSION) == null) {
+                    data.put(alias + GRAPH_API_VERSION, "");
+                }
+                if (data.get(alias + GRAPH_RESOURCE_URL) == null) {
+                    data.put(alias + GRAPH_RESOURCE_URL, "");
+                }
+                if (data.get(alias + PROXY_HOST) == null) {
+                    data.put(alias + PROXY_HOST, "");
+                }
+                if (data.get(alias + PROXY_PORT) == null) {
+                    data.put(alias + PROXY_PORT, "");
+                }
+                if (data.get(alias + PROXY_USER) == null) {
+                    data.put(alias + PROXY_USER, "");
+                }
+                if (data.get(alias + PROXY_PASS) == null) {
+                    data.put(alias + PROXY_PASS, "");
+                }
+                if (data.get(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT) == null) {
+                    data.put(alias + SCEP_RETURN_CA_CHAIN_IN_GETCACERT, Boolean.FALSE.toString());
+                }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));         
         }
@@ -674,5 +840,17 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public String getConfigurationId() {
         return SCEP_CONFIGURATION_ID;
     }
+
+    
+    @Override
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        Set<String> aliases = getAliasList();
+        for (String alias : aliases) {
+            filterDiffMapForLogging(diff, alias + "." + SCEP_RA_AUTHPWD);
+            filterDiffMapForLogging(diff, alias + "." + AAD_APP_KEY);
+            filterDiffMapForLogging(diff, alias + "." + PROXY_PASS);            
+        }
+    }
+
     
 }

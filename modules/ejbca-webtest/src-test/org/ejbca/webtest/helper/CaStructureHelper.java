@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -33,17 +33,36 @@ public class CaStructureHelper extends BaseHelper {
         static final By CRL_PAGE_LINK = By.id("caCafunctions");
 
         static final By CONTAINER = By.xpath("//div[@class='container']");
+        
+        static String getCARowXPath(final String caName) {
+            return "//td[1]/h3[contains(text(), '" + caName + "')]/ancestor::tr";
+        }
 
         // Dynamic references
+        static By getCARow (final String caName) {
+            return By.xpath(getCARowXPath(caName));
+        }
+        
+        static By getCrlUrl(final String caName, final int partitionNo) {
+            int partitionRowNo = partitionNo + 1;
+            return By.xpath(getCARowXPath(caName) + "/td[3]/table/tbody/tr[" + partitionRowNo + "]/td[5]/a");
+        }
+        
+        /**
+         * 
+         * @param caName
+         * @return the CRL URL or CRL URL for partition 0 in case of partitioned or MS-Compatible CA
+         */
         static By getCrlUrl(final String caName) {
-            return By.xpath("//a[text()='Get CRL' and contains(@href, '" + caName + "')]");
+            return getCrlUrl(caName, 0);
         }
 
         static By getPreContainsCaName(final String caName) {
             return By.xpath("//pre[contains(text(), '" + caName + "')]");
         }
+        
         static By getCrlCreateButonByCaName(final String caName) {
-            return By.xpath("//a[text() = 'Get CRL' and contains(@href, 'CN=" + caName + "')]/following-sibling::form/input[contains(@value, 'Create CRL')]");
+            return By.xpath(getCARowXPath(caName) + "/td[3]/form/input[2]");
         }
     }
 
@@ -95,11 +114,13 @@ public class CaStructureHelper extends BaseHelper {
 
     /**
      * Gets the number of 'Get CRL' with matching CA.
+     * It will get partition 0 for partitioned or MS-compatible CAs.
      * 
      * @param caName Name of the CA.
      */
     public int getCrlNumber(String caName) {
-        String crlText = StringUtils.substringBetween(webDriver.findElement(Page.CONTAINER).getText(), caName, " Get CRL");
-        return Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
+        By elementCRLNumber = By.xpath(Page.getCARowXPath(caName) + "/td[3]/table/tbody/tr[1]/td[4]");
+        String crlText = webDriver.findElement(elementCRLNumber).getText();
+        return Integer.parseInt(crlText);
     }
 }

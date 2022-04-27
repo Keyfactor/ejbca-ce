@@ -24,12 +24,13 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.StringTools;
 
 /**
  * Represents an OAuth Public Key entry
- *
  */
 public final class OAuthKeyInfo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -39,7 +40,8 @@ public final class OAuthKeyInfo implements Serializable {
     public enum OAuthProviderType {
         TYPE_GENERIC(0, "Generic"),
         TYPE_AZURE(1, "Azure"),
-        TYPE_KEYCLOAK(2, "Keycloak");
+        TYPE_KEYCLOAK(2, "Keycloak"),
+        TYPE_PINGID(3, "PingID");
 
         private final int index;
         private final String label;
@@ -77,8 +79,17 @@ public final class OAuthKeyInfo implements Serializable {
     private String url;
     private String clientSecret;
     private int skewLimit = 60000;
+    
+    // PingID fields
+    private String tokenUrl;
+    private String logoutUrl;
 
-
+    private String audience;
+    private boolean audienceCheckDisabled = false;
+    
+    // if null, use client secret
+    private Integer keyBinding;
+    
     /**
      * Creates a OAuth Key info object
      *
@@ -227,6 +238,67 @@ public final class OAuthKeyInfo implements Serializable {
         }
     }
 
+    public String getOauthLoginUrl() {
+        if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
+            return getTypeSpecificUrl("auth");
+        }
+        if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
+            return getTypeSpecificUrl("authorize");
+        }
+        if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
+            return url;
+        }
+        return url;
+    }
+
+    public String getTokenUrl() {
+        switch (getType()){
+            case TYPE_AZURE:
+            case TYPE_KEYCLOAK:
+                return getTypeSpecificUrl("token");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return tokenUrl;
+        }
+
+    }
+
+    public String getLogoutUrl() {
+        switch (getType()){
+            case TYPE_AZURE:
+            case TYPE_KEYCLOAK:
+                return getTypeSpecificUrl("logout");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return logoutUrl;
+        }
+    }
+
+    private String getTypeSpecificUrl(String endpoint){
+        switch (getType()) {
+            case TYPE_KEYCLOAK: {
+                String uri = getUrl();
+                uri += getUrl().endsWith("/") ? "" : "/";
+                uri += "realms/" + getRealm() + "/protocol/openid-connect/" + endpoint;
+                return uri;
+            }
+            case TYPE_AZURE: {
+                String uri = getUrl();
+                uri += getUrl().endsWith("/") ? "" : "/";
+                uri += getRealm() + "/oauth2/v2.0/" + endpoint;
+                return uri;
+            }
+            case TYPE_PINGID: 
+            case TYPE_GENERIC: {
+                return getUrl();
+            }
+        }
+        return null;
+    }
+
+
     /** Fixes mistakes in the given URL (like removing trailing slashes). Exact behavior depends on the provider type. */
     public String fixUrl(final String urlToFix) {
         if (urlToFix == null) {
@@ -262,4 +334,72 @@ public final class OAuthKeyInfo implements Serializable {
     public String toString() {
         return label;
     }
+
+    public void setTokenUrl(String tokenUrl) {
+        this.tokenUrl = tokenUrl;
+    }
+
+    public void setLogoutUrl(String logoutUrl) {
+        this.logoutUrl = logoutUrl;
+    }
+
+    public String createLogString(){
+        StringBuilder msg = new StringBuilder();
+        msg.append("{ type=").append( getType().getLabel()).append(", ")
+                .append("client=").append(getClient()).append(", ")
+                .append("realm=").append(getRealm()).append(", ")
+                .append("scope=").append(getScope()).append(", ")
+                .append("url=").append(getUrl()).append(", ")
+                .append("audience=").append(getAudience()).append(", ")
+                .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
+                .append("tokenUrl=").append(getTokenUrl()).append(", ")
+                .append("logoutUrl=").append(getLogoutUrl()).append(", ")
+                .append("skewLimit=").append(getSkewLimit()).append(", ")
+                .append("keys=[");
+        if (getKeys() != null) {
+            for (String key : getKeys().keySet()) {
+                msg.append(key + ";");
+            }
+        }
+        msg.append("]}");
+        return msg.toString();
+    }
+
+    public String getAudience() {
+        return audience;
+    }
+
+    public void setAudience(String audience) {
+        this.audience = audience;
+    }
+
+    public Integer getKeyBinding() {
+        return keyBinding;
+    }
+
+    public void setKeyBinding(Integer keyBinding) {
+        this.keyBinding = keyBinding;
+    }
+    
+    /**
+     * If this is an Azure key info, return the login server's URL, which should be the base 
+     * URL for logout/token/auth endpoints.
+     */
+    public String getLoginServerUrl() {
+        Preconditions.checkState(getType() == OAuthProviderType.TYPE_AZURE);
+        
+        String uri = getUrl();
+        uri += getUrl().endsWith("/") ? "" : "/";
+        uri += getRealm() + "/v2.0";
+        return uri;
+    }
+
+    public boolean isAudienceCheckDisabled() {
+        return audienceCheckDisabled;
+    }
+
+    public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
+        this.audienceCheckDisabled = audienceCheckDisabled;
+    }
+
 }

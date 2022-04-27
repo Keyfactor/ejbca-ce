@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
@@ -36,7 +39,7 @@ import java.util.EnumSet;
 public class SearchEndEntityCriteriaRestRequest {
 
     @ApiModelProperty(value = "A search property",
-            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA, STATUS"
+            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA, STATUS, MODIFIED_BEFORE, MODIFIED_AFTER"
     )
     private String property;
 
@@ -45,7 +48,7 @@ public class SearchEndEntityCriteriaRestRequest {
     private String value;
 
     @ApiModelProperty(value = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
-            allowableValues = "EQUALS, LIKE",
+            allowableValues = "EQUAL, LIKE",
             dataType = "java.lang.String")
     private String operation;
 
@@ -96,7 +99,9 @@ public class SearchEndEntityCriteriaRestRequest {
         END_ENTITY_PROFILE,
         CERTIFICATE_PROFILE,
         CA,
-        STATUS;
+        STATUS,
+        MODIFIED_BEFORE,
+        MODIFIED_AFTER;
 
         /**
          * Resolves the CriteriaProperty using its name or returns null.

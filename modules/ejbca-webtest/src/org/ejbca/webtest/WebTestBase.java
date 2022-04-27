@@ -23,6 +23,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.common.exception.ReferencesToItemExistException;
@@ -201,6 +202,9 @@ public abstract class WebTestBase extends ExtentReportCreator {
     protected static String getRaWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/ra/";
     }
+    protected static String getRaWebPublicUrl() {
+        return "http://" + ejbcaDomain + ":" + ejbcaPublicPort + "/ejbca/ra/";
+    }
 
     protected static String getSwaggerWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSecurePort + "/ejbca/swagger-ui#/";
@@ -322,6 +326,16 @@ public abstract class WebTestBase extends ExtentReportCreator {
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e); // Should never happen with always allow token
         }
+    }
+
+    /**
+     * Removes the Certificate using EJB instance.
+     *
+     * @param username Certificate profile name.
+     */
+    protected static void removeCertificateByUsername(final String username) {
+        final InternalCertificateStoreSessionRemote certificateStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+         certificateStoreSessionRemote.removeCertificatesByUsername(username);
     }
 
     /**

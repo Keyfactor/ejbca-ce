@@ -29,8 +29,6 @@ import org.ejbca.util.query.Query;
 
 /**
  * Local interface for ApprovalSession.
- * 
- * @version $Id$
  */
 @Local
 public interface ApprovalSessionLocal extends ApprovalSession {

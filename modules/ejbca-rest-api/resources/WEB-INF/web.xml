@@ -22,7 +22,7 @@
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
-	<description><![CDATA[External interface for the EJBCA rest api]]></description>
+	<description><![CDATA[External interface for the EJBCA REST API]]></description>
 	<display-name>ejbca-rest-api</display-name>
 
     <filter>
@@ -57,6 +57,30 @@
             <param-value>REST End Entity Management</param-value>  
         </init-param>
     </filter>
+    <filter>
+        <filter-name>ConfigdumpFilter</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>REST Configdump</param-value>  
+        </init-param>  
+    </filter>    
+    <filter>
+        <filter-name>RestLoggingFilter</filter-name>
+        <filter-class>org.ejbca.ui.web.rest.api.config.RestLoggingFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>REST Logging Filter</param-value>  
+        </init-param>  
+    </filter>    
+    <filter>
+        <filter-name>CertificateManagementFilterV2</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>REST Certificate Management V2</param-value>  
+        </init-param>
+    </filter>
     
     <filter-mapping>
         <filter-name>CertificateManagementFilter</filter-name>
@@ -75,7 +99,19 @@
         <filter-name>EndEntityManagementFilter</filter-name>
         <url-pattern>/v1/endentity/*</url-pattern>
     </filter-mapping>
-    
+    <filter-mapping>
+        <filter-name>ConfigdumpFilter</filter-name>
+        <url-pattern>/v1/configdump/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>RestLoggingFilter</filter-name>
+        <url-pattern>/v1/*</url-pattern>
+        <url-pattern>/v2/*</url-pattern>
+    </filter-mapping>
+	<filter-mapping>
+        <filter-name>CertificateManagementFilterV2</filter-name>
+        <url-pattern>/v2/certificate/*</url-pattern>
+    </filter-mapping>
 
 	<security-constraint>
 		<web-resource-collection>

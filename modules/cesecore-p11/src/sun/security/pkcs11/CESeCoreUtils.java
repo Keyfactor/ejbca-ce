@@ -72,14 +72,14 @@ public class CESeCoreUtils {
     }
     /**
      * Writes info about security related attributes.
-     * @param providerName The registered name of the provider. If the provider is not an instance of {@link SunPKCS11} then false is returned.
-     * @param key The key object. If the object is not an instance of {@link P11Key} then false is returned.
-     * @param sb Buffer to write to.
+     * @param providerName The registered name of the provider. If the provider is not an instance of {@link SunPKCS11} the 'Not a PKCS#11 Key' message is returned.
+     * @param key The key object. If the object is not an instance of {@link P11Key} then the 'Not a PKCS#11 Key' message is returned..
+     * @param sb Buffer to write security information to, or 'Not a PKCS#11 key' the key is not a PKCS#11 key that we can get information about.
      * @throws PKCS11Exception
      */
     public static void securityInfo(final String providerName, final Key key, final StringBuilder sb) throws PKCS11Exception {
         final KeyData d = KeyData.getIt(providerName, key);
-        if ( d==null ) {
+        if (d == null) {
             sb.append("Not a PKCS#11 key.");
             return;
         }

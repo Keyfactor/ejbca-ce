@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +37,6 @@ import org.cesecore.keys.token.CryptoToken;
  * There can be many different implementations of CVC CA which are quite different, for example EU EAC electronic passports,
  * Tachographs and eIDs.  
  *
- * @version $Id$
  */
 public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 
@@ -135,16 +135,23 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	    log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}
-
+	
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) {
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
     }
 
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert, final Date futureDate) {
+        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
+        log.info(msg);
+        return null;
+    }
+
+    @Override
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;

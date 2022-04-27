@@ -147,10 +147,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * This will the the different kind of CMP messages that can be sent as NestedMessageContent and if 
- * they are verified correctly
- * 
- * @version $Id$
- *
+ * they are verified correctly.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NestedMessageContentTest extends CmpTestCase {
@@ -350,7 +347,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                             crmfMsg.getHeader().getTransactionID().getOctets(), false, null, 
                             PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        final Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqID);
+        final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
         assertNotNull("CrmfRequest did not return a certificate", cert);
@@ -522,7 +519,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                         crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        final Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqID);
+        final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
@@ -833,7 +830,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                         crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        final Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqID);
+        final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));

@@ -371,10 +371,6 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
             return originalProfileId;
         }
 
-        boolean isCertificateProfile() {
-            return isCertificateProfile;
-        }
-
         boolean isEntityProfile() {
             return isEntityProfile;
         }

@@ -23,15 +23,12 @@ import org.cesecore.configuration.ConfigurationBase;
 
 /**
  * Handles configuration of protocols supporting enable / disable
- *
- * @version $Id$
- *
  */
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final float LATEST_VERSION = 2f;
 
-    public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
+    public static final String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
 
     /**
      * Protocols currently supporting enable/disable configuration by EJBCA
@@ -52,8 +49,11 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/ca<br/>/ejbca/ejbca-rest-api/v1/certificate"),
         REST_CRYPTOTOKEN_MANAGEMENT("REST Crypto Token Management", "/ejbca/ejbca-rest-api/v1/cryptotoken"),
         REST_ENDENTITY_MANAGEMENT("REST End Entity Management", "/ejbca/ejbca-rest-api/v1/endentity"),
+        REST_CONFIGDUMP("REST Configdump", "/ejbca/ejbca-rest-api/v1/configdump"),
+        REST_CERTIFICATE_MANAGEMENT_V2("REST Certificate Management V2", "/ejbca/ejbca-rest-api/v2/certificate"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
-        WS("Web Service", "/ejbca/ejbcaws");
+        WS("Web Service", "/ejbca/ejbcaws"),
+        ITS("ITS Certificate Management", "/ejbca/its");
 
         private final String name;
         private final String url;
@@ -87,7 +87,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         public static String getContextPathByName(String name) {
             return reverseLookupMap.get(name);
         }
-    };
+    }
 
     /** Initializes the configuration */
     public AvailableProtocolsConfiguration() {
@@ -107,13 +107,16 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.EST.getName())   || 
                 protocol.equals(AvailableProtocols.MSAE.getName())   ||
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
+                protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
-                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()))) {
+                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) || 
+                protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName()) ||
+                protocol.equals(AvailableProtocols.ITS.getName()))) {
             setProtocolStatus(protocol, false);
             return false;
         }
-        return ret == null ? true : ret;
+        return (ret == null || ret);
     }
 
     public void setProtocolStatus(String protocol, boolean status) {
@@ -121,7 +124,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
 
     /** @return map containing the current status of all configurable protocols. */
-    public LinkedHashMap<String, Boolean> getAllProtocolsAndStatus() {
+    public Map<String, Boolean> getAllProtocolsAndStatus() {
         LinkedHashMap<String, Boolean> protocolStatusMap = new LinkedHashMap<>();
         for (AvailableProtocols protocol : AvailableProtocols.values()) {
             protocolStatusMap.put(protocol.getName(), getProtocolStatus(protocol.getName()));

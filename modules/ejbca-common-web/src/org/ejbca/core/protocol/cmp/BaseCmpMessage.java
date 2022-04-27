@@ -29,8 +29,6 @@ import org.cesecore.util.Base64;
 
 /**
  * Base class for CMP request messages.
- * 
- * @version $Id$
  */
 public abstract class BaseCmpMessage implements Serializable {
   
@@ -52,7 +50,8 @@ public abstract class BaseCmpMessage implements Serializable {
 	private String pbeKey = null;
 
 	private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
-
+	private boolean includeCaCert = true; // True because backward compatibility.
+	
 	private List<Certificate> additionalExtraCerts = new ArrayList<Certificate>();
 	
 	/** @return the ASN.1 encoded octets as a bas64 encoded String or null if no such data is available */
@@ -69,7 +68,7 @@ public abstract class BaseCmpMessage implements Serializable {
     private byte[] getByteArrayFromAsn1Encodable(final ASN1Encodable asn1Encodable) throws IllegalStateException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            new ASN1OutputStream(baos).writeObject(asn1Encodable);
+            ASN1OutputStream.create(baos).writeObject(asn1Encodable);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -170,6 +169,31 @@ public abstract class BaseCmpMessage implements Serializable {
      */
     public void setAdditionalCaCertificates(final List<Certificate> certificates) {
         this.additionalCaCertificates = certificates;
+    }
+    
+    /**
+     * Include the issuing CA certificate at caPubs field index 0.
+     * 
+     * @see BaseCmpMessage#additionalCaCertificates
+     * 
+     * @return true if CA certificate is added at index 0 of the CMP message 
+     *      caPubs field by default, false otherwise. Since additionally CA 
+     *      certificates can be added to this field - including the issuing 
+     *      CAs certificate - this is no warranty, that the issuing CA 
+     *      certificate is not returned at index 0 of the caPubs field in the CMP 
+     *      response if this option is set to false.
+     */
+    public boolean isIncludeCaCert() {
+        return includeCaCert;
+    }
+    
+    /**
+     * Include the issuing CA certificate at caPubs field index 0.
+     * 
+     * @param includeCaCert true if to be added.  
+     */
+    public void setIncludeCaCert(boolean includeCaCert) {
+        this.includeCaCert = includeCaCert;
     }
     
     /**

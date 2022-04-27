@@ -59,7 +59,7 @@
                             <h:panelGroup id="matchWithSelectedBlock" layout="block" rendered="#{roleMembersBean.authorizedToEditRole}">
                                 <h:selectOneMenu id="matchWith" value="#{roleMembersBean.matchWithSelected}">
                                     <f:selectItems value="#{roleMembersBean.matchWithItems}" />
-                                    <f:ajax execute="@this" render=":rolemembers:list:tokenIssuerIdBlock :rolemembers:list:tokenMatchValueBlock :rolemembers:list:oAuthProviderBlock"/>
+                                    <f:ajax execute="@this" render=":rolemembers:list:oAuthProviderBlock"/>
                                 </h:selectOneMenu> 
                             </h:panelGroup>
                         </f:facet>

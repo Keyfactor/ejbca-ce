@@ -34,3 +34,4 @@ drop table AcmeAccountData cascade constraints;
 drop table AcmeOrderData cascade constraints;
 drop table SctData cascade constraints;
 drop table OcspResponseData cascade constraints;
+drop table IncompleteIssuanceJournalData cascade constraints;

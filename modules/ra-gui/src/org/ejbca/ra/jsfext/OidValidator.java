@@ -24,7 +24,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  */
 @FacesValidator("oidValidator")
-public class OidValidator implements Validator {
+public class OidValidator implements Validator<Object> {
 
     private static final String OID_PATTERN = "(\\.?\\d+)*";
     private static final String LINE_SEPARATOR = "\n";

@@ -13,30 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.security.auth.x500.X500Principal;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -45,6 +21,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -130,6 +107,29 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import javax.security.auth.x500.X500Principal;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -138,9 +138,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * This will test the different cmp authentication modules.
- *
- * @version $Id$
- *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AuthenticationModulesTest extends CmpTestCase {
@@ -278,7 +275,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
                 .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         final CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-        final Certificate cert1 = checkCmpCertRepMessage(USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+        final Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
     }
@@ -376,7 +373,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
                     .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert2 = checkCmpCertRepMessage(testUserDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, testUserDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert2);
             fingerprint2 = CertTools.getFingerprintAsString(cert2);
@@ -384,6 +381,58 @@ public class AuthenticationModulesTest extends CmpTestCase {
             removeAuthenticationToken(admToken, admCert, testUsername); // also removes testUsername
             this.internalCertStoreSession.removeCertificate(fingerprint);
             this.internalCertStoreSession.removeCertificate(fingerprint2);
+        }
+    }
+
+    @Test
+    public void testCrmfReqFailWhenCertRequiredButNoCertInDb() throws Exception {
+        this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
+        this.cmpConfiguration.setRAMode(ALIAS, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+
+        final X500Name testUserDN = new X500Name("CN=cmptestuser5,C=SE");
+        final String testUsername = "cmptestuser5";
+        String fingerprint = null;
+        AuthenticationToken admToken = null;
+        Certificate admCert = null;
+        try {
+            CmpTestCase.updatePropertyOnServer("web.reqcertindb", "true");
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, this.cacert, this.nonce, this.transid,
+                    false, null, null, null, null, pAlg,
+                    new DEROctetString(this.nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+
+            KeyPair admkeys = KeyTools.genKeys("512", "RSA");
+            admToken = createAdminToken(admkeys, testUsername, testUserDN.toString(), this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            admCert = getCertFromCredentials(admToken);
+            fingerprint = CertTools.getFingerprintAsString(admCert);
+            this.internalCertStoreSession.removeCertificate(fingerprint);
+
+            CMPCertificate[] extraCert = getCMPCert(admCert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(),
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
+            assertNotNull(msg);
+            //******************************************''''''
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+            sig.initVerify(admCert.getPublicKey());
+            sig.update(CmpMessageHelper.getProtectedBytes(msg));
+            boolean verified = sig.verify(msg.getProtection().getBytes());
+            assertTrue("Signing the message failed.", verified);
+            //***************************************************
+            final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(msg);
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpFailMessage(resp,  "The certificate attached to the PKIMessage in the extraCert field could not be " +
+                    "found in the database. Start EJBCA with 'web.reqcertindb=false' to disable this check.", PKIBody.TYPE_ERROR,
+                    0, PKIFailureInfo.badRequest);
+        } finally {
+            removeAuthenticationToken(admToken, admCert, testUsername); // also removes testUsername
+            this.internalCertStoreSession.removeCertificate(fingerprint);
         }
     }
 
@@ -538,7 +587,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
                 .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-        Certificate cert2 = checkCmpCertRepMessage(USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+        Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
         assertNotNull("CrmfRequest did not return a certificate", cert2);
 
@@ -570,7 +619,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
                 .getTransactionID().getOctets(), false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-        Certificate cert1 = checkCmpCertRepMessage(USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+        Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
 
@@ -725,7 +774,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
                 .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         ir = (CertReqMessages) req.getBody().getContent();
-        Certificate cert1 = checkCmpCertRepMessage(clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+        Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
 
@@ -744,7 +793,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             checkCmpResponseGeneral(respNoIssuer, issuerDN, clientDN, this.cacert, reqNoIssuer.getHeader().getSenderNonce().getOctets(), reqNoIssuer
                     .getHeader().getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             ir = (CertReqMessages) reqNoIssuer.getBody().getContent();
-            Certificate cert2 = checkCmpCertRepMessage(clientDN, this.cacert, respNoIssuer, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, respNoIssuer, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("Crmf request did not return a certificate", cert2);
 
@@ -836,7 +885,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
                     .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-            Certificate cert1 = checkCmpCertRepMessage(clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+            Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                     .intValue());
             assertNotNull("Crmf request did not return a certificate", cert1);
         } finally {
@@ -869,7 +918,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
                     .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert1 = checkCmpCertRepMessage(clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
+            Certificate cert1 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                     .intValue());
             assertNotNull("Crmf request did not return a certificate", cert1);
 
@@ -1068,7 +1117,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp2 = sendCmpHttp(ba, 200, ALIAS);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert2 = checkCmpCertRepMessage(testUserDN, this.cacert, resp2, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, testUserDN, this.cacert, resp2, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert2);
             fingerprint3 = CertTools.getFingerprintAsString(cert2);
@@ -1214,7 +1263,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
-            Certificate cert2 = checkCmpCertRepMessage(testUserDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+            Certificate cert2 = checkCmpCertRepMessage(cmpConfiguration, ALIAS, testUserDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert2);
             fingerprint2 = CertTools.getFingerprintAsString(cert2);
@@ -1366,7 +1415,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, ecdsaCaInfo.getSubjectDN(), userDN, ecdsaCaCert, _nonce, _transid, true, null,
                     X9ObjectIdentifiers.ecdsa_with_SHA256.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, ecdsaCaCert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, ecdsaCaCert, resp, reqId);
             fp2 = CertTools.getFingerprintAsString(cert);
 
             // ------------------- Send a CMP confirm message
@@ -1471,7 +1520,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, _nonce, _transid, true, null,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             fp2 = CertTools.getFingerprintAsString(cert);
         } finally {
             removeAuthenticationToken(admToken, admCert, testAdminName);

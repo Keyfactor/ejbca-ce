@@ -33,7 +33,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.legacy.Eca7277CertificateProfileData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -42,13 +41,11 @@ import org.ejbca.util.crypto.CryptoTools;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
 /**
- * Representation of a User.
+ * Representation of an End Entity, called User for legacy reasons an end entity can be a server, device, or a user.
  * 
  * Passwords should me manipulated through helper functions setPassword() and setOpenPassword(). The setPassword() function sets the hashed password,
  * while the setOpenPassword() method sets both the hashed password and the clear text password. The method comparePassword() is used to verify a
  * password against the hashed password.
- * 
- * @version $Id$
  */
 @Entity
 @Table(name = "UserData")
@@ -76,6 +73,10 @@ public class UserData extends ProtectedData implements Serializable {
     private int tokenType;
     
     // Hard Tokens functionality is removed since 7.1.0 release, but we need to keep the field in database and in entity for compatibility
+    // mostly for getProtectString, i.e. signing and verification of row data. If we do not read the hardTokenIssuerId from 
+    // old versions of the database, verification of database integrity protection will fail.
+    // Deprecated, but never removed
+    // See Eca8457UserData
     @Deprecated
     private int hardTokenIssuerId = 0;
     
@@ -175,7 +176,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     public void setUsername(String username) {
-        this.username = StringTools.stripUsername(username);
+        this.username = StringTools.stripUsername(StringTools.trim(username));
     }
 
     /** @return the current Subject DN of the EE, never null */

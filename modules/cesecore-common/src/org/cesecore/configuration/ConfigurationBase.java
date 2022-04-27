@@ -14,16 +14,15 @@
 package org.cesecore.configuration;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.StringTools;
 
 /**
- * 
- * @version $Id$
  *
  */
-
 public abstract class ConfigurationBase extends UpgradeableDataHashMap {
 
     private static final long serialVersionUID = 4886872276324915327L;
@@ -56,6 +55,25 @@ public abstract class ConfigurationBase extends UpgradeableDataHashMap {
      */
     public void setCustomClassesWhitelist(Set<String> whitelist) {
         
+    }
+    
+    /** gets an encrypted value from the input string, typically a password, that should be is stored encrypted in the database 
+     * @param value the string to encrypt
+     * @return encrypted form of value 
+     */
+    public String getEncryptedValue(String value) {
+        return StringTools.pbeEncryptStringWithSha256Aes192(value);
+    }
+    /** gets a a decrypted value from the (encrypted) input string, typically a password, that was stored encrypted in the database 
+     * @param value the string to decrypt
+     * @return decrypted form of value 
+     */
+    public String getDecryptedValue(String value) {
+        return StringTools.passwordDecryption(value, this.getClass().getSimpleName());
+    }
+
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        // Do nothing
     }
 
 }

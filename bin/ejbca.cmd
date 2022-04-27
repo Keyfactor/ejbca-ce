@@ -28,6 +28,6 @@ FOR %%A IN (%*) DO (
 ) 
 rem echo %args%
 
-"%JAVA_HOME%\bin\java" -jar "%EJBCA_HOME%\dist\ejbca-ejb-cli\ejbca-ejb-cli.jar" %args%
+"%JAVA_HOME%\bin\java"  -Dlog4j1.compatibility=true -jar "%EJBCA_HOME%\dist\ejbca-ejb-cli\ejbca-ejb-cli.jar" %args%
 
 :end

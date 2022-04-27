@@ -36,3 +36,4 @@ drop table if exists AcmeAccountData;
 drop table if exists AcmeOrderData;
 drop table if exists SctData;
 drop table if exists OcspResponseData;
+drop table if exists IncompleteIssuanceJournalData;

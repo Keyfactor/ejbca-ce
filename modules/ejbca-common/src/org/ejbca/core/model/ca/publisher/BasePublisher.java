@@ -23,6 +23,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.ExternalScriptsAllowlist;
 
 
 /**
@@ -46,6 +47,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
 	
     protected static final String DESCRIPTION                    = "description";
     protected static final String ONLYUSEQUEUE                   = "onlyUseQueue";
+    protected static final String SAFEDIRECTPUBLISHING           = "safeDirectPublishing";
     protected static final String KEEPPUBLISHEDINQUEUE           = "keepPublishedInQueue";
     protected static final String USEQUEUEFORCRLS                = "useQueueForCrls";
     protected static final String USEQUEUEFORCERTIFICATES        = "useQueueForCertificates";
@@ -113,6 +115,18 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      */
     public void setOnlyUseQueue(boolean onlyUseQueue) { data.put(ONLYUSEQUEUE, Boolean.valueOf(onlyUseQueue));}
 
+    /**
+     * @return true if safe direct publishing should be used. I.e. publishing only occurs after commit to PublisherQueueData.
+     */
+    public boolean getSafeDirectPublishing() { return Boolean.TRUE.equals(data.get(SAFEDIRECTPUBLISHING));}
+    
+    /**
+     * Sets whether safe direct publishing should be used. I.e. publishing only occurs after commit to PublisherQueueData.
+     * @param safeDirectPublishing true if safe direct publishing should be used.
+     */
+    public void setSafeDirectPublishing(boolean safeDirectPublishing) { data.put(SAFEDIRECTPUBLISHING, Boolean.valueOf(safeDirectPublishing));}
+    
+    
     /**
      * @return true if successfully published items should remain in the queue (with a different status) 
      */
@@ -238,6 +252,19 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
         return false;
     }
 
+    /**
+     * Returns true if the publisher calls external scripts, in which case setScriptWhiteList will be called to set a whitelist of allowed scripts.
+     * 
+     * @return true if this publisher calls external scripts on the CA host
+     */
+    public abstract boolean isCallingExternalScript();
+    
+    /** Set a list of scripts that are allowed for calling external scripts, if #isCallingExternalScript returns true.
+     * 
+     * @param allowList the list of allowed scripts to call, if null all scripts are allowed.
+     */
+    public abstract void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList);
+    
     /**
      * Published a CRL to a CRL store.
      *

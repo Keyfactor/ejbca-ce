@@ -946,7 +946,20 @@ function checkallfields(){
      <%    }
          } 
        }
-
+       
+       if(profile.isNameConstraintsPermittedRequired()) { %>
+		 	if (document.adduser.<%= TEXTAREA_NC_PERMITTED %>.value == "") { 
+		      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTPERMITTED", true) + "" %>");
+		      illegalfields++;
+		    }
+		<%}
+		
+		if(profile.isNameConstraintsExcludedRequired()) { %>
+		    if (document.adduser.<%= TEXTAREA_NC_EXCLUDED %>.value == "") { 
+		      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTEXCLUDED", true) + "" %>");
+		      illegalfields++;
+		    }
+		<%}
 
        
        for(int i=0; i<profile.getSubjectDirAttrFieldOrderLength(); i++){
@@ -975,9 +988,9 @@ function checkallfields(){
                     if(!checkfieldforgender("document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>", "<%= ejbcawebbean.getText("ONLYMORFINGENDERFIELD") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
                         illegalfields++;
                 <%  if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
-                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value="") {
+                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value=="") {
                             alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
-                            illegalfield++;
+                            illegalfields++;
                         }
             <%      }
                 } else { %>
@@ -1511,13 +1524,13 @@ function checkallfields(){
                         String disabled = "";
 	               	    if(profile.getCopy(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])
                                 && EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
-	               	        disabled = "disabled";
+	               	        disabled = "hidden";
                             %>
                             <input
                                 type="checkbox"
                                 id="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"
                                 onchange="toggleModifySubjectAltName(this, '<%= TEXTFIELD_SUBJECTALTNAME + i %>')"
-                                checked>
+                                checked disabled>
                             <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>">Use entity CN</label><br />
                         <% }
 				        final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
@@ -1776,7 +1789,8 @@ function checkallfields(){
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
                 <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>"/><br />
-                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/></p>
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/><br />
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP3\") %>"/></p>
             </td>
             <td>
                 <textarea name="<%=TEXTAREA_NC_PERMITTED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"></textarea>
@@ -1789,7 +1803,10 @@ function checkallfields(){
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
                 <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
-                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>"/></p>
+
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP1\") %>"/></p>
+                <br/>
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP2\") %>"/></p>
             </td>
             <td>
                 <textarea name="<%=TEXTAREA_NC_EXCLUDED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"></textarea>

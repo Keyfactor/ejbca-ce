@@ -22,9 +22,6 @@ import org.cesecore.roles.member.RoleMember;
 
 /**
  * Container POJO used due to the fact RoleData in certain contexts doesn't survive encoding to JSF
- * 
- * @version $Id$
- *
  */
 public class RoleInformation implements Serializable {
     private static final long serialVersionUID = 1L;

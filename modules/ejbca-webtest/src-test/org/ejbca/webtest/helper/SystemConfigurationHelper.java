@@ -88,7 +88,8 @@ public class SystemConfigurationHelper extends BaseHelper {
     public enum SysConfigProtokols {
         ACME("ACME"),
         CERTSTORE("Certstore"),
-        REST_CERTIFICATE_MANAGEMENT("REST Certificate Management");
+        REST_CERTIFICATE_MANAGEMENT("REST Certificate Management"),
+        REST_CERTIFICATE_MANAGEMENT_V2("REST Certificate Management V2");
 
         private final String label;
 

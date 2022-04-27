@@ -18,9 +18,6 @@ import java.io.Serializable;
  * This interface defines common methods for all Validator types, i.e classes which can be attached to DynamicUiProperties in order to validate 
  * their values. Extends javax.faces.validator.Validator, meaning that it can be used both internally (through the validate(T value) method 
  * defined here) and through the one defined in Validator. 
- *
- * @version $Id$
- *
  */
 public interface DynamicUiPropertyValidator<T extends Serializable> extends Serializable {
     
@@ -38,5 +35,21 @@ public interface DynamicUiPropertyValidator<T extends Serializable> extends Seri
      * @return the ID of this validator, for JSF purposes. Must math an ID defined in modules/admin-gui/resources/WEB-INF/faces-config.xml
      */
     String getValidatorType();
+    
+    /**
+     * Gets the name of the property used as i18n key in the validator.
+     * While rendering the i18n key is replaced by its label, if existent. 
+     * 
+     * @return the name.
+     */
+    String getName();
+    
+    /**
+     * Sets the name of the property used as i18n key in the validator.
+     * While rendering the i18n key is replaced by its label, if existent.
+     * 
+     * @param name the name.
+     */
+    void setName(String name);
 
 }

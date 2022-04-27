@@ -478,6 +478,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollWithRequestIdForm\:generatePem,
 #enrollWithRequestIdForm\:generateKeyStorePem,
 #enrollWithRequestIdForm\:generatePkcs12,
+#enrollWithRequestIdForm\:generateBcfks,
 #enrollWithRequestIdForm\:generateJks,
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
@@ -490,10 +491,12 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollWithRequestIdForm\:checkButton,
 #enrollMakeNewRequestForm\:generateJks,
 #enrollMakeNewRequestForm\:generateP12,
+#enrollMakeNewRequestForm\:generateBcfks,
 #enrollMakeNewRequestForm\:updateRequestPreview,
 #requestInfoForm\:addEndEntity,
 #requestInfoForm\:generateKeyStorePem,
 #requestInfoForm\:generateP12,
+#requestInfoForm\:generateBcfks,
 #requestInfoForm\:generateJks,
 .executeActionButton {
   background: #e9af13;
@@ -519,6 +522,8 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollWithRequestIdForm\:generateKeyStorePem:focus,
 #enrollWithRequestIdForm\:generatePkcs12:hover,
 #enrollWithRequestIdForm\:generatePkcs12:focus,
+#enrollWithRequestIdForm\:generateBcfks:hover,
+#enrollWithRequestIdForm\:generateBcfks:focus,
 #enrollWithRequestIdForm\:generateJks:hover,
 #enrollWithRequestIdForm\:generateJks:focus,
 #detailsForm\:certDetails\:showMoreLessDetailsButton:hover,
@@ -553,6 +558,8 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollMakeNewRequestForm\:generateJks:focus,
 #enrollMakeNewRequestForm\:generateP12:hover,
 #enrollMakeNewRequestForm\:generateP12:focus,
+#enrollMakeNewRequestForm\:generateBcfks:hover,
+#enrollMakeNewRequestForm\:generateBcfks:focus,
 #enrollMakeNewRequestForm\:updateRequestPreview:hover,
 #enrollMakeNewRequestForm\:updateRequestPreview:focus,
 #contentForm\:showMoreButton:hover,
@@ -561,6 +568,8 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #contentForm\:showLessButton:focus,
 #requestInfoForm\:generateP12:hover,
 #requestInfoForm\:generateP12:focus,
+#requestInfoForm\:generateBcfks:hover,
+#requestInfoForm\:generateBcfks:focus,
 #requestInfoForm\:generateJks:hover,
 #requestInfoForm\:generateJks:focus {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000',GradientType=0);
@@ -576,6 +585,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #requestInfoForm\:addEndEntity,
 #requestInfoForm\:generateKeyStorePem,
 #requestInfoForm\:generateP12,
+#requestInfoForm\:generateBcfks,
 #requestInfoForm\:generateJks {
   width: 31%; }
 
@@ -915,6 +925,11 @@ span.approvalStep {
 #enrollWithUsernameForm\:requestKeyAlgorithm {
   color: #fff;
   font-style: italic; }
+
+#enrollWithUsernameForm\:uploadedKeyAlgorithm {
+  width: auto;
+  text-align: left;
+}
 
 .footer {
   height: 100px;
@@ -1285,6 +1300,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   #requestInfoForm\:addEndEntity,
   #requestInfoForm\:generateKeyStorePem,
   #requestInfoForm\:generateP12,
+  #requestInfoForm\:generateBcfks,
   #requestInfoForm\:generateJks {
     width: auto; }
 
@@ -1601,6 +1617,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   #requestInfoForm\:addEndEntity,
   #requestInfoForm\:generateKeyStorePem,
   #requestInfoForm\:generateP12,
+  #requestInfoForm\:generateBcfks,
   #requestInfoForm\:generateJks,
   #requestInfoForm\:resetButton,
   #keyPairForm\:uploadCsrButton {

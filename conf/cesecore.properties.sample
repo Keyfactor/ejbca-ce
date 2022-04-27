@@ -23,8 +23,8 @@
 # - ca.cmskeystorepass (in ejbca.properties)
 
 # -------------- General security --------------
-# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. End Entity and Crypto Token
-#   passwords stored in database).
+# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. End Entity, Crypto Token, 
+#   CMP Alias, SCEP Alias, etc, passwords stored in database).
 # This property should be set before initial EJBCA installation and it should't be changed later, because there could exist
 #   passwords encrypted with the key about to be changed and EJBCA would be unable to decrypt them (note that the current implementation
 #   is capable to try decryption with the default key, i.e. qhrnf.f8743;12%#75, but it won't be able to decrypt passwords encrypted
@@ -358,3 +358,8 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # declared here, separated by commas
 #custom.class.whitelist=org.widget.Bar,org.widget.Foo 
 
+# Use Legacy PKCS#12 Keystore
+#
+# Set to true to keep the implementation used by EJBCA <7.5 and encrypt certificates in PKCS#12 keystores using
+# pbeWithSHA1And40BitRC2-CBC instead of pbeWithSHA1And3-KeyTripleDES-CBC. Default is false.
+#keystore.use_legacy_pkcs12 = true

@@ -13,7 +13,44 @@
 
 package org.ejbca.ui.web.pub;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.MessageContext;
+
 import com.nimbusds.jose.util.Base64URL;
+
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
@@ -44,7 +81,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -62,43 +98,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.MessageContext;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.*;
-import static org.junit.Assert.*;
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.RA_WEB;
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT;
+import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.WS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 
@@ -107,6 +112,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public class OAuthSystemTest {
 
+    private static final String AZURE_AUDIENCE = "api://f4b51ae1-77e0-4367-be11-5a43b6b20358";
     private static final String OAUTH_SUB = "OauthSystemTestSub";
     private static final String CA = "OauthSystemTestCA";
     private static final String OAUTH_KEY = "OauthSystemTestKey";
@@ -192,6 +198,9 @@ public class OAuthSystemTest {
         //add oauth key
         OAuthKeyInfo oAuthKeyInfo = new OAuthKeyInfo(OAUTH_KEY, 6000, OAuthProviderType.TYPE_AZURE);
         oAuthKeyInfo.addPublicKey(OAUTH_KEY, pubKeyBytes);
+        oAuthKeyInfo.setUrl("https://login.microsoftonline.com/");
+        oAuthKeyInfo.setAudience(AZURE_AUDIENCE);
+        oAuthKeyInfo.setScope(AZURE_AUDIENCE + "/ejbca");
         oAuthKeyInfoLabel = oAuthKeyInfo.getLabel();
         oAuthConfiguration.addOauthKey(oAuthKeyInfo);
         globalConfigSession.saveConfiguration(authenticationToken, oAuthConfiguration);
@@ -227,7 +236,7 @@ public class OAuthSystemTest {
         roleMember.setTokenProviderId(oAuthKeyInfo.getInternalId());
         roleMember = roleMemberSession.persist(authenticationToken, roleMember);
 
-        token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\"}", privKey);
+        token = encodeToken("{\"alg\":\"RS256\",\"kid\":\"" + OAUTH_KEY + "\",\"typ\":\"JWT\"}", "{\"sub\":\"" + OAUTH_SUB + "\", \"aud\":\"" + AZURE_AUDIENCE + "\"}", privKey);
         final String timestamp = String.valueOf((System.currentTimeMillis() + -60 * 60 * 1000) / 1000); // 1 hour old
         expiredToken = encodeToken("{\"alg\":\"RS256\",\"kid\":\"key1\",\"typ\":\"JWT\"}", "{\"sub\":\"johndoe\",\"exp\":" + timestamp + "}", privKey);
         defaultSocketFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
@@ -305,7 +314,9 @@ public class OAuthSystemTest {
         final HttpURLConnection connection = doGetRequest(url, token);
         assertEquals("Response code was not 200", 200, connection.getResponseCode());
         String response = getResponse(connection.getInputStream());
-        assertTrue("EJBCA Administration should be accessible. Actual response was: " + response, response.contains("Logged in as " + OAUTH_SUB));
+        //Log out OauthSystemTestSub
+        final String expectedString = "Log out " + OAUTH_SUB;
+        assertTrue("EJBCA Administration should be accessible and contain '" + expectedString + "'. Actual response was: " + response, response.contains(expectedString));
     }
 
     @Test

@@ -42,6 +42,16 @@ public interface EndEntityAccessSession {
      * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
      */
     EndEntityInformation findUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
+    
+    /**
+     * Finds a user by username for the creation of a certificate.
+     * 
+     * @param admin the administrator performing the action
+     * @return EndEntityInformation or null if the user is not found.
+     * 
+     * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
+     */
+    EndEntityInformation findUserWithoutViewEndEntityAccessRule(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
 
     /**
      * Find users by their subject and issuer DN.

@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
@@ -40,6 +43,7 @@ public class AddEndEntityRestRequest {
             allowableValues = "USERGENERATED, P12, JKS, PEM"
     )
     private String token;
+    private String accountBindingId;
     
     /** default constructor needed for serialization */
     public AddEndEntityRestRequest() {}
@@ -55,6 +59,7 @@ public class AddEndEntityRestRequest {
         private String certificateProfileName;
         private String endEntityProfileName;
         private String token;
+        private String accountBindingId;
 
         
         public Builder certificateProfileName(final String certificateProfileName) {
@@ -107,6 +112,11 @@ public class AddEndEntityRestRequest {
             this.token = token;
             return this;
         }
+        
+        public Builder accountBindingId(String accountBindingId) {
+            this.accountBindingId = accountBindingId;
+            return this;
+        }
 
         public AddEndEntityRestRequest build() {
             return new AddEndEntityRestRequest(this);
@@ -124,6 +134,7 @@ public class AddEndEntityRestRequest {
         this.email = builder.email;
         this.extensionData = builder.extensionData;
         this.token = builder.token;
+        this.accountBindingId = builder.accountBindingId;
     }
 
     /**
@@ -140,11 +151,16 @@ public class AddEndEntityRestRequest {
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
         		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
             final ExtendedInformation extendedInfo;
-            if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
+            if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                 extendedInfo = new ExtendedInformation();
-                addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                    extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
-                });
+                if (addEndEntityRestRequest.getAccountBindingId() != null) {
+                    extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
+                }
+                if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
+                    addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
+                        extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
+                    });
+                }
             } else {
                 extendedInfo = null;
             }
@@ -249,6 +265,14 @@ public class AddEndEntityRestRequest {
 		this.token = token;
 	}
 	
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
+    public void setAccountBindingId(String accountBindingId) {
+        this.accountBindingId = accountBindingId;
+    }	
+	
 	public enum EndEntityStatus {
     	NEW(EndEntityConstants.STATUS_NEW),
     	FAILED(EndEntityConstants.STATUS_FAILED),
@@ -292,7 +316,7 @@ public class AddEndEntityRestRequest {
     	USERGENERATED(EndEntityConstants.TOKEN_USERGEN),
     	P12(EndEntityConstants.TOKEN_SOFT_P12),
     	JKS(EndEntityConstants.TOKEN_SOFT_JKS),
-    	PEM(EndEntityConstants.TOKEN_SOFT);
+    	PEM(EndEntityConstants.TOKEN_SOFT_PEM);
 
         private final int tokenValue;
 

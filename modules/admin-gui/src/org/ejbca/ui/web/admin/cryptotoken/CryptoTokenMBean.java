@@ -12,32 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
-import java.io.File;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -47,9 +25,12 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.AvailableCryptoToken;
+import org.cesecore.keys.token.AzureAuthenticationType;
 import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
@@ -71,11 +52,35 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.AcmeConfiguration;
+import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
+
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import java.io.File;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -85,6 +90,14 @@ import org.ejbca.util.SlotList;
 @ManagedBean
 @SessionScoped
 public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
+    
+    public String localize(String stringId) {
+        return getEjbcaWebBean().getText(stringId);
+    }
+
+    public class KeyBindingGuiInfo {
+
+    }
 
     private static final String CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX = "CRYPTOTOKEN_LABEL_TYPE_";
 
@@ -111,13 +124,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private final boolean allowedDeactivation;
         private String authenticationCode;
         private final boolean referenced;
+        private boolean requiresSecretToActivate;
 
-        private CryptoTokenGuiInfo(CryptoTokenInfo cryptoTokenInfo, String p11LibraryAlias, boolean allowedActivation, boolean allowedDectivation, boolean referenced) {
+        private CryptoTokenGuiInfo(CryptoTokenInfo cryptoTokenInfo, String p11LibraryAlias, boolean allowedActivation, boolean allowedDectivation, boolean referenced, boolean requiresSecretToActivate) {
             this.cryptoTokenInfo = cryptoTokenInfo;
             this.p11LibraryAlias = p11LibraryAlias;
             this.allowedActivation = allowedActivation;
             this.allowedDeactivation = allowedDectivation;
             this.referenced = referenced;
+            this.requiresSecretToActivate = requiresSecretToActivate;
         }
 
         public String getStatusImg() {
@@ -183,6 +198,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getAuthenticationCode() {
+            if (!requiresSecretToActivate) {
+                return AzureCryptoToken.DUMMY_ACTIVATION_CODE;
+            }
             return authenticationCode;
         }
 
@@ -218,6 +236,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
         }
 
+        public boolean isRequiresSecretToActivate() {
+            return requiresSecretToActivate;
+        }
+
+        public void setRequiresSecretToActivate(boolean requiresSecretToActivate) {
+            this.requiresSecretToActivate = requiresSecretToActivate;
+        }
+
     }
 
     /**
@@ -243,12 +269,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultType = "premium";
         private String keyVaultName = "ejbca-keyvault";
         private String keyVaultClientID = "";
+        private String keyVaultKeyBinding = "";
         private String awsKMSRegion = "us-east-1"; // default value
         private String awsKMSAccessKeyID = ""; // default value
+        private AzureAuthenticationType azureAuthenticationType = AzureAuthenticationType.APP_ID_AND_SECRET;
 
         private CurrentCryptoTokenGuiInfo() {
         }
 
+        public AzureAuthenticationType[] getAzureAuthenticationTypes() {
+            return AzureAuthenticationType.values();
+        }
+        
         public String getName() {
             return name;
         }
@@ -459,6 +491,48 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isShowAuthorizationInfo() {
             return CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType()) && WebConfiguration.isP11NGUtimacoCP5Enabled();
         }
+
+        public String getKeyVaultKeyBinding() {
+            return keyVaultKeyBinding;
+        }
+
+        public String getKeyVaultKeyBindingName() {
+            for (SelectItem binding : getInternalKeyBindings()) {
+                if (binding.getValue().toString().equals(keyVaultKeyBinding))
+                    return binding.getLabel();
+            }
+            return "binding " + keyVaultKeyBinding + " not found";
+        }
+
+        public void setKeyVaultKeyBinding(String keyVaultKeyBinding) {
+            this.keyVaultKeyBinding = keyVaultKeyBinding;
+        }
+
+
+        public String getAzureAuthenticationType() {
+            return azureAuthenticationType.toString();
+        }
+
+        public void setAzureAuthenticationType(AzureAuthenticationType azureAuthenticationType) {
+            this.azureAuthenticationType = azureAuthenticationType;
+        }
+
+        public void setAzureAuthenticationType(String azureAuthenticationTypeString) {
+            this.azureAuthenticationType = AzureAuthenticationType.valueOf(azureAuthenticationTypeString);
+        }
+
+        public boolean getRequiresSecret() {
+            // true if not azure or not using azure app id and secret
+            return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType == AzureAuthenticationType.APP_ID_AND_SECRET;
+        }
+        
+        public boolean getShowKeyBinding() {
+            return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType == AzureAuthenticationType.KEY_BINDING;
+        }
+        
+        public boolean getShowClientId() {
+            return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType != AzureAuthenticationType.MANAGED_IDENTITY;
+        }
     }
 
     /**
@@ -607,6 +681,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<>();
     private ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
     private List<SelectItem> availablePaddingSchemes;
+    private List<SelectItem> internalKeyBindings = null;
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
@@ -624,6 +699,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private final AuthenticationToken authenticationToken = getAdmin();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
 
     /**
      * Workaround to cache the items used to render the page long enough for actions to be able to use them, but reload on every page view.
@@ -648,6 +724,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         keyPairGuiList = null;
         currentCryptoToken = null;
         p11SlotUsed = false;
+        internalKeyBindings = null;
     }
 
     public void actionAuthorizeStart() {
@@ -772,7 +849,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 final boolean allowedActivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
                 final boolean allowedDeactivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
                 final boolean referenced = referencedCryptoTokenIds.contains(cryptoTokenInfo.getCryptoTokenId());
-                list.add(new CryptoTokenGuiInfo(cryptoTokenInfo, p11LibraryAlias, allowedActivation, allowedDeactivation, referenced));
+                final boolean requiresSecretToActivate = cryptoTokenInfo.requiresSecretToActivate();
+                list.add(new CryptoTokenGuiInfo(cryptoTokenInfo, p11LibraryAlias, allowedActivation, allowedDeactivation, referenced, requiresSecretToActivate));
                 Collections.sort(list, (cryptoTokenInfo1, cryptoTokenInfo2) -> cryptoTokenInfo1.getTokenName().compareToIgnoreCase(cryptoTokenInfo2.getTokenName()));
             }
             cryptoTokenGuiList = new ListDataModel<>(list);
@@ -781,6 +859,21 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         flushCurrent();
         setCurrentCryptoTokenEditMode(false);
         return cryptoTokenGuiList;
+    }
+    
+    /**
+     * Build a list sorted by name of the internal key bindings that can be used for public key authentication to Azure crypto tokens.
+     */
+    public List<SelectItem> getInternalKeyBindings() {
+        if (internalKeyBindings == null) {
+            internalKeyBindings = internalKeyBindingMgmtSession
+                .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS)
+                .stream()
+                .sorted((b1, b2) -> b1.getName().compareTo(b2.getName()))
+                .map(b -> new SelectItem(b.getId(), b.getName()))
+                .collect(Collectors.toList());
+        }
+        return internalKeyBindings;
     }
 
     /**
@@ -799,7 +892,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     log.info(msg + " Base message: " + e.getMessage());
                 } catch (CryptoTokenAuthenticationFailedException e) {
                     final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
-                            ") by administrator " + authenticationToken.toString() + " failed. Authentication code was not correct.";
+                            ") by administrator " + authenticationToken.toString() + " failed. Either the authentication " +
+                            "code was wrong or you forgot to provide a smart card or PED key.";
                     super.addNonTranslatedErrorMessage(msg);
                     log.info(msg + " Base message: " + e.getMessage());
                 }
@@ -825,9 +919,44 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void deleteCryptoToken() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList != null) {
             final CryptoTokenGuiInfo rowData = cryptoTokenGuiList.getRowData();
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, rowData.getCryptoTokenId());
+            // Check references in ACME EAB with symmetric key.
+            final List<String> references = referencedAcmeConfigurationIDs(rowData.getCryptoTokenId()); 
+            if (references.size() == 0) {
+                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, rowData.getCryptoTokenId());
+            } else {
+                addErrorMessage("CRYPTOTOKEN_COULD_NOT_BE_DELETED_BECAUSE_REFERENCE_IN_ACME_ALIAS", String.join(", ", references));
+            }
             flushCaches();
         }
+    }
+    
+    /**
+     * Returns a list of all crypto token references in ACME configurations external account bindings 
+     * of type AcmeEabWithHMac, if key encryption is enabled. 
+     * 
+     * @param cryptoTokenId the ID of the crypto tokens entity.
+     * @return a list containing all ACME configuration IDs or an empty list.
+     */
+    private List<String> referencedAcmeConfigurationIDs(final int cryptoTokenId) {
+        final List<String> result = new ArrayList<>();
+        final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
+                globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
+        AcmeConfiguration acmeAlias; 
+        for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
+            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId); 
+            try {
+                if (acmeAlias != null && acmeAlias.isRequireExternalAccountBinding() 
+                        && acmeAlias.getExternalAccountBinding().getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
+                        && (Boolean) acmeAlias.getExternalAccountBinding().getDataMap().get("encryptKey")
+                        && Integer.toString(cryptoTokenId).equals(acmeAlias.getExternalAccountBinding().getDataMap().get("encryptionKeyId"))) {
+                    result.add(acmeAlias.getConfigurationId());
+                }
+            } catch (AccountBindingException e) {
+                log.warn("Could not load ACME EAB '" + acmeAliasId 
+                        + "' to verify if it contains a reference to the crypto token to be deleted.");
+            }
+        }
+        return result;
     }
 
     /**
@@ -856,7 +985,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Invoked when admin requests a CryptoToken creation.
      */
     private void saveCurrentCryptoToken(boolean checkSlotInUse) throws AuthorizationDeniedException {
-        if (!getCurrentCryptoToken().getSecret1().equals(getCurrentCryptoToken().getSecret2())) {
+        if (getCurrentCryptoToken().getRequiresSecret() && !getCurrentCryptoToken().getSecret1().equals(getCurrentCryptoToken().getSecret2())) {
             addNonTranslatedErrorMessage("Authentication codes do not match!");
             return;
         }
@@ -888,9 +1017,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
 
                 // Verify that it is allowed
-                SlotList allowedSlots = getP11SlotList();
-                if (allowedSlots != null && !allowedSlots.contains(slotTextValue)) {
-                    throw new IllegalArgumentException("Slot number " + slotTextValue + " is not allowed. Allowed slots are: " + allowedSlots);
+                final SlotList allowedSlots = getP11SlotList();
+                if (allowedSlots != null) {
+                    if (!StringUtils.isNumeric(slotTextValue)) {
+                        log.info("An administrator attempted to create a crypto token with " + slotTextValue + " as slot reference. " +
+                                "This failed because only slot number can be used as slot reference when the setting " +
+                                "'cryptotoken.p11.lib.X.slotlist' is enabled in 'web.properties'.");
+                        throw new IllegalArgumentException("Only slot number is allowed to be used as slot reference on this " +
+                                "installation. Allowed slot numbers are: " + allowedSlots);
+                    }
+                    if (!allowedSlots.contains(slotTextValue)) {
+                        throw new IllegalArgumentException("Slot number " + slotTextValue + " is not allowed. Allowed slots are: " + allowedSlots);
+                    }
                 }
 
                 properties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotTextValue);
@@ -951,12 +1089,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 properties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
             } else if (AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = AzureCryptoToken.class.getName();
-                String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();
-                String vaultName = getCurrentCryptoToken().getKeyVaultName().trim();
-                String vaultClientID = getCurrentCryptoToken().getKeyVaultClientID().trim();
+                final String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();
+                final String vaultName = getCurrentCryptoToken().getKeyVaultName().trim();
+                final String vaultClientID = getCurrentCryptoToken().getKeyVaultClientID().trim();
+                final String vaultKeyBinding = getCurrentCryptoToken().getKeyVaultKeyBinding();
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, vaultType);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
                 properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
+                properties.setProperty(AzureCryptoToken.KEY_VAULT_AUTHENTICATION_TYPE, getCurrentCryptoToken().getAzureAuthenticationType().toString());
+                if (vaultKeyBinding != null) {
+                    properties.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
+                }
             } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.AWSKMS_NAME;
                 String region = getCurrentCryptoToken().getAWSKMSRegion().trim();
@@ -974,7 +1117,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 properties.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, String.valueOf(getCurrentCryptoToken().isAllowExplicitParameters()));
             }
 
-            final char[] secret = getCurrentCryptoToken().getSecret1().toCharArray();
+            final char[] secret = getCurrentCryptoToken().getRequiresSecret()
+                    ? getCurrentCryptoToken().getSecret1().toCharArray()
+                    : AzureCryptoToken.DUMMY_ACTIVATION_CODE.toCharArray();
             if (getCurrentCryptoTokenId() == 0) {
                 if (secret.length > 0) {
                     if (getCurrentCryptoToken().isAutoActivate()) {
@@ -1259,6 +1404,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setKeyVaultType(cryptoTokenInfo.getKeyVaultType());
                     currentCryptoToken.setKeyVaultName(cryptoTokenInfo.getKeyVaultName());
                     currentCryptoToken.setKeyVaultClientID(cryptoTokenInfo.getKeyVaultClientID());
+                    currentCryptoToken.setAzureAuthenticationType(cryptoTokenInfo.getAzureAuthenticationType());
+                    currentCryptoToken.setKeyVaultKeyBinding(cryptoTokenInfo.getKeyVaultKeyBinding());
                 }
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME)) {
                     currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
@@ -1273,6 +1420,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public void selectCryptoTokenType() {
+        // NOOP: Only for page reload
+    }
+    
+    public void selectKeyVaultUseBinding() {
         // NOOP: Only for page reload
     }
 

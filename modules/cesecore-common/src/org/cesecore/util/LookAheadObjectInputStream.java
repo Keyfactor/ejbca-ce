@@ -43,8 +43,6 @@ import org.apache.log4j.Logger;
  * X509Certificate certificate = (X509Certificate) lookAheadObjectInputStream.readObject(); //If serialized object is not of the type X509Certificate SecurityException will be thrown
  * 
  * @see LookAheadObjectInputStreamTest LookAheadObjectInputStreamTest for more examples
- * 
- * @version $Id$
  */
 public class LookAheadObjectInputStream extends ObjectInputStream {
 

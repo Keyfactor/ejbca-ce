@@ -362,26 +362,28 @@
                 <h:panelGroup>
 						&nbsp;
 					</h:panelGroup>
-                <h:panelGroup id="mergeDnWebServicesGroup">
+				<h:panelGroup id="mergeDnGroup">
                     <h:outputText
-                        value="#{web.text.ALLOWMERGEDNWEBSERVICES}" />    
+                        value="#{web.text.ALLOWMERGEDN}" />    
 						&nbsp;
 						<h:outputText
-                        value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Allow_merge_DN_Webservices')}"
+                        value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Allow_merge_DN')}"
                         escape="false" />
                 </h:panelGroup>
-                <h:panelGrid id="mergeDnWebServicesGrid" columns="2">
+                <h:panelGrid id="mergeDnGrid" columns="2">
                     <h:selectBooleanCheckbox
-                        id="mergeDnWebServicesCheckBox"
-                        value="#{endEntityProfileMBean.profiledata.allowMergeDnWebServices}"
+                        id="mergeDnCheckBox"
+                        value="#{endEntityProfileMBean.allowMergeDn}"
                         disabled="#{endEntityProfileMBean.viewOnly}">
                     </h:selectBooleanCheckbox>
-                    <h:outputLabel for="mergeDnWebServicesCheckBox"
-                        value="#{web.text.ALLOW}" />
+                    <h:panelGroup>
+                        <h:outputLabel for="mergeDnCheckBox"
+                            value="#{web.text.ALLOW}" />
+                    </h:panelGroup>
                 </h:panelGrid>
                 <h:panelGroup>
-                        &nbsp;
-                    </h:panelGroup>
+						&nbsp;
+				</h:panelGroup>
                 <h:panelGroup id="allowMultiValueRDNGroup">
                     <h:outputText value="#{web.text.ALLOWMULTIVALUERDN}" />    
                         &nbsp;
@@ -819,9 +821,8 @@
 					</h:panelGroup>
             </h:panelGrid>
 
-			<!-- SSH Certificate Data -->
 
-            
+			<!-- SSH Certificate Data -->
 			<h:panelGrid id="header_sshcertificatedata" columns="3"
                 styleClass="edit-top" cellspacing="3" cellpadding="3"
                 border="0" width="100%" rowClasses="Row0,Row1"
@@ -868,7 +869,8 @@
 	                value="#{endEntityProfileMBean.sshFieldList}"
 	                cellspacing="1" cellpadding="3" border="0" width="100%"
 	                rowClasses="Row0,Row1"
-	                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
+	                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
+	                rendered="#{endEntityProfileMBean.typeSshAvailable}">
                 <h:column>
                     <h:selectBooleanCheckbox
                         id="removeSshFieldCheckBox"
@@ -934,7 +936,7 @@
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
-                rendered="#{not endEntityProfileMBean.viewOnly}">
+                rendered="#{not endEntityProfileMBean.viewOnly and endEntityProfileMBean.typeSshAvailable}">
                 <h:panelGroup id="removeSshFieldGroup">
                     <h:commandButton id="removeSshFieldButton"
                         value="#{web.text.REMOVE}"
@@ -956,7 +958,7 @@
                 cellspacing="3" cellpadding="3" border="0" width="100%"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
-                rendered="#{not endEntityProfileMBean.viewOnly}">
+                rendered="#{endEntityProfileMBean.typeSshAvailable}">
             	<h:panelGroup>
 						&nbsp;
 				</h:panelGroup>
@@ -1096,6 +1098,8 @@
 					<h:panelGroup>
                         <h:outputLabel for="availableCA"
                             value="#{web.text.AVAILABLECAS}" />
+                        <br/>
+                        <h:outputText styleClass="smallHelp" value="#{web.text.AVAILABLECAS_EEPROFILE_HELP}"/> 
                     </h:panelGroup>
                 </h:panelGrid>
                 <h:panelGrid id="PGb2" columns="1">
@@ -1676,7 +1680,7 @@
                             value="#{web.text.NOTIFICATIONSUBJECT}" />
                         <h:inputText id="textFieldNotificationSubject"
                             value="#{userNotification.notificationSubject}"
-                            size="25" maxlength="40" required="true"
+                            size="25" maxlength="255" required="true"
                             requiredMessage="#{web.text.MUSTFILLINANOTIFICATIONSUBJECT}"
                             title="#{web.text.FORMAT_STRING}"
                             disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">

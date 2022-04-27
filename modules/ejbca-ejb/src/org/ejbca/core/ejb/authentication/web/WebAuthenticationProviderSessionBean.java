@@ -13,16 +13,19 @@
 package org.ejbca.core.ejb.authentication.web;
 
 import java.io.IOException;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -30,6 +33,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -43,6 +47,7 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
+import org.cesecore.authentication.tokens.OAuth2Principal.Builder;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -50,8 +55,11 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -91,6 +99,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
+    private boolean allowBlankAudience = false;
+
+    private OauthRequestHelper oauthRequestHelper; 
+
     public WebAuthenticationProviderSessionBean() { }
 
     /** Constructor for unit tests */
@@ -100,6 +112,21 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         this.certificateStoreSession = certificateStoreSession;
         this.globalConfigurationSession = globalConfigurationSession;
         this.securityEventsLoggerSession = securityEventsLoggerSession;
+    }
+    
+    /**
+     * OAuth audience ('aud') claim checking was not enforced until 7.8.0.  Allow a blank Audience value in the OAuth configuration to match any Bearer token until 
+     * the database is post-upgraded to 7.8.0.  After that, it is expected that all OAuth provider configurations will have a configured Audience value and that Bearer 
+     * token 'aud' claims will match that value to be considered valid.
+     */
+    @PostConstruct
+    public void initializeAudienceCheck() {
+        GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.8.0");
+        if (isAllowBlankAudience()) {
+            LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
+        }
     }
 
     @Override
@@ -170,6 +197,31 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             final JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("JWT Claims:" + claims);
+            }
+            
+            // token `audience` (generally an identifier for this EJBCA application) needs to match the configured value
+            if (!keyInfo.isAudienceCheckDisabled()) {
+                final String expectedAudience = keyInfo.getAudience();
+                if (StringUtils.isBlank(expectedAudience)) {
+                    if (isAllowBlankAudience()) {
+                        LOG.warn("Empty audience setting in OAuth configuration " + keyInfo.getLabel()
+                                + ".  This is supported for recent upgrades from versions before 7.8.0, but a value should be set IMMEDIATELY.");
+                    } else {
+                        LOG.error("Configuration error: blank OAuth audience setting found.  Failing OAuth login");
+                        return null;
+                    }
+                } else if (claims.getAudience() == null) {
+                    LOG.warn("No audience claim in JWT.  Can't confirm validity.");
+                    return null;
+                } else if (!claims.getAudience().contains(expectedAudience)) {
+                    logAuthenticationFailure(
+                            intres.getLocalizedMessage("authentication.jwt.audience_mismatch", expectedAudience, claims.getAudience()));
+                    return null;
+                }
+            }
+            
             final Date expiry = claims.getExpirationTime();
             final Date now = new Date();
             final String subject = keyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE) ?
@@ -194,7 +246,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, OAuthKeyInfo keyInfo) {
-        return OAuth2Principal.builder()
+        final Builder oauthBuilder = OAuth2Principal.builder()
                 .setOauthProviderId(keyInfo.getInternalId())
                 .setIssuer(claims.getIssuer())
                 .setSubject(claims.getSubject())
@@ -203,8 +255,25 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 .setPreferredUsername(safeGetClaim(claims, "preferred_username"))
                 .setName(safeGetClaim(claims, "name"))
                 .setEmail(safeGetClaim(claims, "email"))
-                .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"))
-                .build();
+                .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"));
+        
+        // add Roles if they exist in the JWT and are of the expected type.  All this type checking may be overly paranoid,
+        // but this is an external value used in authentication, and there's no schema for JSON
+        if (claims.getClaims().containsKey("roles")) {
+            final Object rolesClaimObject = claims.getClaim("roles");
+            if (rolesClaimObject instanceof Collection<?>) {
+                ((Collection<?>) rolesClaimObject).forEach(r -> {
+                    if (r instanceof String) {
+                        oauthBuilder.addRole((String) r);
+                    }
+                });
+            }
+            else {
+                LOG.debug("unexpected type of 'roles' claim: " + rolesClaimObject.getClass());
+            }
+        }
+        
+        return oauthBuilder.build();
     }
 
     private String safeGetClaim(final JWTClaimsSet claims, final String claimName) {
@@ -253,12 +322,12 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     return null;
                 }
                 String redirectUrl = getBaseUrl();
-                oAuthGrantResponseInfo = OauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+                oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
             }
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;
-        } catch (IOException e) {
+        } catch (IOException | KeyBindingNotFoundException | CryptoTokenOfflineException e) {
             LOG.info("Failed to refresh token: " + e.getMessage(), e);
             return null;
         }
@@ -345,5 +414,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
         ) + globalConfiguration.getAdminWebPath();
+    }
+
+    public boolean isAllowBlankAudience() {
+        return allowBlankAudience;
     }
 }

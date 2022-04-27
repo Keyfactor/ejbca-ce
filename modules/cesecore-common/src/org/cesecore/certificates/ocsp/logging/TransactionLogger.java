@@ -14,7 +14,9 @@ package org.cesecore.certificates.ocsp.logging;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
+
+import java.text.SimpleDateFormat;
 
 /**
  * OCSP transaction logger.
@@ -53,6 +55,14 @@ public class TransactionLogger extends PatternLogger {
      * The unnormalized issuer Distinguished Name of the requested certificate
      */
     public static final String ISSUER_NAME_DN_RAW = "ISSUER_NAME_DN_RAW";
+    /**
+     * The BC normalized issuer of OCSP signer Distinguished Name of the requested certificate
+     */
+    public static final String OCSP_CERT_ISSUER_NAME_DN = "OCSP_CERT_ISSUER_NAME_DN";
+    /**
+     * The unnormalized issuer of OCSP signer Distinguished Name of the requested certificate
+     */
+    public static final String OCSP_CERT_ISSUER_NAME_DN_RAW = "OCSP_CERT_ISSUER_NAME_DN_RAW";
     
     /**
      * Algorithm used by requested certificate to hash issuer key and issuer name
@@ -81,9 +91,10 @@ public class TransactionLogger extends PatternLogger {
     /** The HTTP X-Forwarded-For header value. */
     public static final String FORWARDED_FOR = "FORWARDED_FOR";
 
-    public TransactionLogger(Integer logId, String sessionId, String clientIp) {
-        super(OcspConfiguration.getTransactionLog(), TransactionLogger.class, OcspConfiguration.getTransactionLogPattern(),
-                OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
+    public TransactionLogger(Integer logId, String sessionId, String clientIp, GlobalOcspConfiguration ocspConfiguration) {
+        super(ocspConfiguration.getIsOcspTransactionLoggingEnabled(), TransactionLogger.class, ocspConfiguration.getOcspTransactionLogPattern(),
+                ocspConfiguration.getOcspTransactionLogValues(), ocspConfiguration.getOcspLoggingDateFormat(),
+                new SimpleDateFormat(ocspConfiguration.getOcspLoggingDateFormat()).getTimeZone().toString());
         paramPut(PatternLogger.LOG_ID, logId);
         paramPut(PatternLogger.SESSION_ID, sessionId);
         paramPut(PatternLogger.CLIENT_IP, clientIp);
@@ -94,6 +105,8 @@ public class TransactionLogger extends PatternLogger {
         paramPut(SIGN_SUBJECT_NAME, "0");
         paramPut(SIGN_SERIAL_NO, "0");
         paramPut(NUM_CERT_ID, "0");
+        paramPut(OCSP_CERT_ISSUER_NAME_DN, "0");
+        paramPut(OCSP_CERT_ISSUER_NAME_DN_RAW, "0");
         paramPut(ISSUER_NAME_DN, "0");
         paramPut(ISSUER_NAME_DN_RAW, "0");
         paramPut(PatternLogger.ISSUER_NAME_HASH, "0");

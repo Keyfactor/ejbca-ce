@@ -114,3 +114,5 @@
     <div class="main hidemenu">
       <div class="content hidemenu">
     </c:if>
+      <p class="errormessage">The  EJBCA Public Web has been deprecated and will be removed in an upcoming version of EJBCA. Please move your workflows to the EJBCA RA UI</p>
+

@@ -91,7 +91,7 @@ public class EjbcaRestHelperSessionBeanTest {
                                                            CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
                                                            CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                                                            EndEntityConstants.NO_END_ENTITY_PROFILE,
-                                                           CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                                                           CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), "foo");
 
             AuthenticationToken authenticationToken = ejbcaRestHelperProxySessionRemote.getAdmin(true, certificate, null);
 

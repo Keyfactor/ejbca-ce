@@ -228,7 +228,7 @@
 			<f:facet name="header">
 				<h:outputText value="#{auditor.nameFromColumn['additionalDetails']}"/>
 			</f:facet>
-			<h:outputLink rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}" value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}audit/search.xhtml#" styleClass="expandOnClick">
+			<h:outputLink rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}" value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}audit/search.xhtml#" styleClass="expandOnClick" onclick="return false">
 				<h:outputText value="#{auditLogEntry.mapAdditionalDetails}" title="#{auditor.mapToString(auditLogEntry.mapAdditionalDetails)}"><f:converter converterId="mapToStringConverter"/></h:outputText>
 			</h:outputLink>
 			<h:outputText rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] le 50}" value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>

@@ -1669,8 +1669,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityManagementSession.deleteUser(internalAdmin, dnOverrideEndEntityName);
         }
     }
-
-
+    
     @Test
     public void testsignSessionDSAWithRSACA() throws Exception {
         log.trace(">test23SignSessionDSAWithRSACA()");

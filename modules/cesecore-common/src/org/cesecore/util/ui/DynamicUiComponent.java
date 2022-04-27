@@ -23,7 +23,6 @@ public interface DynamicUiComponent {
 	 */
     void setDisabled(final boolean disabled);
     
-    
     /**
      * Updates the components value range with the one of the backing dynamic UI property.
      * 
@@ -32,4 +31,5 @@ public interface DynamicUiComponent {
      * If I18N labels are used, they must have been updated before invocation.  
      */
     void updateValueRange();
+
 }

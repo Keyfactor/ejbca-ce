@@ -42,10 +42,11 @@ public interface PublisherQueueSessionLocal {
      * @param fingerprint unique id for the data to be added to the queue
      * @param queueData actual queue data to be added
      * @param publishStatus status of the publisher 
+     * @param safeDirectPublish true if this entry comes from a safe direct publisher (only applicable for certificate publishing)
      * @throws CreateException if the entry can not be created
      */
     void addQueueData(int publisherId, int publishType, String fingerprint,
-            PublisherQueueVolatileInformation queueData, int publishStatus) throws CreateException;
+            PublisherQueueVolatileInformation queueData, int publishStatus, boolean safeDirectPublish) throws CreateException;
 
     /** Removes an entry from the publisher queue. */
     void removeQueueData(String pk);
@@ -175,4 +176,6 @@ public interface PublisherQueueSessionLocal {
      * @return how many publishing operations that succeeded and failed 
      */
     PublishingResult doChunk(AuthenticationToken admin, BasePublisher publisher);
+
+    PublishingResult doPublish(AuthenticationToken admin, BasePublisher publisher, PublisherQueueData publisherQueueData);
 }

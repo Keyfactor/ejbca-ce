@@ -21,8 +21,6 @@ import java.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
- * @version $Id$
- *
  */
 public abstract class CustomPublisherUiBase extends CustomPublisherContainer implements CustomPublisherUiSupport {
 
