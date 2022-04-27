@@ -15,13 +15,10 @@ package org.ejbca.core.protocol.acme;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.protocol.acme.response.AcmeProblemResponse;
 
 /**
  * ACME Order object
- * 
- * @version $Id$
  */
 public interface AcmeOrder {
 
@@ -63,9 +60,9 @@ public interface AcmeOrder {
 
     void setError(AcmeProblemResponse acmeProblemResponse);
 
-    void setEndEntityInformation(EndEntityInformation endEntityInformation);
+    void setUsername(String name);
 
-    EndEntityInformation getEndEntityInformation();
+    String getUsername();
 
     float getLatestVersion();
 

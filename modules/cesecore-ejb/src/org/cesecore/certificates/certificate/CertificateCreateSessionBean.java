@@ -46,6 +46,10 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -59,6 +63,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificate.ca.its.ECA;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -141,6 +146,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SctDataSessionLocal sctDataSession;
+    @EJB
+    private IncompleteIssuanceJournalDataSessionLocal incompleteIssuanceJournalDataSession;
 
     /** Default create for SessionBean without any creation Arguments. */
     @PostConstruct
@@ -330,6 +337,56 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
     
     @Override
+    public ITSCertificate createItsCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final ECA ca,
+            Builder certificateBuilder, CertificateId certifcateId, PublicVerificationKey verificationKey) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException {
+        
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CREATECERT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId())) {
+            final String msg = intres.getLocalizedMessage("createcert.notauthorized", admin.toString(), ca.getCAId());
+            throw new AuthorizationDeniedException(msg);
+        }
+        
+        try {
+        // Audit log that we received the request
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("certprofile", endEntityInformation.getCertificateProfileId());
+        details.put("publickey", new String(Base64.encode(verificationKey.getEncoded(), false)));
+        logSession.log(EventTypes.CERT_REQUEST, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(),
+        String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
+        } catch (IOException e) {
+            throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e.getLocalizedMessage());
+        }
+
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+        if (cryptoToken==null) {
+            final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
+            log.info(msg);
+            CryptoTokenOfflineException exception = new CryptoTokenOfflineException("CA's CryptoToken not found.");
+            auditFailure(admin, exception, exception.getMessage(), "<createItsCertificate(AuthenticationToken, EndEntityInformation, CA, CertificateId, PublicVerificationKey)", ca.getCAId(), endEntityInformation.getUsername());
+            throw exception;
+        }
+
+        final int certProfileId = endEntityInformation.getCertificateProfileId();
+        final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
+        
+        ITSCertificate cert = ca.generateExplicitItsCertificate(cryptoToken, endEntityInformation, verificationKey, null, null, certProfile, certificateBuilder, certifcateId, null);        
+
+        // Audit log that we issued the certificate
+        final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
+        issuedetails.put("certprofile", endEntityInformation.getCertificateProfileId());
+        try {
+            issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
+        } catch (IOException e) {
+            //Should not be able to happen at this point
+            throw new IllegalStateException();
+        }
+        logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(),
+                issuedetails);
+
+        return cert;
+    }
+
+
+    @Override
     public CertificateDataWrapper createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
             final RequestMessage request, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
             final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final long updateTime)
@@ -410,6 +467,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 return sctDataSession.getThreadPool();
             }
         });
+        certGenParams.setIncompleteIssuanceJournalCallbacks(incompleteIssuanceJournalDataSession);
 
         try {
             CertificateDataWrapper result = null;
@@ -541,13 +599,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
                 final int crlPartitionIndex = ca.getCAInfo().determineCrlPartitionIndex(cert);
 
+                // Extract the accountBindingId from extendedInformation to be stored in CertificateData
+                String accountBindingId = null;
+                if (endEntityInformation != null && endEntityInformation.getExtendedInformation() != null) {
+                    accountBindingId = endEntityInformation.getExtendedInformation().getAccountBindingId();
+                }
+                
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {
                     // We still need to return a CertificateData object for publishers
                     final CertificateData throwAwayCertData = new CertificateData(cert, cert.getPublicKey(), endEntityInformation.getUsername(), 
                             cafingerprint, null, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
                             endEntityInformation.getEndEntityProfileId(), crlPartitionIndex,
-                            null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
+                            null, updateTime, false, certProfile.getStoreSubjectAlternativeName(), accountBindingId);
                     result = new CertificateDataWrapper(cert, throwAwayCertData, null);
                     // Always Store full certificate for OCSP signing certificates.
                     boolean isOcspSigner = certProfile.getExtendedKeyUsageOids().contains("1.3.6.1.5.5.7.3.9");
@@ -567,13 +631,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     if (ctLogException == null) {
                         result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
-                                crlPartitionIndex, tag, updateTime);
+                                crlPartitionIndex, tag, updateTime, accountBindingId);
                     } else {
                         tag = CertificateConstants.CERT_TAG_PRECERT;
                         // Store pre-certificate using a new transaction. We don't want CertificateData rolled back even though issuance failed.
                         result = certificateStoreSession.storeCertificateNoAuthNewTransaction(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
                                 CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
-                                crlPartitionIndex, tag, updateTime);
+                                crlPartitionIndex, tag, updateTime, accountBindingId);
                     }
                     storeEx = null;
                     break;

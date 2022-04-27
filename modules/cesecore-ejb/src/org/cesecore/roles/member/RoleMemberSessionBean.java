@@ -77,9 +77,19 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         }
         if (roleMember.getTokenIssuerId() != RoleMember.NO_ISSUER) {
             // Do more expensive fully correct check if it is potentially issued by a CA
+            boolean checkIssuerAccess = true;
             final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
-            final AccessMatchValue accessMatchValue = metaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
-            if (accessMatchValue.isIssuedByCa()) {
+            if (metaData != null) {
+                final AccessMatchValue accessMatchValue = metaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                if (accessMatchValue != null) {
+                    checkIssuerAccess = accessMatchValue.isIssuedByCa();
+                } else {
+                    log.warn("Unsupported match key #" + roleMember.getTokenMatchKey() + " for token type " + roleMember.getTokenType());
+                }
+            } else {
+                log.warn("Unsupported token type " + roleMember.getTokenType());
+            }
+            if (checkIssuerAccess) {
                 // According to the meta data, this tokenIssuerId should be interpreted as a CA ID
                 final int caId = roleMember.getTokenIssuerId();
                 if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId)) {
@@ -204,8 +214,19 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final Set<String> requiredCaAccessResources = new HashSet<>();
         for (final RoleMemberData roleMemberData : roleMemberDataSession.findByRoleId(roleId)) {
             final RoleMember roleMember = roleMemberData.asValueObject();
+            boolean checkIssuerAccess = true;
             final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
-            if (metaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey()).isIssuedByCa()) {
+            if (metaData != null) {
+                final AccessMatchValue matchKey = metaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                if (matchKey != null) {
+                    checkIssuerAccess = matchKey.isIssuedByCa();
+                } else {
+                    log.warn("Unsupported match key #" + roleMemberData.getTokenMatchKey() + " for token type " + roleMemberData.getTokenType());
+                }
+            } else {
+                log.warn("Unsupported token type " + roleMemberData.getTokenType());
+            }
+            if (checkIssuerAccess) {
                 requiredCaAccessResources.add(StandardRules.CAACCESS.resource() + roleMember.getTokenIssuerId());
             }
             ret.add(roleMember);
@@ -265,7 +286,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         if (removed) {
             final String tokenType = roleMember.getTokenType();
             final int tokenMatchKey = roleMember.getTokenMatchKey();
-            final String tokenMatchKeyName = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey).name();
+            final AccessMatchValue matchKey = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey);
+            final String tokenMatchKeyName = matchKey != null ? matchKey.name() : null;
             final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminremoved", roleMember.getTokenMatchValue(), role.getRoleNameFull());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);

@@ -353,7 +353,14 @@ function confirmrevocation(){
                           case EndEntityConstants.STATUS_KEYRECOVERY :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSKEYRECOVERY\") %>" />
                             <%break;
-                        }%></td>
+                        }%>
+                        <%
+                        if(users[i].getStatus()==EndEntityConstants.STATUS_REVOKED){%>
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_REVOKED%>'>
+                        <% } else {%>
+                            <input type="hidden" name='<%= HIDDEN_USER_STATUS + i %>' value='<%=HIDDEN_USER_STATUS_VALUE_DEFAULT%>' >
+                        <% } %>
+                        </td>
       <td width="10%">
 		<table class="actions" width="100%" border="0" cellspacing="0" cellpadding="0">
 			<tr>

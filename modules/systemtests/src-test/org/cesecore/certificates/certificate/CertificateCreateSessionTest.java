@@ -836,6 +836,13 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         String fp3 = null;
         String fp4 = null;
         String fp5 = null;
+        
+        final String strippedSubjectDN1 = "CN=null/inject/00test,O=PrimeKey,C=SE";
+        final String strippedSubjectDN2 = "CN=another/nullguy/00";
+        final String strippedSubjectDN3 = "CN=anothernullguy\\/00";
+        final String strippedSubjectDN4 = "CN=anothersemicolon/guy";
+        final String strippedSubjectDN5 = "CN=anothersemicolon/guy";
+        final String failMessage = "The subjectDN is not trimmed properly!";
         try {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
             EndEntityInformation user = new EndEntityInformation("null\0injecttest", "C=SE,O=PrimeKey,CN=null\0inject%00test", testx509ca.getCAId(),
@@ -849,7 +856,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp1 = CertTools.getFingerprintAsString(cert);
-                fail("We should not have been allowed to create certificate with that DN.");
+                assertEquals(failMessage, strippedSubjectDN1, cert.getSubjectDN().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -861,7 +868,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp2 = CertTools.getFingerprintAsString(cert);
-                fail("We should not have been allowed to create certificate with that DN.");
+                assertEquals(failMessage, strippedSubjectDN2, cert.getSubjectDN().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -873,7 +880,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp3 = CertTools.getFingerprintAsString(cert);
-                fail("We should not have been allowed to create certificate with that DN.");
+                assertEquals(failMessage, strippedSubjectDN3, cert.getSubjectDN().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -885,7 +892,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp4 = CertTools.getFingerprintAsString(cert);
-                fail("We should not have been allowed to create certificate with that DN.");
+                assertEquals(failMessage, strippedSubjectDN4, cert.getSubjectDN().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -897,7 +904,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp5 = CertTools.getFingerprintAsString(cert);
-                fail("We should not have been allowed to create certificate with that DN.");
+                assertEquals(failMessage, strippedSubjectDN5, cert.getSubjectDN().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }

@@ -46,6 +46,10 @@
    </object>
   </void>
   <void method="put">
+   <string>CERTIFICATE_REQUEST</string>
+   <string>Zm9vMTIz</string>
+  </void>
+  <void method="put">
    <string>longvalue</string>
    <long>123456789</long>
   </void>

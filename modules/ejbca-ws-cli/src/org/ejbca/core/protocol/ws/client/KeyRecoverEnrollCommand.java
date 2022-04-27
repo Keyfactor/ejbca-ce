@@ -45,6 +45,7 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     /**
      * 'hardtokensn' is deprecated since 7.1.0, just use NONE here. Is kept for client compatibility for now.
      */
+    @SuppressWarnings("unused")
     @Deprecated
     private static final int ARG_HARDTOKENSN              = 5;
     

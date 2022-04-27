@@ -30,6 +30,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -39,6 +40,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
+import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.util.HttpTools;
 
 /**
@@ -62,6 +68,12 @@ public class RaLoginBean implements Serializable {
     private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoToken;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreLocal;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
 
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
@@ -82,8 +94,6 @@ public class RaLoginBean implements Serializable {
         public void setLabel(String label) {
             this.label = label;
         }
-
-
     }
     
     public void onLoginPageLoad() throws IOException {
@@ -116,15 +126,20 @@ public class RaLoginBean implements Serializable {
         }
         OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
-            final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
-                    getRedirectUri());
-            if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
-                servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
-                servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
-                raAuthenticationBean.resetAuthentication();
-                FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
-            } else {
-                log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
+            try {
+                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
+                        internalKeyBindings, certificateStoreLocal, cryptoToken));
+                OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
+                if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
+                    servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                    servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
+                    raAuthenticationBean.resetAuthentication();
+                    FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
+                } else {
+                    log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
+                }
+            } catch (CryptoTokenOfflineException | KeyBindingNotFoundException e) {
+                log.info("Error signing oauth token request for token " + oauthClicked, e);
             }
         } else {
             log.info("Can not find Trusted provider configurations. Key indentifier = " + oauthClicked);
@@ -155,23 +170,7 @@ public class RaLoginBean implements Serializable {
     }
     
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
-        String url = oauthKeyInfo.getUrl();
-        final StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(oauthKeyInfo.getUrl());
-        if (!oauthKeyInfo.getUrl().endsWith("/")) {
-            stringBuilder.append("/");
-        }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
-            url = stringBuilder
-                    .append("realms/")
-                    .append(oauthKeyInfo.getRealm())
-                    .append("/protocol/openid-connect/auth").toString();
-        }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            url = stringBuilder
-                    .append(oauthKeyInfo.getRealm())
-                    .append("/oauth2/v2.0/authorize").toString();
-        }
+        String url = oauthKeyInfo.getOauthLoginUrl();
         return addParametersToUrl(oauthKeyInfo, url);
     }
 
@@ -179,7 +178,10 @@ public class RaLoginBean implements Serializable {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
         String scope = "openid";
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            scope += " " + oauthKeyInfo.getScope();
+            scope += " offline_access " + oauthKeyInfo.getScope();
+        }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
+            scope += " " + oauthKeyInfo.getAudience();
         }
         uriBuilder
                 .queryParam("scope", scope)

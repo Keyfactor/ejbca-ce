@@ -66,6 +66,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
@@ -132,6 +133,7 @@ import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.CesecoreException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
@@ -379,7 +381,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             X509Certificate cacert = (X509Certificate) rootCA.getCACertificate();
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(cacert), "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
             //Create a SubCA for this test.
             subCA = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaSubjectDn, rootCA.getCAId());
             int cryptoTokenId = subCA.getCAToken().getCryptoTokenId();
@@ -388,7 +390,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             //Store the CA Certificate.
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(subCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_SUBCA, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
             final EndEntityInformation endentity = new EndEntityInformation(subCaName, subCaSubjectDn, rootCA.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
             endentity.setStatus(EndEntityConstants.STATUS_NEW);
@@ -558,6 +560,88 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 endEntityManagementSession.deleteUser(admin, "EVTLSEJBCAWSTEST");
             }
             internalCertificateStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
+        }
+    }
+    
+    /**
+     * Test running a certificate request (including creating an end entity) using the UnidFnr plugin
+     */
+    @Test
+    public void testEditUserWithUnidFnr() throws InvalidAlgorithmParameterException, OperatorCreationException,
+            CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileExistsException, CryptoTokenOfflineException,
+            InvalidAlgorithmException, CAExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception,
+            EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
+            WaitingForApprovalException_Exception, IOException, CertificateException, CouldNotRemoveEndEntityException, CADoesntExistsException_Exception, CesecoreException_Exception {
+        final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final String username = "testEditUserWithUnidFnr";
+        final String password = "foo123";
+        final String fnr = "90123456789";
+        final String lra = "01234";
+        final String serialNumber = fnr + '-' + lra;
+        final String subjectDn = "C=SE, serialnumber=" + serialNumber + ", CN="+username;
+       
+        
+        final String profileNameUnidPrefix = "1234-5678-";
+        final String profileName = profileNameUnidPrefix + "testEditUserWithUnidFnr";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        int certificateProfileId = certificateProfileSession.addCertificateProfile(intAdmin, profileName, certificateProfile);
+        
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);       
+        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfileSession.addEndEntityProfile(intAdmin, profileName, endEntityProfile);
+        
+        final String issuerDN = "CN=testEditUserWithUnidFnrCa";
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CAInfo testX509CaInfo = (X509CAInfo) testX509Ca.getCAInfo();
+        testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
+        testX509Ca.updateCA(null, testX509CaInfo, null);
+        caSession.addCA(intAdmin, testX509Ca);
+        final UserDataVOWS endEntity = new UserDataVOWS();
+        endEntity.setUsername(username);
+        endEntity.setPassword(password);
+        endEntity.setClearPwd(false);
+        endEntity.setSubjectDN(subjectDn);
+        endEntity.setCaName(testX509CaInfo.getName());
+        endEntity.setEmail(null);
+        endEntity.setSubjectAltName(null);
+        endEntity.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        endEntity.setEndEntityProfileName(profileName);
+        endEntity.setCertificateProfileName(profileName);
+        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());        
+       
+        try {
+            ejbcaraws.editUser(endEntity);
+            EndEntityInformation createdUser = endEntityAccessSession.findUser(intAdmin, username);
+            final String endEntityInformationUnid = IETFUtils.valueToString(
+                    CertTools.stringToBcX500Name(createdUser.getCertificateDN()).getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            final String resultingFnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(endEntityInformationUnid);
+            assertNotNull("Unid value was not stored", resultingFnr);
+            assertEquals("FNR value was not correctly converted", fnr, resultingFnr);      
+            //Generate a certificate, see what happens. 
+            PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name(subjectDn),
+                    keys.getPublic(), null, keys.getPrivate(), null);
+            //Yeah, what happens, Shoresy?
+            CertificateResponse response = ejbcaraws.pkcs10Request(username, password, new String(Base64.encode(request.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            //I hit you, you hit the floor, your mom spends the night. 
+            X509Certificate certificate = response.getCertificate();
+            final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
+            final String unidFromCertificate = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            assertEquals("serialNumber value in certificate was not the same as in end entity", endEntityInformationUnid, unidFromCertificate);
+           
+                
+        } finally {
+            CaTestUtils.removeCa(intAdmin, testX509CaInfo);
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profileName);
+            certificateProfileSession.removeCertificateProfile(intAdmin, profileName);
+            try {
+                endEntityManagementSession.deleteUser(intAdmin, username);
+            } catch (NoSuchEndEntityException e) {
+                //NOPMD
+            } 
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
         }
     }
     
@@ -2862,7 +2946,55 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
     }
     
- 
+    @Test
+    public void createCertificateWithSubjectDirAttrs() throws Exception {
+        final String username = "EjbcaWSTest_createCertificateWithSubjectDirAttrs";
+        final String profileName = "EjbcaWSTest_CertificateWithSubjectDirAttrs";
+        final String subjectDn = "CN=createCertificateWithSubjectDirAttrs,OU=EjbcaWSTest";
+        final String subjectDirAttrs = "COUNTRYOFRESIDENCE=AU, COUNTRYOFRESIDENCE=FR, COUNTRYOFCITIZENSHIP=SE, COUNTRYOFCITIZENSHIP=DE, COUNTRYOFCITIZENSHIP=US";
+        final UserDataVOWS userdata = new UserDataVOWS();
+        userdata.setStatus(EndEntityConstants.STATUS_NEW);
+        userdata.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        userdata.setEndEntityProfileName(profileName);
+        userdata.setCertificateProfileName(profileName);
+        userdata.setCaName(getAdminCAName());
+        userdata.setUsername(username);
+        userdata.setSubjectDN(subjectDn);
+        final List<ExtendedInformationWS> ei = new ArrayList<>();
+        ei.add(new ExtendedInformationWS("subjectdirattributes", subjectDirAttrs));
+        userdata.setExtendedInformation(ei);
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        try {
+            // Create profiles with Subject Directory Attributes
+            CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certProf.setUseSubjectDirAttributes(true);
+            int certProfId = certificateProfileSession.addCertificateProfile(admin, profileName, certProf);
+            EndEntityProfile eeProf = new EndEntityProfile();
+            eeProf.addField("ORGANIZATIONALUNIT");
+            eeProf.addField("COUNTRYOFCITIZENSHIP");
+            eeProf.addField("COUNTRYOFCITIZENSHIP");
+            eeProf.addField("COUNTRYOFCITIZENSHIP");
+            eeProf.addField("COUNTRYOFRESIDENCE");
+            eeProf.addField("COUNTRYOFRESIDENCE");
+            eeProf.setAvailableCertificateProfileIds(Collections.singleton(certProfId));
+            eeProf.setDefaultCertificateProfile(certProfId);
+            eeProf.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+            endEntityProfileSession.addEndEntityProfile(admin, profileName, eeProf);
+            // Issue the certificate
+            final CertificateResponse resp = ejbcaraws.certificateRequest(userdata, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            final X509Certificate cert = resp.getCertificate();
+            assertEquals(subjectDn, CertTools.getSubjectDN(cert));
+            final String actualSubjectDirAttrs = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cert);
+            assertNotNull("Subject Directory Attributes was missing from certificate", actualSubjectDirAttrs);
+            assertEquals(subjectDirAttrs, actualSubjectDirAttrs.toUpperCase(Locale.ROOT));
+        } finally {
+            deleteUser(username);
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityProfileSession.removeEndEntityProfile(admin, profileName);
+            certificateProfileSession.removeCertificateProfile(admin, profileName);
+        }
+    }
 
     private void assertCertificateEquals(final String label, final byte[] left, final CAInfo caInfo)
             throws CertificateParsingException, CertificateEncodingException {

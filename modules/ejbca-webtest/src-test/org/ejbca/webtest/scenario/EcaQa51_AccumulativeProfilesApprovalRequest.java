@@ -12,40 +12,36 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.util.List;
-
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.ApprovalActionsHelper;
 import org.ejbca.webtest.helper.ApprovalProfilesHelper;
 import org.ejbca.webtest.helper.CaActivationHelper;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
-import org.ejbca.webtest.helper.RaWebHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Web Test to verify that Accumulative Approval Profiles work as expected.
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-51>ECAQA-51</a>
  * 
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
-
-    private static int approvalId = -1;
     
+    private static int approvalId = -1;
+
     // Helpers
     private static ApprovalProfilesHelper approvalProfilesHelper;
+    private static ApprovalActionsHelper approvalActionsHelper;
     private static CaActivationHelper caActivationHelper;
     private static CaHelper caHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
-    private static RaWebHelper raWebHelper;
     
     // Test Data
     public static class TestData {
@@ -55,21 +51,22 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
         static final String CA_VALIDITY = "1y";
         static final String END_ENTITY_PROFILE_NAME = "ECAQA_51_TestApprovalEndEntity";
         static final String END_ENTITY_PROFILE_NAME_EMPTY = "";
-        static final String RA_PENDING_APPROVAL_TYPE_ACTIVATE_CA_TOKEN = "Activate CA Token";
-        static final String RA_PENDING_APPROVAL_STATUS = "Waiting for Approval";
+        static final String APPROVAL_ACTION_NAME = "CA Service Activation";
+        static final String APPROVAL_STATUS = "Waiting";
+        static final String SEARCH_TIME_SPAN = "30 minutes";
     }
     
     @BeforeClass
     public static void init() {
-    // Super
-    beforeClass(true, null);
-    final WebDriver webDriver = getWebDriver();
-    // Helpers
-    approvalProfilesHelper = new ApprovalProfilesHelper(webDriver);
-    caActivationHelper = new CaActivationHelper(webDriver);
-    caHelper = new CaHelper(webDriver);
-    endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
-    raWebHelper = new RaWebHelper(webDriver);
+        // Super
+        beforeClass(true, null);
+        final WebDriver webDriver = getWebDriver();
+        // Helpers
+        approvalProfilesHelper = new ApprovalProfilesHelper(webDriver);
+        approvalActionsHelper = new ApprovalActionsHelper(webDriver);
+        caActivationHelper = new CaActivationHelper(webDriver);
+        caHelper = new CaHelper(webDriver);
+        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
     }
     
     @AfterClass
@@ -163,13 +160,12 @@ public class EcaQa51_AccumulativeProfilesApprovalRequest extends WebTestBase{
     // Find and assert approval request
     @Test
     public void stepJ_findAssertPendingApprovals() {
-        raWebHelper.openPage(getRaWebUrl());
-        raWebHelper.clickMenuManageRequests();
-        raWebHelper.clickTabPendingRequests();
+        approvalActionsHelper.openPage(getAdminWebUrl());
+        approvalActionsHelper.setApprovalActionSearchStatus(TestData.APPROVAL_STATUS);
+        approvalActionsHelper.setApprovalActionSearchTimeSpan(TestData.SEARCH_TIME_SPAN);
+        approvalActionsHelper.searchForApprovals();
         //Assert approval request exist
-        final List<WebElement> pendingApprovalRequestRow = raWebHelper.getRequestsTableRow(TestData.CA_NAME, TestData.RA_PENDING_APPROVAL_TYPE_ACTIVATE_CA_TOKEN, TestData.END_ENTITY_PROFILE_NAME_EMPTY, TestData.RA_PENDING_APPROVAL_STATUS);
-        raWebHelper.assertHasRequestRow(pendingApprovalRequestRow);
-        approvalId = raWebHelper.getRequestIdFromRequestRow(pendingApprovalRequestRow);
+        approvalActionsHelper.assertApprovalActionTableLinkExists(TestData.APPROVAL_ACTION_NAME, TestData.APPROVAL_STATUS);
+        approvalId = approvalActionsHelper.extractApprovalId(TestData.APPROVAL_ACTION_NAME, TestData.APPROVAL_STATUS);
     }
-    
 }

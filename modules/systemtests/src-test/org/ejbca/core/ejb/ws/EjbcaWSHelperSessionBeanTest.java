@@ -78,7 +78,7 @@ public class EjbcaWSHelperSessionBeanTest {
                     CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     EndEntityConstants.NO_END_ENTITY_PROFILE,
-                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
+                    CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime(), null);
 
             AuthenticationToken authenticationToken = ejbcaWSHelperProxySessionRemote.getAdmin(true, certificate, null);
 

@@ -18,7 +18,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
      -->
 </ui:remove>
 <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
@@ -64,12 +63,12 @@
                                             <h:outputLink value="enrollmakenewrequest.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_make_new_request}"/></h:outputLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollCertificate}">
                                         <li class="pure-menu-item">
                                         	<h:outputLink value="enrollwithrequestid.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}"/></h:outputLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollCertificate}">
                                         <li class="pure-menu-item">
                                         	<h:outputLink value="enrollwithusername.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_username}"/></h:outputLink>
                                         </li>
@@ -158,7 +157,7 @@
                             </li>
                         </ui:fragment>
 
-                        <ui:fragment>
+                        <ui:fragment rendered="#{!raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item">
                             <h:outputLink
                                     value="preferences.xhtml"
@@ -194,13 +193,23 @@
                         </ui:fragment>
                         -->
                         </ui:remove>
-                        <ui:remove>
-                        <!-- 
-                            Log out is not implemented for administrators using certificate login. This is highly depending on the browser 
-                        -->
-                        </ui:remove>
                         <ui:fragment rendered="#{!raAuthenticationBean.publicUser}">
-                            <li class="pure-menu-item"><h:outputLink value="#" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_logout} #{raAuthenticationBean.userDisplayName}"/></h:outputLink></li>
+                            <li class="pure-menu-item">
+                                <ui:remove>
+                                    <!--
+                                        Log out is not implemented for administrators using certificate login. This is highly depending on the browser
+                                    -->
+                                </ui:remove>
+                                <h:outputLink value="#" styleClass="pure-menu-link" rendered="#{!raAuthenticationBean.oauthUser}">
+                                    <h:outputText value="#{msg.menu_pagetitle_loggedin} #{raAuthenticationBean.userDisplayName}"/>
+                                </h:outputLink>
+                                <h:form rendered="#{raAuthenticationBean.oauthUser}">
+                                    <h:commandLink styleClass="pure-menu-link"
+                                                   action="#{raAuthenticationBean.logOut}">
+                                        <h:outputText value="#{msg.menu_pagetitle_logout} #{raAuthenticationBean.userDisplayName}"/>
+                                    </h:commandLink>
+                                </h:form>
+                            </li>
                         </ui:fragment>
                         <ui:fragment rendered="#{raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item"><h:outputLink value="login.xhtml" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_login}"/></h:outputLink></li>

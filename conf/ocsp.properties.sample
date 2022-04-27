@@ -38,8 +38,8 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used and if 
 # DSA keys are used in the OCSP signing certificate, the algorithm with DSA will be used.
 #
-# Default: SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;SHA1WithDSA
-#ocsp.signaturealgorithm=SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;SHA1WithDSA
+# Default: SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;SHA1WithDSA;Ed25519;Ed448
+#ocsp.signaturealgorithm=SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;SHA1WithDSA;Ed25519;Ed448
 
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.
@@ -214,54 +214,10 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.rekeying.trigging.hosts=
 
 #------------------- OCSP Logging settings -------------
-# Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
-# Specifies if transaction logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
-# Change below to true if you want transaction information to be logged
+# By enabling configuration of OCSP Audit and Transaction logging it is possible to get detailed logging of every request and response.
+# See the documentation how to enable this feature.
 #
-# See the OCSP installation guide for more details on the transaction and audit logging.
-#
-# Default: false
-#ocsp.trx-log = true
-
-# Configure how time of logging in auditlog will be output
-# Default: yyyy-MM-dd:HH:mm:ss:z
-#
-# Almost standard example, but the time offset ':z' (e.g. ':CET') is not standard compliant:
-#ocsp.log-date = yyyy-MM-dd HH:mm:ss.SSS:z
-#
-# Reference: RFC 3339 - Date and Time on the Internet: Timestamps
-# Standard compliant example, the final 'Z' means that the time zone is GMT, i.e. time UTC+00:
-#ocsp.log-date = yyyy-MM-dd HH:mm:ss.SSSZ
-
-# Configure which time zone will be used for logging
-# Note: GMT is the time zone for the time UTC+00, and without daylight saving time. It's the best choice for logs.
-# Default: GMT
-#ocsp.log-timezone = GMT
-
-# A pattern for use with ocsp.trx-log-order to replace constants with values during logging
-# Default: \\$\\{(.+?)\\}
-#ocsp.trx-log-pattern = \\$\\{(.+?)\\}
-
-# Use ocsp.trx-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
-# See OCSP Installation guide for documentation of all parameters.
-# Default: ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID};${FORWARDED_FOR}
-#ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${PROCESS_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID};${FORWARDED_FOR}
-
-# Audit logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
-# change ocsp.audit-log to true of you want audit logging turned on
-# Default: false
-#ocsp.audit-log = true
-
-# A pattern for use with ocsp.audit-order to replace constants with values during logging
-# Default: \\$\\{(.+?)\\}
-#ocsp.audit-log-pattern = \\$\\{(.+?)\\}
-
-# Use ocsp.audit-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
-# See OCSP Installation guide for documentation of all parameters.
-# Default: ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";TIME TO PROCESS:${REPLY_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
-#ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";REPLY TIME:${REPLY_TIME};\nTIME TO PROCESS:${PROCESS_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
-
-# Set to true if you want transactions to be aborted when logging fails
-# This option needs other configuration changes as well, see  "Safer Log4j Logging" in the OCSP install guide for more information
+# As an additional, rare, setting it is possible to configure the system to aborted transactions when logging fails, for example if the disk is full.
+# This option needs other configuration changes as well, see  "Safer Log4j Logging" in the documentation for more information.
 # Default: false
 #ocsp.log-safer = true

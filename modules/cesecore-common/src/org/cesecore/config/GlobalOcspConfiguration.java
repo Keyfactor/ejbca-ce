@@ -12,13 +12,13 @@
  *************************************************************************/
 package org.cesecore.config;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.util.CertTools;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 public class GlobalOcspConfiguration extends ConfigurationBase implements Serializable {
 
@@ -31,6 +31,13 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String DEFAULT_NONCE_ENABLED_REFERENCE = "defaultNonceEnabled";
     private static final String OCSP_SIGNING_CACHE_UPDATE_ENABLED = "ocspSigningCacheUpdateEnabled";
     private static final String EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED = "explicitNoCacheUnauthorizedResponsesEnabled";
+    private static final String PROPERTY_IS_OCSP_TRANSACTION_LOGGING_ENABLED = "isOcspTransactionLoggingEnabled";
+    private static final String PROPERTY_OCSP_TRANSACTION_LOG_PATTERN = "ocspTransactionLogPattern";
+    private static final String PROPERTY_OCSP_TRANSACTION_LOG_VALUES = "ocspTransactionLogValues";
+    private static final String PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED = "ocspAuditLoggingEnabled";
+    private static final String PROPERTY_OCSP_AUDIT_LOG_PATTERN = "ocspAuditLogPattern";
+    private static final String PROPERTY_OCSP_AUDIT_LOG_VALUES = "ocspAuditLogValues";
+    private static final String PROPERTY_OCSP_LOGGING_DATE_FORMAT = "ocspLoggingDateFormat";
 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
@@ -88,7 +95,90 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         }
         return (Boolean) data.get(DEFAULT_NONCE_ENABLED_REFERENCE);
     }
-    
+
+    public void setIsOcspTransactionLoggingEnabled(final boolean isOcspTransactionLoggingEnabled) {
+        data.put(PROPERTY_IS_OCSP_TRANSACTION_LOGGING_ENABLED, isOcspTransactionLoggingEnabled);
+    }
+
+    public boolean getIsOcspTransactionLoggingEnabled() {
+        if (data.get(PROPERTY_IS_OCSP_TRANSACTION_LOGGING_ENABLED) == null) {
+            return false;
+        }
+        return (Boolean) data.get(PROPERTY_IS_OCSP_TRANSACTION_LOGGING_ENABLED);
+    }
+
+    public void setOcspTransactionLogPattern(final String ocspTransactionLogPattern) {
+        data.put(PROPERTY_OCSP_TRANSACTION_LOG_PATTERN, ocspTransactionLogPattern);
+    }
+
+    public String getOcspTransactionLogPattern() {
+        if (data.get(PROPERTY_OCSP_TRANSACTION_LOG_PATTERN) == null) {
+            return "\\$\\{(.+?)\\}";
+        }
+        return (String) data.get(PROPERTY_OCSP_TRANSACTION_LOG_PATTERN);
+    }
+
+    public void setOcspTransactionLogValues(final String ocspTransactionLogValues) {
+        data.put(PROPERTY_OCSP_TRANSACTION_LOG_VALUES, ocspTransactionLogValues);
+    }
+
+    public String getOcspTransactionLogValues() {
+        if (data.get(PROPERTY_OCSP_TRANSACTION_LOG_VALUES) == null) {
+            return "${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}\"${CLIENT_IP}\";\"${SIGN_ISSUER_NAME_DN}\";\"" +
+                    "${SIGN_SUBJECT_NAME}\";${SIGN_SERIAL_NO};\"${LOG_TIME}\";${REPLY_TIME};${NUM_CERT_ID};0;" +
+                    "0;0;0;0;0;0;\"${ISSUER_NAME_DN}\";${ISSUER_NAME_HASH};"
+                    + "${ISSUER_KEY};\"${OCSP_CERT_ISSUER_NAME_DN}\";${DIGEST_ALGOR};" +
+                    "${SERIAL_NOHEX};${CERT_STATUS};${CERT_PROFILE_ID};${FORWARDED_FOR}";
+        }
+        return (String) data.get(PROPERTY_OCSP_TRANSACTION_LOG_VALUES);
+    }
+
+    public void setIsOcspAuditLoggingEnabled(final boolean isOcspAuditLoggingEnabled) {
+        data.put(PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED, isOcspAuditLoggingEnabled);
+    }
+
+    public boolean getIsOcspAuditLoggingEnabled() {
+        if (data.get(PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED) == null) {
+            return false;
+        }
+        return (Boolean) data.get(PROPERTY_IS_OCSP_AUDIT_LOGGING_ENABLED);
+    }
+
+    public void setOcspAuditLogPattern(final String ocspAuditLogPattern) {
+        data.put(PROPERTY_OCSP_AUDIT_LOG_PATTERN, ocspAuditLogPattern);
+    }
+
+    public String getOcspAuditLogPattern() {
+        if (data.get(PROPERTY_OCSP_AUDIT_LOG_PATTERN) == null) {
+            return "\\$\\{(.+?)\\}";
+        }
+        return (String) data.get(PROPERTY_OCSP_AUDIT_LOG_PATTERN);
+    }
+
+    public void setOcspAuditLogValues(final String ocspAuditLogValues) {
+        data.put(PROPERTY_OCSP_AUDIT_LOG_VALUES, ocspAuditLogValues);
+    }
+
+    public String getOcspAuditLogValues() {
+        if (data.get(PROPERTY_OCSP_AUDIT_LOG_VALUES) == null) {
+            return  "SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};\"${LOG_TIME}" +
+                    "\";TIME TO PROCESS:${REPLY_TIME};\\nOCSP REQUEST:\\n\"${OCSPREQUEST}" +
+                    "\";\\nOCSP RESPONSE:\\n\"${OCSPRESPONSE}\";\\nSTATUS:${STATUS}";
+        }
+        return (String) data.get(PROPERTY_OCSP_AUDIT_LOG_VALUES);
+    }
+
+    public void setOcspLoggingDateFormat(final String ocspLoggingDateFormat) {
+        data.put(PROPERTY_OCSP_LOGGING_DATE_FORMAT, ocspLoggingDateFormat);
+    }
+
+    public String getOcspLoggingDateFormat() {
+        if (data.get(PROPERTY_OCSP_LOGGING_DATE_FORMAT) == null) {
+            return "yyyy-MM-dd HH:mm:ss.SSSZ";
+        }
+        return (String) data.get(PROPERTY_OCSP_LOGGING_DATE_FORMAT);
+    }
+
     /**
      * 
      * @param enabled to true if CA's replying to their own OCSP requests should include NONCE's in the replies. 
