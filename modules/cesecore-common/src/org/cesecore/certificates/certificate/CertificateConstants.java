@@ -69,6 +69,8 @@ public final class CertificateConstants {
     public static final int CERTTYPE_ROOTCA     =     0x8;
     /** Certificate belongs to an SSH user */
     public static final int CERTTYPE_SSH        =     0xa;
+    /** Certificate belongs to an ITS user */
+    public static final int CERTTYPE_ITS        =     0xc;
     
     // Certificate types used to create certificates
     /** Certificate used for encryption. */

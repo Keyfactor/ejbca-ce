@@ -12,19 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.ViewScoped;
-import javax.faces.model.SelectItem;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -35,6 +22,18 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
+import javax.annotation.PostConstruct;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.ViewScoped;
+import javax.faces.model.SelectItem;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 /**
  * Backing bean for edit EST alias view.
  *
@@ -43,6 +42,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 @ViewScoped
 public class EditEstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    private static final String HIDDEN_PWD = "**********";
 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
@@ -213,8 +214,19 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
                 setAuthenticationModule("");
             }
         }
-        
-        
+
+        public void setHttpBasicAuthSelected(boolean selected) {
+            if (selected) {
+                setAuthenticationModule(EstConfiguration.CONFIG_AUTHMODULE_HTTP_BASIC_AUTH);
+            } else {
+                setAuthenticationModule("");
+            }
+        }
+
+        public boolean getHttpBasicAuthSelected() {
+            return getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_HTTP_BASIC_AUTH);
+        }
+
         public boolean getChallengePwdSelected() {
             if (getAuthenticationModule().equals(EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD)) {
                 return true;  
@@ -258,7 +270,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setCertificateProfileId(certProfileID);
             estAliasGui.setCertificateRequired(estConfiguration.getCert(aliasName));
             estAliasGui.setUserName(estConfiguration.getUsername(aliasName));
-            estAliasGui.setPassword(estConfiguration.getPassword(aliasName));
+            estAliasGui.setPassword(EditEstConfigMBean.HIDDEN_PWD);
             estAliasGui.setAllowSameKey(estConfiguration.getKurAllowSameKey(aliasName));
             estAliasGui.setExtUsernameComponent(estConfiguration.getExtractUsernameComponent(aliasName));
             estAliasGui.setOperationMode(estConfiguration.getOperationMode(aliasName));
@@ -350,7 +362,10 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         }
         estConfiguration.setCert(alias, estAliasGui.getCertificateRequired());
         estConfiguration.setUsername(alias, estAliasGui.getUserName());
-        estConfiguration.setPassword(alias, estAliasGui.getPassword());
+        // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+        if (!estAliasGui.getPassword().equals(EditEstConfigMBean.HIDDEN_PWD)) {
+            estConfiguration.setPassword(alias, estAliasGui.getPassword());
+        }
         estConfiguration.setKurAllowSameKey(alias, estAliasGui.getAllowSameKey());
         estConfiguration.setExtractUsernameComponent(alias, estAliasGui.getExtUsernameComponent());
         estConfiguration.setExtractDnPwdComponent(alias, estAliasGui.getExtDnPartPwdComponent());

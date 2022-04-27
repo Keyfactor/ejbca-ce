@@ -1,25 +1,32 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.ejbca.ui.web.rest.api.config.ExceptionHandler;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
+
+import javax.ws.rs.client.Client;
+import  javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Application;
+
+import org.jboss.resteasy.plugins.server.undertow.UndertowJaxrsServer;
 
 /**
  * A wrapper utility that creates an instance of TJWSEmbeddedJaxrsServer to run Unit Tests on top of the Resteasy embedded server.
@@ -30,16 +37,13 @@ import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
  * <li>ObjectMapperContextResolver - defines the mapping for JSON.</li>
  * </ul>
  *
- * @version $Id: InMemoryRestServer.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
- *
- * @see org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer
  * @see org.ejbca.ui.web.rest.api.config.ExceptionHandler
  */
 public class InMemoryRestServer implements AutoCloseable {
 
     private static final String bindAddress = "localhost";
     private final Set<Object> resources = new HashSet<>();
-    private TJWSEmbeddedJaxrsServer server;
+    private UndertowJaxrsServer server;
     private int port;
 
     // Private constructor
@@ -65,24 +69,31 @@ public class InMemoryRestServer implements AutoCloseable {
         return port;
     }
 
+    class TestApplication extends Application {
+        @Override
+        public Set<Class<?>> getClasses() {
+            final Set<Class<?>> clazzes = new HashSet<>();
+            clazzes.add(ExceptionHandler.class);
+            clazzes.add(ObjectMapperContextResolver.class);
+            return clazzes;
+        }
+
+        @Override
+        public Set<Object> getSingletons() {
+            return resources;
+        }
+    }
     /**
      * Starts the server instance locally on localhost using dynamic port with predefined SecurityDomain and resources.
      *
      * @throws IOException in case of ServerSocket failure.
      */
     public void start() throws IOException {
-        server = new TJWSEmbeddedJaxrsServer();
+        server = new UndertowJaxrsServer();
         port = findFreePort();
         server.setPort(port);
-        server.setBindAddress(bindAddress);
-        // Add resources
-        for (Object resource : resources) {
-            server.getDeployment().getResources().add(resource);
-        }
-        // Add providers
-        server.getDeployment().getProviderClasses().addAll(
-                Arrays.asList(ExceptionHandler.class.getName(), ObjectMapperContextResolver.class.getName())
-        );
+        server.setHostname(bindAddress);
+        server.deploy(new TestApplication());
         server.start();
     }
 
@@ -93,10 +104,11 @@ public class InMemoryRestServer implements AutoCloseable {
      *
      * @param uriPath a part of URL to make request on.
      * @return An instance of ClientRequest.
-     * @see org.jboss.resteasy.client.ClientRequest
      */
-    public ClientRequest newRequest(final String uriPath) {
-        return new ClientRequest("http://" + bindAddress + ":" + port + uriPath);
+    public WebTarget newRequest(final String uriPath) {
+        Client client = ClientBuilder.newClient();
+        final WebTarget target = client.target("http://" + bindAddress + ":" + port + uriPath);
+        return target;
     }
 
     /**

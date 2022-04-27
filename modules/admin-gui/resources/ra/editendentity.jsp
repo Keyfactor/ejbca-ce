@@ -701,6 +701,21 @@ function fillCAField(){
 function checkallfields(){
     var illegalfields = 0;
  <%    
+ 
+ if(profile.isNameConstraintsPermittedRequired()) { %>
+	 	if (document.edituser.<%= TEXTAREA_NC_PERMITTED %>.value == "") { 
+	      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTPERMITTED", true) + "" %>");
+	      illegalfields++;
+	    }
+	<%}
+	
+	if(profile.isNameConstraintsExcludedRequired()) { %>
+	    if (document.edituser.<%= TEXTAREA_NC_EXCLUDED %>.value == "") { 
+	      alert("<%= ejbcawebbean.getText("REQUIREDNAMECONSTRAINTEXCLUDED", true) + "" %>");
+	      illegalfields++;
+	    }
+	<%}
+
      for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
          fielddata = profile.getSubjectDNFieldsInOrder(i);
          if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)) {
@@ -1608,7 +1623,8 @@ function checkUseInBatch(){
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
                 <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>"/><br />
-                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/></p>
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/><br />
+                <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP3\") %>"/></p>
             </td>
             <td>
                 <textarea name="<%=TEXTAREA_NC_PERMITTED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"><c:out value="<%= NameConstraint.formatNameConstraintsList(ei.getNameConstraintsPermitted()) %>"/></textarea>
@@ -1625,7 +1641,10 @@ function checkUseInBatch(){
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
                 <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
-                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>"/></p>
+
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP1\") %>"/></p>
+                <br/>
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP2\") %>"/></p>
             </td>
             <td>
                 <textarea name="<%=TEXTAREA_NC_EXCLUDED%>" rows="4" cols="38" tabindex="<%=tabindex++%>"><c:out value="<%= NameConstraint.formatNameConstraintsList(ei.getNameConstraintsExcluded()) %>"/></textarea>

@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.config;
@@ -23,7 +26,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.WriteListener;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -34,10 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Servlet Filter for logging REST request and responses.
- * 
- * @version $Id: RestLoggingFilter.java 29032 2018-05-25 14:11:02Z tarmor $
  */
-@WebFilter("/v1/*")
 public class RestLoggingFilter implements Filter {
 
     /** Helper class for making a copy of a ServletOutputStream */
@@ -142,10 +141,8 @@ public class RestLoggingFilter implements Filter {
     public void destroy() {}
 
     @Override
-    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
-        
+    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {        
         final long startTime = System.currentTimeMillis();
-        
         final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         final StringBuilder sbInfo = new StringBuilder(200);
         sbInfo.append(httpServletRequest.getMethod() + " " + httpServletRequest.getRequestURL().toString() + " received from " + servletRequest.getRemoteAddr());

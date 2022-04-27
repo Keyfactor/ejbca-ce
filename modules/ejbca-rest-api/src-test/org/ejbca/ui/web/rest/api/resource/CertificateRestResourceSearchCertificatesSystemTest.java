@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
@@ -83,7 +86,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * A unit test class for CertificateRestResource to test its content.
+ * A test class for CertificateRestResource to test its content.
  */
 public class CertificateRestResourceSearchCertificatesSystemTest extends RestResourceSystemTestBase {
 
@@ -176,7 +179,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final Object actualSerialNumber = actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
-
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
+        
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertNotNull(actualCertificateString);
@@ -196,6 +201,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected.", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
+
     }
 
     @Test
@@ -227,6 +235,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final Object actualSerialNumber = actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
 
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
@@ -247,6 +257,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
     @Test
@@ -277,6 +289,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final Object actualSerialNumber = actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
 
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
@@ -297,6 +311,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
     @Test
@@ -334,6 +350,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
 
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
@@ -354,6 +372,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
 
@@ -386,6 +406,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
 
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
@@ -406,6 +428,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
     @Test
@@ -463,7 +487,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
-
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
+        
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertNotNull(actualCertificateString);
@@ -483,6 +509,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
     @Test
@@ -530,6 +558,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
 
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
@@ -550,6 +580,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
     @Test
@@ -598,6 +630,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
         final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final String actualCertificateProfileName = (String)actualCertificate0JsonObject.get("certificate_profile");
+        final String actualEndEntityProfileName = (String)actualCertificate0JsonObject.get("end_entity_profile");
 
         //then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
@@ -618,6 +652,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
         assertNotNull("SubjectDN not null.", actualSubjectDN);
         assertEquals("Common name should be as expected", expectedCn, actualCName);
+        assertEquals("Certificate profile name should be as expected.", TEST_CERTP_NAME, actualCertificateProfileName);
+        assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
 

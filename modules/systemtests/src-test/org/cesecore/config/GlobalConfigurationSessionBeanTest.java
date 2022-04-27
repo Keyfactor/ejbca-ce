@@ -13,18 +13,6 @@
 
 package org.cesecore.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,11 +32,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests the global configuration entity bean.
- * 
- * 
- * @version $Id$
  */
 public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
@@ -88,6 +85,45 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         globalConfigurationSession.saveConfiguration(internalAdmin, original);
         enableCLI(true);
         internalAdmin = null;
+    }
+
+    @Test
+    public void testOcspConfigurationWriteFlushAndRead() throws AuthorizationDeniedException {
+        final GlobalOcspConfiguration backup = (GlobalOcspConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        try {
+            final GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            ocspConfiguration.setIsOcspAuditLoggingEnabled(false);
+            assertFalse(ocspConfiguration.getIsOcspAuditLoggingEnabled());
+            // ocspConfiguration is a copy, setting properties on this object does not modify the cache
+            ocspConfiguration.setIsOcspAuditLoggingEnabled(true);
+            assertTrue(ocspConfiguration.getIsOcspAuditLoggingEnabled());
+            final GlobalOcspConfiguration ocspConfiguration2 = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            // since we modified a copy and didn't save our changes isOcspAuditLoggingEnabled should still be false
+            // in the cache
+            assertFalse(ocspConfiguration2.getIsOcspAuditLoggingEnabled());
+            // After flushing, we should get a new object constructed from data in the database
+            globalConfigurationSession.flushConfigurationCache(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final GlobalOcspConfiguration ocspConfiguration3 = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertFalse(ocspConfiguration3.getIsOcspAuditLoggingEnabled());
+            // Let try to set isOcspAuditLoggingEnabled to true and save. Now the changes should
+            // be written both to the database and the cache.
+            ocspConfiguration3.setIsOcspAuditLoggingEnabled(true);
+            globalConfigurationSession.saveConfiguration(internalAdmin, ocspConfiguration3);
+            final GlobalOcspConfiguration ocspConfiguration4 = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertTrue(ocspConfiguration4.getIsOcspAuditLoggingEnabled());
+            globalConfigurationSession.flushConfigurationCache(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            // Since the cache was flushed, this will retrieve data from the database
+            final GlobalOcspConfiguration ocspConfiguration5 = (GlobalOcspConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertTrue(ocspConfiguration5.getIsOcspAuditLoggingEnabled());
+        } finally {
+            globalConfigurationSession.saveConfiguration(internalAdmin, backup);
+        }
     }
 
     public String getRoleName() {
@@ -198,21 +234,6 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
             }
         }
         assertTrue("AuthorizationDeniedException was not caught", caught);
-    }
-
-    /**   
-     * Tests reading and writing some values that are of special interest.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testReadingWritingValues() throws Exception {
-        GlobalConfiguration gc = new GlobalConfiguration();
-        assertEquals("Default value should be used in an empty created config", "foo123", gc.getAutoEnrollConnectionPwd());
-        gc.setAutoEnrollConnectionPwd("bar123");
-        assertEquals("We could not set value as we wanted", "bar123", gc.getAutoEnrollConnectionPwd());
-        gc.setAutoEnrollConnectionPwd("");
-        assertEquals("Autoenroll pwd should be possible to blank", "", gc.getAutoEnrollConnectionPwd());
     }
 
     /**

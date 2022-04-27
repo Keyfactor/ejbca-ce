@@ -20,8 +20,6 @@ import org.cesecore.internal.InternalResources;
  * This class is deprecated. Use IntegerValidator.minInstance(0) instead.
  * 
  * @see IntegerValidator
- * 
- * @version $Id$
  */
 @Deprecated
 public class PositiveIntegerValidator implements DynamicUiPropertyValidator<Integer> {
@@ -49,5 +47,14 @@ public class PositiveIntegerValidator implements DynamicUiPropertyValidator<Inte
         }
     }
 
+    @Override
+    public String getName() {
+        return null;
+    }
+    
+    @Override
+    public void setName(String name) {
+        // Not implemented.
+    }
 
 }

@@ -36,5 +36,11 @@ public class AcmeConfigurationSessionBean implements AcmeConfigurationSessionLoc
             throws AcmeProblemException {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
+
+    @Override
+    public String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
  
 }

@@ -43,9 +43,6 @@ import org.cesecore.util.ui.UrlString;
  * to pass. Once the final step passes, the approval automatically passes.
  *
  * Steps are stored in the ApprovalProfile without order, but instead track their own order in the form of a doubly linked list.
- *
- * @version $Id$
- *
  */
 @SuppressWarnings("deprecation")
 public class ApprovalStep implements Serializable {
@@ -199,7 +196,7 @@ public class ApprovalStep implements Serializable {
      *
      * @param partition a partition
      */
-    void addPartition(ApprovalPartition partition) {
+    public void addPartition(ApprovalPartition partition) {
         partitions.put(partition.getPartitionIdentifier(), partition);
     }
 

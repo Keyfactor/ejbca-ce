@@ -28,6 +28,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 
 
 /**
@@ -214,5 +215,13 @@ public interface PublisherSession {
      * @throws PublisherException if something goes wrong with publishing OCSP response
      */
     boolean storeOcspResponses(final AuthenticationToken admin, final Collection<Integer> publisherids, final OcspResponseData ocspResponseData) throws AuthorizationDeniedException, PublisherException;
+
+    /**
+     * Asynchronously publish a single queued entry
+     * @param admin authentication token used to perform the operations
+     * @param publisherId Id of the Publisher associated with the queued entry.
+     * @param entity Queued entry to Publish.
+     */
+    void publishQueuedEntry(AuthenticationToken admin, int publisherId, PublisherQueueData entity);
     
 }

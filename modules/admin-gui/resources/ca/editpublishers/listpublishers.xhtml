@@ -19,7 +19,7 @@
      *                                                                       *
      *************************************************************************/
      
-     $Id$
+
      -->
 </ui:remove>
 
@@ -66,12 +66,23 @@
 							rendered="#{!listPublishers.hasEditRights}" />
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:commandButton id="deleteButton"
-							action="#{listPublishers.deletePublisher}"
-							value="#{web.text.DELETEPUBLISHER}"
-                            onclick="if (checkSelectionMade('listPublishers:selectPublisher')) return confirm('#{web.text.AREYOUSURE}');"
-							disabled="#{listPublishers.availablePublishers.size() == 0}"
-							rendered="#{listPublishers.hasEditRights}" />
+						<h:commandButton
+								id="cloneButton"
+								styleClass="cloneButton"
+								action="#{listPublishers.clonePublisher}"
+								value="#{web.text.CLONE_SELECTED}"/>
+						<h:commandButton
+								id="renameButton"
+								styleClass="renameButton"
+								action="#{listPublishers.renamePublisher}"
+								value="#{web.text.RENAME_SELECTED}"/>
+						<h:commandButton
+								id="deleteButton"
+								action="#{listPublishers.deletePublisher}"
+								value="#{web.text.DELETEPUBLISHER}"
+								onclick="if (checkSelectionMade('listPublishers:selectPublisher')) return confirm('#{web.text.AREYOUSURE}');"
+								disabled="#{listPublishers.availablePublishers.size() == 0}"
+								rendered="#{listPublishers.hasEditRights}"/>
 					</h:panelGroup>
 				</h:panelGrid>
 				<h:panelGroup>
@@ -93,13 +104,6 @@
 						action="#{listPublishers.addPublisher}"
 						value="#{web.text.ADD}" style="margin-left: 3px;" />
 						&#xA0;&#xA0;
-					<h:commandButton id="renameButton"
-						action="#{listPublishers.renamePublisher}"
-						value="#{web.text.RENAME_SELECTED}" />
-						&#xA0;&#xA0;&#xA0;
-					<h:commandButton id="cloneButton"
-						action="#{listPublishers.clonePublisher}"
-						value="#{web.text.CLONE_SELECTED}" />
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>

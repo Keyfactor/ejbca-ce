@@ -46,6 +46,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -58,7 +59,6 @@ import org.junit.runner.RunWith;
 /**
  * Unit test for MultiGroupPublisher.
  * @see MultiGroupPublisherSystemTest
- * @version $Id$
  */
 @RunWith(EasyMockRunner.class)
 public class MultiGroupPublisherUnitTest {
@@ -117,6 +117,14 @@ public class MultiGroupPublisherUnitTest {
         public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
             // Method not applicable for the publisher type.
             return false;
+        }
+        @Override
+        public boolean isCallingExternalScript() {
+            return false;        
+        }
+        @Override
+        public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+            // Method not applicable for this publisher type!        
         }
     }
 

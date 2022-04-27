@@ -625,7 +625,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
         JcaPKCS10CertificationRequest a = new JcaPKCS10CertificationRequest(pemObject.getContent());
         X509Certificate endUserCert = signCertificate(new X500Principal(a.getSubject().getEncoded()), a.getPublicKey(), caCert, issuerPrivateKey, p11Provider, algorithm);
-        List<X509Certificate> caChain = new ArrayList(Arrays.asList((X509Certificate[]) ca.getCertificateChain()));
+        List<X509Certificate> caChain = new ArrayList<>(Arrays.asList((X509Certificate[]) ca.getCertificateChain()));
         caChain.add(0, endUserCert);
         return caChain.toArray(new X509Certificate[0]);
     }

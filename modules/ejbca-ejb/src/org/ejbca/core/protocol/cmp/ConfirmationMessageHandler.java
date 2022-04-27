@@ -158,29 +158,38 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             } else if (LOG.isDebugEnabled()) {
                 LOG.debug("CMP Confirm message header has no protection alg, using default alg in response.");
             }
-        } catch (CADoesntExistsException | CryptoTokenOfflineException e) {
-            LOG.error("Exception during CMP response signing: " + e.getMessage(), e);            
+        } catch (CADoesntExistsException e) {
+            LOG.error("Exception during CMP response signing: " + e.getMessage());            
+        }
+        catch (CryptoTokenOfflineException e) {
+            LOG.error("Exception during CMP response signing: " + e.getMessage(), e);
         }
     }
-    
+	
 	private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
-	    CAInfo caInfo = null;
-	    if (caDn == null) {
-	        final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	        caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-	    } else {
-	        final String caDnNormalized = CertTools.stringToBCDNString(caDn);
-	        caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
-	        if(caInfo == null) {
-	            final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	            LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
-	                    " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
-	            caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-	        }
-	    }
-	    if (!(caInfo instanceof X509CAInfo)) {
-	        throw new CADoesntExistsException("Incorrect CA type.");
-	    }
-	    return (X509CAInfo) caInfo;
-	}
+        CAInfo caInfo = null;
+        final String caDnDefault;
+        
+        caInfo = caSession.getCAInfoInternal(CertTools.stringToBCDNString(caDn).hashCode(), null, true);
+        
+        // Null caInfo, try with the default ca from cmp alias
+        if (caInfo == null) {
+            final String cmpDefaultCA = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+            
+            if (cmpDefaultCA.equals("")) {
+                LOG.error("No CMP Default CA exists in Alias");
+                throw new CADoesntExistsException("No CMP DefaultCA exists");
+            } else {
+                caDnDefault = CertTools.stringToBCDNString(cmpDefaultCA);
+                caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
+                LOG.info("Could not find Recipient CA with DN '" + CertTools.stringToBCDNString(caDn) + "'."
+                        + " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
+            }
+        }
+        if (!(caInfo instanceof X509CAInfo)) {
+            throw new CADoesntExistsException("Incorrect CA type.");
+        }
+        return (X509CAInfo) caInfo;
+    }
+    
 }

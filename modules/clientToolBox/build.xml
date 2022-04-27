@@ -56,6 +56,7 @@
 
 
 	<path id="test.classpath">
+		<path refid="clientToolBox.lib.classpath"/>
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
 		<path refid="lib.commons-config.classpath" />

@@ -14,13 +14,19 @@ package org.ejbca.ui.cli.config.oauth;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
@@ -66,7 +72,7 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     protected boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
-            final boolean hasSameInternalId = existingKeyInfo.getInternalId() == oauthKey.getInternalId();
+            final boolean hasSameInternalId = ObjectUtils.equals(existingKeyInfo.getInternalId(), oauthKey.getInternalId());
             final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
             if (hasSameInternalId || hasSameLabel) {
                 return false;
@@ -99,6 +105,28 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
         }
         
         return skewLimitInt;
+    }
+
+    /**
+     * Given a key binding name, return its ID if found.
+     */
+    protected Optional<Integer> keyBindingNameToId(String keyBindingName) {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        final List<InternalKeyBindingInfo> internalKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAuthenticationToken(),
+                null);
+        return internalKeyBindings.stream().filter(b -> b.getName().equals(keyBindingName)).map(InternalKeyBindingInfo::getId).findFirst();
+    }
+
+    /**
+     * Given a key binding id, return its name if found.
+     */
+    protected Optional<String> keyBindingIdToName(Integer keyBindingId) {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        final List<InternalKeyBindingInfo> internalKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAuthenticationToken(),
+                null);
+        return internalKeyBindings.stream().filter(b -> b.getId() == keyBindingId).map(InternalKeyBindingInfo::getName).findFirst();
     }
     
 }

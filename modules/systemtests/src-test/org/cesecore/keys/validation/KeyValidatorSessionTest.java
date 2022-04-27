@@ -59,6 +59,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAFactory;
@@ -146,7 +147,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     // Helper objects.
     private X509CA testCA;
     private CertificateProfile testCertificateProfile;
-    private EndEntityProfile testEndEntityProfile;
     private EndEntityInformation testUser;
 
     @Before
@@ -169,7 +169,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
         // Create test EEP.
         removeEndEntityProfileIfExist(TEST_EEP_NAME);
-        testEndEntityProfile = createTestEndEntityProfile(TEST_EEP_NAME);
+        createTestEndEntityProfile(TEST_EEP_NAME);
 
         // Create test user.
         removeUserIfExists(TEST_EE_NAME);
@@ -928,7 +928,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         return (EndEntityInformation) o;
     }
 
-    private void setKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException {
+    private void setKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
         ca.getCAInfo().getValidators().clear();
         for (int validatorId : validatorIds) {
             ca.getCAInfo().getValidators().add(validatorId);
@@ -937,7 +937,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         ca.setCAInfo(caSession.getCAInfo(internalAdmin, ca.getCAId()));
     }
 
-    private void removeKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException {
+    private void removeKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException {
         Collection<Integer> ids = ca.getCAInfo().getValidators();
         for (int validatorId : validatorIds) {
             ids.remove(validatorId);

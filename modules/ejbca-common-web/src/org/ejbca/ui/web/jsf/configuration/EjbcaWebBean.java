@@ -17,6 +17,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
@@ -260,6 +261,11 @@ public interface EjbcaWebBean extends Serializable {
      * Returns authorized root CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
     TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames();
+    
+    /**
+     * Returns authorized ITS CA certificate profile names as a treemap of name (String) -> id (Integer)
+     */
+    TreeMap<String, Integer> getAuthorizedItsCACertificateProfileNames();
 
     /**
      * 
@@ -267,6 +273,12 @@ public interface EjbcaWebBean extends Serializable {
      */
     TreeMap<String, Integer>  getAuthorizedSshCertificateProfileNames();
     
+    /**
+     * 
+     * @return authorized ITS certificate profile names as a treemap of name (String) -> id (Integer)
+     */
+    TreeMap<String, Integer>  getAuthorizedItsCertificateProfileNames();
+
     /**
      * Method returning the all available approval profiles id to name.
      *
@@ -595,6 +607,16 @@ public interface EjbcaWebBean extends Serializable {
     void reloadOAuthConfiguration();
 
     void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException;
+
+    //*************************************************
+    //      External Account Binding  configurations
+    //*************************************************
+
+    EABConfiguration getEABConfiguration();
+
+    void reloadEABConfiguration();
+
+    void saveEABConfiguration(final EABConfiguration eabConfiguration) throws AuthorizationDeniedException;
 
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration

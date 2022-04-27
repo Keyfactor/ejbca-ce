@@ -12,26 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -81,6 +61,7 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
@@ -103,6 +84,7 @@ import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
+import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
@@ -112,6 +94,26 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.IllegalQueryException;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * API of available methods on the CA that can be invoked by the RA.
@@ -376,6 +378,13 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
+    
+    /**
+     * Searches for certificates V2. Data (e.g. revocation status) of remote certificates take precedence over local ones.
+     * @return list of certificates from the specified search criteria and order plus pagination summary.
+     * @since Added between Master RA API version 12 and 13 (EJBCA 7.8.0), lacks an exact API version
+     */
+    RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequestV2 raCertificateSearchRequest);
 
     /**
      * Searches for end entities. Remote end entities take precedence over local ones.
@@ -527,13 +536,14 @@ public interface RaMasterApi {
     void finishUserAfterLocalKeyRecovery(AuthenticationToken authenticationToken, String username, String password) throws AuthorizationDeniedException, EjbcaException;
 
     /**
-     * Generates keystore for the specified end entity. Used for server side generated key pairs. It can be of PKCS12 or JKS type.
-     * Keystore can be loaded with:
+     * <p>Generates keystore for the specified end entity. Used for server side generated key pairs. The keystore can be one of
+     * the following types:
+     * <ul>
+     *     <li>PKCS12</li>
+     *     <li>BCFKS</li>
+     *     <li>JKS</li>
+     * </ul>
      *
-     * KeyStore ks = KeyStore.getInstance(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12 ? "PKCS12" : "JKS");
-     * ks.load(new ByteArrayInputStream(keystoreAsByteArray), endEntityInformation.getPassword().toCharArray());
-     *
-     * Note that endEntityInformation are still needed to load a keystore.
      * @param authenticationToken authentication token
      * @param endEntityInformation holds end entity information (including user's password)
      * @return generated keystore
@@ -542,6 +552,25 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     byte[] generateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
+     * <p>Generates keystore for the specified end entity. Only for use in the RA Web when view end entity access rule should not be checked. 
+     * Used for server side generated key pairs. The keystore can be one of the following types:
+     * <ul>
+     *     <li>PKCS12</li>
+     *     <li>BCFKS</li>
+     *     <li>JKS</li>
+     * </ul>
+     *
+     * @param authenticationToken authentication token
+     * @param endEntityInformation holds end entity information (including user's password)
+     * @return generated keystore
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
+     * @since RA Master API version 13 (EJBCA 7.9.0)
+     */
+    byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;
 
     /**
@@ -665,6 +694,15 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username);
+    
+    /**
+     * Finds end entity by its username for the explicit purpose of creating a certificate for an existing end entity via the Ra Web.
+     * @param authenticationToken authentication token
+     * @param username username of the end entity
+     * @return end entity as EndEntityInformation
+     * @since RA Master API version 13 (EJBCA 7.9.0)
+     */
+    EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username);
 
     /**
      * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.
@@ -871,6 +909,20 @@ public interface RaMasterApi {
     ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException;
 
     /**
+     * Creates an approval request.
+     *  
+     * @param authenticationToken the authentication token.
+     * @param approvalType the type of approval request ({@link ApprovalDataVO#getApprovalType()}).
+     * @param approvalProfileId the ID.
+     * @param endEntityProfileId the end entity profile ID.
+     * @param acmeAccountId the ID (key identifier) of the ACME account. 
+     * @return the ID of the approval request created or null.
+     * @throws AuthorizationDeniedException if the authorization has been denied.
+     * @throws ApprovalException if the approval request could not be created because it already exists.
+     */
+    Integer createApprovalRequest(AuthenticationToken authenticationToken, int approvalType, final int approvalProfileId, int endEntityProfileId, String acmeAccountId) throws AuthorizationDeniedException, ApprovalException;
+    
+    /**
      * Performs all "deep" checks of user data (EndEntityInformation) intended to be added. Checks like uniqueness of SubjectDN or username should be part of this test.
      * @param admin auth. token
      * @param endEntity user data as EndEntityInformation object
@@ -925,7 +977,19 @@ public interface RaMasterApi {
     SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
     IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
     CertificateExtensionException, CertificateRenewalException;
-
+    
+    /**
+     * Verifies and decrypts the SCEP PKCS10 message CSR with the CAs cryptoToken.
+     * 
+     * @param authenticationToken the origin of the request
+     * @param alias name of alias containing SCEP configuration
+     * @param message to parse
+     * @return the DER encoded CSR or null.
+     * @throws CertificateCreateException if the message could not be parsed or verified.
+     * @since RA Master API version 11 (EJBCA 7.5.0)  
+     */
+    byte[] verifyScepPkcs10RequestMessage(final AuthenticationToken authenticationToken, final String alias, final byte[] message) throws CertificateCreateException;
+    
     /**
      * Dispatch CMP request over RaMasterApi.
      *
@@ -1325,6 +1389,19 @@ public interface RaMasterApi {
     AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId);
 
     /**
+     * Parses the EAB request.
+     * 
+     * @param authenticationToken the authentication token.
+     * @param requestUrl the ACME newAccount URL.
+     * @param requestJwk the base64 encoded account key in JWK form.
+     * @param eabRequestJsonString the EAB request as JSON string.
+     * @return the external account identifier.
+     * @throws AcmeProblemException if the message could not be verified (technically, well-formed or by content).
+     */
+    String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
+            String eabRequestJsonString) throws AcmeProblemException;
+
+    /**
      * Create or update the AcmeAccount.
      * @param acmeAccount account to persist
      * @return the persisted version of the AcmeAccount.
@@ -1456,4 +1533,56 @@ public interface RaMasterApi {
     <T extends ConfigurationBase> T getGlobalConfiguration(Class<T> type);
 
 
+    /**
+     * Dispatch SCEP message over RaMasterApi, returning enough information to update status in Intune
+     *
+     * @param authenticationToken the origin of the request
+     * @param operation desired SCEP operation to perform
+     * @param message to dispatch
+     * @param scepConfigurationAlias name of alias containing SCEP configuration
+     * @return byte array containing dispatch response from CA. Content depends on operation
+     * @throws CertificateEncodingException if an error occurs while attempting to encode a certificate.
+     * @throws NoSuchAliasException if the alias doesn't exist
+     * @throws CADoesntExistsException if the CA doesn't exist
+     * @throws NoSuchEndEntityException if an end entity is thought to exist but does not
+     * @throws CustomCertificateSerialNumberException if we use custom certificate serial numbers, but are not using a unique issuerDN/certSerialNo index in the database
+     * @throws CryptoTokenOfflineException if we use a CA Token that isn't available
+     * @throws IllegalKeyException if malformed key
+     * @throws SignRequestException if malformed certificate request.
+     * @throws SignRequestSignatureException if invalid signature on certificate request.
+     * @throws AuthStatusException if wrong status of user object.
+     * @throws AuthLoginException if wrong credentials of user object.
+     * @throws IllegalNameException if invalid request name for a certificate.
+     * @throws CertificateCreateException if a serious error happens creating a certificate.
+     * @throws CertificateRevokeException if an error revoking a certificate
+     * @throws CertificateSerialNumberException if we create a certificate that already exists.
+     * @throws IllegalValidityException if an invalid request validity period for a certificate.
+     * @throws CAOfflineException if we use a CA that is offline
+     * @throws InvalidAlgorithmException if an invalid request certificate signature algorithm for a certificate.
+     * @throws SignatureException if generic Signature exception.
+     * @throws CertificateException if a variety of certificate problems.
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws CertificateExtensionException if advanced certificate extensions when it is configured with bad properties.
+     * @throws CertificateRenewalException if an error occurs during Certificate Renewal.
+     * @since RA Master API version 12 (EJBCA 7.5.1)
+     */
+    ScepResponseInfo scepDispatchIntune(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws CertificateEncodingException,
+    NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, SignRequestException,
+    SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException,
+    IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException,
+    CertificateExtensionException, CertificateRenewalException;
+    
+    /**
+     * Enrolls or re-enroll credential of an ITS-S as per as per section 6.2.3.2.1 in ETSI 102 941 v2.1.1.
+     * 
+     * @param authenticationToken
+     * @param ecaCertificateId - certiifcateId of ECA, not CA name
+     * @param requestBody - enrollment request serialized as byte array from figure 14
+     * @param operationCode - placeholder to indicate operation (EC enroll or validation)
+     * @return - signed and encrypted response from figure 15
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException 
+     */
+    byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
+                                                byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException;
 }
