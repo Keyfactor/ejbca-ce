@@ -154,7 +154,7 @@ CREATE TABLE CertificateData (
     rowVersion INT(11) NOT NULL,
     serialNumber VARCHAR(250) BINARY NOT NULL,
     status INT(11) NOT NULL,
-    subjectAltName VARCHAR(2000) BINARY,
+    subjectAltName VARCHAR(500) BINARY,
     subjectDN VARCHAR(400) BINARY NOT NULL,
     subjectKeyId VARCHAR(250) BINARY,
     accountBindingId VARCHAR(250) BINARY,
@@ -308,7 +308,7 @@ CREATE TABLE RoleMemberData (
     tokenProviderId INT(11) DEFAULT 0 NOT NULL,
     tokenMatchKey INT(11) NOT NULL,
     tokenMatchOperator INT(11) NOT NULL,
-    tokenMatchValue VARCHAR(2000) BINARY,
+    tokenMatchValue VARCHAR(500) BINARY,
     roleId INT(11) NOT NULL,
     description VARCHAR(250) BINARY,
     rowProtection LONGTEXT,
@@ -335,12 +335,13 @@ CREATE TABLE UserData (
     clearPassword VARCHAR(250) BINARY,
     endEntityProfileId INT(11) NOT NULL,
     extendedInformationData LONGTEXT,
+    hardTokenIssuerId INT(11) NOT NULL,
     keyStorePassword VARCHAR(250) BINARY,
     passwordHash VARCHAR(250) BINARY,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     status INT(11) NOT NULL,
-    subjectAltName VARCHAR(2000) BINARY,
+    subjectAltName VARCHAR(500) BINARY,
     subjectDN VARCHAR(400) BINARY,
     subjectEmail VARCHAR(250) BINARY,
     timeCreated BIGINT(20) NOT NULL,
@@ -382,7 +383,7 @@ CREATE TABLE NoConflictCertificateData (
     rowVersion INT(11) NOT NULL,
     serialNumber VARCHAR(250) BINARY NOT NULL,
     status INT(11) NOT NULL,
-    subjectAltName VARCHAR(2000) BINARY,
+    subjectAltName VARCHAR(500) BINARY,
     subjectDN VARCHAR(400) BINARY NOT NULL,
     subjectKeyId VARCHAR(250) BINARY,
     accountBindingId VARCHAR(250) BINARY,
@@ -400,7 +401,7 @@ CREATE TABLE AcmeNonceData (
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (nonce)
- ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+ ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
  
 CREATE TABLE AcmeAccountData (
     accountId VARCHAR(250) BINARY NOT NULL,
@@ -409,7 +410,7 @@ CREATE TABLE AcmeAccountData (
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (accountId)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE AcmeOrderData (
     orderId VARCHAR(250) BINARY NOT NULL,
@@ -420,7 +421,7 @@ CREATE TABLE AcmeOrderData (
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (orderId)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE AcmeChallengeData (
     challengeId VARCHAR(250) BINARY NOT NULL,
@@ -430,7 +431,7 @@ CREATE TABLE AcmeChallengeData (
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (challengeId)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(250) BINARY NOT NULL,
@@ -440,7 +441,7 @@ CREATE TABLE AcmeAuthorizationData (
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (authorizationId)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE SctData (
 	pk VARCHAR(250) BINARY NOT NULL,
@@ -448,10 +449,10 @@ CREATE TABLE SctData (
     fingerprint VARCHAR(256) BINARY NOT NULL,
     certificateExpirationDate BIGINT NOT NULL,
     data LONGTEXT,
-    rowProtection LONG TEXT,
+    rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (pk) 
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 
 CREATE TABLE OcspResponseData (
@@ -461,8 +462,16 @@ CREATE TABLE OcspResponseData (
     nextUpdate BIGINT(20),
     ocspResponse LONGBLOB,
     cAId INT(11),
-    rowProtection LONG TEXT,
+    rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (id)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(250) BINARY NOT NULL,
+    startTime BIGINT(20) NOT NULL,
+    rawData LONGTEXT,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;

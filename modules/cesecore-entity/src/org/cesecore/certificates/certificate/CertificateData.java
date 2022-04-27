@@ -482,6 +482,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     /**
      * The ID of the account binding, i.E. ACME EAB.
      */
+    @Override
     public void setAccountBindingId(String accountBindingId) {
         this.accountBindingId = accountBindingId;
     }

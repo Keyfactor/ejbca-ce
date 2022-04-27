@@ -21,6 +21,8 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,17 +31,23 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-
 /**
  * Tests generation of serial numbers.
- *
- * @version $Id$
  */
 public class SernoGeneratorTest {
     private static final Logger log = Logger.getLogger(SernoGeneratorTest.class);
 
+    @Before
+    public void before() { cleanup(); }
+    @After
+    public void after() { cleanup(); }
+
+    private void cleanup() {
+        SernoGeneratorRandom.clearCache();
+    }
+
     /** Test min and max values for different serial number sizes. */
-    @Test
+    @Test(timeout = 60_000)
     public void testSernoValidationChecker() {
         // Default serno size 20 bytes (160 bits)
         SernoGeneratorRandom gen = new SernoGeneratorRandom(20);
@@ -93,7 +101,7 @@ public class SernoGeneratorTest {
     /** Test certificate serialNumber generation with 8 octets size (64 bits). 
      * Using 64 bit serial numbers should not product any collisions for 500.000 serials
      */
-    @Test
+    @Test(timeout = 60_000)
     public void testGenerateSernos8OctetsSHA1PRNG() throws Exception {
         final long start = System.currentTimeMillis();
         final int noRounds = 500;
@@ -109,7 +117,7 @@ public class SernoGeneratorTest {
     /** Using only 32 bit serial numbers will produce collisions 
      * about 1-5 times for 100.000 serial numbers
      */
-    @Test
+    @Test(timeout = 60_000)
     public void testGenerateSernos4OctetsSHA1PRNG() throws Exception {
         final long start = System.currentTimeMillis();
         final int noRounds = 100;
@@ -125,7 +133,7 @@ public class SernoGeneratorTest {
     /** Test certificate serialNumber generation with 20 octets size (160 bits). 
      * Using 160 bit serial numbers should not product any collisions for 500.000 serials
      */
-    @Test
+    @Test(timeout = 60_000)
     public void testGenerateSernos20OctetsSHA1PRNG() throws Exception {
         final long start = System.currentTimeMillis();
         final int noRounds = 500;
@@ -140,7 +148,7 @@ public class SernoGeneratorTest {
 
     /** Test certificate serialNumber generation with 20 octets size (160 bits) using the BC Hybrid random. 
      */
-    @Test
+    @Test(timeout = 60_000)
     public void testGenerateSernos20OctetsBCHybrid() throws Exception {
         final long start = System.currentTimeMillis();
         final int noRounds = 500;
@@ -159,7 +167,7 @@ public class SernoGeneratorTest {
      * it takes 30-70 seconds to generate a single random number once the entropy pool is exhausted after 0-10 serials.
      * On JDK7 and less the "defaultstrong" option is not available, which is considered in this test.
      */
-    @Test
+    @Test(timeout = 60_000)
     public void testGettingDefaultStrong() throws Exception {
         try {
             generateSernos(4, "defaultstrong", 0, 0);
@@ -180,7 +188,7 @@ public class SernoGeneratorTest {
         }
     }
 
-    @Test
+    @Test(timeout = 60_000)
     public void testGettingBCHybrid() throws Exception {
         generateSernos(4, "bcsp800hybrid", 0, 0);
         // If running on JDK >= 8 we will come here
@@ -190,7 +198,7 @@ public class SernoGeneratorTest {
 
     /** Try fetching a random number generator of type "default". This will create a default SecureRandom implementation. 
      */
-    @Test
+    @Test(timeout = 60_000)
     public void testGenerateSernos8OctetsDefault() throws Exception {
         final long start = System.currentTimeMillis();
         final int noRounds = 500;
@@ -242,7 +250,7 @@ public class SernoGeneratorTest {
     }
 
     public static Throwable threadException = null;
-    @Test
+    @Test(timeout = 60_000)
     public void testMultiThreadedSernoGeneration() throws Exception {
         Thread no1 = new Thread(new SernoTester(4),"4 octets"); // NOPMD we want to use thread here, it's not a JEE app
         Thread no2 = new Thread(new SernoTester(8),"8 octets"); // NOPMD we want to use thread here, it's not a JEE app

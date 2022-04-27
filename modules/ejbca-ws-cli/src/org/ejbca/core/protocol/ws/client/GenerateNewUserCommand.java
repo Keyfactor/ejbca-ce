@@ -38,8 +38,6 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 /**
  * Adds a user to the database and issues a certificate, all in one CLI call but using two WS calls in the background.
- *
- * @version $Id$
  */
 public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -273,8 +271,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 
         getPrintStream().println("Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
 		
-        getPrintStream().println("Existing tokens : " + "USERGENERATED" + ", " +
-        		"P12" + ", "+ "JKS" + ", "  + "PEM");
+        getPrintStream().println("Token must be: " + "USERGENERATED");
         getPrintStream().println("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL");
         getPrintStream().println("outputpath : directory where certificate is written in form username+.cer|.pem ");
         getPrintStream().println();

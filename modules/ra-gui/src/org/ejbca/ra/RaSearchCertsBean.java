@@ -56,7 +56,6 @@ import org.ejbca.ra.RaCertificateDetails.Callbacks;
 /**
  * Backing bean for Search Certificates page.
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -64,6 +63,7 @@ public class RaSearchCertsBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaSearchCertsBean.class);
+    private static final String EXPIRED_STATUS = "EXPIRED";
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -99,7 +99,7 @@ public class RaSearchCertsBean implements Serializable {
 
     private UIComponent confirmPasswordComponent;
 
-    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS };
+    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS, EXTERNAL_ACCOUNT };
 
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
@@ -218,7 +218,8 @@ public class RaSearchCertsBean implements Serializable {
                         !stagedRequest.matchSerialNumber(cdw.getCertificateData().getSerialNumber()) &&
                         !stagedRequest.matchUsername(cdw.getCertificateData().getUsername()) &&
                         !stagedRequest.matchSubjectDn(cdw.getCertificateData().getSubjectDnNeverNull()) &&
-                        !stagedRequest.matchSubjectAn(cdw.getCertificateData().getSubjectAltNameNeverNull())
+                        !stagedRequest.matchSubjectAn(cdw.getCertificateData().getSubjectAltNameNeverNull()) &&
+                        !stagedRequest.matchExternalAccountId(cdw.getCertificateData().getAccountBindingId())
                         )) {
                     continue;
                 }
@@ -259,6 +260,17 @@ public class RaSearchCertsBean implements Serializable {
                     return o1.getExpires().compareTo(o2.getExpires()) * (sortAscending ? 1 : -1);
                 case STATUS:
                     return o1.getStatus().compareTo(o2.getStatus()) * (sortAscending ? 1 : -1);
+                case EXTERNAL_ACCOUNT: {
+                    if (o1.getAccountBindingId() == null && o2.getAccountBindingId() == null) {
+                        return 0;
+                    } else if (o1.getAccountBindingId() == null) {
+                        return sortAscending ? 1 : -1;
+                    } else if (o2.getAccountBindingId() == null) {
+                        return sortAscending ? -1 : 1;
+                    } else {
+                        return o1.getAccountBindingId().compareTo(o2.getAccountBindingId()) * (sortAscending ? 1 : -1);
+                    }
+                }
                 case USERNAME:
                 default:
                     return o1.getUsername().compareToIgnoreCase(o2.getUsername()) * (sortAscending ? 1 : -1);
@@ -294,6 +306,8 @@ public class RaSearchCertsBean implements Serializable {
     public void sortByExpiration() { sortBy(SortOrder.EXPIRATION, false); }
     public String getSortedByStatus() { return getSortedBy(SortOrder.STATUS); }
     public void sortByStatus() { sortBy(SortOrder.STATUS, true); }
+    public String getSortedByExternalAccount() { return getSortedBy(SortOrder.EXTERNAL_ACCOUNT); }
+    public void sortByExternalAccount() { sortBy(SortOrder.EXTERNAL_ACCOUNT, true); }
     public String getSortedByUsername() { return getSortedBy(SortOrder.USERNAME); }
     public void sortByUsername() { sortBy(SortOrder.USERNAME, true); }
 
@@ -355,6 +369,7 @@ public class RaSearchCertsBean implements Serializable {
         stagedRequest.setUsernameSearchString(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
+        stagedRequest.setExternalAccountIdSearchString(genericSearchString);
     }
 
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
@@ -578,10 +593,17 @@ public class RaSearchCertsBean implements Serializable {
     public void setCriteriaStatus(final String criteriaStatus) {
         final List<Integer> statuses = new ArrayList<>();
         final List<Integer> revocationReasons = new ArrayList<>();
+        stagedRequest.resetExpiresBefore();
+        stagedRequest.resetExpiresAfter();
+        
         if (criteriaStatus!=null && !criteriaStatus.isEmpty()) {
             final String[] criteriaStatusSplit = criteriaStatus.split("_");
             if (String.valueOf(CertificateConstants.CERT_ACTIVE).equals(criteriaStatusSplit[0])) {
                 statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION }));
+                stagedRequest.setExpiresAfter(System.currentTimeMillis());
+            } else if(EXPIRED_STATUS.equalsIgnoreCase(criteriaStatusSplit[0])) {
+                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, CertificateConstants.CERT_ARCHIVED }));
+                stagedRequest.setExpiresBefore(System.currentTimeMillis());
             } else {
                 statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_REVOKED, CertificateConstants.CERT_ARCHIVED }));
                 if (criteriaStatusSplit.length>1) {
@@ -597,6 +619,7 @@ public class RaSearchCertsBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem("", raLocaleBean.getMessage("search_certs_page_criteria_status_option_any")));
         ret.add(new SelectItem(String.valueOf(CertificateConstants.CERT_ACTIVE), raLocaleBean.getMessage("search_certs_page_criteria_status_option_active")));
+        ret.add(new SelectItem(EXPIRED_STATUS, raLocaleBean.getMessage("search_certs_page_criteria_status_option_expired")));
         ret.add(new SelectItem(String.valueOf(CertificateConstants.CERT_REVOKED), raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked")));
         ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED));
         ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE));

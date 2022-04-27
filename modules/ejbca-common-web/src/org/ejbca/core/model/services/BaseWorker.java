@@ -20,6 +20,8 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.intervals.DummyInterval;
@@ -27,7 +29,6 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
 /**
  * Abstract base class that initializes the worker and its interval and action.
  *  
- * @version $Id$
  */
 public abstract class BaseWorker implements IWorker {
 
@@ -50,6 +51,7 @@ public abstract class BaseWorker implements IWorker {
     
     protected AuthenticationToken admin = null;
 
+    // Cached data
 	private transient Collection<Integer> cAIdsToCheck = null;
 	private transient long timeBeforeExpire = -1;
 
@@ -210,6 +212,24 @@ public abstract class BaseWorker implements IWorker {
 			}
 		}
 		return cAIdsToCheck;
+	}
+
+	/**
+	 * Return Ids for all CAs if ALLCAS constant is found in the PROP_CAIDSTOCHECK.
+	 *
+	 * @param caSession Session for CAs.
+	 * @param includeAllCAsIfNull set to true if the 'catch all' CAConstants.ALLCAS should be included in the list if the property
+	 * 	      	                  BaseWorker.PROP_CAIDSTOCHECK does not exist.
+	 * @return a collection of integer CA IDs.
+	 */
+	protected Collection<Integer> getAllCAIdsToCheck(CaSessionLocal caSession, boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
+		Collection<Integer> caIdsToCheck = getCAIdsToCheck(includeAllCAsIfNull);
+
+		if (caIdsToCheck != null && caIdsToCheck.contains(CAConstants.ALLCAS)) {
+			caIdsToCheck = caSession.getAllCaIds();
+		}
+
+		return caIdsToCheck;
 	}
 	
 	protected static String constructNameList(List<String> names) {

@@ -191,7 +191,7 @@ public class CrlStoreServletTest extends CaTestCase {
                 return;
             }
         }
-        final String sURI = getBaseUrl(false) + "?alias="+alias+(isDelta ? "&delta=" : "");
+        final String sURI = getBaseUrl(false) + "?alias="+alias+(isDelta ? "&delta=" : "") + "&partition=" + crlPartitionIndex;
         testUri(pw, sURI, caSubjectDN, crlPartitionIndex, isDelta);
     }
     

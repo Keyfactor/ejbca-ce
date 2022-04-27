@@ -1,3 +1,0 @@
-"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
-"Apache Commons";               "commons-pool.jar";                                 "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-pool/";                  "v1.5.6. Generic object pooling component.";
-"Quickserver";                  "QuickServer.jar";                                  "LGPLv2.1";             "LICENSE-LGPL-2.1";             "http://www.quickserver.org/";                                      "v2.0.0.";

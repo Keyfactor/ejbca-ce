@@ -25,10 +25,13 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -42,9 +45,26 @@ import javax.ejb.TransactionAttributeType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 /**
  * @see CryptoTokenManagementSession
@@ -65,6 +85,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -208,7 +234,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         Properties properties = new Properties();
         properties.putAll(tokenprops);
         properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");                       
-        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
+        CryptoToken cryptoToken;
+        if (className.equals(AzureCryptoToken.class.getName())) {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false,
+                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
+        } else {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
+        }
         final String providerName = cryptoToken.getSignProviderName();
         if (log.isDebugEnabled()) {
             log.debug("isCryptoTokenUsed: Created provider (without installing) to check for collisions: "+providerName);
@@ -350,7 +382,18 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
         // Note: if data is null, a new empty keystore will be created
         final List<String> isSlotUsed = isCryptoTokenSlotUsed(authenticationToken, tokenName, className, properties);
-        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
+        CryptoToken cryptoToken;
+
+        // special case - azure crypto token can do public key authentication
+        if (className.equals(AzureCryptoToken.class.getName())) {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false,
+                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
+        }
+
+        // Standard crypto token initialization
+        else {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
+        }
         if (authenticationCode != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Activating new crypto token using supplied authentication code.");
@@ -460,7 +503,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // For SoftCryptoTokens, a new secret means that we should change it and it can only be done if the token is active
         CryptoToken newCryptoToken;
         try {
-            newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
+            if (className.equals(AzureCryptoToken.class.getName())) {
+                // special case - pass in an object that can find the authentication key binding
+                newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName, 
+                        new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
+            } else {
+                newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
+            }
             // If a new authenticationCode is provided we should verify it before we go ahead and merge
             if (authenticationCode != null && authenticationCode.length > 0) {
                 newCryptoToken.deactivate();
@@ -786,24 +835,25 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     private List<String> getKeyPairAliasesInternal(final CryptoToken cryptoToken) throws CryptoTokenOfflineException {
         try {
-            final List<String> aliasEnumeration = cryptoToken.getAliases();
             final List<String> keyPairAliases = new ArrayList<>();
-            for (final String currentAlias : aliasEnumeration) {
+            for (final String currentAlias : cryptoToken.getAliases()) {
                 try {
                     if (cryptoToken.getPublicKey(currentAlias) != null && cryptoToken.doesPrivateKeyExist(currentAlias)) {
-                        // A key pair exists for this alias, so add it
                         keyPairAliases.add(currentAlias);
-                        continue; // next alias, skip debug log
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Ignoring key with alias '" + currentAlias + "' in crypto token '" + cryptoToken.getTokenName()
+                                    + "'. Reason: No private or public key exists. Is it a secret key?");
+                        }
                     }
-                } catch (CryptoTokenOfflineException ignored) {
-                    // Ignored
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Ignored key alias '"+currentAlias+"' in crypto token '"+cryptoToken.getTokenName()+"' since it is missing a public and/or private key. Perhaps it is a symmetric key?");
+                } catch (CryptoTokenOfflineException | RuntimeException e) {
+                    log.debug("Ignoring keypair with alias '" + currentAlias + "' in crypto token '" + cryptoToken.getTokenName()
+                            + "'. Reason: " + e.getMessage());
+                    log.trace(e);
                 }
             }
             return keyPairAliases;
-        } catch (KeyStoreException e) {
+        } catch (final KeyStoreException e) {
             throw new CryptoTokenOfflineException(e);
         }
     }

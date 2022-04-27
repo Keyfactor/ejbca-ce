@@ -12,18 +12,16 @@
  *************************************************************************/
 package org.cesecore.config;
 
+import org.apache.log4j.Logger;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-
 /**
  * This file handles configuration from cesecore.properties
- *
- * @version $Id$
  */
 public final class CesecoreConfiguration {
 
@@ -424,7 +422,8 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * @return true if sign mechanisms that uses pkcs#11 for hashing should be disabled.
+     * @return true if sign mechanisms that uses PKCS#11 for hashing should be disabled, 
+     * if no value is defined for pkcs11.disableHashingSignMechanisms default value is true.
      */
     public static boolean p11disableHashingSignMechanisms() {
         final String value = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
@@ -521,5 +520,11 @@ public final class CesecoreConfiguration {
     public static String getCustomClassWhitelist() {
         final String customClassWhitelist = ConfigurationHolder.getExpandedString(CUSTOM_CLASS_WHITELIST_KEY);
         return (customClassWhitelist != null ? customClassWhitelist : "");
+    }
+
+    public static boolean useLegacyPkcs12Keystore() {
+        return ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null
+                ? false
+                : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12"));
     }
 }

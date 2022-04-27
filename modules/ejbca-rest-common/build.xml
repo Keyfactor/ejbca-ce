@@ -58,12 +58,14 @@
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
         <path location="${mod.ejbca-rest-common.lib}"/>
+		<path refid="lib.test.powermock.classpath"/>
 	</path>
 
 	<path id="test.classpath">
         <path refid="compile-test.classpath"/>
 		<path location="${ejbca-rest-common.build-test.dir}"/>
         <path refid="lib.jee-client.classpath"/>
+		<path refid="lib.test.powermock.classpath"/>
 	</path>
 
     <target name="clean" description="Clean up this module">

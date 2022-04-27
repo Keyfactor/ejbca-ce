@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -47,6 +48,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -65,6 +67,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
@@ -143,50 +146,69 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime) throws AuthorizationDeniedException {
+    public CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, 
+            final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, String accountBindingId) throws AuthorizationDeniedException {
     	// Check that user is authorized to the CA that issued this certificate
     	int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
-    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, crlPartitionIndex, endEntityProfileId, tag, updateTime);
+    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, crlPartitionIndex, 
+    	        endEntityProfileId, tag, updateTime, accountBindingId);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper wrappedCert, String username, String cafp, int status, int type,
-            int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime) throws AuthorizationDeniedException {
+    public void storeCertificateRemote(AuthenticationToken admin, CertificateWrapper wrappedCert, String username, String cafp, int status, int type, int certificateProfileId, 
+            final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, String accountBindingId) throws AuthorizationDeniedException {
         Certificate incert = EJBTools.unwrap(wrappedCert);
         // Check that user is authorized to the CA that issued this certificate
         int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
-        storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime);
+        storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime, accountBindingId);
     }
 
     /** Local interface only */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest, 
-            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime) {
+            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, String accountBindingId) {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
         }
-        final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime, true);
+        final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId, 
+                endEntityProfileId, crlPartitionIndex, tag, updateTime, true, accountBindingId, RevocationReasons.NOT_REVOKED, null);
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificateNoAuth()");
         }
         return ret;
     }
-    
+
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public CertificateDataWrapper storeCertificateNoAuthNewTransaction(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest, 
-            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime) {
+    public CertificateDataWrapper storeCertificateNoAuthNewTransaction(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest,
+            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, String accountBindingId) {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
         }
-        final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime, true);
+        final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId,
+                endEntityProfileId, crlPartitionIndex, tag, updateTime, true, accountBindingId, RevocationReasons.NOT_REVOKED, null);
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificateNoAuth()");
+        }
+        return ret;
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public CertificateDataWrapper storeCertificateRevokedNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest,
+            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, String accountBindingId,
+            final RevocationReasons revocationReason, final Date revocationDate) {
+        if (log.isTraceEnabled()) {
+            log.trace(">storeCertificateRevokedNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
+        }
+        final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId,
+                endEntityProfileId, crlPartitionIndex, tag, updateTime, true, accountBindingId, revocationReason, revocationDate);
+        if (log.isTraceEnabled()) {
+            log.trace("<storeCertificateRevokedNoAuth()");
         }
         return ret;
     }
@@ -207,10 +229,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * @param tag a custom string tagging this certificate for some purpose
      * @param updateTime epoch millis to use as last update time of the stored object
      * @param doAuditLog determines if a security audit log event shall be written or not with, EventTypes.CERT_STORED, ModuleTypes.CERTIFICATE,
+     * @param accountBindingId External Account Binding ID
+     * @param revocationReason Revocation reason, or RevocationReasons.NOT_REVOKED for not revoked
+     * @param revocationDate Revocation date, or null for not revoked
      * must only be used when storing special internal certificates, such as the test certificates for checking unique database index.
      */
-    private CertificateDataWrapper storeCertificateNoAuthInternal(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest, 
-            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, boolean doAuditLog) {
+    private CertificateDataWrapper storeCertificateNoAuthInternal(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest,
+            int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, boolean doAuditLog, String accountBindingId,
+            final RevocationReasons revocationReason, final Date revocationDate) {
         final PublicKey pubk = enrichEcPublicKey(incert.getPublicKey(), cafp);
         // Create the certificate in one go with all parameters at once. This used to be important in EJB2.1 so the persistence layer only creates
         // *one* single
@@ -227,11 +253,16 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         final boolean storeSubjectAlternativeName = certificateProfile==null || certificateProfile.getStoreSubjectAlternativeName();
         final CertificateData certificateData = new CertificateData(incert, pubk, username, cafp, certificateRequest, status, type, certificateProfileId, endEntityProfileId,
-                crlPartitionIndex, tag, updateTime, !useBase64CertTable && storeCertificateData, storeSubjectAlternativeName);
+                crlPartitionIndex, tag, updateTime, !useBase64CertTable && storeCertificateData, storeSubjectAlternativeName, accountBindingId);
+        if (revocationReason != RevocationReasons.NOT_REVOKED) {
+            certificateData.setRevocationDate(revocationDate);
+            certificateData.setRevocationReason(revocationReason.getDatabaseValue());
+        }
         entityManager.persist(certificateData);
         if (doAuditLog) {
             final String serialNo = CertTools.getSerialNumberAsString(incert);
-            final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateData.getFingerprint(), certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
+            final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateData.getFingerprint(), certificateData.getSubjectDnNeverNull(), 
+                    certificateData.getIssuerDN(), serialNo, certificateData.getAccountBindingId());
             final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
             logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(), caId,
                     serialNo, username, msg);
@@ -347,8 +378,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String username = data.getUsername();
         final String serialNo = CertTools.getSerialNumberAsString(certificate);
         final int issuerHash = CertTools.getIssuerDN(certificate).hashCode();
-        final String msg = INTRES.getLocalizedMessage("store.storecert", username, certificateFingerprint, 
-                data.getSubjectDnNeverNull(), issuerHash, serialNo);
+        final String msg = INTRES.getLocalizedMessage("store.storecertwithaccountbindingid", username, certificateFingerprint, 
+                data.getSubjectDnNeverNull(), issuerHash, serialNo, accountBindingId);
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         final String caId = String.valueOf(issuerHash);
@@ -1439,32 +1470,59 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     public String getCADnFromRequest(final RequestMessage req) {
-        String dn = req.getIssuerDN();
+        String issuerDn = req.getIssuerDN();
         if (log.isDebugEnabled()) {
-            log.debug("Got an issuerDN: " + dn);
+            log.debug("Got an issuerDN: " + issuerDn);
         }
         // If we have issuer and serialNo, we must find the CA certificate, to get the CAs subject name
         // If we don't have a serialNumber, or CA Sequence, we take a chance that it was actually the subjectDN (for example a RootCA)
         final BigInteger sernoBigInt = req.getSerialNo();
         final String sernoString;
+
         if (sernoBigInt == null) {
             sernoString = req.getCASequence();
         } else {
             sernoString = sernoBigInt.toString();
         }
         if (sernoString != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Got a serialNumber: " + sernoString);
-            }
-            final Certificate cert = findCertificateByIssuerAndSerno(dn, sernoString);
-            if (cert != null) {
-                dn = CertTools.getSubjectDN(cert);
+            Optional<String> optionalDn = lookupCACert(issuerDn, sernoBigInt, sernoString);
+            if (optionalDn.isPresent()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Using CA DN: " + optionalDn.get());
+                }
+                return optionalDn.get();
             }
         }
+
+        return issuerDn;
+    }
+
+    private Optional<String> lookupCACert(final String issuerDn, final BigInteger sernoBigInt, final String sernoString) {
         if (log.isDebugEnabled()) {
-            log.debug("Using DN: " + dn);
+            log.debug("Got a serialNumber: " + sernoString);
         }
-        return dn;
+
+        // First lookup cache for potential CA certs.
+        final X509Certificate[] caCert = CaCertificateCache.INSTANCE.findLatestByIssuerDN(HashID.getFromDNString(issuerDn));
+        if (ArrayUtils.isNotEmpty(caCert)) {
+            for (final X509Certificate cert : caCert) {
+                if (cert.getSerialNumber().equals(sernoBigInt)) {
+                    return Optional.of(CertTools.getSubjectDN(cert));
+                }
+            }
+        }
+        
+        // If no cache hit go for db lookup
+        final Certificate cert = findCertificateByIssuerAndSerno(issuerDn, sernoString);
+        if (cert != null) {
+            return Optional.of(CertTools.getSubjectDN(cert));
+        }
+        
+        // No cache or DB hit, return empty 
+        if (log.isDebugEnabled()) {
+            log.debug("Returning empty DN since no cert found in cache or DB!");
+        }
+        return Optional.empty();
     }
 
     //
@@ -1547,7 +1605,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, long updateTime) throws AuthorizationDeniedException {
-        storeCertificateNoAuthInternal(admin, incert, username, cafp, null, CertificateConstants.CERT_INACTIVE, 0, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "", updateTime, false);
+        storeCertificateNoAuthInternal(admin, incert, username, cafp, null, CertificateConstants.CERT_INACTIVE, 0, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, 
+                EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "", updateTime, false, null, RevocationReasons.NOT_REVOKED, null);
     }
 
     // We want deletion of a certificates to run in a new transactions, so we can catch errors as they happen..

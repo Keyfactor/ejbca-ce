@@ -12,60 +12,59 @@
  *************************************************************************/
 
 /* version: $Id$ */
-
 .content {
 	background: #ffffff;
 	height: 100%;
-	margin: 50px 10% 30px 10%;	
+	margin: 50px 10% 30px 10%;
 	border-radius: 15px;
 }
 
 .header {
-     margin: 0;
-     color: #333;
-     padding: 1.5em 5em 0;
-     border-bottom: 1px solid #eee;
-     text-align: center;
- }
- 
-	.header h1 {
-	    margin: 0.2em 0;
-	    font-size: 3em;
-	    font-weight: 300;
-	    color: #1f589f;
-	}
-	
-.content-body {
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6em;
-    text-align: left;
-    padding: 1em 1.5em 1em; 
+	margin: 0;
+	color: #333;
+	padding: 1.5em 5em 0;
+	border-bottom: 1px solid #eee;
+	text-align: center;
 }
-	.content-body h2 {
-	    margin: 0.2em 0;
-	    font-size: 1.3em;
-	    font-weight: 300;
-	    color: #1f589f;
-	}
-	
-	.content-body h3 {
-	    margin: 0.2em 0;
-	    color: #1f589f;
-	}
-	
-	.content-body pure-table td,
-	.content-body pure-table th {
-	    border-left: 1px solid #cbcbcb;/*  inner column border */
-	    border-width: 0 0 0 1px;
-	    font-size: inherit;
-	    margin: 0;
-	    padding: 0px 10px; /* cell padding */    
-	    overflow: visible; /*to make ths where the title is really long work*/
-	}
-	
+
+.header h1 {
+	margin: 0.2em 0;
+	font-size: 3em;
+	font-weight: 300;
+	color: #1f589f;
+}
+
+.content-body {
+	margin-left: auto;
+	margin-right: auto;
+	line-height: 1.6em;
+	text-align: left;
+	padding: 1em 1.5em 1em;
+}
+
+.content-body h2 {
+	margin: 0.2em 0;
+	font-size: 1.3em;
+	font-weight: 300;
+	color: #1f589f;
+}
+
+.content-body h3 {
+	margin: 0.2em 0;
+	color: #1f589f;
+}
+
+.content-body pure-table td, .content-body pure-table th {
+	border-left: 1px solid #cbcbcb; /*  inner column border */
+	border-width: 0 0 0 1px;
+	font-size: inherit;
+	margin: 0;
+	padding: 0px 10px; /* cell padding */
+	overflow: visible; /*to make ths where the title is really long work*/
+}
+
 .button-group {
-	padding: 0.5em 0.5em;   	 
+	padding: 0.5em 0.5em;
 }
 
 #enrollMakeNewRequestContentBody {
@@ -81,9 +80,8 @@
 	text-align: center;
 }
 
-
 .content-body-subhead {
-    margin: 0 1.5em 0;
+	margin: 0 1.5em 0;
 }
 
 .internal-frame {
@@ -97,15 +95,20 @@
 	border-radius: 5px;
 	margin: 0.5em 0;
 }
-	.internal-frame fieldset {
-		padding: 0;
-	}
+
+.internal-frame fieldset {
+	padding: 0;
+}
+
+.internal-frame-with-left-margin {
+	margin-left: 5em;
+}
 
 .radio-button-table {
 	margin-left: 3em;
 	padding: 0 5em;
 }
-	
+
 .required-input {
 	border: 1px solid #f30513;
 }
@@ -115,21 +118,21 @@
 }
 
 .align-center {
-    text-align: center;
+	text-align: center;
 }
 
 .align-right {
-    text-align: right;
+	text-align: right;
 }
 
 .ra-button {
 	margin: 0.25em 0.25em;
- 	background: #ededed;
-   	color: #212021;
+	background: #ededed;
+	color: #212021;
 }
 
 .ra-outputText {
-    margin: 0.5em 0 0.2em;
+	margin: 0.5em 0 0.2em;
 }
 
 .pure-control-group {
@@ -141,8 +144,15 @@
 	font-size: 1.1em;
 	font-weight: bold;
 }
-.statusApproved { color: #53983d; }
-.statusFailed { color: #e53e33; }
+
+.statusApproved {
+	color: #53983d;
+}
+
+.statusFailed {
+	color: #e53e33;
+}
+
 .editLogEntry {
 	color: #fff;
 	font-size: 0.875em;
@@ -151,6 +161,7 @@
 .tabButtonBar {
 	border-bottom: 0.2ex solid #1e599f;
 }
+
 .tabButton {
 	background: #ededed;
 	color: #000;
@@ -159,6 +170,7 @@
 	border: 0 none;
 	display: inline-block;
 }
+
 .tabButton.active {
 	background: #1e599f;
 	color: #fff;
@@ -169,22 +181,23 @@
 }
 
 .toggleMoreButton {
-    display: inline-block;
-    background: none;
-    border: none;
-    font: inherit;
-    margin: 0;
-    padding: 0;
-    outline: none;
-    outline-offset: 0;
-    color: #e9af13;
-    cursor: pointer;
-    line-height: inherit;
-    float: right;
+	display: inline-block;
+	background: none;
+	border: none;
+	font: inherit;
+	margin: 0;
+	padding: 0;
+	outline: none;
+	outline-offset: 0;
+	color: #e9af13;
+	cursor: pointer;
+	line-height: inherit;
+	float: right;
 }
+
 .toggleMoreButton::-moz-focus-inner {
-    border: none;
-    padding: 0;
+	border: none;
+	padding: 0;
 }
 
 .raNotification {
@@ -204,105 +217,122 @@
 
 /* Add-Remove controls */
 .addRemoveListEnabled, .addRemoveListButtons, .addRemoveListAvailable {
-    display: inline-block;
+	display: inline-block;
 }
+
 .addRemoveListEnabled label, .addRemoveListAvailable label {
-    display: block;
+	display: block;
 }
-.pure-form .addRemoveListEnabled select, .pure-form .addRemoveListAvailable select {
-    min-width: 20em;
+
+.pure-form .addRemoveListEnabled select, .pure-form .addRemoveListAvailable select
+	{
+	min-width: 20em;
 }
+
 .addRemoveListButtons {
-    width: 7em;
-    vertical-align: middle;
-    margin: 0 1em;
+	width: 7em;
+	vertical-align: middle;
+	margin: 0 1em;
 }
+
 .addRemoveListButtons input {
-    min-width: 100%;
-    margin: 0;
-    padding: 0.75ex 0;
+	min-width: 100%;
+	margin: 0;
+	padding: 0.75ex 0;
 }
 
 /* CSS specific for the top menu */
-
 .ejbca-menu {
-    height: 2em;
-    background: #ededed;
-   	color: #212021;	
+	height: 2em;
+	background: #ededed;
+	color: #212021;
 }
 
 .pure-menu-link, .language_button {
-   	color: #212021;	    
-   	font-size: 0.875em; 	
+	color: #212021;
+	font-size: 0.875em;
 }
 
 .pure-menu-item {
 	background: #ededed;
 }
 
-.pure-menu-link:hover, .pure-menu-link:focus  {
+.pure-menu-link:hover, .pure-menu-link:focus {
 	background: #336699;
 }
 
-.enroll-menu-link:hover, .enroll-menu-link:focus  {
+.enroll-menu-link:hover, .enroll-menu-link:focus {
 	background: #336699;
 }
 
 img.menu_logo {
-    height: 1em; 
-    width: auto;
+	height: 1em;
+	width: auto;
 }
 
 .language_button {
 	border: none;
 	padding: 15px 32px;
 	text-align: center;
-    text-decoration: none;
+	text-decoration: none;
 }
 
-.language_button:hover, .language_button:focus{
+.language_button:hover, .language_button:focus {
 	background: #336699;
 }
 
 /* CSS Specific for the bottom menu */
-
 .footer {
-    background: #ededed;
-   	color: #212021;
-   	font-size: 0.875em; 
-    padding: 1px;
+	background: #ededed;
+	color: #212021;
+	font-size: 0.875em;
+	padding: 1px;
 }
 
-.row-even { background-color: transparent; }
-.row-odd { background-color: #f2f2f2; }
+.row-even {
+	background-color: transparent;
+}
+
+textarea.row-even,
+textarea.row-odd,
+.row-odd {
+	background-color: #f2f2f2;
+}
 
 /* Table for issued certificates when viewing an EE */
 .ra-eeCertTable {
-    width: 75%;
-    margin: 5px auto 0 2.5%;
-    border: none;
-    font-size: 0.875em;
+	width: 75%;
+	margin: 5px auto 0 2.5%;
+	border: none;
+	font-size: 0.875em;
 }
 
 .ra-eeCertTable th, .ra-eeCertTable td {
-    color: #ffffff;
+	color: #ffffff;
 }
 
 /* End Entity status change */
-.ra-editEndEntity select, .ra-editEndEntity input, .ra-editEndEntity .warning {
-    color: #000000;
+.ra-editEndEntity select, .ra-editEndEntity input, .ra-editEndEntity .warning
+	{
+	color: #000000;
 	margin-right: 5px;
+}
+
+.editNameConstraints {
+	width: 50%;
+	margin: 5px;
 }
 
 #detailsForm .ra-editEndEntity table {
 	display: inline-block;
 }
 
-#detailsForm .ra-editEndEntity table td{
+#detailsForm .ra-editEndEntity table td {
 	padding-right: 10px;
 }
 
-.ra-editEndEntity .remaining-number-of-login-attempts, .ra-editEndEntity .next-to-radio {
+.ra-editEndEntity .remaining-number-of-login-attempts, .ra-editEndEntity .next-to-radio
+	{
 	width: 40px;
 	margin-right: 15px;
 }
@@ -314,16 +344,16 @@ img.menu_logo {
 
 /* End Entity status change */
 .ra-endEntityNavEditBar {
-    width: auto !important;
-    margin: 1% 2% 0 2% !important;
+	width: auto !important;
+	margin: 1% 2% 0 2% !important;
 }
 
 .ra-searchEndEntityEdit {
-    float: right !important;
+	float: right !important;
 }
 
 .ra-endEntityEditSaveCancel {
-    height: 40px !important;
+	height: 40px !important;
 }
 
 .ra-clearCsrCheckbox {
@@ -331,10 +361,10 @@ img.menu_logo {
 }
 
 .ra-csrDetailsLongText {
-	word-wrap:break-word; 
+	word-wrap: break-word;
 	table-layout: fixed;
 	display: inline-table;
-	width:70%;"
+	width: 70%; "
 	font-family: monospace;
 	color: #fff;
 	margin-bottom: 15px;

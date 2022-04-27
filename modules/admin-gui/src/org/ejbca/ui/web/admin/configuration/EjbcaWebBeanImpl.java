@@ -75,6 +75,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
@@ -157,6 +158,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private OAuthConfiguration oAuthConfiguration = null;
+    private EABConfiguration eabConfiguration = null;
     private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
     private String usercommonname = "";
@@ -167,9 +169,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
-    private String requestScheme;
     private String requestServerName;
-    private int requestServerPort;
     private String currentRemoteIp;
 
     /*
@@ -263,9 +263,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
             resetAuthSessionState();
             // Escape value taken from the request, just to be sure there can be no XSS
-            requestScheme = HTMLTools.htmlescape(httpServletRequest.getScheme());
+            HTMLTools.htmlescape(httpServletRequest.getScheme());
             requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
-            requestServerPort = httpServletRequest.getServerPort();
             currentRemoteIp = httpServletRequest.getRemoteAddr();
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
@@ -1040,6 +1039,17 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return ret;
     }
 
+    @Override
+    public TreeMap<String, Integer>  getAuthorizedItsCertificateProfileNames() {
+        final TreeMap<String,Integer> ret = new TreeMap<>();
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ITS);
+        final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (final int id : authorizedIds) {
+            ret.put(idtonamemap.get(id),id);
+        }
+        return ret;
+    }
+
     /**
      * Returns authorized root CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
@@ -1047,6 +1057,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
         final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ROOTCA);
+        final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (final int id : authorizedIds) {
+            ret.put(idtonamemap.get(id),id);
+        }
+        return ret;
+    }
+    
+    /**
+     * Returns authorized ITS CA certificate profile names as a treemap of name (String) -> id (Integer)
+     */
+    @Override
+    public TreeMap<String, Integer> getAuthorizedItsCACertificateProfileNames() {
+        final TreeMap<String,Integer> ret = new TreeMap<>();
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ITS);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -2037,6 +2061,31 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession.saveConfiguration(administrator, oAuthConfig);
         oAuthConfiguration = oAuthConfig;
     }
+    //*************************************************
+    //      External Account Binding  configurations
+    //*************************************************
+
+    @Override
+    public EABConfiguration getEABConfiguration() {
+        if (eabConfiguration == null) {
+            reloadEABConfiguration();
+        }
+        return eabConfiguration;
+    }
+
+    @Override
+    public void reloadEABConfiguration() {
+        eabConfiguration = (EABConfiguration) globalConfigurationSession
+                .getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
+    }
+
+    @Override
+    public void saveEABConfiguration(EABConfiguration eabConfiguration) throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, eabConfiguration);
+        this.eabConfiguration = eabConfiguration;
+    }
+
+
     //*****************************************************************
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************

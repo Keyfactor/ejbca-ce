@@ -75,11 +75,16 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     public PKCS11TestRunner(Class<?> klass) throws Exception {
         super(klass);
     }
-
+    
     @Override
     public X509CA createX509Ca() throws Exception {
-        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(getSubjectDn()).hashCode());
-        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(getSubjectDn(), SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
+        return createX509Ca(getSubjectDn(), getName());
+    }
+
+    @Override
+    public X509CA createX509Ca(String subjectDn, String username) throws Exception {
+        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
                 true, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         CAToken caToken = x509ca.getCAToken();
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
@@ -91,7 +96,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
         CAInfo info = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId());
         // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
         PublicKey pk = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, ALIAS).getPublicKey();
-        EndEntityInformation user = new EndEntityInformation(super.getName(), info.getSubjectDN(), x509ca.getCAId(), null, null, new EndEntityType(
+        EndEntityInformation user = new EndEntityInformation(username, info.getSubjectDN(), x509ca.getCAId(), null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");

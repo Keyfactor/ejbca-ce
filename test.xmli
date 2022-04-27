@@ -49,7 +49,7 @@
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/msae" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -96,6 +96,10 @@
     </target>
     <target name="optionaltestacme-system" if="${acme.exists}">
         <ant antfile="build.xml" dir="modules/acme" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
+    <condition property="ejbca-msae.exists"><available file="modules/msae"/></condition>
+    <target name="optionaltestmsae-unit" if="${ejbca-msae.exists}">
+        <ant antfile="build.xml" dir="modules/msae" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ejbca-rest-api.exists"><available file="modules/ejbca-rest-api"/></condition>
     <target name="optionaltestrest-unit" if="${ejbca-rest-api.exists}">
@@ -166,6 +170,7 @@
                     <include name="modules/ejbca-ejb-cli/src-test/**/${test.runone}.java" />
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
+                    <include name="modules/cits/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -262,8 +267,11 @@
             <matches string="${test-fullname}" pattern="^modules/ejbca-ejb-cli/.*$"/>
         </condition>
         <condition property="module" value="modules/msae">
-                    <matches string="${test-fullname}" pattern="^modules/msae/.*$"/>
-                </condition>
+            <matches string="${test-fullname}" pattern="^modules/msae/.*$"/>
+        </condition>
+        <condition property="module" value="modules/cits">
+            <matches string="${test-fullname}" pattern="^modules/cits/.*$"/>
+        </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
 		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -339,6 +347,20 @@
     <target name="test:msae" description="run JUnit MSAE test." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/msae" inheritall="true" inheritrefs="true">
             <target name="test:unit" />
+        </ant>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+    
+    <target name="test:cits" description="run JUnit CITS test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/cits" inheritall="true" inheritrefs="true">
+            <target name="test:unit" />
+        </ant>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:caa" description="run JUnit CAA test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/caa" inheritall="true" inheritrefs="true">
+            <target name="test" />
         </ant>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>

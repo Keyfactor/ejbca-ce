@@ -24,4 +24,4 @@ if [ ! -f "$CLI_JAR" ]; then
     exit 2
 fi
 
-exec "$JAVACMD" -jar "$CLI_JAR" "$@"
+exec "$JAVACMD" -Dlog4j1.compatibility=true -jar "$CLI_JAR" "$@"

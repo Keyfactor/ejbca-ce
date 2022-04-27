@@ -1,32 +1,28 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.SecConst;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * A class representing general information about certificate. Is used for REST services' responses.
- *
- * @version $Id: CertificateRestResponse.java 29010 2018-05-23 13:09:53Z andrey_s_helmes $
  */
 public class CertificateRestResponse {
     private byte[] certificate;
@@ -35,12 +31,18 @@ public class CertificateRestResponse {
     private String responseFormat;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<byte[]> certificateChain;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String certificateProfile;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String endEntityProfile;
+    
     private CertificateRestResponse(final CertificateRestResponseBuilder builder) {
         this.certificate = builder.certificate;
         this.serialNumber = builder.serialNumber;
         this.responseFormat = builder.responseFormat;
         this.certificateChain = builder.certificateChain;
+        this.certificateProfile = builder.certificateProfile;
+        this.endEntityProfile = builder.endEntityProfile;
     }
 
     /**
@@ -73,7 +75,15 @@ public class CertificateRestResponse {
     public String getResponseFormat() {
         return responseFormat;
     }
+    
+    public String getCertificateProfile() {
+        return certificateProfile;
+    }
 
+    public String getEndEntityProfile() {
+        return endEntityProfile;
+    }
+    
     public List<byte[]> getCertificateChain() { return certificateChain; }
     
     public static class CertificateRestResponseBuilder {
@@ -81,6 +91,9 @@ public class CertificateRestResponse {
         private String serialNumber;
         private String responseFormat;
         private List<byte[]> certificateChain;
+        private String certificateProfile;
+        private String endEntityProfile;
+
         
         private CertificateRestResponseBuilder() {
         }
@@ -97,6 +110,37 @@ public class CertificateRestResponse {
 
         public CertificateRestResponseBuilder setResponseFormat(String responseFormat) {
             this.responseFormat = responseFormat;
+            return this;
+        }
+        
+        public CertificateRestResponseBuilder setCertificateProfile(String certificateProfile) {
+            this.certificateProfile = certificateProfile;
+            return this;
+        }
+        
+        public CertificateRestResponseBuilder setEndEntityProfile(String endEntityProfile) {
+            this.endEntityProfile = endEntityProfile;
+            return this;
+        }
+
+        public CertificateRestResponseBuilder setResponseFormat(int keystoreType) {
+            switch (keystoreType) {
+            case SecConst.TOKEN_SOFT_JKS:
+                this.responseFormat = "JKS";
+                break;
+            case SecConst.TOKEN_SOFT_PEM:
+                this.responseFormat = "PEM";
+                break;
+            case SecConst.TOKEN_SOFT_P12:
+                this.responseFormat = "PKCS12";
+                break;
+            case SecConst.TOKEN_SOFT_BCFKS:
+                this.responseFormat = "BCFKS";
+                break;
+            default:
+                this.responseFormat = "UNKNOWN";
+                break;
+            }
             return this;
         }
 
@@ -125,31 +169,25 @@ public class CertificateRestResponse {
                     .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
                     .setCertificateChain(certificateChain == null ? null : certificateChain
                             .stream()
-                            .map(c -> getEncodedCertificate(c))
+                            .map(CertificateRestResponseConverter::getEncodedCertificate)
                             .collect(Collectors.toList()))
                     .setResponseFormat("DER")
                     .build();
         }
         
-        public CertificateRestResponse toRestResponse(final KeyStore keyStore, final String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType)  {
             return CertificateRestResponse.builder()
-                    .setCertificate(lockKeyStore(keyStore, password))
-                    .setResponseFormat(keyStore.getType())
+                    .setCertificate(keyStoreBytes)
+                    .setResponseFormat(keystoreType)
                     .build();
         }
 
-        private byte[] getEncodedCertificate(final Certificate certificate) {
+        private static byte[] getEncodedCertificate(final Certificate certificate) {
             try {
                 return certificate.getEncoded();
             } catch (CertificateEncodingException e) {
                 throw new RuntimeException(e);
             }
         }
-    }
-    
-    private static byte[] lockKeyStore(KeyStore keyStore, String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        keyStore.store(baos, password.toCharArray());
-        return baos.toByteArray();
     }
 }

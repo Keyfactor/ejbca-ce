@@ -13,11 +13,27 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
+import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyAndCertFinder;
 
 /**
  * Helper, sends requests to oauth token providers to exchange code to token or to refresh token
  */
 public class OauthRequestHelper {
+    
+    private KeyAndCertFinder keyBindingFinder;
+
+    public OauthRequestHelper(KeyAndCertFinder keyBindingFinder) {
+        this.keyBindingFinder = keyBindingFinder;
+    }
 
     /**
      * Exchanges code to token
@@ -26,8 +42,10 @@ public class OauthRequestHelper {
      * @param redirectUri ejbca url, used by provider to redirect response
      * @return OAuthGrantResponseInfo oauth provider response
      * @throws IOException
+     * @throws KeyBindingNotFoundException 
+     * @throws CryptoTokenOfflineException 
      */
-    public static OAuthGrantResponseInfo sendTokenRequest( OAuthKeyInfo oAuthKeyInfo, String code, String redirectUri ) throws IOException {
+    public OAuthGrantResponseInfo sendTokenRequest( OAuthKeyInfo oAuthKeyInfo, String code, String redirectUri ) throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
         return sendRequest(code, false, oAuthKeyInfo, redirectUri);
     }
 
@@ -38,35 +56,27 @@ public class OauthRequestHelper {
      * @param redirectUri ejbca url, used by provider to redirect response
      * @return OAuthGrantResponseInfo oauth provider response
      * @throws IOException
+     * @throws KeyBindingNotFoundException 
+     * @throws CryptoTokenOfflineException 
      */
-    public static OAuthGrantResponseInfo sendRefreshTokenRequest(String refreshToken, OAuthKeyInfo oAuthKeyInfo, String redirectUri) throws IOException {
+    public OAuthGrantResponseInfo sendRefreshTokenRequest(String refreshToken, OAuthKeyInfo oAuthKeyInfo, String redirectUri) throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
         return sendRequest(refreshToken, true, oAuthKeyInfo, redirectUri);
     }
 
-    private static OAuthGrantResponseInfo sendRequest(String codeOrToken, boolean isRefresh, OAuthKeyInfo oAuthKeyInfo, String redirectUri) throws IOException {
+    private OAuthGrantResponseInfo sendRequest(String codeOrToken, boolean isRefresh, OAuthKeyInfo oAuthKeyInfo, String redirectUri) throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
         final OAuthTokenRequest request = new OAuthTokenRequest();
-        switch (oAuthKeyInfo.getType()) {
-            case TYPE_KEYCLOAK: {
-                String uri = oAuthKeyInfo.getUrl();
-                uri += oAuthKeyInfo.getUrl().endsWith("/") ? "" : "/";
-                uri += "realms/" + oAuthKeyInfo.getRealm() + "/protocol/openid-connect/token";
-                request.setUri(uri);
-                break;
-            }
-            case TYPE_AZURE: {
-                String uri = oAuthKeyInfo.getUrl();
-                uri += oAuthKeyInfo.getUrl().endsWith("/") ? "" : "/";
-                uri += oAuthKeyInfo.getRealm() + "/oauth2/v2.0/token";
-                request.setUri(uri);
-                break;
-            }
-            case TYPE_GENERIC: {
-                request.setUri(oAuthKeyInfo.getUrl());
-                break;
-            }
-        }
+        request.setUri(oAuthKeyInfo.getTokenUrl());
         request.setClientId(oAuthKeyInfo.getClient());
-        request.setClientSecret(oAuthKeyInfo.getClientSecretAndDecrypt());
+        if (oAuthKeyInfo.getKeyBinding() != null) {
+            Preconditions.checkState(oAuthKeyInfo.getType() == OAuthProviderType.TYPE_AZURE, "OAuth cert authentication only supported for Azure");
+            Pair<X509Certificate, PrivateKey> certificateAndKey = keyBindingFinder.find(oAuthKeyInfo.getKeyBinding())
+                    .orElseThrow(() -> new KeyBindingNotFoundException(oAuthKeyInfo.getKeyBinding().toString()));
+            request.setClientAssertionAudience(oAuthKeyInfo.getLoginServerUrl());
+            request.setKey(certificateAndKey.getRight());
+            request.setCertificate(certificateAndKey.getLeft());
+        } else {
+            request.setClientSecret(oAuthKeyInfo.getClientSecretAndDecrypt());
+        }
         request.setRedirectUri(redirectUri);
         return request.execute(codeOrToken, isRefresh);
     }

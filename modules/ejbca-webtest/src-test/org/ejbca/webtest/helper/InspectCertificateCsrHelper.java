@@ -25,8 +25,7 @@ import java.util.List;
 /**
  * 'Inspect Certificate CSR' helper class for EJBCA Web Tests.
  *
- * @version $Id: InspectCertificateCsrHelper.java 35074 2020-05-25 15:43:51Z margaret_d_thomas $
- */
+*/
 public class InspectCertificateCsrHelper extends BaseHelper {
 
     /**
@@ -44,10 +43,10 @@ public class InspectCertificateCsrHelper extends BaseHelper {
         static final By INPUT_BROWSE_CERTIFICATE_UPLOAD = By.id("reqfile");
 
         //Labels
-        static final By LABEL_CSR_DUMP_HEADER = By.cssSelector(".content > p:nth-child(3)");
+        static final By LABEL_CSR_DUMP_HEADER = By.cssSelector(".content > p:nth-child(4)");
 
         //Page Content
-        static final By PAGE_CONTENT_CERTIFICATE_DUMP = By.cssSelector(".content > pre:nth-child(4)");
+        static final By PAGE_CONTENT_CERTIFICATE_DUMP = By.cssSelector(".content > pre:nth-child(5)");
     }
 
     /**
@@ -110,7 +109,6 @@ public class InspectCertificateCsrHelper extends BaseHelper {
         //Get certificate contents from screen
         final WebElement certificateDump = findElement(Page.PAGE_CONTENT_CERTIFICATE_DUMP);
         String fileContents = certificateDump.getText();
-        List<String> fileContentsList = new ArrayList<>(Arrays.asList(fileContents.split("\n")));
 
         //For each row in the array assert it exists in the fileContents
         for (String certificateRow : certificateRows) {

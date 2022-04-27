@@ -10,7 +10,7 @@ if [ "x${JAVA_OPT}" = "x" ] ; then
 else
     echo Using JAVA_OPT: ${JAVA_OPT}
 fi
-java ${JAVA_OPT} -cp $MYCP org.ejbca.database.DatabaseCli "$@"
+java ${JAVA_OPT} -Dlog4j1.compatibility=true -cp $MYCP org.ejbca.database.DatabaseCli "$@"
 
 ERRORLEVEL="$?"
 if [ "x${ERRORLEVEL}" = "x1" ] ; then

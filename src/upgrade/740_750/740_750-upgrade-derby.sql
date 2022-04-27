@@ -3,3 +3,5 @@
 -- If you are using an older version of Derby, such as 10.2, you need to drop and re-create this table. See doc/howto/create-tables-ejbca-derby.sql for drop/create statements.
 -- ALTER TABLE ApprovalData ADD subjectDn VARCHAR(256);
 -- ALTER TABLE ApprovalData ADD email VARCHAR(256);
+-- ALTER TABLE CertificateData ADD accountBindingId VARCHAR(256);
+-- ALTER TABLE NoConflictCertificateData ADD accountBindingId VARCHAR(256);

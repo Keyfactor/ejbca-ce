@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.validation.ExternalScriptsWhitelist;
+import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.config.GlobalConfiguration;
 
 /**
@@ -76,7 +76,7 @@ public class ValidatorSettings {
 
     public void save() {
         try {
-            final ExternalScriptsWhitelist whitelist = ExternalScriptsWhitelist.fromText(externalScriptsWhitelist, isExternalScriptsWhitelistEnabled);
+            final ExternalScriptsAllowlist whitelist = ExternalScriptsAllowlist.fromText(externalScriptsWhitelist, isExternalScriptsWhitelistEnabled);
             if (log.isDebugEnabled()) {
                 log.debug("Saving allow list of permitted scripts: " + whitelist.getScriptsPaths());
             }
@@ -99,7 +99,7 @@ public class ValidatorSettings {
     }
 
     public void validateScripts() {
-        final ExternalScriptsWhitelist whitelist = ExternalScriptsWhitelist.fromText(externalScriptsWhitelist);
+        final ExternalScriptsAllowlist whitelist = ExternalScriptsAllowlist.fromText(externalScriptsWhitelist);
         final List<String> validationMessages = new ArrayList<>();
         for (final Entry<File, String> validationEntry : whitelist.validateScripts().entrySet()) {
             if (validationEntry.getValue() == null) {

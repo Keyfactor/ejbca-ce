@@ -13,6 +13,8 @@
         }, {
             "name": "v1/certificate"
         }, {
+            "name": "v2/certificate"
+        }, {
             "name": "v1/cryptotoken"
         }, {
             "name": "v1/endentity"
@@ -258,7 +260,7 @@
                     }, {
                         "in": "body",
                         "name": "body",
-                        "description": "responseFormat must be one of 'P12', 'JKS', 'DER'",
+                        "description": "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'",
                         "required": false,
                         "schema": {
                             "$ref": "#/definitions/FinalizeRestRequest"
@@ -532,7 +534,7 @@
                 "tags": ["v1/endentity"],
                 "summary": "Get the status of this REST Resource",
                 "description": "Returns status, API version and EJBCA version.",
-                "operationId": "status_3",
+                "operationId": "status_4",
                 "produces": ["application/json"],
                 "parameters": [],
                 "responses": {
@@ -573,7 +575,7 @@
                 "tags": ["v1/endentity"],
                 "summary": "Searches for end entities with given criteria.",
                 "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchEndEntitiesCriteriaRestRequest model.",
-                "operationId": "searchCertificates",
+                "operationId": "searchCertificates_3",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
                 "parameters": [{
@@ -672,6 +674,52 @@
                 "responses": {
                     "default": {
                         "description": "successful operation"
+                    }
+                }
+            }
+        },
+        "/v2/certificate/search": {
+            "post": {
+                "tags": ["v2/certificate"],
+                "summary": "Searches for certificates confirming given criteria and pagination.",
+                "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model.",
+                "operationId": "searchCertificates2",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "description": "Search criteria and pagination.",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/SearchCertificatesRestRequestV2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/SearchCertificatesRestResponseV2"
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/certificate/status": {
+            "get": {
+                "tags": ["v2/certificate"],
+                "summary": "Get the status of this REST Resource",
+                "description": "Returns status, API version and EJBCA version.",
+                "operationId": "status_5",
+                "produces": ["application/json"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/RestResourceStatusRestResponse"
+                        }
                     }
                 }
             }
@@ -782,6 +830,78 @@
                 }
             }
         },
+        "CertificateRestResponseV2": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "byte"
+                    }
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "response_format": {
+                    "type": "string"
+                }
+            }
+        },
+        "AddEndEntityRestRequest": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "dn": {
+                    "type": "string"
+                },
+                "subject_alt_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "extension_data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExtendedInformationRestRequestComponent"
+                    }
+                },
+                "ca_name": {
+                    "type": "string"
+                },
+                "certificate_profile_name": {
+                    "type": "string"
+                },
+                "endEntity_profile_name": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string",
+                    "enum": ["USERGENERATED", "P12", "BCFKS", "JKS", "PEM"]
+                },
+                "account_binding_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ExtendedInformationRestRequestComponent": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
         "EndEntityRestResponse": {
             "type": "object",
             "properties": {
@@ -820,6 +940,22 @@
                 },
                 "value": {
                     "type": "string"
+                }
+            }
+        },
+        "SetEndEntityStatusRestRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string",
+                    "enum": ["USERGENERATED", "P12", "BCFKS", "JKS", "PEM"]
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["NEW", "FAILED", "INITIALIZED", "INPROCESS", "GENERATED", "REVOKED", "HISTORICAL", "KEYRECOVERY", "WAITINGFORADDAPPROVAL"]
                 }
             }
         },
@@ -909,6 +1045,24 @@
                 }
             }
         },
+        "SearchCertificatesRestResponseV2": {
+            "type": "object",
+            "properties": {
+                "certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CertificateRestResponseV2"
+                    }
+                },
+                "pagination_summary": {
+                	"type": "object",
+                    "description": "Pagination summary.",
+                    "items": {
+                        "$ref": "#/definitions/PaginationSummary"
+                    }
+                }
+            }
+        },
         "SearchCertificateCriteriaRestRequest": {
             "type": "object",
             "properties": {
@@ -930,6 +1084,84 @@
             },
             "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n"
         },
+        "SearchCertificateCriteriaRestRequestV2": {
+            "type": "object",
+            "properties": {
+                "property": {
+                    "type": "string",
+                    "description": "A search property",
+                    "enum": ["QUERY", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "CA", "STATUS", "ISSUED_DATE", "EXPIRE_DATE", "REVOCATION_DATE"]
+                },
+                "value": {
+                    "type": "string",
+                    "example": "'SuperCA', '2018-06-15T14:07:09Z', 'MyEndEntityProfile'",
+                    "description": "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA"
+                },
+                "operation": {
+                    "type": "string",
+                    "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
+                    "enum": ["EQUAL", "LIKE", "BEFORE", "AFTER"]
+                }
+            },
+            "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n"
+        },
+        "Pagination": {
+            "type": "object",
+            "properties": {
+            	"page_size": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Page size or max. number of certificates returned.",
+                    "minimum": 1
+                },
+                "current_page": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The current page from 1 to n.",
+                    "minimum": 1
+                }
+            },
+            "description": "Pagination."
+        },
+        "PaginationSummary": {
+            "type": "object",
+            "properties": {
+            	"page_size": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Page size or max. number of certificates returned.",
+                    "minimum": 1
+                },
+                "current_page": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The current page from 1 to n.",
+                    "minimum": 1
+                },
+                "total_certs": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Total number of certificates for the given criteria or null. Null means that this page might not be the last page."
+                }
+            },
+            "description": "Pagination summary."
+        },
+        "SearchCertificateCriteriaSortRequest": {
+            "type": "object",
+            "properties": {
+            	"property": {
+                    "type": "string",
+                    "enum": ["USERNAME", "ISSUER_DN", "SUBJECT_DN", "EXTERNAL_ACCOUNT_BINDING_ID", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "STATUS", "TAG", "TYPE", "UPDATE_TIME", "ISSUED_DATE", "EXPIRE_DATE", "REVOCATION_DATE"],
+                    "description": "The sort property."
+                },
+                "operation": {
+                    "type": "string",
+                    "enum": ["ASC", "DESC"],
+                    "description": "The sort operation."
+                }
+            },
+            "description": "Pagination with limit and offset.\n"
+        },
         "SearchCertificatesRestRequest": {
             "type": "object",
             "properties": {
@@ -942,6 +1174,32 @@
                     "description": "A List of search criteria.",
                     "items": {
                         "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
+                    }
+                }
+            }
+        },
+        "SearchCertificatesRestRequestV2": {
+            "type": "object",
+            "properties": {
+                "criteria": {
+                    "type": "array",
+                    "description": "A List of search criteria.",
+                    "items": {
+                        "$ref": "#/definitions/SearchCertificateCriteriaRestRequestV2"
+                    }
+                },
+                "pagination": {
+                    "type": "object",
+                    "description": "Pagination with limit and offset.",
+                    "items": {
+                        "$ref": "#/definitions/Pagination"
+                    }
+                },
+                "sort": {
+                    "type": "object",
+                    "description": "Sorting ascending or descending.",
+                    "items": {
+                        "$ref": "#/definitions/SearchCertificateCriteriaSortRequest"
                     }
                 }
             }

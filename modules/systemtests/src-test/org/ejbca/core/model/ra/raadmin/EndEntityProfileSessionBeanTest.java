@@ -37,7 +37,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -78,7 +77,6 @@ import static org.junit.Assert.fail;
 /**
  * Tests the end entity profile entity bean.
  *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
@@ -86,13 +84,13 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
 
     private static final String ROLENAME = "EndEntityProfileSessionTest";
 
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
-    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);;
+    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);;
     
-    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("EndEntityProfileSessionBeanTest");
     
@@ -202,7 +200,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         log.trace(">test04EditEndEntityProfile()");
 
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile("TEST");
-        assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONALUNIT) == 1);
+        assertEquals("Retrieving EndEntityProfile failed", 1, profile.getNumberOfField(DnComponents.ORGANIZATIONALUNIT));
 
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
         assertEquals(profile.getNumberOfField(DnComponents.ORGANIZATIONALUNIT), 2);
@@ -224,7 +222,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void test05RemoveEndEntityProfiles() throws Exception {
+    public void test05RemoveEndEntityProfiles() {
         log.trace(">test05removeEndEntityProfiles()");
         boolean ret = false;
         try {
@@ -268,14 +266,14 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             final int eepId = endEntityProfileSession.getEndEntityProfileId(eepProfileName);
             // Test 0 available CPs for this EEP.
             final int cpId1 = createCertificateProfile(alwaysAllowToken, cpProfileName1, CertificateConstants.CERTTYPE_ENDENTITY);
-            eeProfile.setAvailableCertificateProfileIds(Arrays.asList(new Integer[] { cpId1 }));
+            eeProfile.setAvailableCertificateProfileIds(Collections.singletonList(cpId1));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             Map<String, Integer> map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
             assertEquals("getAvailableCertificateProfiles for an EEP with 1 CPs assigned should return 1.", map.size(), 1);
             
             // Test n>1 available CPs for this EEP.
             final int cpId2 = createCertificateProfile(alwaysAllowToken, cpProfileName2, CertificateConstants.CERTTYPE_ENDENTITY);
-            eeProfile.setAvailableCertificateProfileIds(Arrays.asList(new Integer[] { cpId1, cpId2 }));
+            eeProfile.setAvailableCertificateProfileIds(Arrays.asList(cpId1, cpId2));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
             assertEquals("getAvailableCertificateProfiles for an EEP with 2 CPs assigned should return 2.", map.size(), 2);
@@ -311,7 +309,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             // 1. Test results.
             // 1.1 Test no available CAs for this EEP.
             Map<String, Integer> map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
-            assertTrue("getAvailableCAsInProfile for an EEP with no CAs assigned should return a map with size 0.", map.size() == 0);
+            assertEquals("getAvailableCAsInProfile for an EEP with no CAs assigned should return a map with size 0.", 0, map.size());
             
             // 1.2 Test 1 available CAs for this EEP
             // Create first CA.
@@ -319,11 +317,11 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             caInfo1 = getNewCAInfo(caName1, catoken1);
             caAdminSession.createCA(alwaysAllowToken, caInfo1);
-            eeProfile.setAvailableCAs(Arrays.asList(new Integer[] { caInfo1.getCAId() }));
+            eeProfile.setAvailableCAs(Collections.singletonList(caInfo1.getCAId()));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
-            assertTrue("getAvailableCAsInProfile for an EEP with 1 CAs assigned should return a map with size 1.", map.size() == 1);
-            assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
+            assertEquals("getAvailableCAsInProfile for an EEP with 1 CAs assigned should return a map with size 1.", 1, map.size());
+            assertEquals("CA name and ID must match.", (int) map.get(caName1), caInfo1.getCAId());
                         
             // 1.3 Test 2 available CAs for this EEP.
             // Create second CA.
@@ -331,12 +329,12 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             caInfo2 = getNewCAInfo(caName2, catoken2);
             caAdminSession.createCA(alwaysAllowToken, caInfo2);
-            eeProfile.setAvailableCAs(Arrays.asList(new Integer[] { caInfo1.getCAId(), caInfo2.getCAId() }));
+            eeProfile.setAvailableCAs(Arrays.asList(caInfo1.getCAId(), caInfo2.getCAId()));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
-            assertTrue("getAvailableCAsInProfile for an EEP with 2 CAs assigned should return a map with size 2.", map.size() == 2);
-            assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
-            assertTrue("CA name and ID must match.", map.get(caName2) == caInfo2.getCAId());
+            assertEquals("getAvailableCAsInProfile for an EEP with 2 CAs assigned should return a map with size 2.", 2, map.size());
+            assertEquals("CA name and ID must match.", (int) map.get(caName1), caInfo1.getCAId());
+            assertEquals("CA name and ID must match.", (int) map.get(caName2), caInfo2.getCAId());
             
             // 2. Test exception handling.
             // 2.1 Test end entity profile not found.
@@ -395,7 +393,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         String testProfileName = "TESTDYNAMICFIELDS";
         String testString1 = "testString1";
         String testString2 = "testString2";
-        boolean returnValue = true;
+        boolean returnValue;
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
         endEntityProfileSession.addEndEntityProfile(roleMgmgToken, testProfileName, profile);
@@ -417,7 +415,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Test if changes are what we expected
         profile = endEntityProfileSession.getEndEntityProfile(testProfileName);
-        returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONALUNIT, 0));
+        returnValue = testString2.equals(profile.getValue(DnComponents.ORGANIZATIONALUNIT, 0));
         returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
         assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         // Remove profile
@@ -432,7 +430,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void test07PasswordAutoGeneration() throws Exception {
+    public void test07PasswordAutoGeneration()  {
         log.trace(">test07PasswordAutoGeneration()");
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
@@ -441,7 +439,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         final String DIGITS = "0123456789";
         for (int i = 0; i < 100; i++) {
             String password = profile.makeAutoGeneratedPassword();
-            assertTrue("Autogenerated password is not of the requested length (was " + password.length() + ".", password.length() == 13);
+            assertEquals("Autogenerated password is not of the requested length (was " + password.length() + ".", 13, password.length());
             for (int j = 0; j < password.length(); j++) {
                 assertTrue("Password was generated with a improper char '" + password.charAt(j) + "'.", DIGITS.contains("" + password.charAt(j)));
             }
@@ -456,7 +454,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-   public void test08FieldIds() throws Exception {
+   public void test08FieldIds() {
         log.trace(">test08FieldIds()");
         EndEntityProfile profile = new EndEntityProfile();
 
@@ -513,7 +511,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     	    EndEntityProfile profile = new EndEntityProfile();
     	    profile.addField(EndEntityProfile.CARDNUMBER);
     	    profile.setRequired(EndEntityProfile.CARDNUMBER, 0, true);
-            profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+            profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
     	    String cardnumber = "foo123";
     	    boolean ret = false;
     	    try {
@@ -529,17 +527,16 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                     SecConst.TOKEN_SOFT_PEM, null);
             userdata.setPassword("foo123");
     	    try {
-    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
     	        ret = true;
     	    }
     	    assertTrue("User fulfilled the End Entity Profile even though the cardnumber was not sett", ret);
 
-    	    ret = false;
     	    userdata.setCardNumber(cardnumber);
     	    try {
-    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+    	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     	        ret = true;
     	    } catch (EndEntityProfileValidationException e) {
     	        log.debug(e.getMessage());
@@ -563,8 +560,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             final int caid = caIds.iterator().next();
         	try {
         		EndEntityProfile profile = new EndEntityProfile();
-        		profile.setAvailableCertificateProfileIds(Arrays.asList(1337));
-        		profile.setAvailableCAs(Arrays.asList(caid));
+        		profile.setAvailableCertificateProfileIds(Collections.singletonList(1337));
+        		profile.setAvailableCAs(Collections.singletonList(caid));
         		endEntityProfileSession.addEndEntityProfile(roleMgmgToken, NAME, profile);
         	} catch (EndEntityProfileExistsException pee) {
         		log.warn("Failed to add Certificate Profile " + NAME + ". Assuming this is caused from a previous failed test..");
@@ -636,31 +633,31 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             
             try {
                 endEntityProfileSession.addEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH1", profile);
-                assertTrue("should throw", false);
+                fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
             try {
                 endEntityProfileSession.changeEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", profile);
-                assertTrue("should throw", false);
+                fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
             try {
                 endEntityProfileSession.cloneEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", "TESTEEPROFNOAUTH1");
-                assertTrue("should throw", false);
+                fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
             try {
                 endEntityProfileSession.renameEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", "TESTEEPROFNOAUTH1");
-                assertTrue("should throw", false);
+                fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
             try {
                 endEntityProfileSession.removeEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH");
-                assertTrue("should throw", false);
+                fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
@@ -683,8 +680,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             // So we have to deny the admin specifically for a certain CA
             Collection<Integer> caids = caSession.getAllCaIds();
             int caid = caids.iterator().next();
-            profile.setAvailableCertificateProfileIds(Arrays.asList(1337));
-            profile.setAvailableCAs(Arrays.asList(caid));
+            profile.setAvailableCertificateProfileIds(Collections.singletonList(1337));
+            profile.setAvailableCAs(Collections.singletonList(caid));
             // It should work now
             endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
             // Add a deny rule to the role
@@ -694,7 +691,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             try {
                 // Now it should fail
                 endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
-                assertTrue("should throw", false);
+                fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }

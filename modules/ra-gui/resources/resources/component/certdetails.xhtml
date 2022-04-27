@@ -233,9 +233,11 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="username" value="#{msg.component_certdetails_field_username}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" 
+                rendered="#{raAccessBean.authorizedToSearchEndEntities}"/>
             <h:panelGroup id="username"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{raAccessBean.authorizedToSearchEndEntities}">
                 <h:outputText value="#{cc.attrs.raCertificateDetails.username} " />
                 <h:outputLink value="endentity.xhtml" styleClass="fineprint">
                     <f:param name="ee" value="#{cc.attrs.raCertificateDetails.username}" />
@@ -249,6 +251,10 @@
             <h:outputLabel for="cp" value="#{msg.component_certdetails_field_cp}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="cp" value="#{cc.attrs.raCertificateDetails.cpName}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="eab" value="#{msg.component_certdetails_field_eab}" rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="eab" value="#{cc.attrs.raCertificateDetails.accountBindingId}" rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 			
 

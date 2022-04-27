@@ -57,6 +57,7 @@ public class CompressedCollection<T extends Serializable> implements Collection<
     private final List<LookAheadObjectInputStream> oiss = new ArrayList<>();
     private final Set<Class<? extends Serializable>> acceptedClasses;
 
+    @SuppressWarnings("unchecked")
     @SafeVarargs
     public CompressedCollection(final Class<T> elementClass, final Class<? extends Serializable>... nestedClasses) {
         acceptedClasses = SetUtils.typedSet(new HashSet<>(nestedClasses.length + 1), Serializable.class); // generic varargs are not type safe
