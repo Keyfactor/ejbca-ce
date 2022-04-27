@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -40,15 +41,19 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileDoesNotExistException;
 import org.cesecore.profiles.ProfileSessionLocal;
+import org.cesecore.roles.RoleInformation;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 
 /**
  * Keeps track of the approval profiles
- * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -312,4 +317,69 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         return null;
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Boolean updateApprovalProfileRightsByRoleId(List<RoleMember> roleMembers, ApprovalProfile approvalProfile, int roleId, String roleName) {
+        List<ApprovalStep> steps = approvalProfile.getStepList();
+        if (steps == null) {
+            return false;
+        }
+        Boolean isApprovalProfileUpdated = false;
+        for (ApprovalStep step : steps) {
+            List<ApprovalPartition> partitions = step.getPartitionList();
+            if (partitions == null) {
+                continue;
+            }
+            for (ApprovalPartition partition : partitions) {
+                // Update roles with approval rights
+                DynamicUiProperty<? extends Serializable> rolesWithApprovalRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS);
+                if (rolesWithApprovalRightsProperty == null) {
+                    continue;
+                }               
+                RoleInformation newApprovalRightsRoleInfo = null;
+                RoleInformation oldApprovalRightsRoleInfo = null;
+                @SuppressWarnings("unchecked")
+                List<RoleInformation> roleInfos = (List<RoleInformation>) rolesWithApprovalRightsProperty.getValues();
+                for (RoleInformation roleInfo : roleInfos) {
+                    if (roleInfo.getIdentifier() != roleId || roleInfo.getAccessUserAspects() == null) {
+                        continue;
+                    }
+                    newApprovalRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), roleName, roleMembers);
+                    oldApprovalRightsRoleInfo = roleInfo;
+                }
+                if (oldApprovalRightsRoleInfo != null && newApprovalRightsRoleInfo != null) {
+                    roleInfos.remove(oldApprovalRightsRoleInfo);
+                    roleInfos.add(newApprovalRightsRoleInfo);
+                    rolesWithApprovalRightsProperty.setValuesGeneric(roleInfos);
+                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithApprovalRightsProperty);
+                    isApprovalProfileUpdated = true;
+                }
+                
+                // Update roles with view rights
+                DynamicUiProperty<? extends Serializable> rolesWithViewRightsProperty = partition.getProperty(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_VIEW_RIGHTS);
+                if (rolesWithViewRightsProperty == null) {
+                    continue;
+                }                
+                RoleInformation newViewRightsRoleInfo = null;
+                RoleInformation oldViewRightsRoleInfo = null;
+                @SuppressWarnings("unchecked")
+                List<RoleInformation> viewRightsRoleInfos = (List<RoleInformation>) rolesWithViewRightsProperty.getValues();
+                for (RoleInformation roleInfo : viewRightsRoleInfos) {
+                    if (roleInfo.getIdentifier() != roleId || roleInfo.getAccessUserAspects() == null) {
+                        continue;
+                    }
+                    newViewRightsRoleInfo = RoleInformation.fromRoleMembers(roleInfo.getIdentifier(), roleInfo.getNameSpace(), roleName, roleMembers);
+                    oldViewRightsRoleInfo = roleInfo;
+                }
+                if (oldViewRightsRoleInfo != null && newViewRightsRoleInfo != null) {
+                    viewRightsRoleInfos.remove(oldViewRightsRoleInfo);
+                    viewRightsRoleInfos.add(newViewRightsRoleInfo);
+                    rolesWithViewRightsProperty.setValuesGeneric(viewRightsRoleInfos);
+                    approvalProfile.addPropertyToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), rolesWithViewRightsProperty);
+                    isApprovalProfileUpdated = true;
+                }
+            }
+        }
+        return isApprovalProfileUpdated;
+    }
 }

@@ -13,18 +13,6 @@
 
 package org.ejbca.config;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -34,12 +22,24 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 
 /**
  * This is a  class containing EST configuration parameters.
  */
 public class EstConfiguration extends ConfigurationBase implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(EstConfiguration.class);
@@ -73,6 +73,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     // Possible values for CONFIG_AUTHENTICATIONMODULE
     public static final String CONFIG_AUTHMODULE_CHALLENGE_PWD         = "ChallengePwd";
     public static final String CONFIG_AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
+    public static final String CONFIG_AUTHMODULE_HTTP_BASIC_AUTH       = "HttpBasicAuth";
         
     private final String ALIAS_LIST = "aliaslist";
     public static final String EST_CONFIGURATION_ID = "4";
@@ -342,7 +343,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
      */
     public String getPassword(String alias) {
         String key = alias + "." + CONFIG_REQPASSWORD;
-        return getValue(key, alias);
+        return getDecryptedValue(getValue(key, alias));
     }
 
     /** Username required for RA password authentication
@@ -351,7 +352,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
      */
     public void setPassword(String alias, String password) {
         String key = alias + "." + CONFIG_REQPASSWORD;
-        setValue(key, password, alias);
+        setValue(key, getEncryptedValue(password), alias);
     }
 
     /**
@@ -748,5 +749,13 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
         }
     }
+
+    @Override
+    public void filterDiffMapForLogging(Map<Object,Object> diff) {
+        Set<String> aliases = getAliasList();
+        for (String alias : aliases) {
+            filterDiffMapForLogging(diff, alias + "." + CONFIG_REQPASSWORD);
+        }
+    } 
 
 }

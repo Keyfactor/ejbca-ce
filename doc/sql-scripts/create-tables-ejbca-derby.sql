@@ -360,6 +360,7 @@ CREATE TABLE UserData (
     clearPassword VARCHAR(256),
     endEntityProfileId INTEGER NOT NULL,
     extendedInformationData CLOB,
+    hardTokenIssuerId INTEGER NOT NULL,
     keyStorePassword VARCHAR(256),
     passwordHash VARCHAR(256),
     rowProtection CLOB(10 K),
@@ -454,6 +455,15 @@ CREATE TABLE OcspResponseData (
     rowProtection CLOB(10 K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
+);
+
+CREATE TABLE IncompleteIssuanceJournalData (
+    serialNumberAndCaId VARCHAR(256) NOT NULL,
+    startTime BIGINT NOT NULL,
+    rawData CLOB,
+    rowProtection CLOB(10 K),
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (serialNumberAndCaId)
 );
 
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;

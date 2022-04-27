@@ -1,13 +1,15 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.resource;
 
 import org.apache.http.client.HttpClient;
@@ -71,6 +73,7 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -79,12 +82,13 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
+import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -128,6 +132,7 @@ public class RestResourceSystemTestBase {
     protected static final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     protected static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     protected static final EndEntityAuthenticationSessionRemote endEntityAuthenticationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
+    protected static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     //
     protected static final ObjectMapperContextResolver objectMapperContextResolver = new ObjectMapperContextResolver();
     //
@@ -232,6 +237,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), true);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
@@ -242,6 +248,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), false);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
@@ -283,8 +290,8 @@ public class RestResourceSystemTestBase {
      *
      * @see org.jboss.resteasy.client.ClientRequest
      */
-    WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
+    WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {    
+     // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(TRUST_KEYSTORE);
@@ -296,12 +303,15 @@ public class RestResourceSystemTestBase {
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
                 .build();
         
-        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(client);
-        Client newClient = new ResteasyClientBuilder().httpEngine(engine).build();
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(client);
+        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
+        Client newClient = builder.httpEngine(engine).build();
         WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
         
         return webTarget;
     }
+    
+    
 
     WebTarget newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
         // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
@@ -316,10 +326,10 @@ public class RestResourceSystemTestBase {
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
                 .build();
         
-        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(client);
-        Client newClient = new ResteasyClientBuilder().httpEngine(engine).build();
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(client);
+        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
+        Client newClient = builder.httpEngine(engine).build();
         WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
-        
         return webTarget;
     }
 

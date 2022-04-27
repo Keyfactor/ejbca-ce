@@ -18,8 +18,12 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -416,13 +420,14 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
         final List<String> importedFiles = new ArrayList<>();
         final List<String> ignoredFiles = new ArrayList<>();
+        final Map<String, Set<Integer>> ignoredCAsByProfile = new HashMap<>();
         int nrOfFiles = 0;
         final ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(zipFileBytes));
         ZipEntry zipEntry = zipInputStream.getNextEntry();
         if (zipEntry == null) {
             // Print import message if the file header corresponds to an empty zip archive
             if (FileTools.isEmptyZipFile(zipFileBytes)) {
-                printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
+                printImportMessage(nrOfFiles, importedFiles, ignoredFiles, ignoredCAsByProfile);
             } else {
                 String msg = uploadFilename + " is not a zip file.";
                 log.info(msg);
@@ -473,6 +478,10 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             if (profileId == -1) {
                 endEntityProfileSession.addEndEntityProfile(getAdmin(), profileName, eeProfile);
             } else {
+                final Set<Integer> removedCAs = removeNonExistentCAsAndReturnRemovedCAs(eeProfile);
+                if (!removedCAs.isEmpty()) {
+                    ignoredCAsByProfile.put(profileName, removedCAs);
+                }
                 endEntityProfileSession.addEndEntityProfile(getAdmin(), profileId, profileName, eeProfile);
             }
             importedFiles.add(filename);
@@ -480,7 +489,29 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         } while ((zipEntry = zipInputStream.getNextEntry()) != null);
         zipInputStream.closeEntry();
         zipInputStream.close();
-        printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
+        printImportMessage(nrOfFiles, importedFiles, ignoredFiles, ignoredCAsByProfile);
+    }
+
+    private String createMessageForIgnoredCA(String endEntityProfileName, Set<Integer> removedCAs) {
+        String caNames = removedCAs.stream()
+            .map(String::valueOf)
+            .reduce("", (acc, id) -> acc.equals("") ? acc + id : acc + ", " + id);
+        return "Non existent CAs (with id " + caNames + ") removed from End Entity Profile " + endEntityProfileName + ". ";
+    }
+
+    private Set<Integer> removeNonExistentCAsAndReturnRemovedCAs(EndEntityProfile profile) {
+        List<Integer> allCas = caSession.getAllCaIds();
+        Set<Integer> removedCas = new HashSet<>();
+        List<Integer> existentCAs = new ArrayList<>();
+        profile.getAvailableCAs().forEach(id -> {
+            if (allCas.contains(id)) {
+                existentCAs.add(id);
+            } else {
+                removedCas.add(id);
+            }
+        });
+        profile.setAvailableCAs(existentCAs);
+        return removedCas;
     }
 
     private EndEntityProfile getEndEntityProfileFromByteArray(final byte[] profileBytes) {
@@ -552,7 +583,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         return false;
     }
 
-    private void printImportMessage(final int nrOfFiles, final List<String> importedFiles, final List<String> ignoredFiles) {
+    private void printImportMessage(final int nrOfFiles, final List<String> importedFiles, final List<String> ignoredFiles, final Map<String, Set<Integer>> ignoredCAsByProfile) {
         final String msg = "Number of files included in " + uploadFilename + ": " + nrOfFiles;
         log.info(msg);
         addNonTranslatedInfoMessage(msg);
@@ -561,6 +592,9 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
         if (!ignoredFiles.isEmpty()) {
             addNonTranslatedInfoMessage("Ignored files: " + StringUtils.join(ignoredFiles, ", "));
+        }
+        if (!ignoredCAsByProfile.isEmpty()) {
+            ignoredCAsByProfile.forEach((profileName, caIds) -> addNonTranslatedInfoMessage(createMessageForIgnoredCA(profileName, caIds)));
         }
         if (importedFiles.isEmpty()) {
             addErrorMessage("No End Entity Profiles were imported.");

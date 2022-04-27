@@ -13,38 +13,14 @@
 
 package org.cesecore.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
 import com.novell.ldap.LDAPDN;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
@@ -93,6 +69,31 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1790,6 +1791,14 @@ public class CertToolsUnitTest {
         assertEquals("Should return IDP URL for CRL with issuingDistributionPoint.", 1, uris.size());
         assertEquals("Extracted string from issuingDistributionPoint is wrong.", "http://crl.example.com/CA.crl", uris.iterator().next());
     }
+    
+    @Test
+    public void testGetCrlAuthorityKeyId() throws Exception {
+        final X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
+        final byte[] authorityKeyIdBytes = CertTools.getAuthorityKeyId(crl);
+        final String authorityKeyId = new String(Hex.encode(authorityKeyIdBytes));
+        assertEquals("Unexpected Authorirt Key Id returned", "b77f6cdfcf88f1f3f476252cf18f1362d09aafc8", authorityKeyId);
+    }
 
     @Test
     public void test25AiaCaIssuerUri() throws Exception {
@@ -2250,10 +2259,14 @@ public class CertToolsUnitTest {
                                  "example.com\n" +
                                  "@mail.example\n" +
                                  "user@host.com\n" +
+                                 "uri:example.com\n" +
+                                 "uri:.example.com\n" +
                                  "10.0.0.0/8\n" +
+                                 "www.example.com\n" +
                                  "   C=SE,  CN=spacing    \n";
         final String excluded = "forbidden.example.com\n" +
                                 "postmaster@mail.example\n" +
+                                "uri:def123.test.com\n" +
                                 "10.1.0.0/16\n" +
                                 "::/0"; // IPv6
         
@@ -2262,12 +2275,13 @@ public class CertToolsUnitTest {
         GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(NameConstraint.parseNameConstraintsList(excluded));
         byte[] extdata = new NameConstraints(permittedSubtrees, excludedSubtrees).toASN1Primitive().getEncoded();
         extensions.add(new Extension(Extension.nameConstraints, false, extdata));
-        
+               
         final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null,
                 testkeys.getPrivate(), testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true,
                 X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
-        
+        log.info(CertTools.getPemFromCertificate(cacert));
+
         // Allowed subject DNs
         final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com"); // re-used below
         CertTools.checkNameConstraints(cacert, validDN, null);
@@ -2301,28 +2315,97 @@ public class CertToolsUnitTest {
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.0.0.1").getAddress()))));
         CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.255.255.255").getAddress()))));
         
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "example.com/")));
+        CertTools.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, "host.example.com")));
+
+
         // Disallowed subject DN
         checkNCException(cacert, new X500Name("C=DK,CN=example.com"), null, "Disallowed DN (wrong field value) was accepted");
         checkNCException(cacert, new X500Name("C=SE,O=Company,CN=example.com"), null, "Disallowed DN (extra field) was accepted");
         
         // Disallowed SAN
-        // The commented out lines are allowed by BouncyCastle but disallowed by the RFC
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "bad.com"), "Disallowed SAN (wrong DNS name) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "forbidden.example.com"), "Disallowed SAN (excluded DNS subdomain) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.rfc822Name, "wronguser@host.com"), "Disallowed SAN (wrong e-mail) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("10.1.0.1").getAddress())), "Disallowed SAN (excluded IPv4 address) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("192.0.2.1").getAddress())), "Disallowed SAN (wrong IPv4 address) was accepted");
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("2001:DB8::").getAddress())), "Disallowed SAN (IPv6 address) was accepted");
+        
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.uniformResourceIdentifier, "ldap://def123.test.com:8080"), "Disallowed SAN (wrong URI) was accepted");
+
+    }
+    
+    @Test
+    public void testNameConstraintAreCorrectInCert() throws Exception {
+
+        final String excluded = ".\n" + "example.com";
+
+        final List<Extension> extensions = new ArrayList<>();
+
+        List<String> ncList = NameConstraint.parseNameConstraintsList(excluded);
+
+        GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(ncList);
+        byte[] extdata = new NameConstraints(null, excludedSubtrees).toASN1Primitive().getEncoded();
+        extensions.add(new Extension(Extension.nameConstraints, false, extdata));
+
+        final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null, testkeys.getPrivate(),
+                testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null,
+                "BC", true, extensions);
+
+        final byte[] ncbytes = cacert.getExtensionValue(Extension.nameConstraints.getId());
+        final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
+        final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
+        final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
+
+        GeneralSubtree[] excludedST = nc.getExcludedSubtrees();
+
+        assertNotNull("Excluded sub tree was null!", excludedST);
+        assertEquals("Array size did not match", 2, excludedST.length);
+        assertEquals("Domain not match!", "2: ", excludedST[0].getBase().toString());
+        assertEquals("Domain not match!", "2: example.com", excludedST[1].getBase().toString());
+    }
+
+    @Test
+    public void testNameConstraintsEmptyDNS() throws Exception {
+        final String excluded = ".";
+                                
+        final List<Extension> extensions = new ArrayList<>();
+        
+        List<String> ncList = NameConstraint.parseNameConstraintsList(excluded);
+        
+        GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(ncList);
+        byte[] extdata = new NameConstraints(null, excludedSubtrees).toASN1Primitive().getEncoded();
+        extensions.add(new Extension(Extension.nameConstraints, false, extdata));
+        
+        final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null,
+                testkeys.getPrivate(), testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true,
+                X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null, "BC", true, extensions);
+        
+        // Allowed subject DNs
+        final X500Name validDN = new X500Name("C=SE,O=PrimeKey,CN=example.com");
+        
+        // Disallowed SAN
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "test.email.com"), "Disallowed SAN (excluded test.email.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "example.com"), "Disallowed SAN (excluded example.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "com"), "Disallowed SAN (excluded com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, ".com"), "Disallowed SAN (excluded .com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, ".example.com"), "Disallowed SAN (excluded .example.com DNS name) was accepted");
+        checkNCException(cacert, validDN, new GeneralName(GeneralName.dNSName, "."), "Disallowed SAN (excluded . DNS name) was accepted");
+
     }
     
     /** Check Name Constraints that are expected to fail NC validation, and fail the JUnit test of the NC validation 
-     * does not fail with am IllegalNameException
+     * does not fail with an IllegalNameException
      */
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
         try {
             CertTools.checkNameConstraints(cacert, subjectDNName, subjectAltName != null ? new GeneralNames(subjectAltName) : null);
             fail(message);
-        } catch (IllegalNameException e) { /* NOPMD expected */ }
+        } catch (IllegalNameException e) { 
+            /* NOPMD expected */ 
+        }
     }    
 
     @Test
@@ -2445,25 +2528,18 @@ public class CertToolsUnitTest {
     @Test
     public void testPreventingHeapOverflowDuringGetCertsFromByteArray() throws Exception {
         log.trace(">testPreventingHeapOverflowDuringgetCertsFromByteArray()");
-        
-        ByteArrayOutputStream byteArrayOutputStream = null;
-        try {
-            byteArrayOutputStream = new ByteArrayOutputStream();
-            SecurityFilterInputStreamTest.prepareExploitStream(byteArrayOutputStream, 0x1FFFFF);  // 0x1FFFFF just simulates exploit stream
+
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            SecurityFilterInputStreamTest.prepareExploitStream(byteArrayOutputStream, 0x1FFFFF); // 0x1FFFFF just simulates exploit stream
 
             CertTools.getCertfromByteArray(byteArrayOutputStream.toByteArray(), X509Certificate.class);
-            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB) and"
+            fail("No Java heap error happened for StringBuilder exploit (MaxHeap = " + Runtime.getRuntime().maxMemory() / (1024 * 1024) + "MB) and"
                     + " SecurityFilterInputStream hasn't limited the size of input stream during testPreventingHeapOverflowDuringgetCertsFromByteArray");
         } catch (CertificateParsingException e) { //It seems that BC provider while generating certificate wraps RuntimeException into CertificateException (which CertTools wraps into CertificateParsingException...)
             //Good
-        } catch (Exception e){
+        } catch (Exception e) {
             fail("Unexpected exception: " + e.getMessage() + " during testPreventingHeapOverflowDuringgetCertsFromByteArray");
-        }finally {
-            if (byteArrayOutputStream != null) {
-                byteArrayOutputStream.close();
-            }
         }
-        
         log.trace("<testPreventingHeapOverflowDuringgetCertsFromByteArray()");
     }
 
@@ -2737,13 +2813,13 @@ public class CertToolsUnitTest {
         try {
             CertTools.verify(null, null);
             fail(errorMessage);
-        } catch (NullPointerException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
             CertTools.verify(null, new ArrayList<X509Certificate>());
             fail(errorMessage);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
@@ -2756,13 +2832,13 @@ public class CertToolsUnitTest {
         try {
             CertTools.verify(x509Certificate, null);
             fail(errorMessage);
-        } catch (NullPointerException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {
             CertTools.verify(x509Certificate, new ArrayList<X509Certificate>());
             fail(errorMessage);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (CertPathValidatorException e) {
             log.debug(infoMessage, e);
         }
         try {

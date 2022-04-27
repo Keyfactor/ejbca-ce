@@ -34,8 +34,7 @@ import org.junit.Test;
 
 /**
  * Unit tests for the EndEntityProfile class.
- * 
- * @version $Id$
+ *
  *
  */
 public class EndEntityProfileTest {
@@ -90,7 +89,7 @@ public class EndEntityProfileTest {
         userdata.setPassword("foo123");
         try {
             // Should pass
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             e.printStackTrace();
             fail("En empty subjectDN should be OK when nothing is required: " + e.getMessage());
@@ -107,14 +106,14 @@ public class EndEntityProfileTest {
                 SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("cardnumber should be required");
         } catch (EndEntityProfileValidationException e) {
             // NOPMD: ignore this is what we want
         }
         userdata.setCardNumber("123456789");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("cardnumber was in and should be ok: "+e.getMessage());
         }
@@ -124,27 +123,27 @@ public class EndEntityProfileTest {
         profile.addField(DnComponents.RFC822NAME);
         profile.setRequired(DnComponents.RFC822NAME, 0, true);
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("rfc822Name should be required");
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Error message was not the expected", "Data does not contain required RFC822NAME field.", e.getMessage());
         }
         userdata.setSubjectAltName("rfc822Name=foo@bar.com");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("rfc822Name was in and should be ok: "+e.getMessage());
         }
         userdata.setSubjectAltName("rfc822Name=AB:CD:32:45");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("rfc822Name was not an email address, but it should be ok: "+e.getMessage());
         }
         // Add another DN component
         userdata.setDN("CN=Foo,O=PrimeKey");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("O should not be allowed");
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Error message was not the expected", "Wrong number of ORGANIZATION fields in Subject DN.", e.getMessage());
@@ -153,14 +152,14 @@ public class EndEntityProfileTest {
         profile.setRequired(DnComponents.ORGANIZATION, 0, true);
         try {
             // Should pass now
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("Organization should be ok now: "+e.getMessage());
         }
         // Add yet one more DN component
         userdata.setDN("CN=Foo,O=PrimeKey,C=SE");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("C should not be allowed");
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Error message was not the expected", "Wrong number of COUNTRY fields in Subject DN.", e.getMessage());
@@ -169,7 +168,7 @@ public class EndEntityProfileTest {
         profile.setRequired(DnComponents.COUNTRY, 0, true);
         try {
             // Should pass now
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("Country should be ok now: "+e.getMessage());
         }
@@ -194,13 +193,13 @@ public class EndEntityProfileTest {
         userdata.setPassword("foo123");
         try {
             // Should pass
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("Normal non multi value DN should work: "+e.getMessage());
         }
         userdata.setDN("CN=User+UID=123,SN=134566,O=PrimeKey,C=SE");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("Multi value RDN, and UID should not be allowed, because we don't allow multi value RDNs in the EE profile: "+userdata.getDN());
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Error message was not the expected", "Subject DN has multi value RDNs, which is not allowed.", e.getMessage());
@@ -208,7 +207,7 @@ public class EndEntityProfileTest {
         // Allow multi value RDNs, but it should still not be allowed due to us not allowing IUD in the profile
         profile.setAllowMultiValueRDNs(true);
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("Multi value RDN, and UID should not be allowed, because we don't allow UID in the EE profile: "+userdata.getDN());
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Error message was not the expected", "Wrong number of UID fields in Subject DN.", e.getMessage());
@@ -217,7 +216,7 @@ public class EndEntityProfileTest {
         profile.addField(DnComponents.UID);
         profile.setRequired(DnComponents.UID, 0, true);
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("UID was in the profile and should be ok: "+e.getMessage());
         }
@@ -225,7 +224,7 @@ public class EndEntityProfileTest {
         // Verify that we don't allow multi-value RDNs on strange fields
         userdata.setDN("CN=User+UID=123,SN=134566,O=PrimeKey+OU=SubO,C=SE");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("Multi value RDN, and UID should not be allowed, because we don't allow UID in the EE profile: "+userdata.getDN());
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Error message was not the expected", "Subject DN is illegal.", e.getMessage());
@@ -245,7 +244,7 @@ public class EndEntityProfileTest {
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
 
     @Test
@@ -260,7 +259,7 @@ public class EndEntityProfileTest {
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
 
     @Test(expected = EndEntityProfileValidationException.class)
@@ -276,7 +275,7 @@ public class EndEntityProfileTest {
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
 
 
@@ -297,7 +296,7 @@ public class EndEntityProfileTest {
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
 
     @Test(expected = EndEntityProfileValidationException.class)
@@ -311,7 +310,7 @@ public class EndEntityProfileTest {
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setQCEtsiPSD2NcaName("SomePsd2NCName");
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
     
     @Test
@@ -326,7 +325,7 @@ public class EndEntityProfileTest {
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setQCEtsiPSD2NcaName("SomePsd2NCName");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
         } catch (EndEntityProfileValidationException e) {
             fail("Expected profile validation to success when 'Psd2QcStatement' was allowed");
             throw e;
@@ -346,7 +345,7 @@ public class EndEntityProfileTest {
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setCabfOrganizationIdentifier("SEVAT-112233123401"); // use extension in EE
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithExt, false);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithExt, false, null);
         log.trace("<testUserEepCpExtensionsMatch");
     }
     
@@ -362,7 +361,7 @@ public class EndEntityProfileTest {
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setCabfOrganizationIdentifier("SEVAT-112233123401");
         try {
-            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false);
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
             fail("Validation should fail when extension is present in EE but not enabled in CP");
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Certificate Extension 'cabforganizationidentifier' is not allowed in Certificate Profile, but was present with value 'SEVAT-112233123401'", e.getMessage());
@@ -371,7 +370,7 @@ public class EndEntityProfileTest {
     }
 
     @Test
-    public void testOnlyUsernameValidationFieldIsChanged() throws CloneNotSupportedException {
+    public void testOnlyUsernameValidationFieldIsChanged() {
         final EndEntityProfile foo = new EndEntityProfile();
         foo.addField(DnComponents.ORGANIZATION);
         foo.addField(EndEntityProfile.CARDNUMBER);

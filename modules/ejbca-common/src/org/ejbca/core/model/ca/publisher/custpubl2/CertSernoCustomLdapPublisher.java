@@ -102,8 +102,6 @@ setuserpasssword (false)
 usefieldsinldapdn
  *
  * In most cases default values are good. 
- *
- * @version $Id$
  */
 public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICustomPublisher {
 

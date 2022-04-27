@@ -340,6 +340,15 @@ public class AddEndEntityHelper extends BaseHelper {
         }
 
     }
+
+    /**
+     * Asserts End Entity already exists alert message is displayed.
+     */
+    public void assertEndEntityExistsAlertMessageDisplayed() {
+        assertEquals("Unexpected info message while saving end entity",
+                "End entity already exists, choose another Username.",
+                getElementText(Page.MESSAGE_ALERT));
+    }
     
     /**
      * Clicks the 'Add' button

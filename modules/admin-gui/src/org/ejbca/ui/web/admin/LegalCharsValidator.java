@@ -30,7 +30,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * 
  * @version $Id$
  */
-public class LegalCharsValidator implements Validator {
+public class LegalCharsValidator implements Validator<Object> {
 	private static final Logger log = Logger.getLogger(LegalCharsValidator.class);
 
 	@Override

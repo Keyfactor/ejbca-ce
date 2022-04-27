@@ -346,6 +346,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
         case ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_revoke_and_delete_end_entity"); break;
         case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE: type = raLocaleBean.getMessage("manage_requests_type_revoke_certificate"); break;
         case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY: type = raLocaleBean.getMessage("manage_requests_type_revoke_end_entity"); break;
+        case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_REGISTRATION: type = raLocaleBean.getMessage("manage_requests_type_acme_account_registration"); break;
+        case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_KEYCHANGE: type = raLocaleBean.getMessage("manage_requests_type_acme_account_keychange"); break;
         default:
             log.info("Invalid/unsupported type of approval request: " + approvalData.getApprovalType());
             type = "???";

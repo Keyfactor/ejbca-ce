@@ -406,9 +406,19 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         // Verify that the caller is authorized to all CAs that are issuers of members in this role
         final Set<String> tokenIssuerAccessRules = new HashSet<>();
         for (final RoleMemberData roleMemberData : roleMemberDataSession.findByRoleId(roleId)) {
+            boolean checkIssuerAccess = true;
             final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMemberData.getTokenType());
-            final AccessMatchValue accessMatchValue = metaData.getAccessMatchValueIdMap().get(roleMemberData.getTokenMatchKey());
-            if (accessMatchValue.isIssuedByCa()) {
+            if (metaData != null) {
+                final AccessMatchValue matchKey = metaData.getAccessMatchValueIdMap().get(roleMemberData.getTokenMatchKey());
+                if (matchKey != null) {
+                    checkIssuerAccess = matchKey.isIssuedByCa();
+                } else {
+                    log.warn("Unsupported match key #" + roleMemberData.getTokenMatchKey() + " for token type " + roleMemberData.getTokenType());
+                }
+            } else {
+                log.warn("Unsupported token type " + roleMemberData.getTokenType());
+            }
+            if (checkIssuerAccess) {
                 tokenIssuerAccessRules.add(StandardRules.CAACCESS.resource() + roleMemberData.getTokenIssuerId());
             }
         }

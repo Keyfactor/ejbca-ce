@@ -12,13 +12,12 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.ejb.Local;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+
+import javax.ejb.Local;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Local interface for CaSession
@@ -290,5 +289,7 @@ public interface CaSessionLocal extends CaSession {
      * @throws AuthorizationDeniedException if not authorized.
      */
     boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException;
+
+    List<CAData> findAllCitsCa();
 
 }

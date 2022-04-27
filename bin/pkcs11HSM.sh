@@ -37,4 +37,4 @@ fi
 # Finally run java
 #set -x
 # -cp $CLASSES 
-$JAVACMD -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar PKCS11HSMKeyTool "${@}"
+$JAVACMD -Dlog4j1.compatibility=true -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar PKCS11HSMKeyTool "${@}"

@@ -184,7 +184,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             // 1. Make EST simpleenroll request, message is a simple PKCS#10 request, RFC7030 section 4.2.1
             //
             final String requestDN = "CN=" + username + ",O=EJBCA,C=SE";
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, ec256);
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             // Send request first without username, should give unauthorized
             sendEstRequest(estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid username or password</body></html>"); 
@@ -260,7 +260,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             //
             final KeyPair ec256Admin = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
             final String adminRequestDN = "CN=" + adminUsername + ",O=EJBCA,C=SE";
-            final PKCS10CertificationRequest p10Admin = generateCertReq(adminRequestDN, null, null, null, ec256Admin);
+            final PKCS10CertificationRequest p10Admin = generateCertReq(adminRequestDN, null, null, null, null, ec256Admin);
             byte[] reqmsgAdmin = Base64.encode(p10Admin.getEncoded());
             byte[] respAdmin = sendEstRequest(estAlias, "simpleenroll", reqmsgAdmin, 200, null, adminUsername, pwd); 
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3 (tests on this is made in enroll test method)
@@ -276,7 +276,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             // 2. Make EST simpleenroll request with client cert authentication, message is a simple PKCS#10 request, RFC7030 section 4.2.1
             //
             final String requestDN = "CN=" + clientUsername + ",O=EJBCA,C=SE";
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, ec256);
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, null, ec256);
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             // Send request first client cert auth, but no username, should give unauthorized
             sendEstRequest(true, estAlias, "simpleenroll", reqmsg, 401, "<html><head><title>Error</title></head><body>Invalid username or password</body></html>", null, null); 
@@ -357,7 +357,7 @@ public class EstRAModeBasicTest extends EstTestCase {
             // 1. Issue a first certificate with a EST simpleenroll request, message is a simple PKCS#10 request, RFC7030 section 4.2.1
             //
             final String requestDN = "CN=" + username + ",O=EJBCA,C=SE";
-            final PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, ec256);
+            final PKCS10CertificationRequest p10 = generateCertReq(requestDN, null, null, null, null, ec256);
             final byte[] reqmsg = Base64.encode(p10.getEncoded());
             byte[] resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd); 
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3 (tests on this is made in enroll test method)
@@ -383,7 +383,7 @@ public class EstRAModeBasicTest extends EstTestCase {
                     null, null);
             // A new request with new keys, but with the same subject DN should succeed
             final KeyPair ec256New = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
-            final PKCS10CertificationRequest p10New = generateCertReq(requestDN, null, null, null, ec256New);
+            final PKCS10CertificationRequest p10New = generateCertReq(requestDN, null, null, null, null, ec256New);
             final byte[] reqmsgNew = Base64.encode(p10New.getEncoded());
             resp = sendEstRequest(true, estAlias, "simplereenroll", reqmsgNew, 200, null, null, null);
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
@@ -423,7 +423,7 @@ public class EstRAModeBasicTest extends EstTestCase {
 
             // Change the subject DN in the CSR, should not be allowed to reenroll now
             // Log will show: 11:11:45,539 INFO  [org.ejbca.core.protocol.est.EstOperationsSessionBean] (default task-4) Can't reenroll using different subject than requesting certificate. Request DN='CN=ESTRARAReenroll204554,OU=Test,O=EJBCA,C=SE'
-            final PKCS10CertificationRequest p10NewDN = generateCertReq(requestDN + ",OU=Test", null, null, null, ec256New);
+            final PKCS10CertificationRequest p10NewDN = generateCertReq(requestDN + ",OU=Test", null, null, null, null, ec256New);
             final byte[] reqmsgNewDN = Base64.encode(p10NewDN.getEncoded());
             sendEstRequest(true, estAlias, "simplereenroll", reqmsgNewDN, 400, "<html><head><title>Error</title></head><body>Exception encountered when performing EST operation 'simplereenroll' on alias 'EstRAModeBasicTest'.</body></html>", 
                     null, null);

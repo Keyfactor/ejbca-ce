@@ -42,7 +42,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  * stored in system configuration, the request is filtered and an HTTP response with
  * error code 403 is sent back to the client. Otherwise, the request is let through
  * unaltered.
- * @version $Id$
  */
 public class ServiceControlFilter implements Filter {
     private static final Logger log = Logger.getLogger(ServiceControlFilter.class);

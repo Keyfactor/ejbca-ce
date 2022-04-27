@@ -117,7 +117,12 @@
 
     <target name="runone" depends="compile-tests">
 	    <fail message="'test.runone' is not set. Example -Dtest.runone=UnidFnrTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
-	    <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+		<condition property="remoteDebugJvmArgs"
+				   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				   else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 	        <classpath>
 	            <path refid="test.classpath"/>
 	        </classpath>
@@ -128,6 +133,7 @@
 	            </fileset>
 	        </batchtest>
 	    	<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
 	    </junit>
 	</target>
 

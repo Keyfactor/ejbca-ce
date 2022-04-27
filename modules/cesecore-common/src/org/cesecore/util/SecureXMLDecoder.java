@@ -461,6 +461,7 @@ public class SecureXMLDecoder implements AutoCloseable {
      * @return Enum value as a Java object
      * @throws IOException On parse error, or if the class if not allowed.
      */
+    @SuppressWarnings("unchecked")
     private Object toEnumValue(final String enumType, final String valueName) throws IOException {
         if (!enumType.startsWith("org.cesecore.") && !enumType.startsWith("org.ejbca.") && !enumType.startsWith("org.signserver.")) {
             throw new IOException(errorMessage("Instantation of enum type \"" + enumType + "\" not allowed"));
@@ -771,6 +772,7 @@ public class SecureXMLDecoder implements AutoCloseable {
             final Object extendedInformation = Class.forName("org.ejbca.core.model.ra.ExtendedInformation")
                     .getConstructor()
                     .newInstance();
+            @SuppressWarnings("unchecked")
             final LinkedHashMap<Object, Object> rawData = (LinkedHashMap<Object, Object>) MethodUtils.invokeMethod(extendedInformation, "getRawData");
             rawData.putAll(parsedData);
             // Skip

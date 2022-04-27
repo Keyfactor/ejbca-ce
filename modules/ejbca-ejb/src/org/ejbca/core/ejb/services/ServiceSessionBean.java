@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
@@ -186,6 +187,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private OcspResponseGeneratorSessionLocal ocspGeneratorResponseSessionLocal;
     @EJB
     private OcspDataSessionLocal ocspDataSessionLocal;
+    @EJB
+    private RevocationSessionLocal revocationSession;
 
     @PostConstruct
     public void ejbCreate() {
@@ -586,6 +589,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
         ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
         ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
+        ejbs.put(RevocationSessionLocal.class, revocationSession);
         try {
             if (worker != null) {
                 worker.canWorkerRun(ejbs);
@@ -746,8 +750,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
             ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
             ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
+            ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
             ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
             ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
+            ejbs.put(RevocationSessionLocal.class, revocationSession);
             ServiceExecutionResult result = worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName, result.getResult().getOutput(), result.getMessage());
             log.info(msg);

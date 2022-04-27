@@ -56,6 +56,8 @@ import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -72,6 +74,10 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -221,8 +227,17 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return a human readable version of the tokenType and tokenMatchKey values */
     public String getMatchWithItemString(final RoleMember roleMember) {
         final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
+        if (authenticationTokenMetaData == null) {
+            log.warn("Unsupported token type '" + roleMember.getTokenType() + "' in role '" + role.getName() + "'");
+            return roleMember.getTokenType() + "(UNKNOWN): #" + roleMember.getTokenMatchKey();
+        }
         final String tokenTypeString = getEjbcaWebBean().getText(authenticationTokenMetaData.getTokenType());
-        final String tokenMatchKeyString = getEjbcaWebBean().getText(authenticationTokenMetaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey()).name());
+        final AccessMatchValue matchValue = authenticationTokenMetaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+        if (matchValue == null) {
+            log.warn("Unknown token match key " + roleMember.getTokenMatchKey() + " for " + roleMember.getTokenType() + " in role '" + role.getName() + "'");
+            return tokenTypeString + ": " + '#'+String.valueOf(roleMember.getTokenMatchKey() + "(UNKNOWN)");
+        }
+        final String tokenMatchKeyString = getEjbcaWebBean().getText(matchValue.name());
         return tokenTypeString + ": " + tokenMatchKeyString;
     }
 
@@ -279,7 +294,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         if (tokenIssuerId==RoleMember.NO_ISSUER) {
             return "-";
         }
-        if (getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByCa()) {
+        if (isTokenIssuerIdUsed(roleMember)) {
             final String caName = getCaIdToNameMap().get(tokenIssuerId);
             if (caName==null) {
                 return super.getEjbcaWebBean().getText("UNKNOWNCAID") + " " + tokenIssuerId;
@@ -359,7 +374,12 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return the AccessMatchValue from the specified tokenType and tokenMatchKey combo */
     private AccessMatchValue getAccessMatchValue(final String tokenType, final int tokenMatchKey) {
         final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
-        return metaData.getAccessMatchValueIdMap().get(tokenMatchKey);
+        if (metaData != null) {
+            return metaData.getAccessMatchValueIdMap().get(tokenMatchKey);
+        } else {
+            log.warn("Unsupported token type " + tokenType);
+            return null;
+        }
     }
 
     /** @return the current human readable description */
@@ -434,12 +454,19 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             }
             final int tokenProviderId = accessMatchValue.isIssuedByOauthProvider() ? this.tokenProviderId : RoleMember.NO_PROVIDER;
             try {
+                // Persist the new role member
                 final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
-                roleMemberSession.persist(getAdmin(), roleMember);
+                roleMemberSession.persist(getAdmin(), roleMember);                
+                try {
+                    approvalSession.updateApprovalRights(getAdmin(), role.getRoleId(), role.getName());
+                } catch (AuthorizationDeniedException e) {
+                    log.warn("Approval rights were not updated for role '" + role.getName() + "' after adding the role member since the user lacked the required rights.");
+                }
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
             }
+            
             // Only reset this one, since admin might want to add additional matches of the same type
             tokenMatchValue = "";
             // Trigger a reload of the RoleMember list (if this is an AJAX requests and no new viewscope will be created)
@@ -451,7 +478,8 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies that it is issued by a CA */
     public boolean isTokenIssuerIdUsed(final RoleMember roleMember) {
-        return getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByCa();
+        final AccessMatchValue matchKey = getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey());
+        return matchKey != null ? matchKey.isIssuedByCa() : true;
     }
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies that it is issued by an Oauth provider */
     public boolean isTokenProviderIssuerIdUsed(final RoleMember roleMember) {
@@ -460,7 +488,12 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the RoleMember's tokenType and tokenMatchKey combo implies a tokenMatchValue is used */
     public boolean isTokenMatchValueUsed(final RoleMember roleMember) {
-        return !getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).getAvailableAccessMatchTypes().isEmpty();
+        final AccessMatchValue matchKey = getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey());
+        if (matchKey != null) {
+            return !matchKey.getAvailableAccessMatchTypes().isEmpty();
+        } else {
+            return true;
+        }
     }
 
     /** @return the RoleMember that has been selected for deletion */
@@ -485,6 +518,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         try {
             roleMemberSession.remove(getAdmin(), roleMemberToDelete.getId());
             super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ROLEMEMBERS_INFO_REMOVED");
+            try {
+                approvalSession.updateApprovalRights(getAdmin(), role.getRoleId(), role.getRoleName());
+            } catch (AuthorizationDeniedException e) {
+                log.warn("Approval rights were not updated for role '" + role.getName() + "' after removing a role member since the user lacked the required rights.");
+            }
             roleMembers = null;
             roleMemberToDelete = null;
             nonAjaxPostRedirectGet();

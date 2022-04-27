@@ -27,7 +27,7 @@ import org.cesecore.util.ui.UrlString;
  *
  */
 @FacesConverter("stringConverter")
-public class StringConverter implements Converter {
+public class StringConverter implements Converter<Object> {
 
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

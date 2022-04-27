@@ -30,6 +30,13 @@ public class CryptoTokenRule extends ExternalResource {
         }
         return callback.createX509Ca();
     }
+    
+    public X509CA createX509Ca(String subjectDn, String username) throws Exception {
+        if (callback == null) {
+            throw new IllegalStateException("Can't create CA without an injected callback.");
+        }
+        return callback.createX509Ca(subjectDn, username);
+    }
 
     public Integer createCryptoToken() throws Exception {
         if (callback == null) {

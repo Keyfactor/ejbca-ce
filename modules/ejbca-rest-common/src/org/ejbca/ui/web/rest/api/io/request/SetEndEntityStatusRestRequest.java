@@ -1,25 +1,27 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
 
 /**
  * JSON input for editing of end entity.
  */
 @ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
-        "Available TOKEN - USERGENERATED, P12, JKS, PEM; \n" +
+        "Available TOKEN - USERGENERATED, P12, BCFKS, JKS, PEM; \n" +
         "Available STATUS - NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n"
 )
 @ValidEndEntityStatusRestRequest
@@ -27,7 +29,7 @@ public class SetEndEntityStatusRestRequest {
 
     private String password;
     @ApiModelProperty(value = "Token type property",
-            allowableValues = "USERGENERATED, P12, JKS, PEM"
+            allowableValues = "USERGENERATED, P12, BCFKS, JKS, PEM"
     )
     private String token;
     @ApiModelProperty(value = "End entity status property",
@@ -110,8 +112,9 @@ public class SetEndEntityStatusRestRequest {
 	public enum TokenType {
     	USERGENERATED(EndEntityConstants.TOKEN_USERGEN),
     	P12(EndEntityConstants.TOKEN_SOFT_P12),
+        BCFKS(EndEntityConstants.TOKEN_SOFT_BCFKS),
     	JKS(EndEntityConstants.TOKEN_SOFT_JKS),
-    	PEM(EndEntityConstants.TOKEN_SOFT);
+    	PEM(EndEntityConstants.TOKEN_SOFT_PEM);
 
         private final int tokenValue;
 

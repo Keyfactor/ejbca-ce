@@ -27,7 +27,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * @version $Id$
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.PartitionedCrlUrlValidator")
-public class PartitionedCrlUrlValidator implements Validator {
+public class PartitionedCrlUrlValidator implements Validator<Object> {
 
     @Override
     public void validate(FacesContext facesContext, UIComponent component, Object o) throws ValidatorException {

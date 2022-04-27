@@ -32,7 +32,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * 
  * @version $Id$
  */
-public class OptionalHexSerialNumberValidator implements Validator {
+public class OptionalHexSerialNumberValidator implements Validator<Object> {
 	private static final Logger log = Logger.getLogger(OptionalHexSerialNumberValidator.class);
 
     @Override

@@ -231,6 +231,13 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract void setSerialNumber(String serialNumber);
     
     /**
+     * Sets the ID of the account binding.
+     * 
+     * @param accountBindingId ID of the account binding
+     */
+    public abstract void setAccountBindingId(String accountBindingId);
+    
+    /**
      * Fingerprint of certificate
      *
      * @param fingerprint fingerprint
