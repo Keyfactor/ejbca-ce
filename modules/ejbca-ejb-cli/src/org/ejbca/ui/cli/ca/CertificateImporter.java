@@ -264,7 +264,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
             CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(certificate), username,
                     CertTools.getFingerprintAsString(caCertificate), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                    certificateProfileId, endEntityProfileId, crlPartitionIndex, null, now.getTime());
+                    certificateProfileId, endEntityProfileId, crlPartitionIndex, null, now.getTime(), null);
 
             if (status == CertificateConstants.CERT_REVOKED) {
                 endEntityManagementSession.revokeCert(authenticationToken, certificate.getSerialNumber(), revocationTime, issuer,

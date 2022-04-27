@@ -24,6 +24,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -133,14 +134,15 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         log.trace("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     }
 
-    protected void createCRL(final String issuerdn, final boolean deltaCRL) {
+    protected void createCRL(final String issuerdn, final boolean deltaCRL, final Date validFrom) {
         log.trace(">createCRL()");
         try {
             if (issuerdn != null) {
                 CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                         issuerdn.hashCode());
                 if (!deltaCRL) {
-                    EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).forceCRL(getAuthenticationToken(), cainfo.getCAId());
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).forceCRL(getAuthenticationToken(), cainfo.getCAId(),
+                            CertificateConstants.NO_CRL_PARTITION, validFrom);
                     int number = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, CertificateConstants.NO_CRL_PARTITION, false);
                     log.info("CRL with number " + number + " generated.");
                 } else {

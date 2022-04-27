@@ -840,6 +840,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      */
     public void setValidator(final DynamicUiPropertyValidator<T> validator) {
         this.validator = validator;
+        validator.setName(name);
     }
     
     /**

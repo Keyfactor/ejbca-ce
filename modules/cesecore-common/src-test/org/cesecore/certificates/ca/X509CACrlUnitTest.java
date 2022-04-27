@@ -44,7 +44,6 @@ import org.junit.Test;
 /**
  * Unit test for Partitioned CRL functionality in the X509CA class.
  * 
- * @version $Id$
  */
 public class X509CACrlUnitTest extends X509CAUnitTestBase {
 
@@ -66,7 +65,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
@@ -84,7 +83,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint(null);
         ca.updateCA(cryptoToken, cainfo, cceConfig);
-        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertNull("CRL has distribution points", xcrl.getExtensionValue(Extension.cRLDistributionPoints.getId()));
@@ -110,7 +109,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
@@ -132,7 +131,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         cainfo.setCADefinedFreshestCRL(null);
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
-        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
+        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertNull("CRL has freshest crl extension", xcrl.getExtensionValue(Extension.freshestCRL.getId()));
@@ -167,13 +166,13 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         ca.updateCA(cryptoToken, cainfo, cceConfig);
 
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, 12345, revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(cryptoToken, 12345, revcerts, 1, null);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
         assertEquals("CRL distribution point is different", Collections.singletonList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
 
-        crl = ca.generateDeltaCRL(cryptoToken, 12345, revcerts, 2, 1);
+        crl = ca.generateDeltaCRL(cryptoToken, 12345, revcerts, 2, 1, null);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals("CRL distribution point is different", Collections.singletonList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
@@ -200,7 +199,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         int actualUrlListSize = actualCdpUrl.size();
         // Then:
         //The list should contain a minimum of one CRL CDP URL, as we always have a base URL
-        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
+        assertNotNull("Returned list of CRL CDP URLs was null.", actualCdpUrl);
         //We should have 12 entries in the list of URLs
         assertEquals("Number of CRL partition URLs is incorrect.", 12, actualUrlListSize);
         //This URL should be modified without added index number (representing the base url)
@@ -233,7 +232,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         int actualUrlListSize = actualCdpUrl.size();
         // Then:
         //The list should not be null, as we have a base url
-        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
+        assertNotNull("Returned list of CRL CDP URLs was null.", actualCdpUrl);
         //We should have 1 entry in the list of URLs, this is the base URL
         assertEquals("Number of CRL partition URLs should be 1.", 1, actualUrlListSize);
         //This URL should not have an index number, it is the base URL
@@ -264,7 +263,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         int actualUrlListSize = actualCdpUrl.size();
         // Then:
         //The list should not be null, as we have a base url
-        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
+        assertNotNull("Returned list of CRL CDP URLs was null.", actualCdpUrl);
         //We should have 1 entry in the list of URLs, this is the base URL
         assertEquals("Number of CRL partition URLs should be 1.", 1, actualUrlListSize);
         //This URL should not have an index number, it is the base URL
@@ -387,7 +386,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         authorityInformationAccess.add("http://example.com/3");
         testCa.setAuthorityInformationAccess(authorityInformationAccess);
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
+        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0, null);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
@@ -405,7 +404,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         X509CA testCa = createTestCA(cryptoToken, "CN=foo");
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
+        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0, null);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);

@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
@@ -156,6 +157,9 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
         } catch (CADoesntExistsException e) {
             log.error("No such CA with by name when editing CA that previously existed: " + caName);
             log.error(getCaList());
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (CaMsCompatibilityIrreversibleException e) {
+            getLogger().error("Failed CA edit operation for " + caName + ". Microsoft compatibility is irreversible.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNonceConflictException e) {
             log.error("Conflict for " + caName + "detected. OCSP responses can't be pre-produced when an OCSPKeyBinding related to that CA has nonce enabled in response. "

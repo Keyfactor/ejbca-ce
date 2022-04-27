@@ -16,15 +16,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PSSParameterSpec;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,7 +55,9 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
@@ -64,6 +72,7 @@ import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.keys.token.CryptoToken;
@@ -76,6 +85,7 @@ import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Before;
@@ -213,6 +223,47 @@ public class JackNJI11ProviderTest {
     }
 
     @Test
+    public void testSignatureNoneWithRSAPSS() throws SignatureException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, InvalidKeyException {
+        doRawPSSSign("SHA-256", 32, "NonewithRSAAndMGF1", "SHA256withRSAAndMGF1");
+        doRawPSSSign("SHA-384", 48, "NonewithRSAAndMGF1", "SHA384withRSAAndMGF1");
+        doRawPSSSign("SHA-512", 64, "NonewithRSAAndMGF1", "SHA512withRSAAndMGF1");
+    }
+
+    private void doRawPSSSign(String hashMech, int saltLen, String sigAlg, String verifyAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
+            CryptoTokenOfflineException, InvalidKeyException, SignatureException {
+        // Sign
+        final String plainText = "message to sign";
+        byte[] sigBytes;
+        {
+            // Special case as BC (ContentSignerBuilder) does not handle NONEwithRSA
+
+            final Signature signature = Signature.getInstance("NonewithRSAAndMGF1", cryptoToken.getSignProviderName());
+            if (sigAlg.toUpperCase().endsWith("ANDMGF1") || sigAlg.toUpperCase().endsWith("SSA-PSS")) {
+                PSSParameterSpec params = new PSSParameterSpec(hashMech, "MGF1", new MGF1ParameterSpec(hashMech), saltLen, 1);
+                signature.setParameter(params);
+            } else {
+                // Do not allow for RSASSA-PKCS1_v1.5 yet as we want to implement the encoding part here so it will work the same way as for PSS
+                throw new IllegalArgumentException("Client-side hashing through request metadata not supported for other algorithms than RSASSA-PSS yet");
+            }
+
+            final PrivateKey privKey = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
+            signature.initSign(privKey);
+
+            MessageDigest digest = MessageDigest.getInstance(hashMech, BouncyCastleProvider.PROVIDER_NAME);
+            signature.update(digest.digest(plainText.getBytes(StandardCharsets.US_ASCII)));
+            sigBytes = signature.sign();
+            assertNotNull("Signature failed, returned null", sigBytes);
+        }
+        // Verify
+        {
+            Signature signature = Signature.getInstance(verifyAlg, BouncyCastleProvider.PROVIDER_NAME);
+            signature.initVerify(cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1));
+            signature.update(plainText.getBytes(StandardCharsets.US_ASCII));
+            assertTrue("Signature verification failed", signature.verify(sigBytes));
+        }
+    }
+    
+    @Test
     public void testPssParams() throws GeneralSecurityException, IOException {
         testDefaultPSSParams("SHA256withRSAandMGF1");
         testDefaultPSSParams("SHA384withRSAandMGF1");
@@ -272,6 +323,40 @@ public class JackNJI11ProviderTest {
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(new X500Name("CN=issuer"), new BigInteger("12345678"), new Date(), new Date(), new X500Name("CN=subject"), pkinfo);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         assertNotNull("signing must have created a certificate", certHolder);
+        final ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(cryptoToken.getPublicKey(keyAlias));
+        assertTrue("Certificate signature must verify", certHolder.isSignatureValid(verifier));
+        
+        // Create a CRL of different sizes
+        ContentSigner crlsigner = new BufferingContentSigner(new JcaContentSignerBuilder(algorithm).setProvider(provider).build(privKey), MAX_SIGN_BUFFER_SIZE);
+        final X509v2CRLBuilder crlgen = new X509v2CRLBuilder(new X500Name("CN=issuer"), new Date());
+        crlgen.setNextUpdate(new Date());
+        X509CRLHolder crl = crlgen.build(crlsigner);
+        assertNotNull("signing must have created a CRL", crl);
+        byte[] crlBytes = crl.getEncoded();
+        assertTrue("CRL should be less than 1KiB, but larger than 100 bytes: " + crlBytes.length, crlBytes.length < 1000 && crlBytes.length > 100);
+        assertTrue("CRL(1) signature must verify", crl.isSignatureValid(verifier));
+        
+        // A CRL with 1500 entries should be larger than 20KiB (MAX_SIGN_BUFFER_SIZE)
+        for (int i = 0; i<1000; i++) {
+            crlgen.addCRLEntry(BigInteger.valueOf(i), new Date(), 0);
+        }
+        crlsigner = new BufferingContentSigner(new JcaContentSignerBuilder(algorithm).setProvider(provider).build(privKey), MAX_SIGN_BUFFER_SIZE);
+        crl = crlgen.build(crlsigner);
+        assertNotNull("signing must have created a CRL", crl);
+        crlBytes = crl.getEncoded();
+        assertTrue("CRL should be less than 40KiB, but larger than 20KiB: " + crlBytes.length, crlBytes.length < 40000 && crlBytes.length > MAX_SIGN_BUFFER_SIZE);
+        assertTrue("CRL(2) signature must verify", crl.isSignatureValid(verifier));
+
+        // A CRL with 3000 entries should be larger than 2*20KiB (MAX_SIGN_BUFFER_SIZE)
+        for (int i = 0; i<1000; i++) {
+            crlgen.addCRLEntry(BigInteger.valueOf(i), new Date(), 0);
+        }
+        crlsigner = new BufferingContentSigner(new JcaContentSignerBuilder(algorithm).setProvider(provider).build(privKey), MAX_SIGN_BUFFER_SIZE);
+        crl = crlgen.build(crlsigner);
+        assertNotNull("signing must have created a CRL", crl);
+        crlBytes = crl.getEncoded();
+        assertTrue("CRL should be less than 60KiB, but larger than 40KiB: " + crlBytes.length, crlBytes.length < 60000 && crlBytes.length > 2*MAX_SIGN_BUFFER_SIZE);
+        assertTrue("CRL(3) signature must verify", crl.isSignatureValid(verifier));
     }
     
     // Create a P11NgCryptoToken using whichever library is installed

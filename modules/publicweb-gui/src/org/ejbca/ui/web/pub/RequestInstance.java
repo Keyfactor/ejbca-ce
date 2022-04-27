@@ -49,6 +49,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -67,6 +68,8 @@ import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -331,6 +334,39 @@ public class RequestInstance {
 				}
 			}
 
+            if (data.getExtendedInformation() == null) {
+                data.setExtendedInformation(new ExtendedInformation());
+            }
+            
+            boolean update = false;
+            if (!StringUtils.equals(keyalg, data.getExtendedInformation().getKeyStoreAlgorithmType())) {
+                data.getExtendedInformation().setKeyStoreAlgorithmType(keyalg);
+                update = true;
+            }
+            if (!StringUtils.equals(keylength, data.getExtendedInformation().getKeyStoreAlgorithmSubType())) {
+                data.getExtendedInformation().setKeyStoreAlgorithmSubType(keylength);
+                update = true;
+            }
+            if (update) {
+                try {
+                    endEntityManagementSession.changeUser(administrator, data, false);
+                } catch(ApprovalException e) {
+                    // Exception message is rendered as is.
+                    // "Approval request with approvalID 1234... already exists."
+                    // Is thrown if there is pending approval and the user tries to enroll a certificate 
+                    // with a key specification unequal to the one stored at the extended end entity information.
+                    throw e;
+                } catch(WaitingForApprovalException e) {
+                    // Exception message is rendered as is. Add the request ID.
+                    // "Add Entity request has been added for approval by authorized administrators. Request ID 1234..."
+                    throw new WaitingForApprovalException(e.getMessage() + " Request ID " + e.getRequestId() + ".", e.getRequestId());
+                }
+            } else {
+                // NOOP: There might be a pending approval to change the key specification, but the user is still allowed to enroll 
+                // certificates with the last used key specification. Effectively this works only if 'Finish user' in the CA settings 
+                // is disabled. Otherwise the end entity has to transition to status NEW or FAILED which would require a second approval. 
+            }
+            
 			// get users Token Type.
 			tokentype = data.getTokenType();
 			if(tokentype == SecConst.TOKEN_SOFT_P12){
@@ -340,7 +376,7 @@ public class RequestInstance {
 			        throw new IncomatibleTokenTypeException();
 			    }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_P12, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {
 					sendOpenVPNToken(ks, username, password, response);
 				} else {
@@ -354,7 +390,7 @@ public class RequestInstance {
                     throw new IncomatibleTokenTypeException();
                 }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_JKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendJKSToken(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_PEM){
@@ -364,7 +400,7 @@ public class RequestInstance {
                     throw new IncomatibleTokenTypeException();
                 }
                 KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
-                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                        null, null, SecConst.TOKEN_SOFT_PEM, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendPEMTokens(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
@@ -464,6 +500,10 @@ public class RequestInstance {
                     throw new Exception("No known request type received.");
 				}
 			}
+		} 
+		catch (WaitingForApprovalException | ApprovalException e) {
+		    iErrorMessage = e.getMessage();
+		    log.info(iErrorMessage);
 		} catch (AuthStatusException ase) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongstatus");
         } catch (ObjectNotFoundException oe) {

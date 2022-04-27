@@ -23,14 +23,12 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.EJBTools;
+import org.cesecore.util.ExternalScriptsAllowlist;
 
 
 /**
  * This is a class used for testing and example purposes.
- * It is supposed to illustrate how to implement a custom publisher in EJBCA 3.
- *  
- *
- * @version $Id$
+ * It is supposed to illustrate how to implement a custom publisher in EJBCA.
  */
 public class DummyCustomPublisher implements ICustomPublisher, Serializable {
     		
@@ -96,4 +94,14 @@ public class DummyCustomPublisher implements ICustomPublisher, Serializable {
         return false;
     }
 	
+    @Override
+    public boolean isCallingExternalScript() {
+        return false;        
+    }
+
+    @Override
+    public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
+        // Method not applicable for this publisher type!        
+    }
+
 }

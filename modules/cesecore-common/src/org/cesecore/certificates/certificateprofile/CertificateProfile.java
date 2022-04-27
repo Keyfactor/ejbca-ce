@@ -12,29 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
+import org.cesecore.certificate.ca.its.ITSCertificateType;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -51,6 +36,23 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -69,6 +71,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
     public static final String SSHPROFILENAME = "SSH";
+    public static final String ITSPROFILENAME = "ITS";
 
     public static final List<String> FIXED_PROFILENAMES = new ArrayList<>();
     static {
@@ -78,6 +81,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
         FIXED_PROFILENAMES.add(SSHPROFILENAME);
+        FIXED_PROFILENAMES.add(ITSPROFILENAME);
     }
 
     /**
@@ -106,6 +110,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int CVC_ACCESS_DG3 = 1;
     public static final int CVC_ACCESS_DG4 = 2;
     public static final int CVC_ACCESS_DG3DG4 = 3;
+    public static final int CVC_ACCESS_RFU1 = 0x04;
+    public static final int CVC_ACCESS_RFU2 = 0x08;
+    public static final int CVC_ACCESS_RFU3 = 0x10;
+    public static final int CVC_ACCESS_RFU4 = 0x20;
     // For signature terminals (defined in version 2.10 of the EAC specification)
     public static final int CVC_ACCESS_SIGN = 16;
     public static final int CVC_ACCESS_QUALSIGN = 32;
@@ -178,6 +186,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String SUBJECTALTNAMESUBSET = "subjectaltnamesubset";
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
     protected static final String DESCRIPTION = "description";
+    protected static final String EABNAMESPACES = "eabnamespaces";
     /**
      * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
      */
@@ -344,11 +353,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String OVERRIDABLEEXTENSIONOIDS = "overridableextensionoids";
     protected static final String NONOVERRIDABLEEXTENSIONOIDS = "nonoverridableextensionoids";
 
-    //SSH Certificate specific values
+    // SSH Certificate specific values
     protected static final String SSH_CERTIFICATE_TYPE = "sshcertificatetype";
     protected static final String SSH_EXTENSIONS = "sshextensions";
     protected static final String SSH_ALLOW_EXTERNAL_EXTENSIONS = "allowExternalSshExtensions";
     protected static final String SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED = "requireExternalSshExtensionsDefined";
+
+    // ITS Certificate specific values
+    protected static final String ITS_CERTIFICATE_TYPE = "itscertificatetype";
+    protected static final String ITS_APP_PERMISSIONS = "itsapplicationpermissions";
+    protected static final String ITS_CERT_ISSUNG_PERMISSIONS = "itscertissuingpermissions";
 
 
     /**
@@ -558,6 +572,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setOverridableExtensionOIDs(new LinkedHashSet<>());
         setNonOverridableExtensionOIDs(new LinkedHashSet<>());
+        setEabNamespaces(new LinkedHashSet<>());
     }
 
     /**
@@ -1373,13 +1388,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         final List<Integer> availableBitLengths = getAvailableBitLengthsAsList();
         final List<String> availableEcCurves = getAvailableEcCurvesAsList();
-        if (!availableKeyAlgorithms.contains(keyAlgorithm)) { return false; }
+        if (!availableKeyAlgorithms.contains(keyAlgorithm)) {
+            return false;
+        }
         if (StringUtils.isNumeric(keySpecification)) {
             // keySpecification is a bit length (RSA)
             return availableBitLengths.contains(Integer.parseInt(keySpecification));
         } else {
             // keySpecification is a curve name (EC)
-            return availableEcCurves.contains(keySpecification) || availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE);
+            final boolean anyCurveIsAllowed = availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE);
+            final boolean specifiedCurveIsAllowed = availableEcCurves
+                    .stream()
+                    .anyMatch(AlgorithmTools.getEcKeySpecAliases(keySpecification)::contains);
+            return anyCurveIsAllowed || specifiedCurveIsAllowed;
         }
     }
 
@@ -1958,6 +1979,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(DESCRIPTION, "");
         } else {
             data.put(DESCRIPTION, description);
+        }
+    }
+
+    public Set<String> getEabNamespaces() {
+        if (data.get(EABNAMESPACES) == null) {
+            return new LinkedHashSet<>();
+        }
+        return (Set<String>) data.get(EABNAMESPACES);
+    }
+
+    public void setEabNamespaces(Set<String> eabNamespaces) {
+        if (eabNamespaces == null) {
+            data.put(EABNAMESPACES, new LinkedHashSet<>());
+        } else {
+            data.put(EABNAMESPACES, new LinkedHashSet<>(eabNamespaces));
         }
     }
 
@@ -2924,6 +2960,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CTMAXRETRIES, numRetries);
     }
 
+    /** SSH Getters & Setters */
     public SshCertificateType getSshCertificateType() {
         data.putIfAbsent(SSH_CERTIFICATE_TYPE, SshCertificateType.USER);
         return (SshCertificateType) data.get(SSH_CERTIFICATE_TYPE);
@@ -2981,6 +3018,62 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setRequireExternalSshExtensionsDefined(boolean allow) {
         data.put(SSH_REQUIRE_EXTERNAL_EXTENSIONS_DEFINED, allow);
+    }
+
+    /** ITS Getters & Setters */
+    public ITSCertificateType getItsCertificateType() {
+        data.putIfAbsent(ITS_CERTIFICATE_TYPE, ITSCertificateType.EXPLICIT);
+        return (ITSCertificateType) data.get(ITS_CERTIFICATE_TYPE);
+    }
+
+    public void setItsCertificateType(final ITSCertificateType certificateType) {
+        data.put(ITS_CERTIFICATE_TYPE, certificateType);
+    }
+
+    /**
+     * Get a list of List of appPermission PsIds indicating which ITS application permissions the profile should allow.
+     *
+     * @return a list of List of appPermission PsIds, never null.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> getItsApplicationPermissions() {
+        return data.get(ITS_APP_PERMISSIONS) == null
+                ? Collections.emptyList()
+                : (List<Integer>) data.get(ITS_APP_PERMISSIONS);
+    }
+
+    /**
+     * Saves the CertificateProfile's list of ITS appPermissions the cert profile is applicable to.
+     *
+     * @param applicationPermissions List of appPermission PsIds (Integer)
+     * @see ITSApplicationIds
+     */
+
+    public void setItsApplicationPermissions(List<Integer> applicationPermissions) {
+        data.put(ITS_APP_PERMISSIONS, applicationPermissions);
+    }
+
+    /**
+     * Get a list of List of certIssuingPermissions PsIds indicating which ITS certificate issuing permissions the profile should allow.
+     *
+     * @return a list of List of certIssuingPermission PsIds, never null.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> getItsCertIssuingPermissions() {
+        return data.get(ITS_CERT_ISSUNG_PERMISSIONS) == null
+                ? Collections.emptyList()
+                : (List<Integer>) data.get(ITS_CERT_ISSUNG_PERMISSIONS);
+    }
+
+    /**
+     * Saves the CertificateProfile's list of ITS certIssuingPermissions the cert profile is applicable to.
+     *
+     * @param certIssuingPermissions List of certIssuingPermissions PsIds (Integer)
+     * @see ITSApplicationIds
+     */
+
+    public void setItsCertIssuingPermissions(List<Integer> certIssuingPermissions) {
+        data.put(ITS_CERT_ISSUNG_PERMISSIONS, certIssuingPermissions);
     }
 
     /**

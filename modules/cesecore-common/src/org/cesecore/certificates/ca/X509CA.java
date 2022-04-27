@@ -26,7 +26,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
  * CA operations used for X509 implementations specifically.
- * @version $Id$
  *
  */
 public interface X509CA extends CA {
@@ -36,6 +35,10 @@ public interface X509CA extends CA {
     List<CertificatePolicy> getPolicies();
 
     void setPolicies(List<CertificatePolicy> policies);
+
+    boolean isMsCaCompatible();
+
+    void setMsCaCompatible(boolean isMsCaCompatible);
 
     boolean getUseAuthorityKeyIdentifier();
 

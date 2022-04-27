@@ -52,11 +52,15 @@ import org.ejbca.util.SelectItemComparator;
 @SessionScoped
 public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
+    private static final String HIDDEN_PWD = "**********";
+
     /** GUI table representation of a SCEP alias that can be interacted with. */
     public class ScepAliasGuiInfo {
         private String alias;
         private String mode;
         private boolean includeCA;
+        private boolean returnCaChainInGetCaCert;
+        private boolean allowLegacyDigestAlgorithm;
         private String raCertProfile;
         private String raEEProfile;
         private String raAuthPassword;
@@ -69,25 +73,31 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private boolean allowClientCertificateRenewaWithOldKey;
         
         private boolean useIntune;
+        private String intuneAuthority;
         private String intuneAadAppId;
+        private boolean intuneAadUseKeyBinding;
         private String intuneAadAppKey;
+        private String intuneAadAppKeyBinding;
         private String intuneTenant;
+        private String intuneResourceUrl;
+        private String intuneGraphApiVersion;
+        private String intuneGraphResourceUrl;
         private String intuneProxyHost;
         private String intuneProxyPort;
         private String intuneProxyUser;
         private String intuneProxyPass;
 
-
-        
         private ScepAliasGuiInfo(ScepConfiguration scepConfig, String alias) {
             if (alias != null) {
                 this.alias = alias;
                 if (scepConfig.aliasExists(alias)) {
                     this.mode = (scepConfig.getRAMode(alias) ? ScepConfiguration.Mode.RA.getResource() : ScepConfiguration.Mode.CA.getResource());
                     this.includeCA = scepConfig.getIncludeCA(alias);
+                    this.returnCaChainInGetCaCert = scepConfig.getReturnCaChainInGetCaCert(alias);
+                    this.allowLegacyDigestAlgorithm = scepConfig.getAllowLegacyDigestAlgorithm(alias);
                     this.raCertProfile = scepConfig.getRACertProfile(alias);
                     this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
-                    this.raAuthPassword = scepConfig.getRAAuthPassword(alias);
+                    this.raAuthPassword = ScepConfigMBean.HIDDEN_PWD;
                     this.raDefaultCA = scepConfig.getRADefaultCA(alias);
                     this.raNameGenScheme = scepConfig.getRANameGenerationScheme(alias);
                     this.raNameGenParameters = scepConfig.getRANameGenerationParameters(alias);
@@ -96,16 +106,24 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
                     this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
                     this.setUseIntune(scepConfig.getUseIntune(alias));
+                    this.intuneAadUseKeyBinding = scepConfig.getIntuneAadUseKeyBinding(alias);
+                    this.intuneAadAppKeyBinding = scepConfig.getIntuneAadAppKeyBinding(alias);
+                    this.intuneAuthority = scepConfig.getIntuneAuthority(alias);
                     this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
-                    this.intuneAadAppKey = scepConfig.getIntuneAadAppKey(alias);
+                    this.intuneAadAppKey = ScepConfigMBean.HIDDEN_PWD;
                     this.intuneTenant = scepConfig.getIntuneTenant(alias);
+                    this.intuneResourceUrl = scepConfig.getIntuneResourceUrl(alias);
+                    this.intuneGraphApiVersion = scepConfig.getIntuneGraphApiVersion(alias);
+                    this.intuneGraphResourceUrl = scepConfig.getIntuneGraphResourceUrl(alias);
                     this.intuneProxyHost = scepConfig.getIntuneProxyHost(alias);
                     this.intuneProxyPort = scepConfig.getIntuneProxyPort(alias);
                     this.intuneProxyUser = scepConfig.getIntuneProxyUser(alias);
-                    this.intuneProxyPass = scepConfig.getIntuneProxyPass(alias);
+                    this.intuneProxyPass = ScepConfigMBean.HIDDEN_PWD;
                 } else {
                     this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE.toUpperCase();
                     this.includeCA = Boolean.valueOf(ScepConfiguration.DEFAULT_INCLUDE_CA);
+                    this.returnCaChainInGetCaCert = Boolean.valueOf(ScepConfiguration.DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT);
+                    this.allowLegacyDigestAlgorithm = Boolean.valueOf(ScepConfiguration.DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
                     this.raCertProfile = ScepConfiguration.DEFAULT_RA_CERTPROFILE;
                     this.raEEProfile = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
                     this.raAuthPassword = ScepConfiguration.DEFAULT_RA_AUTHPWD;
@@ -118,9 +136,15 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     this.allowClientCertificateRenewaWithOldKey = Boolean
                             .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
                     this.setUseIntune(false);
+                    this.intuneAuthority = "";
                     this.intuneAadAppId = "";
                     this.intuneAadAppKey = "";
+                    this.intuneAadAppKeyBinding = "";
+                    this.intuneAadUseKeyBinding = false;
                     this.intuneTenant = "";
+                    this.intuneResourceUrl = "";
+                    this.intuneGraphApiVersion = "";
+                    this.intuneGraphResourceUrl = "";
                     this.intuneProxyHost = "";
                     this.intuneProxyPort = "";
                     this.intuneProxyUser = "";
@@ -159,7 +183,15 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIncludeCA(boolean includeca) {
             this.includeCA = includeca;
         }
-
+        
+        public boolean isAllowLegacyDigestAlgorithm() {
+            return allowLegacyDigestAlgorithm;
+        }
+        
+        public void setAllowLegacyDigestAlgorithm(boolean allowLegacyDigestAlgorithm) {
+            this.allowLegacyDigestAlgorithm = allowLegacyDigestAlgorithm;
+        }
+        
         public String getRaCertProfile() {
             return raCertProfile;
         }
@@ -248,6 +280,22 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.allowClientCertificateRenewaWithOldKey = allowClientCertificateRenewaWithOldKey;
         }
 
+        public boolean isUseIntune() {
+            return useIntune;
+        }
+
+        public void setUseIntune(boolean useIntune) {
+            this.useIntune = useIntune;
+        }
+        
+        public String getIntuneAuthority() {
+            return intuneAuthority;
+        }
+
+        public void setIntuneAuthority(String intuneAuthority) {
+            this.intuneAuthority = intuneAuthority;
+        }
+        
         public String getIntuneAadAppId() {
             return intuneAadAppId;
         }
@@ -271,8 +319,31 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneTenant(String intuneTenant) {
             this.intuneTenant = intuneTenant;
         }
-
        
+        public String getIntuneResourceUrl() {
+            return intuneResourceUrl;
+        }
+
+        public void setIntuneResourceUrl(String intuneResourceUrl) {
+            this.intuneResourceUrl = intuneResourceUrl;
+        }
+
+        public String getIntuneGraphApiVersion() {
+            return intuneGraphApiVersion;
+        }
+
+        public void setIntuneGraphApiVersion(String intuneGraphApiVersion) {
+            this.intuneGraphApiVersion = intuneGraphApiVersion;
+        }
+
+        public String getIntuneGraphResourceUrl() {
+            return intuneGraphResourceUrl;
+        }
+
+        public void setIntuneGraphResourceUrl(String intuneGraphResourceUrl) {
+            this.intuneGraphResourceUrl = intuneGraphResourceUrl;
+        }
+            
         public String getIntuneProxyHost() {
             return intuneProxyHost;
         }
@@ -305,12 +376,28 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.intuneProxyPass = intuneProxyPass;
         }
 
-        public boolean isUseIntune() {
-            return useIntune;
+        public String getIntuneAadAppKeyBinding() {
+            return intuneAadAppKeyBinding;
         }
 
-        public void setUseIntune(boolean useIntune) {
-            this.useIntune = useIntune;
+        public void setIntuneAadAppKeyBinding(String intuneAadKeyBinding) {
+            this.intuneAadAppKeyBinding = intuneAadKeyBinding;
+        }
+
+        public boolean isIntuneAadUseKeyBinding() {
+            return intuneAadUseKeyBinding;
+        }
+
+        public void setIntuneAadUseKeyBinding(boolean intuneAadUseKeyBinding) {
+            this.intuneAadUseKeyBinding = intuneAadUseKeyBinding;
+        }
+
+        public boolean isReturnCaChainInGetCaCert() {
+            return returnCaChainInGetCaCert;
+        }
+
+        public void setReturnCaChainInGetCaCert(boolean returnCaChainInGetCaCert) {
+            this.returnCaChainInGetCaCert = returnCaChainInGetCaCert;
         }
     }
 
@@ -422,10 +509,15 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             String alias = currentAlias.getAlias();
             scepConfig.setRAMode(alias, "ra".equalsIgnoreCase(currentAlias.getMode()));
             scepConfig.setIncludeCA(alias, currentAlias.isIncludeCA());
+            scepConfig.setReturnCaChainInGetCaCert(alias, currentAlias.isReturnCaChainInGetCaCert());
+            scepConfig.setAllowLegacyDigestAlgorithm(alias, currentAlias.allowLegacyDigestAlgorithm);
             scepConfig.setRACertProfile(alias, currentAlias.getRaCertProfile());
             scepConfig.setRAEndEntityProfile(alias, currentAlias.getRaEEProfile());
             scepConfig.setRADefaultCA(alias, currentAlias.getRaDefaultCA());
-            scepConfig.setRAAuthpassword(alias, currentAlias.getRaAuthPassword());
+            // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+            if (!currentAlias.getRaAuthPassword().equals(ScepConfigMBean.HIDDEN_PWD)) {
+                scepConfig.setRAAuthpassword(alias, currentAlias.getRaAuthPassword());
+            }
             scepConfig.setRANameGenerationScheme(alias, currentAlias.getRaNameGenScheme());
             scepConfig.setRANameGenerationParameters(alias, currentAlias.getRaNameGenParams());
             scepConfig.setRANameGenerationPrefix(alias, currentAlias.getRaNameGenPrefix());
@@ -433,13 +525,25 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
             scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
             scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
+            scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
-            scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
+            scepConfig.setIntuneAadUseKeyBinding(alias, currentAlias.isIntuneAadUseKeyBinding());
+            // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+            if (!currentAlias.getIntuneAadAppKey().equals(ScepConfigMBean.HIDDEN_PWD)) {
+                scepConfig.setIntuneAadAppKey(alias, currentAlias.getIntuneAadAppKey());
+            }
+            scepConfig.setIntuneAadAppKeyBinding(alias, currentAlias.getIntuneAadAppKeyBinding());
             scepConfig.setIntuneTenant(alias, currentAlias.getIntuneTenant());
+            scepConfig.setIntuneResourceUrl(alias, currentAlias.getIntuneResourceUrl());
+            scepConfig.setIntuneGraphApiVersion(alias, currentAlias.getIntuneGraphApiVersion());
+            scepConfig.setIntuneGraphResourceUrl(alias, currentAlias.getIntuneGraphResourceUrl());
             scepConfig.setIntuneProxyHost(alias, currentAlias.getIntuneProxyHost());
             scepConfig.setIntuneProxyPort(alias, currentAlias.getIntuneProxyPort());
             scepConfig.setIntuneProxyUser(alias, currentAlias.getIntuneProxyUser());
-            scepConfig.setIntuneProxyPass(alias, currentAlias.getIntuneProxyPass());
+            // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
+            if (!currentAlias.getIntuneProxyPass().equals(ScepConfigMBean.HIDDEN_PWD)) {
+                scepConfig.setIntuneProxyPass(alias, currentAlias.getIntuneProxyPass());
+            }
 
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, scepConfig);

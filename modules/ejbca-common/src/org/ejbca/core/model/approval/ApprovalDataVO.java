@@ -53,6 +53,8 @@ public class ApprovalDataVO implements Serializable {
 	public static final int APPROVALTYPE_REVOKEANDDELETEENDENTITY    = 8;
 	public static final int APPROVALTYPE_REVOKECERTIFICATE           = 9;
 	public static final int APPROVALTYPE_ACTIVATECATOKEN             = 10;
+	public static final int APPROVALTYPE_ACME_ACCOUNT_REGISTRATION   = 11;
+	public static final int APPROVALTYPE_ACME_ACCOUNT_KEYCHANGE      = 12;
 
 	//IMPORTANT REMEMBER TO SET THE RESOURCES IN BOTH INTERNAL AND ADMINWEB LANGUAGE FILES
 	

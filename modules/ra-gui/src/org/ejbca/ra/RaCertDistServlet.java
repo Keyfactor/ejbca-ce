@@ -44,6 +44,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -245,7 +246,7 @@ public class RaCertDistServlet extends HttpServlet {
     private void writeResponseBytes(final HttpServletResponse httpServletResponse, final String filename, final String contentType, final byte[] response) throws IOException {
         ServletUtils.removeCacheHeaders(httpServletResponse);
         if (filename!=null) {
-            httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");
         }
         httpServletResponse.setContentType(contentType);
         httpServletResponse.setContentLength(response.length);

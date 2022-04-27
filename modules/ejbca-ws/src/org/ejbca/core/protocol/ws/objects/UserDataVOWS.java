@@ -52,6 +52,7 @@ public class UserDataVOWS implements Serializable{
 	public static final String TOKEN_TYPE_JKS           = "JKS";
 	public static final String TOKEN_TYPE_PEM           = "PEM";
 	public static final String TOKEN_TYPE_P12           = "P12";
+    public static final String TOKEN_TYPE_BCFKS         = "BCFKS";
 		
     private String username = null;
     private String password = null;

@@ -36,8 +36,6 @@ import org.ejbca.util.HTMLTools;
 
 /**
  * Base class for servlets (CRL or Certificate) implementing rfc4378
- * 
- * @version  $Id$
  */
 public abstract class StoreServletBase extends HttpServlet {
 
@@ -188,7 +186,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 		final String sKIDHash = VAConfiguration.sKIDHashFromName(alias);
 		if ( sKIDHash==null || sKIDHash.length()<1 ) {
-			final String m = "No '"+alias+"' alias defined in va.properties .";
+			final String m = "No '" + HTMLTools.htmlescape(alias) + "' alias defined in va.properties .";
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND, m);
 			log.debug(m);
 			return true;
@@ -243,12 +241,16 @@ public abstract class StoreServletBase extends HttpServlet {
 		return false;
 	}
 	
-	private void printInfo(X509Certificate certs[], String indent, PrintWriter pw, String url) {
-        for (X509Certificate cert : certs) {
+	private void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url) {
+        
+	    for (X509Certificate cert : certs) {
             // Escape the URL as it might be unsafe
             printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
+            
             pw.println();
-            final X509Certificate issuedCerts[] = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            
+            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }

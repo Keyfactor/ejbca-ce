@@ -144,6 +144,14 @@
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.validToString}"/>
                 </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.ACCOUNT_BINDING_ID}" rendered="#{not empty viewCertificateMBean.certificateData.accountBindingId}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.accountBindingId}" 
+                    	rendered="#{not empty viewCertificateMBean.certificateData.accountBindingId}"/>
+                </h:panelGroup>
             </h:panelGrid>
             
             <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
@@ -291,7 +299,7 @@
                 <h:panelGroup>
 	                <h:selectOneMenu id="selectRevokeReason" value="#{viewCertificateMBean.revokeReason}" 
 	                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}">
-	                    <f:selectItems value="#{viewCertificateMBean.revokeReasons}"/>
+	                    <f:selectItems value="#{viewCertificateMBean.revokeReasons.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
 	                </h:selectOneMenu>
 	                
 	                <h:commandButton value="#{web.text.REVOKE}" action="#{viewCertificateMBean.actionRevoke}" onclick="return confirm('#{web.text.AREYOUSUREREVOKECERT}')"

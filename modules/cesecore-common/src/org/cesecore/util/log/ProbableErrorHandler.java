@@ -82,11 +82,6 @@ public class ProbableErrorHandler implements ErrorHandler {
     @Override
     public void setLogger(Logger logger) {
     }
-
-    /** No options to activate. */
-    @Override
-    public void activateOptions() {
-    }
     
     /** Does not do anything. */
     @Override

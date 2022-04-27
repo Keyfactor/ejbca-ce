@@ -25,25 +25,25 @@ public final class ConfigdumpImportResult extends ConfigdumpResult {
     
     private static final long serialVersionUID = 1L;
 
-    private final List<ConfigdumpItem> problematicItems;
-    private final List<ConfigdumpItem> itemsRequiringPassword;
+    private final List<ConfigdumpItem<?>> problematicItems;
+    private final List<ConfigdumpItem<?>> itemsRequiringPassword;
     
     public ConfigdumpImportResult(
             final List<String> reportedErrors,
             final List<String> reportedWarnings,
-            final Set<ConfigdumpItem> problematicItems,
-            final Set<ConfigdumpItem> itemsRequiringPassword
+            final Set<ConfigdumpItem<?>> problematicItems,
+            final Set<ConfigdumpItem<?>> itemsRequiringPassword
     ) {
         super(reportedErrors, reportedWarnings);
         this.problematicItems = Collections.unmodifiableList(new ArrayList<>(problematicItems));
         this.itemsRequiringPassword = Collections.unmodifiableList(new ArrayList<>(itemsRequiringPassword));
     }
 
-    public List<ConfigdumpItem> getProblematicItems() {
+    public List<ConfigdumpItem<?>> getProblematicItems() {
         return problematicItems;
     }
     
-    public List<ConfigdumpItem> getItemsRequiringPassword() {
+    public List<ConfigdumpItem<?>> getItemsRequiringPassword() {
         return itemsRequiringPassword;
     }
 }

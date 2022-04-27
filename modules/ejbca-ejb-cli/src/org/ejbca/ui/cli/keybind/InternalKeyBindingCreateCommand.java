@@ -138,7 +138,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
             log.error("ERROR: CryptoToken  " + parameters.get(CRYPTO_TOKEN_KEY) + " was offline.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InternalKeyBindingNameInUseException e) {
-            log.error("ERROR: Keybinding of name " + name + " already exists,");
+            log.error("ERROR: Keybinding of name " + name + " already exists.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (InvalidAlgorithmException e) {
             log.error("ERROR: " + signatureAlgorithm + " was not a valid algorithm.");

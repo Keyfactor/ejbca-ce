@@ -85,6 +85,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -184,6 +185,34 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             internalKeyBindingInfos.add(new InternalKeyBindingInfo(internalKeyBindingInstance));
         }
         return internalKeyBindingInfos;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<Integer, String> getAllCaWithoutOcspKeyBinding() {
+        final List<InternalKeyBindingInfo> allOcspKeyBindings = 
+                getAllInternalKeyBindingInfos(OcspKeyBinding.IMPLEMENTATION_ALIAS);
+        List<Integer> internalKeyBoundCas = new ArrayList<Integer>();
+        for(InternalKeyBindingInfo keyBindingInfo: allOcspKeyBindings) {
+            if(keyBindingInfo.getStatus()==null 
+                    || (keyBindingInfo.getStatus()==InternalKeyBindingStatus.DISABLED && 
+                            keyBindingInfo.getCertificateId()!=null) ) {
+                // this allows an Admin to disable an OCspKeyBinding and create new one with signOnBehalf entry
+                // instead of deleting the old entry 
+                // while taking in account for the period before signed CSR is uploaded 
+                continue;
+            }
+            for(InternalKeyBindingTrustEntry signOnBehalfEntry : keyBindingInfo.getSignOcspResponseOnBehalf()) {
+                internalKeyBoundCas.add(signOnBehalfEntry.getCaId());
+            }
+        }
+        
+        final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();        
+        for(Integer internalKeyBoundCa: internalKeyBoundCas) {
+            caIdToNameMap.remove(internalKeyBoundCa);
+        }
+        
+        return caIdToNameMap;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -479,7 +508,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         putDelta("signatureAlgorithm", originalInternalKeyBinding.getSignatureAlgorithm(), internalKeyBinding.getSignatureAlgorithm(), details);
         putDelta("cryptoTokenId", String.valueOf(originalInternalKeyBinding.getCryptoTokenId()), String.valueOf(internalKeyBinding.getCryptoTokenId()), details);
         putDelta("status", originalInternalKeyBinding.getStatus().name(), internalKeyBinding.getStatus().name(), details);
-        putDelta("trustedCertificateReferences", Arrays.toString(originalInternalKeyBinding.getTrustedCertificateReferences().toArray()), Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()), details);
+        putDelta("trustedCertificateReferences", 
+                Arrays.toString(originalInternalKeyBinding.getTrustedCertificateReferences().toArray()), 
+                Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()), details);
+        putDelta("signOcspResponseOnBehalf", 
+                Arrays.toString(originalInternalKeyBinding.getSignOcspResponseOnBehalf().toArray()), 
+                Arrays.toString(internalKeyBinding.getSignOcspResponseOnBehalf().toArray()), details);
         putDelta(originalInternalKeyBinding.getCopyOfProperties(), internalKeyBinding.getCopyOfProperties(), details);
         securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
@@ -1042,7 +1076,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis());
+                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
     }
 
     /** Helper method for audit logging changes */

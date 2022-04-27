@@ -22,7 +22,16 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.its.ETSISignedData;
+import org.bouncycastle.its.ETSISignedDataBuilder;
+import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.its.jcajce.JcaITSContentSigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
+import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Psid;
+import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -37,6 +46,8 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificate.ca.its.ECA;
+import org.cesecore.certificate.ca.its.ITSApplicationIds;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -51,6 +62,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
@@ -90,6 +102,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -111,6 +124,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.scep.ScepRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -136,6 +150,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -469,9 +484,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     // If we haven't done so yet, authenticate user. (Only if we store UserData for this CA.)
                     if (ca.isUseUserStorage() || (suppliedUserData == null && req.getUsername() != null && req.getPassword() != null)) {
                         endEntityInformation = authUser(admin, req.getUsername(), req.getPassword());
+                       if (endEntityInformation != null && endEntityInformation.getExtendedInformation() != null 
+                               && suppliedUserData != null && suppliedUserData.getExtendedInformation() != null) {
+                            endEntityInformation.getExtendedInformation().setAccountBindingId(suppliedUserData.getExtendedInformation().getAccountBindingId());                            
+                        }
                     } else {
                         endEntityInformation = suppliedUserData;
                     }
+                    
                     // We need to make sure we use the users registered CA here
                     if (endEntityInformation.getCAId() != ca.getCAId()) {
                         final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()),
@@ -484,20 +504,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
                         singleActiveCertificateConstraint(admin, endEntityInformation);
                         // Issue the certificate from the request
+                        final CertificateGenerationParams certGenParams = fetchCertGenParams();
                         try {
-                            ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, fetchCertGenParams(),
-                                    updateTime);
+                            ret = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, req, responseClass, certGenParams, updateTime);
                         } catch (CTLogException e) {
                             if (e.getPreCertificate() != null) {
                                 CertificateDataWrapper certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                                 // Publish pre-certificate and abort issuance
                                 postCreateCertificate(admin, endEntityInformation, ca,
-                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()), true);
+                                        new CertificateDataWrapper(certWrapper.getCertificate(), certWrapper.getCertificateData(), certWrapper.getBase64CertData()), true, certGenParams);
                             }
                             throw new CertificateCreateException(e);
                         }
                         postCreateCertificate(admin, endEntityInformation, ca,
-                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false);
+                                new CertificateDataWrapper(ret.getCertificate(), ret.getCertificateData(), ret.getBase64CertData()), false, certGenParams);
+                        // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
+                        if (ca.isUseUserStorage() && endEntityInformation != null) {
+                            finishUser(ca, endEntityInformation);
+                        }
                     }
                 } catch (NoSuchEndEntityException e) {
                     // If we didn't find the entity return error message
@@ -506,11 +530,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     throw new NoSuchEndEntityException(failText, e);
                 }
             }
-            ret.create();
-            // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-            if (ca.isUseUserStorage() && endEntityInformation != null) {
-                finishUser(ca, endEntityInformation);
-            }
+            ret.create();         
         } catch (CustomCertificateSerialNumberException e) {
             cleanUserCertDataSN(endEntityInformation);
             throw e;
@@ -609,6 +629,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return cert;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CertificateWrapper> createCardVerifiableCertificateWS(final AuthenticationToken authenticationToken, final String username,
             String password, final String cvcreq)
@@ -1126,7 +1147,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
             final String dn = certificateStoreSession.getCADnFromRequest(req);
-            final String keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            final String keySequence; 
+            
+            if(req instanceof ScepRequestMessage) {
+                keySequence = new BigInteger(req.getCASequence()).toString(16).toUpperCase(); // BigInteger string to uppercase for scep case
+            } else {
+                keySequence = req.getCASequence(); // key sequence from CVC requests, null from most other types
+            }
+            
             if (log.isDebugEnabled()) {
                 log.debug(">getCAFromRequest, dn: " + dn + ": " + keySequence);
             }
@@ -1187,7 +1215,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws CADoesntExistsException, AuthorizationDeniedException {
         // See if we can get username and password directly from request
         final String username = req.getUsername();
-        final EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
+        final EndEntityInformation data = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(admin, username);
         if (data == null) {
             throw new CADoesntExistsException("Could not find username, and hence no CA for user '" + username + "'.");
         }
@@ -1299,18 +1327,19 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         singleActiveCertificateConstraint(admin, endEntityInformation);
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         CertificateDataWrapper certWrapper;
+        final CertificateGenerationParams certGenParams = fetchCertGenParams();
         try {
             certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
-                    notBefore, notAfter, extensions, sequence, fetchCertGenParams(), updateTime);
+                    notBefore, notAfter, extensions, sequence, certGenParams, updateTime);
         } catch (CTLogException e) {
             if (e.getPreCertificate() != null) {
                 certWrapper = (CertificateDataWrapper) e.getPreCertificate();
                 // Publish pre-certificate and abort issuance
-                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true);
+                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true, certGenParams);
             }
             throw new CertificateCreateException(e);
         }
-        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false);
+        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
@@ -1338,6 +1367,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (log.isDebugEnabled()) {
                 log.debug("SingleActiveCertificateConstraint, found " + cdws.size() + " old (non expired, active) certificates and "
                         + publishers.size() + " publishers.");
+            }
+            // Set the revocation dates
+            for (CertificateDataWrapper cdw : cdws) {
+                if (cdw.getCertificateData().getRevocationDate() == -1) {
+                    cdw.getCertificateData().setRevocationDate(new Date());
+                }
             }
             // Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
             // the certificate must be revoked nonetheless. 
@@ -1369,10 +1404,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param endEntity the end entity involved
      * @param ca the relevant CA
      * @param certificateWrapper the newly created Certificate
+     * @param certGenParams Used to add certificate to IncompleteIssuanceJournalData
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
     private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
-            final CertificateDataWrapper certificateWrapper, final boolean storePreCert) throws AuthorizationDeniedException {
+            final CertificateDataWrapper certificateWrapper, final boolean storePreCert, final CertificateGenerationParams certGenParams) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificateWrapper.getCertificate(), endEntity);
@@ -1389,6 +1425,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(),
                         endEntity.getCertificateDN(), endEntity.getExtendedInformation());
             }
+        }
+        // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
+        final BaseCertificateData certData = certificateWrapper.getBaseCertificateData();
+        if (certData != null) {
+            certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()), storePreCert);
         }
     }
 
@@ -1431,6 +1472,91 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (CMSException | CertificateEncodingException | IOException | OperatorCreationException e) {
             log.debug("Given payload could not be signed.", e);
             throw new SignRequestSignatureException("Given payload could not be signed.", e);
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public byte[] signItsPayload(final byte[] data, final ECA eca)
+            throws CryptoTokenOfflineException, SignRequestSignatureException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to sign ITS payload from CA with ID " + eca.getCAId());
+        }
+        
+        final CAToken catoken = eca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (privateKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
+        }
+
+        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
+        if(ecaCertificate==null) {
+            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
+        }
+
+        try {
+            // Psid is same for EC enroll and authorization validation
+            ETSISignedDataBuilder signedDataBuilder = ETSISignedDataBuilder.builder(
+                            new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.getPsId()));
+            signedDataBuilder.setUnsecuredData(data);
+            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
+                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
+            HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
+            ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
+
+            return etsiSignedData.getEncoded();
+        } catch ( Exception e) {
+            // high level catch block
+            log.debug("ITS payload could not be signed.", e);
+            throw new SignRequestSignatureException("ITS payload could not be signed.", e);
+        }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public ITSCertificate createEnrollCredential(AuthenticationToken admin, Builder certificateBuilder, 
+            CertificateId certifcateId, PublicVerificationKey verificationKey, 
+            ECA eca, EndEntityInformation endEntity)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to generate EC from CA with ID " + eca.getCAId());
+        }
+
+        return certificateCreateSession.createItsCertificate(admin, endEntity, eca, certificateBuilder, certifcateId, verificationKey);
+    }
+
+    @Override
+    public byte[] signItsPayload(ETSISignedDataBuilder signedDataBuilder, ECA eca) 
+                    throws CryptoTokenOfflineException, SignRequestSignatureException {
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to sign ITS payload from CA with ID " + eca.getCAId());
+        }
+        
+        final CAToken catoken = eca.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (privateKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
+        }
+
+        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
+        if(ecaCertificate==null) {
+            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
+        }
+
+        try {
+            // Psid is same for EC enroll and authorization validation
+            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
+                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
+            HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
+            ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
+
+            return etsiSignedData.getEncoded();
+        } catch ( Exception e) {
+            // high level catch block
+            log.debug("ITS payload could not be signed.", e);
+            throw new SignRequestSignatureException("ITS payload could not be signed.", e);
         }
     }
 }

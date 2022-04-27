@@ -262,12 +262,28 @@
 			<h:outputText value="#{web.text.USEFIELDSINDN}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectManyListbox value="#{editPublisher.ldapPublisherMBData.useFieldInLdapDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list" size="10" 
-								required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}" converter="javax.faces.Integer">
-				<f:selectItems value="#{editPublisher.ldapPublisherMBData.ldapPublisherLocationFieldsFromCertificateDN}" />
-			</h:selectManyListbox>
+			<h:selectBooleanCheckbox id="useCustomDnOrder" value="#{editPublisher.ldapPublisherMBData.useCustomDnOrder}">
+				<f:ajax event="change" execute="@this" render="ldapCertDn"/>
+			</h:selectBooleanCheckbox>
+			<h:outputLabel for="useCustomDnOrder" value="#{web.text.CUSTOMDNORDER}"/>
 			<br />
-			<h:outputText value="#{web.text.USEFIELDSINDN_HELP}" styleClass="smallHelp" />
+			<h:panelGroup id="ldapCertDn" layout="block">
+				<h:selectManyListbox id="fieldsInLdapDn"
+									value="#{editPublisher.ldapPublisherMBData.useFieldInLdapDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list" size="10"
+									rendered="#{not editPublisher.ldapPublisherMBData.useCustomDnOrder}"
+									required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}" converter="javax.faces.Integer">
+					<f:selectItems value="#{editPublisher.ldapPublisherMBData.ldapPublisherLocationFieldsFromCertificateDN}" />
+				</h:selectManyListbox>
+				<h:inputText id="fieldsInLdapDnCustomOrder" size="45" value="#{editPublisher.ldapPublisherMBData.fieldsInLdapDnCustomOrder}"
+						rendered="#{editPublisher.ldapPublisherMBData.useCustomDnOrder}" disabled="#{editPublisher.readOnly}"
+						required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.USEFIELDSINDN}"/>
+				<h:panelGroup rendered="#{editPublisher.ldapPublisherMBData.useCustomDnOrder}">
+					<br />
+					<h:outputText value="#{web.text.USEFIELDSINDN_HELP2}" styleClass="smallHelp" />
+				</h:panelGroup>
+				<br />
+				<h:outputText value="#{web.text.USEFIELDSINDN_HELP}" styleClass="smallHelp" />
+			</h:panelGroup>
 		</h:panelGroup>
 		
 	</h:panelGrid>

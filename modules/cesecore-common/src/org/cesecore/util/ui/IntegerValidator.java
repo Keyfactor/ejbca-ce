@@ -29,6 +29,8 @@ public final class IntegerValidator implements DynamicUiPropertyValidator<Intege
     
     private static final InternalResources intres = InternalResources.getInstance();
     
+    private String name;
+    
     private int min = Integer.MIN_VALUE;
     
     private int max = Integer.MAX_VALUE;
@@ -61,7 +63,7 @@ public final class IntegerValidator implements DynamicUiPropertyValidator<Intege
     
     @Override
     public void validate(Integer value) throws PropertyValidationException {
-        validateInteger(value, min, max);
+        validateInteger(value, name, min, max);
     }
 
     @Override
@@ -126,16 +128,26 @@ public final class IntegerValidator implements DynamicUiPropertyValidator<Intege
      * 
      * @throws PropertyValidationException if the validation fails.
      */
-    public static void validateInteger(final Integer value, final int min, final int max) throws PropertyValidationException {
+    public static void validateInteger(final Integer value, final String name, final int min, final int max) throws PropertyValidationException {
         if (log.isDebugEnabled()) {
             log.debug("Validate Integer " + value + " between [" + min + ", " + max + "].");
         }
         if (value < min) {
-            throw new PropertyValidationException(intres.getLocalizedMessage("dynamic.property.validation.integertoosmall.failure", value.toString()));
+            throw new PropertyValidationException(name + ": " + intres.getLocalizedMessage("dynamic.property.validation.integertoosmall.failure", value.toString()));
         }
         if (value > max) {
-            throw new PropertyValidationException(intres.getLocalizedMessage("dynamic.property.validation.integertoobig.failure", value.toString()));
+            throw new PropertyValidationException(name + ": " + intres.getLocalizedMessage("dynamic.property.validation.integertoobig.failure", value.toString()));
         }
+    }
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

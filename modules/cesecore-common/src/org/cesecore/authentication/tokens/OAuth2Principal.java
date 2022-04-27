@@ -16,7 +16,9 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -38,10 +40,10 @@ public class OAuth2Principal implements Principal, Serializable {
     private final String name;
     private final String email;
     private final boolean emailVerified;
+    private HashSet<String> roles;
 
     private OAuth2Principal(int oauthProviderId, String issuer, String subject, String oid, Collection<String> audience, String preferredUsername, String name,
-            String email, final boolean emailVerified) {
-        super();
+            String email, final boolean emailVerified, Collection<String> roles) {
         this.oauthProviderId = oauthProviderId;
         this.issuer = issuer;
         this.subject = subject;
@@ -51,6 +53,7 @@ public class OAuth2Principal implements Principal, Serializable {
         this.name = name;
         this.email = email;
         this.emailVerified = emailVerified;
+        this.roles = new HashSet<>(roles);
     }
 
     /**
@@ -93,7 +96,7 @@ public class OAuth2Principal implements Principal, Serializable {
 
     @Override
     public String toString() {
-        return "[OAuth2 Principal, iss:" + issuer + " sub:" + subject + " oid:" + oid + " aud:" + audience + "]";
+        return "[OAuth2 Principal, iss:" + issuer + " sub:" + subject + " oid:" + oid + " aud:" + audience + " roles:" + roles + "]";
     }
 
     @Override
@@ -108,12 +111,13 @@ public class OAuth2Principal implements Principal, Serializable {
         return StringUtils.equals(subject, other.subject) &&
                 StringUtils.equals(issuer, other.issuer) &&
                 StringUtils.equals(oid, other.oid) &&
+                roles.equals(roles) &&
                 audience.equals(other.audience);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subject, issuer, audience);
+        return Objects.hash(subject, issuer, audience, roles);
     }
 
     public static Builder builder() {
@@ -130,6 +134,7 @@ public class OAuth2Principal implements Principal, Serializable {
         private String name;
         private String email;
         private boolean emailVerified;
+        private Collection<String> roles = new HashSet<>();
 
         public Builder setOauthProviderId(int oauthProviderId) {
             this.oauthProviderId = oauthProviderId;
@@ -140,6 +145,7 @@ public class OAuth2Principal implements Principal, Serializable {
             this.issuer = issuer;
             return this;
         }
+        
         public Builder setSubject(final String subject) {
             this.subject = subject;
             return this;
@@ -170,7 +176,15 @@ public class OAuth2Principal implements Principal, Serializable {
         }
 
         public OAuth2Principal build() {
-            return new OAuth2Principal(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified);
+            return new OAuth2Principal(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified, roles);
         }
+
+        public void addRole(String role) {
+            roles.add(role);
+        }
+    }
+
+    public Set<String> getRoles() {
+        return roles;
     }
 }

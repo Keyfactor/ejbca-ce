@@ -22,11 +22,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.util.Base64;
 
 /**
- * 
- * @version $Id$
- *
+ * Response message utilities.
  */
-
 public abstract class ResponseMessageUtils {
 
     private static final Logger log = Logger.getLogger(ResponseMessageUtils.class);

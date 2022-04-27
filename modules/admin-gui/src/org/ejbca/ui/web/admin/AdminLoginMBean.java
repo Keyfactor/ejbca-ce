@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -35,6 +37,12 @@ import org.cesecore.authentication.AuthenticationNotProvidedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
+import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
@@ -56,6 +64,13 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private String stateInSession = null;
     private String oauthClicked = null;
 
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoToken;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreLocal;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
+
     public class OAuthKeyInfoGui{
         String label;
 
@@ -75,7 +90,16 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private String firstHeader;
     private String secondHeader;
     private String text;
+    private OauthRequestHelper oauthRequestHelper;
 
+    /**
+     * Set the helper object that interacts with OAuth servers.
+     */
+    @PostConstruct
+    public void setRequestHelper() {
+        oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken));
+    }
+    
     /**
      * @return the general error which occurred, or welcome header
      */
@@ -200,19 +224,24 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         if (verifyStateParameter(state)) {
             OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
-                final OAuthGrantResponseInfo token = OauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode,
-                        getRedirectUri());
-                if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
-                    if (token.getAccessToken() != null) {
-                        log.debug("Successfully obtained oauth token, redirecting to main page.");
-                        servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
-                        servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
-                        FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
+                try {
+                    
+                    OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
+                    if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
+                        if (token.getAccessToken() != null) {
+                            log.debug("Successfully obtained oauth token, redirecting to main page.");
+                            servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
+                            servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
+                            FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
+                        } else {
+                            internalError("Did not receive any access token from OAuth provider.");
+                        }
                     } else {
-                        internalError("Did not receive any access token from OAuth provider.");
+                        internalError("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                     }
-                } else {
-                    internalError("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
+                } catch (CryptoTokenOfflineException | KeyBindingNotFoundException e) {
+                    log.info(e);
+                    internalError("Unable to sign request for oauth token with configuration " + oAuthKeyInfo.getLabel() + ". " + e.getMessage());
                 }
             } else {
                 internalError("Received provider identifier does not correspond to existing oauth providers. Key indentifier = " + oauthClicked);
@@ -269,23 +298,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     }
 
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
-        String url = oauthKeyInfo.getUrl();
-        final StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(oauthKeyInfo.getUrl());
-        if (!oauthKeyInfo.getUrl().endsWith("/")) {
-            stringBuilder.append("/");
-        }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
-            url = stringBuilder
-                    .append("realms/")
-                    .append(oauthKeyInfo.getRealm())
-                    .append("/protocol/openid-connect/auth").toString();
-        }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            url = stringBuilder
-                    .append(oauthKeyInfo.getRealm())
-                    .append("/oauth2/v2.0/authorize").toString();
-        }
+        String url = oauthKeyInfo.getOauthLoginUrl();
         return addParametersToUrl(oauthKeyInfo, url);
     }
 
@@ -293,7 +306,10 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         UriBuilder uriBuilder = UriBuilder.fromUri(url);
         String scope = "openid";
         if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            scope += " " + oauthKeyInfo.getScope();
+            scope += " offline_access " + oauthKeyInfo.getScope();
+        }
+        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
+            scope += " " + oauthKeyInfo.getAudience();
         }
         uriBuilder
                 .queryParam("scope", scope)
