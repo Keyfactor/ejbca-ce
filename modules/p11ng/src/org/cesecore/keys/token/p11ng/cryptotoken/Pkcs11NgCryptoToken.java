@@ -291,6 +291,8 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
                 // ECDSA also handled generation of EdDSA keys, because this is done in PKCS#11 v3 with CKA.EC_PARAMS, but with CKM.EC_EDWARDS_KEY_PAIR_GEN
             }
+            // TODO: keySpec of ECC keys of PKCS11NG starts with OID as string, starts with number but has '.'
+            // now they resolve to RSA
             if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_RSA)) {
                 slot.generateRsaKeyPair(keySpec, alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
             } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
@@ -422,5 +424,5 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         }
         return ret;
     }
-
+    
 }
