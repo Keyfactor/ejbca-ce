@@ -597,6 +597,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("7.8.1");
         }
+        if (isLesserThan(oldVersion, "7.10.0")) {
+            try {
+                upgradeSession.migrateDatabase7100();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("7.10.0");
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -2190,6 +2198,36 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     final Integer index = value % NUMBERBOUNDRARY;
                     return FIELDORDERINGBASE * fieldNumber + index;
                 }).collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Adds new access rules added in 7.10.0
+     *
+     * @throws UpgradeFailedException if upgrade fails
+     */
+    @Override
+    public void migrateDatabase7100() throws UpgradeFailedException {
+        final String ruleCreateCert = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+        final String ruleKeyRecovery = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY);
+        final String ruleUsePassword = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_USEUSERNAME);
+        final String ruleUseApprovalRequestId = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID);
+        try {
+            log.debug("migrateDatabase7100: Checking if roles need added access rules added in 7.10.0");
+            for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
+                final LinkedHashMap<String, Boolean> access = role.getAccessRules();
+                if (Boolean.TRUE.equals(access.get(ruleCreateCert)) || Boolean.TRUE.equals(access.get(ruleKeyRecovery))) {
+                    // Users that can create or recover certs should still be able to do so.
+                    log.info("Adding new access rules to '" + role.getRoleNameFull() + "'");
+                    access.put(ruleUsePassword, true);
+                    access.put(ruleUseApprovalRequestId, true);
+                    AccessRulesHelper.minimizeAccessRules(access);
+                    roleSession.persistRole(authenticationToken, role);
+                }
+            }
+        } catch (AuthorizationDeniedException | RoleExistsException e) {
+            log.error("An error occurred when updating roles for 7.10.0: " + e, e);
+            throw new UpgradeFailedException(e);
         }
     }
 
