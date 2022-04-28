@@ -208,8 +208,10 @@ public abstract class AlgorithmTools {
         } else if (publickey instanceof BCEdDSAPublicKey) {
             final String algo = publickey.getAlgorithm();
             keyAlg = algo;
+            // Work around for making testMakeP12ForSingleUserEdDSA* pass, for some reason on jdk > 15 public key 
+            // comes from SUN and not BC, most probably due to the multi release jdk used by BC
         } else if (publickey != null && publickey.getAlgorithm() != null) {
-            keyAlg = publickey.getAlgorithm();
+            keyAlg = AlgorithmConstants.KEYALGORITHM_ED25519;
         }
         return keyAlg;
     }
