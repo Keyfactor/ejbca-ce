@@ -29,6 +29,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
@@ -38,6 +39,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherSpi;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyAgreementSpi;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
@@ -51,15 +53,21 @@ import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERSequenceGenerator;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.DigestInfo;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.AlgorithmParametersSpi.PSS;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.p11ng.MechanismNames;
 import org.cesecore.util.StringTools;
+import org.pkcs11.jacknji11.CKA;
+import org.pkcs11.jacknji11.CKK;
 import org.pkcs11.jacknji11.CKM;
+import org.pkcs11.jacknji11.CKO;
 import org.pkcs11.jacknji11.CKRException;
 import org.pkcs11.jacknji11.LongRef;
+
+import com.sun.jna.Memory;
 
 /**
  * Provider using JackNJI11.
@@ -110,6 +118,7 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "AlgorithmParameters", "PSS", MyAlgorithmParameters.class.getName()));
         putService(new MySigningService(this, "Cipher", "RSAEncryption", MyCipher.class.getName()));
         putService(new MySigningService(this, "Cipher", "1.2.840.113549.1.1.1", MyCipher.class.getName()));
+        putService(new MySigningService(this, "KeyAgreement", "ECDH", MyKeyAgreement.class.getName()));
         // 1.2.840.113549.1.1.1
     }
 
@@ -750,5 +759,132 @@ public class JackNJI11Provider extends Provider {
             }
         }
     }
-    
+        
+    private static class MyKeyAgreement extends KeyAgreementSpi {
+        private static final Logger log = Logger.getLogger(MyKeyAgreement.class);
+
+        private String algorithm;
+        private NJI11Object privateBaseKey;
+        private long session;
+        private boolean hasActiveSession;
+        private Exception debugStacktrace;
+        private BCECPublicKey pubKey;
+        
+        public MyKeyAgreement(Provider provider, String algorithm) {
+            super();
+            this.algorithm = algorithm;
+            if (log.isTraceEnabled()) {
+                log.trace("Creating KeyAgreement provider for algorithm: " + algorithm + ", and provider: " + provider);
+            }
+        }
+
+        @Override
+        protected Key engineDoPhase(Key publicKey, boolean arg1) throws InvalidKeyException, IllegalStateException {
+            log.trace("engineDoPhase: " + this.getClass().getName());
+            pubKey = new BCECPublicKey((ECPublicKey)publicKey, null);
+            return null;
+        }
+
+        @Override
+        protected byte[] engineGenerateSecret() throws IllegalStateException {
+            log.trace("engineGenerateSecret0: " + this.getClass().getName());
+            CKA[] pubTempl;
+            pubTempl = new CKA[] {
+                    new CKA(CKA.TOKEN, false),
+                    new CKA(CKA.CLASS, CKO.SECRET_KEY),
+                    new CKA(CKA.SENSITIVE, false),
+                    new CKA(CKA.EXTRACTABLE, true),
+                    new CKA(CKA.KEY_TYPE, CKK.GENERIC_SECRET),
+                    new CKA(CKA.WRAP, true),
+                    new CKA(CKA.UNWRAP, true),
+                    new CKA(CKA.ENCRYPT, true),
+                    new CKA(CKA.DECRYPT, true)
+                };
+                
+            CKM mechanism;            
+            Memory pubKeyEncoded = new Memory(65); // assume 256 bit only
+            pubKeyEncoded.write(0, pubKey.getQ().getEncoded(false), 0, 65);
+            
+            MyEcdhParameters ecdhParams = new MyEcdhParameters(pubKeyEncoded);
+            ecdhParams.write();
+
+            mechanism = new CKM(CKM.ECDH1_DERIVE);
+            mechanism.pParameter = ecdhParams.getPointer();
+            mechanism.ulParameterLen = ecdhParams.size();
+
+            long keyRef = 0;
+            try {
+                keyRef = privateBaseKey.getSlot().getCryptoki().DeriveKey(session, mechanism,
+                            privateBaseKey.getObject(), pubTempl);
+            } catch(CKRException e) {
+                log.warn("PKCS#11 exception while trying to ecdh: ", e);
+                privateBaseKey.getSlot().closeSession(session);
+                hasActiveSession = false;
+                throw new IllegalStateException("PKCS#11 exception while trying to ecdh: ", e);
+            }
+            
+            CKA privKeyAttribute = ((NJI11ReleasebleSessionPrivateKey) privateBaseKey).getSlot().getCryptoki()
+                    .GetAttributeValue(session, keyRef, CKA.VALUE);
+            
+            privateBaseKey.getSlot().closeSession(session);
+            hasActiveSession = false;
+            return privKeyAttribute.getValue();
+        }
+
+        @Override
+        protected SecretKey engineGenerateSecret(String arg0) throws IllegalStateException, NoSuchAlgorithmException, InvalidKeyException {
+            log.trace("engineGenerateSecret1: " + this.getClass().getName());
+            return null;
+        }
+
+        @Override
+        protected int engineGenerateSecret(byte[] arg0, int arg1) throws IllegalStateException, ShortBufferException {
+            log.trace("engineGenerateSecret2: " + this.getClass().getName());
+            return 0;
+        }
+
+        @Override
+        protected void engineInit(Key key, SecureRandom arg1) throws InvalidKeyException {
+            log.trace("engineInit1: " + this.getClass().getName());
+            
+            privateBaseKey = (NJI11Object) key;
+            session = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().aquireSession();
+            hasActiveSession = true;
+            
+            CKA caKeySupportsDerive = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().getCryptoki()
+                    .GetAttributeValue(session, 
+                            ((NJI11ReleasebleSessionPrivateKey) key).getObject(), 
+                            CKA.DERIVE);
+
+            log.debug("EC private key supports derive operation:" + caKeySupportsDerive.toString());
+
+        }
+
+        @Override
+        protected void engineInit(Key arg0, AlgorithmParameterSpec arg1, SecureRandom arg2)
+                throws InvalidKeyException, InvalidAlgorithmParameterException {
+            log.info("engineInit2: " + this.getClass().getName());
+        }
+        
+        @Override
+        protected void finalize() throws Throwable {
+            try {
+                if (hasActiveSession) {
+                    log.warn("Keyagreement object was not de-initialized. Enable debug logging to see init stack trace", debugStacktrace);
+                    try {
+                        final CryptokiDevice.Slot slot = privateBaseKey.getSlot();
+                        if (slot != null) {
+                            slot.releaseSession(session);
+                        }
+                    } catch (RuntimeException e) {
+                        // Can't do anything
+                        log.warn("Failed to release PKCS#11 session in finalizer");
+                    }
+                }
+            } finally {
+                super.finalize();
+            }
+        }
+        
+    }
 }

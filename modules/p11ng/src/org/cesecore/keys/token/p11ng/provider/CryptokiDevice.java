@@ -64,11 +64,6 @@ import javax.crypto.SecretKey;
 import javax.ejb.EJBException;
 import javax.security.auth.x500.X500Principal;
 
-import com.sun.jna.Memory;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.LongByReference;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -105,9 +100,9 @@ import org.cesecore.keys.token.p11ng.P11NGStoreConstants;
 import org.cesecore.keys.token.p11ng.PToPBackupObj;
 import org.cesecore.keys.token.p11ng.TokenEntry;
 import org.cesecore.keys.token.p11ng.jacknji11.CP5Constants;
+import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.StringTools;
-import org.cesecore.keys.token.p11ng.jacknji11.ExtendedCryptokiE;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKC;
 import org.pkcs11.jacknji11.CKK;
@@ -119,6 +114,11 @@ import org.pkcs11.jacknji11.CKU;
 import org.pkcs11.jacknji11.CK_SESSION_INFO;
 import org.pkcs11.jacknji11.CK_TOKEN_INFO;
 import org.pkcs11.jacknji11.LongRef;
+
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.LongByReference;
 
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
@@ -1140,7 +1140,7 @@ public class CryptokiDevice {
 
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
-                privateKeyTemplate.put(CKA.DERIVE, false);
+                privateKeyTemplate.put(CKA.DERIVE, true);
                 /* CK_TRUE if key supports decryption */
                 privateKeyTemplate.put(CKA.DECRYPT, false);
                 /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
@@ -1705,7 +1705,7 @@ public class CryptokiDevice {
                 throw new EJBException("Failed to remove certificate chain.", ex);
             }
         }
-
+        
         /**
          * Import a certificate chain for a private key to the token.
          *
