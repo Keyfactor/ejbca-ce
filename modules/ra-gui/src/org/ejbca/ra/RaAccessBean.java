@@ -191,14 +191,15 @@ public class RaAccessBean implements Serializable {
      * This method shows and hides the whole or part of enrollment menu depending on access rules*/
     public boolean isAuthorizedToEnroll() {
         return isAuthorizedToEnrollMakeRequest() ||
-                isAuthorizedToEnrollCertificate();
+                isAuthorizedToEnrollUsingUsername() ||
+                isAuthorizedToEnrollUsingApprovalRequestId();
     }
 
     /** correspond to menu items in menu.xhtml
      * This method shows and hides the make request sub menu item */
     public boolean isAuthorizedToEnrollMakeRequest() {
         /*
-         * Only check if this admin has been configured to create end entities to display the meny.
+         * Only check if this admin has been configured to create end entities to display the menu.
          * In order to actually make a request, the admin has to have access to
          *  AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.CREATE_END_ENTITY
          * and the CAs available via this profile.
@@ -206,11 +207,12 @@ public class RaAccessBean implements Serializable {
         return isAuthorized(AccessRulesConstants.REGULAR_CREATEENDENTITY);
     }
 
-    /** correspond to menu items in menu.xhtml
-     * This method shows and hides the use request id sub menu item */
-    public boolean isAuthorizedToEnrollCertificate() {
-        // Checks if user is allowed to enroll certificate.
-        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+    public boolean isAuthorizedToEnrollUsingUsername() {
+        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRulesConstants.REGULAR_USEUSERNAME);
+    }
+
+    public boolean isAuthorizedToEnrollUsingApprovalRequestId() {
+        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID);
     }
 
     public boolean isAuthorizedToCas() {
