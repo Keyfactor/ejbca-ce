@@ -119,6 +119,7 @@ import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.LongByReference;
+
 /**
  * Instance managing the cryptoki library and allowing access to its slots.
  */
@@ -1145,7 +1146,7 @@ public class CryptokiDevice {
 
                 final HashMap<Long, Object> privateKeyTemplate = new HashMap<>();
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.9 - Private key objects
-                privateKeyTemplate.put(CKA.DERIVE, false);
+                privateKeyTemplate.put(CKA.DERIVE, true);
                 /* CK_TRUE if key supports decryption */
                 privateKeyTemplate.put(CKA.DECRYPT, false);
                 /* CK_TRUE if key supports signatures where the signature is an appendix to the data. */
@@ -1710,7 +1711,7 @@ public class CryptokiDevice {
                 throw new EJBException("Failed to remove certificate chain.", ex);
             }
         }
-
+        
         /**
          * Import a certificate chain for a private key to the token.
          *
