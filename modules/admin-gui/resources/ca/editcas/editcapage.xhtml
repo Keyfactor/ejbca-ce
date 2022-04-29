@@ -1045,7 +1045,7 @@
 						value="#{editCAsMBean.caEncodedValidity}"
 						title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}"
 						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.signByExternal}"
-						disabled="#{not editCAsMBean.hasEditRight or (editCAsMBean.signedByExternal and not editCAsMBean.caTypeProxy)}"
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal}"
 						label="Ca Validity" styleClass="mandatory"
 						required="true" >
 					</h:inputText>	
@@ -2218,7 +2218,7 @@
 						value="#{web.text.CREATE}"
 						action="#{editCAsMBean.createCa}"
 						rendered="#{not editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
-						disabled="#{editCAsMBean.signedByExternal and not editCAsMBean.caTypeProxy}" />
+						disabled="#{editCAsMBean.signedByExternal}" />
         	    &nbsp;&nbsp;&nbsp;
 				<h:button 
 						name="buttoncancel"
