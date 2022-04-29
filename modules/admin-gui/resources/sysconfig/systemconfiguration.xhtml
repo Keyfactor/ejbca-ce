@@ -585,7 +585,7 @@
 
 	<!-- Trusted OAuth Providers -->
 	
-	<h:form id="oauthdefaultkeyform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Trusted OAuth Providers'}">
+	<h:form id="oauthdefaultkeyform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Trusted OAuth Providers' and web.ejbcaWebBean.runningEnterprise}">
 		<h4><h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SET_DEFAULT}"/></h4>
 		<h:panelGrid columns="2">
 			<h:panelGroup>
@@ -598,7 +598,7 @@
 			<h:commandButton action="#{systemConfigMBean.saveOAuthConfig}" value="#{web.text.OAUTHKEYCONFIGURATION_SAVE}"/>
 		</h:panelGrid>
 	</h:form>
-	<h:form id="oauthkeysform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Trusted OAuth Providers'}">
+	<h:form id="oauthkeysform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Trusted OAuth Providers' and web.ejbcaWebBean.runningEnterprise}">
 		<div class="section-label">
             <h4>
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_EDIT_OAUTHKEY_TITLE}" rendered="#{systemConfigMBean.allowedToEditOauthKeys}"/>
