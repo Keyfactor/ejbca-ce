@@ -1446,7 +1446,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         updateAvailableCryptoTokenList(false); // TODO: Not sure if true or false. cryptoToken field has to disabled once we get details about the upstream CA
         updateAvailableSigningAlgorithmList();
         getCertificateProfiles();
-        geographicElementsInGui = new ArrayList<>(); // TODO: Not sure if necessary
     }
 
     public boolean isCreateLinkCertificate() {
