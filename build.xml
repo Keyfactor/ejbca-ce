@@ -1074,6 +1074,7 @@
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/caadmin/CVCCAsTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/cli/ca/CaInitCvcCommandTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/CaImportCVCCACommand.java"/>
+				<exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/config/oauth/**"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/cli/ca/CaImportCVCCACommandTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/sign/SignSessionCvcTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/cesecore/certificates/ca/CaCvcSessionTest.java"/>
