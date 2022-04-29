@@ -215,8 +215,8 @@ public class CryptokiDevice {
     public class Slot {
         private final long id;
         private final String label;
-        private final LinkedList<Long> activeSessions = new LinkedList<>();
-        private final LinkedList<Long> idleSessions = new LinkedList<>();
+        private final LinkedList<NJI11Session> activeSessions = new LinkedList<>();
+        private final LinkedList<NJI11Session> idleSessions = new LinkedList<>();
         private final CryptokiFacade cryptoki;
         
         private Slot(final long id, final String label, CryptokiFacade cryptoki) {
@@ -241,16 +241,16 @@ public class CryptokiDevice {
             return c;
         }
         
-        public LinkedList<Long> getActiveSessions() {
+        public LinkedList<NJI11Session> getActiveSessions() {
             return activeSessions;
         }
         
-        public LinkedList<Long> getIdleSessions() {
+        public LinkedList<NJI11Session> getIdleSessions() {
             return idleSessions;
         }
         
-        public synchronized long aquireSession() {
-            Long session;
+        public synchronized NJI11Session aquireSession() {
+            NJI11Session session;
             if (!idleSessions.isEmpty()) {
                 session = idleSessions.pop();
                 if (LOG.isTraceEnabled()) {
@@ -258,7 +258,8 @@ public class CryptokiDevice {
                 }
             } else {
                 try {
-                    session = c.OpenSession(id, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+                    final long sessionId = c.OpenSession(id, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+                    session = new NJI11Session(sessionId);
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("c.OpenSession: " + session + ", " + this);
                     }
@@ -275,15 +276,20 @@ public class CryptokiDevice {
             return session;
         }
         
-        public synchronized void releaseSession(final long session) {
+        public synchronized void releaseSession(final NJI11Session session) {
             // TODO: Checks
-            if (!activeSessions.remove(session)) {
-                LOG.warn("Releasing session not active: " + session + ", " + this);
-            }
-            idleSessions.push(session);
-            
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("Released session: " + session + ", " + this);
+            if (session.hasOperationsActive()) {
+                LOG.warn("PKCS#11 session up to be released but had potentially active operation so closing instead: " + session);
+                closeSession(session);
+            } else {
+                if (!activeSessions.remove(session)) {
+                    LOG.warn("Releasing session not active: " + session + ", " + this);
+                }
+                idleSessions.push(session);
+
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Released session: " + session + ", " + this);
+                }
             }
         }
         
@@ -295,7 +301,7 @@ public class CryptokiDevice {
          * closed and you will become logged out of the HSM
          * @param session the PKCS#11 session to close
          */
-        protected synchronized void closeSession(final long session) {
+        protected synchronized void closeSession(final NJI11Session session) {
             if (activeSessions.size() <=1 && idleSessions.size() == 0) { // session in param is the 1
                 // Put a new session in the idle pool
                 releaseSession(aquireSession());
@@ -308,9 +314,9 @@ public class CryptokiDevice {
          * it's closed an you will get logged out of the HSM
          * @param session the PKCS#11 session to close
          */
-        private synchronized void closeSessionFinal(final long session) {
+        private synchronized void closeSessionFinal(final NJI11Session session) {
             try {
-                c.CloseSession(session);
+                c.CloseSession(session.getId());
             } catch (CKRException ex) {
                 throw new EJBException("Could not close session " + session, ex);
             }
@@ -326,7 +332,7 @@ public class CryptokiDevice {
         }
 
         public synchronized void login(final String pin) {
-            final long loginSession = aquireSession();
+            final NJI11Session loginSession = aquireSession();
             if (LOG.isTraceEnabled()) {
                 LOG.trace("c.Login: " + loginSession + ", " + this);
             }
@@ -338,7 +344,7 @@ public class CryptokiDevice {
                 // or the "R/O User Functions" state."
                 // 
                 // So it doesn't matter which session we login to and we don't have to keep track of which session was used for login
-                c.Login(loginSession, CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
+                c.Login(loginSession.getId(), CKU.USER, pin.getBytes(StandardCharsets.UTF_8));
                 // The loginSession can be used as a normal session, push it back to the idle pool if no error occurred
                 releaseSession(loginSession);
             } catch (Exception e) {
@@ -375,7 +381,7 @@ public class CryptokiDevice {
          * @return the PKCS#11 reference pointer to the private key object, or null if it does not exist 
          */
         // TODO: Support alias that is hexadecimal or label or Id
-        private Long getPrivateKeyRefByLabel(final Long session, final String alias) {
+        private Long getPrivateKeyRefByLabel(final NJI11Session session, final String alias) {
             // We need to optimize so we don't make any unnecessary calls to the HSM, as latency for network HSMs
             // can easily destroy performance of unnecessary FindObject calls are made. So first we check in the 
             // cache only, only if not in the cache will we fall back to look on the HSM, hopefully populating
@@ -387,7 +393,7 @@ public class CryptokiDevice {
             }
             return ret;
         }
-        private Long getPrivateKeyRefByLabel(final Long session, final String alias, boolean onlyCache) {
+        private Long getPrivateKeyRefByLabel(final NJI11Session session, final String alias, boolean onlyCache) {
             final List<Long> certificateRefs;
             if (onlyCache) {
                 certificateRefs = findCertificateObjectsByLabelInCache(session, alias);
@@ -439,7 +445,7 @@ public class CryptokiDevice {
         }
 
         // TODO: Support alias that is hexadecimal or label or Id
-        private Long getPublicKeyRefByLabel(final Long session, final String alias, boolean onlyCache) {
+        private Long getPublicKeyRefByLabel(final NJI11Session session, final String alias, boolean onlyCache) {
             final List<Long> certificateRefs = (onlyCache == true ? findCertificateObjectsByLabelInCache(session, alias) : findCertificateObjectsByLabel(session, alias));
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Certificate Objects: " +  certificateRefs);
@@ -475,7 +481,7 @@ public class CryptokiDevice {
         }
         
         public PrivateKey unwrapPrivateKey(final byte[] wrappedPrivateKey, final String unwrapkey, final long wrappingCipher) {
-            Long session = aquireSession();
+            NJI11Session session = aquireSession();
             // Find unWrapKey
             final List<Long> secretObjects = findSecretKeyObjectsByLabel(session, unwrapkey);
 
@@ -520,7 +526,7 @@ public class CryptokiDevice {
                 // Unwrapped keys should be removed
                 if (priv.isRemovalOnRelease()) {
                     try {
-                        cryptoki.destroyObject(priv.getSession(), priv.getObject());
+                        cryptoki.destroyObject(priv.getSession().getId(), priv.getObject());
                     } catch (CKRException ex) {
                         throw new EJBException("Unwrapped key removal failed.", ex);
                     }
@@ -539,23 +545,23 @@ public class CryptokiDevice {
         }
         
         public SecretKey getSecretKey(String alias) {
-            Long session = null;
+            NJI11Session session = null;
             String keySpec = "n/a";
             try {
                 session = aquireSession();
 
                 // Searching by LABEL is sufficient but using SECRET_KEY also just to be extra safe
-                final List<Long> secretObjects = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
+                final List<Long> secretObjects = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Secret Objects: " + secretObjects);
                 }
                 if (secretObjects.size() > 1) {
                     LOG.warn("More than one secret key with CKA_LABEL=" + alias);
                 } else if (secretObjects.size() == 1) {
-                    final CKA keyTypeObj = cryptoki.getAttributeValue(session, secretObjects.get(0), CKA.KEY_TYPE);
+                    final CKA keyTypeObj = cryptoki.getAttributeValue(session.getId(), secretObjects.get(0), CKA.KEY_TYPE);
                     final String keyType = CKK.L2S(keyTypeObj.getValueLong());
 
-                    final CKA keySpecObj = cryptoki.getAttributeValue(session, secretObjects.get(0), CKA.VALUE_LEN);
+                    final CKA keySpecObj = cryptoki.getAttributeValue(session.getId(), secretObjects.get(0), CKA.VALUE_LEN);
                     if (keySpecObj != null && keySpecObj.getValueLong() != null) { // This check is required as keySpecObj.getValueLong() may be null in case of DES keys for some HSMs like SOFT HSM
                         keySpec = String.valueOf(keySpecObj.getValueLong() * 8);
                     }
@@ -582,7 +588,7 @@ public class CryptokiDevice {
          * @throws CryptoTokenOfflineException
          */
         public PrivateKey aquirePrivateKey(String alias) throws CryptoTokenOfflineException {
-            final long session;
+            final NJI11Session session;
             try {
                 session = aquireSession();
             } catch (CKRException ex) { // throw CryptoTokenOfflineException when device error
@@ -613,7 +619,7 @@ public class CryptokiDevice {
          * @return The PrivateKey object, usable with the P11NG provider, or null if no key with the specified alias exists
          */
         public PrivateKey getReleasableSessionPrivateKey(String alias) { 
-            Long session = null;
+            NJI11Session session = null;
             try {
                 // A session needed just to get the private key, will be released before return of method
                 session = aquireSession();
@@ -661,7 +667,7 @@ public class CryptokiDevice {
          * @return null if no key can be found, otherwise a PublicKey which can be an ECPublicKey (BouncyCastle) using named parameters encoding (OID), an EdPublicKey (BouncyCastle), or an RSAPublicKey (BC as well)
          */
         public PublicKey getPublicKey(final String alias) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
@@ -726,7 +732,7 @@ public class CryptokiDevice {
          * @throws NoSuchProviderException
          * @throws InvalidKeySpecException
          */
-        private PublicKey getPublicKeyFromRef(Long session, final Long publicKeyRef, final String aliasForLogging)
+        private PublicKey getPublicKeyFromRef(NJI11Session session, final Long publicKeyRef, final String aliasForLogging)
                 throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
             
             final CKA modulus = getAttribute(session, publicKeyRef, P11NGStoreConstants.CKA_MODULUS);
@@ -865,12 +871,12 @@ public class CryptokiDevice {
             }
             final int keyLength = Integer.parseInt(keySpec);
             
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
                 // Find wrapKey
-                final List<Long> secretObjects = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true),
+                final List<Long> secretObjects = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true),
                         new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, wrapKeyAlias));
                 
                 long wrapKey = -1;
@@ -910,15 +916,15 @@ public class CryptokiDevice {
                 LongRef publicKeyRef = new LongRef();
                 LongRef privateKeyRef = new LongRef();
 
-                c.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicKeyTemplate, privateKeyTemplate, publicKeyRef, privateKeyRef);
+                c.GenerateKeyPair(session.getId(), new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicKeyTemplate, privateKeyTemplate, publicKeyRef, privateKeyRef);
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated public key: " + publicKeyRef.value + " and private key: " + privateKeyRef.value);
                 }
 
-                final CKA modulusValue = cryptoki.getAttributeValue(session, publicKeyRef.value, CKA.MODULUS);
+                final CKA modulusValue = cryptoki.getAttributeValue(session.getId(), publicKeyRef.value, CKA.MODULUS);
                 final byte[] modulusBytes = modulusValue.getValue();
-                final CKA expValue = cryptoki.getAttributeValue(session, publicKeyRef.value, CKA.PUBLIC_EXPONENT);
+                final CKA expValue = cryptoki.getAttributeValue(session.getId(), publicKeyRef.value, CKA.PUBLIC_EXPONENT);
                 final byte[] publicExponentBytes = expValue.getValue();
 
                 final BigInteger n = new BigInteger(1, modulusBytes);
@@ -937,7 +943,7 @@ public class CryptokiDevice {
                         LOG.debug("Using mechanism: " + cipherMechanism);
                     }
                     
-                    byte[] wrapped = c.WrapKey(session, cipherMechanism, wrapKey, privateKeyRef.value);       // TODO cipher
+                    byte[] wrapped = c.WrapKey(session.getId(), cipherMechanism, wrapKey, privateKeyRef.value);       // TODO cipher
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Wrapped private key: " + Base64.toBase64String(wrapped));
                     }
@@ -958,7 +964,7 @@ public class CryptokiDevice {
 
         public void keyAuthorizeInit(String alias, KeyPair keyAuthorizationKey, String signProviderName, String selectedPaddingScheme) {
             final int KEY_AUTHORIZATION_ASSIGNED = 1;
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 final PublicKey kakPublicKey = keyAuthorizationKey.getPublic();
@@ -973,7 +979,7 @@ public class CryptokiDevice {
                 
                 final byte[] initSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
 
-                long rvAuthorizeKey = c.authorizeKey(session, initSig, initSig.length);
+                long rvAuthorizeKey = c.authorizeKey(session.getId(), initSig, initSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
                     throw new EJBException("Failed to authorize key.");
                 }
@@ -985,7 +991,7 @@ public class CryptokiDevice {
         }
         
         public void keyAuthorize(String alias, KeyPair keyAuthorizationKey, long authorizedoperationCount, String signProviderName, String selectedPaddingScheme) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 final PrivateKey kakPrivateKey = keyAuthorizationKey.getPrivate();
@@ -999,7 +1005,7 @@ public class CryptokiDevice {
                 
                 final byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
-                long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
+                long rvAuthorizeKey = c.authorizeKey(session.getId(), authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
                     throw new EJBException("Key authorization failed.");
                 }
@@ -1011,7 +1017,7 @@ public class CryptokiDevice {
         }
         
         public void changeAuthData(String alias, KeyPair currentKeyAuthorizationKey, KeyPair newKeyAuthorizationKey, String signProviderName, String selectedPaddingScheme) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 final PublicKey kakPublicKey = newKeyAuthorizationKey.getPublic();
@@ -1025,7 +1031,7 @@ public class CryptokiDevice {
                 
                 final byte[] authSig = getSignatureByteArray(alias, signProviderName, selectedPaddingScheme, session, kakPrivateKey, kakLength, mechanism);
                 
-                long rvAuthorizeKey = c.authorizeKey(session, authSig, authSig.length);
+                long rvAuthorizeKey = c.authorizeKey(session.getId(), authSig, authSig.length);
                 if (rvAuthorizeKey != CKR.OK) {
                     throw new EJBException("Failed to authorize key.");
                 }
@@ -1037,7 +1043,7 @@ public class CryptokiDevice {
         }
 
         public void backupObject(final long objectHandle, final String backupFile) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 
@@ -1045,7 +1051,7 @@ public class CryptokiDevice {
                 LongByReference backupObjectLength = new LongByReference();
                 
                 try {
-                    c.backupObject(session, objectHandle, ppBackupObj.getPointer(), backupObjectLength);
+                    c.backupObject(session.getId(), objectHandle, ppBackupObj.getPointer(), backupObjectLength);
                 } catch (CKRException ex) {
                     LOG.error("Error while backuping up key. ", ex);
                     throw new EJBException("Backup operation returned with error.");
@@ -1063,12 +1069,12 @@ public class CryptokiDevice {
         }
         
         public void restoreObject(final long objectHandle, final Path backupFilePath) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 final byte[] bytes = Files.readAllBytes(backupFilePath);
                 final long flags = 0; // alternative value here would be something called "CXI_KEY_FLAG_VOLATILE" but this causes 0x00000054: FUNCTION_NOT_SUPPORTED
-                c.restoreObject(session, flags, bytes, objectHandle);
+                c.restoreObject(session.getId(), flags, bytes, objectHandle);
             
             } catch (IOException e) {
                 LOG.error("Error while restoring key from backup file ", e);
@@ -1099,7 +1105,7 @@ public class CryptokiDevice {
          */
         public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias,
                 final Map<Long, Object> overridePublic, final Map<Long, Object> overridePrivate) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 if (isAliasUsed(session, alias)) {
@@ -1218,7 +1224,7 @@ public class CryptokiDevice {
                     LOG.trace("Using ECDSA_KEY_PAIR_GEN");
                     ckm = new CKM(CKM.ECDSA_KEY_PAIR_GEN);
                 }
-                cryptoki.generateKeyPair(session, ckm, toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
+                cryptoki.generateKeyPair(session.getId(), ckm, toCkaArray(publicKeyTemplate), toCkaArray(privateKeyTemplate),
                         publicKeyRef, privateKeyRef);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated EC public key " + publicKeyRef.value + " and EC private key " + privateKeyRef.value + ".");
@@ -1235,7 +1241,7 @@ public class CryptokiDevice {
         public void generateRsaKeyPair(final String keySpec, final String alias, final boolean publicKeyToken, final Map<Long, Object> overridePublic,
                 final Map<Long, Object> overridePrivate, final CertificateGenerator certGenerator, final boolean storeCertificate)
                 throws CertificateEncodingException, CertificateException, OperatorCreationException {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
@@ -1292,7 +1298,7 @@ public class CryptokiDevice {
                 LongRef privateKeyRef = new LongRef();
                 
                 try {
-                    cryptoki.generateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicTemplateArray, privateTemplateArray, publicKeyRef, privateKeyRef);
+                    cryptoki.generateKeyPair(session.getId(), new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicTemplateArray, privateTemplateArray, publicKeyRef, privateKeyRef);
                 } catch (CKRException ex) {
                     throw new EJBException("Failed to generate RSA key pair.", ex);
                 }
@@ -1302,11 +1308,11 @@ public class CryptokiDevice {
                 }
                 if (certGenerator != null) {
                     try {
-                        CKA publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.MODULUS);
+                        CKA publicValue = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.MODULUS);
         
                         final byte[] modulusBytes = publicValue.getValue();
         
-                        publicValue = c.GetAttributeValue(session, publicKeyRef.value, CKA.PUBLIC_EXPONENT);
+                        publicValue = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.PUBLIC_EXPONENT);
                         final byte[] publicExponentBytes = publicValue.getValue();
         
                         final BigInteger n = new BigInteger(1, modulusBytes);
@@ -1335,7 +1341,7 @@ public class CryptokiDevice {
                                 new CKA(CKA.ID, alias),
                                 new CKA(CKA.VALUE, cert.getEncoded())
                             };
-                            cryptoki.createObject(session, cert0Template);
+                            cryptoki.createObject(session.getId(), cert0Template);
                         }
                     } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException ex) {
                         throw new RuntimeException(ex); // TODO
@@ -1388,7 +1394,7 @@ public class CryptokiDevice {
         }
         
         private byte[] getSignatureByteArray(final String alias, final String signProviderName, final String selectedPaddingScheme, 
-                final Long session, final PrivateKey kakPrivateKey, final int kakLength, CKM mechanism) {
+                final NJI11Session session, final PrivateKey kakPrivateKey, final int kakLength, CKM mechanism) {
             byte[] hash = new byte[SIGN_HASH_SIZE];
             long hashLen = hash.length;
             // Getting the key to initialize and associate with KAK if it exist on the HSM slot with the provided alias.
@@ -1400,7 +1406,7 @@ public class CryptokiDevice {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Private key  with Id: '" + privateKeyObjects.get(0) + "' found for key alias '" + alias + "'");
             }   
-            long rvAuthorizeKeyInit = c.authorizeKeyInit(session, mechanism, privateKeyObjects.get(0), hash, new LongRef(hashLen));
+            long rvAuthorizeKeyInit = c.authorizeKeyInit(session.getId(), mechanism, privateKeyObjects.get(0), hash, new LongRef(hashLen));
             if (rvAuthorizeKeyInit != CKR.OK) {
                 throw new EJBException("Failed to initialize key.");
             }
@@ -1493,16 +1499,16 @@ public class CryptokiDevice {
         }
 
         public void generateKey(long keyAlgorithm, int keySpec, String alias) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
                 // Check if any key with provided alias exists 
-                long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
+                long[] objs = c.FindObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
                 if (objs.length != 0) {
                     throw new IllegalArgumentException("Key with label " + alias + " already exists");
                 }
-                objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
+                objs = c.FindObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
                 if (objs.length != 0) {
                     throw new IllegalArgumentException("Key with ID " + alias + " already exists");
                 }
@@ -1533,7 +1539,7 @@ public class CryptokiDevice {
                         new CKA(CKA.LABEL, alias.getBytes(StandardCharsets.UTF_8))};
                 }                
 
-                long newObject = c.GenerateKey(session, new CKM(keyAlgorithm), secretKeyTemplate);
+                long newObject = c.GenerateKey(session.getId(), new CKM(keyAlgorithm), secretKeyTemplate);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated secret key: " + newObject + " with alias " + alias);
                 }
@@ -1571,12 +1577,12 @@ public class CryptokiDevice {
         }
         
         public boolean removeKey(String alias) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
                 // 1. Search for a certificate
-                final List<Long> certificateRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
+                final List<Long> certificateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("removeKey: Found Certificate Objects: " + certificateRefs);
                 }
@@ -1585,17 +1591,17 @@ public class CryptokiDevice {
                     boolean allDeleted = true;
                     // Find those that have matching private keys
                     for (long certRef : certificateRefs) {
-                        CKA ckaId = cryptoki.getAttributeValue(session, certRef, CKA.ID);
+                        CKA ckaId = cryptoki.getAttributeValue(session.getId(), certRef, CKA.ID);
                         if (ckaId == null) {
                             allDeleted = false;
                         } else {
-                            final List<Long> privRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
+                            final List<Long> privRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
                             if (privRefs.size() > 1) {
                                 LOG.warn("More than one private key object sharing CKA_ID=0x" + Hex.toHexString(ckaId.getValue()));
                                 allDeleted = false;
                             } else if (privRefs.size() == 1) {
                                 // Remove private key
-                                cryptoki.destroyObject(session, privRefs.get(0));
+                                cryptoki.destroyObject(session.getId(), privRefs.get(0));
                                 if (LOG.isDebugEnabled()) {
                                     LOG.debug("Destroyed private key: " + privRefs.get(0) + " for alias " + alias);
                                 }
@@ -1603,9 +1609,9 @@ public class CryptokiDevice {
                                 // Now find and remove the certificate and its CA certificates if they are not used
                                 removeCertificateAndChain(session, certRef, new HashSet<String>());
                                 // Since we search with some other criteria in the above method, make sure this specific cert is removed
-                                cryptoki.destroyObject(session, certRef);
+                                cryptoki.destroyObject(session.getId(), certRef);
                                 // If the private key is not there anymore, let's call it a success
-                                final List<Long> objectsAfterDeletion = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
+                                final List<Long> objectsAfterDeletion = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
                                 allDeleted = allDeleted && objectsAfterDeletion.size() == 0;
                             }
                         }
@@ -1618,7 +1624,7 @@ public class CryptokiDevice {
                     removeKeysByType(session, CKO.PUBLIC_KEY, alias);
 
                     // Check whether key exists after deletion 
-                    final List<Long> objectsAfterDeletion = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
+                    final List<Long> objectsAfterDeletion = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
                     return objectsAfterDeletion.size() == 0;
                 }
             } catch (CKRException ex) {
@@ -1630,21 +1636,21 @@ public class CryptokiDevice {
             }
         }
         
-        private void removeKeysByType(final long session, final long objectTypeCko, final String alias) {
+        private void removeKeysByType(final NJI11Session session, final long objectTypeCko, final String alias) {
             final byte[] encodedAlias = alias.getBytes(StandardCharsets.UTF_8);
             removeKeysByType(session, objectTypeCko, CKA.LABEL, encodedAlias);
             removeKeysByType(session, objectTypeCko, CKA.ID, encodedAlias);
         }
 
-        private void removeKeysByType(final long session, final long objectTypeCko, final long searchTypeCka, final byte[] alias) {
+        private void removeKeysByType(final NJI11Session session, final long objectTypeCko, final long searchTypeCka, final byte[] alias) {
             try {
-                final List<Long> objs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, objectTypeCko), new CKA(searchTypeCka, alias));
+                final List<Long> objs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, objectTypeCko), new CKA(searchTypeCka, alias));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("removeKeysByType: Found objects of type " + CKO.L2S(objectTypeCko) + " by " + CKA.L2S(searchTypeCka) + ": " +  objs);
                 }
                 for (long object : objs) {
                     // Destroy secret key
-                    cryptoki.destroyObject(session, object);
+                    cryptoki.destroyObject(session.getId(), object);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Destroyed Key: " + object + " with alias " + Arrays.toString(alias));
                     }
@@ -1663,20 +1669,20 @@ public class CryptokiDevice {
             return results.toString();
         }
         
-        private void removeCertificateAndChain(long session, long certRef, final Set<String> keptSubjects) {
+        private void removeCertificateAndChain(NJI11Session session, long certRef, final Set<String> keptSubjects) {
             // Remove old certificate objects
              //keptSubjects: Subject DN of certificates that was not deleted
             try {
                 List<Long> certificateRefs;
                 int i = 0;
                 for (; i < MAX_CHAIN_LENGTH; i++) {
-                    CKA ckaSubject = cryptoki.getAttributeValue(session, certRef, CKA.SUBJECT);
-                    CKA ckaIssuer = cryptoki.getAttributeValue(session, certRef, CKA.ISSUER);
+                    CKA ckaSubject = cryptoki.getAttributeValue(session.getId(), certRef, CKA.SUBJECT);
+                    CKA ckaIssuer = cryptoki.getAttributeValue(session.getId(), certRef, CKA.ISSUER);
     
                     // 4. Find any certificate objects having this object as issuer, if no found delete the object
-                    certificateRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.ISSUER, ckaSubject.getValue()));
+                    certificateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.ISSUER, ckaSubject.getValue()));
                     if (certificateRefs.size() == 0 || (certificateRefs.size() == 1 && certificateRefs.get(0) == certRef)) {
-                        cryptoki.destroyObject(session, certRef);
+                        cryptoki.destroyObject(session.getId(), certRef);
                     } else {
                         keptSubjects.add(StringTools.hex(ckaSubject.getValue()));
                     }
@@ -1685,7 +1691,7 @@ public class CryptokiDevice {
                     if (Arrays.equals(ckaSubject.getValue(), ckaIssuer.getValue())) {
                         break;
                     } else {
-                        certificateRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaIssuer.getValue()));
+                        certificateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaIssuer.getValue()));
     
                         if (certificateRefs.size() == 0) {
                             break;
@@ -1731,14 +1737,14 @@ public class CryptokiDevice {
          * @param alias 
          */
         public void importCertificateChain(List<Certificate> certChain, String alias) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 // TODO: Make some sanity checks on the certificates
                 
                 session = aquireSession();
                 
                 // 1. Find certificate object
-                final List<Long> certificateRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
+                final List<Long> certificateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Certificate Objects for alias '" + alias + "' : " +  certificateRefs);
                 }
@@ -1747,10 +1753,10 @@ public class CryptokiDevice {
                 }
 
                 // 2. Get the CKA_ID
-                CKA ckaId = c.GetAttributeValue(session, certificateRefs.get(0), CKA.ID);
+                CKA ckaId = c.GetAttributeValue(session.getId(), certificateRefs.get(0), CKA.ID);
 
                 // 3. Find the matching private key (just as sanity check)
-                final List<Long> privateRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
+                final List<Long> privateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Private Objects for alias '" + alias + "': " +  privateRefs);
                 }
@@ -1784,7 +1790,7 @@ public class CryptokiDevice {
                         new CKA(CKA.ID, alias),
                         new CKA(CKA.VALUE, cert.getEncoded())
                     };
-                    long newCertRef = c.CreateObject(session, cert0Template);
+                    long newCertRef = c.CreateObject(session.getId(), cert0Template);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Stored signer certificate object: " + newCertRef);
                     }
@@ -1794,11 +1800,11 @@ public class CryptokiDevice {
                         subject = cert.getSubjectX500Principal().getEncoded();
                         
                         // Note: For now we assume CA certificate subject DN:s are unique
-                        final List<Long> existingRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, subject));
+                        final List<Long> existingRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, subject));
                         
                         // Remove existing certificate that we will be replacing now
                         for (long existing : existingRefs) {
-                            cryptoki.destroyObject(session, existing);
+                            cryptoki.destroyObject(session.getId(), existing);
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug("Destroyed certificate : " + existing + " for alias " + alias);
                             }
@@ -1814,7 +1820,7 @@ public class CryptokiDevice {
                             new CKA(CKA.VALUE, cert.getEncoded()),
                             new CKA(CKA.ID, getCertID(cert))
                         };
-                        newCertRef = c.CreateObject(session, certTemplate);
+                        newCertRef = c.CreateObject(session.getId(), certTemplate);
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Stored CA certificate object: " + newCertRef);
                         }
@@ -1832,7 +1838,7 @@ public class CryptokiDevice {
         }
 
         public Certificate getCertificate(String alias) { // TODO: Support for alias that are hexadecimal of label or Id
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
@@ -1865,7 +1871,7 @@ public class CryptokiDevice {
         
         public List<Certificate> getCertificateChain(String alias) { // TODO: Support for finding aliases that are hexadecimal label or Id
             final LinkedList<Certificate> result = new LinkedList<>();
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
@@ -1934,19 +1940,19 @@ public class CryptokiDevice {
         
         public Enumeration<SlotEntry> aliases() throws CryptoTokenOfflineException { // TODO: For now we just read all aliases but we should only read chunks and load the next one on demand to scale, see FindObjectsInit
             final LinkedList<SlotEntry> result = new LinkedList<>();            
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 
                 // Map private keys to certificate labels, or use the CKA_ID if not found
-                final List<Long> privkeyRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
+                final List<Long> privkeyRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Private key objects for aliases: " + privkeyRefs);
                 }
                 for (long privkeyRef : privkeyRefs) {
                     CKA ckaId = getAttribute(session, privkeyRef, P11NGStoreConstants.CKA_ID);
                     if (ckaId != null && ckaId.getValue() != null && ckaId.getValue().length > 0) {
-                        final List<Long> certificateRefs = cryptoki.findObjects(session,new CKA(CKA.TOKEN, true), new CKA(CKA.ID, ckaId.getValue()), new CKA(CKA.CLASS, CKO.CERTIFICATE));
+                        final List<Long> certificateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.ID, ckaId.getValue()), new CKA(CKA.CLASS, CKO.CERTIFICATE));
                         CKA ckaLabel = null;
                         if (certificateRefs != null && certificateRefs.size() >= 1) {
                             // If a Certificate object exists, use its label. Otherwise, use the ID
@@ -1959,7 +1965,7 @@ public class CryptokiDevice {
                 }
 
                 // Add all secret keys
-                final List<Long> secretRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY));
+                final List<Long> secretRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Secret Key Objects for aliases: " + secretRefs);
                 }
@@ -1999,7 +2005,7 @@ public class CryptokiDevice {
         * @param sb Buffer to write to, or 'No private key object with alias' if no key with the specified alias can be found
         */
         public void securityInfo(String alias, final StringBuilder sb) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
 
@@ -2007,7 +2013,7 @@ public class CryptokiDevice {
                 if (privateKeyRef == null ) {
                     sb.append("No private key object with alias '" + alias + "'");
                 } else {
-                    final CKA attrs[] = c.GetAttributeValue(session, privateKeyRef, 
+                    final CKA attrs[] = c.GetAttributeValue(session.getId(), privateKeyRef, 
                             CKA.SENSITIVE, 
                             CKA.ALWAYS_SENSITIVE,
                             CKA.EXTRACTABLE,
@@ -2055,7 +2061,7 @@ public class CryptokiDevice {
         * @param alias label of certificate
         * @return found certificate objects or an empty list (Collections.emptyList) if no certificate objects found
         */
-        List<Long> findCertificateObjectsByLabel(Long session, String alias) {
+        List<Long> findCertificateObjectsByLabel(NJI11Session session, String alias) {
             return findCertificateObjectsInternal(session, alias, false);
         }
         /**
@@ -2065,22 +2071,22 @@ public class CryptokiDevice {
         * @param alias label of certificate
         * @return found certificate objects or an empty list (Collections.emptyList) if no certificate objects found
         */
-        List<Long> findCertificateObjectsByLabelInCache(Long session, String alias) {
+        List<Long> findCertificateObjectsByLabelInCache(NJI11Session session, String alias) {
             return findCertificateObjectsInternal(session, alias, true);
         }
         /**
          * @param onlyCache Only look into the cache, and return empty list if there is nothing in the cache, ignoring calling the underlying PKCS#11 api
          */
-        private List<Long> findCertificateObjectsInternal(Long session, String alias, boolean onlyCache) {
+        private List<Long> findCertificateObjectsInternal(NJI11Session session, String alias, boolean onlyCache) {
             try {
                 List<Long> certificateRefs = null;
                 if (onlyCache) {
-                    Optional<List<Long>> cacheret  = cryptoki.findObjectsInCache(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
+                    Optional<List<Long>> cacheret  = cryptoki.findObjectsInCache(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
                     if (cacheret.isPresent()) {
                         certificateRefs = cacheret.get(); 
                     }
                 } else {
-                    certificateRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));                    
+                    certificateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));                    
                 }
                 if (certificateRefs != null && certificateRefs.size() > 1) {
                     LOG.warn("More than one certificate object with label " + alias);
@@ -2098,9 +2104,9 @@ public class CryptokiDevice {
         * @param ckaSubjectValue CKA_SUBJECT of certificate
         * @return found certificate objects, which can be an empty array if no objects are found
         */
-        List<Long> findCertificateObjectsBySubject(Long session, byte[] ckaSubjectValue) {
+        List<Long> findCertificateObjectsBySubject(NJI11Session session, byte[] ckaSubjectValue) {
             try {
-                return cryptoki.findObjects(session, new CKA(CKA.TOKEN, true),
+                return cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true),
                         new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.SUBJECT, ckaSubjectValue));
             } catch (CKRException ex) {
                 throw new EJBException("Failed to find certificate objects.", ex);
@@ -2115,7 +2121,7 @@ public class CryptokiDevice {
          * @param ckaIdValue CKA_ID of public key
          * @return found public key objects, which can be an empty list ((Collections.emptyList)) if no objects are found
          */
-        List<Long> findPublicKeyObjectsByID(Long session, byte[] ckaIdValue) {
+        List<Long> findPublicKeyObjectsByID(NJI11Session session, byte[] ckaIdValue) {
             return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PUBLIC_KEY, false);
         }
         /**
@@ -2125,23 +2131,23 @@ public class CryptokiDevice {
          * @param ckaIdValue CKA_ID of public key
          * @return found public key objects, which can be an empty list ((Collections.emptyList)) if no objects are found
          */
-        List<Long> findPublicKeyObjectsByIDInCache(Long session, byte[] ckaIdValue) {
+        List<Long> findPublicKeyObjectsByIDInCache(NJI11Session session, byte[] ckaIdValue) {
             return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PUBLIC_KEY, true);
         }
         /**
          * @param onlyCache Only look into the cache, and return empty list if there is nothing in the cache, ignoring calling the underlying PKCS#11 api
          * @param type CKO.PUBLIC_KEY or CKO.PRIVATE_KEY 
          */
-        private List<Long> findKeyObjectsByIDInternal(Long session, byte[] ckaIdValue, long type, boolean onlyCache) {
+        private List<Long> findKeyObjectsByIDInternal(NJI11Session session, byte[] ckaIdValue, long type, boolean onlyCache) {
              try {
                  List<Long> pubkeyRefs = null;
                  if (onlyCache) {
-                     Optional<List<Long>> cacheret = cryptoki.findObjectsInCache(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));
+                     Optional<List<Long>> cacheret = cryptoki.findObjectsInCache(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));
                      if (cacheret.isPresent()) {
                          pubkeyRefs = cacheret.get(); 
                      }
                  } else {
-                     pubkeyRefs = cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));                     
+                     pubkeyRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.ID, ckaIdValue));                     
                  }
                  return (pubkeyRefs == null ? Collections.emptyList() : pubkeyRefs);
              } catch (CKRException ex) {
@@ -2158,7 +2164,7 @@ public class CryptokiDevice {
          * @param ckaIdValue CKA_ID of a private key
          * @return found private key object references, which can be an empty array if no objects are found
          */
-        public List<Long> findPrivateKeyObjectsByID(Long session, byte[] ckaIdValue) {
+        public List<Long> findPrivateKeyObjectsByID(NJI11Session session, byte[] ckaIdValue) {
             return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PRIVATE_KEY, false);
         }
 
@@ -2169,7 +2175,7 @@ public class CryptokiDevice {
          * @param ckaIdValue CKA_ID of public key
          * @return found private key object references, which can be an empty list ((Collections.emptyList)) if no objects are found
          */
-        List<Long> findPrivateKeyObjectsByIDInCache(Long session, byte[] ckaIdValue) {
+        List<Long> findPrivateKeyObjectsByIDInCache(NJI11Session session, byte[] ckaIdValue) {
             return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PRIVATE_KEY, true);
         }
 
@@ -2179,10 +2185,10 @@ public class CryptokiDevice {
          */
         long[] findAllPrivateKeyObjects() {
             final long[] results;
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
-                results = c.FindObjects(session, new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
+                results = c.FindObjects(session.getId(), new CKA(CKA.CLASS, CKO.PRIVATE_KEY));
             } catch (CKRException ex) {
                 throw new EJBException("Failed to find private key objects.", ex);
             } finally {
@@ -2200,9 +2206,9 @@ public class CryptokiDevice {
         * @param alias label of secret key
         * @return found secret key objects, which can be an empty array if no objects are found
         */
-        List<Long> findSecretKeyObjectsByLabel(Long session, String alias) {
+        List<Long> findSecretKeyObjectsByLabel(NJI11Session session, String alias) {
             try {
-                return cryptoki.findObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
+                return cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.SECRET_KEY), new CKA(CKA.LABEL, alias));
             } catch (CKRException ex) {
                 throw new EJBException("Failed to find secret key objects.", ex);
             }
@@ -2216,10 +2222,10 @@ public class CryptokiDevice {
          * @param paramName the attribute to fetch, for example P11NGStoreConstants.CKA_ID
          * @return attribute value, which can be an empty value (CKA.getValue() == null) if attribute does not exist
          */
-        CKA getAttribute(Long session, Long object, String paramName) {
+        CKA getAttribute(NJI11Session session, Long object, String paramName) {
             CKA ckaVal;
             try {
-                ckaVal = cryptoki.getAttributeValue(session, object, P11NGStoreConstants.nameToID(paramName));
+                ckaVal = cryptoki.getAttributeValue(session.getId(), object, P11NGStoreConstants.nameToID(paramName));
             } catch (CKRException ex) {
                 throw new EJBException("Failed to get ID of certificate object.", ex);
             }
@@ -2238,14 +2244,14 @@ public class CryptokiDevice {
          * does not exist, or <code>null</code> if no private key exists with the specified alias.
          */
         public CKA getPrivateKeyAttribute(final String alias, final long cka) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 final Long privateKeyRef = getPrivateKeyRefByLabel(session, alias);
                 if (privateKeyRef == null ) {
                     LOG.warn("No private key object with label: " + label);
                 } else {
-                    return cryptoki.getAttributeValue(session, privateKeyRef, cka);
+                    return cryptoki.getAttributeValue(session.getId(), privateKeyRef, cka);
                 }
                 return null;
             } finally {
@@ -2265,7 +2271,7 @@ public class CryptokiDevice {
         * @param unwrappedPrivateKeyTemplate unwrapped private key template
         * @return private key object
         */
-        long getUnwrappedPrivateKey(long session, long wrappingCipher, long unWrapKey, byte[] wrappedPrivateKey, CKA[] unwrappedPrivateKeyTemplate) {
+        long getUnwrappedPrivateKey(NJI11Session session, long wrappingCipher, long unWrapKey, byte[] wrappedPrivateKey, CKA[] unwrappedPrivateKeyTemplate) {
             long privateKey;
 
             CKM cipherMechanism = getCKMForWrappingCipher(wrappingCipher);
@@ -2274,7 +2280,7 @@ public class CryptokiDevice {
                 LOG.trace("c.UnwrapKey(" + session + ", " + cipherMechanism + ", " + unWrapKey + ", privLength:" + wrappedPrivateKey.length + ", templLength:" + unwrappedPrivateKeyTemplate.length);
             }
             try {
-                privateKey = c.UnwrapKey(session, cipherMechanism, unWrapKey, wrappedPrivateKey, unwrappedPrivateKeyTemplate);
+                privateKey = c.UnwrapKey(session.getId(), cipherMechanism, unWrapKey, wrappedPrivateKey, unwrappedPrivateKeyTemplate);
             } catch (CKRException ex) {
                 // As there are sporadic failures with thie method returning 0x00000070: MECHANISM_INVALID, try again after a while:
                 LOG.error("First error during c.unwrapKey call: " + ex.getMessage(), ex);
@@ -2283,7 +2289,7 @@ public class CryptokiDevice {
                 } catch (InterruptedException ex1) {
                     LOG.error("Interrupted: " + ex1.getMessage(), ex1);
                 }
-                privateKey = c.UnwrapKey(session, cipherMechanism, unWrapKey, wrappedPrivateKey, unwrappedPrivateKeyTemplate);
+                privateKey = c.UnwrapKey(session.getId(), cipherMechanism, unWrapKey, wrappedPrivateKey, unwrappedPrivateKeyTemplate);
                 LOG.error("C.UnwrapKey call worked after first error");
             }
 
@@ -2291,7 +2297,7 @@ public class CryptokiDevice {
             // actually exists. Try again if not.
             if (!unwrappedPrivateKeyExists(privateKey)) {
                 LOG.error("Unwrapped private key does not exist actually, going to try again");
-                privateKey = c.UnwrapKey(session, cipherMechanism, unWrapKey, wrappedPrivateKey, unwrappedPrivateKeyTemplate);
+                privateKey = c.UnwrapKey(session.getId(), cipherMechanism, unWrapKey, wrappedPrivateKey, unwrappedPrivateKeyTemplate);
             }
             if (LOG.isTraceEnabled()) {
                 LOG.trace("All private keys after c.UnwrapKey call: " + Arrays.toString(findAllPrivateKeyObjects()));
@@ -2314,14 +2320,14 @@ public class CryptokiDevice {
             return Arrays.asList(privateKeyObjectsBoxed).contains(unwrappedPrivateKey);
         }
 
-        private boolean isAliasUsed(final long session, final String alias) {
+        private boolean isAliasUsed(final NJI11Session session, final String alias) {
             try {
                 // Don't use cache when checking if it's used or not on the HSM
-                long[] objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
+                long[] objs = c.FindObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.LABEL, alias));
                 if (objs.length != 0) {
                     return true;
                 }
-                objs = c.FindObjects(session, new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
+                objs = c.FindObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8)));
                 if (objs.length != 0) {
                     return true;
                 }
@@ -2333,7 +2339,7 @@ public class CryptokiDevice {
 
         /** Returns true if an alias is used as a label or ID */
         public boolean isAliasUsed(final String alias) {
-            Long session = null;
+            NJI11Session session = null;
             try {
                 session = aquireSession();
                 return isAliasUsed(session, alias);
