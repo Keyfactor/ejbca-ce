@@ -210,7 +210,7 @@ public abstract class AlgorithmTools {
             keyAlg = algo;
             // Work around for making testMakeP12ForSingleUserEdDSA* pass, for some reason on jdk > 15 public key 
             // comes from SUN and not BC, most probably due to the multi release jdk used by BC
-        } else if (publickey != null && publickey.getAlgorithm() != null) {
+        } else if (publickey.getClass().getCanonicalName().equals("sun.security.ec.ed.EdDSAPublicKeyImpl")) {
             keyAlg = AlgorithmConstants.KEYALGORITHM_ED25519;
         }
         return keyAlg;
