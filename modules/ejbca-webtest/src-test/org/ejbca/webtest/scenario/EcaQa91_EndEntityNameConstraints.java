@@ -192,20 +192,6 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
         Assert.assertEquals(requirePermittedNC, eeProfile.isNameConstraintsPermittedRequired());
         Assert.assertEquals(requireExcludedNC, eeProfile.isNameConstraintsExcludedRequired());
     }
-
-    public static void assertElementDisplayed(String xpath) {
-        Assert.assertTrue("Following element is not displayed: " + xpath,
-                webDriver.findElement(By.xpath(xpath)).isDisplayed());
-    }
-    
-    public static void assertElementNotDisplayed(String xpath) {
-        try {
-            webDriver.findElement(By.xpath(xpath));
-            Assert.fail("Following element is displayed: " + xpath);
-        } catch(Exception e) {
-            
-        }
-    }
     
     @RunWith(value = Parameterized.class)
     public static class RaGuiTestParams {
@@ -296,15 +282,15 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             raWebHelper.fillCredentials(endEntityName, endEntityName);
 
             if (requiredPermittedNC) {
-                assertElementDisplayed("//*[text()=\"Permitted Name Constraints *\"]");
+                raWebHelper.assertRequiredPermittedConstraintDisplayed();
             } else if (enabledPermittedNC) {
-                assertElementDisplayed("//*[text()=\"Permitted Name Constraints\"]");
+                raWebHelper.assertPermittedConstraintDisplayed();
             }
 
             if (requiredExcludedNC) {
-                assertElementDisplayed("//*[text()=\"Excluded Name Constraints *\"]");
+                raWebHelper.assertRequiredExcludedConstraintDisplayed();
             } else if (enabledExcludedNC) {
-                assertElementDisplayed("//*[text()=\"Excluded Name Constraints\"]");
+                raWebHelper.assertExcludedConstraintDisplayed();
             }
 
             if (populatePermittedNC && requiredPermittedNC && populateExcludedNC && requiredExcludedNC) {
@@ -333,7 +319,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
                 raWebHelper.fillNameConstraintPermitted("");    
                 Thread.sleep(waitTime);
                 raWebHelper.clickDownloadKeystorePem();
-                assertElementDisplayed("//*[text()=\"Permitted name constraints are required.\"]");
+                raWebHelper.assertTextDisplayed("Permitted name constraints are required.");
                 Thread.sleep(waitTime);
                 raWebHelper.fillCredentials(endEntityName, endEntityName);
             }
@@ -342,7 +328,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
                 raWebHelper.fillNameConstraintExcluded("");
                 Thread.sleep(waitTime);
                 raWebHelper.clickDownloadKeystorePem();
-                assertElementDisplayed("//*[text()=\"Excluded name constraints are required.\"]");
+                raWebHelper.assertTextDisplayed("Excluded name constraints are required.");
                 Thread.sleep(waitTime);
                 raWebHelper.fillCredentials(endEntityName, endEntityName);
             }
@@ -370,11 +356,11 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             raWebHelper.clickViewEndEntity();
 
             if (requiredPermittedNC) {
-                assertElementDisplayed("//*[text()=\"Name constraints, permitted *\"]");
+                raWebHelper.assertRequiredPermittedConstraintDisplayedOnViewPage();
             } else if (enabledPermittedNC) {
-                assertElementDisplayed("//*[text()=\"Name constraints, permitted\"]");
+                raWebHelper.assertPermittedConstraintDisplayedOnViewPage();
             } else {
-                assertElementNotDisplayed("//*[text()=\"Name constraints, permitted\"]");
+                raWebHelper.assertPermittedConstraintNotDisplayed();
             }
 
             if (populatePermittedNC) {
@@ -383,15 +369,15 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
                 Assert.assertEquals("Permitted name constraints does not match",
                         expected, raWebHelper.getPermittedNameConstraint());
             } else if (enabledPermittedNC) {
-                assertElementDisplayed("//*[contains(@id, 'nameConstraintsPermittedNone')]");
+                raWebHelper.assertPermittedConstraintNoneDisplayed();
             }
 
             if (requiredExcludedNC) {
-                assertElementDisplayed("//*[text()=\"Name constraints, excluded *\"]");
+                raWebHelper.assertRequiredExcludedConstraintDisplayedOnViewPage();
             } else if (enabledExcludedNC) {
-                assertElementDisplayed("//*[text()=\"Name constraints, excluded\"]");
+                raWebHelper.assertExcludedConstraintDisplayedOnViewPage();
             } else {
-                assertElementNotDisplayed("//*[text()=\"Name constraints, excluded\"]");
+                raWebHelper.assertExcludedConstraintNotDisplayed();
             }
 
             if (populateExcludedNC) {
@@ -400,7 +386,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
                 Assert.assertEquals("Excluded name constraints does not match",
                         expected, raWebHelper.getExcludedNameConstraint());
             } else if (enabledExcludedNC) {
-                assertElementDisplayed("//*[contains(@id, 'nameConstraintsExcludedNone')]");
+                raWebHelper.assertExcludedConstraintNoneDisplayed();
             }
             
             raWebHelper.clickEditInViewEndEntity();
