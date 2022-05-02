@@ -203,7 +203,6 @@ public class RaAccessBean implements Serializable {
          * In order to actually make a request, the admin has to have access to
          *  AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.CREATE_END_ENTITY
          * and the CAs available via this profile.
-         * Also, at least one of REGULAR_SUBMITREQUEST, REGULAR_USEPASSWORD or REGULAR_USEAPPROVALREQUESTID is needed.
          */
         return isAuthorized(AccessRulesConstants.REGULAR_CREATEENDENTITY);
     }
