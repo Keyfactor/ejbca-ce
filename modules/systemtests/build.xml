@@ -75,6 +75,7 @@
         <path location="${mod.cesecore-cvcca.lib}"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.json-smart.classpath"/>
+		<path location="${mod.p11ng.lib}" />
 	</path>
 
 	<path id="common.classpath">

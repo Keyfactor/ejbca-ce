@@ -15,6 +15,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Map;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CertTools;
 
 /**
@@ -67,7 +69,7 @@ public class TokenEntry implements Serializable {
             this.parsedChain = new Certificate[this.chain.length];
             int i = 0;
             for (byte[] certBytes : this.chain) {
-                this.parsedChain[i] = CertTools.getCertfromByteArray(certBytes, "BC", Certificate.class);
+                this.parsedChain[i] = CertTools.getCertfromByteArray(certBytes, BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
                 i++;
             }
         }
@@ -103,7 +105,7 @@ public class TokenEntry implements Serializable {
 
     public Certificate getParsedTrustedCertificate() throws CertificateException {
         if (this.parsedTrustedCertificate == null && this.trustedCertificate != null) {
-            this.parsedTrustedCertificate = CertTools.getCertfromByteArray(this.trustedCertificate, "BC", Certificate.class);
+            this.parsedTrustedCertificate = CertTools.getCertfromByteArray(this.trustedCertificate, BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
         }
         return this.parsedTrustedCertificate;
     }

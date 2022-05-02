@@ -3860,6 +3860,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     } catch (AuthorizationDeniedException | CryptoTokenOfflineException e2) {
                         throw e2;
                     } catch (Exception e2) {
+                        log.info("error on key create", e2);
                         throw new RuntimeException(e2);
                     }
                 } 
@@ -3947,10 +3948,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
                     caCertPublicVerificationKey, cryptoToken.getSignProviderName());
             
-            String nextDefaultKeyAlias = catoken.getNextEcaDefaultKeyAlias();
-            log.debug("nextDefaultKeyAlias: " + nextDefaultKeyAlias);
-            KeyTools.testKey(cryptoToken.getPrivateKey(nextDefaultKeyAlias), 
-                    caCertPublicEncryptionKey, cryptoToken.getSignProviderName());
+            if(cryptoToken.getSignProviderName()=="BC") {
+                String nextDefaultKeyAlias = catoken.getNextEcaDefaultKeyAlias();
+                log.debug("nextDefaultKeyAlias: " + nextDefaultKeyAlias);
+                KeyTools.testKey(cryptoToken.getPrivateKey(nextDefaultKeyAlias), 
+                        caCertPublicEncryptionKey, cryptoToken.getSignProviderName());
+            }
+            // for PKCS11 key signing permission may not be given
             catoken.activateNextKeysEcaToken();
             
             // Activated the next signing key(s) so generate audit log
