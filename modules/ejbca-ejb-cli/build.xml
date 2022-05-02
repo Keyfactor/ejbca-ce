@@ -53,6 +53,7 @@
         <path refid="lib.junit.classpath"/>
         <path location="${ejbca-ejb-cli.build.dir}"/>
         <path location="${ejbca-ejb-cli.dir}/../dist/systemtests-interfaces.jar"/>
+        <path location="${mod.p11ng.lib}" />
     </path>
 
     <path id="test.classpath">

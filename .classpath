@@ -81,6 +81,9 @@
 	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
+	<classpathentry kind="src" path="modules/p11ng/src"/>
+	<classpathentry kind="src" path="modules/p11ng/src-test"/>
+	<classpathentry kind="src" path="modules/p11ng-cli/src"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-cli"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-ejb"/>
@@ -110,7 +113,6 @@
 	<classpathentry kind="src" path="modules/validationtool/src"/>
 	<classpathentry kind="src" path="modules/validationtool/test"/>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="modules/p11ng-cli/src"/>
 	<classpathentry kind="src" path="modules/msae/src"/>
 	<classpathentry kind="src" path="modules/cits/src"/>
 	<classpathentry kind="src" path="modules/cits/src-test"/>
@@ -232,7 +234,7 @@
 	<classpathentry kind="lib" path="lib/commons-text-1.9.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.4.8.jar"/>
-	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.12.1.jar"/>
+	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.21.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.10.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-3.3.12.jar"/>
