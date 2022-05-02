@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.cesecore.certificate.ca.its;
 
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.its.ITSCertificate;
+import org.bouncycastle.its.operator.ITSContentSigner;
+
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
@@ -120,4 +123,6 @@ public interface ECA extends CA {
     void setCertificateHash(String hexString);
 
     String getCertificateHash();
+    
+    ITSContentSigner getITSContentSigner(PrivateKey privateKey, ITSCertificate signerCert) throws IllegalKeyException;
 }
