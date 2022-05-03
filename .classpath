@@ -112,6 +112,7 @@
 	<classpathentry kind="src" path="modules/cits/src"/>
 	<classpathentry kind="src" path="modules/cits/src-test"/>
 	<classpathentry kind="src" path="modules/cits/src-war"/>
+	<classpathentry kind="src" path="modules/proxy-ca/src"/>
 	<classpathentry kind="lib" path="lib/xstream/xmlpull-1.1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xpp3_min-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="lib/adsddl-1.9.jar"/>
