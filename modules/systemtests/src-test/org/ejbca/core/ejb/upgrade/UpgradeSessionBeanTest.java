@@ -108,6 +108,7 @@ import java.lang.reflect.Method;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -1288,6 +1289,30 @@ public class UpgradeSessionBeanTest {
         assertNull("CertReqHandler should have been removed from CMP configuration during upgrade", upgradedCmpConfiguration.getCertReqHandlerClass(alias));
 
         
+    }
+
+    /** Tests addition of new access rules for Public Access RA added in 7.10.0 */
+    @Test
+    public void testUpgradeAccessRules7100() throws AuthorizationDeniedException, RoleExistsException {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.9.0");
+        guc.setPostUpgradedToVersion("7.9.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        // Add role
+        Role role = new Role("UpgradeTestNamespace", "Role", Arrays.asList(AccessRulesConstants.REGULAR_CREATECERTIFICATE + "/"), Collections.emptyList());
+        role.normalizeAccessRules();
+        roleSession.deleteRoleIdempotent(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+        try {
+            roleSession.persistRole(alwaysAllowtoken, role);
+            // Perform upgrade
+            upgradeSession.upgrade(null, "7.9.0", false);
+            // Check role
+            role = roleSession.getRole(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+            assertEquals("New access rule was not added", Boolean.TRUE, role.getAccessRules().get(AccessRulesConstants.REGULAR_USEUSERNAME + "/"));
+            assertEquals("New access rule was not added", Boolean.TRUE, role.getAccessRules().get(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID + "/"));
+        } finally {
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+        }
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
