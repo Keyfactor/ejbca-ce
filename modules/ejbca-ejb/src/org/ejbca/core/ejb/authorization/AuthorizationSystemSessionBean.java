@@ -170,7 +170,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         for (final String resource : AccessRulesConstants.STANDARDREGULARACCESSRULES) {
             accessRulesRegular.put(resource, resource);
         }
-        
+
         if (keyRecoveryEnabled) {
             accessRulesRegular.put(AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRulesConstants.REGULAR_KEYRECOVERY);
         }
@@ -327,6 +327,12 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         roleMemberSession.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 superAdminCN, role.getRoleId(), null));
+
+        //add managementCA access to Public Role
+        final Role publicRole = roleSession.getRole(authenticationToken, null, PUBLIC_ACCESS_ROLE);
+        publicRole.getAccessRules().put(AccessRulesHelper.normalizeResource(StandardRules.CAACCESSBASE.resource() + "/" + caId + "/")
+                , Role.STATE_ALLOW);
+        roleDataSession.persistRole(publicRole);
         return true;
     }
 
@@ -345,7 +351,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         log.info("Initialising public access role with confidential role member.");
         final Role roleToPersist = new Role(null, PUBLIC_ACCESS_ROLE,
                 Arrays.asList(StandardRules.CAVIEW.resource(), StandardRules.CREATECERT.resource(), AccessRulesConstants.REGULAR_USEUSERNAME,
-                        StandardRules.CAACCESSBASE.resource() + "/ManagementCA/", AccessRulesConstants.ENDENTITYPROFILEBASE + "/EMPTY/"),
+                        AccessRulesConstants.ENDENTITYPROFILEBASE + "/"+EndEntityConstants.EMPTY_END_ENTITY_PROFILE+"/"),
                 null);
         final Role role = roleDataSession.persistRole(roleToPersist);
         roleMemberDataSession.persistRoleMember(new RoleMember(PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE,
