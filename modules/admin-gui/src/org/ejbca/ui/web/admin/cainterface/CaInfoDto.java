@@ -92,11 +92,11 @@ public class CaInfoDto {
     private String certificateId;
     private String region;
     
-    long getDeltaCrlPeriod() {
+    public long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
 
-    long getcrlOverlapTime() {
+    public long getcrlOverlapTime() {
         return SimpleTime.getInstance(crlCaOverlapTime, "10" + SimpleTime.TYPE_MINUTES).getLong();
     }
 
@@ -104,7 +104,7 @@ public class CaInfoDto {
         return SimpleTime.getInstance(crlCaIssueInterval, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
 
-    long getCrlPeriod() {
+    public long getCrlPeriod() {
         return SimpleTime.getInstance(crlCaCrlPeriod, "1" + SimpleTime.TYPE_DAYS).getLong();
     }
 
@@ -122,6 +122,10 @@ public class CaInfoDto {
     
     public boolean isCaTypeCits() {
         return caType == CAInfo.CATYPE_CITS;
+    }
+
+    public boolean isCaTypeProxy() {
+        return caType == CAInfo.CATYPE_PROXY;
     }
 
 
