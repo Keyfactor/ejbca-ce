@@ -181,17 +181,19 @@
                                     <li class="pure-menu-item">
                                         <h:outputLink
                                                 value="preferences.xhtml"
-                                                styleClass="pure-menu-link role-menu-link">
+                                                styleClass="pure-menu-link user-menu-link">
                                             <h:outputText value="#{msg.menu_pagetitle_preferences}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="pure-menu-item">
-                                        <h:outputLink
-                                                value="renew_certificate.xhtml"
-                                                styleClass="pure-menu-link role-menu-link">
-                                            <h:outputText value="#{msg.menu_pagetitle_renew_certificate}" />
-                                        </h:outputLink>
-                                    </li>
+                                    <ui:fragment rendered="#{raAuthenticationBean.clientCertificateUser}">
+                                        <li class="pure-menu-item">
+                                            <h:outputLink
+                                                    value="renew_certificate.xhtml"
+                                                    styleClass="pure-menu-link user-menu-link">
+                                                <h:outputText value="#{msg.menu_pagetitle_renew_certificate}" />
+                                            </h:outputLink>
+                                        </li>
+                                    </ui:fragment>
                                     <!-- This function is used to force a page reload after applying the custom admin preferences.
                                          This way the changes will take effect without the need for user to press Ctrl+F5. -->
                                     <script type="text/javascript">
@@ -212,7 +214,7 @@
                                     </ui:remove>
                                     <h:form rendered="#{raAuthenticationBean.oauthUser}">
                                         <li class="pure-menu-item">
-                                            <h:commandLink styleClass="pure-menu-link"
+                                            <h:commandLink styleClass="pure-menu-link user-menu-link user-menu-logout-link"
                                                        action="#{raAuthenticationBean.logOut}">
                                                 <h:outputText value="#{msg.menu_pagetitle_logout}"/>
                                             </h:commandLink>
