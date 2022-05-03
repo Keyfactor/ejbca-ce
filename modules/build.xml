@@ -16,6 +16,16 @@
         <echo message="Run 'ant -p' to see the available targets." />
     </target>
 
+	<target name="-build-proxy-ca" depends="cesecore-x509ca" if="${mod.proxy-ca.exists}">
+		<ant antfile="${mod.proxy-ca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="-copy-proxy-ca" depends="-build-proxy-ca" if="${mod.proxy-ca.exists}">
+		<copy file="${mod.proxy-ca.path}/dist/proxy-ca.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
+	</target>
+
+	<target name="proxy-ca" depends="cesecore-common, -build-proxy-ca, -copy-proxy-ca"/>
+
 	<target name="clean" depends="clean-optional" description="Clean all modules">
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="true"/>
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -49,7 +59,7 @@
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean,
         webtestclean, estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, plugins-ee-clean, 
-		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean, cits-clean"/>
+		cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cesecore-p11-clean, cits-clean, proxy-ca-clean"/>
 
   <target name="cesecore-p11-clean" if="build.cesecore.p11.jar">
        <ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -199,7 +209,12 @@
 	
     <target name="ejbca-rest-endentity-clean" if="${mod.ejbca-rest-endentity.exists}">
         <ant antfile="${mod.ejbca-rest-endentity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-    </target>   
+    </target>
+
+	<target name="proxy-ca-clean" if="${mod.proxy-ca.exists}">
+		<echo message="Cleaning proxy-ca"/>
+		<ant antfile="${mod.proxy-ca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
 
 	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
@@ -462,7 +477,7 @@
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
         	
-	<target name="admin-gui" depends="ejbca-common-web" description="Build the EJBCA Admin GUI WAR">
+	<target name="admin-gui" depends="ejbca-common-web,proxy-ca" description="Build the EJBCA Admin GUI WAR">
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
