@@ -99,6 +99,13 @@
 						rendered="#{editCAsMBean.renderCitsAvailable}">
 						<f:ajax listener="#{editCAsMBean.renderCitsFields()}" render="@form" />
 					</h:commandButton>
+					<h:commandButton
+							id="catypeproxy"
+							styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeProxy?'selected':''}"
+							action="#{editCAsMBean.setCaTypeProxy}"
+							value="#{editCAsMBean.caTypeProxy?'✓':' '}#{web.text.PROXY}">
+						<f:ajax listener="#{editCAsMBean.renderProxyCaFields()}" render="@form" />
+					</h:commandButton>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.editCA}">

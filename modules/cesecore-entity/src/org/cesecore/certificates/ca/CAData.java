@@ -153,6 +153,9 @@ public class CAData extends ProtectedData implements Serializable {
         case CAInfo.CATYPE_CITS:
             ca = (CACommon) CAFactory.INSTANCE.getCitsCaImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
             break;
+		case CAInfo.CATYPE_PROXY:
+			ca = (CACommon) CAFactory.INSTANCE.getProxyCa(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));
+			break;
         
         }
         return ca;
