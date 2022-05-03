@@ -119,6 +119,9 @@ public class RaWebHelper extends BaseHelper {
         // Containers
         static final By CONTAINER_ENROLL_BUTTONS = By.id("requestInfoForm:enrollButtons");
         static final By CSR_FILE_INPUT_FIELD = By.id("keyPairForm:certificateUploadInput");
+        
+        // View End Entity and Approval
+        static final By TEXT_EMAIL = By.xpath("//*[contains(@id, 'email')]");
 
         static By getRequestInfoFormSubjectDnSubjectDnField(final int index) {
             return By.id("requestInfoForm:subjectDn:" + index + ":subjectDnField");
@@ -504,6 +507,18 @@ public class RaWebHelper extends BaseHelper {
      */
     public void assertRequestRejectButtonDoesNotExist() {
         assertElementDoesNotExist(Page.BUTTON_REQUEST_REJECT, "Found 'Reject' button.");
+    }
+    
+    /**
+     * Asserts the email exists and it's content.
+     */
+    public void assertEmailContent(String email) {
+        final WebElement emailWebElement = findElement(Page.TEXT_EMAIL);
+        assertNotNull("Cannot find end entity email.", emailWebElement);
+        assertTrue("End entity or Approval data email does not match. Should contains '" + email 
+                + "', but was '" + emailWebElement.getText() + "'",
+                emailWebElement.getText().contains(email));
+        
     }
 
     /**
