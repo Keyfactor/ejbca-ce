@@ -90,13 +90,15 @@ public class RaAuthenticationBean implements Serializable {
     }
     
     public boolean isPublicUser() {
-        final AuthenticationToken authToken = getAuthenticationToken();
-        return authToken instanceof PublicAccessAuthenticationToken;
+        return getAuthenticationToken() instanceof PublicAccessAuthenticationToken;
     }
 
     public boolean isOauthUser() {
-        final AuthenticationToken authToken = getAuthenticationToken();
-        return authToken instanceof OAuth2AuthenticationToken;
+        return getAuthenticationToken() instanceof OAuth2AuthenticationToken;
+    }
+
+    public boolean isClientCertificateUser() {
+        return getAuthenticationToken() instanceof X509CertificateAuthenticationToken;
     }
 
     public String getUserDisplayName() {
