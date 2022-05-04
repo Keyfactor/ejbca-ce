@@ -14,7 +14,6 @@ package org.ejbca.ra;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -38,7 +37,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
@@ -579,26 +577,16 @@ public class EnrollWithRequestIdBean implements Serializable {
         if (token == null) {
             return;
         }
-        //Download the token
-        FacesContext fc = FacesContext.getCurrentInstance();
-        ExternalContext ec = fc.getExternalContext();
-        ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
-        ec.setResponseContentType(responseContentType);
-        ec.setResponseContentLength(token.length);
+        // Download the token
         String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
         if(fileName == null){
             fileName = "certificatetoken";
         }
-
-        final String filename = StringTools.stripFilename(fileName + fileExtension);
-        ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
-        try (final OutputStream output = ec.getResponseOutputStream()) {
-            output.write(token);
-            output.flush();
-            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
+        try {
+            DownloadHelper.sendFile(token, responseContentType, fileName + fileExtension);
         } catch (IOException e) {
-            log.info("Token " + filename + " could not be downloaded", e);
-            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
+            log.info("Token " + fileName + " could not be downloaded", e);
+            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", fileName);
         }
     }
 
