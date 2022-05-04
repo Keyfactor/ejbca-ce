@@ -664,7 +664,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
-        if (StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
+        if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
             newOauthKey.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
         }
         if (oauthKeyEditor.getKeyBinding() != null) {
@@ -839,7 +839,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
-        if (StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
+        if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
             oauthKeyToUpdate.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
         }
         systemConfigurationHelper.saveOauthKeys(super.getAllOauthKeys());
