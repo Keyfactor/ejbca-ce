@@ -290,6 +290,11 @@ public class RaAccessBean implements Serializable {
         return isAuthorized(AccessRulesConstants.REGULAR_REVOKEENDENTITY);
     }
 
+    public boolean isAuthorizedToRenewClientCertificate() {
+        // TODO add separate access rules for this?
+        return isAuthorized(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRulesConstants.REGULAR_EDITENDENTITY);
+    }
+
     /**
      * Determine if the RA master API is functional. Note that this method will
      * return true if there is a signing CA available locally on this RA.
