@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -951,33 +952,34 @@ public class RaEndEntityBean implements Serializable {
      * @return a map with certificate authority id as key and certificate authority name as value (for certificate authority select options)
      */
     public Map<Integer, String> getCertificateAuthorities() {
-        List<Integer> eepCAs = filterAuthorizedCas(authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs());
+        List<Integer> eepCAs = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs();
         CertificateProfile cp = authorizedCertificateProfiles.get(cpId).getValue();
-        List<Integer> cpCAs = filterAuthorizedCas(authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs());
-        List<Integer> allCAs = new ArrayList<>(authorizedCAInfos.idKeySet());
-        List<Integer> usableCAs;
+        List<Integer> cpCAs = authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs();
+        
+        Stream<Integer> usableCAs;
         if (eepCAs.contains(EndEntityConstants.EEP_ANY_CA)) {
             if (cp.isApplicableToAnyCA()) {
-                usableCAs = allCAs;
+                usableCAs = authorizedCAInfos.idKeySet().stream();
             } else {
-                usableCAs = cpCAs;
+                usableCAs = filterAuthorizedCas(cpCAs);
             }
         } else {
             if (cp.isApplicableToAnyCA()) {
-                usableCAs = eepCAs;
+                usableCAs = filterAuthorizedCas(eepCAs);
             } else {
                 usableCAs = eepCAs.stream()
-                    .filter(cpCAs::contains)
-                    .collect(Collectors.toList());
+                    .filter(cpCAs::contains).filter(authorizedCAInfos.idKeySet()::contains);
             }
         }
 
-        return usableCAs.stream()
-            .collect(Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
+        // delayed collection to reduce instantiation of Collections
+        return usableCAs.collect(
+                Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
+        
     }
 
-    private List<Integer> filterAuthorizedCas(final List<Integer> availableCAs) {
-        return availableCAs.stream().filter(authorizedCAInfos.idKeySet()::contains).collect(Collectors.toList());
+    private Stream<Integer> filterAuthorizedCas(final List<Integer> availableCAs) {
+        return availableCAs.stream().filter(authorizedCAInfos.idKeySet()::contains);
     }
 
     private void handleNullSubjectDistinguishNames() {
