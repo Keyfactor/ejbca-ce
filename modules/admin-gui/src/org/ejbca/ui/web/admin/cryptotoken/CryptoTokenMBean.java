@@ -56,6 +56,7 @@ import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
@@ -941,19 +942,25 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final List<String> result = new ArrayList<>();
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
                 globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
-        AcmeConfiguration acmeAlias; 
+        AcmeConfiguration acmeAlias;
         for (String acmeAliasId : globalConfig.getAcmeConfigurationIds()) {
-            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId); 
-            try {
-                if (acmeAlias != null && acmeAlias.isRequireExternalAccountBinding() 
-                        && acmeAlias.getExternalAccountBinding().getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
-                        && (Boolean) acmeAlias.getExternalAccountBinding().getDataMap().get("encryptKey")
-                        && Integer.toString(cryptoTokenId).equals(acmeAlias.getExternalAccountBinding().getDataMap().get("encryptionKeyId"))) {
-                    result.add(acmeAlias.getConfigurationId());
+            acmeAlias = globalConfig.getAcmeConfiguration(acmeAliasId);
+            if (acmeAlias != null) {
+                try {
+                    final List<AcmeExternalAccountBinding> eabs = acmeAlias.getExternalAccountBinding();
+                    if (eabs != null) {
+                        for (AcmeExternalAccountBinding eab :eabs) {
+                            if (eab.getAccountBindingTypeIdentifier().equals("ACME_EAB_RFC_COMPLIANT")
+                                    && (Boolean) eab.getDataMap().get("encryptKey")
+                                    && Integer.toString(cryptoTokenId).equals(eab.getDataMap().get("encryptionKeyId"))) {
+                                result.add(acmeAlias.getConfigurationId());
+                            }
+                        }
+                    }
+                } catch (AccountBindingException e) {
+                    log.warn("Could not load ACME EAB '" + acmeAliasId 
+                            + "' to verify if it contains a reference to the crypto token to be deleted.");
                 }
-            } catch (AccountBindingException e) {
-                log.warn("Could not load ACME EAB '" + acmeAliasId 
-                        + "' to verify if it contains a reference to the crypto token to be deleted.");
             }
         }
         return result;
