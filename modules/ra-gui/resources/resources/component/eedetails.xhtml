@@ -63,11 +63,11 @@
             </h:panelGroup>
 
             <h:outputLabel for="email" value="#{msg.component_eedetails_field_email}"
-                           rendered="#{not cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityBean.emailUsed}"
+                           rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.emailEnabled}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="email"
                           value="#{cc.attrs.raEndEntityDetails.email}"
-                          rendered="#{not cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityBean.emailUsed and not empty cc.attrs.raEndEntityDetails.email}"
+                          rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup id="newEmail"
                           rendered="#{cc.attrs.editMode}"

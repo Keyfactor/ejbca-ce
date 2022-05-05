@@ -21,10 +21,10 @@ public class NJI11StaticSessionPrivateKey extends NJI11Object implements Key, Pr
 
     private static final long serialVersionUID = -1393340200834353434L;
 
-    private final long session;
+    private final NJI11Session session;
     private final boolean removalOnRelease;
 
-    public NJI11StaticSessionPrivateKey(long session, long object, CryptokiDevice.Slot slot, boolean removalOnRelease) {
+    public NJI11StaticSessionPrivateKey(NJI11Session session, long object, CryptokiDevice.Slot slot, boolean removalOnRelease) {
         super(object, slot);
         this.session = session;
         this.removalOnRelease = removalOnRelease;
@@ -45,7 +45,7 @@ public class NJI11StaticSessionPrivateKey extends NJI11Object implements Key, Pr
         return null;
     }
 
-    protected long getSession() {
+    protected NJI11Session getSession() {
         return session;
     }
 
