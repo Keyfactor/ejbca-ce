@@ -79,6 +79,8 @@ public final class OAuthKeyInfo implements Serializable {
     private String url;
     private String clientSecret;
     private int skewLimit = 60000;
+    private String publicKeyUrl;
+
     
     // PingID fields
     private String tokenUrl;
@@ -173,6 +175,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setKeys(Map<String, OAuthPublicKey> keys) {
         this.keys = keys;
+    }
+
+    public String getPublicKeyUrl() {
+        return this.publicKeyUrl;
+    }
+
+    public void setPublicKeyUrl(String publicKeyUrl) {
+        this.publicKeyUrl = publicKeyUrl;
     }
 
     public String getClient() {
