@@ -1478,7 +1478,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String pemEncodedCsr;
         try {
             fileContents = uploadFile.getBytes();
-            if (new String(fileContents).startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)) {
+            String fileContentString = new String(fileContents);
+            if (fileContentString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)||
+                    fileContentString.startsWith(CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST)) {
                 pemEncodedCsr = new String(uploadFile.getBytes());
             } else {
                 pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
