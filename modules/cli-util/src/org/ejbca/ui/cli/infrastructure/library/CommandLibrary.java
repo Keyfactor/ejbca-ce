@@ -53,7 +53,7 @@ public enum CommandLibrary {
                 boolean offlineError = false;
                 for (Iterator<? extends CliCommandPlugin> iterator = serviceLoader.iterator(); iterator.hasNext();) {
                     CliCommandPlugin command;
-                    try {
+            
                         command = iterator.next();
                         root.addChild(command, command.getCommandPath());
                         if (!command.getCommandPathAliases().isEmpty()) {
@@ -62,20 +62,7 @@ public enum CommandLibrary {
                                 root.addChild(command, true, aliasIterator.next());
                             }
                         }
-                    } catch (ServiceConfigurationError e) {
-                        if (e.getCause() instanceof NoSuchEJBException || (e.getCause() instanceof IllegalStateException
-                                && e.getCause().getLocalizedMessage().contains("No EJB receiver"))) {
-                            if (!offlineError) {
-                                log.error("Error: CLI could not contact EJBCA instance. Either your application server is not up and running,"
-                                        + " EJBCA has not been deployed successfully, or some firewall rule is blocking the CLI from the application server."
-                                        + "\n\n" + "Please be aware that most commands will not work without the application server available.\n");
-                                offlineError = true;
-                            }
-
-                        } else {
-                            throw e;
-                        }
-                    }
+                    
                 }
 
             }
