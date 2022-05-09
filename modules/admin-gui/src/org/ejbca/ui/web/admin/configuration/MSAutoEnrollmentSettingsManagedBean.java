@@ -152,7 +152,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(autoenrollmentConfigMBean.getSelectedAlias());
         }
-        adConnection.updateConnectionProperties(autoenrollmentConfigMBean.getSelectedAlias());
+        // adConnection.updateConnectionProperties(autoenrollmentConfigMBean.getSelectedAlias());
     }
 
     // MSAE Kerberos Settings
