@@ -47,6 +47,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -90,12 +91,15 @@ import org.ejbca.core.ejb.ca.publisher.PublisherTestSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.mock.publisher.MockedThrowAwayRevocationPublisher;
@@ -212,15 +216,17 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         log.trace(">addUser()");
 
         String email = username + "@anatom.se";
-        endEntityManagementSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(username,  "C=SE, O=AnaTom, CN=" + username, caId,  "rfc822name=" + email, email, 
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(pwd);
+        
+        endEntityManagementSession.addUser(admin, endEntityInformation, true);
         usernames.add(username);
         log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" + username);
         // Add the same user again
         boolean userexists = false;
         try {
-            endEntityManagementSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
         } catch (EndEntityExistsException e) {
             userexists = true; // This is what we want
         }
@@ -231,8 +237,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         int fakecaid = -1;
         boolean thrown = false;
         try {
-            endEntityManagementSession.addUser(admin, username2, pwd, "C=SE, O=AnaTom, CN=" + username2, null, null, true, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, fakecaid);
+            EndEntityInformation secondEndEntity = new EndEntityInformation(username2, "C=SE, O=AnaTom, CN=" + username2, fakecaid, null, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+            secondEndEntity.setPassword(pwd);
+            endEntityManagementSession.addUser(admin, secondEndEntity, true);
             fail();
         } catch (CADoesntExistsException e) {
             thrown = true;
@@ -273,16 +282,20 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             String thisusername = genRandomUserName();
             String email = thisusername + "@anatom.se";
             try {
-                endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword("");
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
                 usernames.add(thisusername);
                 fail("User " + thisusername + " was added to the database although it should not have been.");
             } catch (EndEntityProfileValidationException e) {
-                assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+                assertTrue("Error message should be about password, was " + e.getMessage(), e.getMessage().contains("Password cannot be empty or null"));
             }
             try {
-                endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword(null);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);              
                 usernames.add(thisusername);
                 fail("User " + thisusername + " was added to the database although it should not have been.");
             } catch (EndEntityProfileValidationException e) {
@@ -292,17 +305,21 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             profile.setPasswordRequired(false);
             endEntityProfileSession.changeEndEntityProfile(admin, eeprofileName, profile);
             try {
-                endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword("");
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);              
                 usernames.add(thisusername);
             } catch (EndEntityProfileValidationException e) {
-                fail("User " + thisusername + " was not added to the database although it should have been.");
+                fail("User " + thisusername + " was not added to the database although it should have been. " + e.getMessage());
             }
             thisusername = genRandomUserName();
             email = thisusername + "@anatom.se";
             try {
-                endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
-                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "C=SE, CN=" + thisusername, caId, null, email, 
+                        EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword(null);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);              
                 usernames.add(thisusername);
             } catch (EndEntityProfileValidationException e) {
                 fail("User " + thisusername + " was not added to the database although it should have been.");
@@ -310,6 +327,42 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         } finally {
             setEnableEndEntityProfileLimitations(eelimitation);
             endEntityProfileSession.removeEndEntityProfile(admin, eeprofileName);
+        }
+    }
+    
+    /**
+     * Test adding and accessing end entities with leading and trailing whitespace 
+     */
+    @Test
+    public void testAddEndEntityWithWhitespace() throws EndEntityExistsException, CADoesntExistsException, IllegalNameException, CustomFieldException,
+            ApprovalException, CertificateSerialNumberException, AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CouldNotRemoveEndEntityException {
+        //For legacy support, allow whitespace within the username (as this has been previously allowed)
+        final String whitespaceUsername = "john doe";
+        //Add trailing and leading whitespace. 
+        EndEntityInformation leadingWhitespace = new EndEntityInformation(" " + whitespaceUsername + " ", "CN=" + whitespaceUsername, caId, null,
+                null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        leadingWhitespace.setPassword(pwd);
+
+        endEntityManagementSession.addUser(admin, leadingWhitespace, false);
+        try {
+            //Verify that the user has been added sans whitespace
+            assertNotNull("End entity was added without eliminating leading and trailing whitespace.", endEntityAccessSession.findUser(admin, whitespaceUsername));
+            //Verify that we can still find the user with trailing and leading whitespace. 
+            assertNotNull("Whitespace was not eliminated when searching for the username.", endEntityAccessSession.findUser(admin, " " + whitespaceUsername + " "));
+            //Verify that we can delete the user with whitespace 
+            try {
+                endEntityManagementSession.deleteUser(admin, " " + whitespaceUsername + " ");
+            } catch (NoSuchEndEntityException e) {
+                fail("End Entity should have been removed in spite of leading and trailing whitespace in the username.");
+            } 
+        } finally {
+            try {
+                endEntityManagementSession.deleteUser(admin, whitespaceUsername);
+            } catch (NoSuchEndEntityException e) {
+                //Ignore, this is fine
+            }
         }
     }
     
@@ -326,8 +379,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         String thisusername = genRandomUserName();
         String email = thisusername + "@anatom.se";
         genRandomSerialnumber();
-        endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        
+        EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, caId, "rfc822name=" + email, email, 
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, endEntityInformation, false);
+       
         assertTrue("User " + thisusername + " was not added to the database.", endEntityManagementSession.existsUser(thisusername));
         usernames.add(thisusername);
 
@@ -340,8 +397,10 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         // Add another user with the same serialnumber
         thisusername = genRandomUserName();
         try {
-            endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
-                    false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+            EndEntityInformation anotherEndEntityInformation = new EndEntityInformation(thisusername, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, caId, "rfc822name=" + email, email, 
+                    EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+            anotherEndEntityInformation.setPassword(pwd);
+            endEntityManagementSession.addUser(admin, anotherEndEntityInformation, false);
             usernames.add(thisusername);
             fail("Should throw");
         } catch (CertificateSerialNumberException e) {
@@ -352,8 +411,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
         caAdminSession.editCA(admin, cainfo);
-        endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+
+        EndEntityInformation doNotRequireUniqueSN = new EndEntityInformation(thisusername, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, caId, "rfc822name=" + email, email, 
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        doNotRequireUniqueSN.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, doNotRequireUniqueSN, false);
         assertTrue(endEntityManagementSession.existsUser(thisusername));
         usernames.add(thisusername);
 
