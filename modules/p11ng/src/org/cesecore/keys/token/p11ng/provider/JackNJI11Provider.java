@@ -119,7 +119,7 @@ public class JackNJI11Provider extends Provider {
         putService(new MySigningService(this, "Cipher", "RSAEncryption", MyCipher.class.getName()));
         putService(new MySigningService(this, "Cipher", "1.2.840.113549.1.1.1", MyCipher.class.getName()));
         putService(new MySigningService(this, "KeyAgreement", "ECDH", MyKeyAgreement.class.getName()));
-        // 1.2.840.113549.1.1.1
+
     }
 
     private static class MyService extends Service {
@@ -195,7 +195,7 @@ public class JackNJI11Provider extends Provider {
 
         private String algorithm;
         private NJI11Object myKey;
-        private long session;
+        private NJI11Session session;
         private ByteArrayOutputStream buffer;
         private final int type;
         private AlgorithmParameterSpec params;
@@ -278,7 +278,8 @@ public class JackNJI11Provider extends Provider {
                             myKey.getObject() + ", sigAlgoValue: 0x" + Long.toHexString(mechanism) + ", param: " + StringTools.hex(param));
                     debugStacktrace = new Exception();
                 }
-                myKey.getSlot().getCryptoki().SignInit(session, new CKM(mechanism, param),
+                session.markOperationSignStarted();
+                myKey.getSlot().getCryptoki().SignInit(session.getId(), new CKM(mechanism, param),
                         myKey.getObject());
                 log.debug("C_SignInit with mechanism 0x" + Long.toHexString(mechanism) + " successful.");
             } catch (Exception e) {
@@ -306,9 +307,9 @@ public class JackNJI11Provider extends Provider {
             case MechanismNames.T_UPDATE:
                 if (offset != 0 || length != bytes.length) {
                     byte[] newArray = Arrays.copyOfRange(bytes, offset, (offset + length));
-                    myKey.getSlot().getCryptoki().SignUpdate(session, newArray);
+                    myKey.getSlot().getCryptoki().SignUpdate(session.getId(), newArray);
                 } else {
-                    myKey.getSlot().getCryptoki().SignUpdate(session, bytes);
+                    myKey.getSlot().getCryptoki().SignUpdate(session.getId(), bytes);
                 }
                 break;
             case MechanismNames.T_RAW: // No need to call SignUpdate as hash is supplied already
@@ -331,7 +332,9 @@ public class JackNJI11Provider extends Provider {
             }
             try {
                 if (type == MechanismNames.T_UPDATE) {
-                    return myKey.getSlot().getCryptoki().SignFinal(session);
+                    byte[] result =  myKey.getSlot().getCryptoki().SignFinal(session.getId());
+                    session.markOperationSignFinished();
+                    return result;
                 } else if (type == MechanismNames.T_DIGEST) {
                     // Since it's T_DIGEST, hash the buffer before signing it
                     final MessageDigest md = AlgorithmTools.getDigestFromAlgoName(this.algorithm);
@@ -356,7 +359,8 @@ public class JackNJI11Provider extends Provider {
                     if (bufLen != null) {
                         rawSig = new byte[bufLen];
                         try {
-                            myKey.getSlot().getCryptoki().Sign(session, sigInput, rawSig, new LongRef(bufLen));
+                            myKey.getSlot().getCryptoki().Sign(session.getId(), sigInput, rawSig, new LongRef(bufLen));
+                            session.markOperationSignFinished();
                         } catch (CKRException e) {
                             // Assuming CKR_BUFFER_TOO_SMALL, fallback to multi-call, where the first call asks the HSM 
                             // for the size of buffer needed, and the second call calls with that size of a buffer 
@@ -364,12 +368,14 @@ public class JackNJI11Provider extends Provider {
                             if (log.isDebugEnabled()) {
                                 log.debug("CKRException calling Sign with pre-allocated buffer of length " + bufLen + ": " + e.getMessage());
                             }
-                            rawSig = myKey.getSlot().getCryptoki().Sign(session, sigInput);
+                            rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), sigInput);
+                            session.markOperationSignFinished();
                             // Add the signature length to the cache
                             bufLenCache.put(key, rawSig.length);
                         }
                     } else {
-                        rawSig = myKey.getSlot().getCryptoki().Sign(session, sigInput);
+                        rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), sigInput);
+                        session.markOperationSignFinished();
                         // Add the signature length to the cache
                         bufLenCache.put(key, rawSig.length);
                     }
@@ -421,7 +427,8 @@ public class JackNJI11Provider extends Provider {
                     if (bufLen != null) {
                         rawSig = new byte[bufLen];
                         try {
-                            myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray(), rawSig, new LongRef(bufLen));
+                            myKey.getSlot().getCryptoki().Sign(session.getId(), buffer.toByteArray(), rawSig, new LongRef(bufLen));
+                            session.markOperationSignFinished();
                         } catch (CKRException e) {
                             // Assuming CKR_BUFFER_TOO_SMALL, fallback to multi-call, where the first call asks the HSM 
                             // for the size of buffer needed, and the second call calls with that size of a buffer 
@@ -429,12 +436,14 @@ public class JackNJI11Provider extends Provider {
                             if (log.isDebugEnabled()) {
                                 log.debug("CKRException calling C_Sign with pre-allocated buffer of length " + bufLen + ", retrying calling with len=0 to fetch the need length: " + e.getMessage());
                             }
-                            rawSig = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                            rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), buffer.toByteArray());
+                            session.markOperationSignFinished();
                             // Add the signature length to the cache
                             bufLenCache.put(key, rawSig.length);
                         }
                     } else {
-                        rawSig = myKey.getSlot().getCryptoki().Sign(session, buffer.toByteArray());
+                        rawSig = myKey.getSlot().getCryptoki().Sign(session.getId(), buffer.toByteArray());
+                        session.markOperationSignFinished();
                         // Add the signature length to the cache
                         bufLenCache.put(key, rawSig.length);
                     }
@@ -562,7 +571,7 @@ public class JackNJI11Provider extends Provider {
         private int opmode;
         private String algorithm;
         private NJI11Object myKey;
-        private long session;
+        private NJI11Session session;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
 
@@ -600,8 +609,8 @@ public class JackNJI11Provider extends Provider {
                 // This is very generic and ignores wrappedeyAlgorithm and wrappedKeyType to this method, but it supports our 
                 // goal of CMS message encryption using wrapped AES keys for keyRecovery and SCEP in EJBCA
                 // Does not support all other generic cases for key wrapping/unwrapping, specifically when you want to use the secret key inside the HSM 
-                myKey.getSlot().getCryptoki().DecryptInit(session, new CKM(mechanism), myKey.getObject());
-                final byte[] seckeybuf = myKey.getSlot().getCryptoki().Decrypt(session, wrappedKey);
+                myKey.getSlot().getCryptoki().DecryptInit(session.getId(), new CKM(mechanism), myKey.getObject());
+                final byte[] seckeybuf = myKey.getSlot().getCryptoki().Decrypt(session.getId(), wrappedKey);                
                 // Get AES key from byte array
                 SecretKey key = new SecretKeySpec(seckeybuf, wrappedKeyAlgorithm);
                 return key;
@@ -759,13 +768,13 @@ public class JackNJI11Provider extends Provider {
             }
         }
     }
-        
+    
     private static class MyKeyAgreement extends KeyAgreementSpi {
         private static final Logger log = Logger.getLogger(MyKeyAgreement.class);
 
         private String algorithm;
         private NJI11Object privateBaseKey;
-        private long session;
+        private NJI11Session session;
         private boolean hasActiveSession;
         private Exception debugStacktrace;
         private BCECPublicKey pubKey;
@@ -814,7 +823,7 @@ public class JackNJI11Provider extends Provider {
 
             long keyRef = 0;
             try {
-                keyRef = privateBaseKey.getSlot().getCryptoki().DeriveKey(session, mechanism,
+                keyRef = privateBaseKey.getSlot().getCryptoki().DeriveKey(session.getId(), mechanism,
                             privateBaseKey.getObject(), pubTempl);
             } catch(CKRException e) {
                 log.warn("PKCS#11 exception while trying to ecdh: ", e);
@@ -824,7 +833,7 @@ public class JackNJI11Provider extends Provider {
             }
             
             CKA privKeyAttribute = ((NJI11ReleasebleSessionPrivateKey) privateBaseKey).getSlot().getCryptoki()
-                    .GetAttributeValue(session, keyRef, CKA.VALUE);
+                    .GetAttributeValue(session.getId(), keyRef, CKA.VALUE);
             
             privateBaseKey.getSlot().closeSession(session);
             hasActiveSession = false;
@@ -852,7 +861,7 @@ public class JackNJI11Provider extends Provider {
             hasActiveSession = true;
             
             CKA caKeySupportsDerive = ((NJI11ReleasebleSessionPrivateKey) key).getSlot().getCryptoki()
-                    .GetAttributeValue(session, 
+                    .GetAttributeValue(session.getId(), 
                             ((NJI11ReleasebleSessionPrivateKey) key).getObject(), 
                             CKA.DERIVE);
 
@@ -887,4 +896,5 @@ public class JackNJI11Provider extends Provider {
         }
         
     }
+    
 }
