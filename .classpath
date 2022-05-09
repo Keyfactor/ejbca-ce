@@ -25,8 +25,6 @@
 	<classpathentry kind="src" path="modules/cesecore-entity/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-x509ca/src"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>
-	<classpathentry kind="src" path="modules/cli-util/src"/>
-	<classpathentry kind="src" path="modules/cli-util/src-test"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src-test"/>
 	<classpathentry kind="src" path="modules/cmpclient/src"/>
@@ -165,6 +163,7 @@
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-3.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/dnssecjava-2.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.0.jar"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
