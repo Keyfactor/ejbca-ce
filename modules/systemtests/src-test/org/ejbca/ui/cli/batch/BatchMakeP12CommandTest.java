@@ -13,6 +13,10 @@
 
 package org.ejbca.ui.cli.batch;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
@@ -46,13 +50,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 /** Tests the batch making of soft cards.
  *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BatchMakeP12CommandTest extends CaTestCase {
@@ -167,9 +166,9 @@ public class BatchMakeP12CommandTest extends CaTestCase {
             FileUtils.deleteDirectory(tempDir.toFile());
         }
     }
-
+    
     @Test
-    public void testMakeP12ForSingleUserEdDSA() throws Exception {
+    public void testMakeP12ForSingleUserEdDSA25519() throws Exception {
         Path tempDir = Files.createTempDirectory("ejbca");
         try {
             final BatchMakeP12Command makep12 = new BatchMakeP12Command();
@@ -188,6 +187,29 @@ public class BatchMakeP12CommandTest extends CaTestCase {
             FileUtils.deleteDirectory(tempDir.toFile());
         }
     }
+    
+    
+    @Test
+    public void testMakeP12ForSingleUserEdDSA448() throws Exception {
+        Path tempDir = Files.createTempDirectory("ejbca");
+        try {
+            final BatchMakeP12Command makep12 = new BatchMakeP12Command();
+            makep12.execute("-dir", tempDir.toString(), "--username", username1, "--keyalg", "Ed448", "--keyspec", "ED448");
+            assertTrue("No file was created.", tempDir.getNameCount() > 0);
+            final EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
+            assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus());
+            // Check the generated keystore
+            final KeyStore store = KeyStore.getInstance("PKCS12");
+            store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            final Key privKey = store.getKey(username1, "foo123".toCharArray());
+            assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
+            final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
+            assertEquals("Should have generated EdDSA keys by default", EdECObjectIdentifiers.id_Ed448.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+        } finally {
+            FileUtils.deleteDirectory(tempDir.toFile());
+        }
+    }
+    
 
     /**
      * Gets the clear text password of a user.
