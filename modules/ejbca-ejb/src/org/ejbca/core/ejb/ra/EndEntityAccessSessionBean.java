@@ -194,18 +194,19 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public EndEntityInformation findUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
+        final String trimmedUsername = StringTools.trim(username);
         if (log.isTraceEnabled()) {
-            log.trace(">findUser(" + username + ")");
+            log.trace(">findUser(" + trimmedUsername + ")");
         }        
-        final UserData data = findByUsername(username);
+        final UserData data = findByUsername(trimmedUsername);
         if (data == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with username='" + username + "'");
+                log.debug("Cannot find user with username='" + trimmedUsername + "'");
             }
         }
-        final EndEntityInformation ret = convertUserDataToEndEntityInformation(admin, data, username);
+        final EndEntityInformation ret = convertUserDataToEndEntityInformation(admin, data, trimmedUsername);
         if (log.isTraceEnabled()) {
-            log.trace("<findUser(" + username + "): " + (ret == null ? "null" : ret.getDN()));
+            log.trace("<findUser(" + trimmedUsername + "): " + (ret == null ? "null" : ret.getDN()));
         }
         return ret;
     }
@@ -231,11 +232,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public UserData findByUsername(String username) {
+    public UserData findByUsername(final String username) {
         if (username == null) {
             return null;
         }
-        return entityManager.find(UserData.class, username);
+        return entityManager.find(UserData.class, StringTools.trim(username));
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
