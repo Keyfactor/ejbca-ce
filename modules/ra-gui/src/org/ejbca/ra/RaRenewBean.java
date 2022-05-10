@@ -35,8 +35,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
  * Backing bean for the Renew Certificate page
- *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
