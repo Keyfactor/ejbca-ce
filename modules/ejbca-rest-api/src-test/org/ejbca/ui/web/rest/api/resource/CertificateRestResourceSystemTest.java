@@ -44,6 +44,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -96,6 +97,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final String TEST_USERNAME = "CertificateRestSystemTestUser";
     private static final JSONParser jsonParser = new JSONParser();
     
+    protected final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
     protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -208,16 +210,25 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
         }
     }
-
+    
     @Test
-    public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer() throws Exception {
+    public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutEmail() throws Exception {
+        enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null);
+    }
+    
+    @Test
+    public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithEmail() throws Exception {
+        enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer("random@samp.de");
+    }
+
+    public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(String email) throws Exception {
         // Create CSR REST request
         EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
                 certificateAuthorityName(TEST_CA_NAME).
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
                 username(TEST_USERNAME).
-                password("foo123").
+                password("foo123").email(email).
                 certificateRequest(csr).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
@@ -237,6 +248,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
             assertEquals("Returned certificate contained unexpected issuer", "C=SE,CN=RestCertificateResourceTestCa", cert.getIssuerDN().getName());
             assertEquals("Returned certificate contained unexpected subject DN", "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", cert.getSubjectDN().getName());
+            
+            EndEntityInformation userData = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
+            assertEquals("Created user does not have expected email.", email, userData.getEmail());
         } finally {
             endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
             internalCertificateStoreSession.removeCertificatesByUsername(TEST_USERNAME);
