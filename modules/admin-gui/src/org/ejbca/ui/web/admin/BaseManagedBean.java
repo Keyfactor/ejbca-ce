@@ -54,8 +54,6 @@ public abstract class BaseManagedBean implements Serializable {
 
     private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<>();
 
-    protected final ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
-    
     // Reference to AccessRulesConstants.* and StandardRules.*
     final String[] accessRulesConstantString;
     
@@ -271,6 +269,7 @@ public abstract class BaseManagedBean implements Serializable {
     
     public List<SelectItem> getAvailableApprovalProfiles() {
         List<SelectItem> ret = new ArrayList<>();
+        ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
         Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
         Set<Entry<Integer, String>> entries = approvalProfiles.entrySet();
         for(Entry<Integer, String> entry : entries) {
