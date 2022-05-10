@@ -17,9 +17,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.faces.application.FacesMessage;
@@ -34,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.SelectItemComparator;
@@ -261,6 +265,20 @@ public abstract class BaseManagedBean implements Serializable {
      */
     public void doNothing() {
         // does nothing
+    }
+    
+    public List<SelectItem> getAvailableApprovalProfiles() {
+        List<SelectItem> ret = new ArrayList<>();
+        ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
+        Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
+        Set<Entry<Integer, String>> entries = approvalProfiles.entrySet();
+        for(Entry<Integer, String> entry : entries) {
+            ret.add(new SelectItem(entry.getKey(), entry.getValue()));
+        }
+        // Sort list by name
+        ret.sort((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
+        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
+        return ret;
     }
 
 }
