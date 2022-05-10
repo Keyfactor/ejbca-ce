@@ -264,7 +264,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
                 boolean requiredPermittedNC, boolean requiredExcludedNC) throws Exception {
             
             editEndEntityProfile(enabledPermittedNC, enabledExcludedNC, requiredPermittedNC, requiredExcludedNC);
-            int waitTime = 2000;
+            int waitTime = 4000;
             
             String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
             
@@ -355,7 +355,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             raWebHelper.fillSearchEndEntity(endEntityName);
             Thread.sleep(waitTime);
             raWebHelper.clickViewEndEntity();
-            Thread.sleep(waitTime*2);
+            Thread.sleep(waitTime);
 
             if (requiredPermittedNC) {
                 raWebHelper.assertRequiredPermittedConstraintDisplayedOnViewPage();
