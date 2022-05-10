@@ -355,7 +355,7 @@ public class EcaQa91_EndEntityNameConstraints extends WebTestBase {
             raWebHelper.fillSearchEndEntity(endEntityName);
             Thread.sleep(waitTime);
             raWebHelper.clickViewEndEntity();
-            Thread.sleep(waitTime);
+            Thread.sleep(waitTime*2);
 
             if (requiredPermittedNC) {
                 raWebHelper.assertRequiredPermittedConstraintDisplayedOnViewPage();
