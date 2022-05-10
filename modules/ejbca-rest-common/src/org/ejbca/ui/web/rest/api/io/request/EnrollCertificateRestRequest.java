@@ -28,6 +28,8 @@ public class EnrollCertificateRestRequest {
     private String accountBindingId;
     private boolean includeChain;
     
+    private String email;
+    
     public EnrollCertificateRestRequest() {
     }
     
@@ -92,6 +94,14 @@ public class EnrollCertificateRestRequest {
     public void setIncludeChain(final boolean includeChain) {
         this.includeChain = includeChain;
     }
+    
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     /**
      * Returns a converter instance for this class.
@@ -124,6 +134,7 @@ public class EnrollCertificateRestRequest {
                     .password(enrollCertificateRestRequest.getPassword())
                     .accountBindingId(enrollCertificateRestRequest.getAccountBindingId())
                     .includeChain(enrollCertificateRestRequest.getIncludeChain())
+                    .email(enrollCertificateRestRequest.getEmail())
                     .build();
         }
     }
