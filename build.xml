@@ -1093,6 +1093,7 @@
                 <exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/peerconnector/**"/>
                 <exclude unless="edition.is.ee" name="modules/admin-gui/resources/peerconnector/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/acme/AcmeConfigMBean.java"/>
+				<exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/acme/AcmeAliasConfigMBean.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-common-web/src/org/ejbca/core/model/services/workers/PreCertificateRevocationWorker.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ScepRaModeExtension.java"/>
                 <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ProtocolScepHttpRATest.java"/>
