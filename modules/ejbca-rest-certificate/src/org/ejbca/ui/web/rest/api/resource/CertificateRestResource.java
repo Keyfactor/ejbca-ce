@@ -175,6 +175,7 @@ public class CertificateRestResource extends BaseRestResource {
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
+            log.info("exception during enrollPkcs10Certificate: ", e);
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
