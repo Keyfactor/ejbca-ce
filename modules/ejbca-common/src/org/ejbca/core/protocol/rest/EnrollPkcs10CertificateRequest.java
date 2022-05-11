@@ -29,6 +29,8 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
     private String password;
     private String accountBindingId;
     private boolean includeChain;
+    
+    private String email;
 
     public String getCertificateRequest() {
         return certificateRequest;
@@ -60,6 +62,10 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
 
     public boolean getIncludeChain() { return includeChain; }
 
+    public String getEmail() {
+        return email;
+    }
+
     public static class Builder {
         private String certificateRequest;
         private String certificateProfileName;
@@ -69,6 +75,7 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         private String password;
         private String accountBindingId;
         private boolean includeChain;
+        private String email;
 
         public Builder certificateRequest(final String certificateRequest) {
             this.certificateRequest = certificateRequest;
@@ -114,6 +121,11 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         public EnrollPkcs10CertificateRequest build() {
             return new EnrollPkcs10CertificateRequest(this);
         }
+        
+        public Builder email(final String email) {
+            this.email = email;
+            return this;
+        }
     }
     
     private EnrollPkcs10CertificateRequest(final Builder builder) {
@@ -125,5 +137,6 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         this.password = builder.password;
         this.accountBindingId = builder.accountBindingId;
         this.includeChain = builder.includeChain;
+        this.email = builder.email;
     }
 }
