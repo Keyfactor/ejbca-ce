@@ -70,6 +70,7 @@
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-4.0.0.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-extension-session-4.0.0.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-jsp-tags-4.0.0.jar"/>
         	<fileset dir="${admin-gui.resources.dir}" excludes="languages/*"/>
         </war>
     </target>
