@@ -49,7 +49,9 @@ import java.util.EnumSet;
         "EXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
         "EXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
         "REVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
-        "REVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n"
+        "REVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n" +
+        "UPDATE_TIME 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
+        "UPDATE_TIME 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n"
 )
 @ValidSearchCertificateCriteriaRestRequest
 public class SearchCertificateCriteriaRestRequest {
@@ -119,7 +121,8 @@ public class SearchCertificateCriteriaRestRequest {
         STATUS,
         ISSUED_DATE,
         EXPIRE_DATE,
-        REVOCATION_DATE;
+        REVOCATION_DATE,
+        UPDATE_TIME;
 
         /**
          * Resolves the CriteriaProperty using its name or returns null.
@@ -152,7 +155,7 @@ public class SearchCertificateCriteriaRestRequest {
          * @return subset of criteria properties.
          */
         public static EnumSet<CriteriaProperty> DATE_PROPERTIES() {
-            return EnumSet.of(ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE);
+            return EnumSet.of(ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE, UPDATE_TIME);
         }
     }
 
