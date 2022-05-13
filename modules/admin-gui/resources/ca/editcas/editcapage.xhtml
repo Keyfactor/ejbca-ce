@@ -4,7 +4,8 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:t="http://myfaces.apache.org/tomahawk">
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 <ui:remove>
 	<!--
 	/*************************************************************************
@@ -2169,6 +2170,94 @@
 			</h:panelGrid>
 
 			<!-- ==================================================================== Import CA Renewal ============================================================================ -->
+
+			<!-- ==================================================================== Proxy CA specific ============================================================================ -->
+			<h:panelGrid id="proxyCa" columns="2" styleClass="edit-top lone-edit-heading"
+						 cellspacing="3" cellpadding="3" border="0" width="100%"
+						 rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
+						 rendered="#{editCAsMBean.caTypeProxy}">
+				<h:panelGroup>
+					<h:outputLabel for="proxyCaTitle" value="#{web.text.PROXY}" style="font-weight: bold;" />
+				</h:panelGroup>
+				<h:panelGroup id="proxyCaTitle" />
+				<h:panelGroup>
+					<h:outputLabel for="textFieldUpstreamUrl" value="#{web.text.UPSTREAM_URL}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textFieldUpstreamUrl" name="upstreamUrl" size="45" maxlength="225"
+								 value="#{editCAsMBean.caInfoDto.upstreamUrl}" title="#{web.text.UPSTREAM_URL}">
+						<!--<f:validator
+								validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
+								disabled="#{not editCAsMBean.caInfoDto.caTypeCVC}" />-->
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:outputLabel for="textFieldUsername" value="#{web.text.UPSTREAM_USERNAME}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textFieldUsername" name="username" size="25" maxlength="225"
+								 value="#{editCAsMBean.caInfoDto.username}" title="#{web.text.UPSTREAM_USERNAME}">
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:outputLabel for="textFieldPassword" value="#{web.text.UPSTREAM_PASSWORD}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textFieldPassword" name="password" size="25" maxlength="225"
+								 value="#{editCAsMBean.caInfoDto.password}" title="#{web.text.UPSTREAM_PASSWORD}">
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:outputLabel for="headersTitle" value="#{web.text.UPSTREAM_HEADERS}" style="font-weight: bold;" />
+				</h:panelGroup>
+				<h:panelGroup id="headersTitle" />
+				<c:forEach items="#{editCAsMBean.caInfoDto.headers}" var="header" varStatus="loopStatus">
+					<h:panelGroup id="wrapperHeaderKey-#{loopStatus.index}">
+						<h:inputText id="textFieldHeaderKey-#{loopStatus.index}" name="textFieldHeaderKey-#{status.index}" size="25" maxlength="225"
+									 value="#{header.left}" title="#{web.text.HEADER_FIELD_KEY}">
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup id="wrapperHeaderValue-#{loopStatus.index}">
+						<h:inputText id="textFieldHeaderValue-#{loopStatus.index}" name="textFieldHeaderValue-#{status.index}" size="25" maxlength="225"
+									 value="#{header.right}" title="#{web.text.HEADER_FIELD_VALUE}">
+						</h:inputText>
+					</h:panelGroup>
+				</c:forEach>
+				<h:panelGroup id="addHeaderTitle" />
+				<h:commandButton id="addHeaderButton"
+								 value="#{web.text.ADD}"
+								 action="#{editCAsMBean.addBlankHeader}">
+					<f:ajax render="proxyCa" />
+				</h:commandButton>
+				<h:panelGroup>
+					<h:outputLabel for="textFieldCertificateAuthority" value="#{web.text.CERTIFICATE_AUTHORITY}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textFieldCertificateAuthority" name="certificateAuthority" size="25" maxlength="225"
+								 value="#{editCAsMBean.caInfoDto.upstreamCa}" title="#{web.text.CERTIFICATE_AUTHORITY}" />
+					<br/>
+					<h:outputText styleClass="smallHelp" value="#{web.text.UPSTREAM_CA_HELP}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:outputLabel for="textFieldTemplate" value="#{web.text.TEMPLATE}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textFieldTemplate" name="certificateAuthority" size="25" maxlength="225"
+								 value="#{editCAsMBean.caInfoDto.upstreamTemplate}" title="#{web.text.TEMPLATE}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:outputLabel for="textAreaSans" value="#{web.text.SANS}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputTextarea id="textAreaSans" rows="4" cols="38" value="#{editCAsMBean.caInfoDto.sansJson}" />
+					<br/>
+					<h:outputText styleClass="smallHelp" value="#{web.text.SANS_HELP}" />
+				</h:panelGroup>
+
+
+
+			</h:panelGrid>
+			<!-- ==================================================================== Proxy CA specific ============================================================================ -->
 
 			<!-- ==================================================================== Form buttons  ================================================================================ -->
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
