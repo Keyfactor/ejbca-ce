@@ -401,8 +401,6 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
         final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
         final String actualJsonString = actualResponse.readEntity(String.class);
-        // added tmp logging to see why test mis-behaves
-        log.error("actualJsonString:" + actualJsonString);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
