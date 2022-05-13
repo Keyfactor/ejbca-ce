@@ -44,13 +44,11 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.FacesException;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -58,10 +56,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.bouncycastle.its.ITSCertificate;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -109,7 +106,6 @@ import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -239,6 +235,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<ItsGeographicRegionGuiWrapper> geographicElementsInGui = null;
     private String currentGeographicRegionType;
     private List<String> geographicRegionTypes;
+    // private List<MutablePair> headers;
     
     public List<ItsGeographicRegionGuiWrapper> getGeographicRegions() {
         return geographicElementsInGui;
@@ -2570,6 +2567,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
         return approvalRequestItems;
-    }    
+    }
 
+    public void addBlankHeader() {
+        if (caInfoDto.getHeaders() == null) {
+            caInfoDto.setHeaders(new ArrayList<>());
+        }
+        caInfoDto.getHeaders().add(new MutablePair("", ""));
+    }
 }
