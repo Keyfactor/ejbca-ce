@@ -13,11 +13,14 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
+
+import java.util.List;
 
 /**
  * Wrapper class for holding CaInfo properties.
@@ -91,7 +94,16 @@ public class CaInfoDto {
     //cits
     private String certificateId;
     private String region;
-    
+
+    //proxy-ca
+    private String upstreamUrl;
+    private String username;
+    private String password;
+    private List<MutablePair> headers;
+    private String upstreamCa;
+    private String upstreamTemplate;
+    private String sansJson; // Subject Attribute Names in JSON format for Upstream CA
+
     public long getDeltaCrlPeriod() {
         return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
@@ -676,6 +688,62 @@ public class CaInfoDto {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getUpstreamUrl() {
+        return upstreamUrl;
+    }
+
+    public void setUpstreamUrl(String upstreamUrl) {
+        this.upstreamUrl = upstreamUrl;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public List<MutablePair> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(List<MutablePair> headers) {
+        this.headers = headers;
+    }
+
+    public String getUpstreamCa() {
+        return upstreamCa;
+    }
+
+    public void setUpstreamCa(String upstreamCa) {
+        this.upstreamCa = upstreamCa;
+    }
+
+    public String getUpstreamTemplate() {
+        return upstreamTemplate;
+    }
+
+    public void setUpstreamTemplate(String upstreamTemplate) {
+        this.upstreamTemplate = upstreamTemplate;
+    }
+
+    public String getSansJson() {
+        return sansJson;
+    }
+
+    public void setSansJson(String sansJson) {
+        this.sansJson = sansJson;
     }
 }
 
