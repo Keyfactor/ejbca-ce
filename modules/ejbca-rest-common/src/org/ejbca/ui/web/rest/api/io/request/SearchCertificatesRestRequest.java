@@ -211,6 +211,16 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         }
                         break;
                     }
+                    case UPDATE_TIME: {
+                        final long updateTimeLong = parseDateFromStringValue(criteriaValue).getTime();
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER) {
+                            raCertificateSearchRequest.setUpdatedAfter(updateTimeLong);
+                        }
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE) {
+                            raCertificateSearchRequest.setUpdatedBefore(updateTimeLong);
+                        }
+                        break;
+                    }
                 }
             }
             return raCertificateSearchRequest;

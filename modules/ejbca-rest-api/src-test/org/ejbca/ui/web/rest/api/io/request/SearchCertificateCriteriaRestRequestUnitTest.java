@@ -46,10 +46,11 @@ public class SearchCertificateCriteriaRestRequestUnitTest {
         // given
         // when
         // then
-        assertEquals("Should have proper enum set.", 3, CriteriaProperty.DATE_PROPERTIES().size());
+        assertEquals("Should have proper enum set.", 4, CriteriaProperty.DATE_PROPERTIES().size());
         assertTrue("Should have proper enum set.", CriteriaProperty.DATE_PROPERTIES().contains(CriteriaProperty.ISSUED_DATE));
         assertTrue("Should have proper enum set.", CriteriaProperty.DATE_PROPERTIES().contains(CriteriaProperty.EXPIRE_DATE));
         assertTrue("Should have proper enum set.", CriteriaProperty.DATE_PROPERTIES().contains(CriteriaProperty.REVOCATION_DATE));
+        assertTrue("Should have proper enum set.", CriteriaProperty.DATE_PROPERTIES().contains(CriteriaProperty.UPDATE_TIME));
     }
 
     @Test
