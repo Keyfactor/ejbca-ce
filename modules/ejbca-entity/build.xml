@@ -48,7 +48,7 @@
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
-        <path location="${mod.cli-util.lib}"/>
+		<path refid="lib.keyfactor-cli-commons.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -89,7 +89,7 @@
         <path refid="compile.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
-		<path location="${mod.cli-util.lib}"/>
+		<path refid="lib.keyfactor-cli-commons.classpath"/>
         <path refid="lib.ejbca-common-web.classpath"/>
         <path refid="lib.jacknji.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>

@@ -141,9 +141,6 @@
 	<property name="mod.p11ng-cli.dist" location="${ejbca.dist.path}/p11ng-cli" />
 	<property name="mod.p11ng-cli.lib" location="${mod.p11ng-cli.dist}/p11ng-cli.jar" />
 	<property name="mod.p11ng-cli.path" location="${mod.path}/p11ng-cli" />
-	<property name="mod.cli-util.dist" location="${mod.dist.path}/" />
-	<property name="mod.cli-util.lib" location="${mod.cli-util.dist}/cli-util.jar" />
-	<property name="mod.cli-util.path" location="${mod.path}/cli-util" />
 	<property name="mod.ct.path" location="${mod.path}/ct" />
 	<property name="mod.ct.lib" location="${mod.dist.path}/ct.jar" />
 	<property name="mod.edition-specific-interface.path" location="${mod.path}/edition-specific"/>
@@ -319,6 +316,8 @@
             <exclude name="*-sources.jar"/>
         </fileset>
 	</path>
+	
+	<path id="lib.keyfactor-cli-commons.classpath"><fileset dir="${ejbca.home}/lib" includes="keyfactor-commons-cli*.jar"/></path>
 	
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
 	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-reload*.jar"/></path>
