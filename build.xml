@@ -771,7 +771,6 @@
             <sourcepath location="${ejbca.home}/modules/cesecore-ejb-interface/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-entity/src"/>
         	<sourcepath location="${ejbca.home}/modules/cesecore-x509ca/src"/>
-        	<sourcepath location="${ejbca.home}/modules/cli-util/src"/>
            	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
         	<sourcepath location="${ejbca.home}/modules/edition-specific/src-ejb/"/>
         	<sourcepath location="${ejbca.home}/modules/edition-specific/src-interface/"/>
