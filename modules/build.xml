@@ -42,7 +42,6 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.p11ng.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
@@ -227,7 +226,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-cli" depends="cli-util, ejbca-ejb-interface, peerconnector-cli, plugins-ee" description="Build EJBCA EJB CLI">
+	<target name="ejbca-ejb-cli" depends="ejbca-ejb-interface, peerconnector-cli, plugins-ee" description="Build EJBCA EJB CLI">
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -387,10 +386,6 @@
 
 	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-ejb-interface, p11ng">
 		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="true" inheritrefs="true"/>
-	</target>
-
-	<target name="cli-util" depends="ejbca-ejb-interface">
-		<ant antfile="${mod.cli-util.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ejbca-common-web" depends="ejbca-ejb-interface" description="Build EJBCA common web library">
@@ -569,7 +564,7 @@
 		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa, cli-util" description="Creates a CLI jar for CAA lookups">
+	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa" description="Creates a CLI jar for CAA lookups">
 		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
