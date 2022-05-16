@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
@@ -348,6 +349,18 @@ public class SecureXMLDecoderTest {
         log.trace("<testNotAllowedMethod");
     }
     
+    private Object deserializeObject(final String xml) throws IOException {
+        Object result = null;
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.US_ASCII)))) {
+            result = decoder.readObject();
+            decoder.readObject(); // Should trigger EOF
+            fail("Too many objects in stream?");
+        } catch (EOFException e) {
+            // NOPMD: Expected, happens when we reach the end
+        }
+        return result;
+    }
+
     @Test
     public void oldJava6EnumEncoding() throws IOException {
         log.trace(">oldJava6EnumEncoding");
@@ -363,14 +376,7 @@ public class SecureXMLDecoderTest {
                 " </object>\n" +
                 "</java>\n";
         // When
-        Object result = null;
-        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.US_ASCII)))) {
-            result = decoder.readObject();
-            decoder.readObject(); // Should trigger EOF
-            fail("Too many objects in stream?");
-        } catch (EOFException e) {
-            // NOPMD: Expected, happens when we reach the end
-        }
+        final Object result = deserializeObject(xml);
         // Then
         final Map<?,?> map = (Map<?,?>) result;
         assertNotNull("Result was null.", map);
@@ -414,14 +420,7 @@ public class SecureXMLDecoderTest {
                 " </object>\n" +
                 "</java>\n";
         // When
-        Object result = null;
-        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.US_ASCII)))) {
-            result = decoder.readObject();
-            decoder.readObject(); // Should trigger EOF
-            fail("Too many objects in stream?");
-        } catch (EOFException e) {
-            // NOPMD: Expected, happens when we reach the end
-        }
+        final Object result = deserializeObject(xml);
         // Then
         final Map<?,?> map = (Map<?,?>) result;
         assertNotNull("Result was null.", map);
@@ -431,6 +430,51 @@ public class SecureXMLDecoderTest {
         assertEquals("Wrong PKI DS language", "en", pkids.getLanguage());
         assertEquals("Wrong PKI DS URL", "https://cdn.vm.test/etsi_pds_en_server.pdf", pkids.getUrl());
         log.trace("<decodeCorruptPkiDSFromEjbca740");
+    }
+
+    @Test
+    public void decodeExtendedInformationEmpty() throws IOException {
+        log.trace(">decodeExtendedInformationEmpty");
+        // Given
+        final String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><java version=\"1.6.0.0\" class=\"java.beans.XMLDecoder\">\n" +
+                "  <object class=\"org.ejbca.core.model.ra.ExtendedInformation\"/>\n" +
+                "</java>";
+        // When
+        final Object result = deserializeObject(xml);
+        // Then
+        assertNotNull(result);
+        assertEquals("org.ejbca.core.model.ra.ExtendedInformation", result.getClass().getName());
+        log.trace("<decodeExtendedInformationEmpty");
+    }
+
+    @Test
+    public void decodeExtendedInformationNormal() throws Exception {
+        log.trace(">decodeExtendedInformationNormal");
+        // Given
+        final String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><java version=\"1.6.0.0\" class=\"java.beans.XMLDecoder\">\n" +
+                "  <object class=\"org.ejbca.core.model.ra.ExtendedInformation\" id=\"ExtendedInformation0\">\n" +
+                "    <void id=\"LinkedHashMap0\" property=\"data\">\n" +
+                "      <void method=\"put\">\n" +
+                "        <string>CERTIFICATESERIALNUMBER</string>\n" +
+                "        <string>ew==</string>\n" +
+                "      </void>\n" +
+                "    </void>\n" +
+                "    <void property=\"data\">\n" +
+                "      <object idref=\"LinkedHashMap0\"/>\n" +
+                "    </void>\n" +
+                "  </object>\n" +
+                "</java>";
+        // When
+        final Object result = deserializeObject(xml);
+        // Then
+        assertNotNull(result);
+        assertEquals("org.ejbca.core.model.ra.ExtendedInformation", result.getClass().getName());
+        final LinkedHashMap<?,?> rawData = (LinkedHashMap<?,?>) MethodUtils.invokeMethod(result, "getRawData");
+        assertNotNull(rawData);
+        assertEquals("ew==", rawData.get("CERTIFICATESERIALNUMBER"));
+        log.trace("<decodeExtendedInformationNormal");
     }
 
     private void decodeBad(final byte[] xml) {
