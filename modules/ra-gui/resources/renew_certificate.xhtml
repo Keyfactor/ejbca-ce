@@ -21,7 +21,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -41,7 +40,7 @@
 
 				<h:panelGroup layout="block" id="renewCertExisting" styleClass="internal-frame">
 					<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel for="textSubjectDn"
+						<h:outputLabel for="textCurrentSubjectDn"
 							value="#{msg.renewcertificate_page_subject_dn}" />
 						<h:outputText id="textCurrentSubjectDn" value="#{raRenewBean.currentSubjectDn}" />
 					</h:panelGroup>
@@ -72,7 +71,7 @@
 						<h:outputText id="textCaName" value="#{raRenewBean.caName}" />
 					</h:panelGroup>
 					<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel for="textEndEntityproile"
+						<h:outputLabel for="textEndEntityProfile"
 							value="#{msg.renewcertificate_page_end_entity_profile}" />
 						<h:outputText id="textEndEntityProfile" value="#{raRenewBean.endEntityProfileName}" />
 					</h:panelGroup>
@@ -86,10 +85,22 @@
 							value="#{msg.renewcertificate_page_username}" />
 						<h:outputText id="textUsername" value="#{raRenewBean.username}" />
 					</h:panelGroup>
-					<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{raRenewBean.subjectDnChanged}">
-						<h:outputLabel for="textNewSubjectDn"
-							value="#{msg.renewcertificate_page_changed_subject_dn}" />
-						<h:outputText id="textNewSubjectDn" value="#{raRenewBean.newSubjectDn}" />
+					<h:panelGroup id="enteredRequestEnrollmentCode" layout="block"
+								  rendered="#{!raRenewBean.notificationConfigured}"
+								  styleClass="pure-control-group">
+						<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}" />
+						<h:inputSecret id="enrollmentCode" value="#{raRenewBean.enrollmentCode}" autocomplete="off">
+							<f:validateRequired/>
+						</h:inputSecret>
+						<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="showErrorMessage"/>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="fileFormat" value="#{msg.renewcertificate_page_pem_or_der}" />
+						<h:selectOneMenu id="fileFormat" styleClass="jsAutoFocusLast"
+										 value="#{raRenewBean.fileType}" >
+							<f:selectItems value="#{raRenewBean.fileTypeSelectItems}" />
+							<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
+						</h:selectOneMenu>
 					</h:panelGroup>
 				</h:panelGroup>
 

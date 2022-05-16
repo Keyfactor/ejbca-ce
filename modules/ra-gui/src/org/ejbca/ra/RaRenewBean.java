@@ -12,31 +12,43 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Random;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaCertificateDataOnRenew;
+import org.ejbca.core.model.era.RaSelfRenewCertificateData;
 
 
 /**
  * Backing bean for the Renew Certificate page
  *
- * @version $Id$
  */
 @ManagedBean
 @ViewScoped
@@ -60,8 +72,20 @@ public class RaRenewBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
+    private enum FileType {
+        PEM("Pem", ".pem"),
+        DER("Der", ".der");
+        private String label;
+        private String extension;
+
+        FileType(String label, String extension) {
+            this.label = label;
+            this.extension = extension;
+        }
+    };
     private boolean initialized = false;
     private boolean continuePressed = false;
+    private boolean notificationConfigured = false;
     private String currentSubjectDn;
     private String currentIssuerDn;
     private BigInteger currentSerialNumber;
@@ -77,6 +101,8 @@ public class RaRenewBean implements Serializable {
     private String newTokenFileExtension;
     private Integer newApprovalRequestId;
     private boolean certGenerationDone;
+    private String enrollmentCode;
+    private FileType fileType;
 
     public void initialize() {
         if (initialized) {
@@ -130,6 +156,19 @@ public class RaRenewBean implements Serializable {
     public String getUsername() { return username; }
     public String getNewSubjectDn() { return newSubjectDn; }
     public boolean isSubjectDnChanged() { return subjectDnChanged; }
+    public String getEnrollmentCode() { return enrollmentCode; }
+    public void setEnrollmentCode(String enrollmentCode) { this.enrollmentCode = enrollmentCode; }
+    public FileType getFileType() { return fileType; }
+    public void setFileType(FileType fileType) { this.fileType = fileType; }
+    public boolean isNotificationConfigured() { return notificationConfigured; }
+
+    public List<SelectItem> getFileTypeSelectItems(){
+        List<SelectItem> fileTypeSelectItems = new ArrayList<>();
+        for(FileType type : FileType.values()){
+            fileTypeSelectItems.add(new SelectItem(type, type.label));
+        }
+        return fileTypeSelectItems;
+    }
 
     public boolean isRequestRenewalButtonShown() {
         return continuePressed;
@@ -160,19 +199,67 @@ public class RaRenewBean implements Serializable {
 
     public boolean renewCertificate(boolean dryRun) {
         log.debug("Performing admin client certificate renewal.");
-        // TODO actually get data and perform renewal (ECA-10706)
-        caName = "CA name";
-        endEntityProfileName = "EE profile";
-        certificateProfileName = "Certificate Profile";
-        username = "username";
-        newSubjectDn = "CN=test";
+
+        RaCertificateDataOnRenew certificateDataForRenew = raMasterApiProxyBean.getCertificateDataForRenew(currentSerialNumber, currentIssuerDn);
+
+        if (certificateDataForRenew != null) {
+            username = certificateDataForRenew.getUsername();
+            if (certificateDataForRenew.isRevoked()) {
+                raLocaleBean.addMessageInfo("renewcertificate_page_certificate_revoked_message", currentSerialNumber, currentIssuerDn);
+                return true;
+            }
+            caName = certificateDataForRenew.getCaName();
+            endEntityProfileName = certificateDataForRenew.getEndEntityProfileName();
+            certificateProfileName = certificateDataForRenew.getCertificateProfileName();
+            notificationConfigured = certificateDataForRenew.isNotificationConfigured();
+            if (StringUtils.isEmpty(newSubjectDn)) {
+                newSubjectDn = currentSubjectDn;
+            }
+        } else {
+            raLocaleBean.addMessageInfo("renewcertificate_page_no_user_message");
+            return true;
+        }
+
         if (!dryRun) {
-            if (new Random().nextBoolean()) {
-                newToken = new byte[] { 1, 2, 3 };
-                newTokenContentType = "application/octet-stream";
-                newTokenFileExtension = ".pem";
-            } else {
-                newApprovalRequestId = new Random().nextInt();
+            RaSelfRenewCertificateData renewCertificateData = new RaSelfRenewCertificateData();
+            renewCertificateData.setUsername(certificateDataForRenew.getUsername());
+            if (isNotificationConfigured()) {
+                renewCertificateData.setPassword(getEnrollmentCode());
+            }
+            renewCertificateData.setClientIPAddress(raAuthenticationBean.getUserRemoteAddr());
+            try {
+                byte[] keystoreAsByteArray  = raMasterApiProxyBean.selfRenewCertificate(renewCertificateData);
+                try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
+                    buffer.write(keystoreAsByteArray);
+                    newToken = buffer.toByteArray();
+                }
+            }  catch (ApprovalException e) {
+                raLocaleBean.addMessageInfo("renewcertificate_page_certificate_approved_message");
+            } catch (WaitingForApprovalException e) {
+                newApprovalRequestId = e.getRequestId();
+            } catch (Exception e) {
+                log.error("Failed to renew certificate for user " + username + " with serial number " + currentSerialNumber
+                + " and issuer " + currentIssuerDn, e);
+                raLocaleBean.addMessageError("renewcertificate_page_certificate_renew_error");
+            }
+
+            if (newToken != null) {
+                newTokenFileExtension = getFileType().extension;
+                switch (getFileType()) {
+                    case PEM: {
+                        newTokenContentType = "application/octet-stream";
+                        try {
+                            Certificate certificate = CertTools.getCertfromByteArray(newToken, Certificate.class);
+                            newToken = CertTools.getPemFromCertificateChain(Collections.singletonList(certificate));
+                        } catch (CertificateParsingException | CertificateEncodingException e) {
+                            log.info(e);
+                        }
+                        break;
+                    }
+                    case DER: {
+                        newTokenContentType = "application/pkix-cert";
+                    }
+                }
             }
         }
         return true;
