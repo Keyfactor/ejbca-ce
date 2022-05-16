@@ -3587,4 +3587,32 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+
+    @Override
+    public RaCertificateDataOnRenew getCertificateDataForRenew(BigInteger serno, String issuerDn) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getCertificateDataForRenew(serno, issuerDn);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.selfRenewCertificate(renewCertificateData);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
 }
