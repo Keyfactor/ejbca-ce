@@ -1342,6 +1342,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (request.isRevokedBeforeUsed()) {
             sb.append(" AND (a.revocationDate < :revokedBefore)");
         }
+        if (request.isUpdatedAfterUsed()) {
+            sb.append(" AND (a.updateTime > :updatedAfter)");
+        }
+        if (request.isUpdatedBeforeUsed()) {
+            sb.append(" AND (a.updateTime < :updatedBefore)");
+        }
         if (!request.getStatuses().isEmpty()) {
             sb.append(" AND (a.status IN (:status))");
             if ((request.getStatuses().contains(CertificateConstants.CERT_REVOKED) || request.getStatuses().contains(CertificateConstants.CERT_ARCHIVED)) &&
@@ -1450,6 +1456,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (request.isRevokedBeforeUsed()) {
             query.setParameter("revokedBefore", request.getRevokedBefore());
+        }
+        if (request.isUpdatedAfterUsed()) {
+            query.setParameter("updatedAfter", request.getUpdatedAfter());
+        }
+        if (request.isUpdatedBeforeUsed()) {
+            query.setParameter("updatedBefore", request.getUpdatedBefore());
         }
         if (!request.getStatuses().isEmpty()) {
             query.setParameter("status", request.getStatuses());
