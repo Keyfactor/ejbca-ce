@@ -248,6 +248,16 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         }
                         break;
                     }
+                    case UPDATE_TIME: {
+                        final long updateTimeLong = parseDateFromStringValue(criteriaValue).getTime();
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER) {
+                            raRequest.setUpdatedAfter(updateTimeLong);
+                        }
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE) {
+                            raRequest.setUpdatedBefore(updateTimeLong);
+                        }
+                        break;
+                    }
                 }
             }
             return raRequest;
