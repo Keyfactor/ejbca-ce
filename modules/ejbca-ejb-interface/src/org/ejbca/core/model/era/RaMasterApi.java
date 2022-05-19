@@ -705,6 +705,17 @@ public interface RaMasterApi {
     EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username);
 
     /**
+     * Checks whether the status of an end entity allows enrollment.
+     * This method takes into account whether renewal before expiration is allowed.
+     *
+     * @param authenticationToken Authentication token
+     * @param username Username of end entity
+     * @return true if the end entity is in a state that allows enrollment. false if not, or if not authorized.
+     * @since RA Master API version 14 (EJBCA 7.10.0)
+     */
+    boolean canEndEntityEnroll(AuthenticationToken authenticationToken, String username);
+
+    /**
      * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.
      * @param authenticationToken Authentication token.
      * @param username User name of end entity.
