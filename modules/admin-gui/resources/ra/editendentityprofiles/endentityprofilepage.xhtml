@@ -1482,7 +1482,31 @@
                             value="#{endEntityProfileMBean.selectableNumberOfAllowedRequests}" />
                     </h:selectOneMenu>
                 </h:panelGrid>
-				&nbsp;
+                &nbsp;
+                <h:panelGroup id="renewBeforeExpirationGroup">
+                    <h:outputText value="#{web.text.RENEWBEFOREEXPIRATION}" />
+                    &nbsp;
+                    <h:outputText
+                        value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Allow_Renewal_Before_Expiration')}"
+                        escape="false" />
+                </h:panelGroup>
+                <h:panelGrid id="renewBeforeExpirationGrid"
+                    columns="6" styleClass="alignmiddle">
+                    <h:selectBooleanCheckbox
+                        id="renewBeforeExpirationCheckbox"
+                        value="#{endEntityProfileMBean.profiledata.renewDaysBeforeExpirationUsed}"
+                        disabled="#{endEntityProfileMBean.viewOnly}">
+                        <f:ajax render="renewBeforeExpirationGrid" />
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel for="renewBeforeExpirationCheckbox"
+                        value="#{web.text.USE} : " />
+                    <h:outputLabel for="renewBeforeExpirationDaysText"
+                        value="#{web.text.DAYS}: " />
+                    <h:inputText id="renewBeforeExpirationDaysText"
+                        value="#{endEntityProfileMBean.profiledata.renewDaysBeforeExpiration}"
+                        disabled="#{not endEntityProfileMBean.profiledata.renewDaysBeforeExpirationUsed or endEntityProfileMBean.viewOnly}"/>
+                </h:panelGrid>
+                &nbsp;
 				<h:panelGroup id="keyRecoverableGroup"
                     rendered="#{endEntityProfileMBean.keyRecoverableSystemConfigured}">
                     <h:outputText value="#{web.text.KEYRECOVERABLE}" />
