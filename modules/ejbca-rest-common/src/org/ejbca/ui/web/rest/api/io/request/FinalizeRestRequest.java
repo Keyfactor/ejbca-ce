@@ -21,12 +21,16 @@ public class FinalizeRestRequest {
 
     private String responseFormat;
     private String password;
+    private String keyAlg;
+    private String keySpec;
     
     public FinalizeRestRequest() {}
     
-    public FinalizeRestRequest(String responseFormat, String password) {
+    public FinalizeRestRequest(String responseFormat, String password, String keyAlg, String keySpec) {
         this.responseFormat = responseFormat;
         this.password = password;
+        this.keyAlg = keyAlg;
+        this.keySpec = keySpec;
     }
     
     public String getResponseFormat() {
@@ -50,5 +54,21 @@ public class FinalizeRestRequest {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getKeyAlg() {
+        return this.keyAlg;
+    }
+
+    public void setKeyAlg(String keyAlg) {
+        this.keyAlg = keyAlg;
+    }
+
+    public String getKeySpec() {
+        return this.keySpec;
+    }
+
+    public void setKeySpec(String keySpec) {
+        this.keySpec = keySpec;
     }
 }
