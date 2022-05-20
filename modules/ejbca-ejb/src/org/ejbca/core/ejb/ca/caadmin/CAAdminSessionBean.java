@@ -582,14 +582,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
             mergeCertificatePoliciesFromCAAndProfile(citsCainfo, certprofile);
-        } else if (cainfo.getCAType() == X509CAInfo.CATYPE_PROXY) {
+        } else if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
             log.info("Creating a PROXY CA: " + cainfo.getName());
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+            // ProxyCaInfo proxyCaInfo = (ProxyCaInfo) cainfo;
             // Create PROXY CA
-            ca = (CA) CAFactory.INSTANCE.getProxyCa(x509cainfo);
-            ca.setCAToken(catoken);
-            // Set certificate policies in profile object
-            mergeCertificatePoliciesFromCAAndProfile(x509cainfo, certprofile);
+            ca = (CA) CAFactory.INSTANCE.getProxyCa(cainfo);
         } else {
             throw new IllegalStateException("CA of unknown type " + cainfo.getCAType() + " was encountered.");
         }
@@ -668,19 +665,28 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     "Not possible to create CVC CA when there is a unique (issuerDN, serialNumber) index in the database.");
         }
         // Create CAToken
-        final CAToken caToken = cainfo.getCAToken();
-        int cryptoTokenId = caToken.getCryptoTokenId();
-        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        // The certificate profile used for the CAs certificate
-        CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
-        // Create CA
-        CA ca = createCAObject(cainfo, caToken, certprofile);
-        if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-            // See if CA token is OK before storing CA, but skip if no keys can be guaranteed to exist.
-            try {
-                cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
-            } catch (InvalidKeyException e1) {
-                throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
+        final CA ca;
+        final CryptoToken cryptoToken;
+        CertificateProfile certprofile;
+        if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
+            ca = createCAObject(cainfo, null, null);
+            cryptoToken = null;
+            certprofile = null;
+        } else {
+            final CAToken caToken = cainfo.getCAToken();
+            int cryptoTokenId = caToken.getCryptoTokenId();
+            cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+            // The certificate profile used for the CAs certificate
+            certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
+            // Create CA
+            ca = createCAObject(cainfo, caToken, certprofile);
+            if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+                // See if CA token is OK before storing CA, but skip if no keys can be guaranteed to exist.
+                try {
+                    cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+                } catch (InvalidKeyException e1) {
+                    throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
+                }
             }
         }
         // Store CA in database, so we can generate keys using the ca token session.
@@ -696,29 +702,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw e;
         }
 
-        // Finish up and create certificate chain etc.
-        // Both code paths will audit log.
-        if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-            finalizeInitializedCA(admin, ca, cainfo, cryptoToken, certprofile);
-        } else {
-            // Special handling for uninitialized CAs
-            ca.setCertificateChain(new ArrayList<>());
-            ca.setStatus(CAConstants.CA_UNINITIALIZED);
+        if (cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
+            // Finish up and create certificate chain etc.
+            // Both code paths will audit log.
+            if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+                finalizeInitializedCA(admin, ca, cainfo, cryptoToken, certprofile);
+            } else {
+                // Special handling for uninitialized CAs
+                ca.setCertificateChain(new ArrayList<>());
+                ca.setStatus(CAConstants.CA_UNINITIALIZED);
 
-            if (log.isDebugEnabled()) {
-                log.debug("Setting CA status to: " + CAConstants.CA_UNINITIALIZED);
-            }
-            try {
-                caSession.editCA(admin, ca, true);
-            } catch (CADoesntExistsException e) {
-                logAuditEvent(
+                if (log.isDebugEnabled()) {
+                    log.debug("Setting CA status to: " + CAConstants.CA_UNINITIALIZED);
+                }
+                try {
+                    caSession.editCA(admin, ca, true);
+                } catch (CADoesntExistsException e) {
+                    logAuditEvent(
                         EventTypes.CA_EDITING, EventStatus.FAILURE,
                         admin, caid,
                         intres.getLocalizedMessage("caadmin.canotexistsid", caid)
-                );
-                throw new EJBException(e);
+                    );
+                    throw new EJBException(e);
+                }
             }
         }
+
         if (log.isTraceEnabled()) {
             log.trace("<createCA: " + cainfo.getName());
         }
