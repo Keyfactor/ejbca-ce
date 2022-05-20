@@ -185,6 +185,7 @@
 	<property name="mod.cits.war" location="${mod.dist.path}/cits.war" />
 	<property name="mod.proxy-ca.path" location="${mod.path}/proxy-ca" />
 	<property name="mod.proxy-ca.lib" location="${mod.dist.path}/proxy-ca.jar" />
+	<property name="mod.proxy-ca.jar" location="${mod.dist.path}/proxy-ca.jar" />
 	
 	
     <!-- Variables of global interest -->
