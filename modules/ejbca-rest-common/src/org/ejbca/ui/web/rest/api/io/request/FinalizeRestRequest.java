@@ -14,8 +14,6 @@ package org.ejbca.ui.web.rest.api.io.request;
 
 /**
  * JSON input representation of finalize enrollment
- * @version $Id: FinalizeRestRequest.java 29317 2018-06-25 08:14:47Z henriks $
- *
  */
 public class FinalizeRestRequest {
 
@@ -25,7 +23,27 @@ public class FinalizeRestRequest {
     private String keySpec;
     
     public FinalizeRestRequest() {}
-    
+
+    /**
+     * Constructor used when key algorithm is pre-set in the end entity.
+     * Example: Finalizing enrollment after a certificate request has approved. In this case the 
+     * key algorithm has been picked from the CSR already.
+     * @param responseFormat 'P12', 'JKS', 'PEM' or 'DER'
+     * @param password End Entity password
+     */
+    public FinalizeRestRequest(String responseFormat, String password) {
+        this.responseFormat = responseFormat;
+        this.password = password;
+    }
+
+    /**
+     * Constructor used when key algorithm isn't set in the end entity already. 
+     * Example: Finalizing enrollment of an end entity after an "Add end entity approval"
+     * @param responseFormat 'P12', 'JKS', 'PEM' or 'DER'
+     * @param password End Entity password
+     * @param keyAlg 'RSA', 'ECDSA' etc.
+     * @param keySpec key size. E.g. '2048'
+     */
     public FinalizeRestRequest(String responseFormat, String password, String keyAlg, String keySpec) {
         this.responseFormat = responseFormat;
         this.password = password;
