@@ -1501,9 +1501,9 @@
                     <h:outputLabel for="renewBeforeExpirationCheckbox"
                         value="#{web.text.USE} : " />
                     <h:outputLabel for="renewBeforeExpirationDaysText"
-                        value="#{web.text.DAYS}: " />
+                        value="#{web.text.DAYS_BEFORE_EXPIRATION}: " />
                     <h:inputText id="renewBeforeExpirationDaysText"
-                        value="#{endEntityProfileMBean.profiledata.renewDaysBeforeExpiration}"
+                        value="#{endEntityProfileMBean.profiledata.renewDaysBeforeExpiration}" size="3"
                         disabled="#{not endEntityProfileMBean.profiledata.renewDaysBeforeExpirationUsed or endEntityProfileMBean.viewOnly}"/>
                 </h:panelGrid>
                 &nbsp;
