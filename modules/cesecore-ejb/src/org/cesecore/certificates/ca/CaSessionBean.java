@@ -88,6 +88,8 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import static java.util.Objects.nonNull;
+
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
  *
@@ -204,10 +206,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public void addCA(final AuthenticationToken admin, final CACommon ca) throws CAExistsException, AuthorizationDeniedException {
         if (ca != null) {
-            final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-            if (!authorizationSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), ca.getCAId());
-                throw new AuthorizationDeniedException(msg);
+            if (ca.getCAType() != CAInfo.CATYPE_PROXY) {
+                final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+                if (!authorizationSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
+                    String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), ca.getCAId());
+                    throw new AuthorizationDeniedException(msg);
+                }
             }
             CAInfo cainfo = ca.getCAInfo();
             // The CA needs a name and a subject DN in order to store it
@@ -230,8 +234,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             String msg = intres.getLocalizedMessage("caadmin.addedca", ca.getCAId(), cainfo.getName(), cainfo.getStatus());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
-            details.put("tokenproperties", ca.getCAToken().getProperties());
-            details.put("tokensequence", ca.getCAToken().getKeySequence());
+            if (ca.nonNullCaToken()) { // TODO: fix logic
+                CAToken caToken = ca.getCAToken();
+                if (nonNull(caToken)) {
+                    details.put("tokenproperties", caToken.getProperties());
+                    details.put("tokensequence", caToken.getKeySequence());
+                }
+            }
             logSession.log(EventTypes.CA_CREATION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
         } else {
             log.debug("Trying to add null CA, nothing done.");
@@ -978,6 +987,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // Since getCAData has already run upgradeAndMergeToDatabase we can just get the CA here..
                 final CACommon ca = caData.getCA();
                 if (ca != null) {
+                    // CaCache.INSTANCE.removeEntry(caId); // TODO: remove later
                     // Note that we store using the "real" CAId in the cache.
                     CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
                 }
@@ -1028,33 +1038,43 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // and perhaps upgrading
         final float oldversion = ((Float) caDataMap.get(UpgradeableDataHashMap.VERSION)).floatValue();
         // Perform "live" upgrade from 5.0.x and earlier
-        boolean adhocUpgrade = adhocUpgradeFrom50(cadata.getCaId().intValue(), caDataMap, cadata.getName());
-        if (adhocUpgrade) {
-            // Convert map into storage friendly format now since we changed it
-            cadata.setDataMap(caDataMap);
+        // if (oldversion <= 5.0) {
+        boolean adhocUpgrade;
+        if (cadata.getCA().getCAType() == CAInfo.CATYPE_PROXY) {
+            adhocUpgrade = false;
+        } else {
+            adhocUpgrade = adhocUpgradeFrom50(cadata.getCaId().intValue(), caDataMap, cadata.getName());
         }
-        // Fetching the CA object will trigger UpgradableHashMap upgrades
-        CACommon ca = cadata.getCA();
-        if (ca != null) {
-            final boolean expired = hasCAExpiredNow(ca);
-            if (expired) {
-                ca.setStatus(CAConstants.CA_EXPIRED);
+
+            if (adhocUpgrade) {
+                // Convert map into storage friendly format now since we changed it
+                cadata.setDataMap(caDataMap);
             }
-            final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
-            // Compare old version with current version and save the data if there has been a change
-            final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
-            if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
+            // Fetching the CA object will trigger UpgradableHashMap upgrades
+            CACommon ca = cadata.getCA();
+            if (ca != null) {
+                final boolean expired = hasCAExpiredNow(ca);
+                if (expired) {
+                    ca.setStatus(CAConstants.CA_EXPIRED);
+                }
+                final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
+                // Compare old version with current version and save the data if there has been a change
+                final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
+                if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
                             ", adhocUpgrade: " + adhocUpgrade+", upgradedExtendedService: " + upgradedExtendedService +
                             ", upgradeCA: " + upgradeCA + ", expired: " + expired);
+                    }
+                    ca.getCAToken();
+                    final int caId = caSession.mergeCa(ca);
+                    caDataReturn = entityManager.find(CAData.class, caId);
                 }
-                ca.getCAToken();
-                final int caId = caSession.mergeCa(ca);
-                caDataReturn = entityManager.find(CAData.class, caId);
-            }            
-        }
-        return caDataReturn;
+            }
+            return caDataReturn;
+        /*} else {
+            return cadata;
+        }*/
     }
 
     /**

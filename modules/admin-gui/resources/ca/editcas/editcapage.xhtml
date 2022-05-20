@@ -123,8 +123,9 @@
 				</h:panelGroup>
 
 				<!-- "IF CVC AVAILABLE"  -->
+				<c:if test="#{not editCAsMBean.caTypeProxy}">
 				<h:panelGroup
-						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeProxy}">
 					<h:outputLabel value="#{web.text.CRYPTOTOKEN}"
 								   style="font-weight: bold;" />
 					<h:outputText
@@ -143,7 +144,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeProxy}">
 					<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}"
 								  rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
 					<h:selectOneMenu name="selectcryptotoken"
@@ -392,6 +393,7 @@
 						value="#{editCAsMBean.keySequence}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 				</h:panelGroup>
+				</c:if>
 
 				<h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="description" value="#{web.text.DESCRIPTION}" />
@@ -688,7 +690,7 @@
 				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2"
 				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable
-								and not editCAsMBean.caTypeCits}">
+								and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeProxy}">
 				<h:outputLabel for="header_directives"
 					value="#{web.text.DIRECTIVES}" style="font-weight: bold;" />
 				<h:panelGroup id="header_directives" />
@@ -934,7 +936,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
+				rendered="#{not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeProxy}">
 
 				<h:outputLabel for="header_ca_certificate_data"
 					value="#{web.text.CACERTIFICATEDATA}" style="font-weight: bold;" />
@@ -1733,7 +1735,7 @@
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 				rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits) and not editCAsMBean.renderCvcAvailable 
-									and not editCAsMBean.caInfoDto.caTypeSsh}">
+									and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
 				<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="approvals" />
@@ -1744,7 +1746,7 @@
 				width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
 				rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits)and not editCAsMBean.renderCvcAvailable 
-								and not editCAsMBean.caInfoDto.caTypeSsh}">
+								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
 				<h:column>
 					<h:outputText value="#{requestItem.displayText}" />
 				</h:column>
@@ -2041,7 +2043,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCvcAvailable}">
+				rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeProxy}">
 				<h:outputLabel for="externallysignedcacreaterenew"
 					value="#{web.text.EXTERNALLYSIGNED_CA_CREATERENEW}"
 					style="font-weight: bold;" />
