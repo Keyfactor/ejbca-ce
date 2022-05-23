@@ -85,14 +85,32 @@
 							value="#{msg.renewcertificate_page_username}" />
 						<h:outputText id="textUsername" value="#{raRenewBean.username}" />
 					</h:panelGroup>
+					<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
+								  rendered="#{!raRenewBean.keyAlgorithmPreSet}">
+						<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
+						<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{raRenewBean.selectedAlgorithm}">
+							<f:selectItems value="#{raRenewBean.availableAlgorithmSelectItems}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<f:event type="postValidate" listener="#{raRenewBean.validatePassword}"/>
 					<h:panelGroup id="enteredRequestEnrollmentCode" layout="block"
 								  rendered="#{!raRenewBean.notificationConfigured}"
 								  styleClass="pure-control-group">
-						<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}" />
-						<h:inputSecret id="enrollmentCode" value="#{raRenewBean.enrollmentCode}" autocomplete="off">
-							<f:validateRequired/>
+						<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password} *" />
+						<h:inputSecret id="enrollmentCode" value="#{raRenewBean.enrollmentCode}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+							<f:validator validatorId="extendedRequiredValidator"/>
+							<f:attribute name="_required" value="true"/>
 						</h:inputSecret>
-						<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="showErrorMessage"/>
+						<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="validationErrorMessage showErrorMessage"/>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{!raRenewBean.notificationConfigured}">
+						<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password} *" />
+						<h:inputSecret id="passwordConfirmField" binding="#{raRenewBean.confirmPasswordComponent}" value="#{raRenewBean.confirmPassword}"
+									   styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+							<f:validator validatorId="extendedRequiredValidator"/>
+							<f:attribute name="_required" value="true"/>
+						</h:inputSecret>
+						<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 					</h:panelGroup>
 					<h:panelGroup layout="block" styleClass="pure-control-group">
 						<h:outputLabel for="fileFormat" value="#{msg.renewcertificate_page_pem_or_der}" />
