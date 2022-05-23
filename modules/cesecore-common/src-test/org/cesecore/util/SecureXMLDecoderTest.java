@@ -12,10 +12,10 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.junit.Test;
 
 import java.beans.XMLDecoder;
@@ -46,6 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class SecureXMLDecoderTest {
@@ -444,7 +445,7 @@ public class SecureXMLDecoderTest {
         final Object result = deserializeObject(xml);
         // Then
         assertNotNull(result);
-        assertEquals("org.ejbca.core.model.ra.ExtendedInformation", result.getClass().getName());
+        assertTrue(result instanceof ExtendedInformation);
         log.trace("<decodeExtendedInformationEmpty");
     }
 
@@ -470,10 +471,53 @@ public class SecureXMLDecoderTest {
         final Object result = deserializeObject(xml);
         // Then
         assertNotNull(result);
-        assertEquals("org.ejbca.core.model.ra.ExtendedInformation", result.getClass().getName());
-        final LinkedHashMap<?,?> rawData = (LinkedHashMap<?,?>) MethodUtils.invokeMethod(result, "getRawData");
+        assertTrue(result instanceof ExtendedInformation);
+        final ExtendedInformation extendedInfo = (ExtendedInformation) result;
+        final LinkedHashMap<?,?> rawData = extendedInfo.getRawData();
         assertNotNull(rawData);
         assertEquals("ew==", rawData.get("CERTIFICATESERIALNUMBER"));
+        log.trace("<decodeExtendedInformationNormal");
+    }
+
+    @Test
+    public void test() throws Exception {
+        log.trace(">decodeExtendedInformationNormal");
+        // Given
+        final String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "\n" +
+                "<java version=\"1.8.0_292\" class=\"java.beans.XMLDecoder\">\n" +
+                "\n" +
+                "<object class=\"org.cesecore.util.Base64PutHashMap\">\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>version</string>\n" +
+                "   <float>4.0</float>\n" +
+                "  </void>\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>type</string>\n" +
+                "   <int>0</int>\n" +
+                "  </void>\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>subjectdirattributes</string>\n" +
+                "   <string></string>\n" +
+                "  </void>\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>maxfailedloginattempts</string>\n" +
+                "   <int>-1</int>\n" +
+                "  </void>\n" +
+                "  <void method=\"put\">\n" +
+                "   <string>remainingloginattempts</string>\n" +
+                "   <int>-1</int>\n" +
+                "  </void>\n" +
+                "</object>\n" +
+                "</java>\n";
+        // When
+        final Object result = deserializeObject(xml);
+        // Then
+        assertNotNull(result);
+        assertTrue(result instanceof Base64PutHashMap);
+        final Base64PutHashMap map = (Base64PutHashMap) result;
+        assertEquals(-1, map.get("remainingloginattempts"));
         log.trace("<decodeExtendedInformationNormal");
     }
 
