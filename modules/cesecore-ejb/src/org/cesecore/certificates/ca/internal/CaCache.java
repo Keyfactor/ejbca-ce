@@ -64,7 +64,6 @@ public enum CaCache implements CommonCache<CACommon> {
     
     @Override
     public void updateWith(int caId, int digest, String name, CACommon caInterface) {
-        log.error("updateWith(...)"); //TODO: remove
         caCache.updateWith(caId, digest, name, caInterface);
     }
 
