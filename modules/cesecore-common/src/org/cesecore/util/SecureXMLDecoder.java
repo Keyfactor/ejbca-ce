@@ -16,6 +16,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
@@ -348,6 +349,9 @@ public class SecureXMLDecoder implements AutoCloseable {
                         break;
                     case "org.cesecore.keybind.InternalKeyBindingTrustEntry":
                         value = parseObject(new InternalKeyBindingTrustEntry());
+                        break;
+                    case "org.apache.commons.lang3.tuple.MutablePair":
+                        value = parseObject(new MutablePair<String, String>());
                         break;
                     case "org.ejbca.core.model.ra.ExtendedInformation":
                         value = parseLegacyExtendedInformation();
