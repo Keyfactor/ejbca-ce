@@ -13,6 +13,7 @@
 package org.ejbca.core.model.era;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class RaCertificateDataOnRenew implements Serializable {
 
@@ -24,7 +25,10 @@ public class RaCertificateDataOnRenew implements Serializable {
     private String username;
     private boolean revoked;
     private boolean notificationConfigured;
-
+    private boolean keyAlgorithmPreSet;
+    private List<String> availableKeyAlgorithms;
+    private List<Integer> availableBitLengths;
+    private List<String> availableEcCurves;
 
     public String getCaName() {
         return caName;
@@ -72,5 +76,37 @@ public class RaCertificateDataOnRenew implements Serializable {
 
     public void setNotificationConfigured(boolean notificationConfigured) {
         this.notificationConfigured = notificationConfigured;
+    }
+
+    public boolean isKeyAlgorithmPreSet() {
+        return keyAlgorithmPreSet;
+    }
+
+    public void setKeyAlgorithmPreSet(boolean keyAlgorithmPreSet) {
+        this.keyAlgorithmPreSet = keyAlgorithmPreSet;
+    }
+
+    public List<String> getAvailableKeyAlgorithms() {
+        return availableKeyAlgorithms;
+    }
+
+    public void setAvailableKeyAlgorithms(List<String> availableKeyAlgorithms) {
+        this.availableKeyAlgorithms = availableKeyAlgorithms;
+    }
+
+    public List<Integer> getAvailableBitLengths() {
+        return availableBitLengths;
+    }
+
+    public void setAvailableBitLengths(List<Integer> availableBitLengths) {
+        this.availableBitLengths = availableBitLengths;
+    }
+
+    public List<String> getAvailableEcCurves() {
+        return availableEcCurves;
+    }
+
+    public void setAvailableEcCurves(List<String> availableEcCurves) {
+        this.availableEcCurves = availableEcCurves;
     }
 }
