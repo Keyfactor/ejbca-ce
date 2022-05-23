@@ -2160,7 +2160,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         updateAvailableSigningAlgorithmList();
     }
 
-    private void initEditCaPage() {
+    private void initEditCaPage() { // TODO: modify this method to work with ProxyCa
 
         catoken = cainfo.getCAToken();
         keyValidatorMap = keyValidatorSession.getKeyValidatorIdToNameMap(cainfo.getCAType());
