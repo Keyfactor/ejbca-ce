@@ -99,7 +99,7 @@ public class CaInfoDto {
     private String upstreamUrl;
     private String username;
     private String password;
-    private List<MutablePair> headers;
+    private List<MutablePair<String, String>> headers;
     private String upstreamCa;
     private String upstreamTemplate;
     private String sansJson; // Subject Attribute Names in JSON format for Upstream CA
@@ -714,11 +714,11 @@ public class CaInfoDto {
         this.password = password;
     }
 
-    public List<MutablePair> getHeaders() {
+    public List<MutablePair<String, String>> getHeaders() {
         return headers;
     }
 
-    public void setHeaders(List<MutablePair> headers) {
+    public void setHeaders(List<MutablePair<String, String>> headers) {
         this.headers = headers;
     }
 
