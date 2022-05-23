@@ -24,6 +24,8 @@ public class RaSelfRenewCertificateData  implements Serializable {
     private String password;
     private String newSubjectDn;
     private String clientIPAddress;
+    String keyAlg;
+    String keySpec;
 
     public String getUsername() {
         return username;
@@ -55,5 +57,21 @@ public class RaSelfRenewCertificateData  implements Serializable {
 
     public void setClientIPAddress(String clientIPAddress) {
         this.clientIPAddress = clientIPAddress;
+    }
+
+    public String getKeyAlg() {
+        return keyAlg;
+    }
+
+    public void setKeyAlg(String keyAlg) {
+        this.keyAlg = keyAlg;
+    }
+
+    public String getKeySpec() {
+        return keySpec;
+    }
+
+    public void setKeySpec(String keySpec) {
+        this.keySpec = keySpec;
     }
 }
