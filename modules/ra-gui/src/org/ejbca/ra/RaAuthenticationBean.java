@@ -175,4 +175,8 @@ public class RaAuthenticationBean implements Serializable {
         ) + "ra/";
         return baseUrl + "logout.xhtml";
     }
+
+    public String getUserRemoteAddr() {
+        return getHttpServletRequest().getRemoteAddr();
+    }
 }
