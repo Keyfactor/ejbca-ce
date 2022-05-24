@@ -1585,4 +1585,20 @@ public interface RaMasterApi {
      */
     byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
                                                 byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException;
+
+    /**
+     * Returns information related to user certificate: EE profile name, CA name, Certificte Profile name and username.
+     * Used for self renewal
+     * @param serno current certificate serial number
+     * @param issuerDn issuer DN
+     * @return certificate data related to certificate renew
+     */
+    RaCertificateDataOnRenew getCertificateDataForRenew(BigInteger serno, String issuerDn);
+
+    /**
+     * Returns renewed certificate as byte array
+     * @param renewCertificateData information required for certificate self renewal
+     * @return renewed certificate
+     */
+    byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException;
 }
