@@ -93,26 +93,19 @@ public class SunP11SlotListWrapper implements PKCS11SlotListWrapper {
             log.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
-        Method getInstanceMethod;
-        boolean instanceWithMethodHandle = false;
+
+        // sun.security.pkcs11.wrapper.PKCS11.getInstance comes in a few different variantions. 
+        // RedHat/Fedora has created one with five arguments instead of four
+        Method getInstanceMethod1 = null;
         try {
-            getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
-                    String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class);
+            // "standard" OpenJDK getnstance (as of May 2022)
+            getInstanceMethod1 = p11Class.getDeclaredMethod("getInstance",
+                    new Class[] { String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class });
         } catch (NoSuchMethodException e) {
-            log.debug("getInstance(String, String, CK_C_INITIALIZE_ARGS, boolean) not found, trying with additional MethodHandle argument.");
-            try {
-                getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
-                        String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class, MethodHandle.class);
-                instanceWithMethodHandle = true;
-            } catch (NoSuchMethodException e1) {
+            if (log.isDebugEnabled()) {
                 String msg = "Method getInstance was not found in class sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS, this may be due to"
-                        + " a change in the underlying library.";
-                log.error(msg, e);
-                throw new IllegalStateException(msg, e);
-            } catch (ClassNotFoundException e1) {
-                String msg = "Class sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS was not found locally, could not wrap.";
-                log.error(msg, e1);
-                throw new IllegalStateException(msg, e1);
+                        + " a change in the underlying library, will try second alternative getInstance signature.";
+                log.debug(msg, e);
             }
         } catch (SecurityException e) {
             String msg = "Access was denied to method sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS.getInstance";
@@ -123,11 +116,37 @@ public class SunP11SlotListWrapper implements PKCS11SlotListWrapper {
             log.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
+        
+        Method getInstanceMethod2 = null;
+        if (getInstanceMethod1 == null) {
+            try {
+                // RedHat/Fedora OpenJDK getnstance (as of May 2022), not the extra MethodHandle argument
+                getInstanceMethod2 = p11Class.getDeclaredMethod("getInstance",
+                        new Class[] { String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class, MethodHandle.class });
+            } catch (NoSuchMethodException e) {
+                String msg = "Method getInstance was not found in class sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS, this may be due to"
+                        + " a change in the underlying library. Neither first nor second alternative was found.";
+                log.error(msg, e);
+                throw new IllegalStateException(msg, e);
+            } catch (SecurityException e) {
+                String msg = "Access was denied to method sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS.getInstance";
+                log.error(msg, e);
+                throw new IllegalStateException(msg, e);
+            } catch (ClassNotFoundException e) {
+                String msg = "Class sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS was not found locally, could not wrap.";
+                log.error(msg, e);
+                throw new IllegalStateException(msg, e);
+            }
+        }
+        
+        
         try {
-            if (instanceWithMethodHandle) {
-                p11 = getInstanceMethod.invoke(null, fileName, "C_GetFunctionList", null, Boolean.FALSE, null);                
+            if (getInstanceMethod1 != null) {
+                this.p11 = getInstanceMethod1.invoke(null, new Object[] { fileName, "C_GetFunctionList", null, Boolean.FALSE });
+            } else if (getInstanceMethod2 != null) {
+                this.p11 = getInstanceMethod2.invoke(null, new Object[] { fileName, "C_GetFunctionList", null, Boolean.FALSE, null });
             } else {
-                p11 = getInstanceMethod.invoke(null, fileName, "C_GetFunctionList", null, Boolean.FALSE);
+                throw new IllegalStateException("No sun.security.pkcs11.wrapper.PKCS11.getInstance method found");
             }
         } catch (IllegalAccessException e) {
             String msg = "Method sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance was not accessible, this may be due to"
