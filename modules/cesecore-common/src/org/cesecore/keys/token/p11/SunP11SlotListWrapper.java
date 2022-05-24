@@ -94,6 +94,7 @@ public class SunP11SlotListWrapper implements PKCS11SlotListWrapper {
             throw new IllegalStateException(msg, e);
         }
         Method getInstanceMethod;
+        boolean instanceWithMethodHandle = false;
         try {
             getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
                     String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class);
@@ -102,6 +103,7 @@ public class SunP11SlotListWrapper implements PKCS11SlotListWrapper {
             try {
                 getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
                         String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class, MethodHandle.class);
+                instanceWithMethodHandle = true;
             } catch (NoSuchMethodException e1) {
                 String msg = "Method getInstance was not found in class sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS, this may be due to"
                         + " a change in the underlying library.";
@@ -122,7 +124,11 @@ public class SunP11SlotListWrapper implements PKCS11SlotListWrapper {
             throw new IllegalStateException(msg, e);
         }
         try {
-            p11 = getInstanceMethod.invoke(null, fileName, "C_GetFunctionList", null, Boolean.FALSE);
+            if (instanceWithMethodHandle) {
+                p11 = getInstanceMethod.invoke(null, fileName, "C_GetFunctionList", null, Boolean.FALSE, null);                
+            } else {
+                p11 = getInstanceMethod.invoke(null, fileName, "C_GetFunctionList", null, Boolean.FALSE);
+            }
         } catch (IllegalAccessException e) {
             String msg = "Method sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance was not accessible, this may be due to"
                     + " a change in the underlying library.";
