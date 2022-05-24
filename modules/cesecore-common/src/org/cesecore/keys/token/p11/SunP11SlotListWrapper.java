@@ -13,6 +13,7 @@
 package org.cesecore.keys.token.p11;
 
 import java.io.File;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -92,15 +93,25 @@ public class SunP11SlotListWrapper implements PKCS11SlotListWrapper {
             log.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
-        final Method getInstanceMethod;
+        Method getInstanceMethod;
         try {
             getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
                     String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class);
         } catch (NoSuchMethodException e) {
-            String msg = "Method getInstance was not found in class sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS, this may be due to"
-                    + " a change in the underlying library.";
-            log.error(msg, e);
-            throw new IllegalStateException(msg, e);
+            log.debug("getInstance(String, String, CK_C_INITIALIZE_ARGS, boolean) not found, trying with additional MethodHandle argument.");
+            try {
+                getInstanceMethod = p11Class.getDeclaredMethod("getInstance",
+                        String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class, MethodHandle.class);
+            } catch (NoSuchMethodException e1) {
+                String msg = "Method getInstance was not found in class sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS, this may be due to"
+                        + " a change in the underlying library.";
+                log.error(msg, e);
+                throw new IllegalStateException(msg, e);
+            } catch (ClassNotFoundException e1) {
+                String msg = "Class sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS was not found locally, could not wrap.";
+                log.error(msg, e1);
+                throw new IllegalStateException(msg, e1);
+            }
         } catch (SecurityException e) {
             String msg = "Access was denied to method sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS.getInstance";
             log.error(msg, e);
