@@ -1,4 +1,4 @@
-# ejbca_ce [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
+# EJBCA PKI [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
 
 EJBCA covers all your needs – from certificate management, registration and enrollment to certificate validation. 
 
