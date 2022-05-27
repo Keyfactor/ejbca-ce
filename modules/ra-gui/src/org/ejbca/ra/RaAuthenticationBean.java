@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.Principal;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -57,6 +58,7 @@ public class RaAuthenticationBean implements Serializable {
 
     // JavaServlet Specification 2.5 Section 7.1.1: "...The name of the session tracking cookie must be JSESSIONID".
     private static final String SESSIONCOOKIENAME = "JSESSIONID";
+    private static final String PUBLIC_ACCESS_USER = "Public Access User";
 
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
@@ -67,6 +69,7 @@ public class RaAuthenticationBean implements Serializable {
 
     private RaAuthenticationHelper raAuthenticationHelper = null;
     private AuthenticationToken authenticationToken = null;
+    private X509Certificate x509Certificate = null;
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken() {
@@ -75,6 +78,18 @@ public class RaAuthenticationBean implements Serializable {
         }
         authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
+    }
+    /** @return any X509Certificate the client has provided */
+    public X509Certificate getX509CertificateFromRequest() {
+        if (raAuthenticationHelper==null) {
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
+        }
+        x509Certificate = raAuthenticationHelper.getX509CertificateFromRequest(getHttpServletRequest());
+        return x509Certificate;
+    }
+
+    public boolean isCertificateInRequest() {
+        return getX509CertificateFromRequest() != null;
     }
 
     public void resetAuthentication(){
@@ -122,6 +137,8 @@ public class RaAuthenticationBean implements Serializable {
                     return ((OAuth2Principal)principal).getDisplayName();
                 }
             }
+        } else if (authToken instanceof PublicAccessAuthenticationToken) {
+            return PUBLIC_ACCESS_USER;
         }
         return authToken.toString();
     }
