@@ -34,7 +34,7 @@
 			</h1>
 		</h:panelGroup>
 
-		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.clientCertificateUser and raAccessBean.authorizedToRenewClientCertificate}">
+		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.certificateInRequest and raAccessBean.authorizedToRenewClientCertificate}">
 			<h:panelGroup layout="block" id="renewContentBody"
 				styleClass="content-body">
 
