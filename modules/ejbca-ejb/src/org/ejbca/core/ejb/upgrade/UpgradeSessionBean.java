@@ -1708,7 +1708,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             removeUnidFnrConfigurationFromCmp();
 
             // Counting the number of non normal CRLData rows
-            final Query query = entityManager.createQuery("SELECT count(crlPartitionIndex) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
+            final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
             final long countOfRowsToBeNormalized = (long) query.getSingleResult();
             
             final long startDataNormalization = System.currentTimeMillis();
