@@ -51,6 +51,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Objects.nonNull;
+
 
 /**
  * <p>Implements a subset of XMLDecoder in a secure way, without allowing arbitrary classes to be loaded or methods to be invoked.
@@ -377,7 +379,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                         method = null; // value has been used, don't report error
                         break;
                     case "org.apache.commons.lang3.tuple.MutablePair":
-                        value = parseMutablePair(method);
+                        value = parseMutablePair(parser);
                         break;
                     case "java.util.Date":
                         long dateLongValue = (long) readValue();
@@ -739,44 +741,37 @@ public class SecureXMLDecoder implements AutoCloseable {
         }
     }
 
-    private Object parseMutablePair(final String method) throws XmlPullParserException, IOException {
-        switch (method) {
-            case "getField":
-                return new HashSet<>();
-            case "emptyList":
-                return new ArrayList<>();
-            case "emptyMap":
-                return new HashMap<>();
-            case "unmodifiableList":
-                final Object list = readValue();
-                if (!(list instanceof List)) {
-                    throw new IOException(errorMessage("Expected List argument to unmodifiableList"));
-                }
-                return list;
-            case "singletonList":
-                return Collections.singletonList(readValue());
-            case "unmodifiableSet":
-                final Object set = readValue();
-                if (!(set instanceof Set)) {
-                    throw new IOException(errorMessage("Expected Set argument to unmodifiableSet"));
-                }
-                return set;
-            case "unmodifiableMap":
-                final Object map = readValue();
-                if (!(map instanceof Map)) {
-                    throw new IOException(errorMessage("Expected Map argument to unmodifiableMap"));
-                }
-                return map;
-            case "unmodifiableCollection":
-                final Object col = readValue();
-                if (!(col instanceof Collection)) {
-                    throw new IOException(errorMessage("Expected Collection argument to unmodifiableCollection"));
-                }
-                return col;
-
-            default:
-                throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
+    // Only supports String value
+    private Object parseMutablePair(final XmlPullParser parser) throws XmlPullParserException, IOException {
+        MutablePair pair = new MutablePair();
+        final String clazz = parser.getAttributeValue(null, "class");
+        final String method = parser.getAttributeValue(null, "method");
+        if(nonNull(clazz) && nonNull(method) && clazz.equals("org.apache.commons.lang3.tuple.MutablePair") && method.equals("getField")) {
+            parser.nextTag();
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            pair.setLeft(parser.nextText());
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            pair.setRight(parser.nextText());
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
         }
+        return pair;
     }
 
     /**
