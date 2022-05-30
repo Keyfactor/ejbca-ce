@@ -190,6 +190,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -4743,6 +4744,10 @@ public abstract class CertTools {
 
     // Check if we should exclude all dns names
     private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
+        if (Objects.isNull(excluded)) {
+            return false;
+        }
+        
         for (int i = 0; i < excluded.length; i++) {
             if (excluded[i].getBase().toString().equals("2: ")) {
                 return true;
