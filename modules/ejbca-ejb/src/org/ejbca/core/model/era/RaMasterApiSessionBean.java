@@ -355,7 +355,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>14<td>=<td>7.10.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 14;
+    private static final int RA_MASTER_API_VERSION = 14; 
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1495,9 +1495,64 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
+    @Override
+    public RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken, 
+            RaEndEntitySearchRequestV2 raEndEntitySearchRequest) {
+        
+        RaEndEntitySearchPaginationSummary searchSummary = null;
+        String queryCacheKey = authenticationToken.getUniqueId() + raEndEntitySearchRequest.toString();
+        if(raEndEntitySearchRequest.getPageNumber()!=0) {
+            if(raEndEntitySearchRequest.getSearchSummary().isOnlyUpdateCache()) {
+                // update for next page request
+                searchSummary = (RaEndEntitySearchPaginationSummary) 
+                        RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
+                searchSummary.incrementCurrentIdentifierIndex();
+                searchSummary.setCurrentIdentifierSearchOffset(0);
+                // later may be used to update other props too
+                RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
+                return null;
+            }
+            searchSummary = (RaEndEntitySearchPaginationSummary) 
+                    RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
+            
+            if(raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex()!=0) {
+                // update in same page
+                searchSummary.setCurrentIdentifierIndex(
+                        raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex());
+                searchSummary.setCurrentIdentifierSearchOffset(0);
+            }
+            
+        } else {
+            // search identifier index, page offset are all initialized to zero
+            searchSummary = raEndEntitySearchRequest.getSearchSummary();
+            RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
+        }
+                
+        RaEndEntitySearchResponse searchResponse =
+                searchForEndEntities(authenticationToken, raEndEntitySearchRequest, 
+                        searchSummary.getCurrentIdentifierSearchOffset(),
+                raEndEntitySearchRequest.getSortOperation(),
+                raEndEntitySearchRequest.getAdditionalConstraint(),
+                searchSummary.getCurrentIdentifier());
+        
+        // update cache entry - page number, reference update
+        searchSummary.setCurrentIdentifierSearchOffset(
+                searchSummary.getCurrentIdentifierSearchOffset() + searchResponse.getEndEntities().size());
+        searchSummary.incrementNextPageNumber();
+        RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
+        
+        return new RaEndEntitySearchResponseV2(searchResponse, searchSummary);
+    }
+    
     @Override
     public RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request) {
+        return searchForEndEntities(authenticationToken, request, -1, "", "", -1);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private RaEndEntitySearchResponse searchForEndEntities(
+            AuthenticationToken authenticationToken, RaEndEntitySearchRequest request, int currentQueryOffset,
+            String sortingOperation, String additionalConstraintQuery, int additionalConstraintParam) {
         final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
         // Only search a subset of the requested CAs if requested
@@ -1582,6 +1637,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
             sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
         }
+        sb.append(additionalConstraintQuery);
+        sb.append(sortingOperation);
+        log.info("formed query: " + sb.toString());
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);
         if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
@@ -1633,10 +1691,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!request.getStatuses().isEmpty()) {
             query.setParameter("status", request.getStatuses());
         }
+        if(StringUtils.isNotEmpty(additionalConstraintQuery)) {
+            query.setParameter("sortconstraint", additionalConstraintParam);
+        }
         final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
-        final int offset = maxResults * request.getPageNumber();
         query.setMaxResults(maxResults);
-        query.setFirstResult(offset);
+        if(currentQueryOffset!=-1) { 
+            // for v2 on multiple ca,cp,eep id in same page
+            // maxResults is not updated for convenience
+            query.setFirstResult(currentQueryOffset);
+        } else {
+            final int offset = maxResults * request.getPageNumber();
+            query.setFirstResult(offset);
+        }
         /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
          * - The hint is ignored
          * - A QueryTimeoutException is thrown
@@ -1646,6 +1713,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (queryTimeout>0L) {
             query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
+        log.info("query:" + query.toString());
         final List<String> usernames;
         try {
             usernames = query.getResultList();
