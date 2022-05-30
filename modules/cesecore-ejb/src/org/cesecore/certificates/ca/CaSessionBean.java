@@ -255,36 +255,42 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         	}
     		try {
     			final CACommon ca = getCAInternal(cainfo.getCAId(), null, null, false);
-    			// Check if we can edit the CA (also checks authorization)
-                checkForPreProductionAndNonceConflict(cainfo, ca);
-    			int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
-    			if (cainfo.getCAToken() != null) {
-    			    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
-    			}
-                assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
-
-                if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
-                    throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
-
-                @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
-                AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
+                if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
+                    ca.updateCA(null, cainfo, null);
+                } else {
+                    // Check if we can edit the CA (also checks authorization)
+                    checkForPreProductionAndNonceConflict(cainfo, ca);
+                    int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
+                    if (cainfo.getCAToken() != null) {
+                        newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+                    }
+                    assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
+
+                    if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
+                        throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
+
+                    @SuppressWarnings("unchecked")
+                    AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
                         globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-                ca.updateCA(cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId()), cainfo, cceConfig);
+                    ca.updateCA(cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId()), cainfo, cceConfig);
+                }
                 // Audit log
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> newmap = (Map<Object, Object>)ca.saveData();
-    			// Get the diff of what changed
+                // Get the diff of what changed
                 final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
                 final String msg = intres.getLocalizedMessage("caadmin.editedca", ca.getCAId(), ca.getName(), ca.getStatus());
-    			// Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
+                // Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
-    			for (final Map.Entry<Object,Object> entry : diff.entrySet()) {
-    				details.put(entry.getKey().toString(), entry.getValue().toString());
-    			}
-                details.put("tokenproperties", ca.getCAToken().getProperties());
-                details.put("tokensequence", ca.getCAToken().getKeySequence());
+                for (final Map.Entry<Object,Object> entry : diff.entrySet()) {
+                    details.put(entry.getKey().toString(), entry.getValue().toString());
+                }
+                if (cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
+                    details.put("tokenproperties", ca.getCAToken().getProperties());
+                    details.put("tokensequence", ca.getCAToken().getKeySequence());
+                }
                 logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
                 // Store it
                 mergeCa(ca);
