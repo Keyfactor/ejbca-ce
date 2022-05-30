@@ -394,6 +394,13 @@ public interface RaMasterApi {
     RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
 
     /**
+     * Searches for end entities and sorts them. Remote end entities take precedence over local ones.
+     * @return list of end entities from the specified search criteria and sorted accordingly
+     * @since Initial RA Master API version (EJBCA 7.10.0)
+     */
+    RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken, RaEndEntitySearchRequestV2 raEndEntitySearchRequestV2);
+
+    /**
      * Searches for roles that the given authentication token has access to.
      * @param authenticationToken administrator (affects the search results)
      * @param raRoleSearchRequest Object specifying the search criteria.
