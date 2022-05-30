@@ -161,7 +161,6 @@ public enum CAFactory {
     private CACommon createCaByImpl(final String impl, final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
             final Date updateTime, final Date expireTime)  {
         try {
-            log.error("constructor with HashMap is called."); //TODO: remove
             return caImplMap.get(impl).getClass().getConstructor(HashMap.class, Integer.TYPE, String.class, String.class, Integer.TYPE,
                     Date.class, Date.class).newInstance(data, caId, subjectDn, name, status, updateTime, expireTime);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
