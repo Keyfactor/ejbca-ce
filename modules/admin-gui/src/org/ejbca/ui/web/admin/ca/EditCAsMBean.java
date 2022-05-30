@@ -109,6 +109,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
+import org.ejbca.ca.ProxyCaInfo;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -1968,6 +1969,25 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private CAInfo getCaInfo() throws NumberFormatException, AuthorizationDeniedException {
+        if (caInfoDto.getCaType() == CAInfo.CATYPE_PROXY) {
+            ProxyCaInfo proxyCaInfo = new ProxyCaInfo.ProxyCaInfoBuilder()
+                .setCaId(caid)
+                .setName(caInfoDto.getCaName())
+                .setStatus(CAConstants.CA_ACTIVE)
+                .setSubjectDn(caInfoDto.getCaSubjectDN())
+                .setValidators(usedValidators)
+                .setEnrollWithCsrUrl(caInfoDto.getUpstreamUrl())
+                .setHeaders(caInfoDto.getHeaders())
+                .setUsername(caInfoDto.getUsername())
+                .setPassword(caInfoDto.getPassword())
+                .setCa(caInfoDto.getUpstreamCa())
+                .setTemplate(caInfoDto.getUpstreamTemplate())
+                .setSans(caInfoDto.getSansJson())
+                .build();
+
+            return proxyCaInfo;
+        }
+
         CAInfo cainfo;
 
         //External CAs do not require a validity to be set
@@ -2158,9 +2178,28 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
+
+        // caInfoDto.setHeaders(new ArrayList<>()); // TODO: confirm if necessary
     }
 
     private void initEditCaPage() { // TODO: modify this method to work with ProxyCa
+        if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
+            caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
+            cainfo.setCAId(cainfo.getCAId());
+            caInfoDto.setCaName(cainfo.getName());
+            caInfoDto.setCaSubjectDN(cainfo.getSubjectDN());
+            usedValidators = cainfo.getValidators();
+            ProxyCaInfo proxyCaInfo = (ProxyCaInfo)cainfo;
+            caInfoDto.setUpstreamUrl(proxyCaInfo.getEnrollWithCsrUrl());
+            caInfoDto.setHeaders(proxyCaInfo.getHeaders());
+            caInfoDto.setUsername(proxyCaInfo.getUsername());
+            caInfoDto.setPassword(proxyCaInfo.getPassword());
+            caInfoDto.setUpstreamCa(proxyCaInfo.getCa());
+            caInfoDto.setUpstreamTemplate(proxyCaInfo.getTemplate());
+            caInfoDto.setSansJson(proxyCaInfo.getSans());
+
+            return;
+        }
 
         catoken = cainfo.getCAToken();
         keyValidatorMap = keyValidatorSession.getKeyValidatorIdToNameMap(cainfo.getCAType());
