@@ -20,6 +20,7 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -715,6 +716,9 @@ public class CaInfoDto {
     }
 
     public List<MutablePair<String, String>> getHeaders() {
+        if (headers == null) {
+            headers = new ArrayList<>();
+        }
         return headers;
     }
 
