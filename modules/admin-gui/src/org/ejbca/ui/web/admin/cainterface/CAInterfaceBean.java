@@ -1328,8 +1328,10 @@ public class CAInterfaceBean implements Serializable {
 	public boolean isCaExportable(CAInfo caInfo) {
 	    boolean ret = false;
 	    final int caInfoStatus = caInfo.getStatus();
-	    if ((caInfoStatus != CAConstants.CA_EXTERNAL && caInfo.getCAType()!=CAInfo.CATYPE_CITS) && 
-	                                    caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+	    if ((caInfoStatus != CAConstants.CA_EXTERNAL
+            && caInfo.getCAType()!=CAInfo.CATYPE_CITS)
+            && caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE
+            && caInfo.getCAType() != CAInfo.CATYPE_PROXY) {
 	        final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
 	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
 	        if (cryptoTokenInfo!=null) {
