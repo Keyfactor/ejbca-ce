@@ -236,7 +236,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<ItsGeographicRegionGuiWrapper> geographicElementsInGui = null;
     private String currentGeographicRegionType;
     private List<String> geographicRegionTypes;
-    // private List<MutablePair> headers;
     
     public List<ItsGeographicRegionGuiWrapper> getGeographicRegions() {
         return geographicElementsInGui;
@@ -2613,5 +2612,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setHeaders(new ArrayList<>());
         }
         caInfoDto.getHeaders().add(new MutablePair("", ""));
+    }
+
+    public void removeHeader(String index) {
+        caInfoDto.getHeaders();
     }
 }
