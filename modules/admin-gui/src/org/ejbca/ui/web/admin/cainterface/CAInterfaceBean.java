@@ -430,7 +430,8 @@ public class CAInterfaceBean implements Serializable {
                 ProxyCaInfo proxyCaInfo =  proxyCaInfoBuilder
                     //.setIncludeInHealthCheck(false) // TODO: to be confirmed
                     .build();
-                proxyCaInfo.setSubjectDN("CN=" + proxyCaInfo.getName());
+                // proxyCaInfo.setSubjectDN("CN=" + proxyCaInfo.getName());
+                proxyCaInfo.setSubjectDN(caInfoDto.getCaSubjectDN());
                 proxyCaInfo.setEncodedValidity("99y");
                 final int caid = CertTools.stringToBCDNString(proxyCaInfo.getSubjectDN()).hashCode();
                 proxyCaInfo.setCAId(caid);
@@ -441,7 +442,7 @@ public class CAInterfaceBean implements Serializable {
                         throw e;
                 }
             }
-            return true;
+            return false;
         }
 
 	    boolean illegaldnoraltname = false;
