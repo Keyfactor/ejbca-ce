@@ -131,7 +131,7 @@ public enum CAFactory {
         return null;
     }
 
-    public CACommon getProxyCa(final CAInfo caInfo)  { //TODO: should have a ProxyCaInfo class, but ProxyCaInfo is in proxy-ca module that is dependent on cesecore-common module
+    public CACommon getProxyCa(final CAInfo caInfo)  {
         if (caImplMap.containsKey(CA_TYPE_PROXY)) {
             return createCaByImpl(CA_TYPE_PROXY, CAInfo.class, caInfo);
         }
@@ -141,7 +141,6 @@ public enum CAFactory {
 
     public CACommon getProxyCa(final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
                                   final Date updateTime, final Date expireTime)  {
-        log.error("getProxyCa() is called."); //TODO: remove
         if (caImplMap.containsKey(CA_TYPE_PROXY)) {
             return createCaByImpl(CA_TYPE_PROXY, data, caId, subjectDn, name, status, updateTime, expireTime);
         }
@@ -151,7 +150,6 @@ public enum CAFactory {
 
     private <T extends CAInfo> CACommon createCaByImpl(final String impl, final Class<T> caClass, final T caInfo)  {
         try {
-            log.error("constructor without HashMap is called."); //TODO: remove
             return caImplMap.get(impl).getClass().getConstructor(caClass).newInstance(caInfo);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
             throw new IllegalStateException(e);

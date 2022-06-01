@@ -234,7 +234,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             String msg = intres.getLocalizedMessage("caadmin.addedca", ca.getCAId(), cainfo.getName(), cainfo.getStatus());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
-            if (ca.nonNullCaToken()) { // TODO: fix logic
+            if (ca.nonNullCaToken()) {
                 CAToken caToken = ca.getCAToken();
                 if (nonNull(caToken)) {
                     details.put("tokenproperties", caToken.getProperties());
