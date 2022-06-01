@@ -44,13 +44,11 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.FacesException;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -58,10 +56,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.bouncycastle.its.ITSCertificate;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -109,10 +107,10 @@ import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.ECAUtils;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
+import org.ejbca.ca.ProxyCaInfo;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -1971,6 +1969,26 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private CAInfo getCaInfo() throws NumberFormatException, AuthorizationDeniedException {
+        if (caInfoDto.getCaType() == CAInfo.CATYPE_PROXY) {
+            List<MutablePair<String, String>> pairs = caInfoDto.getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
+            ProxyCaInfo proxyCaInfo = new ProxyCaInfo.ProxyCaInfoBuilder()
+                .setCaId(caid)
+                .setName(caInfoDto.getCaName())
+                .setStatus(CAConstants.CA_ACTIVE)
+                .setSubjectDn(caInfoDto.getCaSubjectDN())
+                .setValidators(usedValidators)
+                .setEnrollWithCsrUrl(caInfoDto.getUpstreamUrl())
+                .setHeaders(pairs)
+                .setUsername(caInfoDto.getUsername())
+                .setPassword(caInfoDto.getPassword())
+                .setCa(caInfoDto.getUpstreamCa())
+                .setTemplate(caInfoDto.getUpstreamTemplate())
+                .setSans(caInfoDto.getSansJson())
+                .build();
+
+            return proxyCaInfo;
+        }
+
         CAInfo cainfo;
 
         //External CAs do not require a validity to be set
@@ -2164,6 +2182,24 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private void initEditCaPage() {
+        if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
+            caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
+            cainfo.setCAId(cainfo.getCAId());
+            caInfoDto.setCaName(cainfo.getName());
+            caInfoDto.setCaSubjectDN(cainfo.getSubjectDN());
+            usedValidators = cainfo.getValidators();
+            ProxyCaInfo proxyCaInfo = (ProxyCaInfo)cainfo;
+            caInfoDto.setUpstreamUrl(proxyCaInfo.getEnrollWithCsrUrl());
+            List<MutableTriple<Boolean, String, String>> headerTriples = proxyCaInfo.getHeaders().stream().map(pair -> new MutableTriple<Boolean, String, String>(false, pair.getLeft(), pair.getRight())).collect(Collectors.toList());
+            caInfoDto.setHeaders(headerTriples);
+            caInfoDto.setUsername(proxyCaInfo.getUsername());
+            caInfoDto.setPassword(proxyCaInfo.getPassword());
+            caInfoDto.setUpstreamCa(proxyCaInfo.getCa());
+            caInfoDto.setUpstreamTemplate(proxyCaInfo.getTemplate());
+            caInfoDto.setSansJson(proxyCaInfo.getSans());
+
+            return;
+        }
 
         catoken = cainfo.getCAToken();
         keyValidatorMap = keyValidatorSession.getKeyValidatorIdToNameMap(cainfo.getCAType());
@@ -2570,6 +2606,20 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
         return approvalRequestItems;
-    }    
+    }
 
+    public void addBlankHeader() {
+        if (caInfoDto.getHeaders() == null) {
+            caInfoDto.setHeaders(new ArrayList<>());
+        }
+        caInfoDto.getHeaders().add(new MutableTriple<>(false, "", ""));
+    }
+
+    public void removeHeader() {
+        caInfoDto.getHeaders().removeIf(triple -> triple.left);
+    }
+
+    public boolean getHasAnyHeader() {
+        return caInfoDto.getHeaders().size() > 0;
+    }
 }
