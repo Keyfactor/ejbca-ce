@@ -13,7 +13,8 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
+
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.util.SimpleTime;
@@ -100,7 +101,7 @@ public class CaInfoDto {
     private String upstreamUrl;
     private String username;
     private String password;
-    private List<MutablePair<String, String>> headers;
+    private List<MutableTriple<Boolean, String, String>> headers;
     private String upstreamCa;
     private String upstreamTemplate;
     private String sansJson; // Subject Attribute Names in JSON format for Upstream CA
@@ -715,14 +716,14 @@ public class CaInfoDto {
         this.password = password;
     }
 
-    public List<MutablePair<String, String>> getHeaders() {
+    public List<MutableTriple<Boolean, String, String>> getHeaders() {
         if (headers == null) {
             headers = new ArrayList<>();
         }
         return headers;
     }
 
-    public void setHeaders(List<MutablePair<String, String>> headers) {
+    public void setHeaders(List<MutableTriple<Boolean, String, String>> headers) {
         this.headers = headers;
     }
 

@@ -2217,28 +2217,35 @@
 				<h:panelGroup>
 					<h:outputLabel for="headersTitle" value="#{web.text.UPSTREAM_HEADERS}" style="font-weight: bold;" />
 				</h:panelGroup>
+
 				<h:panelGroup id="headersTitle" />
 				<c:forEach items="#{editCAsMBean.caInfoDto.headers}" var="header" varStatus="loopStatus">
 					<h:panelGroup id="wrapperHeaderKey-#{loopStatus.index}">
 						<h:selectBooleanCheckbox
-								id="removeComponentDnCheckBox"
-								value="#{dnComponent.shouldRemove}"
-								rendered="#{not endEntityProfileMBean.viewOnly}">
+								id="removeHeaderCheckBox-#{loopStatus.index}"
+								value="#{header.left}">
 							<f:ajax />
 						</h:selectBooleanCheckbox>
-						<h:inputText id="textFieldHeaderKey-#{loopStatus.index}" name="textFieldHeaderKey-#{status.index}" size="25" maxlength="225"
-									 value="#{header.left}" title="#{web.text.HEADER_FIELD_KEY}">
-							<f:ajax />
-						</h:inputText>
 					</h:panelGroup>
 					<h:panelGroup id="wrapperHeaderValue-#{loopStatus.index}">
+						<h:inputText id="textFieldHeaderKey-#{loopStatus.index}" name="textFieldHeaderKey-#{status.index}" size="25" maxlength="225"
+									 value="#{header.middle}" title="#{web.text.HEADER_FIELD_KEY}">
+							<f:ajax />
+						</h:inputText>
+						<h:outputText id="headerSeparator-#{loopStatus.index}" value=" : "/>
 						<h:inputText id="textFieldHeaderValue-#{loopStatus.index}" name="textFieldHeaderValue-#{status.index}" size="25" maxlength="225"
 									 value="#{header.right}" title="#{web.text.HEADER_FIELD_VALUE}">
 							<f:ajax />
 						</h:inputText>
 					</h:panelGroup>
 				</c:forEach>
-				<h:panelGroup id="addHeaderTitle" />
+				<h:panelGroup id="addHeaderTitle" rendered="#{not editCAsMBean.hasAnyHeader}" />
+				<h:commandButton id="removeHeaderButton"
+								 value="#{web.text.REMOVE}"
+								 action="#{editCAsMBean.removeHeader}"
+								 rendered="#{editCAsMBean.hasAnyHeader}">
+					<f:ajax render="proxyCa" />
+				</h:commandButton>
 				<h:commandButton id="addHeaderButton"
 								 value="#{web.text.ADD}"
 								 action="#{editCAsMBean.addBlankHeader}">

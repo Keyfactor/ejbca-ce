@@ -57,6 +57,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.CesecoreException;
@@ -1969,6 +1970,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     private CAInfo getCaInfo() throws NumberFormatException, AuthorizationDeniedException {
         if (caInfoDto.getCaType() == CAInfo.CATYPE_PROXY) {
+            List<MutablePair<String, String>> pairs = caInfoDto.getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
             ProxyCaInfo proxyCaInfo = new ProxyCaInfo.ProxyCaInfoBuilder()
                 .setCaId(caid)
                 .setName(caInfoDto.getCaName())
@@ -1976,7 +1978,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 .setSubjectDn(caInfoDto.getCaSubjectDN())
                 .setValidators(usedValidators)
                 .setEnrollWithCsrUrl(caInfoDto.getUpstreamUrl())
-                .setHeaders(caInfoDto.getHeaders())
+                .setHeaders(pairs)
                 .setUsername(caInfoDto.getUsername())
                 .setPassword(caInfoDto.getPassword())
                 .setCa(caInfoDto.getUpstreamCa())
@@ -2190,7 +2192,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             usedValidators = cainfo.getValidators();
             ProxyCaInfo proxyCaInfo = (ProxyCaInfo)cainfo;
             caInfoDto.setUpstreamUrl(proxyCaInfo.getEnrollWithCsrUrl());
-            caInfoDto.setHeaders(proxyCaInfo.getHeaders());
+            List<MutableTriple<Boolean, String, String>> headerTriples = proxyCaInfo.getHeaders().stream().map(pair -> new MutableTriple<Boolean, String, String>(false, pair.getLeft(), pair.getRight())).collect(Collectors.toList());
+            caInfoDto.setHeaders(headerTriples);
             caInfoDto.setUsername(proxyCaInfo.getUsername());
             caInfoDto.setPassword(proxyCaInfo.getPassword());
             caInfoDto.setUpstreamCa(proxyCaInfo.getCa());
@@ -2611,10 +2614,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (caInfoDto.getHeaders() == null) {
             caInfoDto.setHeaders(new ArrayList<>());
         }
-        caInfoDto.getHeaders().add(new MutablePair("", ""));
+        caInfoDto.getHeaders().add(new MutableTriple<>(false, "", ""));
     }
 
-    public void removeHeader(String index) {
-        caInfoDto.getHeaders();
+    public void removeHeader() {
+        caInfoDto.getHeaders().removeIf(triple -> triple.left);
+    }
+
+    public boolean getHasAnyHeader() {
+        return caInfoDto.getHeaders().size() > 0;
     }
 }
