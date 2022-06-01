@@ -164,6 +164,35 @@
                 }
             }
         },
+        "/v1/ca/{issuer_dn}/createCrl": {
+            "post": {
+                "tags": ["v1/ca"],
+                "summary": "Create CRL(main, partition and delta) issued by this CA",
+                "description": "",
+                "operationId": "createCrl",
+                "produces": ["application/json"],
+                "parameters": [{
+                        "name": "issuer_dn",
+                        "in": "path",
+                        "description": "the CRL issuers DN (CAs subject DN)",
+                        "required": true,
+                        "type": "string"
+                    }, {
+                        "name": "deltacrl",
+                        "in": "query",
+                        "description": "true to also create the deltaCRL, false to only create the base CRL",
+                        "required": false,
+                        "type": "boolean",
+                        "default": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    }
+                }
+            }
+        },
         "/v1/ca": {
             "get": {
                 "tags": ["v1/ca"],
