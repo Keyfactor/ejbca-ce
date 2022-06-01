@@ -802,7 +802,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int caId : caSession.getAllCaIds()) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caId);
             // We may have CAIds that can not be resolved to a real CA, for example CVC CAs on Community
-            if (cainfo != null) {
+            if (cainfo != null && cainfo.getCAToken() != null) {
                 ret.add(cainfo.getCAToken().getCryptoTokenId());
             }
         }
