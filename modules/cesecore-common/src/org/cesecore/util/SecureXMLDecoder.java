@@ -349,11 +349,9 @@ public class SecureXMLDecoder implements AutoCloseable {
                     case "org.cesecore.keybind.InternalKeyBindingTrustEntry":
                         value = parseObject(new InternalKeyBindingTrustEntry());
                         break;
-                    case "org.ejbca.core.model.ra.ExtendedInformation":
-                        value = parseObject(new ExtendedInformation()); // Use the new class
-                        break;
                     case "org.ejbca.core.model.ra.raadmin.UserNotification":
                     case "org.ejbca.core.model.ra.UserDataVO":
+                    case "org.ejbca.core.model.ra.ExtendedInformation": // Used by UserDataVO
                     case "org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl":
                     case "org.ejbca.core.protocol.acme.logic.AcmeChallengeImpl":
                     case "org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl":
@@ -772,7 +770,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
                             throw new IOException(errorMessage("Method \"" + setterName + "\" could not be called."), e);
                         } catch (NoSuchMethodException e) {
-                            throwOrLog(errorMessage("No setter method \"" + setterName + "\" was found with parameter type " + ClassUtils.getShortClassName(value, "null")), e);
+                            throwOrLog(errorMessage("No setter method \"" + setterName + "\" was found with parameter type " + ClassUtils.getShortClassName(value, "null") + " in object " + obj), e);
                         }
                     }
                     storeObjectById(id, value);
