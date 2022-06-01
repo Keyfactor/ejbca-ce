@@ -584,7 +584,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             mergeCertificatePoliciesFromCAAndProfile(citsCainfo, certprofile);
         } else if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
             log.info("Creating a PROXY CA: " + cainfo.getName());
-            // ProxyCaInfo proxyCaInfo = (ProxyCaInfo) cainfo;
             // Create PROXY CA
             ca = (CA) CAFactory.INSTANCE.getProxyCa(cainfo);
         } else {

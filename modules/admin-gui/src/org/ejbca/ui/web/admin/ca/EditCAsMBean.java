@@ -2179,11 +2179,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
-
-        // caInfoDto.setHeaders(new ArrayList<>()); // TODO: confirm if necessary
     }
 
-    private void initEditCaPage() { // TODO: modify this method to work with ProxyCa
+    private void initEditCaPage() {
         if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
             caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
             cainfo.setCAId(cainfo.getCAId());
