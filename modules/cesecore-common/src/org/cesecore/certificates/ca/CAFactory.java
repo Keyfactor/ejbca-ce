@@ -131,9 +131,9 @@ public enum CAFactory {
         return null;
     }
 
-    public CACommon getProxyCa(final X509CAInfo caInfo)  { //TODO: should have a ProxyCaInfo class
+    public CACommon getProxyCa(final CAInfo caInfo)  {
         if (caImplMap.containsKey(CA_TYPE_PROXY)) {
-            return createCaByImpl(CA_TYPE_PROXY, X509CAInfo.class, caInfo);
+            return createCaByImpl(CA_TYPE_PROXY, CAInfo.class, caInfo);
         }
         log.error("PROXYCA implementation not found");
         return null;
