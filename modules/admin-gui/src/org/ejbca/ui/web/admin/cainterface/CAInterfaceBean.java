@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJBException;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +48,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.util.encoders.Hex;
@@ -430,7 +432,6 @@ public class CAInterfaceBean implements Serializable {
                 ProxyCaInfo proxyCaInfo =  proxyCaInfoBuilder
                     //.setIncludeInHealthCheck(false) // TODO: to be confirmed
                     .build();
-                // proxyCaInfo.setSubjectDN("CN=" + proxyCaInfo.getName());
                 proxyCaInfo.setSubjectDN(caInfoDto.getCaSubjectDN());
                 proxyCaInfo.setEncodedValidity("99y");
                 final int caid = CertTools.stringToBCDNString(proxyCaInfo.getSubjectDN()).hashCode();
@@ -1494,12 +1495,14 @@ public class CAInterfaceBean implements Serializable {
     }
 
     private ProxyCaInfo.ProxyCaInfoBuilder createProxyCaInfoBuilder(CaInfoDto ca) {
+        List<MutablePair<String, String>> headerPairs = ca.getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
         ProxyCaInfo.ProxyCaInfoBuilder proxyCaInfoBuilder = new ProxyCaInfo.ProxyCaInfoBuilder()
             .setName(ca.getCaName())
             .setStatus(CAConstants.CA_ACTIVE)
             .setDescription(ca.getDescription())
+            .setSubjectDn(ca.getCaSubjectDN())
             .setEnrollWithCsrUrl(ca.getUpstreamUrl())
-            .setHeaders(ca.getHeaders())
+            .setHeaders(headerPairs)
             .setUsername(ca.getUsername())
             .setPassword(ca.getPassword())
             .setCa(ca.getUpstreamCa())
