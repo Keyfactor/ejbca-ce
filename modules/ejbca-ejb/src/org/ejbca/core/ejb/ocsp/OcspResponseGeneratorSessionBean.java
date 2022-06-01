@@ -314,8 +314,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                     final CAInfo caInfo = caSession.getCAInfoInternal(caId);
                     if (caInfo == null || caInfo.getCAType() == CAInfo.CATYPE_CVC
-                            || caInfo.getCAType() == CAInfo.CATYPE_CITS) {
-                        // Bravely ignore OCSP for CVC CAs
+                            || caInfo.getCAType() == CAInfo.CATYPE_CITS || caInfo.getCAType() == CAInfo.CATYPE_PROXY) {
+                        // Bravely ignore OCSP for CVC CAs and PROXY CAs
                         continue;
                     }
 
