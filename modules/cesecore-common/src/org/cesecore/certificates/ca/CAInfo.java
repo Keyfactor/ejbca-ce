@@ -215,6 +215,9 @@ public abstract class CAInfo implements Serializable {
         if (catype == CAInfo.CATYPE_CITS) {
             return "CITS";
         }
+        if (catype == CAInfo.CATYPE_PROXY) {
+            return "PROXY";
+        }
         return String.valueOf(catype);
     }
 
