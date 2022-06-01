@@ -47,6 +47,7 @@
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path location="${mod.statedump-common.lib}"/>
 		<path location="${mod.acme-common.jar}"/>
+		<path location="${mod.proxy-ca.jar}"/>
 	</path>
 	
     <path id="test.classpath">
