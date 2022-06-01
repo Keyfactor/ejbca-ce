@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificate.ssh;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
@@ -53,10 +54,11 @@ public enum SshKeyFactory {
      */
     public SshPublicKey getSshPublicKey(final PublicKey publicKey) {
         try {
-            SshPublicKey result = publicKeyImplementations.get(publicKey.getAlgorithm()).newInstance();
+            SshPublicKey result = publicKeyImplementations.get(publicKey.getAlgorithm()).getConstructor().newInstance();
             result.setPublicKey(publicKey);
             return result;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                | SecurityException e) {
             throw new IllegalStateException(
                     "Could not instance class of type " + publicKeyImplementations.get(publicKey.getAlgorithm()).getCanonicalName(), e);
         }
@@ -82,12 +84,12 @@ public enum SshKeyFactory {
         }
 
         try {
-            SshPublicKey result = sshKeyImplementations.get(algorithm).newInstance();
+            SshPublicKey result = sshKeyImplementations.get(algorithm).getConstructor().newInstance();
             result.init(publicKey);
             return result;
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(
-                    "Could not instance class of type " + sshKeyImplementations.get(algorithm).getCanonicalName(), e);
+        } catch (InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+                | IllegalArgumentException e) {
+            throw new IllegalStateException("Could not instance class of type " + sshKeyImplementations.get(algorithm).getCanonicalName(), e);
         }
     }
 }
