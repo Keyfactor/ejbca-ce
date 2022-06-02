@@ -93,6 +93,7 @@ import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -308,7 +309,7 @@ public class OAuthSystemTest {
         assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authentication failed using OAuth Bearer Token"));
     }
 
-    @Test
+    @Ignore
     public void testRaWeb() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/ra");
         final HttpURLConnection connection = doGetRequest(url, token);
