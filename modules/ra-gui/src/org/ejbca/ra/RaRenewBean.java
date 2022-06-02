@@ -12,29 +12,53 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Random;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
+import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaCertificateDataOnRenew;
+import org.ejbca.core.model.era.RaSelfRenewCertificateData;
 
 
 /**
  * Backing bean for the Renew Certificate page
+ *
  */
 @ManagedBean
 @ViewScoped
@@ -58,8 +82,20 @@ public class RaRenewBean implements Serializable {
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
+    private enum FileType {
+        PEM("Pem", ".pem"),
+        DER("Der", ".der");
+        private String label;
+        private String extension;
+
+        FileType(String label, String extension) {
+            this.label = label;
+            this.extension = extension;
+        }
+    };
     private boolean initialized = false;
     private boolean continuePressed = false;
+    private boolean notificationConfigured = false;
     private String currentSubjectDn;
     private String currentIssuerDn;
     private BigInteger currentSerialNumber;
@@ -75,6 +111,15 @@ public class RaRenewBean implements Serializable {
     private String newTokenFileExtension;
     private Integer newApprovalRequestId;
     private boolean certGenerationDone;
+    private String enrollmentCode;
+    private String confirmPassword;
+    private FileType fileType;
+    private String selectedAlgorithm;
+    private boolean keyAlgorithmPreSet;
+    private List<String> availableKeyAlgorithms;
+    private List<Integer> availableBitLengths;
+    private List<String> availableEcCurves;
+    private UIComponent confirmPasswordComponent;
 
     public void initialize() {
         if (initialized) {
@@ -104,6 +149,7 @@ public class RaRenewBean implements Serializable {
     public String getCurrentIssuerDn() { return currentIssuerDn; }
     public String getCurrentSerialNumber() { return currentSerialNumber != null ? currentSerialNumber.toString(16) : ""; }
     public String getCurrentExpirationDate() { return currentExpirationDate; }
+    public boolean isKeyAlgorithmPreSet() { return keyAlgorithmPreSet; }
 
     public boolean isContinueButtonShown() {
         return currentSerialNumber != null && !continuePressed;
@@ -128,6 +174,25 @@ public class RaRenewBean implements Serializable {
     public String getUsername() { return username; }
     public String getNewSubjectDn() { return newSubjectDn; }
     public boolean isSubjectDnChanged() { return subjectDnChanged; }
+    public String getEnrollmentCode() { return enrollmentCode; }
+    public void setEnrollmentCode(String enrollmentCode) { this.enrollmentCode = enrollmentCode; }
+    public String getConfirmPassword() { return confirmPassword; }
+    public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+    public FileType getFileType() { return fileType; }
+    public void setFileType(FileType fileType) { this.fileType = fileType; }
+    public boolean isNotificationConfigured() { return notificationConfigured; }
+    public String getSelectedAlgorithm() { return selectedAlgorithm; }
+    public void setSelectedAlgorithm(String selectedAlgorithm) { this.selectedAlgorithm = selectedAlgorithm; }
+    public UIComponent getConfirmPasswordComponent() { return confirmPasswordComponent; }
+    public void setConfirmPasswordComponent(UIComponent confirmPasswordComponent) { this.confirmPasswordComponent = confirmPasswordComponent; }
+
+    public List<SelectItem> getFileTypeSelectItems(){
+        List<SelectItem> fileTypeSelectItems = new ArrayList<>();
+        for(FileType type : FileType.values()){
+            fileTypeSelectItems.add(new SelectItem(type, type.label));
+        }
+        return fileTypeSelectItems;
+    }
 
     public boolean isRequestRenewalButtonShown() {
         return continuePressed;
@@ -158,22 +223,212 @@ public class RaRenewBean implements Serializable {
 
     public boolean renewCertificate(boolean dryRun) {
         log.debug("Performing admin client certificate renewal.");
-        // TODO actually get data and perform renewal (ECA-10706)
-        caName = "CA name";
-        endEntityProfileName = "EE profile";
-        certificateProfileName = "Certificate Profile";
-        username = "username";
-        newSubjectDn = "CN=test";
+
+        RaCertificateDataOnRenew certificateDataForRenew = raMasterApiProxyBean.getCertificateDataForRenew(currentSerialNumber, currentIssuerDn);
+
+        if (certificateDataForRenew != null) {
+            username = certificateDataForRenew.getUsername();
+            if (certificateDataForRenew.isRevoked()) {
+                raLocaleBean.addMessageInfo("renewcertificate_page_certificate_revoked_message", currentSerialNumber, currentIssuerDn);
+                return true;
+            }
+            caName = certificateDataForRenew.getCaName();
+            endEntityProfileName = certificateDataForRenew.getEndEntityProfileName();
+            certificateProfileName = certificateDataForRenew.getCertificateProfileName();
+            notificationConfigured = certificateDataForRenew.isNotificationConfigured();
+            keyAlgorithmPreSet = certificateDataForRenew.isKeyAlgorithmPreSet();
+            if (!keyAlgorithmPreSet) {
+                availableKeyAlgorithms = certificateDataForRenew.getAvailableKeyAlgorithms();
+                availableBitLengths = certificateDataForRenew.getAvailableBitLengths();
+                availableEcCurves = certificateDataForRenew.getAvailableEcCurves();
+            }
+            if (StringUtils.isEmpty(newSubjectDn)) {
+                newSubjectDn = currentSubjectDn;
+            }
+        } else {
+            raLocaleBean.addMessageInfo("renewcertificate_page_no_user_message");
+            return false;
+        }
+
         if (!dryRun) {
-            if (new Random().nextBoolean()) {
-                newToken = new byte[] { 1, 2, 3 };
-                newTokenContentType = "application/octet-stream";
-                newTokenFileExtension = ".pem";
-            } else {
-                newApprovalRequestId = new Random().nextInt();
+            RaSelfRenewCertificateData renewCertificateData = new RaSelfRenewCertificateData();
+            renewCertificateData.setUsername(username);
+            if (!isNotificationConfigured()) {
+                renewCertificateData.setPassword(getEnrollmentCode());
+            }
+            renewCertificateData.setClientIPAddress(raAuthenticationBean.getUserRemoteAddr());
+            if (!keyAlgorithmPreSet) {
+                if (!setKeyAlgorithm(renewCertificateData)) {
+                    return false;
+                }
+            }
+            try {
+                byte[] keystoreAsByteArray  = raMasterApiProxyBean.selfRenewCertificate(renewCertificateData);
+                try(ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
+                    buffer.write(keystoreAsByteArray);
+                    newToken = buffer.toByteArray();
+                }
+            }  catch (ApprovalException e) {
+                raLocaleBean.addMessageInfo("renewcertificate_page_certificate_waiting_for_approval_message");
+            } catch (WaitingForApprovalException e) {
+                newApprovalRequestId = e.getRequestId();
+            } catch (Exception e) {
+                log.error("Failed to renew certificate for user " + username + " with serial number " + currentSerialNumber
+                + " and issuer " + currentIssuerDn, e);
+                raLocaleBean.addMessageError("renewcertificate_page_certificate_renew_error");
+            }
+
+            if (newToken != null) {
+                newTokenFileExtension = getFileType().extension;
+                switch (getFileType()) {
+                    case PEM: {
+                        newTokenContentType = "application/octet-stream";
+                        try {
+                            Certificate certificate = CertTools.getCertfromByteArray(newToken, Certificate.class);
+                            newToken = CertTools.getPemFromCertificateChain(Collections.singletonList(certificate));
+                        } catch (CertificateParsingException | CertificateEncodingException e) {
+                            log.info(e);
+                        }
+                        break;
+                    }
+                    case DER: {
+                        newTokenContentType = "application/pkix-cert";
+                    }
+                }
             }
         }
         return true;
+    }
+
+    private boolean setKeyAlgorithm(RaSelfRenewCertificateData renewCertificateData) {
+        if (StringUtils.isEmpty(selectedAlgorithm)) {
+            raLocaleBean.addMessageError("enroll_no_key_algorithm");
+            log.info("No key algorithm was provided.");
+            return false;
+        }
+        final String[] parts = StringUtils.split(selectedAlgorithm, '_');
+        if (parts == null || parts.length < 1) {
+            raLocaleBean.addMessageError("enroll_no_key_algorithm");
+            log.info("No full key algorithm was provided: "+selectedAlgorithm);
+            return false;
+        }
+        final String keyAlg = parts[0];
+        if (StringUtils.isEmpty(keyAlg)) {
+            raLocaleBean.addMessageError("enroll_no_key_algorithm");
+            log.info("No key algorithm was provided: "+selectedAlgorithm);
+            return false;
+        }
+        final String keySpec;
+        if (parts.length > 1) { // It's ok for some algs (EdDSA) to have no keySpec
+            keySpec = parts[1];
+            if (StringUtils.isEmpty(keySpec)) {
+                raLocaleBean.addMessageError("enroll_no_key_specification");
+                log.info("No key specification was provided: "+selectedAlgorithm);
+                return false;
+            }
+        } else {
+            keySpec = null;
+        }
+        renewCertificateData.setKeyAlg(keyAlg);
+        renewCertificateData.setKeySpec(keySpec);
+        return true;
+    }
+
+    public List<SelectItem> getAvailableAlgorithmSelectItems() {
+        final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
+         if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                for (final int availableBitLength : availableBitLengths) {
+                    if (availableBitLength == 1024) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
+                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
+                    }
+                }
+            }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                for (final int availableBitLength : availableBitLengths) {
+                    if (availableBitLength >= 1024) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
+                                AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
+                    }
+                }
+            }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED25519)) {
+                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519,
+                        AlgorithmConstants.KEYALGORITHM_ED25519));
+            }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED448)) {
+                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448,
+                        AlgorithmConstants.KEYALGORITHM_ED448));
+            }
+            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+                final Set<String> ecChoices = new HashSet<>();
+                if (availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE)) {
+                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap(false).keySet()) {
+                        if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
+                            continue;
+                        }
+                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
+                        if (availableBitLengths.contains(bitLength)) {
+                            ecChoices.add(ecNamedCurve);
+                        }
+                    }
+                }
+                ecChoices.addAll(availableEcCurves);
+                ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
+                final List<String> ecChoicesList = new ArrayList<>(ecChoices);
+                Collections.sort(ecChoicesList);
+                for (final String ecNamedCurve : ecChoicesList) {
+                    if (!AlgorithmTools.isKnownAlias(ecNamedCurve)) {
+                        log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the RA web.");
+                        continue;
+                    }
+                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
+                            + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
+                }
+            }
+            for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
+                if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
+                    for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
+                        final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
+                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
+                        if (availableBitLengths.contains(bitLength)) {
+                            availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
+                                    CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
+                        } else {
+                            if (log.isTraceEnabled()) {
+                                log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
+                            }
+                        }
+                    }
+                }
+            }
+            if (availableAlgorithmSelectItems.size() < 1) {
+                availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
+            }
+        EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
+        return availableAlgorithmSelectItems;
+    }
+
+    /**
+     * Validate that password and password confirm entries match and render error messages otherwise.
+     */
+    public final void validatePassword(ComponentSystemEvent event) {
+        if (!isNotificationConfigured()) {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            UIComponent components = event.getComponent();
+            UIInput uiInputPassword = (UIInput) components.findComponent("enrollmentCode");
+            String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
+            UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
+            String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
+            if (password.isEmpty()) {
+                fc.addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_password_can_not_be_empty"));
+                fc.renderResponse();
+            }
+            if (!password.equals(confirmPassword)) {
+                fc.addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
+                fc.renderResponse();
+            }
+        }
     }
 
 }
