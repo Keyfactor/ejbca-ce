@@ -30,7 +30,7 @@
 	<ui:define name="content">
 		<h:panelGroup layout="block" class="header" id="title">
 			<h1>
-				<h:outputText value="#{msg.renewcertificate_page_title}" />
+				<h:outputText value="#{raAccessBean.authorizedToRenewClientCertificate eq true? msg.renewcertificate_page_title : msg.renewcertificate_page_role_not_authorized }" />
 			</h1>
 		</h:panelGroup>
 
