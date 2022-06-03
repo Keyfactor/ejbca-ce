@@ -58,8 +58,7 @@ public class RaAuthenticationBean implements Serializable {
 
     // JavaServlet Specification 2.5 Section 7.1.1: "...The name of the session tracking cookie must be JSESSIONID".
     private static final String SESSIONCOOKIENAME = "JSESSIONID";
-    private static final String PUBLIC_ACCESS_USER = "Public Access User";
-
+    
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     @EJB
@@ -137,8 +136,6 @@ public class RaAuthenticationBean implements Serializable {
                     return ((OAuth2Principal)principal).getDisplayName();
                 }
             }
-        } else if (authToken instanceof PublicAccessAuthenticationToken) {
-            return PUBLIC_ACCESS_USER;
         }
         return authToken.toString();
     }
