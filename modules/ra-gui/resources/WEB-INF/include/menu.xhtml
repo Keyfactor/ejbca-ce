@@ -175,7 +175,7 @@
                                 <h:selectBooleanCheckbox id="web-express-usermenu" class="web-express tablet"/>
                                 <label for="web-express-usermenu" class="web-express tablet">&nbsp;</label>
                                 <h:outputLink value="#" styleClass="pure-menu-link">
-                                    <h:outputText value="#{msg.menu_pagetitle_loggedin} #{raAuthenticationBean.userDisplayName}"/>
+                                    <h:outputText value="#{raAuthenticationBean.publicUser eq true? msg.menu_pagetitle_renew_client_certificate : msg.menu_pagetitle_loggedin += ' ' += raAuthenticationBean.userDisplayName}"/>
                                 </h:outputLink>
                                 <ul class="pure-menu-children">
                                     <ui:fragment rendered="#{raAuthenticationBean.clientCertificateUser}">
