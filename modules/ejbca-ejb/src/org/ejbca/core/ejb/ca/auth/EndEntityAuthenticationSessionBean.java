@@ -272,12 +272,13 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             if (eep == null) {
                 log.warn("End Entity Profile with ID " + userdata.getEndEntityProfileId() + " doesn't exist. Username: " + username);
             } else if (eep.isRenewDaysBeforeExpirationUsed()) {
-                final long minimumExpirationDate = System.currentTimeMillis() - eep.getRenewDaysBeforeExpiration()*24*60*60;
+                final long maximumExpirationDate = System.currentTimeMillis() + eep.getRenewDaysBeforeExpiration()*24*60*60*1000;
+                Date maxDate = new Date(maximumExpirationDate);
                 final Date now = new Date();
                 final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(
-                        username, CertificateConstants.CERT_ACTIVE, minimumExpirationDate);
+                        username, CertificateConstants.CERT_ACTIVE, now.getTime());
                 for (final Certificate cert : certs) {
-                    if (!now.after(CertTools.getNotAfter(cert))) {
+                    if (maxDate.after(CertTools.getNotAfter(cert))) {
                         return true;
                     }
                 }
