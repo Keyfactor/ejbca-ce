@@ -15,7 +15,6 @@ package org.cesecore.util;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.junit.Test;
 
 import java.beans.XMLDecoder;
@@ -49,6 +48,10 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+/**
+ * Tests of {@link SecureXMLDecoder}. This test covers deserialization of CESeCore classes only.
+ * Tests of deserialization of EJBCA classes are in SecureXMLDecoderEjbcaUnitTest in ejbca-common.
+ */
 public class SecureXMLDecoderTest {
 
     private static final Logger log = Logger.getLogger(SecureXMLDecoderTest.class);
@@ -431,52 +434,6 @@ public class SecureXMLDecoderTest {
         assertEquals("Wrong PKI DS language", "en", pkids.getLanguage());
         assertEquals("Wrong PKI DS URL", "https://cdn.vm.test/etsi_pds_en_server.pdf", pkids.getUrl());
         log.trace("<decodeCorruptPkiDSFromEjbca740");
-    }
-
-    @Test
-    public void decodeExtendedInformationEmpty() throws IOException {
-        log.trace(">decodeExtendedInformationEmpty");
-        // Given
-        final String xml =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><java version=\"1.6.0.0\" class=\"java.beans.XMLDecoder\">\n" +
-                "  <object class=\"org.ejbca.core.model.ra.ExtendedInformation\"/>\n" +
-                "</java>";
-        // When
-        final Object result = deserializeObject(xml);
-        // Then
-        assertNotNull(result);
-        assertTrue(result instanceof ExtendedInformation);
-        log.trace("<decodeExtendedInformationEmpty");
-    }
-
-    @Test
-    public void decodeExtendedInformationNormal() throws Exception {
-        log.trace(">decodeExtendedInformationNormal");
-        // Given
-        final String xml =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><java version=\"1.6.0.0\" class=\"java.beans.XMLDecoder\">\n" +
-                "  <object class=\"org.ejbca.core.model.ra.ExtendedInformation\" id=\"ExtendedInformation0\">\n" +
-                "    <void id=\"LinkedHashMap0\" property=\"data\">\n" +
-                "      <void method=\"put\">\n" +
-                "        <string>CERTIFICATESERIALNUMBER</string>\n" +
-                "        <string>ew==</string>\n" +
-                "      </void>\n" +
-                "    </void>\n" +
-                "    <void property=\"data\">\n" +
-                "      <object idref=\"LinkedHashMap0\"/>\n" +
-                "    </void>\n" +
-                "  </object>\n" +
-                "</java>";
-        // When
-        final Object result = deserializeObject(xml);
-        // Then
-        assertNotNull(result);
-        assertTrue(result instanceof ExtendedInformation);
-        final ExtendedInformation extendedInfo = (ExtendedInformation) result;
-        final LinkedHashMap<?,?> rawData = extendedInfo.getRawData();
-        assertNotNull(rawData);
-        assertEquals("ew==", rawData.get("CERTIFICATESERIALNUMBER"));
-        log.trace("<decodeExtendedInformationNormal");
     }
 
     @Test

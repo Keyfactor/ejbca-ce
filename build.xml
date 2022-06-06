@@ -1121,11 +1121,13 @@
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/ConfigdumpRestResourceSwagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/CryptoTokenRestResourceSwagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/EndEntityRestResourceSwagger.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/EndEntityRestResourceV2Swagger.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaRestResourceUnitTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CaManagementRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/CryptoTokenRestResourceSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSystemTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/src-test/org/ejbca/ui/web/rest/api/resource/EndEntityRestResourceSearchPaginationSystemTest.java"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/ssh/**"/>
 		    	<exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/keys/token/p11ng/**"/>
