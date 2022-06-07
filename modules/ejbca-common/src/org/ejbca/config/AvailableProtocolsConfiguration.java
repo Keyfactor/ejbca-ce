@@ -49,6 +49,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/ca<br/>/ejbca/ejbca-rest-api/v1/certificate"),
         REST_CRYPTOTOKEN_MANAGEMENT("REST Crypto Token Management", "/ejbca/ejbca-rest-api/v1/cryptotoken"),
         REST_ENDENTITY_MANAGEMENT("REST End Entity Management", "/ejbca/ejbca-rest-api/v1/endentity"),
+        REST_ENDENTITY_MANAGEMENT_V2("REST End Entity Management V2", "/ejbca/ejbca-rest-api/v2/endentity"),
         REST_CONFIGDUMP("REST Configdump", "/ejbca/ejbca-rest-api/v1/configdump"),
         REST_CERTIFICATE_MANAGEMENT_V2("REST Certificate Management V2", "/ejbca/ejbca-rest-api/v2/certificate"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
@@ -111,6 +112,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) || 
+                protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName()) || 
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName()) ||
                 protocol.equals(AvailableProtocols.ITS.getName()))) {
             setProtocolStatus(protocol, false);
