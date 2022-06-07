@@ -164,6 +164,35 @@
                 }
             }
         },
+        "/v1/ca/{issuer_dn}/createCrl": {
+            "post": {
+                "tags": ["v1/ca"],
+                "summary": "Create CRL(main, partition and delta) issued by this CA",
+                "description": "",
+                "operationId": "createCrl",
+                "produces": ["application/json"],
+                "parameters": [{
+                        "name": "issuer_dn",
+                        "in": "path",
+                        "description": "the CRL issuers DN (CAs subject DN)",
+                        "required": true,
+                        "type": "string"
+                    }, {
+                        "name": "deltacrl",
+                        "in": "query",
+                        "description": "true to also create the deltaCRL, false to only create the base CRL",
+                        "required": false,
+                        "type": "boolean",
+                        "default": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    }
+                }
+            }
+        },
         "/v1/ca": {
             "get": {
                 "tags": ["v1/ca"],
@@ -719,6 +748,52 @@
                         "description": "successful operation",
                         "schema": {
                             "$ref": "#/definitions/RestResourceStatusRestResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/endentity/status": {
+            "get": {
+                "tags": ["v2/endentity"],
+                "summary": "Get the status of this REST Resource",
+                "description": "Returns status, API version and EJBCA version.",
+                "operationId": "status_6",
+                "produces": ["application/json"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/RestResourceStatusRestResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/endentity/search": {
+            "post": {
+                "tags": ["v2/endentity"],
+                "summary": "Searches for end entities with given criteria.",
+                "description": "Insert as many search criteria as needed and optionally a sorting criteria. A reference about allowed values for criteria could be found below, under SearchEndEntityCriteriaRestRequestV2 model.",
+                "operationId": "searchCertificates_4",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "description": "Insert as many search criteria as needed and optionally a sorting criteria.",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/SearchEndEntitiesRestRequestV2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/SearchEndEntitiesRestResponse"
                         }
                     }
                 }
@@ -1306,6 +1381,49 @@
                     "description": "A List of search criteria.",
                     "items": {
                         "$ref": "#/definitions/SearchEndEntitiesCriteriaRestRequest"
+                    }
+                }
+            }
+        },
+        "SearchEndEntitiesSortRestRequest": {
+            "type": "object",
+            "properties": {
+            	"property": {
+                    "type": "string",
+                    "enum": ["USERNAME", "SUBJECT_DN", "SUBJECT_ALT_NAME", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "STATUS", "UPDATE_TIME", "CREATED_TIME"],
+                    "description": "The sort property."
+                },
+                "operation": {
+                    "type": "string",
+                    "enum": ["ASC", "DESC"],
+                    "description": "The sort operation."
+                }
+            },
+            "description": "Pagination with limit and offset.\n"
+        },
+        "SearchEndEntitiesRestRequestV2": {
+            "type": "object",
+            "properties": {
+                "max_number_of_results": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "current_page": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "criteria": {
+                    "type": "array",
+                    "description": "A List of search criteria.",
+                    "items": {
+                        "$ref": "#/definitions/SearchEndEntitiesCriteriaRestRequest"
+                    }
+                },
+                "sort": {
+                    "type": "object",
+                    "description": "Sorting ascending or descending.",
+                    "items": {
+                        "$ref": "#/definitions/SearchEndEntitiesSortRestRequest"
                     }
                 }
             }
