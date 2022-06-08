@@ -99,6 +99,9 @@ public interface AcmeRaMasterApiSessionLocal {
 
     /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorizationsByAccountId(String) */
     List<AcmeAuthorization> getAcmeAuthorizationsByAccountId(String accountId);
+    
+    /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmePreAuthorizationsByAccountIdAndIdentifiers(String, List<AcmeAuthorization>) */
+    List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers);
 
     /** @see org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#createOrUpdate(AcmeAuthorization) */
     String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization);
