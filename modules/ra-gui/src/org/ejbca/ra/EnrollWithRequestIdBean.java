@@ -827,6 +827,9 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public String getPreSetKeyAlgorithm() {
+        if (endEntityInformation.getExtendedInformation() == null) {
+            return null;
+        }
         final String subType = endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmSubType(); // can be null, but that's ok
         return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() + (subType != null ? (" " + subType) : "");
     }
