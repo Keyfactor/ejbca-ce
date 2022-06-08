@@ -426,6 +426,10 @@ CREATE TABLE AcmeChallengeData (
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(254) NOT NULL,
+    identifier VARCHAR(254) NOT NULL,
+    identifierType VARCHAR(20) NOT NULL,
+    expires BIGINT,
+    status VARCHAR(20) NOT NULL,
     orderId VARCHAR(254),
     accountId VARCHAR(254) NOT NULL,
     rawData CLOB(1M),
