@@ -23,6 +23,7 @@ import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionRemote;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 
 /**
  * Class that receives a Acme message and passes it on to the correct message handler.
@@ -53,6 +54,11 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
     }
 
     @Override
+    public List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AcmeAuthorizationData find(String authorizationId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
@@ -66,6 +72,11 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
 
     @Override
     public List<AcmeAuthorizationData> findByAccountId(String accountId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public List<AcmeAuthorizationData> findPreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
