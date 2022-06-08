@@ -431,6 +431,10 @@ CREATE TABLE AcmeChallengeData (
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(255) NOT NULL,
+    identifier VARCHAR(255) NOT NULL,
+    identifierType VARCHAR(20) NOT NULL,
+    expires DECIMAL(20,0),
+    status VARCHAR(20) NOT NULL,
     orderId VARCHAR(255),
     accountId VARCHAR(255) NOT NULL,
     rawData TEXT,
