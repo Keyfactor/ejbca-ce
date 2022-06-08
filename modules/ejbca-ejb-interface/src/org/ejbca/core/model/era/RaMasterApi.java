@@ -83,6 +83,7 @@ import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -1474,7 +1475,15 @@ public interface RaMasterApi {
      * @param accountId a related account id
      * @return the list of sought AcmeAuthorizations or null if not found
      */
-  List<AcmeAuthorization> getAcmeAuthorizationsByAccountId (final String accountId);
+  List<AcmeAuthorization> getAcmeAuthorizationsByAccountId (String accountId);
+
+    /**
+     * Get not expired AcmeAuthorizations by accountId and identifiers.
+     * @param accountId a related account id
+     * @param identifiers the list of ACME identifiers
+     * @return the list of sought AcmeAuthorizations or null if not found
+     */
+     List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers);
 
     /**
      * Create or update the AcmeAuthorization.
