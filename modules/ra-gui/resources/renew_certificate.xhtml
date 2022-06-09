@@ -21,7 +21,6 @@
      *                                                                       *
      *************************************************************************/
 
-     version: $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -31,17 +30,17 @@
 	<ui:define name="content">
 		<h:panelGroup layout="block" class="header" id="title">
 			<h1>
-				<h:outputText value="#{msg.renewcertificate_page_title}" />
+				<h:outputText value="#{raAccessBean.authorizedToRenewClientCertificate eq true? msg.renewcertificate_page_title : msg.renewcertificate_page_role_not_authorized }" />
 			</h1>
 		</h:panelGroup>
 
-		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.clientCertificateUser and raAccessBean.authorizedToRenewClientCertificate}">
+		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.certificateInRequest and raAccessBean.authorizedToRenewClientCertificate}">
 			<h:panelGroup layout="block" id="renewContentBody"
 				styleClass="content-body">
 
 				<h:panelGroup layout="block" id="renewCertExisting" styleClass="internal-frame">
 					<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel for="textSubjectDn"
+						<h:outputLabel for="textCurrentSubjectDn"
 							value="#{msg.renewcertificate_page_subject_dn}" />
 						<h:outputText id="textCurrentSubjectDn" value="#{raRenewBean.currentSubjectDn}" />
 					</h:panelGroup>
@@ -72,7 +71,7 @@
 						<h:outputText id="textCaName" value="#{raRenewBean.caName}" />
 					</h:panelGroup>
 					<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel for="textEndEntityproile"
+						<h:outputLabel for="textEndEntityProfile"
 							value="#{msg.renewcertificate_page_end_entity_profile}" />
 						<h:outputText id="textEndEntityProfile" value="#{raRenewBean.endEntityProfileName}" />
 					</h:panelGroup>
@@ -86,10 +85,40 @@
 							value="#{msg.renewcertificate_page_username}" />
 						<h:outputText id="textUsername" value="#{raRenewBean.username}" />
 					</h:panelGroup>
-					<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{raRenewBean.subjectDnChanged}">
-						<h:outputLabel for="textNewSubjectDn"
-							value="#{msg.renewcertificate_page_changed_subject_dn}" />
-						<h:outputText id="textNewSubjectDn" value="#{raRenewBean.newSubjectDn}" />
+					<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
+								  rendered="#{!raRenewBean.keyAlgorithmPreSet}">
+						<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
+						<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{raRenewBean.selectedAlgorithm}">
+							<f:selectItems value="#{raRenewBean.availableAlgorithmSelectItems}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<f:event type="postValidate" listener="#{raRenewBean.validatePassword}"/>
+					<h:panelGroup id="enteredRequestEnrollmentCode" layout="block"
+								  rendered="#{!raRenewBean.notificationConfigured}"
+								  styleClass="pure-control-group">
+						<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password} *" />
+						<h:inputSecret id="enrollmentCode" value="#{raRenewBean.enrollmentCode}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+							<f:validator validatorId="extendedRequiredValidator"/>
+							<f:attribute name="_required" value="true"/>
+						</h:inputSecret>
+						<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="validationErrorMessage showErrorMessage"/>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{!raRenewBean.notificationConfigured}">
+						<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password} *" />
+						<h:inputSecret id="passwordConfirmField" binding="#{raRenewBean.confirmPasswordComponent}" value="#{raRenewBean.confirmPassword}"
+									   styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+							<f:validator validatorId="extendedRequiredValidator"/>
+							<f:attribute name="_required" value="true"/>
+						</h:inputSecret>
+						<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="fileFormat" value="#{msg.renewcertificate_page_pem_or_der}" />
+						<h:selectOneMenu id="fileFormat" styleClass="jsAutoFocusLast"
+										 value="#{raRenewBean.fileType}" >
+							<f:selectItems value="#{raRenewBean.fileTypeSelectItems}" />
+							<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
+						</h:selectOneMenu>
 					</h:panelGroup>
 				</h:panelGroup>
 
