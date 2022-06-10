@@ -286,7 +286,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                     if (certs.isEmpty()) {
                         log.debug("End entity is in status GENERATED but has no certificates. Not allowing renewal. Username: " + username);
                     } else {
-                        log.debug("Certificates of end entity has expired. Not allowing renewal. Username: " + username);
+                        log.debug("Certificates of end entity will expire after allowed period. Not allowing renewal. Username: " + username);
                     }
                 }
             } else if (log.isDebugEnabled()) {
