@@ -13,10 +13,12 @@
 
 package org.ejbca.core.ejb.upgrade;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -109,9 +111,11 @@ import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
+import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -350,7 +354,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.8.1");
+                setLastPostUpgradedToVersion("7.10.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -658,6 +662,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.8.1");
         }
+        if (isLesserThan(oldVersion, "7.10.0")) {
+            if (!postMigrateDatabase710()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("7.10.0");
+        }
+        
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -696,7 +707,141 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Post upgrade to 7.8.1 complete.");
         return true;
     }
-
+    
+    /**
+     * Copies the fields 
+     * 
+     *  identifier, 
+     *  identifierType, 
+     *  status and
+     *  expires 
+     *  
+     *  from the AcmeAuthorizationData rawData into the separate DB columns for indexing.
+     */
+    @SuppressWarnings("unchecked")
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    private boolean postMigrateDatabase710() {
+        log.info("Starting post upgrade to 7.10.0");
+        
+        List<String> accountIds;
+        try {
+            final Query query = entityManager.createQuery("SELECT a.accountId FROM AcmeAccountData a");
+            accountIds = (List<String>) query.getResultList();
+        } catch (Exception e) {
+            log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+            return false;
+        }
+        
+        // two steps to upgrade all authorizations associated with an ACME account:
+        // 1. upgrade authorizations of 'normal' orders (have an orderId), or processed pre-authorizations (get an orderId during processing)
+        // 2. upgrade pre-authorization which still do not have an orderId.
+        
+        if (accountIds != null && accountIds.size() > 0) {
+            for (String accountId : accountIds) {
+                log.info("Upgrade authorizations for ACME account '" + accountId + "'.");
+                // step 1:
+                final List<String> orderIds;
+                try {
+                    final Query query = entityManager.createQuery("SELECT o.orderId FROM AcmeOrderData o WHERE o.accountId = :accountId");
+                    query.setParameter("accountId", accountId);
+                    orderIds = (List<String>) query.getResultList();
+                } catch (Exception e) {
+                    log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                    return false;
+                }
+                
+                if (orderIds != null && orderIds.size() > 0) {
+                    for (String orderId : orderIds) {
+                        List<String> rawDatas;
+                        try {
+                            Query query = entityManager.createQuery("SELECT a.rawData FROM AcmeAuthorizationData a WHERE a.accountId = :accountId and a.orderId = :orderId");
+                            query.setParameter("accountId", accountId);
+                            query.setParameter("orderId", orderId);
+                            rawDatas = (List<String>) query.getResultList();
+                            for (String rawData : rawDatas) {
+                                upgradeAcmeAuthorization(null, rawData);
+                            }
+                        } catch (Exception e) {
+                            log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                            return false;
+                        }
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No ACME orders for account with ID '" + accountId + " found'");
+                    }
+                }
+                
+                // step 2: pre-authorization which still do not have an orderId.
+                final List<String> preAuthorizationIds;
+                try {
+                    final Query query = entityManager.createQuery("SELECT a.authorizationId FROM AcmeAuthorizationData a WHERE a.accountId = :accountId and a.orderId is null");
+                    query.setParameter("accountId", accountId);
+                    preAuthorizationIds = (List<String>) query.getResultList();
+                } catch (Exception e) {
+                    log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                    return false;
+                }
+                
+                if (preAuthorizationIds != null && preAuthorizationIds.size() > 0) {
+                    for (String preAuthorizationId : preAuthorizationIds) {
+                        try {
+                            final Query query = entityManager.createQuery("SELECT a.rawData FROM AcmeAuthorizationData a WHERE a.authorizationId = :authorizationId");
+                            query.setParameter("authorizationId", preAuthorizationId);
+                            final String rawData = (String) query.getSingleResult();
+                            
+                            upgradeAcmeAuthorization(preAuthorizationId, rawData);
+                        } catch (Exception e) {
+                            log.error("An error occurred when updating data in database table 'AcmeAuthorizationData': " + e);
+                            return false;
+                        }
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No ACME pre-authorizations for account with ID '" + accountId + " found'");
+                    }
+                }
+            }
+        } else {
+            log.info("No ACME accounts or certificates found in the system. No upgrade for ACME authorizations required.");
+        }
+        
+        log.info("Post upgrade to 7.10.0 complete.");
+        return true;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void upgradeAcmeAuthorization(String authorizationId, final String rawData) {
+        try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(rawData.getBytes(StandardCharsets.UTF_8)));) {
+            final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap((Map<?, ?>) decoder.readObject());
+            final String identifier = (String) dataMap.get("acmeIdentifierValue");
+            final String identifierType = (String) dataMap.get("acmeIdentifierType");
+            final String status = (String) dataMap.get("status");
+            final Long expires = (Long) dataMap.get("expires");
+            if (authorizationId == null) {
+                authorizationId = (String) dataMap.get("authorizationId");
+            }
+            
+            final Query query = entityManager.createQuery("UPDATE AcmeAuthorizationData a SET a.identifier = :identifier, a.identifierType = :identifierType, a.status = :status, a.expires = :expires WHERE a.authorizationId = :authorizationId");
+            query.setParameter("identifier", identifier);
+            query.setParameter("identifierType", identifierType);
+            query.setParameter("status", status);
+            query.setParameter("expires", expires);
+            query.setParameter("authorizationId", authorizationId);
+            int rowsUpdated = query.executeUpdate();
+            if (rowsUpdated == 1) {
+                log.info("Upgraded ACME authorization with ID '" + authorizationId + "', status='" + status + "', identifier='" + identifier + "'.");
+            } else {
+                // Should never happen.
+                throw new IOException("Found '" + rowsUpdated + " for ACME authorizations with ID '" + authorizationId + "'.");
+            }
+        } catch (Exception e) {
+            final String msg = "Failed to upgrade AcmeAuthorizationData in database: " + e.getMessage();
+            log.error(msg + ". Data:\n" + rawData);
+            throw new IllegalStateException(msg, e);
+        }
+    }
+    
     private boolean postMigrateDatabase780() {
         // post upgrade is only allowed when all OAuth providers have audience values.
         OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
@@ -718,7 +863,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.8.1");
+        return isLesserThan(getLastPostUpgradedToVersion(), "7.10.0");
     }
 
     /**
