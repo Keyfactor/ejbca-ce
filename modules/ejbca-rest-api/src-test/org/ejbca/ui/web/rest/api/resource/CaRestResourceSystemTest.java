@@ -177,7 +177,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         String responseBody = actualResponse.readEntity(String.class);
         log.error("responseBody: " + responseBody);
         actualResponse.close();
-        assertEquals(actualResponse.getStatus(), 200);
+        assertEquals(200, actualResponse.getStatus());
         return responseBody;
     }
     
@@ -265,7 +265,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         String responseBody = actualResponse.readEntity(String.class);
         log.error("responseBody: " + responseBody);
         actualResponse.close();
-        assertEquals(actualResponse.getStatus(), 400);
+        assertEquals(400, actualResponse.getStatus());
         
     }
 
