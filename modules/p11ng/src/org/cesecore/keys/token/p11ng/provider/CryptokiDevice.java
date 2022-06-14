@@ -427,6 +427,17 @@ public class CryptokiDevice {
                 } else {
                     privateKeyRefs = findPrivateKeyObjectsByID(session, alias.getBytes(StandardCharsets.UTF_8));                    
                 }
+                if (privateKeyRefs.size() == 0) {
+                    // No private key found with ID same as the label were looking for, look for a private key by label
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Did not find PrivateKey by ID, looking for PrivateKey by label: " + alias);
+                    }
+                    if (onlyCache) {
+                        privateKeyRefs = findPrivateKeyObjectsByLabelInCache(session, alias);                    
+                    } else {
+                        privateKeyRefs = findPrivateKeyObjectsByLabel(session, alias);                    
+                    }
+                }
                 if (privateKeyRefs.size() > 1) {
                     LOG.warn("More than one private key object sharing CKA_LABEL=" + alias);
                     return null;
@@ -2155,6 +2166,24 @@ public class CryptokiDevice {
              }
          }
 
+        private List<Long> findKeyObjectsByLabelInternal(NJI11Session session, String alias, long type, boolean onlyCache) {
+            try {
+                List<Long> pubkeyRefs = null;
+                if (onlyCache) {
+                    //Optional<List<Long>> cacheret  = cryptoki.findObjectsInCache(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.CERTIFICATE), new CKA(CKA.LABEL, alias));
+                    Optional<List<Long>> cacheret = cryptoki.findObjectsInCache(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.LABEL, alias));
+                    if (cacheret.isPresent()) {
+                        pubkeyRefs = cacheret.get(); 
+                    }
+                } else {
+                    pubkeyRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, type), new CKA(CKA.LABEL, alias));                     
+                }
+                return (pubkeyRefs == null ? Collections.emptyList() : pubkeyRefs);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to find key objects of type (2=pub, 3=priv) " + type, ex);
+            }
+        }
+
         /**
          * Fetches private key objects with given ID, returning cached object if cache is enabled and object is present in the cache, going out to fetch it otherwise.
          * You can prevent falling back to looking in the HSM without cache by setting onlyCache=true.
@@ -2177,6 +2206,14 @@ public class CryptokiDevice {
          */
         List<Long> findPrivateKeyObjectsByIDInCache(NJI11Session session, byte[] ckaIdValue) {
             return findKeyObjectsByIDInternal(session, ckaIdValue, CKO.PRIVATE_KEY, true);
+        }
+
+        public List<Long> findPrivateKeyObjectsByLabel(NJI11Session session, String label) {
+            return findKeyObjectsByLabelInternal(session, label, CKO.PRIVATE_KEY, false);
+        }
+
+        List<Long> findPrivateKeyObjectsByLabelInCache(NJI11Session session, String label) {
+            return findKeyObjectsByLabelInternal(session, label, CKO.PRIVATE_KEY, true);
         }
 
         /**
