@@ -52,6 +52,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         REST_ENDENTITY_MANAGEMENT_V2("REST End Entity Management V2", "/ejbca/ejbca-rest-api/v2/endentity"),
         REST_CONFIGDUMP("REST Configdump", "/ejbca/ejbca-rest-api/v1/configdump"),
         REST_CERTIFICATE_MANAGEMENT_V2("REST Certificate Management V2", "/ejbca/ejbca-rest-api/v2/certificate"),
+        REST_SSH_V1("REST SSH V1", "/ejbca/ejbca-rest-api/v1/ssh"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws"),
         ITS("ITS Certificate Management", "/ejbca/its");
@@ -114,6 +115,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) || 
                 protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName()) || 
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName()) ||
+                protocol.equals(AvailableProtocols.REST_SSH_V1.getName()) ||
                 protocol.equals(AvailableProtocols.ITS.getName()))) {
             setProtocolStatus(protocol, false);
             return false;
