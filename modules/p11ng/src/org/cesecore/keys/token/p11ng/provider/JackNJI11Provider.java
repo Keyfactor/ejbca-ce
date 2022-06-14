@@ -238,7 +238,7 @@ public class JackNJI11Provider extends Provider {
         @Override
         protected void engineInitSign(PrivateKey pk) throws InvalidKeyException {
             if (!(pk instanceof NJI11Object)) {
-                throw new InvalidKeyException("Not a NJI11Object: " + pk.getClass().getName());
+                throw new InvalidKeyException("Not a NJI11Object: " + (pk == null ? "null" : pk.getClass().getName()));
             }
             myKey = (NJI11Object) pk;
             
