@@ -71,7 +71,8 @@ import org.ejbca.ui.web.rest.api.io.response.CrlRestResponse;
 public class CaRestResource extends BaseRestResource {
 
     private static final Logger log = Logger.getLogger(CaRestResource.class);
-
+    private static final int MAX_CRL_FILE_SIZE = 1024 * 1024 * 50; // 50MB
+    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
     @EJB
@@ -195,7 +196,9 @@ public class CaRestResource extends BaseRestResource {
             // FormParam annotations above are just for Swagger - the default JavaEE rest library has
             // no support for multipart data parameters, so we need to parse them ourselves.
             final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
-            final List<FileItem> requestItems = new ServletFileUpload(fileItemFactory).parseRequest(httpServletRequest);
+            final ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
+            upload.setSizeMax(MAX_CRL_FILE_SIZE);
+            final List<FileItem> requestItems = upload.parseRequest(httpServletRequest);
             FileItem uploadedFile = null;
             for (final FileItem item : requestItems) {
                 if (item.isFormField() && "crlPartitionIndex".equals(item.getFieldName())) {
