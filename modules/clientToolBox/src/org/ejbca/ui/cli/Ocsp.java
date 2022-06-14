@@ -170,7 +170,7 @@ public class Ocsp extends ClientToolBox {
                 System.out
                         .println("Usage: OCSP stress <OCSP URL> <Certificate serial number file> <ca cert file> <number of threads> <wait time between requests> [<POST | GET | FNR | FNRGET | FNRPOST>] [<request signing keystore file>] [<request signing password>]");
                 System.out
-                        .println("Certificate serial number file is the \"result.log\" created using the WS stress command: ./ejbcaClientToolBox.sh EjbcaWsRaCli stress... or could also be a text file with one serial number on each row. Start with '0x' if hex.");
+                        .println("Certificate serial number file is the \"result.ser\" created using the WS stress command: ./ejbcaClientToolBox.sh EjbcaWsRaCli stress... or could also be a text file with one serial number on each row. Start with '0x' if hex.");
                 System.out.println("If the directory \"./" + OCSPUnidClient.requestDirectory
                         + "\" exists then a file for each request will be stored in this directory.");
                 System.out.println();
