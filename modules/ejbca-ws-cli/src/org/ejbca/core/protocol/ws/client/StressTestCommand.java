@@ -497,13 +497,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>] [<certificate profile name>] [<type of test>]");
 		getPrintStream().println();
 		getPrintStream().println("Here is an example of how the test could be started:");
-		getPrintStream().println("./ejbcawsracli.sh stress ManagementCA 20 5000");
+		getPrintStream().println("./ejbcaClientToolBox.sh EjbcaWsRaCli stress ManagementCA 20 5000");
 		getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA ManagementCA.");
 		getPrintStream().println("You should use the CA with 'Enforce unique public keys' unchecked to avoid 'User ... is not allowed to use same key as another user is using.' error");
 		getPrintStream().println();
 		getPrintStream().println("To define a template for the subject DN of each new user use the java system property 'subjectDN'.");
 		getPrintStream().println("If the property value contains one or several '<userName>' string these strings will be substituted with the user name.");
-		getPrintStream().println("Example: JAVA_OPT=\"-DsubjectDN=CN=<userName>,O=Acme,UID=hej<userName>,OU=,OU=First Fixed,OU=sfsdf,OU=Middle Fixed,OU=fsfsd,OU=Last Fixed\" ../../PWE/ejbca_3_11/dist/clientToolBox/ejbcaClientToolBox.sh EjbcaWsRaCli stress ldapDirect 1 1000 ldapClientOUTest ldapClientDirect");
+		getPrintStream().println("Example: JAVA_OPT=\"-DsubjectDN=CN=<userName>,O=Acme,UID=hej<userName>,OU=,OU=First Fixed,OU=sfsdf,OU=Middle Fixed,OU=fsfsd,OU=Last Fixed\" ./ejbcaClientToolBox.sh EjbcaWsRaCli stress ldapDirect 1 1000 ldapClientOUTest ldapClientDirect");
         getPrintStream().println();
         getPrintStream().println("To specify a key size, use the java system property 'keySize'.");
         getPrintStream().println("To specify a key algorithm, use the java system property 'keyAlgorithm'.  'RSA' and 'EC' are supported.");
