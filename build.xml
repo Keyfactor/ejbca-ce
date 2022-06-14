@@ -1157,6 +1157,8 @@
 		    	
 		    	<!-- Only include SSH module if specified -->
 		    	<exclude unless="build.contains.ssh" name="modules/ssh/**"/>
+		    	<exclude unless="build.contains.ssh" name="modules/ejbca-rest-api/src/org/ejbca/ui/web/rest/api/resource/swagger/SshRestResourceSwagger.java"/>
+		    	<exclude unless="build.contains.ssh" name="modules/ssh/src-test/org/ejbca/ui/web/rest/api/resource/SshRestResourceSystemTest.java"/>
 		    	
 				<!-- List of subcommands for ejbca.sh script that must be hidden when we are running on limited ejbca (va/ra) installation. -->
 		    	<!-- The excluded parts are listed in the ticket ECA-7904 and could be updated accordingly if needed.   -->
