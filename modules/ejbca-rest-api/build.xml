@@ -43,6 +43,7 @@
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
         <path location="${mod.ejbca-rest-camanagement.lib}"/>
         <path location="${mod.ejbca-rest-endentity.lib}"/>
+		<path location="${mod.ejbca-rest-ssh.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
 	</path>
 
