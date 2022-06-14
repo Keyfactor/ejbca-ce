@@ -2256,7 +2256,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final EndEntityProfile prof = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         String value = null;
         if (prof != null) {
-            if (prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+            if (prof.isAllowedRequestsUsed()) {
                 value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
             }
         } else {
