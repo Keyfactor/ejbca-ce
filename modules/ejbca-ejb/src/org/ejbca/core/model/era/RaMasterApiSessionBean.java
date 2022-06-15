@@ -355,7 +355,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>14<td>=<td>7.10.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 14; 
+    private static final int RA_MASTER_API_VERSION = 14;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1496,15 +1496,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken, 
+    public RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken,
             RaEndEntitySearchRequestV2 raEndEntitySearchRequest) {
-        
+
         RaEndEntitySearchPaginationSummary searchSummary = null;
         String queryCacheKey = authenticationToken.getUniqueId() + raEndEntitySearchRequest.toString();
         if(raEndEntitySearchRequest.getPageNumber()!=0) {
             if(raEndEntitySearchRequest.getSearchSummary().isOnlyUpdateCache()) {
                 // update for next page request
-                searchSummary = (RaEndEntitySearchPaginationSummary) 
+                searchSummary = (RaEndEntitySearchPaginationSummary)
                         RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
                 searchSummary.incrementCurrentIdentifierIndex();
                 searchSummary.setCurrentIdentifierSearchOffset(0);
@@ -1512,43 +1512,43 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
                 return null;
             }
-            searchSummary = (RaEndEntitySearchPaginationSummary) 
+            searchSummary = (RaEndEntitySearchPaginationSummary)
                     RaMasterApiQueryCache.INSTANCE.getCachedResult(queryCacheKey);
-            
+
             if(raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex()!=0) {
                 // update in same page
                 searchSummary.setCurrentIdentifierIndex(
                         raEndEntitySearchRequest.getSearchSummary().getCurrentIdentifierIndex());
                 searchSummary.setCurrentIdentifierSearchOffset(0);
             }
-            
+
         } else {
             // search identifier index, page offset are all initialized to zero
             searchSummary = raEndEntitySearchRequest.getSearchSummary();
             RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
         }
-                
+
         RaEndEntitySearchResponse searchResponse =
-                searchForEndEntities(authenticationToken, raEndEntitySearchRequest, 
+                searchForEndEntities(authenticationToken, raEndEntitySearchRequest,
                         searchSummary.getCurrentIdentifierSearchOffset(),
                 raEndEntitySearchRequest.getSortOperation(),
                 raEndEntitySearchRequest.getAdditionalConstraint(),
                 searchSummary.getCurrentIdentifier());
-        
+
         // update cache entry - page number, reference update
         searchSummary.setCurrentIdentifierSearchOffset(
                 searchSummary.getCurrentIdentifierSearchOffset() + searchResponse.getEndEntities().size());
         searchSummary.incrementNextPageNumber();
         RaMasterApiQueryCache.INSTANCE.updateCache(queryCacheKey, searchSummary);
-        
+
         return new RaEndEntitySearchResponseV2(searchResponse, searchSummary);
     }
-    
+
     @Override
     public RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request) {
         return searchForEndEntities(authenticationToken, request, -1, "", "", -1);
     }
-    
+
     @SuppressWarnings("unchecked")
     private RaEndEntitySearchResponse searchForEndEntities(
             AuthenticationToken authenticationToken, RaEndEntitySearchRequest request, int currentQueryOffset,
@@ -1696,7 +1696,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
         query.setMaxResults(maxResults);
-        if(currentQueryOffset!=-1) { 
+        if(currentQueryOffset!=-1) {
             // for v2 on multiple ca,cp,eep id in same page
             // maxResults is not updated for convenience
             query.setFirstResult(currentQueryOffset);
@@ -2010,6 +2010,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             return null;
         }
+    }
+
+    @Override
+    public boolean canEndEntityEnroll(AuthenticationToken authenticationToken, String username) {
+        return endEntityAuthenticationSessionLocal.isAllowedToEnroll(authenticationToken, username);
     }
 
     @Override
