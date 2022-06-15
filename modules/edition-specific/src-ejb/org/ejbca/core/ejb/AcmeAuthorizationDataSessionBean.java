@@ -28,10 +28,7 @@ import org.ejbca.core.protocol.acme.AcmeIdentifier;
 /**
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
- *
- * @version $Id$
  */
-
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAuthorizationDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSessionRemote, AcmeAuthorizationDataSessionLocal {
@@ -87,6 +84,11 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
 
     @Override
     public void createOrUpdateList(List<AcmeAuthorization> acmeAuthorizations) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
+    public void persistAcmeAuthorizationData(AcmeAuthorizationData data) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
