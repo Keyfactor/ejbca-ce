@@ -14,12 +14,14 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TimeZone;
 
 import javax.faces.context.ExternalContext;
@@ -61,6 +63,7 @@ public class RaEndEntityDetails {
     private final String username;
     private final EndEntityInformation endEntityInformation;
     private final ExtendedInformation extendedInformation;
+    private final String extensionData;
     private final String subjectDn;
     private final String subjectAn;
     private final String subjectDa;
@@ -95,6 +98,7 @@ public class RaEndEntityDetails {
         this.endEntityInformation = endEntity;
         final ExtendedInformation extendedInformation = endEntity.getExtendedInformation();
         this.extendedInformation = extendedInformation==null ? new ExtendedInformation() : extendedInformation;
+        this.extensionData = getExtensionData(endEntityInformation.getExtendedInformation());
         this.callbacks = callbacks;
         this.username = endEntity.getUsername();
         this.subjectDn = endEntity.getDN();
@@ -520,6 +524,62 @@ public class RaEndEntityDetails {
             }
         }
         return ret.toString();
+    }
+    
+    
+    /**
+     * @return Certificate extension data after it has already been read from extended information
+     */
+    public String getExtensionData() {
+        return extensionData;
+    }
+    
+    public boolean isExtensionDataConfigured() {
+        if (endEntityProfile != null) {
+            return endEntityProfile.getUseExtensiondata();
+        }
+        return false;
+    }
+    
+    /**
+     * @return Certificate extension data read from extended information
+     */
+    public String getExtensionData(ExtendedInformation extendedInformation) {
+        final String result;
+        if (extendedInformation == null) {
+            return null;
+        } else {
+            @SuppressWarnings("rawtypes")
+            Map data = (Map) extendedInformation.getData();
+            Properties properties = new Properties();
+
+            for (Object o : data.keySet()) {
+                if (o instanceof String) {
+                    String key = (String) o;
+                    if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
+                        String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
+                        properties.put(subKey, data.get(key));
+                    }
+                }
+
+            }
+
+            // Render the properties and remove the first line created by the Properties class.
+            StringWriter out = new StringWriter();
+            try {
+                properties.store(out, null);
+            } catch (IOException ex) {
+                // Should not happen as we are using a StringWriter
+                throw new RuntimeException(ex);
+            }
+
+            StringBuffer buff = out.getBuffer();
+            String lineSeparator = System.getProperty("line.separator");
+            int firstLineSeparator = buff.indexOf(lineSeparator);
+
+            result = firstLineSeparator >= 0 ? buff.substring(firstLineSeparator + lineSeparator.length()) : buff.toString();
+        }
+        return result;
     }
 
     /** @return true every twice starting with every forth call */

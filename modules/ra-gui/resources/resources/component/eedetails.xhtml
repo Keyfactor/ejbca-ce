@@ -498,6 +498,22 @@
 								value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_yes : msg.component_eedetails_field_keyrecoverable_no }"
 			                   rendered="#{cc.attrs.approvalRequestMode or not cc.attrs.editMode}"/>
 			<h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+            <h:outputLabel for="editCertificateExtensionDataField" value="#{msg.enroll_cert_extension_data}" 
+                rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.extensionDataConfigured and not cc.attrs.approvalRequestMode}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:inputTextarea id="editCertificateExtensionDataField" value="#{cc.attrs.raEndEntityBean.extensionData}" 
+                rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.extensionDataConfigured and not cc.attrs.approvalRequestMode}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <f:validator validatorId="oidValidator"/>
+                <f:attribute name="beginsWith" value="true"/>
+            </h:inputTextarea>
+            <h:message for="editCertificateExtensionDataField" id="editCertificateExtensionDataFieldMessage" styleClass="showErrorMessage"/>
+            <h:outputLabel for="viewCertificateExtensionDataField" value="#{msg.enroll_cert_extension_data}" 
+                rendered="#{cc.attrs.raEndEntityDetails.extensionDataConfigured and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="viewCertificateExtensionDataField" value="#{cc.attrs.raEndEntityDetails.extensionData}" 
+                rendered="#{cc.attrs.raEndEntityDetails.extensionDataConfigured and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
             <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
                            rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
