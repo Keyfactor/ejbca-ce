@@ -106,6 +106,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.crl.CrlDataTestSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.cvc.AccessRightsIS;
 import org.ejbca.cvc.AuthorizationRoleEnum;
@@ -267,6 +268,16 @@ public abstract class CaTestUtils {
             internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
             internalCertificateStoreSession.removeCRLs(authenticationToken, caInfo.getSubjectDN());            
         }
+    }
+
+    /**
+     * Removes certificate revocation lists by issuer's distinguished name
+     * @param issuerDn Issuer DN
+     */
+    public static void removeCrlByIssuerDn(final String issuerDn) {
+        final CrlDataTestSessionRemote crlDataTestSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CrlDataTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        crlDataTestSession.deleteCrlDataByIssuerDn(issuerDn);
     }
 
     /** Creates a CA object, but does not actually add the CA to EJBCA. */

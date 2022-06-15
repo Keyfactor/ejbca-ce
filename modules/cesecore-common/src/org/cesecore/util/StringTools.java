@@ -196,7 +196,7 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String stripFilenameReplaceSpaces(final String str) {
-        return stripFilename(str.replace(' ', '_'));
+        return stripFilename(str.replace(" ", "_esc_spc_"));
     }
 
     /**
