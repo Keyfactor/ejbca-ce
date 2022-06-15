@@ -1213,6 +1213,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public boolean canEndEntityEnroll(AuthenticationToken authenticationToken, String username) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    if (raMasterApi.canEndEntityEnroll(authenticationToken, username)) {
+                        return true;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void checkUserStatus(AuthenticationToken authenticationToken, String username, String password)
             throws NoSuchEndEntityException, AuthStatusException, AuthLoginException {
         NoSuchEndEntityException noSuchEndEntityException = null;
