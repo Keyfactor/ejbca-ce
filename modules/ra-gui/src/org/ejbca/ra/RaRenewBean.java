@@ -41,6 +41,7 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -128,20 +129,21 @@ public class RaRenewBean implements Serializable {
         initialized = true;
         final AuthenticationToken admin = raAuthenticationBean.getAuthenticationToken();
         if (log.isDebugEnabled()) {
-            log.debug("Checking authentication token details for '" + admin + "'");
+            log.debug("Checking certificate details for '" + admin + "'");
         }
-        if (admin instanceof X509CertificateAuthenticationToken) {
-            final X509CertificateAuthenticationToken x509AuthToken = (X509CertificateAuthenticationToken) admin;
-            final X509Certificate adminCert = x509AuthToken.getCertificate();
-            currentSubjectDn = CertTools.getSubjectDN(adminCert);
-            final Date notAfter = CertTools.getNotAfter(adminCert);
-            if (notAfter != null) {
-                currentExpirationDate = ValidityDate.formatAsISO8601ServerTZ(notAfter.getTime(), TimeZone.getDefault());
-            } else {
-                log.warn("Existing admin certificate has no expiration date.");
+        if(admin instanceof PublicAccessAuthenticationToken || admin instanceof X509CertificateAuthenticationToken) {
+            final X509Certificate x509Cert = raAuthenticationBean.getX509CertificateFromRequest();
+            if (x509Cert!=null) {
+                currentSubjectDn = CertTools.getSubjectDN(x509Cert);
+                final Date notAfter = CertTools.getNotAfter(x509Cert);
+                if (notAfter != null) {
+                    currentExpirationDate = ValidityDate.formatAsISO8601ServerTZ(notAfter.getTime(), TimeZone.getDefault());
+                } else {
+                    log.warn("Existing admin certificate has no expiration date.");
+                }
+                currentIssuerDn = CertTools.getIssuerDN(x509Cert);
+                currentSerialNumber = CertTools.getSerialNumber(x509Cert);
             }
-            currentIssuerDn = CertTools.getIssuerDN(adminCert);
-            currentSerialNumber = CertTools.getSerialNumber(adminCert);
         }
     }
 
