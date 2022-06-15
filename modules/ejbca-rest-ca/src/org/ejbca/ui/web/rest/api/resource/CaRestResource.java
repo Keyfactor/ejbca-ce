@@ -10,8 +10,11 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.File;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +25,9 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -31,8 +37,17 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -40,12 +55,16 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.crl.CrlImportException;
+import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -69,6 +88,8 @@ import io.swagger.annotations.ApiParam;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CaRestResource extends BaseRestResource {
+
+    private static final Logger log = Logger.getLogger(CaRestResource.class);
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
@@ -78,6 +99,8 @@ public class CaRestResource extends BaseRestResource {
     private CaSessionLocal caSession;
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
+    @EJB
+    private ImportCrlSessionLocal importCrlSession;
 
     @GET
     @Path("/status")
@@ -210,5 +233,72 @@ public class CaRestResource extends BaseRestResource {
         
         return Response.ok(response).build();
     }
-    
+
+    @POST
+    @Path("/{issuer_dn}/importcrl")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Import a certificate revocation list (CRL) for a CA")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "CRL file was imported successfully"),
+            @ApiResponse(code = 400, message = "Error while importing CRL file"),
+    }
+    )
+    public Response importCrl(@Context final HttpServletRequest httpServletRequest,
+                              @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
+                              @ApiParam("CRL file in DER format") @FormParam("crlFile") final File crlFile,
+                              @ApiParam("CRL partition index") @DefaultValue("0") @FormParam("crlPartitionIndex") int crlPartitionIndex
+    ) throws AuthorizationDeniedException, RestException {
+        final AuthenticationToken admin = getAdmin(httpServletRequest, false);
+        issuerDn = issuerDn.trim();
+        final CAInfo cainfo = caSession.getCAInfo(admin, issuerDn.hashCode());
+        if (cainfo == null) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with DN: " + issuerDn + " does not exist.");
+        }
+        try {
+            // FormParam annotations above are just for Swagger - the default JavaEE rest library has
+            // no support for multipart data parameters, so we need to parse them ourselves.
+            final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
+            final List<FileItem> requestItems = new ServletFileUpload(fileItemFactory).parseRequest(httpServletRequest);
+            FileItem uploadedFile = null;
+            for (final FileItem item : requestItems) {
+                if (item.isFormField() && "crlPartitionIndex".equals(item.getFieldName())) {
+                    if (item.getString().matches("\\d+")) {
+                        crlPartitionIndex = Integer.parseInt(item.getString());
+                    } else {
+                        throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid CRL partition index: " +
+                                item.getString() + ", should be 0 or greater.");
+                    }
+                } else if ("crlFile".equals(item.getFieldName())) {
+                    uploadedFile = item;
+                }
+            }
+            if (uploadedFile == null) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No CRL file uploaded.");
+            }
+            final X509CRL x509crl = CertTools.getCRLfromByteArray(uploadedFile.get());
+            if (x509crl == null) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(),
+                        "Could not parse CRL. It must be in DER format.");
+            } else if (!StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(),
+                        "CRL is not issued by " + issuerDn);
+            } else {
+                final int uploadedCrlNumber = CrlExtensions.getCrlNumber(x509crl).intValue();
+                final boolean isDeltaCrl = CrlExtensions.getDeltaCRLIndicator(x509crl).intValue() != -1;
+                if (uploadedCrlNumber <= crlStoreSession.getLastCRLNumber(issuerDn, crlPartitionIndex, isDeltaCrl)) {
+                    throw new RestException(Status.BAD_REQUEST.getStatusCode(),
+                            "CRL #" + uploadedCrlNumber + " or higher is already in the database.");
+                }
+                importCrlSession.importCrl(admin, cainfo, uploadedFile.get(), crlPartitionIndex);
+                return Response.status(Status.OK).build();
+            }
+        } catch (final FileUploadException e) {
+            log.info("Error uploading CRL file", e);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No file uploaded.");
+        } catch (CrlImportException | CrlStoreException | CRLException | AuthorizationDeniedException e) {
+            log.info("Error importing CRL:", e);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Error while importing CRL: " + e.getMessage());
+        }
+    }
 }
