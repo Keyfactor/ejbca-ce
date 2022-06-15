@@ -67,6 +67,13 @@ public interface AcmeAuthorizationDataSessionLocal extends AcmeAuthorizationData
      * Create or update the AcmeAuthorizations .
      */
     void createOrUpdateList(List<AcmeAuthorization> acmeAuthorizations);
+    
+    /**
+     * Persists a data object. Used for testing ECA-10060 post upgrade.
+     * 
+     * @param the data object to persist.
+     */
+    void persistAcmeAuthorizationData(AcmeAuthorizationData data);
 
     /**
      * Removes an ACME authorization with the given ID. Fails silently if no such ACME Authorization exists.
