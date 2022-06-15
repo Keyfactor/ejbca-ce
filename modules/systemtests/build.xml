@@ -65,6 +65,7 @@
 		<pathelement location="${mod.systemtest-ejb.lib}"/>
 		<pathelement location="${mod.systemtests.path}/resources"/>
 		<path location="${mod.ejbca-common.path}/build-test"/>
+		<path location="${mod.acme-common.jar}"/>
 	</path>
 
 	<path id="systemtests.classpath">
