@@ -336,6 +336,14 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             assertEquals("CA name and ID must match.", (int) map.get(caName1), caInfo1.getCAId());
             assertEquals("CA name and ID must match.", (int) map.get(caName2), caInfo2.getCAId());
             
+            // 1.4 Test AnyCa available for this EEP
+            int anyCAId = SecConst.ALLCAS;
+            eeProfile.setAvailableCAs(Collections.singletonList(anyCAId));
+            endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
+            Collection<Integer> availableCaIdsInProfile = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId).values();
+            assertEquals("getAvailaBleCAsInProfile for EEP with AnyCA chosen should return a map with all CAs", map.size(), availableCaIdsInProfile.size());
+            
             // 2. Test exception handling.
             // 2.1 Test end entity profile not found.
             final int notExistingEepId = eepId + 1234;
