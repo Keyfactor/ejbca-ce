@@ -121,11 +121,6 @@ public class CertificateRestResource extends BaseRestResource {
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
 
-    @Override
-    public Response status() {
-        return super.status();
-    }
-
     public Response enrollPkcs10Certificate(final HttpServletRequest requestContext,
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
