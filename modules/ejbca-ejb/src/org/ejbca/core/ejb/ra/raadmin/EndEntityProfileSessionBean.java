@@ -397,9 +397,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
         final TreeMap<String,Integer> result = new TreeMap<>();
         if (profile != null) {
-            final Collection<Integer> ids = profile.getAvailableCAs();
+            Collection<Integer> ids = profile.getAvailableCAs();
             final Map<Integer,String> map = caSession.getCAIdToNameMap();
             String name;
+            if (ids.contains(SecConst.ALLCAS)) {
+                ids = caSession.getAuthorizedCaIds(admin);
+            }
             for (int id : ids) {
                 name = map.get(id);
                 if (name != null) {
