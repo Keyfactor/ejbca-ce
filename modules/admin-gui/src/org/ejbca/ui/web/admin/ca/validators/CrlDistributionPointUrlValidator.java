@@ -41,6 +41,7 @@ public class CrlDistributionPointUrlValidator implements Validator<Object> {
                 log.debug("Validating component " + uiComponent.getClientId(facesContext) + " with value \"" + urlValue + "\"");
             }
             boolean error;
+            // Ignore quotation marks, see ECA-10623
             urlValue = urlValue.replace("\"", "");
             if (urlValue.toString().indexOf(':') == -1) {
                 error = true;
