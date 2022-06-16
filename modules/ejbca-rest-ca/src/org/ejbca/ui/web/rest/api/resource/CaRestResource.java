@@ -83,11 +83,6 @@ public class CaRestResource extends BaseRestResource {
     @EJB
     private ImportCrlSessionLocal importCrlSession;
 
-    @Override
-    public Response status() {
-        return super.status();
-    }
-
     /**
      * @param subjectDn CA subjectDn
      * @return PEM file with CA certificates
