@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.admin;
+package org.ejbca.ui.web.admin.ca.validators;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -20,19 +20,19 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * JSF validator to check that input fields are valid urls
+ * JSF validator to check that input fields are valid urls while allowing for quotation marks
  */
-public class UrlValidator implements Validator<Object> {
-    private static final Logger log = Logger.getLogger(UrlValidator.class);
+@FacesValidator("org.ejbca.ui.web.admin.ca.validators.CrlDistributionPointUrlValidator")
+public class CrlDistributionPointUrlValidator implements Validator<Object> {
+    private static final Logger log = Logger.getLogger(CrlDistributionPointUrlValidator.class);
     
-    
-
     @Override
     public void validate(FacesContext facesContext, UIComponent uiComponent, Object o) throws ValidatorException {
         String urlValue = o.toString();
@@ -41,6 +41,7 @@ public class UrlValidator implements Validator<Object> {
                 log.debug("Validating component " + uiComponent.getClientId(facesContext) + " with value \"" + urlValue + "\"");
             }
             boolean error;
+            urlValue = urlValue.replace("\"", "");
             if (urlValue.toString().indexOf(':') == -1) {
                 error = true;
             } else {
