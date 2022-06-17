@@ -52,6 +52,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
+import org.ejbca.ui.web.rest.api.resource.swagger.CertificateRestResourceSwagger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.AfterClass;
@@ -73,7 +74,7 @@ public class CertificateRestResourceUnitTest {
     private static final JSONParser jsonParser = new JSONParser();
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
-    private static class CertificateRestResourceWithoutSecurity extends CertificateRestResource {
+    private static class CertificateRestResourceWithoutSecurity extends CertificateRestResourceSwagger {
         @Override
         protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) {
             return authenticationToken;
