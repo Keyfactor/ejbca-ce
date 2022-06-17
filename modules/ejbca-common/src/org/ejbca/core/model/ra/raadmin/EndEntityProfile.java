@@ -2094,7 +2094,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                                     // Try to match with all possible values
                                     String[] fixedValues = getValue(profileID, l).split(SPLITCHAR);
                                     for (String fixedValue : fixedValues) {
-                                        if (subjectsToProcess[m] != null && subjectsToProcess[m].equals(fixedValue)) {
+                                        if (subjectsToProcess[m] != null && subjectsToProcess[m].trim().equals(fixedValue.trim())) {
                                             // Remove matched pair
                                             subjectsToProcess[m] = null;
                                             profileCrossOffList[l] = MATCHED_FIELD;
