@@ -90,7 +90,7 @@
         </init-param>
     </filter>
     <filter>
-        <filter-name>SshFilterV2</filter-name>
+        <filter-name>SshFilter</filter-name>
         <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
         <init-param>  
             <param-name>serviceName</param-name>  
