@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -341,8 +342,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             eeProfile.setAvailableCAs(Collections.singletonList(anyCAId));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
-            Collection<Integer> availableCaIdsInProfile = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId).values();
-            assertEquals("getAvailaBleCAsInProfile for EEP with AnyCA chosen should return a map with all CAs", map.size(), availableCaIdsInProfile.size());
+            List<Integer> allCaIds = caSession.getAllCaIds();
+            assertEquals("getAvailaBleCAsInProfile for EEP with AnyCA chosen should return a map with all CAs", map.size(), allCaIds.size() );
             
             // 2. Test exception handling.
             // 2.1 Test end entity profile not found.
