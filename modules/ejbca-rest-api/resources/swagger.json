@@ -18,6 +18,8 @@
             "name": "v1/cryptotoken"
         }, {
             "name": "v1/endentity"
+        }, {
+            "name": "v1/ssh"
         }
     ],
     "schemes": ["https"],
