@@ -27,6 +27,9 @@
     },
     {
       "name": "v1/endentity"
+    },
+    {
+      "name": "v2/endentity"
     }
   ],
   "schemes": [
@@ -51,33 +54,6 @@
             "schema": {
               "$ref": "#/definitions/RestResourceStatusRestResponse"
             }
-          }
-        }
-      }
-    },
-    "/v1/ca_management/{ca_name}/deactivate": {
-      "put": {
-        "tags": [
-          "v1/ca_management"
-        ],
-        "summary": "Deactivate a CA",
-        "description": "Deactivates CA with given name",
-        "operationId": "deactivate",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "ca_name",
-            "in": "path",
-            "description": "Name of the CA to deactivate",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "CA deactivated"
           }
         }
       }
@@ -109,6 +85,33 @@
         }
       }
     },
+    "/v1/ca_management/{ca_name}/deactivate": {
+      "put": {
+        "tags": [
+          "v1/ca_management"
+        ],
+        "summary": "Deactivate a CA",
+        "description": "Deactivates CA with given name",
+        "operationId": "deactivate",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ca_name",
+            "in": "path",
+            "description": "Name of the CA to deactivate",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CA deactivated"
+          }
+        }
+      }
+    },
     "/v1/ca/status": {
       "get": {
         "tags": [
@@ -126,6 +129,93 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/RestResourceStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ca/{subject_dn}/certificate/download": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Get PEM file with the active CA certificate chain",
+        "description": "",
+        "operationId": "getCertificateAsPem",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "subject_dn",
+            "in": "path",
+            "description": "CAs subject DN",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/v1/ca": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "description": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "operationId": "listCas",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CaInfosRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ca/{issuer_dn}/createcrl": {
+      "post": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Create CRL(main, partition and delta) issued by this CA",
+        "description": "",
+        "operationId": "createCrl",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "deltacrl",
+            "in": "query",
+            "description": "true to also create the deltaCRL, false to only create the base CRL",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CreateCrlRestResponse"
             }
           }
         }
@@ -178,51 +268,51 @@
         }
       }
     },
-    "/v1/ca/{subject_dn}/certificate/download": {
-      "get": {
+    "/v1/ca/{issuer_dn}/importcrl": {
+      "post": {
         "tags": [
           "v1/ca"
         ],
-        "summary": "Get PEM file with the active CA certificate chain",
+        "summary": "Import a certificate revocation list (CRL) for a CA",
         "description": "",
-        "operationId": "getCertificateAsPem",
-        "produces": [
-          "*/*"
+        "operationId": "importCrl",
+        "consumes": [
+          "multipart/form-data"
         ],
-        "parameters": [
-          {
-            "name": "subject_dn",
-            "in": "path",
-            "description": "CAs subject DN",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "successful operation"
-          }
-        }
-      }
-    },
-    "/v1/ca": {
-      "get": {
-        "tags": [
-          "v1/ca"
-        ],
-        "summary": "Returns the Response containing the list of CAs with general information per CA as Json",
-        "description": "Returns the Response containing the list of CAs with general information per CA as Json",
-        "operationId": "listCas",
         "produces": [
           "application/json"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "crlFile",
+            "in": "formData",
+            "description": "CRL file in DER format",
+            "required": false,
+            "type": "file"
+          },
+          {
+            "name": "crlPartitionIndex",
+            "in": "formData",
+            "description": "CRL partition index",
+            "required": false,
+            "type": "integer",
+            "default": 0,
+            "format": "int32"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CaInfosRestResponse"
-            }
+            "description": "CRL file was imported successfully"
+          },
+          "400": {
+            "description": "Error while importing CRL file"
           }
         }
       }
@@ -300,14 +390,14 @@
         }
       }
     },
-    "/v1/certificate/certificaterequest": {
+    "/v1/certificate/search": {
       "post": {
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Enrollment with client generated keys for an existing End Entity",
-        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-        "operationId": "certificateRequest",
+        "summary": "Searches for certificates confirming given criteria.",
+        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
+        "operationId": "searchCertificates",
         "consumes": [
           "application/json"
         ],
@@ -318,17 +408,18 @@
           {
             "in": "body",
             "name": "body",
+            "description": "Maximum number of results and collection of search criterias.",
             "required": false,
             "schema": {
-              "$ref": "#/definitions/CertificateRequestRestRequest"
+              "$ref": "#/definitions/SearchCertificatesRestRequest"
             }
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/SearchCertificatesRestResponse"
             }
           }
         }
@@ -363,41 +454,6 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/CertificateRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/certificate/search": {
-      "post": {
-        "tags": [
-          "v1/certificate"
-        ],
-        "summary": "Searches for certificates confirming given criteria.",
-        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
-        "operationId": "searchCertificates",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Maximum number of results and collection of search criterias.",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/SearchCertificatesRestRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/SearchCertificatesRestResponse"
             }
           }
         }
@@ -548,6 +604,40 @@
             "required": false,
             "schema": {
               "$ref": "#/definitions/FinalizeRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/certificaterequest": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Enrollment with client generated keys for an existing End Entity",
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "operationId": "certificateRequest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CertificateRequestRestRequest"
             }
           }
         ],
@@ -1087,14 +1177,14 @@
         }
       }
     },
-    "/v1/cryptotoken/{cryptotoken_name}/deactivate": {
-      "put": {
+    "/v1/cryptotoken/{cryptotoken_name}/{key_pair_alias}/removekeys": {
+      "post": {
         "tags": [
           "v1/cryptotoken"
         ],
-        "summary": "Deactivate a Crypto Token",
-        "description": "Deactivates Crypto Token given name",
-        "operationId": "deactivate_1",
+        "summary": "Remove keys",
+        "description": "Remove a key pair given crypto token name and key pair alias to be removed.",
+        "operationId": "removeKeys",
         "produces": [
           "application/json"
         ],
@@ -1102,7 +1192,14 @@
           {
             "name": "cryptotoken_name",
             "in": "path",
-            "description": "Name of the token to deactivate",
+            "description": "Name of the token to remove keys for.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "key_pair_alias",
+            "in": "path",
+            "description": "Alias for the key to be removed from the crypto token.",
             "required": true,
             "type": "string"
           }
@@ -1150,14 +1247,14 @@
         }
       }
     },
-    "/v1/cryptotoken/{cryptotoken_name}/{key_pair_alias}/removekeys": {
-      "post": {
+    "/v1/cryptotoken/{cryptotoken_name}/deactivate": {
+      "put": {
         "tags": [
           "v1/cryptotoken"
         ],
-        "summary": "Remove keys",
-        "description": "Remove a key pair given crypto token name and key pair alias to be removed.",
-        "operationId": "removeKeys",
+        "summary": "Deactivate a Crypto Token",
+        "description": "Deactivates Crypto Token given name",
+        "operationId": "deactivate_1",
         "produces": [
           "application/json"
         ],
@@ -1165,14 +1262,7 @@
           {
             "name": "cryptotoken_name",
             "in": "path",
-            "description": "Name of the token to remove keys for.",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "key_pair_alias",
-            "in": "path",
-            "description": "Alias for the key to be removed from the crypto token.",
+            "description": "Name of the token to deactivate",
             "required": true,
             "type": "string"
           }
@@ -1415,6 +1505,63 @@
           }
         }
       }
+    },
+    "/v2/endentity/status": {
+      "get": {
+        "tags": [
+          "v2/endentity"
+        ],
+        "summary": "Get the status of this REST Resource",
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_7",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RestResourceStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v2/endentity/search": {
+      "post": {
+        "tags": [
+          "v2/endentity"
+        ],
+        "summary": "Searches and sorts for end entity conforming given criteria.",
+        "description": "Insert as many search criteria as needed and optionally a sorting criteria. A reference about allowed values for criteria could be found below, under SearchEndEntityCriteriaRestRequestV2 model.",
+        "operationId": "sortedSearch",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Maximum number of results and collection of search criterias.",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SearchEndEntitiesRestRequestV2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/SearchEndEntitiesRestResponse"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1428,21 +1575,6 @@
           "type": "string"
         },
         "revision": {
-          "type": "string"
-        }
-      }
-    },
-    "CrlRestResponse": {
-      "type": "object",
-      "properties": {
-        "crl": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "byte"
-          }
-        },
-        "response_format": {
           "type": "string"
         }
       }
@@ -1477,6 +1609,54 @@
           "items": {
             "$ref": "#/definitions/CaInfoRestResponse"
           }
+        }
+      }
+    },
+    "CreateCrlRestResponse": {
+      "type": "object",
+      "properties": {
+        "issuer_dn": {
+          "type": "string"
+        },
+        "latest_crl_version": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "latest_delta_crl_version": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "latest_partition_crl_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "latest_partition_delta_crl_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "all_success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CrlRestResponse": {
+      "type": "object",
+      "properties": {
+        "crl": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "response_format": {
+          "type": "string"
         }
       }
     },
@@ -1538,55 +1718,6 @@
         }
       }
     },
-    "CertificateRequestRestRequest": {
-      "type": "object",
-      "properties": {
-        "certificate_request": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "include_chain": {
-          "type": "boolean"
-        },
-        "certificate_authority_name": {
-          "type": "string"
-        }
-      }
-    },
-    "EnrollCertificateRestRequest": {
-      "type": "object",
-      "properties": {
-        "certificate_request": {
-          "type": "string"
-        },
-        "certificate_profile_name": {
-          "type": "string"
-        },
-        "end_entity_profile_name": {
-          "type": "string"
-        },
-        "certificate_authority_name": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "account_binding_id": {
-          "type": "string"
-        },
-        "include_chain": {
-          "type": "boolean"
-        }
-      }
-    },
     "SearchCertificatesRestResponse": {
       "type": "object",
       "properties": {
@@ -1627,6 +1758,38 @@
           "items": {
             "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
           }
+        }
+      }
+    },
+    "EnrollCertificateRestRequest": {
+      "type": "object",
+      "properties": {
+        "certificate_request": {
+          "type": "string"
+        },
+        "certificate_profile_name": {
+          "type": "string"
+        },
+        "end_entity_profile_name": {
+          "type": "string"
+        },
+        "certificate_authority_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "account_binding_id": {
+          "type": "string"
+        },
+        "include_chain": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string"
         }
       }
     },
@@ -1692,6 +1855,32 @@
           "type": "string"
         },
         "password": {
+          "type": "string"
+        },
+        "key_alg": {
+          "type": "string"
+        },
+        "key_spec": {
+          "type": "string"
+        }
+      }
+    },
+    "CertificateRequestRestRequest": {
+      "type": "object",
+      "properties": {
+        "certificate_request": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "include_chain": {
+          "type": "boolean"
+        },
+        "certificate_authority_name": {
           "type": "string"
         }
       }
@@ -2026,6 +2215,10 @@
           "type": "integer",
           "format": "int32"
         },
+        "current_page": {
+          "type": "integer",
+          "format": "int32"
+        },
         "criteria": {
           "type": "array",
           "items": {
@@ -2071,6 +2264,39 @@
         },
         "delete": {
           "type": "boolean"
+        }
+      }
+    },
+    "SearchEndEntitiesRestRequestV2": {
+      "type": "object",
+      "properties": {
+        "max_number_of_results": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "current_page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchEndEntityCriteriaRestRequest"
+          }
+        },
+        "sort_operation": {
+          "$ref": "#/definitions/SearchEndEntitiesSortRestRequest"
+        }
+      }
+    },
+    "SearchEndEntitiesSortRestRequest": {
+      "type": "object",
+      "properties": {
+        "property": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
         }
       }
     }
