@@ -15,7 +15,11 @@ package org.ejbca.ui.web.admin.configuration;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
@@ -77,6 +81,8 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         private boolean vendorMode;
         private boolean allowChangeSubjectName;
         private String extDnPartPwdComponent;
+        
+        private boolean usesProxyCa;
         
         
         public String getName() {
@@ -249,6 +255,15 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         public String getExtUsernameComponent() {
             return extUsernameComponent;
         }
+
+        public boolean isUsesProxyCa() {
+            return usesProxyCa;
+        }
+
+        public void setUsesProxyCa(boolean usesProxyCa) {
+            this.usesProxyCa = usesProxyCa;
+        }
+        
     }
 
     public EstAliasGui getEstAlias() {
@@ -282,6 +297,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setExtDnPartPwdComponent(estConfiguration.getExtractDnPwdComponent(aliasName));
             estAliasGui.setAllowChangeSubjectName(estConfiguration.getAllowChangeSubjectName(aliasName));
             estAliasGui.setVendorCas(estConfiguration.getVendorCAs(aliasName));
+            estAliasGui.setUsesProxyCa(estConfiguration.getSupportProxyCa(aliasName));
             this.estAliasGui = estAliasGui;
         }
         return estAliasGui;
@@ -375,6 +391,8 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estConfiguration.setAuthenticationModule(alias, estAliasGui.getAuthenticationModule());
         estConfiguration.setAllowChangeSubjectName(alias, estAliasGui.getAllowChangeSubjectName());
         estConfiguration.setVendorCAs(alias, getCurrentVendorCas());
+        updateSupportProxyCa();
+        estConfiguration.setSupportProxyCa(alias, estAliasGui.isUsesProxyCa());
         getEjbcaWebBean().updateEstConfigFromClone(alias);
         reset();
         return "done";
@@ -391,6 +409,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             currentVendorCaList.add(estAliasGui.getSelectedVendorCa());
         }
         setCurrentVendorCas(StringUtils.join(currentVendorCaList, ";"));
+        updateSupportProxyCa();
     }
     
     public void actionRemoveVendorCa() {
@@ -399,6 +418,39 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             final List<String> currentVendorCaList = new ArrayList<>(Arrays.asList( currentVendorCas.split(";")));
             if (currentVendorCaList.remove(estAliasGui.getSelectedVendorCa())) {
                 setCurrentVendorCas(StringUtils.join(currentVendorCaList, ";"));
+                updateSupportProxyCa();
+            }
+        }
+    }
+    
+    private void updateSupportProxyCa() {
+        final AuthenticationToken authenticationToken = getAdmin();
+        final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
+        estAliasGui.setUsesProxyCa(false); //default, repeated for remove action
+        
+        if (!isRaMode() && isVendorMode() && StringUtils.isNotBlank(getCurrentVendorCas())) {
+            List<String> currentVendorCaList = new ArrayList<>(Arrays.asList(getCurrentVendorCas().split(";")));
+            for (String caName : currentVendorCaList) {
+                try {
+                    if (caSession.getCAInfo(authenticationToken, caName).getCAType() == CAInfo.CATYPE_PROXY) {
+                        estAliasGui.setUsesProxyCa(true);
+                        return;
+                    }
+                } catch (AuthorizationDeniedException e) {
+                    // should not happen
+                    throw new IllegalStateException("Vendor CA is not authhorized.");
+                }
+            }
+        }
+
+        if (isRaMode() && StringUtils.isNotBlank(estAliasGui.getCaId())) {
+            try {
+                if (caSession.getCAInfo(authenticationToken, Integer.valueOf(estAliasGui.getCaId())).getCAType() == CAInfo.CATYPE_PROXY) {
+                    estAliasGui.setUsesProxyCa(true);
+                }
+            } catch (AuthorizationDeniedException e) {
+                // should not happen
+                throw new IllegalStateException("RA CA is not authhorized.");
             }
         }
     }
