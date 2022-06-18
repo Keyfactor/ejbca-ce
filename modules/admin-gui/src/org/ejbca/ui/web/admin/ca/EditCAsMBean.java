@@ -2566,7 +2566,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean isKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
         for (final int caId : CAIds) {
             final CAInfo caInfo = caSession.getCAInfoInternal(caId);
-            if (caInfo != null && currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias)) {
+            if (caInfo != null && caInfo.getCAToken()!= null && 
+                    currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias)) {
                 return true;
             }
         }
