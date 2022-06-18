@@ -106,12 +106,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
-            this.certificatechain = new ArrayList<>(certificatechain);
+            this.certificatechain = certificatechain!= null ? new ArrayList<>(certificatechain) : new ArrayList<>();
             Collections.reverse(this.certificatechain);
             this.crlinfo = crlinfo;
             this.deltacrlinfo = deltacrlinfo;
             this.deltaPeriodEnabled = deltaPeriodEnabled;
-            showJksDownloadForm = new boolean[certificatechain.size()];
+            showJksDownloadForm = new boolean[this.certificatechain.size()];
             this.caStatusActive = caStatusActive;
             this.caType = caType;
         }
