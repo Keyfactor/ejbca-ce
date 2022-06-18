@@ -570,7 +570,7 @@
 		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme, cits" if="${mod.edition-specific-ee.exists}">
+	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme, cits, proxy-ca" if="${mod.edition-specific-ee.exists}">
 		<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
