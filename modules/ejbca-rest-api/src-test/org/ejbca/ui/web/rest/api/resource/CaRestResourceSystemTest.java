@@ -185,7 +185,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     public void testCreateCrlWithoutDeltaCrl() throws Exception {
         log.error("testCreateCrlWithoutDeltaCrl");
         // with delta
-        String responseBody = createCrl("/v1/ca/" + URLEncoder.encode(TEST_ISSUER_DN1) + "/createcrl?deltacrl=true");
+        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":false"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":0,"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
@@ -193,7 +193,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_delta_crl_version\":0"));
         
         // without delta
-        responseBody = createCrl("/v1/ca/" + URLEncoder.encode(TEST_ISSUER_DN1) + "/createcrl??deltacrl=false");
+        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl??deltacrl=false");
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":0,"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":2,"));
@@ -206,7 +206,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     public void testCreateCrlWithDeltaCrl() throws Exception {
         log.error("testCreateCrlWithDeltaCrl");
         // without delta
-        String responseBody = createCrl("/v1/ca/" + URLEncoder.encode(TEST_ISSUER_DN2) + "/createcrl");
+        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl");
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":0,"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
@@ -214,7 +214,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_delta_crl_version\":0"));
         
         // with delta
-        responseBody = createCrl("/v1/ca/" + URLEncoder.encode(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
+        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":3,"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":2,"));
@@ -227,7 +227,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, cainfo);
         
         // with delta
-        responseBody = createCrl("/v1/ca/" + URLEncoder.encode(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
+        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":5,"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":4,"));
@@ -240,7 +240,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         log.error("testCreateCrlNoPartition");
         
         // with delta
-        String responseBody = createCrl("/v1/ca/" + URLEncoder.encode(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=true");
+        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":null"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":null"));
@@ -248,7 +248,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_delta_crl_version\":2")); // generated over base version
         
         // without delta
-        responseBody = createCrl("/v1/ca/" + URLEncoder.encode(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=false");
+        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=false");
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":null"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":null"));
@@ -260,7 +260,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     public void testCreateCrlInvalidIssuer() throws Exception {
         log.error("testCreateCrlInvalidIssuer");
         
-        WebTarget request = newRequest("/v1/ca/" + URLEncoder.encode("CN=InvalidCa") + "/createcrl?deltacrl=false");
+        WebTarget request = newRequest("/v1/ca/" + encodeUrl("CN=InvalidCa") + "/createcrl?deltacrl=false");
         Response actualResponse = request.request().post(null);
         String responseBody = actualResponse.readEntity(String.class);
         log.error("responseBody: " + responseBody);
