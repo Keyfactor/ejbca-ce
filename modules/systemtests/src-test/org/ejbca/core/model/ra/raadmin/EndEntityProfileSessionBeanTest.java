@@ -342,7 +342,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             eeProfile.setAvailableCAs(Collections.singletonList(anyCAId));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
-            List<Integer> allCaIds = caSession.getAllCaIds();
+            List<Integer> allCaIds = caSession.getAuthorizedCaIds(alwaysAllowToken);
             assertEquals("getAvailaBleCAsInProfile for EEP with AnyCA chosen should return a map with all CAs", map.size(), allCaIds.size() );
             
             // 2. Test exception handling.
