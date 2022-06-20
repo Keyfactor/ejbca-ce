@@ -128,6 +128,7 @@
     		<!-- slf4j-log4j.jar is needed just to avoid errors when running the CLI with later versions of JBoss -->
        		<path refid="lib.slf4jlog4j.classpath"/>
        		<path refid="lib.jacknji.classpath"/>
+    		<path refid="lib.commons-config.classpath"/>
     	</copy>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
     		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
