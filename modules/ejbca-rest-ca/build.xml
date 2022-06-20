@@ -19,7 +19,6 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
         <path refid="lib.json-simple.classpath"/>
