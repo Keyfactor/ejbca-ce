@@ -193,7 +193,7 @@ public class CaRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with DN: " + issuerDn + " does not exist.");
         }
         try {
-            // FormParam annotations above are just for Swagger - the default JavaEE rest library has
+            // FormParam annotations in resource definition class are just for Swagger - the default JavaEE rest library has
             // no support for multipart data parameters, so we need to parse them ourselves.
             final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
             final ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
