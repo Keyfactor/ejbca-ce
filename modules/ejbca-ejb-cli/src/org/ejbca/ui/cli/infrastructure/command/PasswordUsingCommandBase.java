@@ -13,12 +13,19 @@
 package org.ejbca.ui.cli.infrastructure.command;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -245,6 +252,21 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
             authenticationToken.setSha1HashFromCleartextPassword(password);
             return authenticationToken;
         }
+    }
+    
+    protected static PropertiesConfiguration loadReloadingProperties(final File file) throws ConfigurationException {
+        final Parameters params = new Parameters();
+        // FileBasedConfiguration
+        final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
+                new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
+                .configure(params.fileBased().setFile(file));
+        
+        final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
+            null, 1, TimeUnit.MINUTES);
+        trigger.start();
+        
+        final PropertiesConfiguration config = builder.getConfiguration();
+        return config;
     }
 
 }
