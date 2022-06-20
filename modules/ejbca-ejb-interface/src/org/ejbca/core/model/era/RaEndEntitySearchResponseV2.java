@@ -110,39 +110,24 @@ public class RaEndEntitySearchResponseV2 extends RaEndEntitySearchResponse {
             case 6:
                 return eei0.getStatus() - eei1.getStatus();
             case 7:
-                return eei0.getTimeModified().compareTo(eei0.getTimeModified());
+                return eei0.getTimeModified().compareTo(eei1.getTimeModified());
             case 8:
-                return eei0.getTimeCreated().compareTo(eei0.getTimeCreated());
+                return eei0.getTimeCreated().compareTo(eei1.getTimeCreated());
             case 0:
             default:
                 return eei0.getUsername().compareTo(eei1.getUsername());
             }
-        }
-        
-        
+        }        
         
         private int convertSortingProperty(String sortingProperty) {
-            switch(sortingProperty) {
-                case "SUBJECT_DN":
-                    return 1;
-                case "SUBJECT_ALT_NAME":
-                    return 2;
-                case "END_ENTITY_PROFILE":
-                    return 3;
-                case "CERTIFICATE_PROFILE":
-                    return 4;
-                case "CA":
-                    return 5;
-                case "STATUS":
-                    return 6;
-                case "UPDATE_TIME":
-                    return 7;
-                case "CREATED_TIME":
-                    return 8;
-                case "USERNAME":
-                default:
-                    return 0;
+            final String[] orderedSortPropertyTypes = new String[]{"username", "subjectDN", "subjectAltName", 
+                    "endEntityProfileId", "certificateProfileId", "caId", "status", "timeModified", "timeCreated"};
+            for(int i=0; i<orderedSortPropertyTypes.length; i++) {
+                if(sortingProperty.contains(orderedSortPropertyTypes[i])) {
+                    return i;
+                }
             }
+            return 0;
         }
         
     }
