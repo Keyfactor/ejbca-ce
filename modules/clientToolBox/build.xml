@@ -18,8 +18,6 @@
 	<path id="clientToolBox.lib.classpath">
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
-		<!-- runtime dependency org/apache/commons/collections/Predicate -->
-		<path refid="lib.commons-collections.classpath"/><!-- Dependency of commons-config (unused ConfigurationConverter) -->
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-io.classpath"/>	
 		<path refid="lib.commons-lang.classpath"/>
