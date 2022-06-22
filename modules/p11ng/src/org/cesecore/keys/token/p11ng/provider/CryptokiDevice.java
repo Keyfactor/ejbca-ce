@@ -1852,12 +1852,18 @@ public class CryptokiDevice {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Certificate Objects for alias '" + alias + "' : " +  certificateRefs);
                 }
-                if (certificateRefs.size() < 1) {
-                    throw new IllegalArgumentException("No such key");
-                }
 
-                // 2. Get the CKA_ID
-                CKA ckaId = c.GetAttributeValue(session.getId(), certificateRefs.get(0), CKA.ID);
+                CKA ckaId;
+                if (certificateRefs.size() > 0) {
+                    ckaId = getAttribute(session, certificateRefs.get(0), P11NGStoreConstants.CKA_ID);
+                    if (ckaId == null) {
+                        LOG.warn("Missing ID attribute on certificate object with label " + alias);
+                        throw new IllegalArgumentException("No such key '" + alias +"': Missing ID attribute on certificate object");
+                    }
+                } else {
+                    // In this case, we assume the private/public key has the alias in the ID attribute
+                    ckaId = new CKA(CKA.ID, alias.getBytes(StandardCharsets.UTF_8));
+                }
 
                 // 3. Find the matching private key (just as sanity check)
                 final List<Long> privateRefs = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
@@ -1873,7 +1879,9 @@ public class CryptokiDevice {
 
                 // 4. 5. 6. Remove old certificate objects
                 final Set<String> keptSubjects = new HashSet<>(); // Subject DN of certificates that was not deleted
-                removeCertificateAndChain(session, certificateRefs.get(0), keptSubjects);
+                if (certificateRefs.size() > 0) {
+                    removeCertificateAndChain(session, certificateRefs.get(0), keptSubjects);
+                }
 
                 // 7. Add the new certificate objects, excluding those subjects that was not deleted in step 4.
                 // Following the convention used by Oracle Java PKCS#11 Reference Guide
