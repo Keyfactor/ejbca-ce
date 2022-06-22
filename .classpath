@@ -120,8 +120,8 @@
 	<classpathentry kind="lib" path="lib/adsddl-1.9.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.14.jar"/>
-	<classpathentry kind="lib" path="lib/csrfguard-4.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/csrfguard-extension-session-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/csrfguard-4.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/csrfguard-extension-session-4.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-jsp-tags-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-all-1.14.jar"/>
