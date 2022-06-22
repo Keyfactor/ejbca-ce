@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +34,7 @@ import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.log4j.Logger;
 
 /**
@@ -403,6 +405,14 @@ public final class ConfigurationHolder {
         return true;
     }
     
+    /**
+     * Loads properties by URL.
+     * 
+     * @param url the URL to the properties file (usually from within the EAB file).
+     * @return the properties configuration for the given file or an empty properties configuration.
+     * 
+     * @throws ConfigurationException if the configuration exists and could not be loaded.
+     */
     public static final PropertiesConfiguration loadProperties(final URL url) throws ConfigurationException {
         final FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
                 new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
@@ -413,42 +423,22 @@ public final class ConfigurationHolder {
         return config;
     }
     
-    public static final PropertiesConfiguration loadProperties(final File file) throws ConfigurationException {
-        final FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
-                new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
-                .configure(new Parameters().properties()
-                    .setFile(file)
-                    .setThrowExceptionOnMissing(false)
-                    .setIncludesAllowed(false));
-        final PropertiesConfiguration config = builder.getConfiguration();
-        return config;
-    }
-    
-    public static final PropertiesConfiguration loadReloadingProperties(final URL url) throws ConfigurationException {        
-        final Parameters params = new Parameters();
-        // FileBasedConfiguration
-        final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
-                new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
-                .configure(params.fileBased().setURL(url));
-        
-//        final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
-//            null, 1, TimeUnit.MINUTES);
-//        trigger.start();
-        
-        final PropertiesConfiguration config = builder.getConfiguration();
-        return config;
-    }
-    
+    /**
+     * Loads reloading properties by file.
+     * 
+     * @param file the properties file (external file, effective if allow.external-dynamic.configuration=true).
+     * @return the properties configuration for the given file or an empty properties configuration.
+     * 
+     * @throws ConfigurationException if the configuration exists and could not be loaded.
+     */
     public static final PropertiesConfiguration loadReloadingProperties(final File file) throws ConfigurationException {
-        final Parameters params = new Parameters();
-        // FileBasedConfiguration
         final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
                 new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
-                .configure(params.fileBased().setFile(file));
+                .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false).setFile(file));
         
-//        final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
-//            null, 1, TimeUnit.MINUTES);
-//        trigger.start();
+        final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
+            null, 1, TimeUnit.MINUTES);
+        trigger.start();
         
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;
