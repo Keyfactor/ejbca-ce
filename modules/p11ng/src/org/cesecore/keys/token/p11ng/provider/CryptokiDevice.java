@@ -1711,6 +1711,8 @@ public class CryptokiDevice {
                             }
                         }
                     }
+                    // Also delete public key objects, if any
+                    removeKeysByType(session, CKO.PUBLIC_KEY, alias);
                     return allDeleted;
                 } else {
                     // No certificate found. Find and remove keys directly by label and ID
