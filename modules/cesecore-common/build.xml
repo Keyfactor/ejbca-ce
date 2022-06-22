@@ -21,8 +21,6 @@
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<!-- needs ConfigurationHolder CompositeConfiguration with Predicate -->
-		<path refid="lib.commons-collections.classpath"/><!-- Dependency of commons-config (unused ConfigurationConverter) -->
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.xmlpull.classpath"/>
