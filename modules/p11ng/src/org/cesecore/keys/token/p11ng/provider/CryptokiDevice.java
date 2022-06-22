@@ -939,7 +939,7 @@ public class CryptokiDevice {
                 LongRef publicKeyRef = new LongRef();
                 LongRef privateKeyRef = new LongRef();
 
-                c.GenerateKeyPair(session.getId(), new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicKeyTemplate, privateKeyTemplate, publicKeyRef, privateKeyRef);
+                cryptoki.generateKeyPair(session.getId(), new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), publicKeyTemplate, privateKeyTemplate, publicKeyRef, privateKeyRef);
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated public key: " + publicKeyRef.value + " and private key: " + privateKeyRef.value);
