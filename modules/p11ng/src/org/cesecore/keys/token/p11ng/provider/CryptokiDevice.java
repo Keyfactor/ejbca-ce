@@ -510,7 +510,7 @@ public class CryptokiDevice {
                           unWrapKey + ", session: " + session);
             }
 
-            NJI11StaticSessionPrivateKey result = new NJI11StaticSessionPrivateKey(session, privateKey, this, true);
+            NJI11StaticSessionPrivateKey result = new NJI11StaticSessionPrivateKey(session, privateKey, "RSA", this, true); // TODO: EC support!
             return result;
         }
         
@@ -597,7 +597,7 @@ public class CryptokiDevice {
             try {
                 final Long privateRef = getPrivateKeyRefByLabel(session, alias);
                 if (privateRef != null) {
-                    return new NJI11StaticSessionPrivateKey(session, privateRef, this, false);
+                    return new NJI11StaticSessionPrivateKey(session, privateRef, getPrivateKeyAlgorithm(session, privateRef), this, false);
                 }
             } catch (CKRException e) {
                 // If a CKRException happens here, it's likely someting wrong with the session. 
@@ -608,6 +608,29 @@ public class CryptokiDevice {
             // And if we ended up here...we could not get a private key...again something wrong with the session? 
             closeSession(session);
             return null;
+        }
+
+        private String getPrivateKeyAlgorithm(NJI11Session session, long privateObject) {
+            // PKCS#11 v2.40, section 2.9.1, RSA private key objects
+            // The only attributes from Table 26 for which a Cryptoki implementation is required to be able to return values are
+            // CKA_MODULUS, CKA_PRIVATE_EXPONENT, and CKA_PUBLIC_EXPONENT.
+            final CKA modulus = getAttribute(session, privateObject, P11NGStoreConstants.CKA_MODULUS);
+            // If we have a modulus value, it's an RSA key. Otherwise, bravely assume it's EC.
+            final BigInteger mod;
+            final String keyAlg;
+            if (modulus.getValue() == null) {
+                mod = null;
+                keyAlg = "EC";
+            } else {
+                // We need special treatment for RSA private keys because OpenJDK make a bitLength check
+                // on the RSA private key in the TLS implementation
+                // SignatureScheme.getSignerOfPreferableAlgorithm->KeyUtil.getKeySize
+                // hence we need to modulus also in the private key, not only in the public
+                final byte[] modulusBytes = modulus.getValue();
+                mod = new BigInteger(1, modulusBytes);
+                keyAlg = "RSA";
+            }
+            return keyAlg;
         }
         
         /**
@@ -1327,7 +1350,7 @@ public class CryptokiDevice {
                         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                         PublicKey pubKey = keyFactory.generatePublic(new X509EncodedKeySpec(new SubjectPublicKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption), publicKey.getEncoded()).getEncoded())); // TODO: Maybe not the shortest
     
-                        KeyPair keyPair = new KeyPair(pubKey, new NJI11StaticSessionPrivateKey(session, privateKeyRef.value, this, false));
+                        KeyPair keyPair = new KeyPair(pubKey, new NJI11StaticSessionPrivateKey(session, privateKeyRef.value, "RSA", this, false));
 
                         X509Certificate cert = certGenerator.generateCertificate(keyPair, provider); // Note: Caller might want to store the certificate so we need to call this even if storeCertificate==false
                         
