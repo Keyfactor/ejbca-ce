@@ -1126,8 +1126,8 @@ public class CryptokiDevice {
          * @param alias the CKA_LABEL of the key.
          * @throws IllegalStateException if a key with the specified alias already exists on the token.
          */
-        public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias,
-                final Map<Long, Object> overridePublic, final Map<Long, Object> overridePrivate) {
+        public void generateEccKeyPair(final ASN1ObjectIdentifier oid, final String alias, final boolean publicKeyToken,
+                                       final Map<Long, Object> overridePublic, final Map<Long, Object> overridePrivate, final CertificateGenerator certGenerator, final boolean storeCertificate) {
             NJI11Session session = null;
             try {
                 session = aquireSession();
@@ -1151,7 +1151,7 @@ public class CryptokiDevice {
 
                 // Attributes from PKCS #11 Cryptographic Token Interface Base Specification Version 2.40, section 4.4 - Storage objects
                 /* CK_TRUE if object is a token object or CK_FALSE if object is a session object. */
-                publicKeyTemplate.put(CKA.TOKEN, true);
+                publicKeyTemplate.put(CKA.TOKEN, publicKeyToken);
                 /* Description of the object (default empty). */
                 publicKeyTemplate.put(CKA.LABEL, ("pub-" + alias).getBytes(StandardCharsets.UTF_8));
 
@@ -1251,6 +1251,79 @@ public class CryptokiDevice {
                         publicKeyRef, privateKeyRef);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Generated EC public key " + publicKeyRef.value + " and EC private key " + privateKeyRef.value + ".");
+                }
+
+                if (certGenerator != null) {
+                    try {
+                        final CKA ckaQ = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.EC_POINT);
+                        final CKA ckaParams = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.EC_PARAMS);
+
+                        if (ckaQ.getValue() == null) {
+                            LOG.warn("Mandatory attribute CKA_EC_POINT is missing for key with alias '" + alias + "'.");
+                            throw new RuntimeException("Failed to read EC point");
+                        } else if (ckaParams.getValue() == null) {
+                            LOG.warn("Mandatory attribute CKA_EC_PARAMS is missing for key with alias '" + alias + "'.");
+                            throw new RuntimeException("Failed to read EC parameters");
+                        } else {
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Trying to decode public elliptic curve OID. The DER encoded parameters look like this: "
+                                        + StringTools.hex(ckaParams.getValue()) + ".");
+                            }
+
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Trying to decode public elliptic curve point Q using the curve with OID " + oid.getId()
+                                    + ". The DER encoded point looks like this: " + StringTools.hex(ckaQ.getValue()));
+                            }
+
+                            // Construct the public key object (Bouncy Castle)
+                            // Always return a public key with OID form of parameters, which means we probably don't support EC keys with fully custom EC parameters using this code
+                            final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(oid.getId());
+                            final PublicKey publicKey;
+                            if (bcspec != null) {
+                                final java.security.spec.EllipticCurve ellipticCurve = EC5Util.convertCurve(bcspec.getCurve(), bcspec.getSeed());
+                                final java.security.spec.ECPoint ecPoint = ECPointUtil.decodePoint(ellipticCurve,
+                                        ASN1OctetString.getInstance(ckaQ.getValue()).getOctets());
+                                final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), ecPoint);
+                                final ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(ecp, bcspec);
+                                final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+                                publicKey = keyfact.generatePublic(pubKeySpec);
+                            } else if (EdECObjectIdentifiers.id_Ed25519.equals(oid) || EdECObjectIdentifiers.id_Ed448.equals(oid)) {
+                                // It is an EdDSA key
+                                X509EncodedKeySpec edSpec = createEdDSAPublicKeySpec(ckaQ.getValue());
+                                final KeyFactory keyfact = KeyFactory.getInstance(oid.getId(), BouncyCastleProvider.PROVIDER_NAME);
+                                publicKey = keyfact.generatePublic(edSpec);
+                            } else {
+                                LOG.warn("Could not find an elliptic curve with the specified OID " + oid.getId() + ", not returning public key with alias '" + alias +"'.");
+                                throw new RuntimeException("Failed to find an curve with specified OID");
+                            }
+
+
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Public key: " + Base64.toBase64String(publicKey.getEncoded()));
+                            }
+
+                            KeyPair keyPair = new KeyPair(publicKey, new NJI11StaticSessionPrivateKey(session, privateKeyRef.value, "EC", this, false));
+
+                            X509Certificate cert = certGenerator.generateCertificate(keyPair, provider); // Note: Caller might want to store the certificate so we need to call this even if storeCertificate==false
+
+                            if (storeCertificate) {
+                                CKA[] cert0Template = new CKA[] {
+                                    new CKA(CKA.CLASS, CKO.CERTIFICATE),
+                                    new CKA(CKA.CERTIFICATE_TYPE, CKC.CKC_X_509),
+                                    new CKA(CKA.TOKEN, true),
+                                    new CKA(CKA.LABEL, alias),
+                                    new CKA(CKA.SUBJECT, cert.getSubjectX500Principal().getEncoded()),
+                                    new CKA(CKA.ID, alias),
+                                    new CKA(CKA.VALUE, cert.getEncoded())
+                                };
+                                cryptoki.createObject(session.getId(), cert0Template);
+                            }
+                        }
+                    } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException | OperatorCreationException | CertificateException ex) {
+                        throw new EJBException(ex);
+                    } catch (CKRException ex) {
+                        throw new EJBException("Failed to get public key during ECC key pair generation", ex);
+                    }
                 }
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to encode OID.", e);
