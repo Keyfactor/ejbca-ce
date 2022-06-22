@@ -1404,11 +1404,11 @@ public class CryptokiDevice {
                 }
                 if (certGenerator != null) {
                     try {
-                        CKA publicValue = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.MODULUS);
+                        CKA publicValue = getAttribute(session, publicKeyRef.value, P11NGStoreConstants.CKA_MODULUS);
         
                         final byte[] modulusBytes = publicValue.getValue();
         
-                        publicValue = c.GetAttributeValue(session.getId(), publicKeyRef.value, CKA.PUBLIC_EXPONENT);
+                        publicValue = getAttribute(session, publicKeyRef.value, P11NGStoreConstants.CKA_PUBLIC_EXPONENT);
                         final byte[] publicExponentBytes = publicValue.getValue();
         
                         final BigInteger n = new BigInteger(1, modulusBytes);
