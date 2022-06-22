@@ -2050,7 +2050,7 @@ public class CryptokiDevice {
             }
         }
         
-        public Enumeration<SlotEntry> aliases() throws CryptoTokenOfflineException { // TODO: For now we just read all aliases but we should only read chunks and load the next one on demand to scale, see FindObjectsInit
+        public Enumeration<SlotEntry> aliases() throws CryptoTokenOfflineException { // TODO: For now we just read all aliases but we should only read chunks and load the next one on demand to scale, see FindObjectsInit, but in that case remember to do session.markFindObjectsStarted() and session.markFindObjectsFinished() in case there is a failure before FindObjectsFinal
             final LinkedList<SlotEntry> result = new LinkedList<>();            
             NJI11Session session = null;
             try {
