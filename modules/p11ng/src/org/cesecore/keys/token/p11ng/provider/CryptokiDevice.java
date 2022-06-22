@@ -1705,8 +1705,6 @@ public class CryptokiDevice {
                                 
                                 // Now find and remove the certificate and its CA certificates if they are not used
                                 removeCertificateAndChain(session, certRef, new HashSet<String>());
-                                // Since we search with some other criteria in the above method, make sure this specific cert is removed
-                                cryptoki.destroyObject(session.getId(), certRef);
                                 // If the private key is not there anymore, let's call it a success
                                 final List<Long> objectsAfterDeletion = cryptoki.findObjects(session.getId(), new CKA(CKA.TOKEN, true), new CKA(CKA.CLASS, CKO.PRIVATE_KEY), new CKA(CKA.ID, ckaId.getValue()));
                                 allDeleted = allDeleted && objectsAfterDeletion.size() == 0;
@@ -1774,6 +1772,13 @@ public class CryptokiDevice {
                 int i = 0;
                 for (; i < MAX_CHAIN_LENGTH; i++) {
                     CKA ckaSubject = cryptoki.getAttributeValue(session.getId(), certRef, CKA.SUBJECT);
+
+                    // If there is no subject there is no chain to look for so just remove this single object
+                    if (ckaSubject.getValue() == null) {
+                        cryptoki.destroyObject(session.getId(), certRef);
+                        break;
+                    }
+
                     CKA ckaIssuer = cryptoki.getAttributeValue(session.getId(), certRef, CKA.ISSUER);
     
                     // 4. Find any certificate objects having this object as issuer, if no found delete the object
