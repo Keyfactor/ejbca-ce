@@ -2111,6 +2111,46 @@ public class CryptokiDevice {
         }
         
        /**
+         * Check if there is a private key entry for the given key alias.
+         *
+         * A private key entry is defined as having a certificate object with a
+         * label that matches the private key ID, or that there is a private key
+         * with that ID.
+         *
+         * @param alias to check
+         * @return True if entry was found (either in cache or by querying HSM)
+         */
+        public boolean hasPrivateKeyEntry(final String alias) {
+            NJI11Session session = null;
+            try {
+                session = aquireSession();
+                return getPrivateKeyRefByLabel(session, alias) != null;
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+
+        /**
+         * Check if there is a secret key entry for the given key alias.
+         *
+         * @param alias to check
+         * @return True if entry was found (either in cache or by querying HSM)
+         */
+        public boolean hasSecretKeyEntry(final String alias) {
+            NJI11Session session = null;
+            try {
+                session = aquireSession();
+                return !findSecretKeyObjectsByLabel(session, alias).isEmpty();
+            } finally {
+                if (session != null) {
+                    releaseSession(session);
+                }
+            }
+        }
+
+       /**
         * Same as CESeCoreUtils#securityInfo.
         * Writes info about security related attributes.
         * @param alias The alias of the private key to get info about.
@@ -2416,6 +2456,14 @@ public class CryptokiDevice {
             }
 
             return privateKey;
+        }
+
+        void removeObject(NJI11Session session, long keyObject) {
+            try {
+                cryptoki.destroyObject(session.getId(), keyObject);
+            } catch (CKRException ex) {
+                throw new EJBException("Failed to remove object.", ex);
+            }
         }
 
         private CKM getCKMForWrappingCipher(long wrappingCipher) {
