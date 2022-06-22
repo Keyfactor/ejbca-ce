@@ -298,11 +298,11 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
                 if (!StringUtils.equals(oidString, keySpec)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed448.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed448.getId()), alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
                 } else {
                     throw new InvalidAlgorithmParameterException("The elliptic curve " + keySpec + " is not supported.");
                 }
