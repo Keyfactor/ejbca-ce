@@ -1902,7 +1902,7 @@ public class CryptokiDevice {
                         new CKA(CKA.ID, alias),
                         new CKA(CKA.VALUE, cert.getEncoded())
                     };
-                    long newCertRef = c.CreateObject(session.getId(), cert0Template);
+                    long newCertRef = cryptoki.createObject(session.getId(), cert0Template);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Stored signer certificate object: " + newCertRef);
                     }
@@ -1932,7 +1932,7 @@ public class CryptokiDevice {
                             new CKA(CKA.VALUE, cert.getEncoded()),
                             new CKA(CKA.ID, getCertID(cert))
                         };
-                        newCertRef = c.CreateObject(session.getId(), certTemplate);
+                        newCertRef = cryptoki.createObject(session.getId(), certTemplate);
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Stored CA certificate object: " + newCertRef);
                         }
