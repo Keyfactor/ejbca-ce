@@ -1539,9 +1539,10 @@ public class CryptokiDevice {
                         new CKA(CKA.LABEL, alias.getBytes(StandardCharsets.UTF_8))};
                 }                
 
-                long newObject = c.GenerateKey(session.getId(), new CKM(keyAlgorithm), secretKeyTemplate);
+                LongRef newObjectRef = new LongRef();
+                cryptoki.generateKey(session.getId(), new CKM(keyAlgorithm), secretKeyTemplate, newObjectRef);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Generated secret key: " + newObject + " with alias " + alias);
+                    LOG.debug("Generated secret key: " + newObjectRef.value + " with alias " + alias);
                 }
                 
             } catch (CKRException ex) {
