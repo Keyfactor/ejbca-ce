@@ -238,6 +238,7 @@
 			<include name="httpclient-*.jar"/>
 			<include name="httpmime-*.jar"/>
 			<include name="commons-collections4-*.jar"/>
+			<include name="commons-configuration2-*.jar"/>
 			<include name="commons-text-*.jar"/><!-- Dependency of commons-configuration2 -->
 			<include name="commons-beanutils-*.jar"/><!-- Dependency of commons-configuration2 -->
 		</fileset>
