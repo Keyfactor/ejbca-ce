@@ -206,10 +206,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
-/**
- *
- * @version $Id$
- */
 public abstract class CommonEjbcaWs extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CommonEjbcaWs.class);
@@ -1721,9 +1717,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         // Now find the real one instead
         cas = ejbcaraws.getAvailableCAsInProfile(id);
         assertNotNull(cas);
-        // This profile only has ALLCAS available, so this list will be empty
-        assertTrue(cas.size() == 0);
-
+        // This profile has ALLCAS available, so this will return a list with all authorized CAIds.
+        assertEquals("available cas in profile is equal to available cas", cas.size(), caSession.getAuthorizedCaIds(intAdmin).size());
         // TODO: make a test that actually returns something
 
     } // test24GetAvailableCAsInProfile
