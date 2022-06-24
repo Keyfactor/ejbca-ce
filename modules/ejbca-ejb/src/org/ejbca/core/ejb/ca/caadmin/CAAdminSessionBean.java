@@ -122,6 +122,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -182,6 +183,7 @@ import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -582,10 +584,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
             mergeCertificatePoliciesFromCAAndProfile(citsCainfo, certprofile);
-        } else if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
-            log.info("Creating a PROXY CA: " + cainfo.getName());
-            // Create PROXY CA
-            ca = (CA) CAFactory.INSTANCE.getProxyCa(cainfo);
         } else {
             throw new IllegalStateException("CA of unknown type " + cainfo.getCAType() + " was encountered.");
         }
@@ -667,27 +665,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final CA ca;
         final CryptoToken cryptoToken;
         CertificateProfile certprofile;
-        if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
-            ca = createCAObject(cainfo, null, null);
-            cryptoToken = null;
-            certprofile = null;
-        } else {
-            final CAToken caToken = cainfo.getCAToken();
-            int cryptoTokenId = caToken.getCryptoTokenId();
-            cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-            // The certificate profile used for the CAs certificate
-            certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
-            // Create CA
-            ca = createCAObject(cainfo, caToken, certprofile);
-            if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-                // See if CA token is OK before storing CA, but skip if no keys can be guaranteed to exist.
-                try {
-                    cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
-                } catch (InvalidKeyException e1) {
-                    throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
-                }
+        final CAToken caToken = cainfo.getCAToken();
+        int cryptoTokenId = caToken.getCryptoTokenId();
+        cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        // The certificate profile used for the CAs certificate
+        certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
+        // Create CA
+        ca = createCAObject(cainfo, caToken, certprofile);
+        if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+            // See if CA token is OK before storing CA, but skip if no keys can be guaranteed to exist.
+            try {
+                cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+            } catch (InvalidKeyException e1) {
+                throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
             }
         }
+        
         // Store CA in database, so we can generate keys using the ca token session.
         try {
             caSession.addCA(admin, ca);
@@ -701,29 +694,27 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw e;
         }
 
-        if (cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
-            // Finish up and create certificate chain etc.
-            // Both code paths will audit log.
-            if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-                finalizeInitializedCA(admin, ca, cainfo, cryptoToken, certprofile);
-            } else {
-                // Special handling for uninitialized CAs
-                ca.setCertificateChain(new ArrayList<>());
-                ca.setStatus(CAConstants.CA_UNINITIALIZED);
+        // Finish up and create certificate chain etc.
+        // Both code paths will audit log.
+        if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+            finalizeInitializedCA(admin, ca, cainfo, cryptoToken, certprofile);
+        } else {
+            // Special handling for uninitialized CAs
+            ca.setCertificateChain(new ArrayList<>());
+            ca.setStatus(CAConstants.CA_UNINITIALIZED);
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Setting CA status to: " + CAConstants.CA_UNINITIALIZED);
-                }
-                try {
-                    caSession.editCA(admin, ca, true);
-                } catch (CADoesntExistsException e) {
-                    logAuditEvent(
-                        EventTypes.CA_EDITING, EventStatus.FAILURE,
-                        admin, caid,
-                        intres.getLocalizedMessage("caadmin.canotexistsid", caid)
-                    );
-                    throw new EJBException(e);
-                }
+            if (log.isDebugEnabled()) {
+                log.debug("Setting CA status to: " + CAConstants.CA_UNINITIALIZED);
+            }
+            try {
+                caSession.editCA(admin, ca, true);
+            } catch (CADoesntExistsException e) {
+                logAuditEvent(
+                    EventTypes.CA_EDITING, EventStatus.FAILURE,
+                    admin, caid,
+                    intres.getLocalizedMessage("caadmin.canotexistsid", caid)
+                );
+                throw new EJBException(e);
             }
         }
 
@@ -937,7 +928,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Check if extended service certificates are about to be renewed.
-        if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+        if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED && cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
             final Collection<ExtendedCAServiceInfo> extendedCAServiceInfos = cainfo.getExtendedCAServiceInfos();
             if (extendedCAServiceInfos != null) {
                 for (final ExtendedCAServiceInfo extendedCAServiceInfo : extendedCAServiceInfos) {
@@ -1729,9 +1720,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return returnval;
     }
-
+    
     @Override
     public void importCACertificate(AuthenticationToken admin, String caname, Collection<CertificateWrapper> wrappedCerts)
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
+        importExternalCA(admin, caname, wrappedCerts, null);
+    }
+
+    @Override
+    public void importExternalCA(AuthenticationToken admin, String caname, 
+            Collection<CertificateWrapper> wrappedCerts, CAInfo cainfo)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
         List<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
@@ -1750,42 +1748,46 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new CertificateImportException("Only CA certificates can be imported using this function.");
         }
         CACommon ca = null;
-        CAInfo cainfo = null;
 
         // Parameters common for both X509 and CVC CAs
-        int certprofileid = CertTools.isSelfSigned(caCertificate) ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
-                : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
-        String subjectdn = CertTools.getSubjectDN(caCertificate);
-        String validityString = "0d";
-        int signedby = CertTools.isSelfSigned(caCertificate) ? CAInfo.SELFSIGNED : CAInfo.SIGNEDBYEXTERNALCA;
-        log.info("Preparing to import of CA with Subject DN " + subjectdn);
-        if (caCertificate instanceof X509Certificate) {
-            X509Certificate x509CaCertificate = (X509Certificate) caCertificate;
-            String subjectaltname = CertTools.getSubjectAlternativeName(x509CaCertificate);
-
-            // Process certificate policies.
-            ArrayList<CertificatePolicy> policies = new ArrayList<>();
-            CertificateProfile certprof = certificateProfileSession.getCertificateProfile(certprofileid);
-            if (certprof.getCertificatePolicies() != null && !certprof.getCertificatePolicies().isEmpty()) {
-                policies.addAll(certprof.getCertificatePolicies());
+        if(cainfo==null) {
+            int certprofileid = CertTools.isSelfSigned(caCertificate) ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
+                    : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
+            String subjectdn = CertTools.getSubjectDN(caCertificate);
+            String validityString = "0d";
+            int signedby = CertTools.isSelfSigned(caCertificate) ? CAInfo.SELFSIGNED : CAInfo.SIGNEDBYEXTERNALCA;
+            log.info("Preparing to import of CA with Subject DN " + subjectdn);
+            if (caCertificate instanceof X509Certificate) {
+                X509Certificate x509CaCertificate = (X509Certificate) caCertificate;
+                String subjectaltname = CertTools.getSubjectAlternativeName(x509CaCertificate);
+    
+                // Process certificate policies.
+                ArrayList<CertificatePolicy> policies = new ArrayList<>();
+                CertificateProfile certprof = certificateProfileSession.getCertificateProfile(certprofileid);
+                if (certprof.getCertificatePolicies() != null && !certprof.getCertificatePolicies().isEmpty()) {
+                    policies.addAll(certprof.getCertificatePolicies());
+                }
+                final X509CAInfo x509cainfo = X509CAInfo.getDefaultX509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null,
+                        null);
+                x509cainfo.setSubjectAltName(subjectaltname);
+                x509cainfo.setPolicies(policies);
+                cainfo = x509cainfo;
+            } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
+                cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null, null);
+            } else {
+                throw new CertificateImportException("Certificate was of an unknown type: " + caCertificate.getType());
             }
-            final X509CAInfo x509cainfo = X509CAInfo.getDefaultX509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null,
-                    null);
-            x509cainfo.setSubjectAltName(subjectaltname);
-            x509cainfo.setPolicies(policies);
-            cainfo = x509cainfo;
-        } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
-            cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null, null);
-        } else {
-            throw new CertificateImportException("Certificate was of an unknown type: " + caCertificate.getType());
+            cainfo.setExpireTime(CertTools.getNotAfter(caCertificate));
+            cainfo.setDescription("CA created by certificate import.");
         }
-        cainfo.setExpireTime(CertTools.getNotAfter(caCertificate));
-        cainfo.setDescription("CA created by certificate import.");
 
         if (cainfo instanceof X509CAInfo) {
             log.info("Creating a X509 CA (process request)");
             ca = CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
-        } else if (cainfo instanceof CVCCAInfo) {
+        } else if(cainfo instanceof ProxyCaInfo) {
+            log.info("Creating a Proxy CA (process request)");
+            ca = CAFactory.INSTANCE.getProxyCa(cainfo);
+        }  else if (cainfo instanceof CVCCAInfo) {
             // CVC CA is a special type of CA for EAC electronic passports
             log.info("Creating a CVC CA (process request)");
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
@@ -1804,6 +1806,36 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.addCA(admin, ca);
         // Persist ("Publish") the CA certificates to the local CertificateData database.
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
+        
+        if(cainfo instanceof ProxyCaInfo) {
+            log.info("Creating empty template of EST configuration for proxy ca");
+            createEmptyEstConfigForProxyCa(admin, (ProxyCaInfo) cainfo);
+        }
+        
+    }
+
+    private void createEmptyEstConfigForProxyCa(AuthenticationToken admin, ProxyCaInfo cainfo) throws AuthorizationDeniedException {
+        EstConfiguration estConfiguration = 
+                (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        
+        String estConfigAlias = cainfo.getEstConfigAlias();
+        if(estConfiguration.getAliasList().contains(estConfigAlias)) {
+            // may happen if we had CA with same subjectDn beforehand and deleted
+            // otherwise CA creation would have failed
+            log.info("Removing preexisitng EST alias named: " + estConfigAlias);
+            estConfiguration.removeAlias(estConfigAlias);
+            globalConfigurationSession.saveConfiguration(admin, estConfiguration);
+        }
+        
+        estConfiguration.addAlias(estConfigAlias); // initializes to default values
+        estConfiguration.setDefaultCAID(estConfigAlias, cainfo.getSubjectDN().hashCode()); // proxy ca id
+        // username and password are empty + client certificate is not required
+        // hence all authentication will fail in RA mode(default EST mode)
+        estConfiguration.setCert(estConfigAlias, false);
+        estConfiguration.setSupportProxyCa(estConfigAlias, true);
+        
+        globalConfigurationSession.saveConfiguration(admin, estConfiguration);
+        
     }
 
     @Override

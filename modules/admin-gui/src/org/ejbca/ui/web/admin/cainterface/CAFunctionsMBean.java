@@ -279,8 +279,10 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
             final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
-            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlInfos, deltacrlinfo,
-                    cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
+            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), 
+                    cainfo.getCAType()!=CAInfo.CATYPE_PROXY ? cainfo.getCertificateChain() : null, 
+                    crlInfos, deltacrlinfo, cainfo.getDeltaCRLPeriod() > 0, 
+                    cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
             caGuiInfos.add(caGuiInfo);
         }
     }

@@ -23,7 +23,7 @@ public enum CAFactory {
     private static final String CA_TYPE_CVC_EAC = "CVC_EAC";
     private static final String CA_TYPE_SSH = "SSHCA";
     private static final String CA_TYPE_CITS = "ECA";
-    private static final String CA_TYPE_PROXY = "PROXYCA";
+    private static final String CA_TYPE_PROXY = "KeyfactorEnrollmentProxyCA";
 
     private static final Logger log = Logger.getLogger(CAFactory.class);
 
