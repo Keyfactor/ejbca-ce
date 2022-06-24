@@ -120,7 +120,7 @@ public class ConfigdumpRestResource extends BaseRestResource {
                     + " nothing else)")
             @DefaultValue("false") @QueryParam("externalcas")
             final boolean exportExternalCas, 
-
+            
             @ApiParam("Names of items/types to include in the export. The syntax is identical to that"
                     + " of exclude. For items of types that aren't listed, everything is included.")
             @QueryParam("include")
