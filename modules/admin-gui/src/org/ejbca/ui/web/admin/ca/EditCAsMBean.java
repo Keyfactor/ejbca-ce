@@ -84,6 +84,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -110,7 +111,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
-import org.ejbca.ca.ProxyCaInfo;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -142,6 +142,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private static final String INVALID_KEK_ERROR_MESSAGE = "Key encryption key must be set to RSA key to allow key export.";
     private static final HashSet<String> ALLOWED_KEK_TYPES = new HashSet<String>(Arrays.asList(new String[] {"RSA"}));
     private static final String CERTIFICATE_UNAVAILABLE = "Certificate unavailable";
+    private final static String HIDDEN_KF_ENROLL_CA_UPSTREAM_PASSWORD = "*********";
     
     @EJB
     private CaSessionLocal caSession;
@@ -434,7 +435,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         case CAInfo.CATYPE_CITS:
             return "ECA";
         case CAInfo.CATYPE_PROXY:
-            return "PROXY CA";
+            return "Keyfactor Enrollment Proxy CA";
         default:
             return "UNKNOWN";
         }
@@ -1302,7 +1303,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isRenderSaveExternalCa() {
-        return caInfoDto.isCaTypeX509() && isHasEditRight();
+        return (caInfoDto.isCaTypeX509() || caInfoDto.isCaTypeProxy()) && isHasEditRight();
     }
 
     public String getCmsCertLink() throws UnsupportedEncodingException {
@@ -1439,11 +1440,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void renderProxyCaFields() {
         caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
-        // caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
-        caInfoDto.setSignedBy(CAInfo.SELFSIGNED); // TODO: just for testing, it must be CAInfo.SIGNEDBYEXTERNALCA, details about the upstream CA will make things correctly implementable
-        updateAvailableCryptoTokenList(false); // TODO: Not sure if true or false. cryptoToken field has to disabled once we get details about the upstream CA
-        updateAvailableSigningAlgorithmList();
-        getCertificateProfiles();
+        caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        //caInfoDto.setSignedBy(CAInfo.SELFSIGNED); // TODO: just for testing, it must be CAInfo.SIGNEDBYEXTERNALCA, details about the upstream CA will make things correctly implementable
+//        updateAvailableCryptoTokenList(false); // TODO: Not sure if true or false. cryptoToken field has to disabled once we get details about the upstream CA
+//        updateAvailableSigningAlgorithmList();
+//        getCertificateProfiles();
     }
 
     public boolean isCreateLinkCertificate() {
@@ -1676,6 +1677,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             x509caInfo.setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses());
             x509caInfo.setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand());
             return saveCaInternal(x509caInfo);
+        } else if (caInfoDto.getCaType()==CAInfo.CATYPE_PROXY) {
+            return saveCaInternal(caInfoDto.buildProxyCaInfo());
         }
         return "";
     }
@@ -1970,23 +1973,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     private CAInfo getCaInfo() throws NumberFormatException, AuthorizationDeniedException {
         if (caInfoDto.getCaType() == CAInfo.CATYPE_PROXY) {
-            List<MutablePair<String, String>> pairs = caInfoDto.getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
-            ProxyCaInfo proxyCaInfo = new ProxyCaInfo.ProxyCaInfoBuilder()
-                .setCaId(caid)
-                .setName(caInfoDto.getCaName())
-                .setStatus(CAConstants.CA_ACTIVE)
-                .setSubjectDn(caInfoDto.getCaSubjectDN())
-                .setValidators(usedValidators)
-                .setEnrollWithCsrUrl(caInfoDto.getUpstreamUrl())
-                .setHeaders(pairs)
-                .setUsername(caInfoDto.getUsername())
-                .setPassword(caInfoDto.getPassword())
-                .setCa(caInfoDto.getUpstreamCa())
-                .setTemplate(caInfoDto.getUpstreamTemplate())
-                .setSans(caInfoDto.getSansJson())
-                .build();
-
-            return proxyCaInfo;
+            return caInfoDto.buildProxyCaInfo();
         }
 
         CAInfo cainfo;
@@ -2182,6 +2169,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private void initEditCaPage() {
+        signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
+        isCaexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
+        
         if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
             caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
             cainfo.setCAId(cainfo.getCAId());
@@ -2194,7 +2184,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setHeaders(headerTriples);
             caInfoDto.setUsername(proxyCaInfo.getUsername());
             caInfoDto.setPassword(proxyCaInfo.getPassword());
-            caInfoDto.setUpstreamCa(proxyCaInfo.getCa());
+            caInfoDto.setUpstreamCa(proxyCaInfo.getUpstreamCertificateAuthority());
             caInfoDto.setUpstreamTemplate(proxyCaInfo.getTemplate());
             caInfoDto.setSansJson(proxyCaInfo.getSans());
 
@@ -2206,8 +2196,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam())) {
             caInfoDto.setSignatureAlgorithmParam(catoken.getSignatureAlgorithm());
         }
-        signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
-        isCaexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
+        
         isCaRevoked = cainfo.getStatus() == CAConstants.CA_REVOKED || RevokedCertInfo.isRevoked(cainfo.getRevocationReason());
         revokable = cainfo.getStatus() != CAConstants.CA_REVOKED && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE
                 && cainfo.getStatus() != CAConstants.CA_EXTERNAL && !RevokedCertInfo.isPermanentlyRevoked(cainfo.getRevocationReason());
@@ -2623,4 +2612,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean getHasAnyHeader() {
         return caInfoDto.getHeaders().size() > 0;
     }
+    
+    public String getUpstreamPassword() {
+        // can never see the pasword
+        return HIDDEN_KF_ENROLL_CA_UPSTREAM_PASSWORD;
+    }
+    
+    public void setUpstreamPassword(String newPassword) {
+        if(!newPassword.equals(HIDDEN_KF_ENROLL_CA_UPSTREAM_PASSWORD)) {
+            caInfoDto.setPassword(newPassword);
+        }
+    }
+    
 }
