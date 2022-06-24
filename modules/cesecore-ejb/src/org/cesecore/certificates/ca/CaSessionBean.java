@@ -206,12 +206,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public void addCA(final AuthenticationToken admin, final CACommon ca) throws CAExistsException, AuthorizationDeniedException {
         if (ca != null) {
-            if (ca.getCAType() != CAInfo.CATYPE_PROXY) {
-                final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
-                if (!authorizationSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
-                    String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), ca.getCAId());
-                    throw new AuthorizationDeniedException(msg);
-                }
+            final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+            log.info("cryptoTokenId: " + cryptoTokenId);
+            if (!authorizationSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), ca.getCAId());
+                throw new AuthorizationDeniedException(msg);
             }
             CAInfo cainfo = ca.getCAInfo();
             // The CA needs a name and a subject DN in order to store it
@@ -256,25 +255,26 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     		try {
     			final CACommon ca = getCAInternal(cainfo.getCAId(), null, null, false);
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
-                if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
-                    ca.updateCA(null, cainfo, null);
-                } else {
-                    // Check if we can edit the CA (also checks authorization)
-                    checkForPreProductionAndNonceConflict(cainfo, ca);
-                    int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
-                    if (cainfo.getCAToken() != null) {
-                        newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
-                    }
-                    assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
 
-                    if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
-                        throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
-
-                    @SuppressWarnings("unchecked")
-                    AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
-                        globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-                    ca.updateCA(cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId()), cainfo, cceConfig);
+                // Check if we can edit the CA (also checks authorization)
+                checkForPreProductionAndNonceConflict(cainfo, ca);
+                int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
+                if (cainfo.getCAToken() != null) {
+                    newCryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
                 }
+                assertAuthorizationAndTarget(admin, cainfo.getName(), cainfo.getSubjectDN(), newCryptoTokenId, ca);
+
+                if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
+                    throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
+
+                @SuppressWarnings("unchecked")
+                AvailableCustomCertificateExtensionsConfiguration cceConfig = null;
+                if (cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
+                    cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
+                    globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+                }
+                ca.updateCA(cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId()), cainfo, cceConfig);
+                
                 // Audit log
                 @SuppressWarnings("unchecked")
                 final Map<Object, Object> newmap = (Map<Object, Object>)ca.saveData();
@@ -287,10 +287,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 for (final Map.Entry<Object,Object> entry : diff.entrySet()) {
                     details.put(entry.getKey().toString(), entry.getValue().toString());
                 }
-                if (cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
-                    details.put("tokenproperties", ca.getCAToken().getProperties());
-                    details.put("tokensequence", ca.getCAToken().getKeySequence());
-                }
+                details.put("tokenproperties", ca.getCAToken().getProperties());
+                details.put("tokensequence", ca.getCAToken().getKeySequence());
                 logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
                 // Store it
                 mergeCa(ca);
