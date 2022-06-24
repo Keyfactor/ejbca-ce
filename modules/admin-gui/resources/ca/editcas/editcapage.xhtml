@@ -100,13 +100,6 @@
 						rendered="#{editCAsMBean.renderCitsAvailable}">
 						<f:ajax listener="#{editCAsMBean.renderCitsFields()}" render="@form" />
 					</h:commandButton>
-					<h:commandButton
-							id="catypeproxy"
-							styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeProxy?'selected':''}"
-							action="#{editCAsMBean.setCaTypeProxy}"
-							value="#{editCAsMBean.caTypeProxy?'✓':' '}#{web.text.PROXY}">
-						<f:ajax listener="#{editCAsMBean.renderProxyCaFields()}" render="@form" />
-					</h:commandButton>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.editCA}">
@@ -393,7 +386,6 @@
 						value="#{editCAsMBean.keySequence}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 				</h:panelGroup>
-				</c:if>
 
 				<h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="description" value="#{web.text.DESCRIPTION}" />
@@ -407,6 +399,8 @@
 						disabled="#{not editCAsMBean.hasEditRight}"
 						rendered="#{not editCAsMBean.caExternal}" />
 				</h:panelGroup>
+			  </c:if>
+				
 			</h:panelGrid>
 			
 			<!-- ==================================================================== CITS Attributes =================================================================================== -->
@@ -1225,6 +1219,7 @@
 							disabled="#{not editCAsMBean.editCA or editCAsMBean.waitingForResponse}" />
 					</h:panelGroup>
 				</c:if>
+					
 			</h:panelGrid>
 
 
@@ -1770,7 +1765,8 @@
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable 
-								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeCits}">
+								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeCits
+								and not  editCAsMBean.caTypeProxy}">
 				<h:outputLabel for="otherdata" value="#{web.text.OTHERDATA}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="otherdata" />
@@ -1898,7 +1894,7 @@
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 				rendered="#{editCAsMBean.renderCaLifeCycle and not editCAsMBean.renderCvcAvailable
-								and not editCAsMBean.caTypeCits}">
+								and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeProxy}">
 				<h:outputLabel for="califecycle" value="#{web.text.CALIFECYCLE}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="califecycle"
@@ -2045,7 +2041,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeProxy}">
+				rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="externallysignedcacreaterenew"
 					value="#{web.text.EXTERNALLYSIGNED_CA_CREATERENEW}"
 					style="font-weight: bold;" />
@@ -2145,7 +2141,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable}">
+				rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeProxy}">
 				<h:outputLabel for="importcarenewal"
 					value="#{web.text.IMPORTED_CA_RENEWAL}" style="font-weight: bold;" />
 				<h:panelGroup id="importcarenewal" />
@@ -2181,38 +2177,46 @@
 						 rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 						 rendered="#{editCAsMBean.caTypeProxy}">
 				<h:panelGroup>
-					<h:outputLabel for="proxyCaTitle" value="#{web.text.PROXY}" style="font-weight: bold;" />
+					<h:outputLabel for="proxyCaTitle" value="#{web.text.PROXY_CATYPE}" style="font-weight: bold;" />
 				</h:panelGroup>
 				<h:panelGroup id="proxyCaTitle" />
 				<h:panelGroup>
 					<h:outputLabel for="textFieldUpstreamUrl" value="#{web.text.UPSTREAM_URL}" />
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:inputText id="textFieldUpstreamUrl" name="upstreamUrl" size="45" maxlength="225"
+					<h:inputText rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}" id="textFieldUpstreamUrl" name="upstreamUrl" size="45" maxlength="225"
 								 value="#{editCAsMBean.caInfoDto.upstreamUrl}" title="#{web.text.UPSTREAM_URL}">
 						<f:ajax />
 						<!--<f:validator
 								validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
 								disabled="#{not editCAsMBean.caInfoDto.caTypeCVC}" />-->
 					</h:inputText>
+					<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="#{editCAsMBean.caInfoDto.upstreamUrl}" />
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputLabel for="textFieldUsername" value="#{web.text.UPSTREAM_USERNAME}" />
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:inputText id="textFieldUsername" name="username" size="25" maxlength="225"
-								 value="#{editCAsMBean.caInfoDto.username}" title="#{web.text.UPSTREAM_USERNAME}">
+								 value="#{editCAsMBean.caInfoDto.username}" title="#{web.text.UPSTREAM_USERNAME}"
+								 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 						<f:ajax />
 					</h:inputText>
+					<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="#{editCAsMBean.caInfoDto.username}" />
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputLabel for="textFieldPassword" value="#{web.text.UPSTREAM_PASSWORD}" />
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:inputText id="textFieldPassword" name="password" size="25" maxlength="225"
-								 value="#{editCAsMBean.caInfoDto.password}" title="#{web.text.UPSTREAM_PASSWORD}">
+					<h:inputSecret id="textFieldPassword" name="password" size="25" maxlength="225" redisplay="true"
+								autocomplete="off" rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
+								 value="#{editCAsMBean.upstreamPassword}" title="#{web.text.UPSTREAM_PASSWORD}">
 						<f:ajax />
-					</h:inputText>
+					</h:inputSecret>
+					<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="********" />
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputLabel for="headersTitle" value="#{web.text.UPSTREAM_HEADERS}" style="font-weight: bold;" />
@@ -2223,32 +2227,40 @@
 					<h:panelGroup id="wrapperHeaderKey-#{loopStatus.index}">
 						<h:selectBooleanCheckbox
 								id="removeHeaderCheckBox-#{loopStatus.index}"
-								value="#{header.left}">
+								value="#{header.left}"
+								rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 							<f:ajax />
 						</h:selectBooleanCheckbox>
 					</h:panelGroup>
 					<h:panelGroup id="wrapperHeaderValue-#{loopStatus.index}">
 						<h:inputText id="textFieldHeaderKey-#{loopStatus.index}" name="textFieldHeaderKey-#{status.index}" size="25" maxlength="225"
-									 value="#{header.middle}" title="#{web.text.HEADER_FIELD_KEY}">
+									 value="#{header.middle}" title="#{web.text.HEADER_FIELD_KEY}"
+									 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 							<f:ajax />
 						</h:inputText>
+						<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="#{header.middle}" />
 						<h:outputText id="headerSeparator-#{loopStatus.index}" value=" : "/>
 						<h:inputText id="textFieldHeaderValue-#{loopStatus.index}" name="textFieldHeaderValue-#{status.index}" size="25" maxlength="225"
-									 value="#{header.right}" title="#{web.text.HEADER_FIELD_VALUE}">
+									 value="#{header.right}" title="#{web.text.HEADER_FIELD_VALUE}"
+									 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 							<f:ajax />
 						</h:inputText>
+						<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="#{header.right}" />
 					</h:panelGroup>
 				</c:forEach>
 				<h:panelGroup id="addHeaderTitle" rendered="#{not editCAsMBean.hasAnyHeader}" />
 				<h:commandButton id="removeHeaderButton"
 								 value="#{web.text.REMOVE}"
 								 action="#{editCAsMBean.removeHeader}"
-								 rendered="#{editCAsMBean.hasAnyHeader}">
+								 rendered="#{editCAsMBean.hasAnyHeader and editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 					<f:ajax render="proxyCa" />
 				</h:commandButton>
 				<h:commandButton id="addHeaderButton"
 								 value="#{web.text.ADD}"
-								 action="#{editCAsMBean.addBlankHeader}">
+								 action="#{editCAsMBean.addBlankHeader}"
+								 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 					<f:ajax render="proxyCa" />
 				</h:commandButton>
 				<h:panelGroup>
@@ -2256,9 +2268,12 @@
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:inputText id="textFieldCertificateAuthority" name="certificateAuthority" size="25" maxlength="225"
-								 value="#{editCAsMBean.caInfoDto.upstreamCa}" title="#{web.text.CERTIFICATE_AUTHORITY}">
+								 value="#{editCAsMBean.caInfoDto.upstreamCa}" title="#{web.text.CERTIFICATE_AUTHORITY}"
+								 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 						<f:ajax />
 					</h:inputText>
+					<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="#{editCAsMBean.caInfoDto.upstreamCa}" />
 					<br/>
 					<h:outputText styleClass="smallHelp" value="#{web.text.UPSTREAM_CA_HELP}" />
 				</h:panelGroup>
@@ -2267,17 +2282,24 @@
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:inputText id="textFieldTemplate" name="certificateAuthority" size="25" maxlength="225"
-								 value="#{editCAsMBean.caInfoDto.upstreamTemplate}" title="#{web.text.TEMPLATE}">
+								 value="#{editCAsMBean.caInfoDto.upstreamTemplate}" title="#{web.text.TEMPLATE}"
+								 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 						<f:ajax />
 					</h:inputText>
+					<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="#{editCAsMBean.caInfoDto.upstreamTemplate}" />
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:outputLabel for="textAreaSans" value="#{web.text.SANS}" />
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:inputTextarea id="textAreaSans" rows="4" cols="38" value="#{editCAsMBean.caInfoDto.sansJson}">
+					<h:inputTextarea id="textAreaSans" rows="4" cols="38" 
+							value="#{editCAsMBean.caInfoDto.sansJson}"
+							rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
 						<f:ajax />
 					</h:inputTextarea>
+					<h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}" 
+												value="#{editCAsMBean.caInfoDto.sansJson}" />
 					<br/>
 					<h:outputText styleClass="smallHelp" value="#{web.text.SANS_HELP}" />
 				</h:panelGroup>
