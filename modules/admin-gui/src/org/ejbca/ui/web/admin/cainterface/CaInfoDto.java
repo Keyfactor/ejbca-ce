@@ -13,16 +13,18 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import org.apache.commons.lang.StringUtils;
-
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.ca.EditCaUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Wrapper class for holding CaInfo properties.
@@ -749,6 +751,24 @@ public class CaInfoDto {
 
     public void setSansJson(String sansJson) {
         this.sansJson = sansJson;
+    }
+    
+    public ProxyCaInfo buildProxyCaInfo() {
+        List<MutablePair<String, String>> pairs = getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
+        ProxyCaInfo proxyCaInfo = new ProxyCaInfo.ProxyCaInfoBuilder()
+            .setCaId(getCaSubjectDN().hashCode())
+            .setName(getCaName())
+            .setSubjectDn(getCaSubjectDN())
+            .setEnrollWithCsrUrl(getUpstreamUrl())
+            .setHeaders(pairs)
+            .setUsername(getUsername())
+            .setPassword(getPassword())
+            .setCa(getUpstreamCa())
+            .setTemplate(getUpstreamTemplate())
+            .setSans(getSansJson())
+            .build();
+
+        return proxyCaInfo;
     }
 }
 
