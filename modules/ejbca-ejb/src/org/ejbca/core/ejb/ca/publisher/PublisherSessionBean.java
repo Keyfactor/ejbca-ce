@@ -321,7 +321,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                         final String msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
                         final Map<String, Object> details = new LinkedHashMap<>();
                         details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
+                        EventStatus status;
+                        if (publishStatus == PublisherConst.STATUS_SUCCESS) {
+                            status = EventStatus.SUCCESS;
+                        } else {
+                            status = EventStatus.FAILURE;
+                        }
+                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, status, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                     } catch (PublisherException pe) {
                         final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "CRL");
