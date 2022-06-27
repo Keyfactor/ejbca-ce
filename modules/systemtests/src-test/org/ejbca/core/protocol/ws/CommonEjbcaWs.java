@@ -1718,7 +1718,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         cas = ejbcaraws.getAvailableCAsInProfile(id);
         assertNotNull(cas);
         // This profile has ALLCAS available, so this will return a list with all authorized CAIds.
-        assertEquals("available cas in profile is equal to available cas", cas.size(), caSession.getAuthorizedCaIds(intAdmin).size());
+        assertEquals("all CAs should be available in profile", caSession.getAuthorizedCaIds(intAdmin).size(), cas.size());
+        
         // TODO: make a test that actually returns something
 
     } // test24GetAvailableCAsInProfile
