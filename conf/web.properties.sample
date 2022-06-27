@@ -295,7 +295,9 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # (for a capability that is disabled you have the chance to specify a message that may be displayed in the GUI)
 # canGenerateKey can be used to disable key generation in the Web UI, if this does not work properly (typically due to limited p11 support)
 #cryptotoken.p11.lib.114.canGenerateKey=false
-#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM PrimeKey
+#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM
+#cryptotoken.p11.lib.135.canGenerateKey=false
+#cryptotoken.p11.lib.135.canGenerateKeyMsg=The GCP Console must be used to generate keys on GCP Cloud KMS
 
 # Available PKCS#11 CryptoToken attribute files and their display names
 # Use if the default PKCS#11 attributes are not good for the PKCS#11 module and if needs specific attributes 
