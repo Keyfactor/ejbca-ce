@@ -19,7 +19,6 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
         <path refid="lib.json-simple.classpath"/>
@@ -27,6 +26,7 @@
         <path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.swagger.classpath"/>
         <path refid="lib.jackson2.classpath"/>
+		<path refid="lib.commons-fileupload.classpath"/>
         <path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
