@@ -190,6 +190,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -4723,7 +4724,7 @@ public abstract class CertTools {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
                         validator.checkPermitted(sangn);
-                        if (isAllDNSNamesExcluded(excluded)) {
+                        if (sangn.getTagNo() == 2 && isAllDNSNamesExcluded(excluded)) {
                             final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
                                     NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
                             throw new IllegalNameException(msg);
@@ -4738,11 +4739,13 @@ public abstract class CertTools {
             }
         }
     }
-    
-
 
     // Check if we should exclude all dns names
     private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
+        if (Objects.isNull(excluded)) {
+            return false;
+        }
+        
         for (int i = 0; i < excluded.length; i++) {
             if (excluded[i].getBase().toString().equals("2: ")) {
                 return true;
