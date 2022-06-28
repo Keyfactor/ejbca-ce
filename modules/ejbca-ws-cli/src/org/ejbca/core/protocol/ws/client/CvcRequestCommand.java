@@ -202,7 +202,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				fos.write(cvcert.getDEREncoded());
 				fos.close();
 				getPrintStream().println("Wrote binary certificate to: "+basefilename+".cvcert");
-				getPrintStream().println("You can look at the certificate with the command cvcwscli.sh cvcprint "+basefilename+".cvcert");
+				getPrintStream().println("You can look at the certificate with the command ./ejbcaClientToolBox.sh CvcWsRaCli cvcprint "+basefilename+".cvcert");
 			}catch(AuthorizationDeniedException_Exception e){
 				getPrintStream().println("Error : " + e.getMessage());
 			}catch(UserDoesntFullfillEndEntityProfile_Exception e){
@@ -219,7 +219,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	}
 
 	protected void usage() {
-		getPrintStream().println("Command used to make a CVC request. A user must exist, add one with 'ejbcawsracli.sh edituser'.");
+		getPrintStream().println("Command used to make a CVC request. A user must exist, add one with './ejbcaClientToolBox.sh EjbcaWsRaCli edituser'.");
 		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <signatureAlg> <keyspec (1024|1536|2048|curve)> <genreq true|false> <basefilename> [<auth-sign-key>] [<auth-sign-cert>]\n\n");
 		getPrintStream().println("SignatureAlg is used when generating a request and can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA1WithECDSA, SHA224WithECDSA, SHA256WithECDSA");
 		getPrintStream().println("Keyspec is used when generating a request and is 1024, 1536, 2048, etc. for RSA keys and the name of a named curve for ECDSA, see User Guide for supported curves.");

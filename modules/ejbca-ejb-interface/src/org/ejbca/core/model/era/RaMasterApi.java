@@ -395,6 +395,13 @@ public interface RaMasterApi {
     RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
 
     /**
+     * Searches for end entities and sorts them. Remote end entities take precedence over local ones.
+     * @return list of end entities from the specified search criteria and sorted accordingly
+     * @since Initial RA Master API version (EJBCA 7.10.0)
+     */
+    RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken, RaEndEntitySearchRequestV2 raEndEntitySearchRequestV2);
+
+    /**
      * Searches for roles that the given authentication token has access to.
      * @param authenticationToken administrator (affects the search results)
      * @param raRoleSearchRequest Object specifying the search criteria.
@@ -704,6 +711,17 @@ public interface RaMasterApi {
      * @since RA Master API version 13 (EJBCA 7.9.0)
      */
     EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username);
+
+    /**
+     * Checks whether the status of an end entity allows enrollment.
+     * This method takes into account whether renewal before expiration is allowed.
+     *
+     * @param authenticationToken Authentication token
+     * @param username Username of end entity
+     * @return true if the end entity is in a state that allows enrollment. false if not, or if not authorized.
+     * @since RA Master API version 14 (EJBCA 7.10.0)
+     */
+    boolean canEndEntityEnroll(AuthenticationToken authenticationToken, String username);
 
     /**
      * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.
@@ -1594,4 +1612,20 @@ public interface RaMasterApi {
      */
     byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
                                                 byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException;
+
+    /**
+     * Returns information related to user certificate: EE profile name, CA name, Certificte Profile name and username.
+     * Used for self renewal
+     * @param serno current certificate serial number
+     * @param issuerDn issuer DN
+     * @return certificate data related to certificate renew
+     */
+    RaCertificateDataOnRenew getCertificateDataForRenew(BigInteger serno, String issuerDn);
+
+    /**
+     * Returns renewed certificate as byte array
+     * @param renewCertificateData information required for certificate self renewal
+     * @return renewed certificate
+     */
+    byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException;
 }
