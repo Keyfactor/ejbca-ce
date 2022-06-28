@@ -47,7 +47,7 @@ CREATE TABLE ApprovalData (
     endEntityProfileId INTEGER NOT NULL,
     expireDate BIGINT NOT NULL,
     remainingApprovals INTEGER NOT NULL,
-    subjectDn VARCHAR(254),
+    subjectDn VARCHAR(400),
     email VARCHAR(254),
     reqAdminCertIssuerDn VARCHAR(254),
     reqAdminCertSn VARCHAR(254),

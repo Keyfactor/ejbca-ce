@@ -20,7 +20,6 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
         <path refid="lib.commons-logging.classpath"/>
@@ -43,6 +42,7 @@
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
         <path location="${mod.ejbca-rest-camanagement.lib}"/>
         <path location="${mod.ejbca-rest-endentity.lib}"/>
+		<path location="${mod.ejbca-rest-ssh.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
 	</path>
 
