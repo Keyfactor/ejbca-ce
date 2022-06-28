@@ -21,9 +21,10 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-text.classpath"/><!-- Dependency of commons-configuration2 -->
 		<path refid="lib.commons-beanutils.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
@@ -128,6 +129,7 @@
     		<!-- slf4j-log4j.jar is needed just to avoid errors when running the CLI with later versions of JBoss -->
        		<path refid="lib.slf4jlog4j.classpath"/>
        		<path refid="lib.jacknji.classpath"/>
+    		<path refid="lib.commons-config.classpath"/>
     	</copy>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
     		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
