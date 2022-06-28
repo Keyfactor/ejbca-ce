@@ -122,6 +122,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     protected IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private boolean isCsrChanged;
     private boolean isKeyRecovery;
+    private boolean statusAllowsEnrollment;
 
     @PostConstruct
     protected void postConstruct() {
@@ -169,14 +170,15 @@ public class EnrollWithRequestIdBean implements Serializable {
                 } else {
                     requestUsername = raApprovalRequestInfo.getEditableData().getUsername();
                 }
-                endEntityInformation = raMasterApiProxyBean.searchUserWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), requestUsername);
-                if (endEntityInformation == null) {
+                final EndEntityInformation eei = raMasterApiProxyBean.searchUserWithoutViewEndEntityAccessRule(raAuthenticationBean.getAuthenticationToken(), requestUsername);
+                if (eei == null) {
                     log.error("Could not find endEntity for the username='" + requestUsername + "'");
-                }else if(endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED){
+                } else if (eei.getStatus() == EndEntityConstants.STATUS_GENERATED) {
                     raLocaleBean.addMessageInfo("enrollwithrequestid_enrollment_with_request_id_has_already_been_finalized", Integer.parseInt(requestId));
-                }else{
+                } else {
                     raLocaleBean.addMessageInfo("enrollwithrequestid_request_with_request_id_has_been_approved", Integer.parseInt(requestId));
                 }
+                setEndEntityInformation(eei);
                 break;
             case ApprovalDataVO.STATUS_EXPIRED:
             case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
@@ -193,8 +195,8 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isFinalizeEnrollmentRendered() {
-        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation != null &&
-                (endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW || endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY);
+        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) &&
+                statusAllowsEnrollment;
     }
 
     public void generateCertificatePem() {
@@ -771,6 +773,28 @@ public class EnrollWithRequestIdBean implements Serializable {
         return availableAlgorithmSelectItems;
     }
 
+    public boolean canEndEntityEnroll(final EndEntityInformation endEntity) {
+        // raMasterApiProxyBean.isAllowedToEnrollByStatus is not available if the CA runs an
+        // older version than 7.10.0, so only call it if needed.
+        if (endEntity == null) {
+            return false;
+        }
+        int status = endEntity.getStatus();
+        if (status == EndEntityConstants.STATUS_NEW || status == EndEntityConstants.STATUS_FAILED ||
+            status == EndEntityConstants.STATUS_INPROCESS || status == EndEntityConstants.STATUS_KEYRECOVERY) {
+            return true;
+        } else {
+            if (raMasterApiProxyBean.canEndEntityEnroll(raAuthenticationBean.getAuthenticationToken(), endEntity.getUsername())) {
+                return true;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Wrong End Entity status for the username='" + endEntity.getUsername() + "', "+endEntity.getStatus());
+                }
+                return false;
+            }
+        }
+    }
+
     //-----------------------------------------------------------------
     //Getters/setters
 
@@ -782,6 +806,11 @@ public class EnrollWithRequestIdBean implements Serializable {
     /** @param endEntityInformation EEI to be set*/
     public void setEndEntityInformation(EndEntityInformation endEntityInformation) {
         this.endEntityInformation = endEntityInformation;
+        statusAllowsEnrollment = canEndEntityEnroll(endEntityInformation);
+    }
+
+    public boolean isStatusAllowsEnrollment() {
+        return statusAllowsEnrollment;
     }
 
      /** @return the requestId */
@@ -827,6 +856,9 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public String getPreSetKeyAlgorithm() {
+        if (endEntityInformation.getExtendedInformation() == null) {
+            return null;
+        }
         final String subType = endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmSubType(); // can be null, but that's ok
         return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() + (subType != null ? (" " + subType) : "");
     }
