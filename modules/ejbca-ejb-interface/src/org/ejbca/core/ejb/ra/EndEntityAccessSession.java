@@ -122,6 +122,17 @@ public interface EndEntityAccessSession {
       */
      Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
              String endentityprofilestring, int numberofrows, String endentityAccessRule) throws IllegalQueryException;
+
+     /**
+      * 
+      * @param admin
+      * @param query
+      * @param numberOfRows
+      * @param endentityAccessRule
+      * @return
+      * @throws IllegalQueryException
+      */
+     Collection<EndEntityInformation> queryOptimized(AuthenticationToken admin, Query query, int numberOfRows, String endentityAccessRule) throws IllegalQueryException;
      
      /**
       * Retrieves a collection of certificates as byte array generated for a user.

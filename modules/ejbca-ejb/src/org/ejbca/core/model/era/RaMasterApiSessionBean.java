@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -2515,18 +2516,66 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         List<UserDataVOWS> retValue = null;
         try {
             final org.ejbca.util.query.Query query = ejbcaWSHelperSession.convertUserMatch(authenticationToken, usermatch);
-            final Collection<EndEntityInformation> results = endEntityAccessSession.query(authenticationToken, query, null,null, maxNumberOfRows, AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
-            if (results.size() > 0) {
-                retValue = new ArrayList<>(results.size());
-                for (final EndEntityInformation userData : results) {
-                    retValue.add(ejbcaWSHelperSession.convertEndEntityInformation(userData));
+            if (query.getQueryString().contains("subjectDN") || query.getQueryString().contains("serialNo")) {
+                Collection<EndEntityInformation> resultsWithCasFiltered = filterCas(authenticationToken, query, maxNumberOfRows);
+                GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession
+                        .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
+                    Collection<EndEntityInformation> resultsWithCasAndEepFiltered = filterEep(authenticationToken, resultsWithCasFiltered);
+                    if (CollectionUtils.isNotEmpty(resultsWithCasAndEepFiltered)) {
+                        retValue = new ArrayList<>(resultsWithCasAndEepFiltered.size());
+                        for (final EndEntityInformation userData : resultsWithCasAndEepFiltered) {
+                            retValue.add(ejbcaWSHelperSession.convertEndEntityInformation(userData));
+                        }
+                    }
+                } else {
+                    if (CollectionUtils.isNotEmpty(resultsWithCasFiltered)) {
+                        retValue = new ArrayList<>(resultsWithCasFiltered.size());
+                        for (final EndEntityInformation userData : resultsWithCasFiltered) {
+                            retValue.add(ejbcaWSHelperSession.convertEndEntityInformation(userData));
+                        }
+                    }
+                }
+            } else {
+                Collection<EndEntityInformation> results;
+                results = endEntityAccessSession.query(authenticationToken, query, null, null, maxNumberOfRows, AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
+                if (CollectionUtils.isNotEmpty(results)) {
+                    retValue = new ArrayList<>(results.size());
+                    for (final EndEntityInformation userData : results) {
+                        retValue.add(ejbcaWSHelperSession.convertEndEntityInformation(userData));
+                    }
                 }
             }
         } catch (CesecoreException e) {
             // Convert cesecore exception to EjbcaException
-            throw  new EjbcaException(e.getErrorCode(), e);
+            throw new EjbcaException(e.getErrorCode(), e);
         }
         return retValue;
+    }
+
+    private Collection<EndEntityInformation> filterEep(final AuthenticationToken authenticationToken,
+            final Collection<EndEntityInformation> resultsWithCasFiltered) {
+        final List<Integer> profileIds = new ArrayList<>(
+                endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
+        // Additionally require view access to all the profiles
+        for (final Integer profileid : new ArrayList<>(profileIds)) {
+            if (!isAuthorizedNoLogging(authenticationToken,
+                    AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.VIEW_END_ENTITY)) {
+                profileIds.remove(profileid);
+            }
+        }
+
+        return resultsWithCasFiltered.stream()
+                .filter(ee -> endEntityProfileSession.isAuthorizedToView(authenticationToken, ee.getEndEntityProfileId()))
+                .collect(Collectors.toList());
+    }
+
+    private Collection<EndEntityInformation> filterCas(final AuthenticationToken authenticationToken, final org.ejbca.util.query.Query query, int maxNumberOfRows)
+            throws IllegalQueryException {
+        log.debug("Query contains subjectDN and/or serialNo, hence using the optimized query!");
+        Collection<EndEntityInformation> results = endEntityAccessSession.queryOptimized(authenticationToken, query, maxNumberOfRows,
+                AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
+        return results.stream().filter(ee -> caSession.authorizedToCANoLogging(authenticationToken, ee.getCAId())).collect(Collectors.toList());
     }
 
     @Override
