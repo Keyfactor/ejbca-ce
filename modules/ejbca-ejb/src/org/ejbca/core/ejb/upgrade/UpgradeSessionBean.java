@@ -52,7 +52,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -161,6 +161,8 @@ import org.ejbca.util.JDBCUtil;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
+
+    private static final int PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE = 1000;
 
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
@@ -1849,7 +1851,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-            upgradeSession.fixPartitionedCrls();
+
+            // Counting the number of non normal CRLData rows
+            final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
+            final long countOfRowsToBeNormalized = (long) query.getSingleResult();
+            
+            final long startDataNormalization = System.currentTimeMillis();
+
+            // Normalization is done in chunks in case number of rows are huge in CRLData table.
+            // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
+            // See ECA-10712 for more info.
+            for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
+                upgradeSession.fixPartitionedCrls(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE);
+            }
+            // Do fix the remaining if any
+            final Query normalizeData = entityManager.createQuery(
+                    "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+            log.debug("Executing SQL query: " + normalizeData);
+            normalizeData.executeUpdate();
+            log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
+                    + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+            
             fixPartitionedCrlIndexes();
         } catch (AuthorizationDeniedException | UpgradeFailedException e) {
             log.error(e);
@@ -2078,15 +2100,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public void fixPartitionedCrls() throws UpgradeFailedException {
+    public void fixPartitionedCrls(final int limit) throws UpgradeFailedException {
+
         try {
-            final long startDataNormalization = System.currentTimeMillis();
-            final Query normalizeData = entityManager.createQuery(
-                    "UPDATE CRLData a SET a.crlPartitionIndex=-1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+            final Query normalizeData = entityManager.createNativeQuery(
+                    "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0 LIMIT :limit");
+            normalizeData.setParameter("limit", limit);
             log.debug("Executing SQL query: " + normalizeData);
-            final int rowCount = normalizeData.executeUpdate();
-            log.info("Successfully normalized " + rowCount + " rows in CRLData. Completed in "
-                    + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+            normalizeData.executeUpdate();
         } catch (RuntimeException e) {
             log.error("An error occurred when updating data in database table 'CRLData': " + e);
             log.error("You can update the data manually using the following SQL query and then run the post-upgrade again.");

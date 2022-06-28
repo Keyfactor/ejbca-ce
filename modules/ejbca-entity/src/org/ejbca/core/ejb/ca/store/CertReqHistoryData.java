@@ -37,9 +37,11 @@ import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
@@ -255,18 +257,26 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 		// The EndEntityInformation object is not fully serializable by XMLEncoder/Decoder
 		// (the "type" field is not serialized correctly), so we set ignoreErrors to true
 		try (final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baXML), true)) {
-			Object o = decoder.readObject();
-			try  {
-				endEntityInformation  = (EndEntityInformation)o;
-			} catch( ClassCastException e ) {
-				if (log.isTraceEnabled()) {
-					log.trace("Trying to decode old type of CertReqHistoryData: "+e.getMessage());
-				}
-				// It is probably an older object of type UserDataVO
-				UserDataVO olddata = (UserDataVO)o;
-				endEntityInformation = olddata.toEndEntityInformation();
-			}
-		} catch( Throwable t ) { // NOPMD: catch all to try to repair
+            final Object o = decoder.readObject();
+            if (o instanceof EndEntityInformation) {
+                endEntityInformation  = (EndEntityInformation)o;
+            } else if (o instanceof UserDataVO) {
+                // It is probably an older object of type UserDataVO
+                log.debug("Trying to decode old type of CertReqHistoryData with UserDataVO");
+                UserDataVO olddata = (UserDataVO)o;
+                endEntityInformation = olddata.toEndEntityInformation();
+            } else if (o instanceof Base64PutHashMap) {
+                // Base64PutHashMap has been seen in some cases (from old EJBCA versions? or a bug?)
+                // This will not be accessible in the GUI, since the end entity profile ID is missing.
+                log.debug("Trying to decode old type of CertReqHistoryData with Base64PutHashMap. Entry will not be viewable in GUI");
+                final ExtendedInformation extinfo = new ExtendedInformation();
+                extinfo.loadData(o);
+                endEntityInformation = new EndEntityInformation();
+                endEntityInformation.setExtendedInformation(extinfo);
+            } else {
+                throw new IllegalStateException("Decoded CertReqHistoryData with unexpected class: " + (o != null ? o.getClass() : null));
+            }
+        } catch (Exception t) { // NOPMD: catch all to try to repair
 			// try to repair the end of the XML string.
 			// this will only succeed if a limited number of chars is lost in the end of the string
 			// note that this code will not make anything worse and that it will not be run if the XML can be encoded.

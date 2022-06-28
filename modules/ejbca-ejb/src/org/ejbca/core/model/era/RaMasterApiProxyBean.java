@@ -894,6 +894,35 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
+    
+    @Override
+    public RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken, 
+            RaEndEntitySearchRequestV2 raEndEntitySearchRequestV2) {
+        final RaEndEntitySearchResponseV2 retMerged = new RaEndEntitySearchResponseV2();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    RaEndEntitySearchResponseV2 retNode = raMasterApi.searchForEndEntitiesV2(authenticationToken, raEndEntitySearchRequestV2);
+                    retMerged.merge(retNode);
+                    retMerged.setSearchSummary(retNode.getSearchSummary());
+                } catch (UnsupportedOperationException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
+                    }
+                    // Just try next implementation
+                } catch (RaMasterBackendUnavailableException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Timeout during back end invocation.", e);
+                    }
+                    // If the back end timed out due to a too heavy search we want to allow the client to retry with more fine grained criteria
+                    retMerged.setMightHaveMoreResults(true);
+                }
+            }
+        }
+        retMerged.sortMergedMembers();
+        return retMerged;
+    }
+
 
     @Override
     public Map<Integer, String> getAuthorizedCertificateProfileIdsToNameMap(final AuthenticationToken authenticationToken) {
@@ -1182,6 +1211,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean canEndEntityEnroll(AuthenticationToken authenticationToken, String username) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    if (raMasterApi.canEndEntityEnroll(authenticationToken, username)) {
+                        return true;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -3599,6 +3644,34 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         if (authorizationDeniedException != null) {
             throw authorizationDeniedException;
+        }
+        return null;
+    }
+
+    @Override
+    public RaCertificateDataOnRenew getCertificateDataForRenew(BigInteger serno, String issuerDn) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getCertificateDataForRenew(serno, issuerDn);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.selfRenewCertificate(renewCertificateData);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
         }
         return null;
     }

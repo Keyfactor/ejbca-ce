@@ -236,7 +236,9 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), true);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
@@ -247,7 +249,9 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), false);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
@@ -290,50 +294,37 @@ public class RestResourceSystemTestBase {
      *
      * @see org.jboss.resteasy.client.ClientRequest
      */
-    WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {    
-     // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
+    static WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(getHttpClient(true));
+        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
+        Client newClient = builder.httpEngine(engine).build();
+        return newClient.target(getBaseUrl() + uriPath);
+    }
+
+    WebTarget newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(getHttpClient(false));
+        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
+        Client newClient = builder.httpEngine(engine).build();
+        WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
+        return webTarget;
+    }
+
+    static HttpClient getHttpClient(boolean isAdmin) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
+        // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(TRUST_KEYSTORE);
         final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(ADMIN_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
+        keyManagerFactory.init(isAdmin ? ADMIN_KEYSTORE : NOADMIN_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         HttpClient client = HttpClients.custom()
                 .setSSLContext(sslContext)
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
                 .build();
-        
-        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(client);
-        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
-        Client newClient = builder.httpEngine(engine).build();
-        WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
-        
-        return webTarget;
-    }
-    
-    
-
-    WebTarget newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
-        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        trustManagerFactory.init(TRUST_KEYSTORE);
-        final KeyManagerFactory keyManagerFactoryNoAdmin = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactoryNoAdmin.init(NOADMIN_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
-        sslContext.init(keyManagerFactoryNoAdmin.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-        HttpClient client = HttpClients.custom()
-                .setSSLContext(sslContext)
-                .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                .build();
-        
-        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(client);
-        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
-        Client newClient = builder.httpEngine(engine).build();
-        WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
-        return webTarget;
+        return client;
     }
 
-    private static String getBaseUrl() {
+    public static String getBaseUrl() {
         return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
     }
 
