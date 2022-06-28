@@ -435,10 +435,10 @@ CREATE TABLE AcmeChallengeData (
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(250) BINARY NOT NULL,
-    identifier VARCHAR(250) NOT NULL,
-    identifierType VARCHAR(20) NOT NULL,
-    expires BIGINT,
-    status VARCHAR(20) NOT NULL,
+    identifier VARCHAR(250) BINARY,
+    identifierType VARCHAR(20) BINARY,
+    expires BIGINT(20),
+    status VARCHAR(20) BINARY,
     orderId VARCHAR(250) BINARY,
     accountId VARCHAR(250) BINARY NOT NULL,
     rawData LONGTEXT,
