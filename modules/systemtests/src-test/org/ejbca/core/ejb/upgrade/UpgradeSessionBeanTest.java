@@ -1407,15 +1407,22 @@ public class UpgradeSessionBeanTest {
             final AcmeAuthorizationImpl impl = new AcmeAuthorizationImpl(authorizationId, orderId, order.getAccountId(), true, now);
             impl.setStatus(AcmeAuthorizationStatus.INVALID);
             impl.setAcmeIdentifier(identifier);
+            impl.setExpires(now + 60 * 60 * 1000);
+            
             AcmeAuthorizationData data = new AcmeAuthorizationData(); 
             data.setAuthorizationId(authorizationId);
             data.setAccountId(order.getAccountId());
             data.setOrderId(orderId);
             data.setDataMap(impl.getRawData());
             
-            acmeAuthorizationDataSessionProxy.persistAcmeAuthorizationData(data);
-            assertAcmeAuthorizationData791(data);
+            final LinkedHashMap<Object, Object> dataMap = data.getDataMap(); 
+            dataMap.put("acmeIdentifierValue", identifier.getValue());
+            dataMap.put("acmeIdentifierType", identifier.getType());
+            dataMap.put("status", "invalid");
+            dataMap.put("expires", now + 60 * 60 * 1000);
+            data.setDataMap(dataMap);
             
+            acmeAuthorizationDataSessionProxy.persistAcmeAuthorizationData(data);
             data = acmeAuthorizationDataSessionProxy.find(authorizationId);
             assertAcmeAuthorizationData791(data);
             
@@ -1429,6 +1436,7 @@ public class UpgradeSessionBeanTest {
         assertNotNull("Status must not be null.", data.getDataMap().get("status"));
         assertTrue("Expires must not be 0.", (Long) data.getDataMap().get("expires") > 0);
     }
+    
     private void assertAcmeAuthorizationData791(final AcmeAuthorizationData data) {
         // DB columns identifier, identifierType, status are null (or expires = 0 here).
         // But the data map contains all fields.
