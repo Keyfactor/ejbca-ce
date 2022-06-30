@@ -124,6 +124,11 @@ public interface EndEntityAccessSession {
              String endentityprofilestring, int numberofrows, String endentityAccessRule) throws IllegalQueryException;
 
      /**
+      * This method executes an optimized query on the ra user data.
+      * The difference with the query method is that it does not pass CA authorization and EEP authorization
+      * strings to the query down to the database. Instead it applies those constraints later on the returned
+      * results from db. This way the performance would be improved.
+      * Note that it is only used in case the subjectDN or serialNumber are used for querying the users.
       * 
       * @param admin
       * @param query
