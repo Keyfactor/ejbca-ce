@@ -1447,7 +1447,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
                     throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                 }
-                if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cert), username, EJBTools.wrap(kp), cryptoTokenId, keyAlias)) {
+                if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(caInfo.getCertificateChain().get(0)),
+                        EJBTools.wrap(cert), username, EJBTools.wrap(kp), cryptoTokenId, keyAlias)) {
                     // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
                     throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                 }
@@ -1456,7 +1457,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 if (log.isDebugEnabled()) {
                     log.debug("Recovering locally stored key pair for end entity '" + username + "'");
                 }
-                final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias);
+                final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias, (X509Certificate) caInfo.getCertificateChain().get(0));
                 if (kri == null) {
                     // This should not happen when the user has its status set to KEYRECOVERY
                     final String message = "Could not find key recovery data for end entity '" + username + "'";
