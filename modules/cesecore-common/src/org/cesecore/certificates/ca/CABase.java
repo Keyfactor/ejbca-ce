@@ -274,7 +274,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         if (service == null) {
             final String msg = "Extended CA service is null for service request: "+request.getClass().getName();
             log.error(msg);
-            throw new IllegalExtendedCAServiceRequestException();
+            throw new IllegalExtendedCAServiceRequestException(msg);
         }
         // Enrich request with CA in order for the service to be able to use CA keys and certificates
         service.setCA(this);
