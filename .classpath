@@ -157,8 +157,8 @@
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-java-3.141.59.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-remote-driver-3.141.59.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium/selenium-support-3.141.59.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/extentreports-4.1.5.jar"/>
-	<classpathentry kind="lib" path="lib/ext/webtest/report/freemarker-2.3.29.jar"/>
+	<classpathentry kind="lib" path="lib/ext/webtest/report/extentreports-4.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/ext/webtest/report/freemarker-2.3.31.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.7.jar"/>
