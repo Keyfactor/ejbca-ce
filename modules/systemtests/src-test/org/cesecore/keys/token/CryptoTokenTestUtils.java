@@ -87,7 +87,7 @@ public class CryptoTokenTestUtils {
 
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
             String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec, "RSA1024", false);
+        return createCryptoTokenForCA(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec, signKeySpec, false);
     }
 
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
