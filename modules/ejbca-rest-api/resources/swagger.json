@@ -30,7 +30,7 @@
     },
     {
       "name": "v2/endentity"
-    }, 
+    },
     {
       "name": "v1/ssh"
     }
@@ -1215,23 +1215,37 @@
       }
     },
     "/v1/ssh/{ca_name}/pubkey": {
-            "put": {
-                "tags": ["v1/ssh"],
-                "summary": "Public Key",
-                "description": "Retrieve",
-                "operationId": "pubkey",
-                "produces": ["application/json"],
-                "parameters": [],
-                "responses": {
-                    "200": {
-                        "description": "successful operation",
-                        "schema": {
-                            "$ref": "#/definitions/SshPublicKeyRestResponse"
-                        }
-                    }
-                }
+      "get": {
+        "tags": [
+          "v1/ssh"
+        ],
+        "summary": "Retrieves a CA's public key in SSH format.",
+        "description": "Retrieves a CA's public key in SSH format.",
+        "operationId": "pubkey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ca_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/SshPublicKeyRestResponse"
             }
-        },
+          }
+        }
+      }
+    },
     "/v1/cryptotoken/{cryptotoken_name}/activate": {
       "put": {
         "tags": [
@@ -1583,22 +1597,29 @@
           }
         }
       }
-    }
-  },
-  "SshPublicKeyRestResponse": {
-            "type": "object",
-            "properties": {
-                "response": {
-                    "type": "array",
-                    "items": {
-                        "type": "byte",
-                        "format": "byte"
-                    }
-                },
-                "caName": {
-                    "type": "string"
-                }
+    },
+    "/v1/ssh/status": {
+      "get": {
+        "tags": [
+          "v1/ssh"
+        ],
+        "summary": "Get the status of this REST Resource",
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_8",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RestResourceStatusRestResponse"
             }
+          }
+        }
+      }
+    }
   },
   "definitions": {
     "RestResourceStatusRestResponse": {
@@ -2333,6 +2354,21 @@
         },
         "operation": {
           "type": "string"
+        }
+      }
+    },
+    "SshPublicKeyRestResponse": {
+      "type": "object",
+      "properties": {
+        "ca_name": {
+          "type": "string"
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
         }
       }
     }
