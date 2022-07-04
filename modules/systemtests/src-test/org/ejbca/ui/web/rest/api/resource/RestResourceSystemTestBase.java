@@ -240,6 +240,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SSH_V1.getName(), true);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
@@ -253,6 +254,7 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CONFIGDUMP.getName(), false);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SSH_V1.getName(), false);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
     
