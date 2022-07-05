@@ -347,7 +347,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_END_ENTITY_PROFILE_ID, Integer.valueOf(endEntityProfileId));
     }
 
-    /** @return the pattern we will use for "http-01" challenge validation. Defaults to example from RFC draft 06. */
+    /** 
+     * For testing purposes only, the identifier can be set to 'localhost', if you want to issue certificates 
+     * for arbitrary DNS names on your host -> http://localhost/.well-known/acme-challenge/{token}
+     * 
+     * @return the pattern we will use for "http-01" challenge validation. Defaults to example from RFC draft 06.
+     * */
     public String getValidationHttpCallBackUrlTemplate() {
         final String urlTemplate = (String) super.data.get(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE);
         return urlTemplate==null ? "http://{identifer}/.well-known/acme-challenge/{token}" : urlTemplate;
