@@ -85,6 +85,7 @@ public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault im
         return ret;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<String, AdminPreference> getAdminPreferences() {
         if (log.isTraceEnabled()) {
@@ -197,11 +198,13 @@ public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault im
         return raStyleCacheBean.getAvailableRaStyles(admin);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void invalidateRaStyleCache() {
         raStyleCacheBean.invalidateCache();
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public AdminPreference getDefaultAdminPreference() {
         if (log.isTraceEnabled()) {
@@ -213,9 +216,9 @@ public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault im
             ret = apdata.getAdminPreference();
         } else {
             try {
-                // Create new configuration
+                // Just return an object with default settings.
+                // This is not persisted in the database at this point, because this method may be called without a transaction.
                 AdminPreferencesData newapdata = new AdminPreferencesData(DEFAULTUSERPREFERENCE, new AdminPreference());
-                entityManager.persist(newapdata);
                 ret = newapdata.getAdminPreference();
             } catch (Exception e) {
                 throw new EJBException(e);
@@ -244,22 +247,24 @@ public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault im
         }
 
         final AdminPreferencesData apdata = AdminPreferencesData.findById(entityManager, DEFAULTUSERPREFERENCE);
+        final AdminPreference currentPreferences;
         if (apdata != null) {
-            final Map<Object, Object> diff = apdata.getAdminPreference().diff(defaultadminpreference);
             apdata.setAdminPreference(defaultadminpreference);
-            final String msg = intres.getLocalizedMessage("ra.defaultadminprefsaved");
-            final Map<String, Object> details = new LinkedHashMap<>();
-            details.put("msg", msg);
-            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                details.put(entry.getKey().toString(), entry.getValue().toString());
-            }
-            auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
+            currentPreferences = apdata.getAdminPreference();
         } else {
-            final String msg = intres.getLocalizedMessage("ra.errorsavedefaultadminpref");
-            log.info(msg);
-            throw new EJBException(msg);
+            final AdminPreferencesData initialData = new AdminPreferencesData(DEFAULTUSERPREFERENCE, new AdminPreference());
+            currentPreferences = initialData.getAdminPreference();
+            entityManager.persist(new AdminPreferencesData(DEFAULTUSERPREFERENCE, defaultadminpreference));
         }
+        final Map<Object, Object> diff = currentPreferences.diff(defaultadminpreference);
+        final String msg = intres.getLocalizedMessage("ra.defaultadminprefsaved");
+        final Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", msg);
+        for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+            details.put(entry.getKey().toString(), entry.getValue().toString());
+        }
+        auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA,
+                admin.toString(), null, null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<saveDefaultAdminPreference()");
         }
