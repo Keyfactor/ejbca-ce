@@ -14,6 +14,7 @@
 package org.ejbca.util;
 
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -24,9 +25,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
@@ -51,6 +57,11 @@ public class ServiceControlFilter implements Filter {
     private String serviceName;
 
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    
+    private AuthorizationSessionLocal authorizationSession;
+    
+    private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
+    
 
     @Override
     public void destroy() {
@@ -63,6 +74,8 @@ public class ServiceControlFilter implements Filter {
         // cmpHttpProxy module, to make cmpHttpProxy module deploy-able in JEE servers we initialize 
         // the globalConfigurationSession bean here instead of using the EJB annotation.
         globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
+        authorizationSession = new EjbLocalHelper().getAuthorizationSession();
+        ejbcaRestHelperSession = new EjbLocalHelper().getEjbcaRestHelperSession();
         if (log.isDebugEnabled()) {
             log.debug("Initialized service control filter for '" + serviceName + "'.");
         }
@@ -80,6 +93,20 @@ public class ServiceControlFilter implements Filter {
             if (log.isDebugEnabled()) {
                 log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
             }
+            
+            if(serviceName.equalsIgnoreCase(
+                    AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())) {
+                AuthenticationToken authenticationToken = getAdmin(httpRequest);
+                if(authenticationToken!=null &&
+                        authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Access to disabled service " + serviceName + " is allowed due to superadmin access. "
+                                                + "HTTP request " + httpRequest.getRequestURL() + " is let through.");
+                    }
+                    chain.doFilter(request, response);
+                    return;
+                }
+            }
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
             return;
         }
@@ -88,5 +115,25 @@ public class ServiceControlFilter implements Filter {
             log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
         }
         chain.doFilter(request, response);
+    }
+    
+    private AuthenticationToken getAdmin(HttpServletRequest requestContext) {
+        if (requestContext == null) {
+            return null;
+        }
+
+        final X509Certificate[] certificates = (X509Certificate[]) requestContext.getAttribute("javax.servlet.request.X509Certificate");
+        final X509Certificate certificate = certificates != null ? certificates[0] : null;
+        final String oauthBearerToken = HttpTools.extractBearerAuthorization(requestContext.getHeader(HttpTools.AUTHORIZATION_HEADER));
+
+        if (certificate == null && StringUtils.isEmpty(oauthBearerToken)) {
+            return null;
+        }
+
+        try {
+            return ejbcaRestHelperSession.getAdmin(false, certificate, oauthBearerToken);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
