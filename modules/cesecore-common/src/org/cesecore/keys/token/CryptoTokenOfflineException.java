@@ -43,10 +43,10 @@ public class CryptoTokenOfflineException extends CesecoreException {
         super(ErrorCode.CA_OFFLINE, msg);
     }
 
-    public CryptoTokenOfflineException(Exception e) {
+    public CryptoTokenOfflineException(Throwable e) {
         super(ErrorCode.CA_OFFLINE, e);
     }
-    public CryptoTokenOfflineException(String msg, Exception e) {
+    public CryptoTokenOfflineException(String msg, Throwable e) {
         super(ErrorCode.CA_OFFLINE, msg, e);
     }
 
