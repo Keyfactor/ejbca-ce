@@ -11,6 +11,7 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -26,6 +27,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
+import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
@@ -42,7 +45,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     
     protected static final InternalResources intres = InternalResources.getInstance();
     
-    protected static final float LATEST_VERSION = 8;
+    protected static final float LATEST_VERSION = 9;
     
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
@@ -63,6 +66,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_PRE_AUTHORIZATION_VALIDITY = "preAuthorizationValidity";
     private static final String KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = "wildcardCertificateIssuanceAllowed";
     private static final String KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = "wildcardWithHttp01ChallengeAllowed";
+    private static final String KEY_DNS_IDENTIFIER_CHALLENGE_TYPES = "dnsIdentifierChallengeTypes";
     private static final String KEY_DNS_RESOLVER = "dnsResolver";
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
     private static final String KEY_DNS_PORT = "dnsPort";
@@ -73,8 +77,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
     private static final String KEY_AUTHORIZED_REDIRECT_PORTS = "authorizedRedirectPorts";
-    private static final String APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
-    private static final String APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
+    private static final String KEY_APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
+    private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
 
     private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.RANDOM;
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
@@ -87,6 +91,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final boolean DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED = true;
     private static final boolean DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = false;
     private static final boolean DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = true;
+    public static final String DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES = "any-dns-challenge";
     
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
@@ -115,6 +120,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
+            // v9. Added DNS identifier chaleenge Types selection.
+            if (data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES) == null) {
+                data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            }
             // v8. ACME EAB with multiple keys -> multiple EAB.
             try {
                 if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) { 
@@ -136,10 +145,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
                 setAuthorizedRedirectPorts("");
             }
             // v6. Added approvals for account management.
-            if (data.get(APPROVAL_FOR_NEW_ACCOUNT_ID) == null) {
+            if (data.get(KEY_APPROVAL_FOR_NEW_ACCOUNT_ID) == null) {
                 setApprovalForNewAccountId(DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID);
             }
-            if (data.get(APPROVAL_FOR_KEY_CHANGE_ID) == null) {
+            if (data.get(KEY_APPROVAL_FOR_KEY_CHANGE_ID) == null) {
                 setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
             }
             if (data.get(KEY_RA_NAMEGENERATIONSCHEME) == null) {
@@ -433,7 +442,40 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setWildcardWithHttp01ChallengeAllowed(final boolean allowed) {
         super.data.put(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED, String.valueOf(allowed));
     }
-
+    
+    public String getDnsIdentifiersChallengeTypes() {
+        return (String) super.data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES);
+    }
+    
+    public List<String> getDnsIdentifiersChallengeTypesList() {
+        final List<String> result = new ArrayList<>();
+        final String types = getDnsIdentifiersChallengeTypes();
+        if (types != null && types.length() > 0) {
+            result.addAll(Arrays.asList(types.split(",")));
+        }
+        return result;
+    }
+    
+    public void setDnsIdentifiersChallengeTypes(String types) throws Exception {
+        if (types != null && !types.trim().isEmpty()) {
+            // Remove duplicates.
+            Set<String> challengeTypes = Stream.of(types.trim().split(",")).collect(Collectors.toSet());
+            // Check value range.
+            final List<String> availableChallengeTypes = AcmeChallenge.AcmeChallengeType.getDnsIdentifierChallengeTypes(AcmeIdentifier.AcmeIdentifierTypes.DNS);
+            availableChallengeTypes.add(DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            if (!availableChallengeTypes.containsAll(challengeTypes)) {
+                throw new Exception("Invalid ACME DNS identifier challenge type. Use one of: " + availableChallengeTypes);
+            }
+            // Normalize selection any.
+            if (challengeTypes.size() >= availableChallengeTypes.size() - 1) {
+                challengeTypes = Collections.singleton(AcmeConfiguration.DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            }
+            super.data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, challengeTypes.stream().collect(Collectors.joining(",")));
+        } else {
+            super.data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+        }
+    }
+    
     public String getDnssecTrustAnchor() {
         return (String) super.data.get(KEY_DNSSEC_TRUST_ANCHOR);
     }
@@ -515,21 +557,21 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
     public int getApprovalForNewAccountId() {
-        final Integer value = (Integer) data.get(APPROVAL_FOR_NEW_ACCOUNT_ID);
+        final Integer value = (Integer) data.get(KEY_APPROVAL_FOR_NEW_ACCOUNT_ID);
         return Objects.isNull(value) ? DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID : value;
     }
 
     public void setApprovalForNewAccountId(int approvalForNewAccountId) {
-        data.put(APPROVAL_FOR_NEW_ACCOUNT_ID, approvalForNewAccountId);
+        data.put(KEY_APPROVAL_FOR_NEW_ACCOUNT_ID, approvalForNewAccountId);
     }
 
     public int getApprovalForKeyChangeId() {
-        final Integer value = (Integer) data.get(APPROVAL_FOR_KEY_CHANGE_ID);
+        final Integer value = (Integer) data.get(KEY_APPROVAL_FOR_KEY_CHANGE_ID);
         return Objects.isNull(value) ? DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID : value;
     }
 
     public void setApprovalForKeyChangeId(int approvalForKeyChangeId) {
-        data.put(APPROVAL_FOR_KEY_CHANGE_ID, approvalForKeyChangeId);
+        data.put(KEY_APPROVAL_FOR_KEY_CHANGE_ID, approvalForKeyChangeId);
     }
     
     public boolean isApprovalForNewAccountRequired() {
@@ -561,6 +603,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
         setWildcardCertificateIssuanceAllowed(DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
         setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
+        data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
         setWebSiteUrl(DEFAULT_WEBSITE_URL);
         setOrderValidity(DEFAULT_ORDER_VALIDITY);
         setDnsResolver(DNS_RESOLVER_DEFAULT);
