@@ -32,7 +32,6 @@ public class JsfValidatorTestBase {
 
     private final FacesContext fc = EasyMock.createStrictMock(FacesContext.class);
     private final UIComponent comp = EasyMock.createStrictMock(UIComponent.class);
-    private Map<String, Object> attributeMap;
 
     public JsfValidatorTestBase() {
         super();
@@ -48,7 +47,7 @@ public class JsfValidatorTestBase {
 
     @Before
     public void before() {
-        attributeMap = new HashMap<>();
+        final Map<String, Object> attributeMap = new HashMap<>();
         attributeMap.put("errorMessage", "SomeErrorMessage"); // Prevents call to EjbcaJSFHelper
         reset(fc, comp);
         expect(comp.getClientId(same(fc))).andReturn("TestDummy").anyTimes();
