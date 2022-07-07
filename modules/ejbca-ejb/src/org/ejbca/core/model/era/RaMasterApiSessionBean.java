@@ -224,6 +224,7 @@ import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeConfigurationSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeProblemException;
@@ -3167,6 +3168,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public List<AcmeAuthorization> getAcmeAuthorizationsByAccountId(String accountId) {
         return acmeAuthorizationDataSession.getAcmeAuthorizationsByAccountId(accountId);
+    }
+
+    @Override
+    public List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers) {
+        return acmeAuthorizationDataSession.getAcmePreAuthorizationsByAccountIdAndIdentifiers(accountId, identifiers);
     }
 
     @Override
