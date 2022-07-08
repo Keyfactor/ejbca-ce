@@ -623,7 +623,7 @@ public final class StringTools {
 
         for (int i = 0; i < b.length; i++) {
             final byte b1 = b[i];
-            final byte b2 = b[s.length() - (i + 1)];
+            final byte b2 = b[b.length - (i + 1)];
             final int i1 = b1 + b2 + 127;
             final int i2 = b1 - b2 + 127;
             final int i0 = i1 * 256 + i2;

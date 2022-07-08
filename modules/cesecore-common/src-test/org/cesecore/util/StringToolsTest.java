@@ -224,6 +224,10 @@ public class StringToolsTest {
         assertNull(StringTools.deobfuscate(null));
         assertNull(StringTools.deobfuscateIf(null));
         assertNull(StringTools.obfuscate(null));
+        // Non-ASCII should be handled
+        String obf2 = StringTools.obfuscate("euro€emoji🧑🏿.");
+        String deobf2 = StringTools.deobfuscate(obf2);
+        assertEquals("euro€emoji🧑🏿.", deobf2);
     }
 
     @Test
