@@ -42,12 +42,14 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
+import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -139,6 +141,9 @@ public class RaEndEntityBean implements Serializable {
     private boolean keyRecoverable;
     private boolean viewEndEntityMode = false;
     private Boolean sendNotification;
+    private String psd2NcaName;
+    private String psd2NcaId;
+    private List<String> selectedPsd2PspRoles;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -202,6 +207,9 @@ public class RaEndEntityBean implements Serializable {
                 if (email == null || email.length == 1)
                     email = new String[] {"", ""};
                 sendNotification = endEntityInformation.getSendNotification();
+                psd2NcaName = raEndEntityDetails.getPsd2NcaName();
+                psd2NcaId = raEndEntityDetails.getPsd2NcaId();
+                selectedPsd2PspRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
             }
         }
         issuedCerts = null;
@@ -440,6 +448,27 @@ public class RaEndEntityBean implements Serializable {
         if (keyRecoverable != endEntityInformation.getKeyRecoverable()) {
             endEntityInformation.setKeyRecoverable(keyRecoverable);
             changed = true;
+        }
+        if (eep.isPsd2QcStatementUsed()){
+            if (endEntityInformation.getExtendedInformation() == null){
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            if (!StringUtils.equals(psd2NcaName, endEntityInformation.getExtendedInformation().getQCEtsiPSD2NCAName())) {
+                endEntityInformation.getExtendedInformation().setQCEtsiPSD2NcaName(StringUtils.trimToNull(psd2NcaName));
+                changed = true;
+            }
+            if (!StringUtils.equals(psd2NcaId, endEntityInformation.getExtendedInformation().getQCEtsiPSD2NCAId())) {
+                endEntityInformation.getExtendedInformation().setQCEtsiPSD2NcaId(StringUtils.trimToNull(psd2NcaId));
+                changed = true;
+            }
+            if (psd2PspRoleSelectionChanged()) {
+                final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = new ArrayList<>();
+                for (String role : selectedPsd2PspRoles) {
+                    psd2RoleOfPSPStatements.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
+                }
+                endEntityInformation.getExtendedInformation().setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
+                changed = true;
+            }
         }
 
         boolean isClearPwd = false;
@@ -1267,6 +1296,61 @@ public class RaEndEntityBean implements Serializable {
 
     public void setSendNotification(Boolean sendNotification) {
         this.sendNotification = sendNotification;
+    }
+
+    /**
+     * @return the National Competent Authority (NCA) Name of PSD2 Qualified Certificate Statement
+     */
+    public String getPsd2NcaName() {
+        return psd2NcaName;
+    }
+
+    /**
+     * Set the National Competent Authority (NCA) Name of PSD2 Qualified Certificate Statement
+     */
+    public void setPsd2NcaName(String psd2NcaName) {
+        this.psd2NcaName = StringUtils.trim(psd2NcaName);
+    }
+
+    /**
+     * @return the National Competent Authority (NCA) Identifier of PSD2 Qualified Certificate Statement
+     */
+    public String getPsd2NcaId() {
+        return psd2NcaId;
+    }
+
+    /**
+     * Set the National Competent Authority (NCA) Identifier of PSD2 Qualified Certificate Statement
+     */
+    public void setPsd2NcaId(String psd2NcaId) {
+        this.psd2NcaId = StringUtils.trim(psd2NcaId);
+    }
+
+    /**
+     * @return selected roles of PSD2 third party Payment Service Providers (PSPs)
+     */
+    public List<String> getSelectedPsd2PspRoles() {
+        return selectedPsd2PspRoles == null ? new ArrayList<>() : selectedPsd2PspRoles;
+    }
+
+    /**
+     * Set selected roles of PSD2 third party Payment Service Providers (PSPs)
+     */
+    public void setSelectedPsd2PspRoles(List<String> roles) {
+        selectedPsd2PspRoles = new ArrayList<>(roles);
+    }
+
+    /**
+     * @return true if PSD2 PSP role selection differs from roles saved in End Entity
+     */
+    private boolean psd2PspRoleSelectionChanged(){
+        final List<String> oldRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
+        final List<String> roleDiff = new ArrayList<>(oldRoles);
+        roleDiff.removeAll(getSelectedPsd2PspRoles());
+        if (oldRoles.size() != getSelectedPsd2PspRoles().size() || !roleDiff.isEmpty()){
+            return true;
+        }
+        return false;
     }
 
     private boolean isDnEmail(EndEntityProfile.FieldInstance instance) {

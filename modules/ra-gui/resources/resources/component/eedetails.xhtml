@@ -515,6 +515,55 @@
                 rendered="#{cc.attrs.raEndEntityDetails.extensionDataConfigured and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled}"/>
+            <!-- PSD2 NCAName -->
+            <h:outputLabel for="viewPsd2NCANameField" value="#{msg.enroll_psd2_ncaname}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputText id="viewPsd2NCANameField" value="#{cc.attrs.raEndEntityDetails.psd2NcaName}"
+                          rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputLabel for="editPsd2NCANameField" value="#{msg.enroll_psd2_ncaname}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:inputText id="editPsd2NCANameField" value="#{cc.attrs.raEndEntityBean.psd2NcaName}" />
+            </h:panelGroup>
+            <!-- PSD2 NCAId -->
+            <h:outputLabel for="viewPsd2NCAIdField" value="#{msg.enroll_psd2_ncaid}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputText id="viewPsd2NCAIdField" value="#{cc.attrs.raEndEntityDetails.psd2NcaId}"
+                          rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputLabel for="editPsd2NCAIdField" value="#{msg.enroll_psd2_ncaid}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:inputText id="editPsd2NCAIdField" value="#{cc.attrs.raEndEntityBean.psd2NcaId}" />
+            </h:panelGroup>
+            <!-- PSD2 PSP roles -->
+            <h:outputLabel for="viewPsd2PspRoleField" value="#{msg.enroll_psd2_psp_roles}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:selectManyListbox id="viewPsd2PspRoleField" value="#{cc.attrs.raEndEntityDetails.selectedPsd2PspRoles}" disabled="true">
+                    <f:selectItems value="#{cc.attrs.raEndEntityDetails.availablePsd2PspRoles}"/>
+                </h:selectManyListbox>
+            </h:panelGroup>
+            <h:outputLabel for="editPsd2PspRoleField" value="#{msg.enroll_psd2_psp_roles}"
+                           rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:selectManyListbox id="editPsd2PspRoleField" value="#{cc.attrs.raEndEntityBean.selectedPsd2PspRoles}">
+                    <f:selectItems value="#{cc.attrs.raEndEntityDetails.availablePsd2PspRoles}"/>
+                </h:selectManyListbox>
+            </h:panelGroup>
+
             <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
                            rendered="#{cc.attrs.raEndEntityDetails.addEndEntityApprovalRequestId != ''}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
