@@ -1725,29 +1725,28 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "No Crypto Token exists when trying to create a new Key Binding with name "
                             + getCurrentName(), null));
-	    return;
         } else {
             //Make sure that the crypto token actually has keys
             CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(currentCryptoToken);
-	    try {
+            try {
                 if(cryptoToken.getAliases().isEmpty()) {
                     // Should not happen
                     FacesContext.getCurrentInstance().addMessage(
                             null,
                             new FacesMessage(FacesMessage.SEVERITY_ERROR, "Selected crypto token contains no keys", null));
-		    return;
+                    return;
                 }
             } catch (KeyStoreException e) {
                 FacesContext.getCurrentInstance().addMessage(
                         null,
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "Selected crypto token has not been initialized.", null));
-		return;
+                return;
             } catch (CryptoTokenOfflineException e1) {
                 FacesContext.getCurrentInstance().addMessage(
                         null,
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "Selected crypto token is offline.", null));
                 return;
-	    }
+            }
             
             
             try {
