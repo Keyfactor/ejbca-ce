@@ -149,7 +149,12 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public String getKeyPairAlias() { return keyPairAlias; }
     @Override
-    public void setKeyPairAlias(final String keyPairAlias) { this.keyPairAlias = keyPairAlias; }
+    public void setKeyPairAlias(final String keyPairAlias) { 
+        if(keyPairAlias == null) {
+            throw new IllegalArgumentException("Keybinding key pair alias may not be null.");
+        }
+        this.keyPairAlias = keyPairAlias; 
+    }
 
     @Override
     public String getNextKeyPairAlias() {
