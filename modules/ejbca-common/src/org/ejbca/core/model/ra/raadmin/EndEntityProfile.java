@@ -3026,9 +3026,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isRequired() { return EndEntityProfile.this.isRequired(name, number); }
         public boolean isModifiable() { return EndEntityProfile.this.isModifyable(name, number); }
         public boolean isRegexPatternRequired() { return getRegexPattern() != null; }
-        public boolean isUnModifiableUpnRfc() {
-            return !isModifiable() && (name.equals("RFC822NAME") || name.equals("UPN"));
+        public boolean isUpnRfc() {
+            return name.equals("RFC822NAME") || name.equals("UPN");
         }
+//        public boolean isUnModifiableUpnRfc() {
+//            return !isModifiable() && (name.equals("RFC822NAME") || name.equals("UPN") && getSelectableValuesUpnRfc().size() == 1);
+//        }
         public boolean isRfcUseEmail() {
             return name.equals("RFC822NAME") && isUsed();
         }
@@ -3060,6 +3063,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public List<String> getSelectableValuesUpnRfc() {
             return Arrays.asList(defaultValue.split(";"));
+        }
+        public boolean isSelectableValuesUpnRfcDomainOnly() {
+            return !defaultValue.contains("@");
         }
         @Override
         public int hashCode() { return name.hashCode(); }
