@@ -65,8 +65,6 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.ErrorCode;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
@@ -1478,7 +1476,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String pemEncodedCsr;
         try {
             fileContents = uploadFile.getBytes();
-            if (new String(fileContents).startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)) {
+            String fileContentString = new String(fileContents);
+            if (fileContentString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)||
+                    fileContentString.startsWith(CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST)) {
                 pemEncodedCsr = new String(uploadFile.getBytes());
             } else {
                 pemEncodedCsr = new String(CertTools.getPEMFromCertificateRequest(uploadFile.getBytes()));
@@ -1811,13 +1811,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return a List of available end entity profile identifiers
      */
     private List<Integer> getAvailableEndEntityProfiles() {
-        AuthenticationToken authToken = raAuthenticationBean.getAuthenticationToken();
-        List<Integer> ret = new ArrayList<>(authorizedEndEntityProfiles.idKeySet());
-        Integer emptyProfileInteger = 1;
-        if (authToken instanceof PublicAccessAuthenticationToken && ret.contains(emptyProfileInteger)) {
-            ret.remove(emptyProfileInteger);
-        }
-        return ret;
+        return new ArrayList<>(authorizedEndEntityProfiles.idKeySet());
     }
 
     /**

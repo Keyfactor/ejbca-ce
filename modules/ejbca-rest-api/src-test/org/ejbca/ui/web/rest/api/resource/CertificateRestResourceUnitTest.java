@@ -1,13 +1,15 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.resource;
 
 import static org.easymock.EasyMock.anyBoolean;
@@ -50,6 +52,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
+import org.ejbca.ui.web.rest.api.resource.swagger.CertificateRestResourceSwagger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.AfterClass;
@@ -71,7 +74,7 @@ public class CertificateRestResourceUnitTest {
     private static final JSONParser jsonParser = new JSONParser();
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
-    private static class CertificateRestResourceWithoutSecurity extends CertificateRestResource {
+    private static class CertificateRestResourceWithoutSecurity extends CertificateRestResourceSwagger {
         @Override
         protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) {
             return authenticationToken;
