@@ -60,7 +60,8 @@ public class ConfigdumpSetting implements Serializable {
         CTLOG("ct-logs", "CT Log"),
         EXTENDEDKEYUSAGE("extended-key-usage", "EXTENDEDKEYUSAGE"),
         CERTEXTENSION("custom-certificate-extensions", "CERTEXTENSION"),
-        OAUTHKEY("trusted-oauth-providers", "OAUTHKEY");
+        OAUTHKEY("trusted-oauth-providers", "OAUTHKEY"),
+        AVAILABLEPROTOCOLS("available-protocols", "AVAILABLEPROTOCOLS");
         // Unimplemented:
         // ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
 

@@ -75,7 +75,7 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -253,6 +253,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     protected void setMockedInternalKeyBindingDataSession(final InternalKeyBindingDataSessionLocal internalKeyBindingDataSession) { this.internalKeyBindingDataSession = internalKeyBindingDataSession; }
     protected void setMockedGlobalConfigurationSession(final GlobalConfigurationSessionLocal globalConfigurationSession) { this.globalConfigurationSession = globalConfigurationSession; }
     protected void setMockedTimerService(final TimerService timerService) { this.timerService = timerService; }
+    protected void setOcspDataSessionLocal(final OcspDataSessionLocal ocspDataSession) { this.ocspDataSession = ocspDataSession; }
 
     @PostConstruct
     public void init() {
@@ -1717,6 +1718,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         certificateStatusHolder = certificateStoreSession.getCertificateAndStatus(issuerDnOcspRequest, certId.getSerialNumber());
                         status = certificateStatusHolder.getCertificateStatus();
                     }
+                    if(status.getExpirationDate()<System.currentTimeMillis() && isPreSigning) {
+                        return null; // do not store response for expired certificates
+                    }
                     if (!isPreSigning && transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_PROFILE_ID, String.valueOf(status.certificateProfileId));
                     }
@@ -2053,7 +2057,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         
         if (serialNrForResponseStore != null && caIdForResponseStore != 0 && 
-                ocspResponse.getStatus() == OCSPRespBuilder.SUCCESSFUL) {
+                ocspResponse.getStatus() == OCSPRespBuilder.SUCCESSFUL) { 
             try {
                 storeOcspResponse(caIdForResponseStore, serialNrForResponseStore, ocspResponse);
             } catch (OCSPException | IOException e) {

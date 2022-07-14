@@ -12,6 +12,32 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.SecureRandom;
+import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -69,6 +95,7 @@ import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
@@ -83,6 +110,9 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -93,6 +123,21 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.protocol.acme.AcmeAccount;
+import org.ejbca.core.protocol.acme.AcmeAccountDataSessionProxyRemote;
+import org.ejbca.core.protocol.acme.AcmeAccountDataSessionRemote;
+import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionProxyRemote;
+import org.ejbca.core.protocol.acme.AcmeAuthorizationStatus;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
+import org.ejbca.core.protocol.acme.AcmeOrder;
+import org.ejbca.core.protocol.acme.AcmeOrderDataSessionProxyRemote;
+import org.ejbca.core.protocol.acme.AcmeOrderDataSessionRemote;
+import org.ejbca.core.protocol.acme.AcmeRandomnessSingletonBean;
+import org.ejbca.core.protocol.acme.logic.AcmeAuthorizationImpl;
+import org.ejbca.core.protocol.acme.logic.AcmeIdentifierImpl;
+import org.ejbca.core.protocol.acme.logic.AcmeOrderImpl;
+import org.ejbca.core.protocol.acme.storage.AcmeAccountImpl;
+import org.ejbca.core.protocol.acme.storage.AcmeAccountImpl.AcmeAccountStatus;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
@@ -101,27 +146,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * System tests for the upgrade session bean. 
@@ -153,8 +177,13 @@ public class UpgradeSessionBeanTest {
     private UpgradeTestSessionRemote upgradeTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CesecoreConfigurationProxySessionRemote cesecoreConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalKeyBindingMgmtSessionRemote internalKeyBindingSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-
-
+        
+    private AcmeAccountDataSessionRemote acmeAccountDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AcmeAccountDataSessionRemote.class, EjbRemoteHelper.MODULE_EDITION_SPECIFIC);
+    private AcmeAccountDataSessionProxyRemote acmeAccountDataSessionProxy = EjbRemoteHelper.INSTANCE.getRemoteSession(AcmeAccountDataSessionProxyRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private AcmeOrderDataSessionRemote acmeOrderDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AcmeOrderDataSessionRemote.class, EjbRemoteHelper.MODULE_EDITION_SPECIFIC);
+    private AcmeOrderDataSessionProxyRemote acmeOrderDataSessionProxy = EjbRemoteHelper.INSTANCE.getRemoteSession(AcmeOrderDataSessionProxyRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private AcmeAuthorizationDataSessionProxyRemote acmeAuthorizationDataSessionProxy = EjbRemoteHelper.INSTANCE.getRemoteSession(AcmeAuthorizationDataSessionProxyRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     private static AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
@@ -1288,6 +1317,144 @@ public class UpgradeSessionBeanTest {
         assertNull("CertReqHandler should have been removed from CMP configuration during upgrade", upgradedCmpConfiguration.getCertReqHandlerClass(alias));
 
         
+    }
+
+    /** Tests addition of new access rules for Public Access RA added in 7.10.0 */
+    @Test
+    public void testUpgradeAccessRules7100() throws AuthorizationDeniedException, RoleExistsException {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.9.0");
+        guc.setPostUpgradedToVersion("7.9.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        // Add role
+        Role role = new Role("UpgradeTestNamespace", "Role", Arrays.asList(AccessRulesConstants.REGULAR_CREATECERTIFICATE + "/"), Collections.emptyList());
+        role.normalizeAccessRules();
+        roleSession.deleteRoleIdempotent(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+        try {
+            roleSession.persistRole(alwaysAllowtoken, role);
+            // Perform upgrade
+            upgradeSession.upgrade(null, "7.9.0", false);
+            // Check role
+            role = roleSession.getRole(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+            assertEquals("New access rule was not added", Boolean.TRUE, role.getAccessRules().get(AccessRulesConstants.REGULAR_USEUSERNAME + "/"));
+            assertEquals("New access rule was not added", Boolean.TRUE, role.getAccessRules().get(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID + "/"));
+        } finally {
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, "UpgradeTestNamespace", "Role");
+        }
+    }
+    
+    @Test
+    public void testAcmeAuthorizationDataPostUpgrade7100() throws AuthorizationDeniedException, InvalidAlgorithmParameterException, ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException {
+        final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("7.9.0");
+        guc.setPostUpgradedToVersion("7.9.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        
+        final KeyPair keyPair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        AcmeAccount account = new AcmeAccountImpl();
+        account.setAccountId(AcmeRandomnessSingletonBean.generate128bitRandomToken(new SecureRandom()));
+        account.setStatus(AcmeAccountStatus.VALID.getJsonValue());
+        account.setPublicKey(keyPair.getPublic());
+        account.setTermsOfServiceAgreedVersion("https://example.org/tos.html");
+        account.setConfigurationId("example");
+        account.setContact(Collections.singletonList("test@primekey.com"));
+        acmeAccountDataSessionProxy.createOrUpdate(account);
+        account = acmeAccountDataSession.getAcmeAccount(account.getAccountId());
+        
+        long now = System.currentTimeMillis();
+        final long validity = 3600 * 1000;
+        final List<AcmeIdentifier> identifiers = new ArrayList<>();
+        identifiers.add(new AcmeIdentifierImpl(AcmeIdentifier.AcmeIdentifierTypes.DNS, "example.org"));
+        identifiers.add(new AcmeIdentifierImpl(AcmeIdentifier.AcmeIdentifierTypes.DNS, "www.example.org"));
+        identifiers.add(new AcmeIdentifierImpl(AcmeIdentifier.AcmeIdentifierTypes.DNS, "user.example.org"));
+                
+        AcmeOrder order = new AcmeOrderImpl(account.getAccountId(), now + validity, identifiers, now, now + validity);
+        acmeOrderDataSession.createOrUpdate(order);
+        order = acmeOrderDataSession.getAcmeOrder(order.getOrderId());
+        
+        final ArrayList<AcmeAuthorizationData> authorizations = new ArrayList<>();
+        createAcmeAuthorizations(identifiers, order, false, authorizations);
+        createAcmeAuthorizations(identifiers, order, true, authorizations);
+        
+        try {
+            // Perform upgrade
+            upgradeSession.upgrade(null, "7.9.0", true);
+            for (AcmeAuthorizationData data : authorizations) {
+                final AcmeAuthorizationData data7100 = acmeAuthorizationDataSessionProxy.find(data.getAuthorizationId());
+                assertAcmeAuthorizationData7100(data, data7100);
+            }
+        } finally {
+            for (AcmeAuthorizationData data : authorizations) {
+                acmeAuthorizationDataSessionProxy.remove(data.getAuthorizationId());
+            }
+            if (order != null) {
+                acmeOrderDataSessionProxy.remove(order.getOrderId());
+            }
+            if (account != null) {
+                acmeAccountDataSessionProxy.remove(account.getAccountId());
+            }
+        }
+    }
+    
+    private void createAcmeAuthorizations(final List<AcmeIdentifier> identifiers, final AcmeOrder order, final boolean isPreAuthorization, final List<AcmeAuthorizationData> authorizations) {
+        for (AcmeIdentifier identifier : identifiers) {
+            final long now = System.currentTimeMillis();
+            final String authorizationId = CertTools.getSHA256FingerprintAsString(String.valueOf(now).getBytes(StandardCharsets.UTF_8));
+            String orderId = order.getOrderId();
+            if (isPreAuthorization) {
+                orderId = null;
+            }
+            final AcmeAuthorizationImpl impl = new AcmeAuthorizationImpl(authorizationId, orderId, order.getAccountId(), true, now);
+            impl.setStatus(AcmeAuthorizationStatus.INVALID);
+            impl.setAcmeIdentifier(identifier);
+            impl.setExpires(now + 60 * 60 * 1000);
+            
+            AcmeAuthorizationData data = new AcmeAuthorizationData(); 
+            data.setAuthorizationId(authorizationId);
+            data.setAccountId(order.getAccountId());
+            data.setOrderId(orderId);
+            data.setDataMap(impl.getRawData());
+            
+            final LinkedHashMap<Object, Object> dataMap = data.getDataMap(); 
+            dataMap.put("acmeIdentifierValue", identifier.getValue());
+            dataMap.put("acmeIdentifierType", identifier.getType());
+            dataMap.put("status", "invalid");
+            dataMap.put("expires", now + 60 * 60 * 1000);
+            data.setDataMap(dataMap);
+            
+            acmeAuthorizationDataSessionProxy.persistAcmeAuthorizationData(data);
+            data = acmeAuthorizationDataSessionProxy.find(authorizationId);
+            assertAcmeAuthorizationData791(data);
+            
+            authorizations.add(data);
+        }
+    }
+    
+    private void assertAcmeAuthorizationDataMapFields(final AcmeAuthorizationData data) {
+        assertNotNull("Identifier must not be null.", data.getDataMap().get("acmeIdentifierValue"));
+        assertNotNull("Identifier type must not be null.", data.getDataMap().get("acmeIdentifierType"));
+        assertNotNull("Status must not be null.", data.getDataMap().get("status"));
+        assertTrue("Expires must not be 0.", (Long) data.getDataMap().get("expires") > 0);
+    }
+    
+    private void assertAcmeAuthorizationData791(final AcmeAuthorizationData data) {
+        // DB columns identifier, identifierType, status are null (or expires = 0 here).
+        // But the data map contains all fields.
+        assertAcmeAuthorizationDataMapFields(data);
+        assertNull("AcmeAuthorizationData v791 getIdentifier() must be null.", data.getIdentifier());
+        assertNull("AcmeAuthorizationData v791 getIdentifierType() must be null.", data.getIdentifierType());
+        assertTrue("AcmeAuthorizationData v791 getExpires() must be null or 0.", data.getExpires() == 0);
+        assertNull("AcmeAuthorizationData v791 getStatus() must be null.", data.getStatus());
+    }
+    
+    private void assertAcmeAuthorizationData7100(final AcmeAuthorizationData data, final AcmeAuthorizationData data7100) {
+        // Fields from data map must have been copied to the corresponding DB columns.
+        assertAcmeAuthorizationDataMapFields(data);
+        assertAcmeAuthorizationDataMapFields(data7100);
+        assertEquals("AcmeAuthorizationData v7100 copy of identifier does not match.", data.getDataMap().get("acmeIdentifierValue"), data7100.getIdentifier());
+        assertEquals("AcmeAuthorizationData v7100 copy of identifier type does not match.", data.getDataMap().get("acmeIdentifierType"), data7100.getIdentifierType());
+        assertEquals("AcmeAuthorizationData v7100 copy of status does not match.", data.getDataMap().get("status"), data7100.getStatus());
+        assertEquals("AcmeAuthorizationData v7100 copy of expires does not match.", data.getDataMap().get("expires"), data7100.getExpires());        
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
