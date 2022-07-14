@@ -124,30 +124,26 @@ public class LDAPAttributeHelper {
             final SDDL sddl = new SDDL(securityDescription);
             final List<ACE> accessControlEntries = sddl.getDacl().getAces();
             for (ACE ace : accessControlEntries) {
-                if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE && 
-                        ace.getObjectType() != null && 
-                        GUID.getGuidAsString(ace.getObjectType()).equals(AD_ACCESS_TYPE_AUTOENROLL)) {
-                    if (groupMembership.contains(ace.getSid().toString())) {
-                        autoenrollAllowed = true;
-                    }
+                if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE && ace.getObjectType() != null
+                        && GUID.getGuidAsString(ace.getObjectType()).equals(AD_ACCESS_TYPE_AUTOENROLL)
+                        && groupMembership.contains(ace.getSid().toString())) {
+                    autoenrollAllowed = true;
                 }
-                if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE && 
-                        ace.getObjectType() != null && 
-                        GUID.getGuidAsString(ace.getObjectType()).equals(AD_ACCESS_TYPE_ENROLL)) {
-                    if (groupMembership.contains(ace.getSid().toString())) {
-                        enrollAllowed = true;
-                    }
+                if (ace.getType() == AceType.ACCESS_ALLOWED_OBJECT_ACE_TYPE && ace.getObjectType() != null
+                        && GUID.getGuidAsString(ace.getObjectType()).equals(AD_ACCESS_TYPE_ENROLL)
+                        && groupMembership.contains(ace.getSid().toString())) {
+                    enrollAllowed = true;
                 }
                 if (!autoenrollAllowed && !enrollAllowed && ace.getType() == AceType.ACCESS_ALLOWED_ACE_TYPE) {
                     // Check if "All extended rights" or "Full control" is allowed
                     for (ObjectRight objectRight : ace.getRights().getObjectRights()) {
                         // ACE allows all extended rights (incl. enrollment) OR "Full control" 
-                        if ((objectRight.name().equals(ObjectRight.CR.name()) || objectRight.name().equals(ObjectRight.GA.name())) 
+                        if ((objectRight.name().equals(ObjectRight.CR.name()) || objectRight.name().equals(ObjectRight.GA.name()))
                                 && groupMembership.contains(ace.getSid().toString())) {
                             if (log.isDebugEnabled()) {
                                 log.debug("ACE allows all extended rights on the group: " + ace.getSid().toString());
                             }
-                            return new boolean[] {true, true};
+                            return new boolean[] { true, true };
                         }
                     }
                 }
@@ -171,14 +167,11 @@ public class LDAPAttributeHelper {
             return null;
         }
         Long adEnrollment = Long.valueOf(enrollmentFlag);
-        Long results = (adEnrollment & CT_FLAG_INCLUDE_SYMMETRIC_ALGORITHMS)
-                + (adEnrollment & CT_FLAG_PUBLISH_TO_DS)
+        return (adEnrollment & CT_FLAG_INCLUDE_SYMMETRIC_ALGORITHMS) + (adEnrollment & CT_FLAG_PUBLISH_TO_DS)
                 + (adEnrollment & CT_FLAG_AUTO_ENROLLMENT_CHECK_USER_DS_CERTIFICATE)
-                + (adEnrollment & CT_FLAG_PREVIOUS_APPROVAL_VALIDATE_REENROLLMENT)
-                + (adEnrollment & CT_FLAG_USER_INTERACTION_REQUIRED)
+                + (adEnrollment & CT_FLAG_PREVIOUS_APPROVAL_VALIDATE_REENROLLMENT) + (adEnrollment & CT_FLAG_USER_INTERACTION_REQUIRED)
                 + (adEnrollment & CT_FLAG_REMOVE_INVALID_CERTIFICATE_FROM_PERSONAL_STORE)
                 + (adEnrollment & CT_FLAG_ENABLE_KEY_REUSE_ON_NT_TOKEN_KEYSET_STORAGE_FULL);
-        return results;
     }
     
     public static BigInteger getTimePeriodFromFileTime(final javax.naming.directory.Attributes attributes, final String attributeId) {
@@ -216,7 +209,7 @@ public class LDAPAttributeHelper {
             return null;
         }
         try {
-            return new Long(String.valueOf(attribute.get()));
+            return Long.parseLong(String.valueOf(attribute.get()));
         } catch (NamingException e) {
             log.warn("Could find attributeId '" + attributeId + "' in AD search results");
             return null;
@@ -230,7 +223,7 @@ public class LDAPAttributeHelper {
             return 0;
         }
         try {
-            return Long.valueOf((String)attribute.get()).longValue();
+            return Long.parseLong((String)attribute.get());
         } catch (NamingException e) {
             log.warn("Could find attributeId '" + attributeId + "' in AD search results");
             return 0;
