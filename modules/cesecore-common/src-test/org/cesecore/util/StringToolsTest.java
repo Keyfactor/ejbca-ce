@@ -57,8 +57,8 @@ public class StringToolsTest {
         final String str = "file name";
         final String str1 = "file  name ";
         final String str2 = "fileName";
-        assertEquals("file_name", StringTools.stripFilenameReplaceSpaces(str));
-        assertEquals("file__name_", StringTools.stripFilenameReplaceSpaces(str1));
+        assertEquals("file_esc_spc_name", StringTools.stripFilenameReplaceSpaces(str));
+        assertEquals("file_esc_spc__esc_spc_name_esc_spc_", StringTools.stripFilenameReplaceSpaces(str1));
         assertEquals("fileName", StringTools.stripFilenameReplaceSpaces(str2));        
         log.trace("<testIpOctetsToString");
     }

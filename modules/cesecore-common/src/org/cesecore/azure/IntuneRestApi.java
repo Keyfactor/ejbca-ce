@@ -615,7 +615,7 @@ public class IntuneRestApi {
 
             HttpClientWithProxySupport client;
             if (proxyHost != null) {
-                Preconditions.checkNotNull(proxyPassword);
+                Preconditions.checkNotNull(proxyPort);
                 if (proxyUser != null) {
                     Preconditions.checkNotNull(proxyPassword);
                     client = HttpClientWithProxySupport.basicAuthProxy(proxyHost, proxyPort, proxyUser, proxyPassword);
