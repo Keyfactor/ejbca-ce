@@ -47,7 +47,7 @@ CREATE TABLE ApprovalData (
     endEntityProfileId INT4 NOT NULL,
     expireDate INT8 NOT NULL,
     remainingApprovals INT4 NOT NULL,
-    subjectDn VARCHAR(256) with null,
+    subjectDn VARCHAR(400) with null,
     email VARCHAR(256) with null,
     reqAdminCertIssuerDn VARCHAR(256) with null,
     reqAdminCertSn VARCHAR(256) with null,
@@ -431,6 +431,10 @@ CREATE TABLE AcmeChallengeData (
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(256) NOT NULL,
+    identifier VARCHAR(256),
+    identifierType VARCHAR(20),
+    expires INT8,
+    status VARCHAR(20),
     orderId VARCHAR(256),
     accountId VARCHAR(256) NOT NULL,
     rawData LONG VARCHAR,
