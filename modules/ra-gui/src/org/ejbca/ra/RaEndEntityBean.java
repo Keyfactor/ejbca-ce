@@ -41,6 +41,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -75,6 +76,7 @@ public class RaEndEntityBean implements Serializable {
     private static final Logger log = Logger.getLogger(RaEndEntityBean.class);
     private static final String MISSING_PERMITTED_NAME_CONSTRAINTS = "enroll_name_constraint_permitted_required";
     private static final String MISSING_EXCLUDED_NAME_CONSTRAINTS = "enroll_name_constraint_excluded_required";
+    private static final String MISSING_CABF_ORGANIZATION_IDENTIFIER = "editendentity_cabf_organizationidentifier_required";
     private static final String INVALID_PERMITTED_NAME_CONSTRAINTS = "enroll_invalid_permitted_name_constraints";
     private static final String INVALID_EXCLUDED_NAME_CONSTRAINTS = "enroll_invalid_excluded_name_constraints";
 
@@ -144,6 +146,7 @@ public class RaEndEntityBean implements Serializable {
     private String psd2NcaName;
     private String psd2NcaId;
     private List<String> selectedPsd2PspRoles;
+    private String cabfOrganizationIdentifier;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -210,6 +213,7 @@ public class RaEndEntityBean implements Serializable {
                 psd2NcaName = raEndEntityDetails.getPsd2NcaName();
                 psd2NcaId = raEndEntityDetails.getPsd2NcaId();
                 selectedPsd2PspRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
+                cabfOrganizationIdentifier = raEndEntityDetails.getCabfOrganizationIdentifier();
             }
         }
         issuedCerts = null;
@@ -467,6 +471,18 @@ public class RaEndEntityBean implements Serializable {
                     psd2RoleOfPSPStatements.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
                 }
                 endEntityInformation.getExtendedInformation().setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
+                changed = true;
+            }
+        }
+        if (eep.isCabfOrganizationIdentifierUsed()){
+            if (!verifyCabfOrganizationIdentifier()) {
+                return;
+            }
+            if (endEntityInformation.getExtendedInformation() == null){
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            if (!StringUtils.equals(cabfOrganizationIdentifier, endEntityInformation.getExtendedInformation().getCabfOrganizationIdentifier())){
+                endEntityInformation.getExtendedInformation().setCabfOrganizationIdentifier(StringUtils.trimToNull(cabfOrganizationIdentifier));
                 changed = true;
             }
         }
@@ -1351,6 +1367,52 @@ public class RaEndEntityBean implements Serializable {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @return the CA/B Forum Organization Identifier
+     */
+    public String getCabfOrganizationIdentifier() {
+        return cabfOrganizationIdentifier;
+    }
+
+    /**
+     * Set CA/B Forum Organization Identifier
+     */
+    public void setCabfOrganizationIdentifier(final String cabfOrganizationIdentifier) {
+        this.cabfOrganizationIdentifier = StringUtils.trim(cabfOrganizationIdentifier);
+    }
+
+    /**
+     * @return true if CA/B Forum Organization Identifier in required in the selected End Entity profile
+     */
+    public boolean isCabfOrganizationIdentifierRequired() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isCabfOrganizationIdentifierRequired();
+    }
+
+    /**
+     * @return true if CA/B Forum Organization Identifier field can be modified in the selected End Entity profile
+     */
+    public boolean isCabfOrganizationIdentifierModifiable() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isCabfOrganizationIdentifierModifiable();
+    }
+
+    /**
+     * @return validation regex for the CA/B Forum Organization Identifier field
+     */
+    public String getCabfOrganizationIdentifierRegex() {
+        return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+
+    /**
+     * @return true if required CA/B Forum Organization Identifier is not empty, otherwise set an error message and return false
+     */
+    private boolean verifyCabfOrganizationIdentifier(){
+        if (isCabfOrganizationIdentifierRequired() && StringUtils.isEmpty(cabfOrganizationIdentifier)){
+            raLocaleBean.addMessageError(MISSING_CABF_ORGANIZATION_IDENTIFIER);
+            return false;
+        }
+        return true;
     }
 
     private boolean isDnEmail(EndEntityProfile.FieldInstance instance) {

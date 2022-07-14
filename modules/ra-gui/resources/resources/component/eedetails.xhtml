@@ -4,6 +4,7 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:composite="http://xmlns.jcp.org/jsf/composite"
     xmlns:component="http://xmlns.jcp.org/jsf/composite/component">
     <ui:remove>
@@ -515,7 +516,6 @@
                 rendered="#{cc.attrs.raEndEntityDetails.extensionDataConfigured and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
-            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled}"/>
             <!-- PSD2 NCAName -->
             <h:outputLabel for="viewPsd2NCANameField" value="#{msg.enroll_psd2_ncaname}"
                            rendered="#{cc.attrs.raEndEntityDetails.psd2QcStatementEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
@@ -562,6 +562,28 @@
                 <h:selectManyListbox id="editPsd2PspRoleField" value="#{cc.attrs.raEndEntityBean.selectedPsd2PspRoles}">
                     <f:selectItems value="#{cc.attrs.raEndEntityDetails.availablePsd2PspRoles}"/>
                 </h:selectManyListbox>
+            </h:panelGroup>
+            <!-- CA/B Forum Organization Identifier -->
+            <h:outputLabel for="viewCabfOrganizationIdentifierField" value="#{msg.enroll_cabf_organizationidentifier}"
+                           rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputText id="viewCabfOrganizationIdentifierField" value="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifier}"
+                          rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and (!cc.attrs.editMode or cc.attrs.approvalRequestMode)}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:outputLabel for="editCabfOrganizationIdentifierField" value="#{msg.enroll_cabf_organizationidentifier}"
+                           rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+            <h:panelGroup rendered="#{cc.attrs.raEndEntityDetails.cabfOrganizationIdentifierEnabled and cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                <h:inputText id="editCabfOrganizationIdentifierField" value="#{cc.attrs.raEndEntityBean.cabfOrganizationIdentifier}"
+                             pt:pattern="#{cc.attrs.raEndEntityBean.cabfOrganizationIdentifierRegex}"
+                             pt:title="#{msg.enroll_cabf_organizationidentifier_format}"
+                             disabled="#{not cc.attrs.raEndEntityBean.cabfOrganizationIdentifierModifiable}">
+                    <f:validator validatorId="extendedRegexValidator" />
+                    <f:attribute name="pattern" value="#{cc.attrs.raEndEntityBean.cabfOrganizationIdentifierRegex}"/>
+                    <f:attribute name="_label" value="#{msg.enroll_cabf_organizationidentifier}"/>
+                </h:inputText>
+                <h:message for="editCabfOrganizationIdentifierField" id="cabfOrganizationIdentifierMessage" styleClass="validationErrorMessage showErrorMessage"/>
             </h:panelGroup>
 
             <h:outputLabel for="addEEApprovalReq" value="#{msg.component_eedetails_field_addendentity_approvalrequestid}"
