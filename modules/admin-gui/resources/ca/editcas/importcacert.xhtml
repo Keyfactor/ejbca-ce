@@ -56,11 +56,11 @@
 						</h:inputText>
 					</h:panelGroup>
 					
-					<h:panelGroup>
+					<h:panelGroup rendered="#{importCaCertMBean.proxyCaAvailable}">
 						<h:outputLabel for="textfieldkeyfactorenrollca"
 							value="#{web.text.IMPORTCA_KEYFACTOR_CA}" style="font-weight: bold;" />
 					</h:panelGroup>
-					<h:panelGroup>
+					<h:panelGroup rendered="#{importCaCertMBean.proxyCaAvailable}">
 					<h:commandButton
 							id="catypeproxy"
 							styleClass="selectButton largeSelectButton #{importCaCertMBean.keyFactorCa?'selected':''}"

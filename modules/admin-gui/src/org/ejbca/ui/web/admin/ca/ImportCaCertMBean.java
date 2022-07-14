@@ -29,7 +29,9 @@ import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.kfenroll.ProxyCa;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo.ProxyCaInfoBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
@@ -82,7 +84,11 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     public void setUploadedFile(final UploadedFile uploadedFile) {
         this.uploadedFile = uploadedFile;
     }
-        
+
+    public boolean isProxyCaAvailable() {
+        return CAFactory.INSTANCE.existsCaType(ProxyCa.CA_TYPE);
+    }
+
     public boolean isKeyFactorCa() {
         return keyFactorCa;
     }
