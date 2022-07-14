@@ -971,7 +971,11 @@
         <condition property="build.contains.ssh" value="true">
         	<equals arg1="${variant}" arg2="ssh" casesensitive="false"/>
         </condition>
-		
+
+        <condition property="build.contains.proxy-ca" value="true">
+            <equals arg1="${variant}" arg2="proxy-ca" casesensitive="false"/>
+        </condition>
+
         <condition property="build.contains.cesecore-x509ca" value="true">
         	<istrue value="${running.full.ejbca}" />
         </condition>
@@ -998,7 +1002,11 @@
 		<condition property="variant.suffix" value="_SSH">
 			<equals arg1="${variant}" arg2="ssh" casesensitive="false"/>
 		</condition>
-		
+
+		<condition property="variant.suffix" value="_ProxyCA">
+			<equals arg1="${variant}" arg2="proxy-ca" casesensitive="false"/>
+		</condition>
+
 		<condition property="variant.suffix" value="">
 			<istrue value="${running.full.ejbca}" />
         </condition>
@@ -1151,6 +1159,8 @@
 		    	
 		    	<!-- Only include SSH module if specified -->
 		    	<exclude unless="build.contains.ssh" name="modules/ssh/**"/>
+                <!-- Only include ProxyCA module if specified -->
+                <exclude unless="build.contains.proxy-ca" name="modules/proxy-ca/**"/>
 		    	
 				<!-- List of subcommands for ejbca.sh script that must be hidden when we are running on limited ejbca (va/ra) installation. -->
 		    	<!-- The excluded parts are listed in the ticket ECA-7904 and could be updated accordingly if needed.   -->
