@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
@@ -137,6 +140,11 @@ public class SearchCertificatesRestResponseV2 {
                 
                 if (certificate != null && cd != null) {
                     final byte[] certificateBytes = certificate.getEncoded();
+                    final byte[] skidBytes = CertTools.getSubjectKeyId(certificate);
+                    String skid = "";
+                    if (skidBytes != null && skidBytes.length > 0) {
+                        skid = new String(Hex.encode(skidBytes));
+                    }
                     final CertificateRestResponseV2 response = CertificateRestResponseV2.builder()
                         .setFingerprint(CertTools.getFingerprintAsString(certificateBytes))
                         .setCAFingerprint(cd.getCaFingerprint())
@@ -151,7 +159,7 @@ public class SearchCertificatesRestResponseV2 {
                         .setStatus(cd.getStatus())
                         .setSubjectAltName(cd.getSubjectAltName())
                         .setSubjectDN(cd.getSubjectDN())
-                        .setSubjectKeyId(new String(Hex.encode(CertTools.getSubjectKeyId(certificate))))
+                        .setSubjectKeyId(skid)
                         .setTag(cd.getTag())
                         .setType(cd.getType())
                         .setUpdateTime(cd.getUpdateTime())

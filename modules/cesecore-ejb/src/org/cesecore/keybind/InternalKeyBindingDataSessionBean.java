@@ -148,7 +148,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
                 }
             }
             if (allocatedId == null) {
-                throw new RuntimeException("Failed to allocate a new internalKeyBindingId.");
+                throw new IllegalStateException("Failed to allocate a new internalKeyBindingId.");
             }
             internalKeyBindingId = allocatedId.intValue();
             // We need to replace this object with an object that has the correct ID if we are going to cache it later

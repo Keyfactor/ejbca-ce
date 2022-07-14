@@ -22,7 +22,7 @@
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
-	<description><![CDATA[External interface for the EJBCA rest api]]></description>
+	<description><![CDATA[External interface for the EJBCA REST API]]></description>
 	<display-name>ejbca-rest-api</display-name>
 
     <filter>
@@ -58,6 +58,14 @@
         </init-param>
     </filter>
     <filter>
+        <filter-name>EndEntityManagementFilterV2</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>REST End Entity Management V2</param-value>  
+        </init-param>
+    </filter>
+    <filter>
         <filter-name>ConfigdumpFilter</filter-name>
         <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
         <init-param>  
@@ -81,6 +89,14 @@
             <param-value>REST Certificate Management V2</param-value>  
         </init-param>
     </filter>
+    <filter>
+        <filter-name>SshFilter</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>REST SSH V1</param-value>
+        </init-param>
+    </filter>
     
     <filter-mapping>
         <filter-name>CertificateManagementFilter</filter-name>
@@ -100,8 +116,16 @@
         <url-pattern>/v1/endentity/*</url-pattern>
     </filter-mapping>
     <filter-mapping>
+        <filter-name>EndEntityManagementFilterV2</filter-name>
+        <url-pattern>/v2/endentity/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
         <filter-name>ConfigdumpFilter</filter-name>
         <url-pattern>/v1/configdump/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>SshFilter</filter-name>
+        <url-pattern>/v1/ssh/*</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>RestLoggingFilter</filter-name>
