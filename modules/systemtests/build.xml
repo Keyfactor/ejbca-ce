@@ -65,6 +65,7 @@
 		<pathelement location="${mod.systemtest-ejb.lib}"/>
 		<pathelement location="${mod.systemtests.path}/resources"/>
 		<path location="${mod.ejbca-common.path}/build-test"/>
+		<path location="${mod.acme-common.jar}"/>
 	</path>
 
 	<path id="systemtests.classpath">
@@ -75,17 +76,21 @@
         <path location="${mod.cesecore-cvcca.lib}"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.json-smart.classpath"/>
+		<path location="${mod.p11ng.lib}" />
+		<path refid="lib.jackson2.classpath"/>
+		<pathelement location="${mod.ejbca-rest-common.lib}"/>
+		<path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
 	<path id="common.classpath">
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.hc.classpath"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.ejbca-common.lib}"/>
         <path refid="lib.bouncycastle.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
-
 	</path>
 
 	<path id="interfaces.classpath">
@@ -109,7 +114,7 @@
 		<path refid="lib.log4j.classpath" />
 		<path refid="lib.commons-lang.classpath" />
 		<path refid="lib.commons-config.classpath" />
-		<path refid="lib.commons-collections.classpath" />
+		<path refid="lib.commons-collections4.classpath" />
 		<path refid="lib.commons-logging.classpath" />
 		<path refid="lib.commons-io.classpath" />
 		<path refid="lib.servlet.classpath" />
@@ -168,6 +173,7 @@
             <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
 			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
 			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>
+			<include name="org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java"/>
 		<!-- ECA-9129: Not included normally - doing so breaks the build unless this class is enabled in cesecore.properties
 			<include name="com/widget/WidgetCustomExtension.java"/> -->
 		</javac>
@@ -183,7 +189,8 @@
             <exclude name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
             <exclude name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
 			<exclude name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
-			<exclude name="com/widget/WidgetCustomExtension.java"/>	
+			<exclude name="com/widget/WidgetCustomExtension.java"/>
+			<exclude name="org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java"/>	
 		</javac>
 	</target>
 

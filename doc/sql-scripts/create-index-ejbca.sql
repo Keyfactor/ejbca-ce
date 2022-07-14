@@ -45,6 +45,10 @@ CREATE UNIQUE INDEX certificatedata_idx12 ON CertificateData (serialNumber, issu
 -- If using CVC CA remove the above UNIQUE index, and apply the below NON UNIQUE index instead
 -- Do not apply both of them!
 -- CREATE INDEX certificatedata_idx12 ON CertificateData (serialNumber, issuerDN);
+-- The following indexes have been identified to be beneficial to performance in the following scenario:
+-- Keyfactor Gateway Connector for Keyfactor Remote trying to query/page through 1.5 mill certs with the REST Api on a Hardware Appliance (even 2020XL)
+CREATE INDEX certificatedata_idx15 ON CertificateData (issuerDN,notBefore);
+CREATE INDEX certificatedata_idx16 ON CertificateData (issuerDN,revocationDate);
 
 CREATE INDEX historydata_idx1 ON CertReqHistoryData (username);
 CREATE INDEX historydata_idx3 ON CertReqHistoryData (serialNumber);
@@ -77,7 +81,7 @@ CREATE INDEX acmeorderdata_idx1 ON AcmeOrderData (accountId);
 CREATE INDEX acmeorderdata_idx2 ON AcmeOrderData (fingerprint, status);
 
 -- index for searching for ACME authorizations by account id
-CREATE INDEX acmeauthorizationdata_idx1 ON AcmeAuthorizationData (accountId);
+CREATE INDEX acmeauthorizationdata_idx1 ON AcmeAuthorizationData (orderId,accountId,expires,status);
 
 -- index for searching for ACME authorizations by order id
 CREATE INDEX acmeauthorizationdata_idx2 ON AcmeAuthorizationData (orderId);

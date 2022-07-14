@@ -417,7 +417,7 @@ public class PerformanceTest {
                 this.errorPrinter = new PrintWriter(new FileWriter("error.log"));
                 this.infoPrinter = new PrintWriter(new FileWriter("info.log"));
                 this.allPrinter = new PrintWriter(new FileWriter("all.log"));
-                this.resultObject = new ObjectOutputStream(new FileOutputStream("result.log", true));
+                this.resultObject = new ObjectOutputStream(new FileOutputStream("result.ser", true));
                 this.thread = new LogThread();
                 final Thread t = new Thread(this.thread); // NOPMD this is a standalone test, not run in jee app
                 t.setPriority(Thread.MIN_PRIORITY);

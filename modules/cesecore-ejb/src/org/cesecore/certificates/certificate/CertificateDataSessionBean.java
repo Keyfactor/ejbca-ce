@@ -265,6 +265,18 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
     
     @Override
+    public List<String> findSerialNrByIssuerAndExpireDateWithLimitAndOffset(String issuerDN, long expireDate, int limit, int offset) {
+        // we ignore the certificate status
+        final TypedQuery<String> query = entityManager
+                .createQuery("SELECT a.serialNumber FROM CertificateData a WHERE a.issuerDN=:issuerDN and a.expireDate>:expireDate", String.class);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("expireDate", expireDate);
+        query.setMaxResults(limit);
+        query.setFirstResult(offset);
+        return query.getResultList();
+    }
+    
+    @Override
     public List<CertificateData> findByExpireDateWithLimitAndOffset(long expireDate, int maxNumberOfResults, int offset) {
         final long now = System.currentTimeMillis();
         final TypedQuery<CertificateData> query = entityManager

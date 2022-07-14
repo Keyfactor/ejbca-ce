@@ -169,13 +169,14 @@ public final class StringTools {
     }
 
     /**
-     * Strips '<' and '>' as well as all special characters from a string by replacing them with a forward slash, '/'.
+     * Strips '<' and '>' as well as all special characters from a string by replacing them with a forward slash: '/', as well as trailing and leading whitespace.
      * @param str the string whose contents will be stripped.
-     * @return the stripped version of the input string.
+     * @return the stripped version of the input string, 
      */
     public static String stripUsername(final String str) {
         String xssStripped = strip(str, STRIP_XSS);
-        return strip(xssStripped);
+        //trim gets rid of leading and trailing whitespace as well
+        return strip(trim(xssStripped));
     }
 
     /**
@@ -195,7 +196,7 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String stripFilenameReplaceSpaces(final String str) {
-        return stripFilename(str.replace(' ', '_'));
+        return stripFilename(str.replace(" ", "_esc_spc_"));
     }
 
     /**

@@ -75,7 +75,9 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     /** For internal user from UpgradeSessionBean only */
     void migrateDatabase781() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
-    void fixPartitionedCrls() throws UpgradeFailedException;
+    void migrateDatabase7100() throws UpgradeFailedException;
+    /** For internal user from UpgradeSessionBean only */
+    void fixPartitionedCrls(final int limit) throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
     IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery);
     

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -101,7 +102,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (user == null) {
             throw new NotFoundException("End Entity of name " + username + " not found in database");
         } else {
-            return new AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm>(user.getPasswordHash(), user.findHashAlgorithm());
+            return new AbstractMap.SimpleEntry<>(user.getPasswordHash(), user.findHashAlgorithm());
         }
     }
 
@@ -121,12 +122,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         query.setParameter("subjectDN", dn);
         final List<UserData> dataList =  query.getResultList();
         
-        if (dataList.size() == 0) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with subjectdn: " + dn);
-            }
+        if (dataList.isEmpty() && log.isDebugEnabled()) {
+            log.debug("Cannot find user with subjectdn: " + dn);
         }
-        final List<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
+        final List<EndEntityInformation> result = new ArrayList<>();
         for (UserData data : dataList) {
             result.add(convertUserDataToEndEntityInformation(admin, data, null));
         }
@@ -166,12 +165,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         query.setParameter("subjectDN", dn);
         query.setParameter("caId", issuerDN.hashCode());
         final List<UserData> dataList = query.getResultList();
-        if (dataList.size() == 0) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with subjectdn: " + dn + ", issuerdn : " + issuerDN);
-            }
+        if (dataList.isEmpty() && log.isDebugEnabled()) {
+            log.debug("Cannot find user with subjectdn: " + dn + ", issuerdn : " + issuerDN);
         }
-        final List<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
+        final List<EndEntityInformation> result = new ArrayList<>();
         for (UserData data : dataList) {
             result.add(convertUserDataToEndEntityInformation(admin, data, null));
         }
@@ -194,18 +191,17 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public EndEntityInformation findUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
+        final String trimmedUsername = StringTools.trim(username);
         if (log.isTraceEnabled()) {
-            log.trace(">findUser(" + username + ")");
+            log.trace(">findUser(" + trimmedUsername + ")");
         }        
-        final UserData data = findByUsername(username);
-        if (data == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with username='" + username + "'");
-            }
+        final UserData data = findByUsername(trimmedUsername);
+        if (data == null && log.isDebugEnabled()) {
+            log.debug("Cannot find user with username='" + trimmedUsername + "'");
         }
-        final EndEntityInformation ret = convertUserDataToEndEntityInformation(admin, data, username);
+        final EndEntityInformation ret = convertUserDataToEndEntityInformation(admin, data, trimmedUsername);
         if (log.isTraceEnabled()) {
-            log.trace("<findUser(" + username + "): " + (ret == null ? "null" : ret.getDN()));
+            log.trace("<findUser(" + trimmedUsername + "): " + (ret == null ? "null" : ret.getDN()));
         }
         return ret;
     }
@@ -217,10 +213,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             log.trace(">findUserWithoutViewEndEntityAccessRule(" + username + ")");
         }        
         final UserData data = findByUsername(username);
-        if (data == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with username='" + username + "'");
-            }
+        if (data == null && log.isDebugEnabled()) {
+            log.debug("Cannot find user with username='" + username + "'");
         }
         final EndEntityInformation ret = convertUserDataToEndEntityInformationWithoutViewEndEntityAccessRule(admin, data, username);
         if (log.isTraceEnabled()) {
@@ -231,11 +225,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public UserData findByUsername(String username) {
+    public UserData findByUsername(final String username) {
         if (username == null) {
             return null;
         }
-        return entityManager.find(UserData.class, username);
+        return entityManager.find(UserData.class, StringTools.trim(username));
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -251,12 +245,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectEmail=:subjectEmail", UserData.class);
         query.setParameter("subjectEmail", email);
         final List<UserData> result =  query.getResultList();
-        if (result.size() == 0) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with Email='" + email + "'");
-            }
+        if (result.isEmpty() && log.isDebugEnabled()) {
+            log.debug("Cannot find user with Email='" + email + "'");
         }
-        final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
+        final List<EndEntityInformation> returnval = new ArrayList<>();
         for (final UserData data : result) {
             if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
                     .getEnableEndEntityProfileLimitations()) {
@@ -290,11 +282,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_END_ENTITY)) {
                     if (requestedUsername == null) {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()),
+                        final String msg = intres.getLocalizedMessage("ra.errorauthprofile", data.getEndEntityProfileId(),
                                 admin.toString());
                         throw new AuthorizationDeniedException(msg);
                     } else {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", Integer.valueOf(data.getEndEntityProfileId()),
+                        final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", data.getEndEntityProfileId(),
                                 requestedUsername, admin.toString());
                         throw new AuthorizationDeniedException(msg);
                     }
@@ -302,10 +294,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             }
             if (!authorizedToCA(admin, data.getCaId())) {
                 if (requestedUsername == null) {
-                    final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(data.getCaId()), admin.toString());
+                    final String msg = intres.getLocalizedMessage("ra.errorauthca", data.getCaId(), admin.toString());
                     throw new AuthorizationDeniedException(msg);
                 } else {
-                    final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), requestedUsername,
+                    final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", data.getCaId(), requestedUsername,
                             admin.toString());
                     throw new AuthorizationDeniedException(msg);
                 }
@@ -328,11 +320,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfileForRaWebCertificateCreation(admin, data.getEndEntityProfileId())) {
                     if (requestedUsername == null) {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()),
+                        final String msg = intres.getLocalizedMessage("ra.errorauthprofile", data.getEndEntityProfileId(),
                                 admin.toString());
                         throw new AuthorizationDeniedException(msg);
                     } else {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", Integer.valueOf(data.getEndEntityProfileId()),
+                        final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", data.getEndEntityProfileId(),
                                 requestedUsername, admin.toString());
                         throw new AuthorizationDeniedException(msg);
                     }
@@ -340,10 +332,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             }
             if (!authorizedToCA(admin, data.getCaId())) {
                 if (requestedUsername == null) {
-                    final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(data.getCaId()), admin.toString());
+                    final String msg = intres.getLocalizedMessage("ra.errorauthca", data.getCaId(), admin.toString());
                     throw new AuthorizationDeniedException(msg);
                 } else {
-                    final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), requestedUsername,
+                    final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", data.getCaId(), requestedUsername,
                             admin.toString());
                     throw new AuthorizationDeniedException(msg);
                 }
@@ -370,23 +362,13 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     }
     
     private boolean authorizedToEndEntityProfileForRaWebCertificateCreation(AuthenticationToken admin, int profileid) {
-        boolean returnval = false;
-        if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
-            if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
-                returnval = true;
-            } else {
-                log.info("Admin " + admin.toString() + " was not authorized to resource " + StandardRules.ROLE_ROOT);
-            }
-        } else {
             // We need to have access to the profile, but not any specific access.
             // With only "AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid", it would require full access.
             // So we accept any of /endentityprofilerules/.../(create|view|edit)_end_entity/
             // (The access rules /ra_functions/(create|view|edit)_end_entity/ are NOT required)
-            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.CREATE_END_ENTITY) ||
+        return authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.CREATE_END_ENTITY) ||
                     authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.VIEW_END_ENTITY) ||
-                    authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.EDIT_END_ENTITY);;
-        }
-        return returnval;
+                    authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.EDIT_END_ENTITY);
     }
 
     private boolean authorizedToCA(AuthenticationToken admin, int caid) {
@@ -413,8 +395,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         try {
             returnval = query(admin, query, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
         } catch (IllegalQueryException e) {
+            log.debug("Query is illegal: " + e);
         }
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled() && Objects.nonNull(returnval)) {
             log.debug("found " + returnval.size() + " user(s) with status=" + status);
         }
         if (log.isTraceEnabled()) {
@@ -440,7 +423,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         } catch (IllegalQueryException e) {
             // Ignore ??
             log.debug("Illegal query", e);
-            returnval = new ArrayList<EndEntityInformation>();
+            returnval = new ArrayList<>();
         }
         if (log.isDebugEnabled()) {
             log.debug("found " + returnval.size() + " user(s) with caid=" + caid);
@@ -456,7 +439,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     public long countByCaId(int caId) {
         final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
         query.setParameter("caId", caId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
+        return (Long) query.getSingleResult(); // Always returns a result
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -464,7 +447,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     public long countByCertificateProfileId(int certificateProfileId) {
         final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
         query.setParameter("certificateProfileId", certificateProfileId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
+        return (Long) query.getSingleResult(); // Always returns a result
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -479,7 +462,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         query.setMaxResults(getGlobalCesecoreConfiguration().getMaximumQueryCount());
         @SuppressWarnings("unchecked")
         final List<UserData> userDataList = query.getResultList();
-        final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
+        final List<EndEntityInformation> returnval = new ArrayList<>(userDataList.size());
         for (UserData ud : userDataList) {
             EndEntityInformation endEntityInformation = ud.toEndEntityInformation();
             if (endEntityInformation.getPassword() != null && endEntityInformation.getPassword().length() > 0) {
@@ -491,6 +474,47 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return returnval;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Collection<EndEntityInformation> queryOptimized(AuthenticationToken admin, Query query, int numberofrows,
+            String endentityAccessRule) throws IllegalQueryException {
+        final ArrayList<EndEntityInformation> returnval = new ArrayList<>();
+        int fetchsize = getGlobalCesecoreConfiguration().getMaximumQueryCount();
+
+        if (numberofrows != 0) {
+            fetchsize = numberofrows;
+        }
+        
+        // Check if query is legal.
+        if (query != null && !query.isLegalQuery()) {
+            throw new IllegalQueryException();
+        }
+
+        String sqlquery = "";
+        if (query != null) {
+            sqlquery += query.getQueryString();
+        }
+
+        // Finally order the return values
+        sqlquery += " ORDER BY " + USERDATA_CREATED_COL + " DESC";
+        if (log.isDebugEnabled()) {
+            log.debug("generated query: " + sqlquery);
+        }
+            final javax.persistence.Query dbQuery = entityManager.createQuery("SELECT a FROM UserData a WHERE " + sqlquery);
+            if (fetchsize > 0) {
+                dbQuery.setMaxResults(fetchsize);
+            }
+            @SuppressWarnings("unchecked")
+            final List<UserData> userDataList = dbQuery.getResultList();
+            for (UserData userData : userDataList) {
+                returnval.add(userData.toEndEntityInformation());
+            }
+        if (log.isTraceEnabled()) {
+            log.trace("<query(): " + returnval.size());
+        }
+        return returnval;    
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -499,13 +523,13 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         boolean authorizedtoanyprofile = true;
         final String caauthorizationstring = StringTools.strip(caauthorizationstr);
         final String endentityprofilestring = StringTools.strip(endentityprofilestr);
-        final ArrayList<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
+        final ArrayList<EndEntityInformation> returnval = new ArrayList<>();
         int fetchsize = getGlobalCesecoreConfiguration().getMaximumQueryCount();
 
         if (numberofrows != 0) {
             fetchsize = numberofrows;
         }
-
+        
         // Check if query is legal.
         if (query != null && !query.isLegalQuery()) {
             throw new IllegalQueryException();
@@ -592,6 +616,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         try {
             returnval = query(admin, null, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
         } catch (IllegalQueryException e) {
+            log.debug("Query is illegal: " + e);
         }
         if (log.isTraceEnabled()) {
             log.trace("<findAllUsersWithLimit()");
@@ -608,7 +633,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.caId=:caId", UserData.class);
         query.setParameter("caId", caid);
         final List<UserData> userDataList = query.getResultList();
-        final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
+        final List<EndEntityInformation> returnval = new ArrayList<>(userDataList.size());
         for (UserData ud : userDataList) {
             returnval.add(ud.toEndEntityInformation());
         }
@@ -642,7 +667,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
         query.setParameter("certificateProfileId", certificateprofileid);
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for(Object userDataObject : query.getResultList()) {
                 result.add(((UserData) userDataObject).getUsername());
         }
@@ -678,10 +703,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             log.debug( "Find certificates by username requested by " + authenticationToken.getUniqueId());
         }
         // Check authorization on current CA and profiles and view_end_entity by looking up the end entity.
-        if (findUser(authenticationToken, username) == null) {
-            if (log.isDebugEnabled()) {
+        if (findUser(authenticationToken, username) == null && log.isDebugEnabled()) {
                 log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-            }
         }
         // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData.
         Collection<CertificateWrapper> searchResults;
@@ -699,16 +722,16 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         Boolean authorized = null;
         final Map<Integer, Boolean> authorizationCache = new HashMap<>();
         final List<CertificateWrapper> result = new ArrayList<>();
-        for (Object searchResult: searchResults) {
-            certificate = ((CertificateWrapper) searchResult).getCertificate();
+        for (final CertificateWrapper searchResult: searchResults) {
+            certificate = searchResult.getCertificate();
             caId = CertTools.getIssuerDN(certificate).hashCode();
             authorized = authorizationCache.get(caId);
             if (authorized == null) {
                 authorized = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId);
                 authorizationCache.put(caId, authorized);
             }
-            if (authorized.booleanValue()) {
-                result.add((CertificateWrapper) searchResult);
+            if (Boolean.TRUE.equals(authorized)) {
+                result.add(searchResult);
             }
         }
         if (log.isDebugEnabled()) {
@@ -716,4 +739,6 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return result;
     }
+
+
 }

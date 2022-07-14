@@ -286,7 +286,7 @@
         <mkdir dir="${docs.dest.rest}"/>
         <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.4.25.jar" fork="true">
             <arg line="generate -i ${mod.ejbca-rest-api.path}/resources/swagger.json -l html2 -o ${docs.dest.rest}
-            -t ${ejbca.home}/modules/ejbca-rest-api/htmlDocsTemplate"/>
+            -t ${ejbca.home}/modules/ejbca-rest-common/htmlDocsTemplate"/>
         </java>
     </target>
     
@@ -294,7 +294,7 @@
         <mkdir dir="${docs.dest.acme}"/>
         <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.4.25.jar" fork="true">
             <arg line="generate -i ${mod.acme.path}/resources/swagger.json -l html2 -o ${docs.dest.acme}
-            -t ${ejbca.home}/modules/ejbca-rest-api/htmlDocsTemplate"/>
+            -t ${ejbca.home}/modules/ejbca-rest-common/htmlDocsTemplate"/>
         </java>
     </target>
     
