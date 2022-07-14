@@ -631,6 +631,20 @@ public class RaEndEntityDetails {
         return pspRoles;
     }
 
+    /**
+     * @return true if CA/B Forum Organization Identifier field usage is enabled in End Entity profile.
+     */
+    public boolean isCabfOrganizationIdentifierEnabled() {
+        return getEndEntityProfile() != null ? getEndEntityProfile().isCabfOrganizationIdentifierUsed() : false;
+    }
+
+    /**
+     * @return the CA/B Forum Organization Identifier stored in the extended information
+     */
+    public String getCabfOrganizationIdentifier() {
+        return extendedInformation.getCabfOrganizationIdentifier();
+    }
+
     /** @return true every twice starting with every forth call */
     public boolean isEven() {
         styleRowCallCounter++;
