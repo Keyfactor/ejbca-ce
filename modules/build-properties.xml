@@ -141,9 +141,6 @@
 	<property name="mod.p11ng-cli.dist" location="${ejbca.dist.path}/p11ng-cli" />
 	<property name="mod.p11ng-cli.lib" location="${mod.p11ng-cli.dist}/p11ng-cli.jar" />
 	<property name="mod.p11ng-cli.path" location="${mod.path}/p11ng-cli" />
-	<property name="mod.cli-util.dist" location="${mod.dist.path}/" />
-	<property name="mod.cli-util.lib" location="${mod.cli-util.dist}/cli-util.jar" />
-	<property name="mod.cli-util.path" location="${mod.path}/cli-util" />
 	<property name="mod.ct.path" location="${mod.path}/ct" />
 	<property name="mod.ct.lib" location="${mod.dist.path}/ct.jar" />
 	<property name="mod.edition-specific-interface.path" location="${mod.path}/edition-specific"/>
@@ -167,12 +164,20 @@
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
     <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
+    <property name="mod.ejbca-rest-certificate.path" location="${mod.path}/ejbca-rest-certificate" />
+    <property name="mod.ejbca-rest-certificate.lib" location="${mod.dist.path}/ejbca-rest-certificate.jar" />
+    <property name="mod.ejbca-rest-configdump.path" location="${mod.path}/ejbca-rest-configdump" />
+    <property name="mod.ejbca-rest-configdump.lib" location="${mod.dist.path}/ejbca-rest-configdump.jar" />
+    <property name="mod.ejbca-rest-ca.path" location="${mod.path}/ejbca-rest-ca" />
+    <property name="mod.ejbca-rest-ca.lib" location="${mod.dist.path}/ejbca-rest-ca.jar" />
     <property name="mod.ejbca-rest-cryptotoken.path" location="${mod.path}/ejbca-rest-cryptotoken" />
     <property name="mod.ejbca-rest-cryptotoken.lib" location="${mod.dist.path}/ejbca-rest-cryptotoken.jar" />
     <property name="mod.ejbca-rest-camanagement.path" location="${mod.path}/ejbca-rest-camanagement" />
     <property name="mod.ejbca-rest-camanagement.lib" location="${mod.dist.path}/ejbca-rest-camanagement.jar" />
 	<property name="mod.ejbca-rest-endentity.path" location="${mod.path}/ejbca-rest-endentity" />
 	<property name="mod.ejbca-rest-endentity.lib" location="${mod.dist.path}/ejbca-rest-endentity.jar" />
+	<property name="mod.ejbca-rest-ssh.path" location="${mod.path}/ejbca-rest-ssh" />
+	<property name="mod.ejbca-rest-ssh.lib" location="${mod.dist.path}/ejbca-rest-ssh.jar" />
     <property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
     <property name="swagger-ui.war" location="${ejbca.home}/lib/swagger/swagger-ui.war" />
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
@@ -186,6 +191,8 @@
 	<property name="mod.proxy-ca.path" location="${mod.path}/proxy-ca" />
 	<property name="mod.proxy-ca.lib" location="${mod.dist.path}/proxy-ca.jar" />
 	<property name="mod.proxy-ca.jar" location="${mod.dist.path}/proxy-ca.jar" />
+	<property name="mod.p11ng.path" location="${mod.path}/p11ng" />
+	<property name="mod.p11ng.lib" location="${mod.dist.path}/p11ng.jar" />
 	
 	
     <!-- Variables of global interest -->
@@ -233,6 +240,10 @@
 			<include name="httpcore-*.jar"/>
 			<include name="httpclient-*.jar"/>
 			<include name="httpmime-*.jar"/>
+			<include name="commons-collections4-*.jar"/>
+			<include name="commons-configuration2-*.jar"/>
+			<include name="commons-text-*.jar"/><!-- Dependency of commons-configuration2 -->
+			<include name="commons-beanutils-*.jar"/><!-- Dependency of commons-configuration2 -->
 		</fileset>
 	</path>
 
@@ -266,7 +277,6 @@
 		</fileset>
 	</path>
 
-    <mkdir dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="reactive-streams-1.*.jar"/>
@@ -316,6 +326,8 @@
         </fileset>
 	</path>
 	
+	<path id="lib.keyfactor-cli-commons.classpath"><fileset dir="${ejbca.home}/lib" includes="keyfactor-commons-cli*.jar"/></path>
+	
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
 	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-reload*.jar"/></path>
 	<path id="lib.slf4japi.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-api*.jar"/></path>
@@ -331,8 +343,7 @@
 	</path>
 	<path id="lib.commons-beanutils.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-beanutils-*.jar"/></path>
 	<path id="lib.commons-codec.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/></path>
-	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration-*.jar"/></path>
-	<path id="lib.commons-collections.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-collections-*.jar"/></path>
+	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration2-*.jar"/></path>
 	<path id="lib.commons-collections4.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-collections4-*.jar"/></path>
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
 	<path id="lib.commons-el.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-el-*.jar"/></path>
@@ -570,6 +581,18 @@
     <condition property="mod.ejbca-rest-common.exists">
         <available file="${mod.ejbca-rest-common.path}/build.xml"/>
     </condition>
+
+    <condition property="mod.ejbca-rest-certificate.exists">
+        <available file="${mod.ejbca-rest-certificate.path}/build.xml"/>
+    </condition>
+
+    <condition property="mod.ejbca-rest-configdump.exists">
+        <available file="${mod.ejbca-rest-configdump.path}/build.xml"/>
+    </condition>
+
+    <condition property="mod.ejbca-rest-ca.exists">
+        <available file="${mod.ejbca-rest-ca.path}/build.xml"/>
+    </condition>
 	
     <condition property="mod.ejbca-rest-cryptotoken.exists">
         <available file="${mod.ejbca-rest-cryptotoken.path}/build.xml"/>
@@ -582,6 +605,10 @@
     <condition property="mod.ejbca-rest-endentity.exists">
         <available file="${mod.ejbca-rest-endentity.path}/build.xml"/>
     </condition>
+	
+	 <condition property="mod.ejbca-rest-ssh.exists">
+	        <available file="${mod.ejbca-rest-ssh.path}/build.xml"/>
+	 </condition>
     
     <condition property="mod.statedump.exists">
         <available file="${mod.statedump.path}/build.xml" />

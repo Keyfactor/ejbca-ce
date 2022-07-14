@@ -37,6 +37,7 @@ public class JsfDynamicUiHtmlSelectBooleanCheckbox extends HtmlSelectBooleanChec
      * Default constructor.
      */
     public JsfDynamicUiHtmlSelectBooleanCheckbox() {
+        super();
     }
 
     /**

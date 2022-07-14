@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
@@ -24,6 +27,8 @@ public class EnrollCertificateRestRequest {
     private String password;
     private String accountBindingId;
     private boolean includeChain;
+    
+    private String email;
     
     public EnrollCertificateRestRequest() {
     }
@@ -89,6 +94,14 @@ public class EnrollCertificateRestRequest {
     public void setIncludeChain(final boolean includeChain) {
         this.includeChain = includeChain;
     }
+    
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     /**
      * Returns a converter instance for this class.
@@ -121,6 +134,7 @@ public class EnrollCertificateRestRequest {
                     .password(enrollCertificateRestRequest.getPassword())
                     .accountBindingId(enrollCertificateRestRequest.getAccountBindingId())
                     .includeChain(enrollCertificateRestRequest.getIncludeChain())
+                    .email(enrollCertificateRestRequest.getEmail())
                     .build();
         }
     }

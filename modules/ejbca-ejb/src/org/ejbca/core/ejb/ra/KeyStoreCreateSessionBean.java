@@ -359,16 +359,20 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException, CertificateSignatureException,
             KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
-            // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
-            if (loadkeys) {
-                endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
-                        new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
-            } else if (isNewToken) {
-                // If we generate a new token through an enrollment, we don't want to demand access to edit_end_entity
-                endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
-                        new UsernamePrincipal("Implicit authorization from new enrollments")), username, null);
-            } else {
-                endEntityManagementSession.setClearTextPassword(administrator, username, null);
+            // Don't clear the password if "Allow renewal before expiration" is enabled
+            final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+            if (eep == null || !eep.isRenewDaysBeforeExpirationUsed()) {
+                // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
+                if (loadkeys) {
+                    endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
+                            new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
+                } else if (isNewToken) {
+                    // If we generate a new token through an enrollment, we don't want to demand access to edit_end_entity
+                    endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
+                            new UsernamePrincipal("Implicit authorization from new enrollments")), username, null);
+                } else {
+                    endEntityManagementSession.setClearTextPassword(administrator, username, null);
+                }
             }
         }
         // Make a certificate chain from the certificate and the CA-certificate
