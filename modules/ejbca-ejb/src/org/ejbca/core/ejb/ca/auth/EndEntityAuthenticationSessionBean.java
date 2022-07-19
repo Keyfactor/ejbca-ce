@@ -25,11 +25,14 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -37,10 +40,12 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.UserData;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -50,6 +55,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -69,17 +76,21 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
 
     private GlobalConfiguration getGlobalConfiguration() {
         return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
-    
+
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    
+
     @Override
     public EndEntityInformation authenticateUser(final AuthenticationToken admin, final String username, final String password)
         throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
@@ -98,7 +109,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
            	eichange = decRemainingLoginAttempts(data, ei);
            	boolean authenticated = false;
            	final int status = data.getStatus();
-            if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
+            if (isAllowedToEnroll(admin, username)) {
             	if (log.isDebugEnabled()) {
             		log.debug("Trying to authenticate user: username="+username+", dn="+data.getSubjectDnNeverNull()+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
             	}
@@ -238,6 +249,53 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             log.trace("<verifyPassword(" + username + ", hiddenpwd)");
         }
         return ret;
+    }
+
+    @Override
+    public boolean isAllowedToEnroll(final AuthenticationToken admin, final String username) {
+        final UserData userdata = endEntityAccessSession.findByUsername(username);
+        if (userdata == null) {
+            return false;
+        }
+        // Quick access check, to ensure that user has some kind of access to the EE.
+        // But we can't require view_end_entity here, because this call happens during enrollment.
+        if (!authorizedToCA(admin, userdata.getCaId())) {
+            return false;
+        }
+        final int status = userdata.getStatus();
+        if (status == EndEntityConstants.STATUS_NEW || status == EndEntityConstants.STATUS_FAILED ||
+                status == EndEntityConstants.STATUS_INPROCESS || status == EndEntityConstants.STATUS_KEYRECOVERY) {
+            return true;
+        } else if (status == EndEntityConstants.STATUS_GENERATED) {
+            // Renewal might be allowed
+            final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+            if (eep == null) {
+                log.warn("End Entity Profile with ID " + userdata.getEndEntityProfileId() + " doesn't exist. Username: " + username);
+            } else if (eep.isRenewDaysBeforeExpirationUsed()) {
+                final long maximumExpirationDate = System.currentTimeMillis() + eep.getRenewDaysBeforeExpiration()*24*60*60*1000;
+                Date maxDate = new Date(maximumExpirationDate);
+                final Date now = new Date();
+                final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(
+                        username, CertificateConstants.CERT_ACTIVE, now.getTime());
+                for (final Certificate cert : certs) {
+                    if (maxDate.after(CertTools.getNotAfter(cert))) {
+                        return true;
+                    }
+                }
+                if (log.isDebugEnabled()) {
+                    if (certs.isEmpty()) {
+                        log.debug("End entity is in status GENERATED but has no certificates. Not allowing renewal. Username: " + username);
+                    } else {
+                        log.debug("Certificates of end entity will expire after allowed period. Not allowing renewal. Username: " + username);
+                    }
+                }
+            } else if (log.isDebugEnabled()) {
+                log.debug("Enrollment is not allowed for end entity with status GENERATED. Username: " + username);
+            }
+        } else if (log.isDebugEnabled()) {
+            log.debug("Enrollment is not allowed with end entity status " + status + ". Username: " + username);
+        }
+        return false;
     }
 
     @Override

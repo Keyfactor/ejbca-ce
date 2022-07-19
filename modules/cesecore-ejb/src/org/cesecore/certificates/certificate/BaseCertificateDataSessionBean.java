@@ -55,7 +55,7 @@ public abstract class BaseCertificateDataSessionBean {
             crlPartitionExpression = " AND (crlPartitionIndex = :crlPartitionIndex OR crlPartitionIndex IS NULL)";
         }
         if (CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered()) {
-            ordering = " ORDER BY revocationDate ASC";
+            ordering = " ORDER BY revocationDate, fingerprint ASC";
         } else {
             ordering = "";
         }

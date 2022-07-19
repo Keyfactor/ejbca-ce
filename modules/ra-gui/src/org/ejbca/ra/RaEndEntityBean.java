@@ -12,13 +12,18 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -122,6 +127,7 @@ public class RaEndEntityBean implements Serializable {
     private SubjectDn subjectDistinguishNames = null;
     private SubjectAlternativeName subjectAlternativeNames = null;
     private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
+    private String extensionData;
     private Map<Integer, String> endEntityProfiles;
     private boolean deleted = false;
     private List<String> nameConstraintsPermitted;
@@ -189,6 +195,7 @@ public class RaEndEntityBean implements Serializable {
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
+                extensionData = raEndEntityDetails.getExtensionData(endEntityInformation.getExtendedInformation());
                 keyRecoverable = raEndEntityDetails.getEndEntityInformation().getKeyRecoverable();
                 resetMaxFailedLogins();
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
@@ -369,6 +376,10 @@ public class RaEndEntityBean implements Serializable {
             }
         }
 
+        if (extendedInformation != null && extensionData != null) {
+            editExtensionData(extendedInformation);
+            changed = true;
+        }
         if (extendedInformation != null && maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
             endEntityInformation.getExtendedInformation().setMaxLoginAttempts(maxFailedLogins);
             changed = true;
@@ -464,6 +475,44 @@ public class RaEndEntityBean implements Serializable {
             }
         }
         editEditEndEntityCancel();
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void editExtensionData(ExtendedInformation extendedInformation) {
+        Properties properties = new Properties();
+        try {
+            properties.load(new StringReader(extensionData));
+        } catch (IOException ex) {
+            // Should not happen as we are only reading from a String.
+            throw new RuntimeException(ex);
+        }
+
+        // Remove old extensiondata
+        Map data = (Map) extendedInformation.getData();
+        // We have to use an iterator in order to remove an item while iterating, if we try to remove an object from
+        // the map while looping over keys we will get a ConcurrentModificationException
+        Iterator it = data.keySet().iterator();
+        while (it.hasNext()) {
+            Object o = it.next();
+            if (o instanceof String) {
+                String key = (String) o;
+                if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
+                    //it.remove() will delete the item from the map
+                    it.remove();
+                }
+            }
+        }
+
+        // Add new extensiondata
+        for (Object o : properties.keySet()) {
+            if (o instanceof String) {
+                String key = (String) o;
+                data.put(ExtendedInformation.EXTENSIONDATA + key, properties.getProperty(key));
+            }
+        }
+
+        // Updated ExtendedInformation to use the new data
+        extendedInformation.loadData(data);
     }
 
     /**
@@ -951,33 +1000,34 @@ public class RaEndEntityBean implements Serializable {
      * @return a map with certificate authority id as key and certificate authority name as value (for certificate authority select options)
      */
     public Map<Integer, String> getCertificateAuthorities() {
-        List<Integer> eepCAs = filterAuthorizedCas(authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs());
+        List<Integer> eepCAs = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCAs();
         CertificateProfile cp = authorizedCertificateProfiles.get(cpId).getValue();
-        List<Integer> cpCAs = filterAuthorizedCas(authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs());
-        List<Integer> allCAs = new ArrayList<>(authorizedCAInfos.idKeySet());
-        List<Integer> usableCAs;
+        List<Integer> cpCAs = authorizedCertificateProfiles.get(cpId).getValue().getAvailableCAs();
+        
+        Stream<Integer> usableCAs;
         if (eepCAs.contains(EndEntityConstants.EEP_ANY_CA)) {
             if (cp.isApplicableToAnyCA()) {
-                usableCAs = allCAs;
+                usableCAs = authorizedCAInfos.idKeySet().stream();
             } else {
-                usableCAs = cpCAs;
+                usableCAs = filterAuthorizedCas(cpCAs);
             }
         } else {
             if (cp.isApplicableToAnyCA()) {
-                usableCAs = eepCAs;
+                usableCAs = filterAuthorizedCas(eepCAs);
             } else {
                 usableCAs = eepCAs.stream()
-                    .filter(cpCAs::contains)
-                    .collect(Collectors.toList());
+                    .filter(cpCAs::contains).filter(authorizedCAInfos.idKeySet()::contains);
             }
         }
 
-        return usableCAs.stream()
-            .collect(Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
+        // delayed collection to reduce instantiation of Collections
+        return usableCAs.collect(
+                Collectors.toMap(caId -> caId, caId -> authorizedCAInfos.get(caId).getValue().getName()));
+        
     }
 
-    private List<Integer> filterAuthorizedCas(final List<Integer> availableCAs) {
-        return availableCAs.stream().filter(authorizedCAInfos.idKeySet()::contains).collect(Collectors.toList());
+    private Stream<Integer> filterAuthorizedCas(final List<Integer> availableCAs) {
+        return availableCAs.stream().filter(authorizedCAInfos.idKeySet()::contains);
     }
 
     private void handleNullSubjectDistinguishNames() {
@@ -1089,6 +1139,21 @@ public class RaEndEntityBean implements Serializable {
     public boolean getAnySubjectDirectoryAttribute() {
         EndEntityProfile eep = authorizedEndEntityProfiles.getIdMap().get(eepId).getValue();
         return eep.getSubjectDirAttrFieldOrderLength() > 0;
+    }
+    
+    /**
+     * @return extensionData currently typed in edit mode
+     */
+    public String getExtensionData() {
+        return extensionData;
+    }
+    
+    /**
+     * Set extensionData
+     * @param extensionData the String value of extensionData
+     */
+    public void setExtensionData(String extensionData) {
+        this.extensionData = extensionData;
     }
     
     /**
