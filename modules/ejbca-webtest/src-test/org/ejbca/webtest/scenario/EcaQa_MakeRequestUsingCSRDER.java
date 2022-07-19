@@ -48,6 +48,7 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         static final String COUNTRY = "US";
         static final String ORGANIZATION = "Primekey webTest Inc";
         static final String CERTIFICATE_REQUEST_CSR = "Restrict_CN.csr";
+        static final String CERTIFICATE_REQUEST_CSR_WITH_NEW_KEYWORD_IN_HEADER = "Restrict_CN_NEW.csr";
         static final String CERTIFICATE_REQUEST_DER = "Restrict_CN.der"; 
    }  
     
@@ -160,5 +161,27 @@ public class EcaQa_MakeRequestUsingCSRDER extends WebTestBase {
         raWebHelper.clickDownloadPem();      
         Thread.sleep(2000);
         raWebHelper.assertDownloadedFileExits(getDownloadDir() + "/" + TestData.COMMON_NAME_1 + ".pem");
+       }
+    
+    @Test
+    public void stepE_MakeRequestUsingCSRNewKeyword() throws InterruptedException {
+        cleanUp();
+        // Go to RA Web -> Make New Request
+        raWebHelper.openPage(getRaWebUrl());
+        Thread.sleep(2000);
+        raWebHelper.makeNewCertificateRequest();
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);        
+        //Select KeyPairGeneration Provided by user
+        raWebHelper.selectKeyPairGenerationProvided();
+        Thread.sleep(3000);        
+        //Upload RestrictCN.der
+        raWebHelper.fillCsrFilename(new TestFileResource(
+                TestData.CERTIFICATE_REQUEST_CSR_WITH_NEW_KEYWORD_IN_HEADER).getFileAbsolutePath());
+        raWebHelper.verifyCommonNameValue(TestData.COMMON_NAME_FROM_CSR,"Common name value was not parsed from csr");
+        raWebHelper.verifyCountryValue(TestData.COUNTRY,"Country value was not parsed from csr");
+        raWebHelper.verifyOrganizationValue(TestData.ORGANIZATION,"Organization value was not parsed from csr");
+        raWebHelper.fillRequiredSubjectDNAttributes(TestData.COMMON_NAME_1);
+        raWebHelper.fillUsernameProvideUserCredentials(TestData.USER_NAME_1);
+      
        }
 }

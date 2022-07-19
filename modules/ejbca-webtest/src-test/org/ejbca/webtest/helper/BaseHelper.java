@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.ejbca.webtest.util.WebTestUtil;
+import org.junit.Assert;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -50,6 +51,10 @@ public class BaseHelper {
     public static class Page {
         static final By TEXT_MESSAGE = By.xpath("//*[@id='messages']//li[@class='infoMessage']");
         static final By TEXT_ERROR_MESSAGE = By.xpath("//*[@id='messages']//li[@class='errorMessage']");
+        static By getContainsText(final String text) {
+            return By.xpath("//*[text()=\"" + text + "\"]");
+        }
+
     }
 
     /**
@@ -950,6 +955,25 @@ public class BaseHelper {
                     expectedErrorMessages[i],
                     errorMessages.get(i).getText()
             );
+        }
+    }
+
+    public void assertElementDisplayed(By element, String elementDescription) {
+        Assert.assertTrue("Following element is not displayed: " + elementDescription,
+                webDriver.findElement(element).isDisplayed());
+    }
+
+    public void assertTextDisplayed(String text) {
+        Assert.assertTrue("Following text is not displayed: " + text,
+                webDriver.findElement(Page.getContainsText(text)).isDisplayed());
+    }
+
+    public void assertElementNotDisplayed(By element, String elementDescription) {
+        try {
+            webDriver.findElement(element);
+            Assert.fail("Following element is displayed: " + elementDescription);
+        } catch(Exception e) {
+
         }
     }
 }
