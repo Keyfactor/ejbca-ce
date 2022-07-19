@@ -52,6 +52,17 @@ public interface EndEntityAuthenticationSession {
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException;
 
     /**
+     * Returns true if the given end entity is allowed to enroll.
+     * End entities with status NEW and KEYRECOVERY are allowed, as well as end entities with status
+     * GENERATED that are about to expire if "Allow renewal before expiration" is enabled.
+     *
+     * @param admin Authentication token
+     * @param username Username of end entity to check
+     * @return true if allowed to enroll. false if not, or if not authorized to the CA of the end entity.
+     */
+    boolean isAllowedToEnroll(final AuthenticationToken admin, String username);
+
+    /**
      * Check if user is authorized to access the specified end entity profile.
      *
      * @param admin authenticationToken to be check for authorization

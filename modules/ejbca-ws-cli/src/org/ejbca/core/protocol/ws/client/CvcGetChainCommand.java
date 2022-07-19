@@ -83,7 +83,7 @@ public class CvcGetChainCommand extends EJBCAWSRABaseCommand implements IAdminCo
 					fos.write(cvcert.getDEREncoded());
 					fos.close();
 					getPrintStream().println("Wrote binary certificate to: "+basefilename+i+".cvcert");
-					getPrintStream().println("You can look at the certificate with the command cvcwscli.sh cvcprint "+basefilename+i+".cvcert");					
+					getPrintStream().println("You can look at the certificate with the command ./ejbcaClientToolBox.sh CvcWsRaCli cvcprint "+basefilename+i+".cvcert");					
 					i++;
 				}
 			}catch(AuthorizationDeniedException_Exception e){

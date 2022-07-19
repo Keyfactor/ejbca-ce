@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           *
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
@@ -67,9 +70,12 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
+import org.ejbca.ui.web.rest.api.io.request.Pagination;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CertificateStatus;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -395,8 +401,6 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
         final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
         final String actualJsonString = actualResponse.readEntity(String.class);
-        // added tmp logging to see why test mis-behaves
-        log.error("actualJsonString:" + actualJsonString);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
@@ -653,6 +657,99 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals("End entity profile name should be as expected.", TEST_EEP_NAME, actualEndEntityProfileName);
     }
 
+    @Test
+    public void shouldFindCertificateByUpdateTime() throws Exception {
+        ///given
+        String username = "searchByUpdateTimeUsername";
+        Date updateTimeAfter = new Date(System.currentTimeMillis() - 1000);
+        X509Certificate expectedCertificate = createCertificate(username, "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
+        Date updateTimeBefore = new Date(System.currentTimeMillis() + 1000);
+        String expectedSerialNumber = CertTools.getSerialNumberAsString(expectedCertificate);
+        certificates.add(expectedCertificate);
+        Thread.sleep(2000);
+        X509Certificate laterCertificate = createCertificate(username, "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
+        certificates.add(laterCertificate);
+        final SearchCertificateCriteriaRestRequest usernameCriteria = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.QUERY.name())
+                .value(username)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificateCriteriaRestRequest updateTimeAfterCriteria = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.UPDATE_TIME.name())
+                .value(DATE_FORMAT_ISO8601.format(updateTimeAfter))
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER.name())
+                .build();
+        final SearchCertificateCriteriaRestRequest updateTimeBeforeCriteria = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.UPDATE_TIME.name())
+                .value(DATE_FORMAT_ISO8601.format(updateTimeBefore))
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE.name())
+                .build();
+        List<SearchCertificateCriteriaRestRequest> criterias = new ArrayList<>();
+        criterias.add(usernameCriteria);
+        criterias.add(updateTimeAfterCriteria);
+        criterias.add(updateTimeBeforeCriteria);
+        Pagination pagination = new Pagination();
+        pagination.setPageSize(10);
+        pagination.setCurrentPage(1);
+        final SearchCertificateCriteriaRequest searchCertificatesRestRequest = SearchCertificatesRestRequestV2.builder()
+                .pagination(pagination)
+                .criteria(criterias)
+                .build();
+
+        //when
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v2/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
+        final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serialNumber");
+
+        //then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertEquals("Only one certificate should be found", 1, actualCertificates.size());
+        assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
+    }
+
+    @Test
+    public void shouldFindCertificateByUpdateTime_Negative() throws Exception {
+        ///given
+        Date updateTimeBefore = new Date(System.currentTimeMillis() - 1000);
+        String username = "searchByUpdateTimeUsername2";
+        X509Certificate certificate = createCertificate(username, "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
+        certificates.add(certificate);
+        final SearchCertificateCriteriaRestRequest usernameCriteria = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.QUERY.name())
+                .value(username)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificateCriteriaRestRequest updateTimeBeforeCriteria = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.UPDATE_TIME.name())
+                .value(DATE_FORMAT_ISO8601.format(updateTimeBefore))
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE.name())
+                .build();
+        List<SearchCertificateCriteriaRestRequest> criterias = new ArrayList<>();
+        criterias.add(usernameCriteria);
+        criterias.add(updateTimeBeforeCriteria);
+        Pagination pagination = new Pagination();
+        pagination.setPageSize(10);
+        pagination.setCurrentPage(1);
+        final SearchCertificateCriteriaRequest searchCertificatesRestRequest = SearchCertificatesRestRequestV2.builder()
+                .pagination(pagination)
+                .criteria(criterias)
+                .build();
+
+        //when
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v2/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+
+        //then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertEquals("No certificates should be found", 0, actualCertificates.size());
+    }
 
     @Test
     public void shouldFillMoreResultsFlagProperly() throws Exception {

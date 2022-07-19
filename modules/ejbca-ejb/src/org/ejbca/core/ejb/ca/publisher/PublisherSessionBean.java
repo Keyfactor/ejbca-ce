@@ -40,7 +40,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
@@ -318,10 +318,18 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                                 throw e;
                             }
                         }
-                        final String msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
+                        final String msg;
                         final Map<String, Object> details = new LinkedHashMap<>();
+                        EventStatus status;
+                        if (publishStatus == PublisherConst.STATUS_SUCCESS) {
+                            msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
+                            status = EventStatus.SUCCESS;
+                        } else {
+                            msg = intres.getLocalizedMessage("publisher.store.fail", "CRL", name, publishStatus);
+                            status = EventStatus.FAILURE;
+                        }
                         details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
+                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, status, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                     } catch (PublisherException pe) {
                         final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "CRL");

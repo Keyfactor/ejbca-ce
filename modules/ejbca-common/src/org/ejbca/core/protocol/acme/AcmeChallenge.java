@@ -12,8 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import static org.ejbca.core.protocol.acme.AcmeIdentifier.AcmeIdentifierTypes;
+import java.util.List;
+
+import org.ejbca.core.protocol.acme.AcmeIdentifier.AcmeIdentifierTypes;
 
 /**
  * An ACME Challenge is a proof a client needs to provide in order to be authorized to get a certificate for an identifier.
@@ -78,5 +81,15 @@ public interface AcmeChallenge {
 
         public AcmeIdentifierTypes getAcmeIdentifierType() { return acmeIdentifierType; }
         public String getChallengeType() { return challengeType; }
+        
+        public static List<String> getDnsIdentifierChallengeTypes(AcmeIdentifier.AcmeIdentifierTypes identifierType) {
+            final List<String> result = new ArrayList<>();
+            for (AcmeChallengeType type : AcmeChallenge.AcmeChallengeType.values()) {
+                if(identifierType.equals(type.getAcmeIdentifierType())) {
+                    result.add(type.getChallengeType());
+                }
+            }
+            return result;
+        } 
     }
 }
