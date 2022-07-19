@@ -1250,7 +1250,7 @@
 					<h:inputText name="textfieldexternalcdp" size="45" maxlength="255"
 						value="#{editCAsMBean.crlCaCRLDPExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:validator validatorId="urlValidator"/>
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CrlDistributionPointUrlValidator"/>
 						<f:attribute name="errorMessage" value="#{web.text.CRL_CA_CRLDP_EXTERNAL_ERROR}"/>						
 					</h:inputText>
 				</h:panelGroup>
@@ -1603,9 +1603,9 @@
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}"
 						required="#{editCAsMBean.caInfoDto.usePartitionedCrl or editCAsMBean.caInfoDto.msCaCompatible}" requiredMessage="#{web.text.PARTITIONEDCRLS_WITHOUT_DEFAULTCDP}">
-						<f:validator validatorId="urlValidator"/>
-						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.PartitionedCrlUrlValidator"
-									 disabled="#{editCAsMBean.caExternal or not editCAsMBean.defaultCRLDistributionPointValidated}"/>
+                        <f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CrlDistributionPointUrlValidator"/>
+                        <f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.PartitionedCrlUrlValidator"
+                                     disabled="#{editCAsMBean.caExternal or not editCAsMBean.defaultCRLDistributionPointValidated}"/>
 						<f:attribute name="errorMessage" value="#{web.text.EXT_PKIX_CDP_DEFAULTURI_ERROR}"/>
 					</h:inputText>
 					<h:commandButton type="button"

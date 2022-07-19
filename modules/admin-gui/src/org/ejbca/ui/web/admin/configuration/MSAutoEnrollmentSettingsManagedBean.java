@@ -152,7 +152,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(autoenrollmentConfigMBean.getSelectedAlias());
         }
-        adConnection.updateConnectionProperties(autoenrollmentConfigMBean.getSelectedAlias());
     }
 
     // MSAE Kerberos Settings
@@ -653,19 +652,24 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * Test if a connection can be made to Active Directory with given credentials.
      */
     public void testAdConnection() {
+        String adLoginPassword = getAdLoginPassword();
         if (StringUtils.isBlank(getAdLoginDN())) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_ERROR_NO_LOGIN");
             return;
         }
-
-        if (StringUtils.isBlank(getAdLoginPassword())) {
+        if (StringUtils.isBlank(adLoginPassword)) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_ERROR_NO_PWD");
             return;
         }
-
+        if (adLoginPassword.equals(HIDDEN_PWD)) {
+            // If password field has been reset in GUI, test connection with persisted password
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
+                globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+            adLoginPassword = autoEnrollmentConfiguration.getAdLoginPassword(autoenrollmentConfigMBean.getSelectedAlias());
+        }
         try {
             availableTemplates = null;
-            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), getAdLoginPassword(), isUseSSL(),
+            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), adLoginPassword, isUseSSL(),
                     autoenrollmentConfigMBean.getSelectedAlias());
             addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
         } catch (LDAPException e) {

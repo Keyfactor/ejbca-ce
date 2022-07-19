@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.util;
 
-import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -191,11 +191,12 @@ public abstract class AlgorithmTools {
      */
     public static String getKeyAlgorithm(final PublicKey publickey) {
         String keyAlg = null;
-        if ( publickey instanceof RSAPublicKey ) {
-            keyAlg  = AlgorithmConstants.KEYALGORITHM_RSA;
-        } else if ( publickey instanceof DSAPublicKey ) {
+
+        if (publickey instanceof RSAPublicKey) {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_RSA;
+        } else if (publickey instanceof DSAPublicKey) {
             keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
-        } else if ( publickey instanceof ECPublicKey ) {
+        } else if (publickey instanceof ECPublicKey) {
             final String algo = publickey.getAlgorithm();
             if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
@@ -204,9 +205,13 @@ public abstract class AlgorithmTools {
             } else {
                 keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
             }
-        } else if ( publickey instanceof BCEdDSAPublicKey ) {
+        } else if (publickey instanceof BCEdDSAPublicKey) {
             final String algo = publickey.getAlgorithm();
             keyAlg = algo;
+            // Work around for making testMakeP12ForSingleUserEdDSA* pass, for some reason on jdk > 15 public key 
+            // comes from SUN and not BC, most probably due to the multi release jdk used by BC
+        } else if (publickey.getClass().getCanonicalName().equals("sun.security.ec.ed.EdDSAPublicKeyImpl")) {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_ED25519;
         }
         return keyAlg;
     }
