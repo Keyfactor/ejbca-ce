@@ -2644,23 +2644,40 @@ public class EnrollMakeNewRequestBean implements Serializable {
         int index = -1;
         String email = "";
         if (emailInput != null) {
-            email = emailInput.getValue().toString();
             // Split the clientId on ':', the second to last substring is the loop index
             String[] split = emailInput.getClientId().split(":");
             index = Integer.parseInt(split[split.length - 2]);
+            // log.debug("Index " + index + " for clientId '" + emailInput.getClientId() + "'.");
+        }
+        if (emailInput != null && emailInput.getValue() != null) {
+            email = emailInput.getValue().toString();
         }
         String domain = "";
-        if (domainInput != null) {
+        if (domainInput != null && domainInput.getValue() != null) {
             domain = domainInput.getValue().toString();
         }
         String concatenated = "";
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
             concatenated = email + "@" + domain;
+        } else if (email.trim().isEmpty() && !domain.trim().isEmpty()) {
+            // Field layout changed: drop-down box for the domain part contains entire e-mail. 
+            concatenated = domain;
+        } else if (!email.trim().isEmpty() && domain.trim().isEmpty()) {
+            // Field layout changed: text-field for email contains entire e-mail. 
+            concatenated = email;
         }
-        List<EndEntityProfile.FieldInstance> fieldInstances = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
-        if (index >= 0 && index < fieldInstances.size()) {
-            fieldInstances.get(index).setValue(concatenated);
+        if (emailInput.getClientId().startsWith("requestInfoForm:subjectAlternativeNameOptional")) {
+            List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getOptionalFieldInstances();
+            if (index >= 0 && index < fi.size()) {
+                fi.get(index).setValue(concatenated);
+            }
+        } else {
+            List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
+            if (index >= 0 && index < fi.size()) {
+                fi.get(index).setValue(concatenated);
+            }
         }
+        log.debug("Index " + index + " set to rfc822mail '" + email + "' / domain '" + domain + "' / conc. " + concatenated + ".");
     }
 
     /**
