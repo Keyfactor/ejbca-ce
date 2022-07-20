@@ -15,10 +15,14 @@ package org.ejbca.ui.web.rest.api.io.request;
 import java.util.Date;
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidAddEndEntityRestRequest;
 
@@ -149,7 +153,8 @@ public class AddEndEntityRestRequest {
     public static class AddEndEntityRestRequestConverter {
 
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
-        		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
+        		Integer endEntityProfileId, Integer certificateProfileId,
+        		EndEntityProfile endEntityProfile) throws RestException {
             final ExtendedInformation extendedInfo;
             if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                 extendedInfo = new ExtendedInformation();
@@ -181,6 +186,15 @@ public class AddEndEntityRestRequest {
                     tokenType,
                     extendedInfo);
             eeInformation.setPassword(addEndEntityRestRequest.getPassword());
+            if(endEntityProfile.isSendNotificationUsed()) {
+                // assume notification "use" as "default" value
+                if(StringUtils.isNotEmpty(addEndEntityRestRequest.getEmail())) {
+                    eeInformation.setSendNotification(true);
+                } else if(endEntityProfile.isSendNotificationRequired()) {
+                    throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), 
+                                        "Email must be mentioned to receive notification.");
+                } 
+            }
             return eeInformation;
         }
     }
