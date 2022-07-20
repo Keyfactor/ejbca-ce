@@ -3029,9 +3029,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isUpnRfc() {
             return name.equals("RFC822NAME") || name.equals("UPN");
         }
-//        public boolean isUnModifiableUpnRfc() {
-//            return !isModifiable() && (name.equals("RFC822NAME") || name.equals("UPN") && getSelectableValuesUpnRfc().size() == 1);
-//        }
+        public boolean isDnEmail() {
+            return name.equals(DnComponents.DNEMAILADDRESS);
+        }
         public boolean isRfcUseEmail() {
             return name.equals("RFC822NAME") && isUsed();
         }
@@ -3048,6 +3048,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public String getValue(){ return value; }
         public void setValue(String value) { this.value = value; }
+        
+        
+        public String getEmailFieldDisplayValue() {
+            if (getSelectableValuesUpnRfc().size() > 1 | isSelectableValuesUpnRfcDomainOnly()) {
+                return "";
+            } else {
+                return getSelectableValuesUpnRfc().get(0);
+            }
+        }
+        public void setEmailFieldDisplayValue(String value) {} // NOOP
+        
         public String getDefaultValue() { return defaultValue; }
         public void setDefaultValue(String value) { this.defaultValue = value; }
 		public boolean isUseDataFromEmailField() { return useDataFromEmailField; }
@@ -3065,7 +3076,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             return Arrays.asList(defaultValue.split(";"));
         }
         public boolean isSelectableValuesUpnRfcDomainOnly() {
-            return !defaultValue.contains("@");
+            return defaultValue.length() > 0 && !defaultValue.contains("@");
         }
         @Override
         public int hashCode() { return name.hashCode(); }
