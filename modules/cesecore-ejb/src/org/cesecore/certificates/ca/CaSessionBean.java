@@ -1041,10 +1041,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data
         // and perhaps upgrading
         final float oldversion = ((Float) caDataMap.get(UpgradeableDataHashMap.VERSION)).floatValue();
+        // Fetching the CA object will trigger UpgradableHashMap upgrades
+        CACommon ca = cadata.getCA();
         // Perform "live" upgrade from 5.0.x and earlier
         // if (oldversion <= 5.0) {
         boolean adhocUpgrade;
-        if (cadata.getCA().getCAType() == CAInfo.CATYPE_PROXY) {
+        if (ca != null && ca.getCAType() == CAInfo.CATYPE_PROXY) {
             adhocUpgrade = false;
         } else {
             adhocUpgrade = adhocUpgradeFrom50(cadata.getCaId().intValue(), caDataMap, cadata.getName());
@@ -1054,8 +1056,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // Convert map into storage friendly format now since we changed it
                 cadata.setDataMap(caDataMap);
             }
-            // Fetching the CA object will trigger UpgradableHashMap upgrades
-            CACommon ca = cadata.getCA();
             if (ca != null) {
                 final boolean expired = hasCAExpiredNow(ca);
                 if (expired) {
