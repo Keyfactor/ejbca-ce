@@ -507,7 +507,7 @@
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
         	
-	<target name="admin-gui" depends="ejbca-common-web,proxy-ca" description="Build the EJBCA Admin GUI WAR">
+	<target name="admin-gui" depends="ejbca-common-web" description="Build the EJBCA Admin GUI WAR">
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
