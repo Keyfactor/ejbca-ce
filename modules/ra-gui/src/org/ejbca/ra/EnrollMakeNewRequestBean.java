@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -1385,17 +1386,52 @@ public class EnrollMakeNewRequestBean implements Serializable {
     /**
      * Update RFC822NAME with value from end entity email
      */
-    public void updateRfcAltName() {
-        EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
-        if (rfc822Name != null) {
-            if (rfc822Name.getRfcEmailUsed()) {
-                String email = getEndEntityInformation().getEmail();
-                if (email != null) {
+    public void updateRfcAltName(AjaxBehaviorEvent event) {
+        
+        UIComponent components = event.getComponent();
+        UIInput emailInput = (UIInput) components.findComponent("upnRfcEmail");
+ 
+        int index = -1;
+        if (emailInput != null) {
+            // If triggered with check box e-mail field, updates on field.
+            // Split the clientId on ':', the second to last substring is the loop index
+            String[] split = emailInput.getClientId().split(":");
+            index = Integer.parseInt(split[split.length - 2]);
+        
+            EndEntityProfile.FieldInstance rfc822Name = null;
+            if (emailInput.getClientId().startsWith("requestInfoForm:subjectAlternativeNameOptional")) {
+                List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getOptionalFieldInstances();
+                if (index >= 0 && index < fi.size()) {
+                    rfc822Name = fi.get(index); 
+                }
+            } else {
+                List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
+                if (index >= 0 && index < fi.size()) {
+                    rfc822Name = fi.get(index); 
+                }
+            }
+            
+            if (rfc822Name != null) {
+                final String email = getEndEntityInformation().getEmail();
+                if (rfc822Name.getRfcEmailUsed() && email != null) {
                     rfc822Name.setValue(email);
                     return;
                 }
+                rfc822Name.setValue("");
             }
-            rfc822Name.setValue("");
+        } else {
+            // If triggered with releasing focus on the EE e-mail field, updates all
+            final String email = getEndEntityInformation().getEmail();
+            if (email != null) {
+                final Map<Integer,FieldInstance> map = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME);
+                for (FieldInstance fi : map.values()) {
+                    if (fi.isRfcUseEmail()) {
+                        fi.setValue(email);
+                    }
+                }
+            }
+            
+            EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
         }
     }
 
@@ -2651,10 +2687,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         if (emailInput != null && emailInput.getValue() != null) {
             email = emailInput.getValue().toString();
+            log.debug("Index " + index + " mail part '" + email + "'.");
         }
         String domain = "";
         if (domainInput != null && domainInput.getValue() != null) {
             domain = domainInput.getValue().toString();
+            log.debug("Index " + index + " domain part '" + domain + "'.");
         }
         String concatenated = "";
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
