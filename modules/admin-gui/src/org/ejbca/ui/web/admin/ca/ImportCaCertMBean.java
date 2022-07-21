@@ -25,14 +25,20 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAFactory;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.kfenroll.ProxyCa;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo.ProxyCaInfoBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
 /**
  * JSF MBean backing the import ca cert page.
@@ -50,6 +56,9 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
 
     private String importCaCertName;
     private UploadedFile uploadedFile;
+    
+    private boolean keyFactorCa;
+    private CaInfoDto caInfoDto;
     
     public ImportCaCertMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
@@ -74,7 +83,42 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
 
     public void setUploadedFile(final UploadedFile uploadedFile) {
         this.uploadedFile = uploadedFile;
-    }    
+    }
+
+    public boolean isProxyCaAvailable() {
+        return CAFactory.INSTANCE.existsCaType(ProxyCa.CA_TYPE);
+    }
+
+    public boolean isKeyFactorCa() {
+        return keyFactorCa;
+    }
+    
+    public void toggleKeyFactorCa() {
+        this.keyFactorCa = !this.keyFactorCa;
+        renderKeyFactorFields();
+    }
+    
+    public CaInfoDto getCaInfoDto() {
+        return caInfoDto;
+    }
+    
+    public void renderKeyFactorFields() {
+        if(!keyFactorCa) {
+            return;
+        }
+        
+        this.caInfoDto = new CaInfoDto();
+        caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
+        caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
+        caInfoDto.setHeaders(new ArrayList<>());
+        caInfoDto.setUpstreamUrl("");
+        caInfoDto.setUsername("");
+        caInfoDto.setPassword("");
+        caInfoDto.setUpstreamCa("");
+        caInfoDto.setUpstreamTemplate("");
+        caInfoDto.setSansJson("");
+        
+    }
     
     public String importCaCertificate() {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
@@ -93,12 +137,36 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
                 certs = new ArrayList<>();
                 certs.add(cert);
             }
-            caAdminSession.importCACertificate(getAdmin(), importCaCertName, EJBTools.wrapCertCollection(certs));
+            if(this.keyFactorCa) {
+                Certificate cert = (Certificate) certs.toArray()[0];
+                caInfoDto.setCaSubjectDN(CertTools.getSubjectDN(cert));
+                caInfoDto.setCaName(importCaCertName);
+                caAdminSession.importExternalCA(getAdmin(), importCaCertName, 
+                                        EJBTools.wrapCertCollection(certs), caInfoDto.buildProxyCaInfo());
+                getEjbcaWebBean().reloadEstConfiguration();
+            } else {
+                caAdminSession.importCACertificate(getAdmin(), importCaCertName, EJBTools.wrapCertCollection(certs));
+            }
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e);
             log.info("Error happened while importing ca cert!", e);
             return "";
         }
+    }
+    
+    public void addBlankHeader() {
+        if (caInfoDto.getHeaders() == null) {
+            caInfoDto.setHeaders(new ArrayList<>());
+        }
+        caInfoDto.getHeaders().add(new MutableTriple<>(false, "", ""));
+    }
+
+    public void removeHeader() {
+        caInfoDto.getHeaders().removeIf(triple -> triple.left);
+    }
+
+    public boolean getHasAnyHeader() {
+        return caInfoDto!=null && caInfoDto.getHeaders().size() > 0;
     }
 }

@@ -232,6 +232,16 @@ public class ConfigdumpSetting implements Serializable {
     public void setIncluded(Map<ItemType, List<ConfigdumpPattern>> included) {
         this.included = included;
     }
+    
+    public void addIncludedPattern(ItemType itemType, ConfigdumpPattern pattern) {
+        if(this.included==null) {
+            this.included = new HashMap<ItemType, List<ConfigdumpPattern>> ();
+        }
+        if(!this.included.containsKey(itemType)) {
+            this.included.put(itemType, new ArrayList<ConfigdumpPattern>());
+        }
+        this.included.get(itemType).add(pattern);
+    }
 
     public void setExcluded(Map<ItemType, List<ConfigdumpPattern>> excluded) {
         this.excluded = excluded;
@@ -336,7 +346,7 @@ public class ConfigdumpSetting implements Serializable {
     public void setExportExternalCas(final boolean exportExternalCas) {
         this.exportExternalCas = exportExternalCas;
     }
-
+    
     public boolean isIncluded(final ItemType type, final String nameStr) {
         
         final List<ConfigdumpPattern> includeList = included.get(type);
