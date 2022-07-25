@@ -457,7 +457,7 @@ public final class StringTools {
     }
 
     /**
-     * Determine if the given string is a valid IPv4 or IPv6 address.  This method
+     * Determines if the given string is a valid IPv4 or IPv6 address.  This method
      * uses pattern matching to see if the given string could be a valid IP address.
      * Snitched from http://www.java2s.com/Code/Java/Network-Protocol/DetermineifthegivenstringisavalidIPv4orIPv6address.htm
      * Under LGPLv2 license.
@@ -474,6 +474,30 @@ public final class StringTools {
       }
       Matcher m2 = StringTools.VALID_IPV6_PATTERN.matcher(ipAddress);
       return m2.matches();
+    }
+    
+    /**
+     * Determines if the given string is a valid IPv4 address (see {@link StringTools#isIpAddress(String)}).
+     * 
+     * @param ipAddress A string that is to be examined to verify whether or not
+     *  it could be a valid IPv4 address.
+     * @return <code>true</code> if the string is a value that is a valid IPv4 address,
+     *  <code>false</code> otherwise.
+     */
+    public static boolean isIpV4Address(String ipAddress) {
+        return StringTools.VALID_IPV4_PATTERN.matcher(ipAddress).matches();
+    }
+    
+    /**
+     * Determines if the given string is a valid IPv6 address (see {@link StringTools#isIpAddress(String)}).
+     *
+     * @param ipAddress A string that is to be examined to verify whether or not
+     *  it could be a valid IPv6 address.
+     * @return <code>true</code> if the string is a value that is a valid IPv6 address,
+     *  <code>false</code> otherwise.
+     */
+    public static boolean isIpV6Address(String ipAddress) {
+        return StringTools.VALID_IPV6_PATTERN.matcher(ipAddress).matches();
     }
 
     /**
