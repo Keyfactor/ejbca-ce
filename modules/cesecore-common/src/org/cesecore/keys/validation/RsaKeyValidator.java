@@ -73,7 +73,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
     public static final int CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR = 752;
 
     /** The key validator type. */
-    private static final String TYPE_IDENTIFIER = "RSA_KEY_VALIDATOR";
+    protected static final String TYPE_IDENTIFIER = "RSA_KEY_VALIDATOR";
 
     protected static final String BIT_LENGTHS = "bitLengths";
 
