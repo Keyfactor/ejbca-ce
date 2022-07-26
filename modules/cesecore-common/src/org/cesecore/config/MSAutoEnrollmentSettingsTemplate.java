@@ -33,6 +33,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private boolean includeNetBiosInSubjectSAN;
     private boolean includeDomainInSubjectSAN;
     private boolean includeObjectGuidInSubjectSAN;
+    private boolean includeFQDNInSubjcetSAN;
     private String additionalSubjectDNAttributes;
     private boolean publishToActiveDirectory;
 
@@ -57,9 +58,12 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         setIncludeNetBiosInSubjectSAN(false);
         setIncludeDomainInSubjectSAN(false);
         setIncludeObjectGuidInSubjectSAN(false);
+        setInclueFQDNInSubjectSAN(false);
         setAdditionalSubjectDNAttributes("");
         setPublishToActiveDirectory(false);
     }
+
+
 
     // Getters and Setters
     public boolean isUsed() {
@@ -189,7 +193,15 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     public void setIncludeObjectGuidInSubjectSAN(boolean includeObjectGuidInSubjectSAN) {
         this.includeObjectGuidInSubjectSAN = includeObjectGuidInSubjectSAN;
     }
-
+    
+    public boolean isIncludeFQDNInSubjectSAN() {
+        return includeFQDNInSubjcetSAN;
+    }
+    
+    public void setInclueFQDNInSubjectSAN(boolean includeFQDNInSubjcetSAN) {
+        this.includeFQDNInSubjcetSAN = includeFQDNInSubjcetSAN;
+    }
+    
     public String getAdditionalSubjectDNAttributes() {
         return additionalSubjectDNAttributes;
     }
@@ -227,10 +239,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
             return false;
         }
         MSAutoEnrollmentSettingsTemplate other = (MSAutoEnrollmentSettingsTemplate) obj;
-        if (!oid.equals(other.oid)) {
-            return false;
-        }
-        return true;
+        return !oid.equals(other.oid);
     }
 
     @Override
@@ -246,7 +255,8 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         "\nIncludeSPNInSubjectSAN: " + isIncludeSPNInSubjectSAN() + 
         "\nIncludeNetBiosInSubjectSAN: " + isIncludeNetBiosInSubjectSAN() + 
         "\nIncludeDomainInSubjectSAN: " + isIncludeDomainInSubjectSAN() + 
-        "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() + 
+        "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() +
+        "\nIncludeFQDNInSubjectSAN: " + isIncludeFQDNInSubjectSAN() +
         "\nAdditionalSubjectDNAttributes: " + getAdditionalSubjectDNAttributes() + 
         "\nPublishToActiveDirectory: " + isPublishToActiveDirectory();
     }
