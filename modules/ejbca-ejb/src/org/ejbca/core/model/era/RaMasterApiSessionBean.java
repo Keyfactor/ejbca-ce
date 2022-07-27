@@ -1941,8 +1941,24 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean isClearPwd) throws AuthorizationDeniedException,
+    public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, boolean isClearPwd) throws AuthorizationDeniedException,
             EjbcaException, WaitingForApprovalException{
+        // only for REST to avoid fetching end entity profile contents to RA
+        if(endEntity.getExtendedInformation()!=null && 
+                endEntity.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE)!=null) {
+            EndEntityProfile endEntityProfile = 
+                    endEntityProfileSession.getEndEntityProfileNoClone(endEntity.getEndEntityProfileId());
+            if(endEntityProfile==null) {
+                throw new EjbcaException("End Entity Profile is invalid.");
+            }
+            if(endEntityProfile.isSendNotificationUsed()) {
+                if(StringUtils.isNotEmpty(endEntity.getEmail()) && endEntityProfile.isSendNotificationDefault()) {
+                    endEntity.setSendNotification(true);
+                }
+            }
+            isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
+            endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+        }
         try {
             endEntityManagementSession.addUser(admin, endEntity, isClearPwd);
         } catch (CesecoreException e) {
@@ -2497,6 +2513,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // If called from the wrong instance, return to proxybean and try next implementation
             return false;
         } else {
+            // only for REST to avoid fetching end entity profile contents to RA
+            if(endEntityInformation.getExtendedInformation()!=null && 
+                    endEntityInformation.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE)!=null) {
+                EndEntityProfile endEntityProfile = 
+                        endEntityProfileSession.getEndEntityProfileNoClone(endEntityInformation.getEndEntityProfileId());
+                isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
+                endEntityInformation.getExtendedInformation().getRawData().remove(ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+            }
             if (newUsername == null)
                 endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
             else
