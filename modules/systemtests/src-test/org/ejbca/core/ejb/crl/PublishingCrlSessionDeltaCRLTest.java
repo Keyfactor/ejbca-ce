@@ -112,7 +112,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         try {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
             tearDownRemoveRole();
         }
     }
