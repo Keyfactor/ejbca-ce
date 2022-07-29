@@ -29,6 +29,7 @@ import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.roles.Role;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -45,6 +46,7 @@ import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaEditableRequestData;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -264,10 +266,13 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private boolean canEdit;
     private boolean canView;
     private final boolean authorizedToRequestType;
+    private final RaMasterApiProxyBeanLocal raMasterApi;
     
-    public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean, final RaAccessBean raAccessBean) {
+    public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean, final RaAccessBean raAccessBean,
+            final RaMasterApiProxyBeanLocal raMasterApi) {
         this.request = request;
         approvalData = request.getApprovalData();
+        this.raMasterApi = raMasterApi;
         
         // Determine what parts of the approval request are editable
         final EndEntityInformation endEntityInformation = getEndEntityInformation(); // editable
@@ -516,13 +521,19 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isEditedByMe() { return request.isEditedByMe(); }
     public boolean isRequestedByMe() { return request.isRequestedByMe(); }
     public boolean isApprovedByMe() { return request.isApprovedByMe(); }
-    public boolean isPending(final AuthenticationToken admin) { return request.isPending(admin); }
+    public boolean isPending(final AuthenticationToken admin) { 
+        List<Role> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
+        return request.isPending(roles); 
+    }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
     public boolean isExecuted() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTED; }
     public boolean isSuccessful() { return isExecuted() || isPendingExecution(); }
     public boolean isUnsuccessful() { return !isWaitingForApproval() && !isSuccessful(); }
     public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
-    public boolean isWaitingForMe(final AuthenticationToken admin) { return request.isWaitingForMe(admin); }
+    public boolean isWaitingForMe(final AuthenticationToken admin) {
+        List<Role> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
+        return request.isWaitingForMe(roles); 
+    }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }
     public boolean isExpired() { return request.getStatus() == ApprovalDataVO.STATUS_EXPIRED || request.getStatus() == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED; }
     public boolean hasNextApprovalStep() { return request.getNextApprovalStep() != null; }

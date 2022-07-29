@@ -433,6 +433,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return new ArrayList<>(roleMap.values());
     }
+    
+    @Override
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
+        final Map<Integer, Role> roleMap = new HashMap<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
+                try {
+                    for (final Role role : raMasterApi.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
+                        roleMap.put(role.getRoleId(), role);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return new ArrayList<>(roleMap.values());
+    }
 
     @Override
     public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {

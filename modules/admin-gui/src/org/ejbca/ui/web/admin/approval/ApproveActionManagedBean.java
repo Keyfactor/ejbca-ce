@@ -47,6 +47,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -121,7 +122,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     private RoleSessionLocal roleSession;
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
-
+    @EJB
+    private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -383,7 +385,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         try {
             ApprovalProfile approvalProfile = approvalDataVOView.getApprovalProfile();
             if (approvalProfile != null) {
-                return approvalProfile.getOrdinalOfStepBeingEvaluated(approvals);
+                final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
+                return approvalProfile.getOrdinalOfStepBeingEvaluated(approvals, rolesTokenIsMemberOf);
             } else {
                 return 0;
             }
@@ -403,8 +406,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if (approvalProfile == null) {
             return null;
         } else {
+            List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
             try {
-                return approvalDataVOView.getApprovalProfile().getStepBeingEvaluated(approvals);
+                return approvalDataVOView.getApprovalProfile().getStepBeingEvaluated(approvals, rolesTokenIsMemberOf);
             } catch (AuthenticationFailedException e) {
                 //We shouldn't have gotten here in the UI with an invalid token
                 throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
@@ -423,22 +427,18 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             if (approvalProfile != null) {
                 ApprovalStep step = approvalProfile.getFirstStep();
                 ApprovalStep currentStep = getCurrentStep();
+                List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
                 while (step != null) {
                     if (currentStep != null && step.equals(currentStep)) {
                         break;
                     }
                     for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
-                        try {
-                            if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                                authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
-                                        approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                        approvalPartition.getPartitionIdentifier(),
-                                        approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(),
-                                        getPartitionProperties(approvalPartition)));
-                            }
-                        } catch (AuthenticationFailedException e) {
-                            //We shouldn't have gotten here in the UI with an invalid token
-                            throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+                        if (approvalDataVOView.getApprovalProfile().canView(rolesTokenIsMemberOf, approvalPartition)) {
+                            authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
+                                    approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                    approvalPartition.getPartitionIdentifier(),
+                                    approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(),
+                                    getPartitionProperties(approvalPartition)));
                         }
                     }
                     step = approvalDataVOView.getApprovalProfile().getStep(step.getNextStep());
@@ -462,24 +462,20 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
             if (getCurrentStep() != null) {
                 final ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
+                List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
                 for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
                     ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
                     if (approvalPartition != null) {
-                        try {
-                            if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                                final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition
-                                        .getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
-                                authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
-                                        approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                        approvalPartition.getPartitionIdentifier(), nameProperty != null ? nameProperty.getValueAsString() : "-",
-                                        getPartitionProperties(approvalPartition)));
-                            }
-                            if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
-                                partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
-                            }
-                        } catch (AuthenticationFailedException e) {
-                            //We shouldn't have gotten here in the UI with an invalid token
-                            throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+                        if (approvalProfile.canView(roles, approvalPartition)) {
+                            final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition
+                                    .getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+                            authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
+                                    approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                    approvalPartition.getPartitionIdentifier(), nameProperty != null ? nameProperty.getValueAsString() : "-",
+                                    getPartitionProperties(approvalPartition)));
+                        }
+                        if (approvalProfile.canApprove(roles, approvalPartition)) {
+                            partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
                         }
                     }
                 }

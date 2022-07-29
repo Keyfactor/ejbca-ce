@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -105,7 +106,7 @@ public class RaApprovalRequestInfo implements Serializable {
 
     public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String caName, final String endEntityProfileName,
             final EndEntityProfile endEntityProfile, final String certificateProfileName, final ApprovalDataVO approval,
-            final List<ApprovalDataText> requestData, final RaEditableRequestData editableData) {
+            final List<ApprovalDataText> requestData, final RaEditableRequestData editableData, final List<Role> rolesTokenIsMemberOf) {
         id = approval.getId();
         this.caName = caName;
         final Certificate requesterCert = approval.getApprovalRequest().getRequestAdminCert();
@@ -144,7 +145,7 @@ public class RaApprovalRequestInfo implements Serializable {
         // Next steps
         final ApprovalStep nextStep;
         try {
-            nextStep = approvalProfile.getStepBeingEvaluated(approval.getApprovals());
+            nextStep = approvalProfile.getStepBeingEvaluated(approval.getApprovals(), rolesTokenIsMemberOf);
         } catch (AuthenticationFailedException e) {
             throw new IllegalStateException(e);
         }
@@ -154,21 +155,17 @@ public class RaApprovalRequestInfo implements Serializable {
         if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && (!lastEditedByMe || approval.getApprovalProfile().getAllowSelfEdit())) {
             final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
             for (ApprovalPartition partition : partitions.values()) {
-                try {
-                    if (approvalProfile.canApprovePartition(authenticationToken, partition)) {
-                        nextApprovalStep = nextStep;
-                        nextApprovalStepPartition = partition;
-                        break;
-                    } else if (approvalProfile.canViewPartition(authenticationToken, partition)) {
-                        isVisibleByMe = true;
-                    }
-                } catch (AuthenticationFailedException e) {
-                    // If this admin cannot approve this partition, check the next partition
+                if (approvalProfile.canApprove(rolesTokenIsMemberOf, partition)) {
+                    nextApprovalStep = nextStep;
+                    nextApprovalStepPartition = partition;
+                    break;
+                } else if (approvalProfile.canView(rolesTokenIsMemberOf, partition)) {
+                    isVisibleByMe = true;
                 }
             }
         }
         try {
-            currentStepOrdinal = approvalProfile.getOrdinalOfStepBeingEvaluated(approval.getApprovals());
+            currentStepOrdinal = approvalProfile.getOrdinalOfStepBeingEvaluated(approval.getApprovals(), rolesTokenIsMemberOf);
         } catch (AuthenticationFailedException e) {
             // Should never happen
             log.debug("Exception occurred while getting current step", e);
@@ -194,13 +191,9 @@ public class RaApprovalRequestInfo implements Serializable {
 
             final List<ApprovalPartition> partitions = new ArrayList<>();
             for (final ApprovalPartition partition : step.getPartitions().values()) {
-                try {
-                    final StepPartitionId spId = new StepPartitionId(stepId, partition.getPartitionIdentifier());
-                    if (approvedByMeSet.contains(spId) || (approvalProfile.canViewPartition(authenticationToken, partition) && approvedSet.contains(spId))) {
-                        partitions.add(partition);
-                    }
-                } catch (AuthenticationFailedException e) {
-                    // Just ignore
+                final StepPartitionId spId = new StepPartitionId(stepId, partition.getPartitionIdentifier());
+                if (approvedByMeSet.contains(spId) || (approvalProfile.canView(rolesTokenIsMemberOf, partition) && approvedSet.contains(spId))) {
+                    partitions.add(partition);
                 }
             }
             if (!partitions.isEmpty()) {
@@ -300,7 +293,7 @@ public class RaApprovalRequestInfo implements Serializable {
     }
     
     /** Is waiting for the given admin to do something */
-    public boolean isWaitingForMe(final AuthenticationToken admin) {
+    public boolean isWaitingForMe(final List<Role> roles) {
         if (requestedByMe) {
             // There are approval types that do not get executed automatically on approval.
             // These go into APPROVED (instead of EXECUTED) state and need to executed again by the requester
@@ -309,19 +302,17 @@ public class RaApprovalRequestInfo implements Serializable {
             return false; // Already approved by me, so not "waiting for me"
         } else {
             if(status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
-                try {
-                    if(approvalProfile.canApprovePartition(admin, nextApprovalStepPartition)) {
-                        return true;
-                    }
-                } catch (AuthenticationFailedException e) { }
+                if(approvalProfile.canApprove(roles, nextApprovalStepPartition)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
     /** Is waiting for someone else to do something */
-    public boolean isPending(final AuthenticationToken admin) {
-        return !isWaitingForMe(admin) && !isProcessed();
+    public boolean isPending(final List<Role> roles) {
+        return !isWaitingForMe(roles) && !isProcessed();
     }
 
     public boolean isExpired(final Date now) {

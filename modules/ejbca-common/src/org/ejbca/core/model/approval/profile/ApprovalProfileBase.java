@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.profiles.ProfileBase;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -467,12 +468,13 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     }
 
     @Override
-    public boolean isApprovalAuthorized(Collection<Approval> approvalsPerformed, Approval approval) throws AuthenticationFailedException {
+    public boolean isApprovalAuthorized(Collection<Approval> approvalsPerformed, Approval approval, 
+            List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException {
         ApprovalStep previousStep = getFirstStep();
         ApprovalStep relevantStep = getStep(approval.getStepId());
         while(previousStep != null) {
             if(!previousStep.equals(relevantStep)) {
-                if(!isStepSatisfied(previousStep, approvalsPerformed)) {
+                if(!isStepSatisfied(previousStep, approvalsPerformed, rolesTokenIsMemberOf)) {
                     return false;
                 } else {
                     previousStep = getStep(previousStep.getNextStep());
@@ -483,7 +485,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
                 if(approvalPartition == null) {
                     return false;
                 }
-                return canApprovePartition(approval.getAdmin(), approvalPartition);
+                return canApprove(rolesTokenIsMemberOf, approvalPartition);
 
             }
         }
@@ -494,13 +496,13 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
      * @return true if the list of approvals validates the given step
      * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
      */
-    protected boolean isStepSatisfied(final ApprovalStep approvalStep, final Collection<Approval> approvalsPerformed)
+    protected boolean isStepSatisfied(final ApprovalStep approvalStep, final Collection<Approval> approvalsPerformed, final List<Role> rolesTokenIsMemberOf)
             throws AuthenticationFailedException {
         PARTITION_LOOP: for (ApprovalPartition partition : approvalStep.getPartitions().values()) {
             for (Approval approval : approvalsPerformed) {
                 if (approval.getStepId() == approvalStep.getStepIdentifier() && partition.getPartitionIdentifier() == approval.getPartitionId()) {
                     //While we already have checked the credentials of all partitions, doing so is cheap and a good double check.
-                    if (canApprovePartition(approval.getAdmin(), partition)) {
+                    if (canApprove(rolesTokenIsMemberOf, partition)) {
                         continue PARTITION_LOOP;
                     }
                 }

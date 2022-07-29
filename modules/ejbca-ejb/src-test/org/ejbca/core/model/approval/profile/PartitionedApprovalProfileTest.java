@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.roles.Role;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.junit.Test;
@@ -51,7 +52,8 @@ public class PartitionedApprovalProfileTest {
                 approvals.add(new Approval("", step.getStepIdentifier(), partition.getPartitionIdentifier()));
             }
         }
-        assertFalse("No approvals submitted, check should have failed.", approvalProfile.canApprovalExecute(new ArrayList<Approval>()));
+        List<Role> roles = new ArrayList();
+        assertFalse("No approvals submitted, check should have failed.", approvalProfile.canApprovalExecute(new ArrayList<Approval>(), roles));
         assertFalse("Incorrect approvals submitted, check should have failed.",
                 approvalProfile.canApprovalExecute(Arrays.asList(approvals.get(0), approvals.get(0), approvals.get(0), approvals.get(0))));
         assertTrue("Correct set of approvals submitted, check should have passed.", approvalProfile.canApprovalExecute(approvals));
