@@ -54,6 +54,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.Base64;
@@ -131,6 +133,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
+    private RoleSessionLocal roleSession;
+    @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     
     private ApprovalSessionLocal approvalSession;
@@ -163,7 +167,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-                sendApprovalNotifications(approvalRequest, approvalProfile, approvalData, false);
+                sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData, false);
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", requestId);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -608,14 +612,15 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void sendApprovalNotifications(final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
+    public void sendApprovalNotifications(final AuthenticationToken admin, final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
             final ApprovalData approvalData, final boolean expired) {
         try {
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
             // When adding a new approval request the list of performed approvals is empty
             final Approval lastApproval = approvalsPerformed.isEmpty() ? null : approvalsPerformed.get(approvalsPerformed.size()-1);
+            final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
             // If all steps has been satisfied, the ApprovalStep from getStepBeingEvaluated is null
-            final ApprovalStep approvalStep = approvalProfile.getStepBeingEvaluated(approvalsPerformed);
+            final ApprovalStep approvalStep = approvalProfile.getStepBeingEvaluated(approvalsPerformed, rolesTokenIsMemberOf);
             if (lastApproval!=null && (!lastApproval.isApproved() || expired)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Creating rejected or expired notification for approval profile: "+approvalProfile.getProfileName());

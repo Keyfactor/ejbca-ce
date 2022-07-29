@@ -34,6 +34,8 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -65,8 +67,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * Handles execution of approved tasks. Separated from ApprovealSessionBean to avoid
  * circular dependencies, since execution will require SSBs that originally created the
  * approval request.
- * 
- * @version $Id$
  */
 @SuppressWarnings("deprecation")
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalExecutionSessionRemote")
@@ -86,6 +86,8 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private RoleSessionLocal roleSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -121,17 +123,18 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request, expected STATUS_WAITINGFORAPPROVAL(-1): "+approvalData.getStatus());
             }
+            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
-            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
+            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
                                 + " in step " + approval.getStepId() + " of approval profile " + approvalProfile.getProfileName());
             }
             approvalsPerformed.add(approval);
             if (approvalData.hasRequestOrApprovalExpired()) {
-                approvalSession.sendApprovalNotifications(approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
+                approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
                 throw new ApprovalRequestExpiredException();
             }
-            final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed);
+            final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed, rolesWhichApprovalAuthTokenIsMemberOf);
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             if (readyToCheckExecution) {
                 //Kept for legacy reasons to allow for 100% uptime, can be removed once upgrading from 6.6.0 is no longer supported. 
@@ -171,7 +174,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 }
             }
             // Notify all administrators affected by the work flow update
-            approvalSession.sendApprovalNotifications(approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
+            approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", intres.getLocalizedMessage("approval.approved", approvalData.getId()));
             List<ApprovalDataText> texts = approvalData.getApprovalRequest().getNewRequestDataAsText(admin);
@@ -221,14 +224,15 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
             }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
+            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
-            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval)) {
+            if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
                                 + " in step " + approval.getStepId() + " of approval profile " + approvalProfile.getProfileName());
             }
             approvalsPerformed.add(approval);
             if (approvalData.hasRequestOrApprovalExpired()) {
-                approvalSession.sendApprovalNotifications(approvalData.getApprovalRequest(), approvalProfile, approvalData, true);
+                approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalData, true);
                 throw new ApprovalRequestExpiredException();
             }
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
@@ -245,7 +249,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalData.setStatus(ApprovalDataVO.STATUS_REJECTED);
                 approvalData.setExpiredate((new Date()).getTime() + approvalData.getApprovalRequest().getApprovalValidity());
             }
-            approvalSession.sendApprovalNotifications(approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
+            approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", intres.getLocalizedMessage("approval.rejected", approvalData.getId()));
             List<ApprovalDataText> texts = approvalData.getApprovalRequest().getNewRequestDataAsText(admin);
@@ -341,22 +345,20 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         boolean allowed = false;
         final ApprovalStep nextStep;
         final ApprovalProfile approvalProfile = approvalData.getApprovalProfile();
+        final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
         try {
-            nextStep = approvalProfile.getStepBeingEvaluated(approvalData.getApprovals());
+            nextStep = approvalProfile.getStepBeingEvaluated(approvalData.getApprovals(), rolesTokenIsMemberOf);
         } catch (AuthenticationFailedException e) {
             throw new IllegalStateException(e);
         }
         
         if (nextStep != null) {
             final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
+            List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
             for (ApprovalPartition partition : partitions.values()) {
-                try {
-                    if (approvalProfile.canApprovePartition(admin, partition)) {
-                        allowed = true;
-                        break;
-                    }
-                } catch (AuthenticationFailedException e) {
-                    // If this admin cannot approve this partition, check the next partition
+                if (approvalProfile.canApprove(roles, partition)) {
+                    allowed = true;
+                    break;
                 }
             }
         }
