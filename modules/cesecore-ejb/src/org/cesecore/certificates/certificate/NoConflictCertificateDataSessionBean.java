@@ -96,7 +96,7 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         if (log.isDebugEnabled()) {
             log.debug("Quering for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "', Last Base CRL Date: " +  FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastbasecrldate));
         }
-        return getRevokedCertInfosInternal(issuerDN, crlPartitionIndex, lastbasecrldate, true);
+        return getRevokedCertInfosInternal(issuerDN, crlPartitionIndex, lastbasecrldate, true, true);
     }
     
 }

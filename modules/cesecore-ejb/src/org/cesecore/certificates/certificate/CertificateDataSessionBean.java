@@ -238,7 +238,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         if (log.isDebugEnabled()) {
             log.debug("Quering for revoked certificates. IssuerDN: '" + issuerDN + "', Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastbasecrldate));
         }
-        return getRevokedCertInfosInternal(issuerDN, crlPartitionIndex, lastbasecrldate, false);
+        return getRevokedCertInfosInternal(issuerDN, crlPartitionIndex, lastbasecrldate, false, false);
     }
 
     @Override

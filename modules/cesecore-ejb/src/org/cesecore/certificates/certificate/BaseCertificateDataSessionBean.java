@@ -44,9 +44,10 @@ public abstract class BaseCertificateDataSessionBean {
      * Returns a list with information about revoked certificates. Depending on the table, the result can
      * either contain at most one entry per certificate, or it may contain duplicates.
      */
-    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final String issuerDN, final int crlPartitionIndex, final long lastbasecrldate, final boolean forceGetAll) {
+    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final String issuerDN, final int crlPartitionIndex, final long lastbasecrldate, final boolean forceGetAll, final boolean excludeArchived) {
         final String tableName = getTableName();
         final String crlPartitionExpression;
+        final String excludeArchivedExpression;
         final String ordering;
         final Query query;
         if (crlPartitionIndex != 0) {
@@ -59,12 +60,18 @@ public abstract class BaseCertificateDataSessionBean {
         } else {
             ordering = "";
         }
+        if (excludeArchived) {
+            // used to exclude records from the append-only NoConflictCertificateData table if an entry with status ARCHIVED exists
+            excludeArchivedExpression = " AND NOT EXISTS(SELECT 1 FROM " + tableName + " b WHERE b.fingerprint=a.fingerprint AND b.status=" + CertificateConstants.CERT_ARCHIVED + ")";
+        } else {
+            excludeArchivedExpression = "";
+        }
         if (lastbasecrldate > 0) {
             // Delta CRL
             query = getEntityManager().createNativeQuery(
                     "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
                             + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
-                            + crlPartitionExpression + ordering,
+                            + crlPartitionExpression + excludeArchivedExpression + ordering,
                     "RevokedCertInfoSubset");
             query.setParameter("revocationDate", lastbasecrldate);
             query.setParameter("status1", CertificateConstants.CERT_REVOKED);
@@ -75,7 +82,7 @@ public abstract class BaseCertificateDataSessionBean {
             query = getEntityManager().createNativeQuery(
                     "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
                             + "a.issuerDN=:issuerDN AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)"
-                            + crlPartitionExpression + ordering,
+                            + crlPartitionExpression + excludeArchivedExpression + ordering,
                     "RevokedCertInfoSubset");
             query.setParameter("status1", CertificateConstants.CERT_REVOKED);
             query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
@@ -84,7 +91,8 @@ public abstract class BaseCertificateDataSessionBean {
             // Base CRL
             query = getEntityManager().createNativeQuery(
                     "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.status=:status" + crlPartitionExpression + ordering,
+                            + "a.issuerDN=:issuerDN AND a.status=:status"
+                            + crlPartitionExpression + excludeArchivedExpression + ordering,
                     "RevokedCertInfoSubset");
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
