@@ -181,7 +181,7 @@ public class RaManageRequestsBean implements Serializable {
          *  PROCESSED & CUSTOM_SEARCH: Basically all the request minus those which the user doesn't have power to approve.
         **/
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
-            final ApprovalRequestGUIInfo approvalRequestGuiInfo = new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean);
+            final ApprovalRequestGUIInfo approvalRequestGuiInfo = new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean, raMasterApiProxyBean);
             if (searchRequest.isSearchingWaitingForMe() && approvalRequestGuiInfo.isCanApprove() && !raInfoMap.isEmpty()) {
                 guiInfos.add(approvalRequestGuiInfo);
             } else if (searchRequest.isSearchingPending() && (approvalRequestGuiInfo.isRequestedByMe() || approvalRequestGuiInfo.isCanView())) {
