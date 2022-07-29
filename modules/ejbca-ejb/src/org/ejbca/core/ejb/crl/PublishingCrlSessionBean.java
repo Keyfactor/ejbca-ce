@@ -533,7 +533,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.info("KeepExpiredCertsOnCRL is enabled, we will not archive expired certificate but will keep them on the CRL (for ever growing): " + keepexpiredcertsoncrl);
                 }
                 for (final RevokedCertInfo revokedCertInfo : revokedCertificates) {
-                    // We want to include certificates that was revoked after the last CRL was issued, but before this one
+                    // We want to include certificates that were revoked after the last CRL was issued, but before this one
                     // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
                     // If chosen to keep expired certificates on CRL, we will NOT do this but keep them (ISO 9594-8 par. 8.5.2.12)
                     if ( !keepexpiredcertsoncrl && revokedCertInfo.getExpireDate() != null && revokedCertInfo.getExpireDate().before(lastCrlCreationDate) ) {
@@ -566,7 +566,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 if (crlBytes != null) {
                     ret = CertTools.getFingerprintAsString(crlBytes);
                 }
-                // This debug logging is very very heavy if you have large CRLs. Please don't use it :-)
+                // This debug logging is very, very heavy if you have large CRLs. Please don't use it :-)
                 //              if (log.isDebugEnabled()) {
                 //              X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
                 //              debug("Created CRL with expire date: "+crl.getNextUpdate());
