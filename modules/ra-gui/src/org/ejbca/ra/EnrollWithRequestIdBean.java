@@ -46,6 +46,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.ErrorCode;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -61,9 +62,11 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -96,6 +99,8 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    @EJB
+    private RoleSessionLocal roleSession;
 
     @ManagedProperty(value = "#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
@@ -123,6 +128,8 @@ public class EnrollWithRequestIdBean implements Serializable {
     private boolean isCsrChanged;
     private boolean isKeyRecovery;
     private boolean statusAllowsEnrollment;
+    private boolean deletePublicAccessRole = true;
+    private boolean deletePublicAccessRoleRendered;
 
     @PostConstruct
     protected void postConstruct() {
@@ -305,6 +312,15 @@ public class EnrollWithRequestIdBean implements Serializable {
             getEndEntityInformation().getExtendedInformation().setCertificateRequest(binaryReqBytes);
         }
         generateCertificateAfterCheck();
+        if (generatedToken != null && isDeletePublicAccessRoleRendered() && isDeletePublicAccessRole()) {
+            try {
+                final AlwaysAllowLocalAuthenticationToken adminToken = new AlwaysAllowLocalAuthenticationToken("DeleteRoleAfterSuperadminEnrollment");
+                roleSession.deleteRoleIdempotent(adminToken, null, AuthorizationSystemSession.PUBLIC_ACCESS_ROLE);
+            } catch (AuthorizationDeniedException e) {
+                raLocaleBean.addMessageError("enrolle_failed_delete_role");
+                log.error("Not authorized to create CA: " + e.getMessage());
+            }
+        }
     }
 
     public void generateKeyStoreJks() {
@@ -897,5 +913,21 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
         }
         return result;
+    }
+
+    public boolean isDeletePublicAccessRole() {
+        return deletePublicAccessRole;
+    }
+
+    public void setDeletePublicAccessRole(boolean deletePublicAccessRole) {
+        this.deletePublicAccessRole = deletePublicAccessRole;
+    }
+
+    public boolean isDeletePublicAccessRoleRendered(){
+        return deletePublicAccessRoleRendered;
+    }
+
+    public void setDeletePublicAccessRoleRendered(boolean deletePublicAccessRoleRendered) {
+        this.deletePublicAccessRoleRendered = deletePublicAccessRoleRendered;
     }
 }
