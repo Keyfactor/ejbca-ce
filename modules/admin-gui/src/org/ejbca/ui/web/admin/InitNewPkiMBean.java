@@ -433,7 +433,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
                 roleSession.deleteRoleIdempotent(getAdmin(), null, AuthorizationSystemSession.PUBLIC_ACCESS_ROLE);
             } catch (AuthorizationDeniedException e) {
                 addErrorMessage("ACCESSRULES_ERROR_UNAUTH", getAdmin() + " not authorized to delete role");
-                log.error("Not authorized to create CA: " + e.getMessage());
+                log.error("Not authorized to delete role: " + e.getMessage());
                 return;
             }
         }
