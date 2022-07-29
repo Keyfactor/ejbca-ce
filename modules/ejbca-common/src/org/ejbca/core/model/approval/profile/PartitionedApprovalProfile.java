@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -98,11 +99,12 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed) throws ApprovalException, AuthenticationFailedException {
+    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed, 
+            List<Role> rolesWhichTokenIsMemberOf) throws ApprovalException, AuthenticationFailedException {
         // Walk through all steps and their respective partitions, verify that the collection of approvals satisfies them.
         ApprovalStep step = getFirstStep();
         while(step != null) {
-            if(!isStepSatisfied(step, approvalsPerformed)) {
+            if(!isStepSatisfied(step, approvalsPerformed, rolesWhichTokenIsMemberOf)) {
                 return false;
             }
             step = getStep(step.getNextStep());
@@ -114,11 +116,11 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed) throws AuthenticationFailedException {
+    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException {
         ApprovalStep step = getFirstStep();
         int i = 1;
         while(step != null) {
-            if(!isStepSatisfied(step, approvalsPerformed)) {
+            if(!isStepSatisfied(step, approvalsPerformed, rolesTokenIsMemberOf)) {
                 return i;
             } else {
                 i++;
@@ -132,10 +134,10 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed) throws AuthenticationFailedException {
+    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException {
         ApprovalStep step = getFirstStep();
         while(step != null) {
-            if(!isStepSatisfied(step, approvalsPerformed)) {
+            if(!isStepSatisfied(step, approvalsPerformed, rolesTokenIsMemberOf)) {
                 return step;
             } else {
                 step = getStep(step.getNextStep());
@@ -178,6 +180,39 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return false;
     }
+    
+    @Override
+    public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+        boolean canApprove = false;
+        List<String> roleNamesWhichCanApprove = this.getAllowedRoleNames(approvalPartition);
+        if (roleNamesWhichCanApprove.contains("Anybody")) {
+            return true;
+        }
+        for (Role role: rolesTokenIsMemberOf) {
+            if (roleNamesWhichCanApprove.contains(role.getName())) {
+                canApprove = true;
+                break;
+            }
+        }
+        return canApprove;
+    }
+    
+    @Override
+    public boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+        boolean canView = false;
+        List<String> roleNamesWhichCanView = this.getAllowedRoleNamesForViewingPartition(approvalPartition);
+        List<String> roleNamesWhichCanApprove = this.getAllowedRoleNames(approvalPartition);
+        if (roleNamesWhichCanView.contains("Anybody") || roleNamesWhichCanApprove.contains("Anybody")) {
+            return true;
+        }
+        for (Role role: rolesTokenIsMemberOf) {
+            if (roleNamesWhichCanView.contains(role.getName()) || roleNamesWhichCanApprove.contains(role.getName())) {
+                canView = true;
+                break;
+            }
+        }
+        return canView;
+    }
 
     @Override
     public boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition) {
@@ -196,6 +231,17 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         final List<String> ret = new ArrayList<>();
         @SuppressWarnings("unchecked")
         final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
+        for (final RoleInformation role : roles) {
+            ret.add(role.getName());
+        }
+        return ret;
+    }
+
+    @Override
+    public List<String> getAllowedRoleNamesForViewingPartition(final ApprovalPartition approvalPartition) {
+        final List<String> ret = new ArrayList<>();
+        @SuppressWarnings("unchecked")
+        final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_VIEW_RIGHTS).getValues();
         for (final RoleInformation role : roles) {
             ret.add(role.getName());
         }
