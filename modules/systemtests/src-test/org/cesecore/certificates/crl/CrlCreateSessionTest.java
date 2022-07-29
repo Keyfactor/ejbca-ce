@@ -489,7 +489,7 @@ public class CrlCreateSessionTest {
             Date check = new Date(now.getTime() - crlperiod);
             AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
             for (RevokedCertInfo data : revcerts) {
-                // We want to include certificates that was revoked after the last CRL was issued, but before this one
+                // We want to include certificates that were revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
                 if (data.getExpireDate().before(check)) {
                     // Certificate has expired, set status to archived in the database

@@ -96,7 +96,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	try {
     	    removeTestCrls();
     	} finally {
-    		// Be sure to to this, even if the above fails
+    		// Be sure to do this, even if the above fails
     	    super.tearDownRemoveRole();
     	}
     }

@@ -162,7 +162,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
             CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
         	super.tearDownRemoveRole();
         }
     }
