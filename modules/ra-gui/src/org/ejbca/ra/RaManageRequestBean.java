@@ -34,6 +34,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.roles.Role;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -108,14 +109,14 @@ public class RaManageRequestBean implements Serializable {
         if (requestData == null) {
             throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
     }
     private void loadRequestByApprovalId(final int approvalId) {
         requestData = raMasterApiProxyBean.getApprovalRequestByRequestHash(raAuthenticationBean.getAuthenticationToken(), approvalId);
         if (requestData == null) {
             throw new IllegalStateException("Request does not exist, or user is not allowed to see it at this point");
         }
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
     }
 
     public void initializeRequestInfo() {
@@ -243,22 +244,32 @@ public class RaManageRequestBean implements Serializable {
             final ApprovalStep step = requestInfo.request.getNextApprovalStep();
             final ApprovalProfile approvalProfile = requestInfo.request.getApprovalProfile();
             if (step != null) {
+                List<Role> roles = raMasterApiProxyBean.getRolesAuthenticationTokenIsMemberOf(raAuthenticationBean.getAuthenticationToken());
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
-                    try {
-                        if (approvalProfile.canViewPartition(raAuthenticationBean.getAuthenticationToken(), approvalPartition)) {
-                            ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject =
-                                    new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepIdentifier(),
-                                    approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition),
-                                    getPartitionApproval(approvalPartition.getPartitionIdentifier(), step.getStepIdentifier()));
-                            authorizedPartitions.add(partitionGuiObject);
+                    boolean canApprove = false;
+                    boolean canView = false;
+                    List<String> roleNamesWhichCanApprove = approvalProfile.getAllowedRoleNames(approvalPartition);
+                    List<String> roleNamesWhichCanView = approvalProfile.getAllowedRoleNamesForViewingPartition(approvalPartition);
+                    for (Role role: roles) {
+                        if (roleNamesWhichCanApprove.contains(role.getName()) || roleNamesWhichCanApprove.contains("Anybody")) {
+                            canApprove = true;
+                            break;
                         }
-                        if (approvalProfile.canApprovePartition(raAuthenticationBean.getAuthenticationToken(), approvalPartition)) {
-                            partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
+                        if (roleNamesWhichCanView.contains(role.getName())) {
+                            canView = true;
                         }
-                    } catch (AuthenticationFailedException e) {
-                        //We shouldn't have gotten here in the UI with an invalid token
-                        throw new IllegalStateException("Trying to perform an approval with an invalid authentication token: "
-                                + raAuthenticationBean.getAuthenticationToken(), e);
+                    }
+
+                    if (canView || canApprove) {
+                        ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject =
+                                new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepIdentifier(),
+                                approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition),
+                                getPartitionApproval(approvalPartition.getPartitionIdentifier(), step.getStepIdentifier()));
+                        authorizedPartitions.add(partitionGuiObject);
+                    }
+
+                    if (canApprove) {
+                        partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
                     }
                 }
             }
@@ -586,7 +597,7 @@ public class RaManageRequestBean implements Serializable {
             return;
         }
         requestData = newReqData;
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
         editing = false;
     }
 
@@ -596,7 +607,7 @@ public class RaManageRequestBean implements Serializable {
         }
         // Restore everything
         requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId());
-        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
+        requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean, raMasterApiProxyBean);
         editing = false;
     }
 

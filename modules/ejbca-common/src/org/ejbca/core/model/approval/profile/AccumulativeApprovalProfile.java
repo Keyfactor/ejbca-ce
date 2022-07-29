@@ -23,6 +23,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
+import org.cesecore.roles.Role;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PositiveIntegerValidator;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -105,7 +106,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed) throws ApprovalException {
+    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed, final List<Role> rolesTokenIsMemberOf) throws ApprovalException {
         //Verify that at least one of the approvals performed covers the single sequence in this implementation (Though it would be odd if they didn't)
         boolean sequenceAndPartitionFound = false;
         for(Approval approval : approvalsPerformed) {
@@ -160,6 +161,16 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
     
     @Override
+    public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+        return true;
+    }
+    
+    @Override
+    public boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+        return true;
+    }
+    
+    @Override
     public boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition) {
         // Anyone can allow (given that their role has the needed access rules)
         return true;
@@ -171,18 +182,23 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
     
     @Override
+    public List<String> getAllowedRoleNamesForViewingPartition(final ApprovalPartition approvalPartition) {
+        return new ArrayList<>();
+    }
+    
+    @Override
     public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)
             throws AuthenticationFailedException {
         return canApprovePartition(authenticationToken, approvalPartition);
     }
 
     @Override
-    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed) {
+    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) {
         return 1;
     }
 
     @Override
-    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed) {
+    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) {
         return getStep(FIXED_STEP_ID);
     }
     
