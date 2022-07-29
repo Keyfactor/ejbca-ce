@@ -164,7 +164,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             certProfileSession.removeCertificateProfile(alwaysAllowToken, certprofileName);
             endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "CertRevocationStatusCheckerTestEndEntityProfile");
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
             tearDownRemoveRole();
         }
 
