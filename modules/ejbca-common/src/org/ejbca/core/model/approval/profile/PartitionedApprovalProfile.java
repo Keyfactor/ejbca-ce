@@ -184,7 +184,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         boolean canApprove = false;
-        List<String> roleNamesWhichCanApprove = this.getAllowedRoleNames(approvalPartition);
+        List<String> roleNamesWhichCanApprove = getAllowedRoleNames(approvalPartition);
         if (roleNamesWhichCanApprove.contains("Anybody")) {
             return true;
         }
@@ -200,8 +200,8 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         boolean canView = false;
-        List<String> roleNamesWhichCanView = this.getAllowedRoleNamesForViewingPartition(approvalPartition);
-        List<String> roleNamesWhichCanApprove = this.getAllowedRoleNames(approvalPartition);
+        List<String> roleNamesWhichCanView = getAllowedRoleNamesForViewingPartition(approvalPartition);
+        List<String> roleNamesWhichCanApprove = getAllowedRoleNames(approvalPartition);
         if (roleNamesWhichCanView.contains("Anybody") || roleNamesWhichCanApprove.contains("Anybody")) {
             return true;
         }
@@ -229,6 +229,9 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition) {
         final List<String> ret = new ArrayList<>();
+        if (approvalPartition == null) {
+            return ret;
+        }
         @SuppressWarnings("unchecked")
         final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
         for (final RoleInformation role : roles) {
@@ -240,6 +243,9 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public List<String> getAllowedRoleNamesForViewingPartition(final ApprovalPartition approvalPartition) {
         final List<String> ret = new ArrayList<>();
+        if (approvalPartition == null) {
+            return ret;
+        }
         @SuppressWarnings("unchecked")
         final List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_VIEW_RIGHTS).getValues();
         for (final RoleInformation role : roles) {
