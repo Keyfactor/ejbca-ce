@@ -74,12 +74,14 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_AUTHMODULE_CHALLENGE_PWD         = "ChallengePwd";
     public static final String CONFIG_AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
     public static final String CONFIG_AUTHMODULE_HTTP_BASIC_AUTH       = "HttpBasicAuth";
+    // support proxy ca
+    public static final String CONFIG_SUPPORT_PROXY_CA   = "supportproxyca";
         
     private final String ALIAS_LIST = "aliaslist";
-    public static final String EST_CONFIGURATION_ID = "4";
+    public static final String EST_CONFIGURATION_ID = "4";    
 
     // Default Values
-    public static final float LATEST_VERSION = 4f;
+    public static final float LATEST_VERSION = 5f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
     // Default values
@@ -102,6 +104,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_EXTRACTDNPARTPWD_COMPONENT = "DN";
     private static final String DEFAULT_ALLOW_CHANGESUBJECTNAME = "false";
     private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
+    private static final String DEFAULT_SUPPORT_PROXY_CA = "false";
         
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
@@ -154,6 +157,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_EXTRACTDNPARTPWDCOMPONENT, DEFAULT_EXTRACTDNPARTPWD_COMPONENT);
             data.put(alias + CONFIG_AUTHENTICATIONMODULE, DEFAULT_CLIENT_AUTHENTICATION_MODULE);
             data.put(alias + CONFIG_ALLOWCHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+            data.put(alias + CONFIG_SUPPORT_PROXY_CA, DEFAULT_SUPPORT_PROXY_CA);
         }
     }
     
@@ -235,6 +239,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_AUTHENTICATIONMODULE);
         keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
         keys.add(alias + CONFIG_ALLOWCHANGESUBJECTNAME);
+        keys.add(alias + CONFIG_SUPPORT_PROXY_CA);
         return keys;
     }
 
@@ -715,6 +720,32 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_RA_NAMEGENERATIONPOSTFIX;
         setValue(key, postfix, alias);
     }
+    
+    /**
+     * Getter for support for proxy Ca
+     * @param alias the EST alias to set the name generation postfix for
+     *
+     */     
+    public boolean getSupportProxyCa(String alias) {
+        String key = alias + "." + CONFIG_SUPPORT_PROXY_CA;
+        
+        String value = getValue(key, alias);
+        if (value == null) {
+            value = DEFAULT_SUPPORT_PROXY_CA;
+        }
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+
+     /**
+     * Setter for support for proxy Ca
+     * @param alias the EST alias to set support for proxy Ca for
+     * @param supportProxyCa supports proxy Ca
+     *
+     */    
+    public void setSupportProxyCa(String alias, boolean supportProxyCa) {
+        String key = alias + "." + CONFIG_SUPPORT_PROXY_CA;
+        setValue(key, Boolean.toString(supportProxyCa), alias);
+    }
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
     @Override
@@ -744,6 +775,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
                 }
                 if (data.get(alias + CONFIG_ALLOWCHANGESUBJECTNAME) == null) {
                     data.put(alias + CONFIG_ALLOWCHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
+                }
+                // v5 support proxy ca
+                if (data.get(alias + CONFIG_SUPPORT_PROXY_CA) == null) {
+                    data.put(alias + CONFIG_SUPPORT_PROXY_CA, DEFAULT_SUPPORT_PROXY_CA);
                 }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));

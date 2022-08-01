@@ -178,6 +178,22 @@ public interface CAAdminSession {
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
 
     /**
+     * Add an external CA's certificate and other custom CA attributes as a CA.
+     *
+     * @param authenticationToken The administrator performing the action
+     * @param caName              CA name.
+     * @param wrappedCerts        contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
+     * @param caInfo              contains other custom CA fields including CA type in simplified format
+     * @throws AuthorizationDeniedException if the administrators isn't authorized
+     * @throws CAExistsException            if the CA already exists
+     * @throws IllegalCryptoTokenException  the certificate chain is incomplete
+     * @throws CertificateImportException   in the case the certificate was already imported or the provided certificates could not be used.
+     */
+    void importExternalCA(AuthenticationToken authenticationToken, String caName, 
+            Collection<CertificateWrapper> wrappedCerts, CAInfo caInfo)
+            throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException;
+
+    /**
      * Update an existing external CA's certificate chain.
      * <p>
      * We allow the same leaf CA certificate to be re-imported in the case where the chain has changed.

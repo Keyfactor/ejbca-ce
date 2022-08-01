@@ -16,6 +16,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
@@ -49,6 +50,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Objects.nonNull;
 
 
 /**
@@ -372,6 +375,9 @@ public class SecureXMLDecoder implements AutoCloseable {
                     case "java.util.Collections":
                         value = parseSpecialCollection(method);
                         method = null; // value has been used, don't report error
+                        break;
+                    case "org.apache.commons.lang3.tuple.MutablePair":
+                        value = parseMutablePair(parser);
                         break;
                     case "java.util.Date":
                         long dateLongValue = (long) readValue();
@@ -731,6 +737,39 @@ public class SecureXMLDecoder implements AutoCloseable {
             default:
                 throw new IOException("Method \"" + method + "\" not supported or not allowed on java.util.Collections.");
         }
+    }
+
+    // Only supports String value
+    private Object parseMutablePair(final XmlPullParser parser) throws XmlPullParserException, IOException {
+        MutablePair pair = new MutablePair();
+        final String clazz = parser.getAttributeValue(null, "class");
+        final String method = parser.getAttributeValue(null, "method");
+        if(nonNull(clazz) && nonNull(method) && clazz.equals("org.apache.commons.lang3.tuple.MutablePair") && method.equals("getField")) {
+            parser.nextTag();
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            pair.setLeft(parser.nextText());
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.next();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+            pair.setRight(parser.nextText());
+            parser.nextTag();
+            parser.nextTag();
+            parser.nextTag();
+        }
+        return pair;
     }
 
     /**

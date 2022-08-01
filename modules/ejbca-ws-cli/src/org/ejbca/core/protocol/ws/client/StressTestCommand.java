@@ -494,7 +494,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println("The command will start up a number of threads.");
 		getPrintStream().println("Each thread will continuously add new users to EJBCA. After adding a new user the thread will fetch a certificate for it.");
 		getPrintStream().println();
-		getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>] [<certificate profile name>] [<type of test>]");
+		getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>] [<certificate profile name>] [<type of test>] [<nr of tests>]");
 		getPrintStream().println();
 		getPrintStream().println("Here is an example of how the test could be started:");
 		getPrintStream().println("./ejbcaClientToolBox.sh EjbcaWsRaCli stress ManagementCA 20 5000");
@@ -523,16 +523,17 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {
-			if(this.args.length <  2){
+			if(this.args.length < 2){
 				usage();
 				System.exit(-1); // NOPMD, this is not a JEE app
 			}
-            final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(this.args.length>2 ? this.args[2] : null);
+			NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(this.args.length>2 ? this.args[2] : null);
 			final int waitTime = this.args.length>3 ? Integer.parseInt(this.args[3]) : -1;
 			final String caName = this.args[1];
 			final String endEntityProfileName = this.args.length>4 ? this.args[4] : "EMPTY";
 			final String certificateProfileName = this.args.length>5 ? this.args[5] : "ENDUSER";
 			final TestType testType = this.args.length>6 ? TestType.valueOf(this.args[6]) : TestType.BASIC;
+			notanot.setTests(this.args.length>7 ? Integer.parseInt(this.args[7]) : -1);
 			final int maxCertificateSN;
 			final String subjectDN = System.getProperty("subjectDN", "CN="+USER_NAME_TAG);
 			{
