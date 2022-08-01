@@ -40,8 +40,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Information for an approval request, as seen by an admin.
- *
- * @version $Id$
  */
 public class RaApprovalRequestInfo implements Serializable {
 
