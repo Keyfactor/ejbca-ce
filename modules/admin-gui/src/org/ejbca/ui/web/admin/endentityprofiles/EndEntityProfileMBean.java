@@ -51,6 +51,7 @@ import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -1433,6 +1434,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             // SAN e-mail with list of e-mails and size > 1 (m@domain1.de;m@domain2.de;...) + modifiable = invalid
             if (component.isEmailField() && component.isListOfEmails() && component.isModifiable()) {
                 editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHLISTOFEMAILSMUSTBEUNMODIFIABLE"));
+            }
+            if (component.isEmailField() && !component.isRequired() && !component.isModifiable() && StringTools.isValidEmail(component.getValue())) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHEMAILMUSTBEMODIFIABLEOROPTIONAL"));
             }
             if (component.isUseValidation()) {
                 validateFieldRegex(component.getValidationString(), name);
