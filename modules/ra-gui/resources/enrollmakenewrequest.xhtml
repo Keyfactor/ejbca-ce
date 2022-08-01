@@ -411,19 +411,26 @@
                                         <h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{instance.rfcUseEmail}">
-                                        <h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].rfcEmailUsed}">
+                                        <h:selectBooleanCheckbox id="rfcEmailUsed" value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].rfcEmailUsed}" disabled="true">
                                             <f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"
                                                 execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                                         </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="rfcEmailUsed" value="#{msg.subject_dn_USESEMAILFIELDDATA}"/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{instance.upnRfc and !instance.rfcUseEmail}">
-                                        <h:inputText id="upnRfcEmail" 
-                                        	rendered="#{(instance.selectableValuesUpnRfc.size() == 1 and instance.modifiable) or (instance.isSelectableValuesUpnRfcDomainOnly())}">
+                                        <h:inputText id="upnRfcEmail" rendered="#{instance.isSelectableValuesUpnRfcDomainOnly()}">
                                             <f:ajax event="change" listener="#{enrollMakeNewRequestBean.upnRfc}"
                                                 execute="@this upnRfcEmail upnRfcDomain" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
+                                            <f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validateUpnRfcEmail}"/>
                                         </h:inputText>
-                                        <h:outputText id="upnRfcEmailNonModifiableField" value="#{instance.emailFieldDisplayValue}"
-                                        	rendered="#{instance.selectableValuesUpnRfc.size() == 1 and !instance.modifiable}" style="color:white;">                                            
+                                        <h:inputText id="upnRfcEmail2" value="#{instance.defaultValue}"
+                                        	rendered="#{instance.selectableValuesUpnRfc.size() == 1 and !instance.isSelectableValuesUpnRfcDomainOnly() and instance.modifiable}">
+                                            <f:ajax event="change" listener="#{enrollMakeNewRequestBean.upnRfc}"
+                                                execute="@this upnRfcEmail2" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
+                                            <f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validateUpnRfcEmail}"/>
+                                        </h:inputText>
+                                        <h:outputText id="upnRfcEmailNonModifiableField" value="#{instance.upnRfcEmailNonModifiableField}"
+                                        	rendered="#{instance.selectableValuesUpnRfc.size() == 1 and instance.defaultValue.contains('@') and !instance.modifiable}" style="color:white;">
                                         </h:outputText>
                                         <h:outputText value=" @ " rendered="#{(instance.selectableValuesUpnRfc.size() == 1 and instance.isSelectableValuesUpnRfcDomainOnly()) or (instance.selectableValuesUpnRfc.size() > 1 and instance.isSelectableValuesUpnRfcDomainOnly())}"/>
                                         <h:selectOneMenu id="upnRfcDomain" rendered="#{(instance.selectableValuesUpnRfc.size() == 1 and instance.isSelectableValuesUpnRfcDomainOnly()) or instance.selectableValuesUpnRfc.size() > 1}" styleClass="jsAutoFocusFirst">
@@ -433,6 +440,7 @@
                                                 execute="@this upnRfcEmail upnRfcDomain" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
                                         </h:selectOneMenu>                                        
                                         <h:message for="upnRfcEmail" id="upnRfcEmailMessage" styleClass="showErrorMessage"/>
+                                        <h:message for="upnRfcEmail2" id="upnRfcEmailMessage2" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
 									<h:panelGroup rendered="#{instance.copyDns}">
 										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText" />
@@ -479,22 +487,27 @@
                                         </h:selectOneMenu>
                                         <h:message for="subjectAltNameOptionalField" id="subjectAltNameOptionalFieldMessage" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
-                                    
                                     <h:panelGroup rendered="#{instance.rfcUseEmail}">
-                                        <h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.optionalFieldInstances[loop.index].rfcEmailUsed}">
+                                        <h:selectBooleanCheckbox id="rfcEmailUsed" value="#{enrollMakeNewRequestBean.subjectAlternativeName.optionalFieldInstances[loop.index].rfcEmailUsed}">
                                             <f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"
                                                 execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                                         </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="rfcEmailUsed" value="#{msg.subject_dn_USESEMAILFIELDDATA}"/>
                                     </h:panelGroup>
-                                    
                                     <h:panelGroup rendered="#{instance.upnRfc and !instance.rfcUseEmail}">
-                                        <h:inputText id="upnRfcEmail" 
-                                        	rendered="#{(instance.selectableValuesUpnRfc.size() == 1 and instance.modifiable) or (instance.isSelectableValuesUpnRfcDomainOnly())}">
+                                        <h:inputText id="upnRfcEmail" rendered="#{instance.isSelectableValuesUpnRfcDomainOnly()}">
                                             <f:ajax event="change" listener="#{enrollMakeNewRequestBean.upnRfc}"
                                                 execute="@this upnRfcEmail upnRfcDomain" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
+                                            <f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validateUpnRfcEmail}"/>
                                         </h:inputText>
-                                        <h:outputText id="upnRfcEmailNonModifiableField" value="#{instance.emailFieldDisplayValue}"
-                                        	rendered="#{instance.selectableValuesUpnRfc.size() == 1 and !instance.modifiable}"  style="color:white;">                                            
+                                        <h:inputText id="upnRfcEmail2" value="#{instance.defaultValue}"
+                                        	rendered="#{instance.selectableValuesUpnRfc.size() == 1 and !instance.isSelectableValuesUpnRfcDomainOnly() and instance.modifiable}">
+                                            <f:ajax event="change" listener="#{enrollMakeNewRequestBean.upnRfc}"
+                                                execute="@this upnRfcEmail2" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
+                                            <f:event type="postValidate" listener="#{enrollMakeNewRequestBean.validateUpnRfcEmail}"/>
+                                        </h:inputText>
+                                        <h:outputText id="upnRfcEmailNonModifiableField" value="#{instance.upnRfcEmailNonModifiableField}"
+                                        	rendered="#{instance.selectableValuesUpnRfc.size() == 1 and instance.defaultValue.contains('@') and !instance.modifiable}" style="color:white;">                                            
                                         </h:outputText>
                                         <h:outputText value=" @ " rendered="#{(instance.selectableValuesUpnRfc.size() == 1 and instance.isSelectableValuesUpnRfcDomainOnly()) or (instance.selectableValuesUpnRfc.size() > 1 and instance.isSelectableValuesUpnRfcDomainOnly())}"/>
                                         <h:selectOneMenu id="upnRfcDomain" rendered="#{(instance.selectableValuesUpnRfc.size() == 1 and instance.isSelectableValuesUpnRfcDomainOnly()) or instance.selectableValuesUpnRfc.size() > 1}" styleClass="jsAutoFocusFirst">
@@ -504,6 +517,7 @@
                                                 execute="@this upnRfcEmail upnRfcDomain" render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage" />
                                         </h:selectOneMenu>
                                         <h:message for="upnRfcEmail" id="upnRfcEmailMessage" styleClass="showErrorMessage"/>
+                                        <h:message for="upnRfcEmail2" id="upnRfcEmailMessage2" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
 									<h:panelGroup rendered="#{instance.copyDns}">
 										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText"/>
