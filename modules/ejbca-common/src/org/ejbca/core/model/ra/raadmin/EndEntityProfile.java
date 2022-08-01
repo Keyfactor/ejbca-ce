@@ -3011,7 +3011,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.name = name;
             this.number = number;
             this.defaultValue = EndEntityProfile.this.getValue(name, number);
-            this.value = isSelectable() ? getSelectableValues().get(0) : defaultValue;
+            this.value = (defaultValue != null && defaultValue.split(";").length > 1) ? defaultValue.split(";")[0] : defaultValue;
             this.profileId = EndEntityProfile.DATA_CONSTANTS.get(name);
             this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
             this.dnsCopyCheckbox = name.equals(DnComponents.DNSNAME) && isCopy();
@@ -3049,21 +3049,21 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public String getValue(){ return value; }
         public void setValue(String value) { this.value = value; }
         
-        
-        public String getEmailFieldDisplayValue() {
-            if (getSelectableValuesUpnRfc().size() > 1 | isSelectableValuesUpnRfcDomainOnly()) {
-                return "";
-            } else {
-                return getSelectableValuesUpnRfc().get(0);
+        public String getUpnRfcEmailNonModifiableField() {
+            final List<String> list = getSelectableValuesUpnRfc();
+            if (list.size() > 0) {
+                return list.get(0);
             }
+            return "";
         }
-        public void setEmailFieldDisplayValue(String value) {} // NOOP
+        public void setUpnRfcEmailNonModifiableField(String value) {} // NOOP
         
         public String getDefaultValue() { return defaultValue; }
         public void setDefaultValue(String value) { this.defaultValue = value; }
 		public boolean isUseDataFromEmailField() { return useDataFromEmailField; }
 		public void setUseDataFromEmailField(boolean useDataFromEmailField) { this.useDataFromEmailField = useDataFromEmailField; }
 		public String getName() { return name; }
+		public void setName(String name) { /* NOOP. Inly required for JSF template hidden field which stores the type of the field for post event validation. */ }
         public String getRegexPattern() { return regexPattern; }
         public int getNumber() { return number; }
         public boolean isSelectable() {
