@@ -1050,7 +1050,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final List<String> issuerDns = new ArrayList<>();
         for (final int caId : authorizedLocalCaIds) {
-            final String caInfoIssuerDn = StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN());
+            final CAInfo caInfo = caSession.getCAInfoInternal(caId);
+            final String caInfoIssuerDn = caInfo != null ? StringTools.strip(caInfo.getSubjectDN()) : "";
             if(caInfoIssuerDn.startsWith(CAInfo.CITS_SUBJECTDN_PREFIX)) {
                 continue; // skip CITS CAs
             }
