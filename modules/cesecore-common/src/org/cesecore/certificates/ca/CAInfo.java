@@ -43,7 +43,8 @@ public abstract class CAInfo implements Serializable {
     public static final int CATYPE_CVC = 2;
     public static final int CATYPE_SSH = 3;
     public static final int CATYPE_CITS = 4;
-    
+    public static final int CATYPE_PROXY = 5;
+
     // Used to indicate CITS certificateId in database in subjectDN column
     public static final String CITS_SUBJECTDN_PREFIX = "cits:";
 
@@ -213,6 +214,9 @@ public abstract class CAInfo implements Serializable {
         }
         if (catype == CAInfo.CATYPE_CITS) {
             return "CITS";
+        }
+        if (catype == CAInfo.CATYPE_PROXY) {
+            return "KeyfactorEnrollmentProxyCA";
         }
         return String.valueOf(catype);
     }
