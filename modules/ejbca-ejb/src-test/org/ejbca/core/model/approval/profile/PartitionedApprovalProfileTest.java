@@ -27,8 +27,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for the PartitionedApprovalProfile class.
- * 
- * @version $Id$
  *
  */
 public class PartitionedApprovalProfileTest {
@@ -52,11 +50,11 @@ public class PartitionedApprovalProfileTest {
                 approvals.add(new Approval("", step.getStepIdentifier(), partition.getPartitionIdentifier()));
             }
         }
-        List<Role> roles = new ArrayList();
+        List<Role> roles = new ArrayList<>();
         assertFalse("No approvals submitted, check should have failed.", approvalProfile.canApprovalExecute(new ArrayList<Approval>(), roles));
         assertFalse("Incorrect approvals submitted, check should have failed.",
-                approvalProfile.canApprovalExecute(Arrays.asList(approvals.get(0), approvals.get(0), approvals.get(0), approvals.get(0))));
-        assertTrue("Correct set of approvals submitted, check should have passed.", approvalProfile.canApprovalExecute(approvals));
+                approvalProfile.canApprovalExecute(Arrays.asList(approvals.get(0), approvals.get(0), approvals.get(0), approvals.get(0)), roles));
+        assertTrue("Correct set of approvals submitted, check should have passed.", approvalProfile.canApprovalExecute(approvals, roles));
 
     }
 
