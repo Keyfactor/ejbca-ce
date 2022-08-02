@@ -100,6 +100,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
     public static final int DEFAULT_REMAININGLOGINATTEMPTS = -1;
     
+    public static final String MARKER_FROM_REST_RESOURCE = "__zzz_marker_rest_";
+    
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
