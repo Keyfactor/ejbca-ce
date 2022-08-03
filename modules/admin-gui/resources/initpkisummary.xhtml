@@ -76,6 +76,13 @@
 		
 			<h:outputLabel for="adminValidity" value="Super Administrator Validity (days)"/>
 			<h:outputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}"/>
+
+			<h:panelGroup/><h:panelGroup/>
+			<h:outputText value="Clean up" style="font-weight:bold"/>
+			<h:outputText value=""/>
+			<h:outputLabel for="deletePublicRole" value="Delete default public access role"/>
+			<h:selectBooleanCheckbox id="deletePublicRole" value="#{initNewPkiMBean.deletePublicRole}" />
+
 			<br/>
 		</h:panelGrid>
 	
