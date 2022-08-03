@@ -399,7 +399,7 @@
                                             <f:ajax event="keyup" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectAltNameFieldMessage"/>
                                         </h:inputText>                                        
-										<h:outputText id="sANNonModifiableField" rendered="#{!instance.modifiable}" value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].value}"/>
+										<h:outputText id="sANNonModifiableField" rendered="#{!instance.modifiable and !instance.selectable}" value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].value}"/>
                                         <h:selectOneMenu value="#{enrollMakeNewRequestBean.subjectAlternativeName.requiredFieldInstances[loop.index].value}"
                                         	rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
                                             <f:selectItems value="#{instance.selectableValues}" />
