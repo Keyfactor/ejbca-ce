@@ -1526,7 +1526,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (field == null || field.getLocalValue() == null || field.getLocalValue().toString().isEmpty()) {
             field = (UIInput) components.findComponent("upnRfcEmail2");
         }
-        final String value = field.getLocalValue() == null ? "" : field.getLocalValue().toString();
+        final String value = field.getLocalValue() == null ? "" : field.getLocalValue().toString().trim();
         if (!value.isEmpty()) {
             final UIComponent domainField = (UIComponent) components.findComponent("upnRfcDomain");
             if (domainField != null && domainField.isRendered()) {
