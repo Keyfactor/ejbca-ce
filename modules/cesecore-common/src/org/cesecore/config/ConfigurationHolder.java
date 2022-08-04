@@ -436,7 +436,9 @@ public final class ConfigurationHolder {
     public static final PropertiesConfiguration loadReloadingProperties(final File file) throws ConfigurationException {
         final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
                 new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
-                .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false).setFile(file));
+                .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false)
+                        .setFile(file)
+                        .setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
         
         final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
             null, 1, TimeUnit.MINUTES);
