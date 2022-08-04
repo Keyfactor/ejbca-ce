@@ -693,14 +693,6 @@
 	            <include name="unidfnr-ejb.jar" />
 	            <include name="ejbca-ejb.jar" />
 				<include name="acme-common.jar" />
-        		<include name="ejbca-rest-common.jar" />
-        		<include name="ejbca-rest-certificate.jar" />
-        		<include name="ejbca-rest-configdump.jar" />
-        		<include name="ejbca-rest-ca.jar" />
-        		<include name="ejbca-rest-cryptotoken.jar" />
-        		<include name="ejbca-rest-camanagement.jar" />
-        		<include name="ejbca-rest-endentity.jar" />
-        		<include name="ejbca-rest-ssh.jar" />
         		<include name="ejbca-ssh.jar" />
         		<include name="ejbca-cits.jar" />
         		<include name="proxy-ca.jar" />
