@@ -3162,6 +3162,44 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        EndEntityProfileNotFoundException endentityProfileNotFoundException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getEndEntityProfile(authenticationToken, profileName);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Authorization was denied to access the End Entity Profile with name " + profileName + " for proxied request on CA. " + e.getMessage());
+                    }
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                }  catch (EndEntityProfileNotFoundException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("End Entity Profile with name " + profileName +  " could not be found for proxied request on CA. " + e.getMessage());
+                    }
+                    if (endentityProfileNotFoundException == null) {
+                        endentityProfileNotFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+            }
+        }
+        if (endentityProfileNotFoundException != null) {
+            throw endentityProfileNotFoundException;
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
+
+    @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcReq)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             EjbcaException, WaitingForApprovalException, CertificateExpiredException, CesecoreException {
