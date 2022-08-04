@@ -150,9 +150,8 @@ public class AddEndEntityRestRequest {
 
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
         		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
-            final ExtendedInformation extendedInfo;
+            final ExtendedInformation extendedInfo = new ExtendedInformation();
             if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-                extendedInfo = new ExtendedInformation();
                 if (addEndEntityRestRequest.getAccountBindingId() != null) {
                     extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
                 }
@@ -161,9 +160,9 @@ public class AddEndEntityRestRequest {
                         extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
                     });
                 }
-            } else {
-                extendedInfo = null;
             }
+            extendedInfo.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+            
             final Date now = new Date();
             final int tokenType = TokenType.resolveEndEntityTokenByName(addEndEntityRestRequest.getToken()).getTokenValue();
             final EndEntityInformation eeInformation = new EndEntityInformation(
