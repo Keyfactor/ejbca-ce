@@ -67,10 +67,21 @@ public final class StringTools {
     private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
     private static final String ipv6Pattern = "(([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}|[0-9a-f]{1,4}(:[0-9a-f]{1,4})*::[0-9a-f]{1,4}(:[0-9a-f]{1,4})*)";
 
+    private static Pattern VALID_RFC5322_USER_PART = null;
+    private static Pattern VALID_RFC5322_EMAIL = null;
+    /* RFC5322 user part with alpha numeric start and end. */
+    private static final String emailUserPart = "^[a-z0-9]+[a-z0-9_!#$%&'*+/=?`{|}~^.-]+";
+    /* RFC5322 with alpha numeric start and end at user and domain part. */
+    private static final String email = "^[a-z0-9]+[a-z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-z0-9]+[a-z0-9.-]+[a-z0-9]+$";
+
     static {
       try {
         VALID_IPV4_PATTERN = Pattern.compile(ipv4Pattern, Pattern.CASE_INSENSITIVE);
         VALID_IPV6_PATTERN = Pattern.compile(ipv6Pattern, Pattern.CASE_INSENSITIVE);
+
+        VALID_RFC5322_USER_PART = Pattern.compile(emailUserPart, Pattern.CASE_INSENSITIVE);
+        VALID_RFC5322_EMAIL = Pattern.compile(email, Pattern.CASE_INSENSITIVE);
+
       } catch (PatternSyntaxException e) {
         log.error("Unable to compile IP address validation pattern", e);
       }
@@ -475,10 +486,10 @@ public final class StringTools {
       Matcher m2 = StringTools.VALID_IPV6_PATTERN.matcher(ipAddress);
       return m2.matches();
     }
-    
+
     /**
      * Determines if the given string is a valid IPv4 address (see {@link StringTools#isIpAddress(String)}).
-     * 
+     *
      * @param ipAddress A string that is to be examined to verify whether or not
      *  it could be a valid IPv4 address.
      * @return <code>true</code> if the string is a value that is a valid IPv4 address,
@@ -487,7 +498,7 @@ public final class StringTools {
     public static boolean isIpV4Address(String ipAddress) {
         return StringTools.VALID_IPV4_PATTERN.matcher(ipAddress).matches();
     }
-    
+
     /**
      * Determines if the given string is a valid IPv6 address (see {@link StringTools#isIpAddress(String)}).
      *
@@ -498,6 +509,26 @@ public final class StringTools {
      */
     public static boolean isIpV6Address(String ipAddress) {
         return StringTools.VALID_IPV6_PATTERN.matcher(ipAddress).matches();
+    }
+
+    /**
+     * Determine if the given string is a valid RFC5322 e-mail address user part.
+     *
+     * @param emailUserPart the user part of the e-mail address (before '@').
+     * @return true if it is a valid RFC5322 e-mail address user part.
+     */
+    public static boolean isValidEmailUserPart(final String emailUserPart) {
+        return VALID_RFC5322_USER_PART.matcher(emailUserPart).matches();
+    }
+
+    /**
+     * Determine if the given string is a valid RFC5322 e-mail.
+     *
+     * @param emailUserPart the e-mail address.
+     * @return true if it is a valid RFC5322 e-mail address.
+     */
+    public static boolean isValidEmail(final String email) {
+        return VALID_RFC5322_EMAIL.matcher(email).matches();
     }
 
     /**

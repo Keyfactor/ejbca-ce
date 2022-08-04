@@ -3011,7 +3011,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.name = name;
             this.number = number;
             this.defaultValue = EndEntityProfile.this.getValue(name, number);
-            this.value = isSelectable() ? getSelectableValues().get(0) : defaultValue;
+            this.value = (defaultValue != null && defaultValue.split(";").length > 1) ? defaultValue.split(";")[0] : defaultValue;
             this.profileId = EndEntityProfile.DATA_CONSTANTS.get(name);
             this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
             this.dnsCopyCheckbox = name.equals(DnComponents.DNSNAME) && isCopy();
@@ -3026,8 +3026,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isRequired() { return EndEntityProfile.this.isRequired(name, number); }
         public boolean isModifiable() { return EndEntityProfile.this.isModifyable(name, number); }
         public boolean isRegexPatternRequired() { return getRegexPattern() != null; }
-        public boolean isUnModifiableUpnRfc() {
-            return !isModifiable() && (name.equals("RFC822NAME") || name.equals("UPN"));
+        public boolean isUpnRfc() {
+            return name.equals("RFC822NAME") || name.equals("UPN");
+        }
+        public boolean isDnEmail() {
+            return name.equals(DnComponents.DNEMAILADDRESS);
         }
         public boolean isRfcUseEmail() {
             return name.equals("RFC822NAME") && isUsed();
@@ -3045,11 +3048,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public String getValue(){ return value; }
         public void setValue(String value) { this.value = value; }
+        
+        public String getUpnRfcEmailNonModifiableField() {
+            final List<String> list = getSelectableValuesUpnRfc();
+            if (list.size() > 0) {
+                return list.get(0);
+            }
+            return "";
+        }
+        public void setUpnRfcEmailNonModifiableField(String value) {} // NOOP
+        
         public String getDefaultValue() { return defaultValue; }
         public void setDefaultValue(String value) { this.defaultValue = value; }
 		public boolean isUseDataFromEmailField() { return useDataFromEmailField; }
 		public void setUseDataFromEmailField(boolean useDataFromEmailField) { this.useDataFromEmailField = useDataFromEmailField; }
 		public String getName() { return name; }
+		public void setName(String name) { /* NOOP. Inly required for JSF template hidden field which stores the type of the field for post event validation. */ }
         public String getRegexPattern() { return regexPattern; }
         public int getNumber() { return number; }
         public boolean isSelectable() {
@@ -3060,6 +3074,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public List<String> getSelectableValuesUpnRfc() {
             return Arrays.asList(defaultValue.split(";"));
+        }
+        public boolean isSelectableValuesUpnRfcDomainOnly() {
+            return defaultValue.length() > 0 && !defaultValue.contains("@");
         }
         @Override
         public int hashCode() { return name.hashCode(); }
