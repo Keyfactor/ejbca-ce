@@ -14,6 +14,8 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -24,12 +26,18 @@ import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CACommon;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
+import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 
@@ -45,6 +53,8 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
+    @EJB
+    private CaSessionLocal caSession;
 
     @Override
     public Response status() {
@@ -84,5 +94,73 @@ public class CertificateRestResourceV2 extends BaseRestResource {
         final RaCertificateSearchRequestV2 raRequest = SearchCertificatesRestRequestV2.converter().toEntity(restRequest);
         final RaCertificateSearchResponseV2 raResponse = (RaCertificateSearchResponseV2) raMasterApi.searchForCertificatesV2(authenticationToken, raRequest);
         return SearchCertificatesRestResponseV2.converter().toRestResponse(raResponse, restRequest.getPagination());
+    }
+    
+    /**
+     * Get Certificate Profile Info
+     * 
+     * @param requestContext 
+     * @param profileName is the name of the Certificate Profile
+     * @return response containing Certificate Profile Info
+     * @throws AuthorizationDeniedException
+     * @throws RestException In case of malformed criteria.
+     */
+    public Response getCertificateProfileInfo(final HttpServletRequest requestContext, final String profileName
+            ) throws AuthorizationDeniedException, RestException  {
+        final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
+        final CertificateProfileInfoRestResponseV2 getCertificateProfileInfoRestResponse = getCertificateProfileInfo(authenticationToken, profileName);
+        return Response.ok(getCertificateProfileInfoRestResponse).build();
+    }
+    /**
+     * Get Certificate Profile Info
+     * 
+     * @param authenticationToken
+     * @param profileName is the name of the Certificate Profile
+     * @return a CertificateProfileInfoRestResponseV2 containing Certificate Profile Info
+     * @throws AuthorizationDeniedException
+     * @throws RestException In case of malformed criteria.
+     */
+    private CertificateProfileInfoRestResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) throws AuthorizationDeniedException, RestException {
+        IdNameHashMap<CertificateProfile> availableCertificateProfilesNew = new IdNameHashMap<>();
+        availableCertificateProfilesNew = CertificateRestResourceUtil.loadAllAuthorizedCertificateProfiles(authenticationToken, raMasterApi, availableCertificateProfilesNew);
+        KeyToValueHolder<CertificateProfile> holder = availableCertificateProfilesNew.get(profileName);
+        Integer profileId;
+        if (holder!=null) {
+            profileId = holder.getId();
+        }else {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), 
+                    "Invalid search criteria, unknown certificate profile.");
+        }
+        final CertificateProfile certProfile = raMasterApi.getCertificateProfile(profileId);
+        final List<Integer> caIds = certProfile.getAvailableCAs();
+        List<String> availableCas = new ArrayList<String>();
+        List<String> availableKeyAlgos = certProfile.getAvailableKeyAlgorithmsAsList();
+        List<String> availableEcdsaCurves = new ArrayList<>();
+        List<Integer> availableBitLengths = new ArrayList<>();
+        // add CA name for all ids...
+        for (final int id : caIds) {
+            if (id == CertificateProfile.ANYCA) {
+                availableCas.add("ANY CA");
+            } else {
+                final CACommon ca = caSession.getCA(authenticationToken, id, null);
+                availableCas.add(ca.getName());
+            }
+        }
+        if (!availableKeyAlgos.contains("ECDSA")) {
+            availableEcdsaCurves.add("No EC curves available.");
+        }else {
+            availableEcdsaCurves = certProfile.getAvailableEcCurvesAsList();
+        }
+        if ((!availableKeyAlgos.contains("RSA")) && (!availableEcdsaCurves.contains("ANY_EC_CURVE"))) {
+            availableBitLengths.add(0);
+        }else {
+            availableBitLengths = certProfile.getAvailableBitLengthsAsList();
+        }
+        return CertificateProfileInfoRestResponseV2.builder()
+                .setAvailableAlgos(availableKeyAlgos)
+                .setAvailableBitLengths(availableBitLengths)
+                .setAvailableEcdsaCurves(availableEcdsaCurves)
+                .setAvailableProfileCAs(availableCas)
+                .build();
     }
 }
