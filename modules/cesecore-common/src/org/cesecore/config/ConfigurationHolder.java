@@ -33,6 +33,7 @@ import org.apache.commons.configuration2.SystemConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.log4j.Logger;
@@ -418,6 +419,7 @@ public final class ConfigurationHolder {
                 new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
                 .configure(new Parameters().properties().setURL(url)
                     .setThrowExceptionOnMissing(false)
+                    .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
                     .setIncludesAllowed(false));
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;
