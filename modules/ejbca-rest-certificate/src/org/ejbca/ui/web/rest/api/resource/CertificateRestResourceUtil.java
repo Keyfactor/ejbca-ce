@@ -20,6 +20,8 @@ import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRequest;
@@ -95,6 +97,13 @@ public class CertificateRestResourceUtil {
                     // Do nothing
             }
         }
+    }
+    
+    public static IdNameHashMap<CertificateProfile> loadAllAuthorizedCertificateProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi, final  IdNameHashMap<CertificateProfile> availableCertificateProfiles) {
+        if(availableCertificateProfiles.isEmpty()) {
+            return raMasterApi.getAllAuthorizedCertificateProfiles(authenticationToken);
+        }
+        return availableCertificateProfiles;
     }
     
     public static Map<Integer, String> loadAuthorizedEndEntityProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi, final  Map<Integer, String> availableEndEntityProfiles) {

@@ -61,6 +61,7 @@ import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.After;
@@ -76,6 +77,7 @@ import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -164,6 +166,39 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
+    }
+    
+    @Test
+    public void shouldReturnCertificateProfileInfo() throws Exception {
+        //given
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        List<Integer> availableCas = new ArrayList<>();
+        availableCas.add(x509TestCa.getCAId());
+        certificateProfile.setAvailableCAs(availableCas);
+        int[] availableBits = {4096};
+        certificateProfile.setAvailableBitLengths(availableBits);
+        String[] availableAlgorithms = {"RSA"};
+        certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+        certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, "TestProfileName", certificateProfile);
+        try {
+            // when
+            final Response actualResponse = newRequest("/v2/certificate/profile/TestProfileName").request().get();
+            final String actualJsonString = actualResponse.readEntity(String.class);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
+            String algs  = (String) jsonArrayAlgs.get(0);
+            JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
+            long bits  = (long) jsonArrayBitLengths.get(0);
+            JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
+            String cas  = (String) jsonArrayCas.get(0);
+            // then
+            assertEquals("RSA", algs);
+            assertEquals(4096, bits);
+            assertEquals(TEST_CA_NAME, cas);
+            assertJsonContentType(actualResponse);
+        } finally {
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, "TestProfileName");
+        }
     }
 
     @Test
