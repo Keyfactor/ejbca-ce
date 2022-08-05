@@ -3460,4 +3460,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return generateKeyStoreWithoutViewEndEntityAccessRule(admin, userData);
     }
+
+    @Override
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, final String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
+        if (endEntityProfileSession.isAuthorizedToView(authenticationToken, endEntityProfileId)) {
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(profileName);
+            RaEndEntityProfileResponse.RaEndEntityProfileResponseConverter converter = RaEndEntityProfileResponse.converter();
+            return converter.toRaResponse(profileName, endEntityProfile, caSession.getCAIdToNameMap(),
+                    certificateProfileSession.getCertificateProfileIdToNameMap());
+        } else {
+            throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to view certificate profile " + profileName);
+        }
+    }
 }
