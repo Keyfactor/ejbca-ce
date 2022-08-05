@@ -1363,6 +1363,15 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
 
     /**
+     * Fetches the end entity profile for REST API.
+     *
+     * @param profileName the end entity profile name.
+     * @return  end entity profile as rest response object.
+     * @since RA Master API version 4 (EJBCA 7.10.0)
+     */
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, final String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException;
+
+    /**
      * Fetches the certificate profile by ID in XML format.
      *
      * @param profileId the certificate profile ID.
