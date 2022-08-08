@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.log4j.Logger;
@@ -259,7 +260,8 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
         // FileBasedConfiguration
         final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
                 new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
-                .configure(params.fileBased().setFile(file));
+                .configure(params.fileBased().setFile(file)
+                        .setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
         
         final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
             null, 1, TimeUnit.MINUTES);

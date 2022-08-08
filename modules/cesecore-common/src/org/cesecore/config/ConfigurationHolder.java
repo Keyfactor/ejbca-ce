@@ -33,6 +33,7 @@ import org.apache.commons.configuration2.SystemConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.log4j.Logger;
@@ -418,6 +419,7 @@ public final class ConfigurationHolder {
                 new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
                 .configure(new Parameters().properties().setURL(url)
                     .setThrowExceptionOnMissing(false)
+                    .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
                     .setIncludesAllowed(false));
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;
@@ -434,7 +436,9 @@ public final class ConfigurationHolder {
     public static final PropertiesConfiguration loadReloadingProperties(final File file) throws ConfigurationException {
         final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
                 new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
-                .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false).setFile(file));
+                .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false)
+                        .setFile(file)
+                        .setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
         
         final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
             null, 1, TimeUnit.MINUTES);
