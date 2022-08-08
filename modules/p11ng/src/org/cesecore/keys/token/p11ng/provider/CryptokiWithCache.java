@@ -175,6 +175,12 @@ class CryptokiWithCache implements CryptokiFacade {
     }
 
     @Override
+    public void generateKey(long session, CKM mechanism, CKA[] secretKeyTemplate, LongRef secretKey) {
+        api.generateKey(session, mechanism, secretKeyTemplate, secretKey);
+        objectsCache.clear();
+    }
+
+    @Override
     public long createObject(final long session, final CKA... template) {
         final long objectHandle = api.createObject(session, template);
         objectsCache.clear();
