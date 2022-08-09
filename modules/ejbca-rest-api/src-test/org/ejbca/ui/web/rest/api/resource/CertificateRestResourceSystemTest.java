@@ -175,8 +175,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         List<Integer> availableCas = new ArrayList<>();
         availableCas.add(x509TestCa.getCAId());
         certificateProfile.setAvailableCAs(availableCas);
-        int[] availableBits = {4096};
-        certificateProfile.setAvailableBitLengths(availableBits);
+        int[] availableBitLengths = {4096};
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
         String[] availableAlgorithms = {"RSA"};
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
         certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, "TestProfileName", certificateProfile);
@@ -186,14 +186,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final String actualJsonString = actualResponse.readEntity(String.class);
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
             JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
-            String algs  = (String) jsonArrayAlgs.get(0);
+            String algorithms  = (String) jsonArrayAlgs.get(0);
             JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
-            long bits  = (long) jsonArrayBitLengths.get(0);
+            long bitLengths  = (long) jsonArrayBitLengths.get(0);
             JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
             String cas  = (String) jsonArrayCas.get(0);
             // then
-            assertEquals("RSA", algs);
-            assertEquals(4096, bits);
+            assertEquals("RSA", algorithms);
+            assertEquals(4096, bitLengths);
             assertEquals(TEST_CA_NAME, cas);
             assertJsonContentType(actualResponse);
         } finally {
