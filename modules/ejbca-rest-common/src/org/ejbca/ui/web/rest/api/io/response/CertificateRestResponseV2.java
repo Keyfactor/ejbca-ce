@@ -15,6 +15,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * A class representing general information about a certificate and its CertificateData 
@@ -25,59 +26,73 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "status", "subjectAltName", "subjectDN", "subjectKeyId", "tag", "type", "updateTime", "username", 
     "certificate", "certificateRequest", "crlPartitionIndex" })
 public class CertificateRestResponseV2 {
-    
+
+    @ApiModelProperty(value = "Certificate fingerprint", example = "123abc456def789ghi123klm456nop789qrs123t")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("fingerprint")
     private String fingerprint;
-    
+
+    @ApiModelProperty(value = "Certificate Authority fingerprint", example = "abc123def456ghi789klm123nop456qrs789tvx1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("cAFingerprint")
     private String caFingerprint;
-    
+
+    @ApiModelProperty(value = "Issuer Distinguished Name", example = "CN=ExampleCA")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("issuerDN")
     private String issuerDN;
-    
+
+    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("subjectDN")
     private String subjectDN;
-    
+
+    @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("subjectAltName")
     private String subjectAltName;
-    
+
+    @ApiModelProperty(value = "Subject Key Identifier", example = "z123abc456def789ghi123klm456nop789qrs123")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("subjectKeyId")
     private String subjectKeyId;
-    
+
+    @ApiModelProperty(value = "Certificate Profile Identifier", example = "1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("certificateProfileId")
     private Integer certificateProfileId;
-    
+
+    @ApiModelProperty(value = "End Entity Profile Identifier", example = "1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("endEntityProfileId")
     private Integer endEntityProfileId;
-    
+
+    @ApiModelProperty(value = "Date at which certificate became valid", example = "1659952800011")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("notBefore")
     private Long notBefore;
-    
+
+    @ApiModelProperty(value = "Date after which certificate should be considered expired", example = "2147483647000")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("expireDate")
     private Long expireDate;
-    
+
+    @ApiModelProperty(value = "Revocation date", example = "-1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("revocationDate")
     private Long revocationDate = -1L;
-    
+
+    @ApiModelProperty(value = "Revocation reson", example = "-1", allowableValues = "-1, 0, 1, 2, 3, 4, 5, 6, 8, 9, 10")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("revocationReason")
     private Integer revocationReason = -1;
-    
+
+    @ApiModelProperty(value = "Hex Serial Number", example = "1234567890ABCDEF")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("serialNumber")
     private String serialNumber;
-    
+
+    @ApiModelProperty(value = "Certificate status", example = "20")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("status")
     private Integer status;
@@ -89,23 +104,29 @@ public class CertificateRestResponseV2 {
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("type")
     private Integer type;
-    
+
+    @ApiModelProperty(value = "Update time", example = "1659967133000")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("udpateTime")
     private Long updateTime;
-    
+
+    @ApiModelProperty(value = "Username", example = "JohnDoe")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("username")
     private String username;
-    
+
+    @ApiModelProperty(value = "Base64 encoded certificate", example = "TUlJR...t2A==")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("base64Cert")
     private byte[] certificate;
-    
+
+    @ApiModelProperty(value = "Certificate request", example = "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("certificateRequest")
     private String certificateRequest;
-    
+
+    @ApiModelProperty(value = "CRL partition index", example = "1")
+
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("crlPartitionIndex")
     private Integer crlPartitionIndex;
