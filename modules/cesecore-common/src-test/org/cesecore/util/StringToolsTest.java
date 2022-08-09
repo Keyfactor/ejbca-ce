@@ -24,6 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -212,9 +213,11 @@ public class StringToolsTest {
     public void testObfuscate() throws Exception {
         String obf = StringTools.obfuscate("foo123");
         String deobf = StringTools.deobfuscate(obf);
+        assertEquals("OBF:1jg21l181ku51kqp1kxu1jd8", obf);
         assertEquals("foo123", deobf);
         String obfif = StringTools.obfuscate("foo123qw");
         String deobfif = StringTools.deobfuscate(obfif);
+        assertEquals("OBF:1wtq1xfh1l8b18qm18qo1l4z1xfl1wuo", obfif);
         assertEquals("foo123qw", deobfif);
         assertEquals("foo123qwe", StringTools.deobfuscateIf("foo123qwe"));
         // Empty String should be handled
@@ -224,6 +227,67 @@ public class StringToolsTest {
         assertNull(StringTools.deobfuscate(null));
         assertNull(StringTools.deobfuscateIf(null));
         assertNull(StringTools.obfuscate(null));
+        // Non-ASCII should be handled
+        String obf2 = StringTools.obfuscate("euro€.");
+        String deobf2 = StringTools.deobfuscate(obf2);
+        assertEquals("euro€.", deobf2);
+    }
+
+    @Test
+    public void testObfuscateEmoji() throws Exception {
+        String obf = StringTools.obfuscate("euro€emoji🧑🏿.");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("euro\u20ACemoji\uD83E\uDDD1\uD83C\uDFFF.", deobf);
+    }
+
+    @Test
+    public void testObfuscateNoRepeat() throws Exception {
+        String obf = StringTools.obfuscate("aabc");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("aabc", deobf);
+        assertNotEquals(obf.substring(0, 4), obf.substring(4, 8));
+
+        obf = StringTools.obfuscate("€€€€aabc");
+        deobf = StringTools.deobfuscate(obf);
+        assertEquals("€€€€aabc", deobf);
+        obf = obf.substring(4);
+        assertNotEquals(obf.substring(0, 12), obf.substring(12, 24));
+        assertEquals(obf.substring(24, 36), obf.substring(36, 48));
+    }
+
+    @Test
+    public void testObfuscateFuzz() throws Exception {
+        Random random = new Random(1);
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < 999999; i++) {
+            builder.setLength(0);
+            int length = 40 + random.nextInt(50);
+            for (int j = 0; j < length; j++) {
+                int codePoint = random.nextInt(Character.MAX_CODE_POINT + 1);
+                if (!Character.isDefined(codePoint) || Character.isSurrogate((char)codePoint)) {
+                    continue;
+                }
+                builder.appendCodePoint(codePoint);
+
+                codePoint = random.nextInt(500);
+                if (codePoint < 128) {
+                    builder.appendCodePoint(codePoint);
+                }
+            }
+
+            String input = builder.toString();
+            String obf = StringTools.obfuscate(input);
+            String deobf = StringTools.deobfuscate(obf);
+            assertEquals(input, deobf);
+        }
+    }
+
+    @Test
+    public void testObfuscateNuls() throws Exception {
+        String obf = StringTools.obfuscate("a\0\0\0\0\0\0\0c");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("a\0\0\0\0\0\0\0c", deobf);
     }
 
     @Test
