@@ -10,6 +10,7 @@
 package org.cesecore.keys.token.p11ng.provider;
 
 /**
+ * Representation of a PKCS#11 session.
  *
  */
 public class NJI11Session {
