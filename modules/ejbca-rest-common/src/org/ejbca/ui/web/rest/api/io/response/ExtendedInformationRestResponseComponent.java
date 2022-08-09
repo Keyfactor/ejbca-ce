@@ -19,7 +19,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class ExtendedInformationRestResponseComponent {
 
-    @ApiModelProperty(value = "Extended Information property name", example = "extensiondata_1.3.6.1.5.5.7.1.24.value")
+    @ApiModelProperty(value = "Extended Information property name", example = "1.3.6.1.5.5.7.1.24")
 	private String name;
     @ApiModelProperty(value = "Property value", example = "3003020105")
     private String value;
