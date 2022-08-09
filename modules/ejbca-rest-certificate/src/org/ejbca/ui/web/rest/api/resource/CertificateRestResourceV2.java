@@ -14,9 +14,6 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -26,12 +23,9 @@ import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.era.IdNameHashMap;
-import org.ejbca.core.model.era.KeyToValueHolder;
+import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -111,6 +105,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
         final CertificateProfileInfoRestResponseV2 getCertificateProfileInfoRestResponse = getCertificateProfileInfo(authenticationToken, profileName);
         return Response.ok(getCertificateProfileInfoRestResponse).build();
     }
+    
     /**
      * Get Certificate Profile Info
      * 
@@ -121,46 +116,12 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      * @throws RestException In case of malformed criteria.
      */
     private CertificateProfileInfoRestResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) throws AuthorizationDeniedException, RestException {
-        IdNameHashMap<CertificateProfile> availableCertificateProfilesNew = new IdNameHashMap<>();
-        availableCertificateProfilesNew = CertificateRestResourceUtil.loadAllAuthorizedCertificateProfiles(authenticationToken, raMasterApi, availableCertificateProfilesNew);
-        KeyToValueHolder<CertificateProfile> holder = availableCertificateProfilesNew.get(profileName);
-        Integer profileId;
-        if (holder!=null) {
-            profileId = holder.getId();
-        }else {
+        RaCertificateProfileResponseV2 raResponse = raMasterApi.getCertificateProfileInfo(authenticationToken, profileName);
+        if (raResponse == null){
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), 
                     "Invalid search criteria, unknown certificate profile.");
         }
-        final CertificateProfile certProfile = raMasterApi.getCertificateProfile(profileId);
-        final List<Integer> caIds = certProfile.getAvailableCAs();
-        List<String> availableCas = new ArrayList<String>();
-        List<String> availableKeyAlgos = certProfile.getAvailableKeyAlgorithmsAsList();
-        List<String> availableEcdsaCurves = new ArrayList<>();
-        List<Integer> availableBitLengths = new ArrayList<>();
-        // add CA name for all ids...
-        for (final int id : caIds) {
-            if (id == CertificateProfile.ANYCA) {
-                availableCas.add("ANY CA");
-            } else {
-                final CACommon ca = caSession.getCA(authenticationToken, id, null);
-                availableCas.add(ca.getName());
-            }
-        }
-        if (!availableKeyAlgos.contains("ECDSA")) {
-            availableEcdsaCurves.add("No EC curves available.");
-        }else {
-            availableEcdsaCurves = certProfile.getAvailableEcCurvesAsList();
-        }
-        if ((!availableKeyAlgos.contains("RSA")) && (!availableEcdsaCurves.contains("ANY_EC_CURVE"))) {
-            availableBitLengths.add(0);
-        }else {
-            availableBitLengths = certProfile.getAvailableBitLengthsAsList();
-        }
-        return CertificateProfileInfoRestResponseV2.builder()
-                .setAvailableAlgos(availableKeyAlgos)
-                .setAvailableBitLengths(availableBitLengths)
-                .setAvailableEcdsaCurves(availableEcdsaCurves)
-                .setAvailableProfileCAs(availableCas)
-                .build();
+        CertificateProfileInfoRestResponseV2 response = new CertificateProfileInfoRestResponseV2().convert().toCertificateProfileInfoRestResponse(raResponse);
+        return response;
     }
 }
