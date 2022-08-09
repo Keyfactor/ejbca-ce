@@ -14,6 +14,8 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import java.util.List;
 
+import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
+
 /**
  * Output for certificate profile info V2.
  */
@@ -24,46 +26,35 @@ public class CertificateProfileInfoRestResponseV2 {
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     
-    private CertificateProfileInfoRestResponseV2(List<String> availableKeyAlgs, List<Integer> availableBitLengths, List<String> availableEcdsaCurves, List<String> availableCas ){
+    public CertificateProfileInfoRestResponseV2(List<String> availableKeyAlgs, List<Integer> availableBitLengths, List<String> availableEcdsaCurves, List<String> availableCas){
         this.availableKeyAlgs = availableKeyAlgs;
         this.availableBitLenghts = availableBitLengths;
         this.availableEcdsaCurves = availableEcdsaCurves;
         this.availableCas= availableCas;
+    }
+    
+    public CertificateProfileInfoRestResponseV2() {
+        
     }
 
     public List<String> getAvailableKeyAlgs() {
         return availableKeyAlgs;
     }
     
-    public void setgetAvailableKeyAlgs (List<String> availableKeyAlgs) {
-        this.availableKeyAlgs = availableKeyAlgs;
-    }
-    
     public List<Integer> getAvailableBitLenghts() {
         return availableBitLenghts;
-    }
-    
-    public void setAvailableBitLenghts (List<Integer> availableBitLenghts) {
-        this.availableBitLenghts = availableBitLenghts;
     }
     
     public List<String> getAvailableEcdsaCurves() {
         return availableEcdsaCurves;
     }
-        
-    public void setgetAvailableEcdsaCurves (List<String> availableEcdsaCurves) {
-        this.availableEcdsaCurves = availableEcdsaCurves;
-    }
-
+    
     public List<String> getAvailableCas() {
         return availableCas;
     }
-    public void setAvailableCas (List<String> availableCas) {
-        this.availableCas = availableCas;
-    }
-
+    
     /**
-     * Return a builder instance for this class.
+     * Returns a builder instance for this class.
      *
      * @return builder instance for this class.
      */
@@ -76,7 +67,8 @@ public class CertificateProfileInfoRestResponseV2 {
         private List<Integer> availableProfileBitLengths;
         private List<String> availableProfileEcdsaCurves;
         private List<String> availableProfileCas;
-        private CertificateProfileInfoRestResponseBuilderV2() {}
+        
+        public CertificateProfileInfoRestResponseBuilderV2() {}
 
         public CertificateProfileInfoRestResponseBuilderV2 setAvailableAlgos(List<String> availableProfileAlgos) {
             this.availableProfileAlgos = availableProfileAlgos;
@@ -102,5 +94,20 @@ public class CertificateProfileInfoRestResponseV2 {
             return new CertificateProfileInfoRestResponseV2(availableProfileAlgos, availableProfileBitLengths, availableProfileEcdsaCurves, availableProfileCas);
         }
     }
-
+    
+    public CertificateProfileInfoRestResponseConverterV2 convert() {
+        return new CertificateProfileInfoRestResponseConverterV2();
+    }
+    
+    public static class CertificateProfileInfoRestResponseConverterV2 {
+        public CertificateProfileInfoRestResponseConverterV2() {};
+        
+        public CertificateProfileInfoRestResponseV2 toCertificateProfileInfoRestResponse(RaCertificateProfileResponseV2 raResponse) {
+            return CertificateProfileInfoRestResponseV2.builder().setAvailableAlgos(raResponse.getAvailableAlgorithms())
+                    .setAvailableBitLengths(raResponse.getAvailableBitLengths())
+                    .setAvailableEcdsaCurves(raResponse.getAvailableEcdsaCurves())
+                    .setAvailableProfileCAs(raResponse.getAvailableCas())
+                    .build();
+        }
+    }
 }
