@@ -14,6 +14,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 
 /**
@@ -21,12 +22,21 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
  */
 public class EndEntityRestResponse {
 
+    @ApiModelProperty(value = "Username", example = "JohnDoe")
     private String username;
+    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     private String dn;
+    @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     private String subjectAltName;
+    @ApiModelProperty(value = "Email", example = "john.doe@example.com")
     private String email;
+    @ApiModelProperty(value = "End Entity status", example = "NEW",
+            allowableValues = "NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL"
+    )
     private String status;
+    @ApiModelProperty(value = "Token type", example = "P12", allowableValues = "USERGENERATED, P12, BCFKS, JKS, PEM")
     private String token;
+    @ApiModelProperty(value = "Extended Information")
     private List<ExtendedInformationRestResponseComponent> extensionData;
 
     private EndEntityRestResponse(String username, String dn, String subjectAltName, String email, String status, String token,
