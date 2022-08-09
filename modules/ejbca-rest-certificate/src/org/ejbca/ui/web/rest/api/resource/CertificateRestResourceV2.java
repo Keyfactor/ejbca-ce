@@ -47,9 +47,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
-    @EJB
-    private CaSessionLocal caSession;
-
+    
     @Override
     public Response status() {
         return Response.ok(RestResourceStatusRestResponse.builder()
