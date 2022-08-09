@@ -164,7 +164,7 @@ public class AddEndEntityRestRequest {
                 }
                 if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                     addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                        extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
+                        extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
                     });
                 }
             }
