@@ -30,19 +30,26 @@ import io.swagger.annotations.ApiModelProperty;
 @ValidAddEndEntityRestRequest
 public class AddEndEntityRestRequest {
 
+    @ApiModelProperty(value = "Username", example = "JohnDoe")
 	private String username;
+    @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
+    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     private String subjectDn;
+    @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     private String subjectAltName;
+    @ApiModelProperty(value = "Email", example = "john.doe@example.com")
     private String email;
     private List<ExtendedInformationRestRequestComponent> extensionData;
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
     private String caName;
+    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
     private String certificateProfileName;
+    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "Token type property",
-            allowableValues = "USERGENERATED, P12, JKS, PEM"
-    )
+    @ApiModelProperty(value = "Token type property", allowableValues = "USERGENERATED, P12, JKS, PEM", example = "P12")
     private String token;
+    @ApiModelProperty(value = "Account Binding ID", example = "1234567890")
     private String accountBindingId;
     
     /** default constructor needed for serialization */

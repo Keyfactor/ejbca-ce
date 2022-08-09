@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * A class representing the information about an "expected" exceptional event triggered by REST resource,
@@ -26,7 +27,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class ExceptionInfoRestResponse {
 
     // Have to match HTTP Status codes
+    @ApiModelProperty(value = "Status code", example = "202")
     private int statusCode;
+    @ApiModelProperty(value = "Information message", example = "Request with Id 1 is still waiting for approval")
     private String infoMessage;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String link;
