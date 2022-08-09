@@ -99,13 +99,6 @@ public class CertificateRestResourceUtil {
         }
     }
     
-    public static IdNameHashMap<CertificateProfile> loadAllAuthorizedCertificateProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi, final  IdNameHashMap<CertificateProfile> availableCertificateProfiles) {
-        if(availableCertificateProfiles.isEmpty()) {
-            return raMasterApi.getAllAuthorizedCertificateProfiles(authenticationToken);
-        }
-        return availableCertificateProfiles;
-    }
-    
     public static Map<Integer, String> loadAuthorizedEndEntityProfiles(final AuthenticationToken authenticationToken, final RaMasterApiProxyBeanLocal raMasterApi, final  Map<Integer, String> availableEndEntityProfiles) {
         if(availableEndEntityProfiles.isEmpty()) {
             return raMasterApi.getAuthorizedEndEntityProfileIdsToNameMap(authenticationToken);
