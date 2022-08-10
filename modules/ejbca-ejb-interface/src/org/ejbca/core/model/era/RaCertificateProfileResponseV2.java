@@ -15,6 +15,7 @@ package org.ejbca.core.model.era;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -59,12 +60,15 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
         private List<String> getAvailableCasFromProfile(List<Integer>caIds, IdNameHashMap<CAInfo> caInfos) {
             List<String> availableCas = new ArrayList<String>();
-            for (final int id : caIds) {
-                if (id == CertificateProfile.ANYCA) {
-                    availableCas.add("ANY_CA");
-                } else {
-                    availableCas.add(caInfos.get(id).getName());
-                }    
+            Set<Integer> caInfoCaIds = caInfos.idKeySet();
+            if (caIds.contains(CertificateProfile.ANYCA)) {
+                availableCas.add("ANY_CA");
+            } else {
+                for (Integer caInfoCaId : caInfoCaIds) {
+                    if (caIds.contains(caInfoCaId)) {
+                        availableCas.add(caInfos.get(caInfoCaId).getName());
+                    }
+                }
             }
             return availableCas;
         }

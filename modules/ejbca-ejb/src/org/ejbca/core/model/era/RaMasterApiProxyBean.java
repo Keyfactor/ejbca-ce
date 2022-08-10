@@ -1021,7 +1021,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public RaCertificateProfileResponseV2 getCertificateProfileInfo(AuthenticationToken authenticationToken, String profileName) {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable()) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
                 try {
                     return raMasterApi.getCertificateProfileInfo(authenticationToken, profileName);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
