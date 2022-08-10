@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.profiles.Profile;
 import org.cesecore.roles.Role;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -29,7 +28,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 /**
  * An interface for approval profiles types.
  *
- * @version $Id$
  */
 public interface ApprovalProfile extends Profile, Serializable, Cloneable, Comparable<ApprovalProfile> {
 
@@ -274,26 +272,6 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      * @throws AuthenticationFailedException if the authentication of the approvals failed
      */
     ApprovalStep getStepBeingEvaluated(final Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException;
-
-    /**
-     * Tests if an administrator can approve a particular partition
-     *
-     * @param authenticationToken an authentication token
-     * @param approvalPartition an approval partition from an approval step
-     * @return true if administrator has approval rights
-     * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
-     */
-    boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
-
-    /**
-     * Tests if an administrator can view a particular partition. Approval rights automatically count as view rights.
-     *
-     * @param authenticationToken an authentication token
-     * @param approvalPartition an approval partition from an approval step
-     * @return true if administrator has view or approval rights
-     * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
-     */
-    boolean canViewPartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException;
 
     /**
      * Tests if an administrator can approve a particular partition

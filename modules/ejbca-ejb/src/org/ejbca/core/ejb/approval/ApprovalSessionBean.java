@@ -1023,30 +1023,4 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             return result;
         }
     }
-    
-    @Override
-    public void updateApprovalRights(AuthenticationToken admin, int roleId, String roleName) throws AuthorizationDeniedException {
-        // Update Approval Profile Partitions with updated AccessUserAspects
-        List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(admin, roleId);
-        Collection<ApprovalProfile> approvalProfileList = approvalProfileSession.getApprovalProfilesList();
-        for (ApprovalProfile approvalProfile : approvalProfileList) {
-            Boolean isApprovalProfileUpdated = approvalProfileSession.updateApprovalProfileRightsByRoleId(roleMembers, approvalProfile, roleId, roleName);
-            if (isApprovalProfileUpdated) {
-                approvalProfileSession.changeApprovalProfile(admin, approvalProfile);
-            }
-        }
-        // Update existing Approvals
-        List<ApprovalData> approvalDataList = approvalSession.findWaitingForApprovalApprovalDataLocal();
-        for (ApprovalData data : approvalDataList) {
-            if (data == null || data.hasRequestOrApprovalExpired() || data.getApprovalRequest() == null || data.getApprovalRequest().getApprovalProfile() == null) {
-                continue;
-            }
-            ApprovalRequest approvalRequest = data.getApprovalRequest();
-            ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-            Boolean isApprovalProfileUpdated = approvalProfileSession.updateApprovalProfileRightsByRoleId(roleMembers, approvalProfile, roleId, roleName);
-            if (isApprovalProfileUpdated) {
-                approvalSession.updateApprovalRequest(data.getId(), approvalRequest);
-            }
-        }
-    }
 }

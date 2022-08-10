@@ -141,14 +141,4 @@ public interface ApprovalProfileSession {
      */
     void forceProfileCacheRebuild();
 
-    /**
-     * Updates the approval and viewing rights associated with an Approval Profile
-     * 
-     * @param roleMembers role members of the role being used to update the rights of the profile
-     * @param approvalProfile the approval profile to update
-     * @param roleId the id of the role being used to update the rights of the profile
-     * @param roleName the name of the role being used to update the rights of the profile
-     */
-    Boolean updateApprovalProfileRightsByRoleId(List<RoleMember> roleMembers, ApprovalProfile approvalProfile, int roleId, String roleName);
-
 }
