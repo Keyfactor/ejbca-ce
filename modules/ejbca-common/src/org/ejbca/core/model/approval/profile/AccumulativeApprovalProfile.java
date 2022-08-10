@@ -153,12 +153,6 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
         approvalPartition.addProperty(numberOfRequiredApprovals);
         return approvalPartition;
     }
-
-    @Override
-    public boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException {
-        // We all good here, homie. 
-        return true;
-    }
     
     @Override
     public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
@@ -184,12 +178,6 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     @Override
     public List<String> getAllowedRoleNamesForViewingPartition(final ApprovalPartition approvalPartition) {
         return new ArrayList<>();
-    }
-    
-    @Override
-    public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)
-            throws AuthenticationFailedException {
-        return canApprovePartition(authenticationToken, approvalPartition);
     }
 
     @Override
