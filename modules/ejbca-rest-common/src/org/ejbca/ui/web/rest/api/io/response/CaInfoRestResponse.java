@@ -16,6 +16,7 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CertTools;
@@ -27,10 +28,15 @@ import org.cesecore.util.CertTools;
  */
 public class CaInfoRestResponse {
 
+    @ApiModelProperty(value = "CA identifier", example = "12345678")
     private Integer id;
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
     private String name;
+    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String subjectDn;
+    @ApiModelProperty(value = "Issuer Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String issuerDn;
+    @ApiModelProperty(value = "Expiration date", example = "2038-01-19T03:14:07Z")
     private Date expirationDate;
 
     /**

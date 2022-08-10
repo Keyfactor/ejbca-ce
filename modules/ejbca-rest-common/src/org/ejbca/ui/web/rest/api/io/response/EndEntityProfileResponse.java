@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.ejbca.core.model.era.RaEndEntityProfileResponse;
 
 import java.util.List;
@@ -21,10 +22,15 @@ import java.util.List;
  */
 public class EndEntityProfileResponse {
 
+    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
+    @ApiModelProperty(value = "List of available Certificate Authorities (CAs)", position = 2, example = "[ “ExampleCA“ ]")
     private List<String> availableCAs;
+    @ApiModelProperty(value = "List of available Certificate Profiles",position = 1, example = "[ “ENDUSER“ ]")
     private List<String> availableCertificateProfiles;
+    @ApiModelProperty(value = "List of Subject DN Attributes", example = "[ “CN“ ]")
     private List<String> subjectDomainNameFields;
+    @ApiModelProperty(value = "List of Subject Alternative Name fields", example = "[ “RFC822NAME“ ]")
     private List<String> subjectAltNameFields;
 
     public EndEntityProfileResponse() {
