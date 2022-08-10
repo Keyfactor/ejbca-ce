@@ -1957,7 +1957,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
             }
             isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
-            endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+            endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA +
+                    ExtendedInformation.MARKER_FROM_REST_RESOURCE);
         }
         try {
             endEntityManagementSession.addUser(admin, endEntity, isClearPwd);
@@ -2519,7 +2520,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 EndEntityProfile endEntityProfile = 
                         endEntityProfileSession.getEndEntityProfileNoClone(endEntityInformation.getEndEntityProfileId());
                 isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
-                endEntityInformation.getExtendedInformation().getRawData().remove(ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+                endEntityInformation.getExtendedInformation().getRawData().remove(
+                        ExtendedInformation.CUSTOMDATA + ExtendedInformation.MARKER_FROM_REST_RESOURCE);
             }
             if (newUsername == null)
                 endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
