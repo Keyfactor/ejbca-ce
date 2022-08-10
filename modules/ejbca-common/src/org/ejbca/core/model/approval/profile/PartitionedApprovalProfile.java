@@ -148,38 +148,6 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return null;
     }
-
-    @Override
-    public boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException {
-        if(approvalPartition != null) {
-            @SuppressWarnings("unchecked")
-            List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS).getValues();
-            for (RoleInformation role : roles) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Checking if authenticationToken '"+authenticationToken+"' matches role "+role.getName());
-                }
-                if (role.equals(ANYBODY)) {
-                    return true;
-                } else {
-                    // Check if authenticationToken matches any of the AccessUserAspects that existed in the Role when the ApprovalProfile was saved.
-                    for (final AccessUserAspect accessUserAspect : role.getAccessUserAspects()) {
-                        if (authenticationToken.matches(accessUserAspect)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else {
-            if (log.isTraceEnabled()) {
-                log.trace("Approval partition is null, canApprovePartition returns false for authenticationToken "+authenticationToken);
-            }
-            return false;
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Administrator '"+authenticationToken+"' does not belong to a role that can approve partition "+approvalPartition.getPartitionIdentifier());
-        }
-        return false;
-    }
     
     @Override
     public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
@@ -252,27 +220,6 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             ret.add(role.getName());
         }
         return ret;
-    }
-
-    @Override
-    public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)
-            throws AuthenticationFailedException {
-        boolean result = false;
-        @SuppressWarnings("unchecked")
-        List<RoleInformation> roles = (List<RoleInformation>) approvalPartition.getProperty(PROPERTY_ROLES_WITH_VIEW_RIGHTS).getValues();
-        for (RoleInformation role : roles) {
-            if (role.equals(ANYBODY)) {
-                result = true;
-            } else {
-                // Check if authenticationToken matches any of the AccessUserAspects that existed in the Role when the ApprovalProfile was saved.
-                for (final AccessUserAspect accessUserAspect : role.getAccessUserAspects()) {
-                    if (authenticationToken.matches(accessUserAspect)) {
-                        result = true;
-                    }
-                }
-            }
-        }
-        return result || canApprovePartition(authenticationToken, approvalPartition);
     }
 
     @Override
