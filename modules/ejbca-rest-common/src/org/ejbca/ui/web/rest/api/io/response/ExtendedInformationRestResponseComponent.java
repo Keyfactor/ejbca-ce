@@ -12,12 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * A container for response end entity extended information
  */
 public class ExtendedInformationRestResponseComponent {
 
+    @ApiModelProperty(value = "Extended Information property name", example = "1.3.6.1.5.5.7.1.24")
 	private String name;
+    @ApiModelProperty(value = "Property value", example = "3003020105")
     private String value;
 
     private ExtendedInformationRestResponseComponent(String name, String value) {
