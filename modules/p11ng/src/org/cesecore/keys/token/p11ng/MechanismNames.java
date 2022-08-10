@@ -33,7 +33,7 @@ public class MechanismNames {
     public final static int T_DIGEST = 1;
     // constant for type update, token does everything
     public final static int T_UPDATE = 2;
-    // constant for type raw, used with NONEwithRSA and EdDSA only
+    // constant for type raw, used with NONEwith* and EdDSA only
     public final static int T_RAW = 3;
 
     private static final Map<Long, String> L2S = C.createL2SMap(CKM.class);
@@ -83,6 +83,7 @@ public class MechanismNames {
         }
         SIGALGOS2L.put("MD5withRSA", Pair.of(CKM.MD5_RSA_PKCS, T_UPDATE));
         SIGALGOS2L.put("NONEwithRSAandMGF1", Pair.of(CKM.RSA_PKCS_PSS, T_RAW));
+        SIGALGOS2L.put("NONEwithECDSA", Pair.of(CKM.ECDSA, T_RAW));
         SIGALGOS2L.put("NONEwithRSASSA-PSS", Pair.of(CKM.RSA_PKCS_PSS, T_RAW));
         SIGALGOS2L.put("NONEwithDSA", Pair.of(CKM.DSA, T_UPDATE));
         SIGALGOS2L.put("SHA1withDSA", Pair.of(CKM.DSA_SHA1, T_UPDATE));
