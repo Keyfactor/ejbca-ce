@@ -12,13 +12,17 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * A class containing a public key in SSH format
  *
  */
 public class SshPublicKeyRestResponse {
 
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
     private final String caName;
+    @ApiModelProperty(value = "CA’s public key", example = "ssh-rsa AAAAB...QxLwx SshCA")
     private final byte[] response;
 
     public SshPublicKeyRestResponse(final String caName, final byte[] response) {
