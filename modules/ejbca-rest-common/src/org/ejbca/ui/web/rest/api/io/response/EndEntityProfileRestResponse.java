@@ -12,13 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * This is used to build a response for authorized eep key-values.
  */
 public class EndEntityProfileRestResponse {
 
+    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     private String name;
+    @ApiModelProperty(value = "End Entity profile ID", example = "1234567890")
     private long id;
+    @ApiModelProperty(value = "Description", example = "Example End Entity profile")
     private String description;
 
     private EndEntityProfileRestResponse(final String name, final long id, final String description) {
