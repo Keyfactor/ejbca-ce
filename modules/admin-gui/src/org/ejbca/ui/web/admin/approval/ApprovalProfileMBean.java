@@ -518,17 +518,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     for (final Role role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            try {
-                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                            } catch (AuthorizationDeniedException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
-                                }
-                            }
+                            roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
+                                    new ArrayList<>()));
                         }
                     }
-                    if(!roleRepresentations.contains(propertyClone.getDefaultValue())) {
+                    if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
                         //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else.
                         roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
                     }
@@ -542,17 +536,11 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_VIEWAPPROVALS)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            try {
-                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                                viewingRoleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                            } catch (AuthorizationDeniedException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
-                                }
-                            }
+                            viewingRoleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
+                                    new ArrayList<>()));
                         }
                     }
-                    if(!viewingRoleRepresentations.contains(propertyClone.getDefaultValue())) {
+                    if (!viewingRoleRepresentations.contains(propertyClone.getDefaultValue())) {
                         viewingRoleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
                     }
                     propertyClone.setPossibleValues(viewingRoleRepresentations);

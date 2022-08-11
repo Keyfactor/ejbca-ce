@@ -563,14 +563,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     for (final Role role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            try {
-                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
-                                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                            } catch (AuthorizationDeniedException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
-                                }
-                            }
+                            roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
+                                    new ArrayList<>()));
                         }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
@@ -693,12 +687,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             if (role.getRoleId() == roleToUpdate.getIdentifier()
                     && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                             || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
-                try {
-                    final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(alwaysAllowToken, role.getRoleId());
-                    roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
-                } catch (AuthorizationDeniedException e) {
-                    throw new IllegalStateException(e);
-                }
+                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), new ArrayList<>()));
             }
         }
         return roleRepresentations;

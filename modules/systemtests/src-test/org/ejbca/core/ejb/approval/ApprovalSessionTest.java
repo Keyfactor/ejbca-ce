@@ -748,7 +748,7 @@ public class ApprovalSessionTest extends CaTestCase {
         }
     }
 
-    //@Test
+    @Test
     public void shouldChangeTheStatusToExpiredNotifiedAfterApprovalRequestExpiredExceptionIsThrown() throws Exception {
         // given
         int approvalId = removeApprovalIds.get(0);
