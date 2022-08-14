@@ -299,8 +299,8 @@ public class RaApprovalRequestInfo implements Serializable {
         } else if (approvedByMe) {
             return false; // Already approved by me, so not "waiting for me"
         } else {
-            if(status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
-                if(approvalProfile.canApprove(roles, nextApprovalStepPartition)) {
+            if (status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+                if (approvalProfile.canApprove(roles, nextApprovalStepPartition)) {
                     return true;
                 }
             }
