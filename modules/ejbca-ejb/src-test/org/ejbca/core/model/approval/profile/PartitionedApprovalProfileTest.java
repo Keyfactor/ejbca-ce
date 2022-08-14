@@ -20,6 +20,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.junit.Test;
@@ -61,8 +62,7 @@ public class PartitionedApprovalProfileTest {
     
     @Test
     @SuppressWarnings("deprecation")
-    public void testCanApproveSuccess() {
-        //Create a profile with two steps, two partitions in each. 
+    public void testCanApproveSuccess() throws PropertyValidationException {
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
         //Create another step (one is default)
@@ -81,6 +81,7 @@ public class PartitionedApprovalProfileTest {
                     roleInfo1, roleInfos);
             //Will make this property into a multi-select instead of single select.
             approvalRoles.setHasMultipleValues(true);
+            approvalRoles.setValues(roleInfos);
             partition.addProperty(approvalRoles);
             assertTrue("Correct roles supplied to the method, should have been possible to approve", approvalProfile.canApprove(rolesTokenIsMemberOf, partition));
         }
@@ -88,8 +89,7 @@ public class PartitionedApprovalProfileTest {
     
     @Test
     @SuppressWarnings("deprecation")
-    public void testCanApproveFail() {
-        //Create a profile with two steps, two partitions in each. 
+    public void testCanApproveFail() throws PropertyValidationException {
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
         //Create another step (one is default)
@@ -107,6 +107,7 @@ public class PartitionedApprovalProfileTest {
                     roleInfo3, roleInfos);
             //Will make this property into a multi-select instead of single select.
             approvalRoles.setHasMultipleValues(true);
+            approvalRoles.setValues(roleInfos);
             partition.addProperty(approvalRoles);
             assertFalse("Wrong roles supplied to the method, should have been impossible to approve", approvalProfile.canApprove(rolesTokenIsMemberOf, partition));
         }
@@ -114,8 +115,7 @@ public class PartitionedApprovalProfileTest {
 
     @Test
     @SuppressWarnings("deprecation")
-    public void testCanViewSuccess() {
-        //Create a profile with two steps, two partitions in each. 
+    public void testCanViewSuccess() throws PropertyValidationException {
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
         //Create another step (one is default)
@@ -134,6 +134,7 @@ public class PartitionedApprovalProfileTest {
                     roleInfo1, roleInfos);
             //Will make this property into a multi-select instead of single select.
             viewRoles.setHasMultipleValues(true);
+            viewRoles.setValues(roleInfos);
             partition.addProperty(viewRoles);
             assertTrue("Correct roles supplied to the method, should have been possible to view", approvalProfile.canView(rolesTokenIsMemberOf, partition));
         }
@@ -141,7 +142,7 @@ public class PartitionedApprovalProfileTest {
     
     @Test
     @SuppressWarnings("deprecation")
-    public void testCanViewSuccessWithoutViewRights() {
+    public void testCanViewSuccessWithoutViewRights() throws PropertyValidationException {
         //Create a profile with two steps, two partitions in each. 
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
@@ -159,6 +160,7 @@ public class PartitionedApprovalProfileTest {
             DynamicUiProperty<RoleInformation> approvalRoles = new DynamicUiProperty<RoleInformation>(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, 
                     roleInfo3, roleInfos);
             approvalRoles.setHasMultipleValues(true);
+            approvalRoles.setValues(roleInfos);
             partition.addProperty(approvalRoles);
             assertTrue("Correct roles supplied to the method, should have been possible to view", approvalProfile.canView(rolesTokenIsMemberOf, partition));
         }
@@ -166,7 +168,7 @@ public class PartitionedApprovalProfileTest {
     
     @Test
     @SuppressWarnings("deprecation")
-    public void testCanViewFail() {
+    public void testCanViewFail() throws PropertyValidationException {
         //Create a profile with two steps, two partitions in each. 
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
@@ -184,10 +186,12 @@ public class PartitionedApprovalProfileTest {
             DynamicUiProperty<RoleInformation> viewRoles = new DynamicUiProperty<RoleInformation>(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_VIEW_RIGHTS, 
                     roleInfo3, roleInfos);
             viewRoles.setHasMultipleValues(true);
+            viewRoles.setValues(roleInfos);
             partition.addProperty(viewRoles);
             DynamicUiProperty<RoleInformation> approvalRoles = new DynamicUiProperty<RoleInformation>(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, 
                     roleInfo3, roleInfos);
             approvalRoles.setHasMultipleValues(true);
+            approvalRoles.setValues(roleInfos);
             partition.addProperty(approvalRoles);
             assertFalse("Wrong roles supplied to the method, should have been impossible to view", approvalProfile.canView(rolesTokenIsMemberOf, partition));
         }
