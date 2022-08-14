@@ -19,8 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
 import org.cesecore.roles.Role;
@@ -106,7 +104,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed, final List<Role> rolesTokenIsMemberOf) throws ApprovalException {
+    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed) throws ApprovalException {
         //Verify that at least one of the approvals performed covers the single sequence in this implementation (Though it would be odd if they didn't)
         boolean sequenceAndPartitionFound = false;
         for(Approval approval : approvalsPerformed) {
@@ -181,12 +179,12 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) {
+    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed) {
         return 1;
     }
 
     @Override
-    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) {
+    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed) {
         return getStep(FIXED_STEP_ID);
     }
     
