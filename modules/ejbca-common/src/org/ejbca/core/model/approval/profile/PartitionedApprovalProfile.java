@@ -21,8 +21,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
 import org.cesecore.roles.Role;
@@ -99,12 +97,11 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed, 
-            List<Role> rolesWhichTokenIsMemberOf) throws ApprovalException, AuthenticationFailedException {
+    public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed) throws ApprovalException, AuthenticationFailedException {
         // Walk through all steps and their respective partitions, verify that the collection of approvals satisfies them.
         ApprovalStep step = getFirstStep();
         while(step != null) {
-            if(!isStepSatisfied(step, approvalsPerformed, rolesWhichTokenIsMemberOf)) {
+            if(!isStepSatisfied(step, approvalsPerformed)) {
                 return false;
             }
             step = getStep(step.getNextStep());
@@ -116,11 +113,11 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException {
+    public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed) throws AuthenticationFailedException {
         ApprovalStep step = getFirstStep();
         int i = 1;
         while(step != null) {
-            if(!isStepSatisfied(step, approvalsPerformed, rolesTokenIsMemberOf)) {
+            if(!isStepSatisfied(step, approvalsPerformed)) {
                 return i;
             } else {
                 i++;
@@ -134,10 +131,10 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
 
     @Override
-    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException {
+    public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed) throws AuthenticationFailedException {
         ApprovalStep step = getFirstStep();
         while(step != null) {
-            if(!isStepSatisfied(step, approvalsPerformed, rolesTokenIsMemberOf)) {
+            if(!isStepSatisfied(step, approvalsPerformed)) {
                 return step;
             } else {
                 step = getStep(step.getNextStep());
