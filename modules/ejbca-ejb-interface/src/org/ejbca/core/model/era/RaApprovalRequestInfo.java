@@ -143,7 +143,7 @@ public class RaApprovalRequestInfo implements Serializable {
         // Next steps
         final ApprovalStep nextStep;
         try {
-            nextStep = approvalProfile.getStepBeingEvaluated(approval.getApprovals(), rolesTokenIsMemberOf);
+            nextStep = approvalProfile.getStepBeingEvaluated(approval.getApprovals());
         } catch (AuthenticationFailedException e) {
             throw new IllegalStateException(e);
         }
@@ -163,7 +163,7 @@ public class RaApprovalRequestInfo implements Serializable {
             }
         }
         try {
-            currentStepOrdinal = approvalProfile.getOrdinalOfStepBeingEvaluated(approval.getApprovals(), rolesTokenIsMemberOf);
+            currentStepOrdinal = approvalProfile.getOrdinalOfStepBeingEvaluated(approval.getApprovals());
         } catch (AuthenticationFailedException e) {
             // Should never happen
             log.debug("Exception occurred while getting current step", e);

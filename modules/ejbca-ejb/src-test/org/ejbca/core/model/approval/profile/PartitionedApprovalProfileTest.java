@@ -14,17 +14,14 @@ package org.ejbca.core.model.approval.profile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -55,11 +52,10 @@ public class PartitionedApprovalProfileTest {
                 approvals.add(new Approval("", step.getStepIdentifier(), partition.getPartitionIdentifier()));
             }
         }
-        List<Role> roles = new ArrayList<>();
-        assertFalse("No approvals submitted, check should have failed.", approvalProfile.canApprovalExecute(new ArrayList<Approval>(), roles));
+        assertFalse("No approvals submitted, check should have failed.", approvalProfile.canApprovalExecute(new ArrayList<Approval>()));
         assertFalse("Incorrect approvals submitted, check should have failed.",
-                approvalProfile.canApprovalExecute(Arrays.asList(approvals.get(0), approvals.get(0), approvals.get(0), approvals.get(0)), roles));
-        assertTrue("Correct set of approvals submitted, check should have passed.", approvalProfile.canApprovalExecute(approvals, roles));
+                approvalProfile.canApprovalExecute(Arrays.asList(approvals.get(0), approvals.get(0), approvals.get(0), approvals.get(0))));
+        assertTrue("Correct set of approvals submitted, check should have passed.", approvalProfile.canApprovalExecute(approvals));
 
     }
     

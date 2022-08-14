@@ -474,7 +474,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         ApprovalStep relevantStep = getStep(approval.getStepId());
         while(previousStep != null) {
             if(!previousStep.equals(relevantStep)) {
-                if(!isStepSatisfied(previousStep, approvalsPerformed, rolesTokenIsMemberOf)) {
+                if(!isStepSatisfied(previousStep, approvalsPerformed)) {
                     return false;
                 } else {
                     previousStep = getStep(previousStep.getNextStep());
@@ -496,15 +496,12 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
      * @return true if the list of approvals validates the given step
      * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
      */
-    protected boolean isStepSatisfied(final ApprovalStep approvalStep, final Collection<Approval> approvalsPerformed, final List<Role> rolesTokenIsMemberOf)
+    protected boolean isStepSatisfied(final ApprovalStep approvalStep, final Collection<Approval> approvalsPerformed)
             throws AuthenticationFailedException {
         PARTITION_LOOP: for (ApprovalPartition partition : approvalStep.getPartitions().values()) {
             for (Approval approval : approvalsPerformed) {
                 if (approval.getStepId() == approvalStep.getStepIdentifier() && partition.getPartitionIdentifier() == approval.getPartitionId()) {
-                    //While we already have checked the credentials of all partitions, doing so is cheap and a good double check.
-                    if (canApprove(rolesTokenIsMemberOf, partition)) {
-                        continue PARTITION_LOOP;
-                    }
+                    continue PARTITION_LOOP;
                 }
             }
             //If we've gotten to the bottom of a partition without satisfying it's conditions, we're done

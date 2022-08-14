@@ -46,7 +46,6 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -385,8 +384,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         try {
             ApprovalProfile approvalProfile = approvalDataVOView.getApprovalProfile();
             if (approvalProfile != null) {
-                final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
-                return approvalProfile.getOrdinalOfStepBeingEvaluated(approvals, rolesTokenIsMemberOf);
+                return approvalProfile.getOrdinalOfStepBeingEvaluated(approvals);
             } else {
                 return 0;
             }
@@ -406,9 +404,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if (approvalProfile == null) {
             return null;
         } else {
-            List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
             try {
-                return approvalDataVOView.getApprovalProfile().getStepBeingEvaluated(approvals, rolesTokenIsMemberOf);
+                return approvalDataVOView.getApprovalProfile().getStepBeingEvaluated(approvals);
             } catch (AuthenticationFailedException e) {
                 //We shouldn't have gotten here in the UI with an invalid token
                 throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);

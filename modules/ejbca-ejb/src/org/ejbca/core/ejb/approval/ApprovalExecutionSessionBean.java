@@ -134,7 +134,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalSession.sendApprovalNotifications(admin, approvalData.getApprovalRequest(), approvalProfile, approvalData, false);
                 throw new ApprovalRequestExpiredException();
             }
-            final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed, rolesWhichApprovalAuthTokenIsMemberOf);
+            final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed);
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             if (readyToCheckExecution) {
                 //Kept for legacy reasons to allow for 100% uptime, can be removed once upgrading from 6.6.0 is no longer supported. 
@@ -345,9 +345,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         boolean allowed = false;
         final ApprovalStep nextStep;
         final ApprovalProfile approvalProfile = approvalData.getApprovalProfile();
-        final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
+
         try {
-            nextStep = approvalProfile.getStepBeingEvaluated(approvalData.getApprovals(), rolesTokenIsMemberOf);
+            nextStep = approvalProfile.getStepBeingEvaluated(approvalData.getApprovals());
         } catch (AuthenticationFailedException e) {
             throw new IllegalStateException(e);
         }
