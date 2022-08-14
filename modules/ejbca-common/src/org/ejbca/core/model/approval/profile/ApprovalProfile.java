@@ -107,12 +107,10 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
 
     /**
      * @param approvalsPerformed a Collection of approvals already performed.
-     * @param rolesTokenIsMemberOf a List of roles which the admin is a member of
      * @return true if this approval profile's criteria are fulfilled, allowing the approval to pass
      * @throws AuthenticationFailedException if any of the authentication tokens in the approval collection were faulty
      */
-    boolean canApprovalExecute(final Collection<Approval> approvalsPerformed, 
-            final List<Role> rolesTokenIsMemberOf) throws ApprovalException, AuthenticationFailedException;
+    boolean canApprovalExecute(final Collection<Approval> approvalsPerformed) throws ApprovalException, AuthenticationFailedException;
 
     /**
      *
@@ -256,22 +254,20 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
     /**
      *
      * @param approvalsPerformed a list of performed approvals
-     * @param rolesTokenIsMemberOf a list of roles which the admin is a member of
      * @return the ordinal of the step currently being evaluated, given the performed approvals
      * @throws AuthenticationFailedException if the authentication of the approvals failed
      */
-    int getOrdinalOfStepBeingEvaluated(final Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException;
+    int getOrdinalOfStepBeingEvaluated(final Collection<Approval> approvalsPerformed) throws AuthenticationFailedException;
 
     /**
      * Returns the first step which hasn't been fully evaluated by the given collection of approvals, or null if all steps
      * have been evaluated.
      *
      * @param approvalsPerformed approvalsPerformed a list of performed approvals
-     * @param rolesTokenIsMemberOf a list of roles which the admin is a member of
      * @return the step currently being evaluated, given the performed approvals, or null if all steps have been evaluated.
      * @throws AuthenticationFailedException if the authentication of the approvals failed
      */
-    ApprovalStep getStepBeingEvaluated(final Collection<Approval> approvalsPerformed, List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException;
+    ApprovalStep getStepBeingEvaluated(final Collection<Approval> approvalsPerformed) throws AuthenticationFailedException;
 
     /**
      * Tests if an administrator can approve a particular partition
