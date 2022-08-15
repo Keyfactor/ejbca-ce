@@ -42,7 +42,7 @@ public class IdNameHashMap<T extends Serializable> implements Serializable{
         if(nameMap.containsKey(name) || idMap.containsKey(id)){
             return null;
         }
-        KeyToValueHolder<T> newValue = new KeyToValueHolder<T>(id, name, value);
+        KeyToValueHolder<T> newValue = new KeyToValueHolder<>(id, name, value);
 		nameMap.put(name, newValue);
 		idMap.put(id, newValue);
 		return newValue;
