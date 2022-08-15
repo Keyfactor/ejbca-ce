@@ -51,6 +51,7 @@ import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -135,11 +136,47 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             this.dnsField = dnsField;
             lastUsedValidationString = getValidationString();
         }
+        
+        public boolean isDomainOrListOfDomains() {
+            final String value = getValue();
+            return value != null && value.length() > 0 && !value.contains("@");
+        }
+        
+        public boolean isMixedListOfDomainsAndEmails() {
+            final String[] values = getValue().split(";");
+            if (values.length > 1) {
+                boolean isDomain = false;
+                boolean isEmail = false;
+                for (String value : values ) {
+                    if (value.contains("@")) {
+                        isEmail = true;
+                    } else {
+                        isDomain = true;
+                    }
+                    if (isEmail & isDomain) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        public boolean isListOfEmails() {
+            final String[] values = getValue().split(";");
+            if (values.length > 1) {
+                for (String value : values ) {
+                    if (!value.contains("@") | !value.contains(".")) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
 
         public boolean isEmailField() {
             return emailField;
         }
-
 
         public boolean isDnsField() {
             return dnsField;
@@ -1385,6 +1422,21 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                 } else {
                     editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + name);
                 }
+            }
+            // SAN e-mail with list of domains and e-mails = invalid 
+            if (component.isEmailField() && component.isMixedListOfDomainsAndEmails() && !component.isModifiable()) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHLISTMUSTNOTINCLUDEDOMAINSANDEMAILS"));
+            }
+            // SAN e-mail with domain (domain.de) or list of domains (domain1.de;domain2.de;...) + non-modifiable = invalid 
+            if (component.isEmailField() && component.isDomainOrListOfDomains() && !component.isModifiable()) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHDOMAINONLYMUSTBEMODIFIABLE"));
+            }
+            // SAN e-mail with list of e-mails and size > 1 (m@domain1.de;m@domain2.de;...) + modifiable = invalid
+            if (component.isEmailField() && component.isListOfEmails() && component.isModifiable()) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHLISTOFEMAILSMUSTBEUNMODIFIABLE"));
+            }
+            if (component.isEmailField() && !component.isRequired() && !component.isModifiable() && StringTools.isValidEmail(component.getValue())) {
+                editerrors.add(ejbcaWebBean.getText("EMAILDEFAULTWITHEMAILMUSTBEMODIFIABLEOROPTIONAL"));
             }
             if (component.isUseValidation()) {
                 validateFieldRegex(component.getValidationString(), name);

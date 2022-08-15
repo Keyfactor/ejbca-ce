@@ -15,14 +15,10 @@ package org.ejbca.ui.web.rest.api.io.request;
 import java.util.Date;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidAddEndEntityRestRequest;
 
@@ -34,19 +30,26 @@ import io.swagger.annotations.ApiModelProperty;
 @ValidAddEndEntityRestRequest
 public class AddEndEntityRestRequest {
 
+    @ApiModelProperty(value = "Username", example = "JohnDoe")
 	private String username;
+    @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
+    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     private String subjectDn;
+    @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     private String subjectAltName;
+    @ApiModelProperty(value = "Email", example = "john.doe@example.com")
     private String email;
     private List<ExtendedInformationRestRequestComponent> extensionData;
+    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "CN=ExampleCA")
     private String caName;
+    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
     private String certificateProfileName;
+    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "Token type property",
-            allowableValues = "USERGENERATED, P12, JKS, PEM"
-    )
+    @ApiModelProperty(value = "Token type property", allowableValues = "USERGENERATED, P12, JKS, PEM", example = "P12")
     private String token;
+    @ApiModelProperty(value = "Account Binding ID", example = "1234567890")
     private String accountBindingId;
     
     /** default constructor needed for serialization */
@@ -153,22 +156,20 @@ public class AddEndEntityRestRequest {
     public static class AddEndEntityRestRequestConverter {
 
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest, Integer caId,
-        		Integer endEntityProfileId, Integer certificateProfileId,
-        		EndEntityProfile endEntityProfile) throws RestException {
-            final ExtendedInformation extendedInfo;
+        		Integer endEntityProfileId, Integer certificateProfileId) throws RestException {
+            final ExtendedInformation extendedInfo = new ExtendedInformation();
             if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-                extendedInfo = new ExtendedInformation();
                 if (addEndEntityRestRequest.getAccountBindingId() != null) {
                     extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
                 }
                 if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
                     addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                        extendedInfo.setCustomData(extendedInformation.getName(), extendedInformation.getValue());
+                        extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
                     });
                 }
-            } else {
-                extendedInfo = null;
             }
+            extendedInfo.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+            
             final Date now = new Date();
             final int tokenType = TokenType.resolveEndEntityTokenByName(addEndEntityRestRequest.getToken()).getTokenValue();
             final EndEntityInformation eeInformation = new EndEntityInformation(
@@ -186,15 +187,6 @@ public class AddEndEntityRestRequest {
                     tokenType,
                     extendedInfo);
             eeInformation.setPassword(addEndEntityRestRequest.getPassword());
-            if(endEntityProfile.isSendNotificationUsed()) {
-                // assume notification "use" as "default" value
-                if(StringUtils.isNotEmpty(addEndEntityRestRequest.getEmail())) {
-                    eeInformation.setSendNotification(true);
-                } else if(endEntityProfile.isSendNotificationRequired()) {
-                    throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), 
-                                        "Email must be mentioned to receive notification.");
-                } 
-            }
             return eeInformation;
         }
     }

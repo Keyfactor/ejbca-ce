@@ -88,6 +88,16 @@ interface CryptokiFacade {
     void generateKeyPair(long session, CKM mechanism, CKA[] publicKeyTemplate, CKA[] privateKeyTemplate, LongRef publicKey, LongRef privateKey);
 
     /**
+     * C.GenerateKey.
+     *
+     * @param session session handle.
+     * @param mechanism the mechanism to use for key generation
+     * @param secretKeyTemplate template for the new key
+     * @param secretKey reference to the secret key which will be generated inside the HSM.
+     */
+    void generateKey(long session, CKM mechanism, CKA[] secretKeyTemplate, LongRef secretKey);
+
+    /**
      * C_CreateObject
      *
      * @param session session handle.

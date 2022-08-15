@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * JSON input representation of crypto token key generation request through REST API.
  * @version $Id: CryptoTokenKeyGenerationRestRequest.java 32299 2019-05-08 13:23:48Z lauri_k_helmes $
@@ -19,8 +21,11 @@ package org.ejbca.ui.web.rest.api.io.request;
  */
 public class CryptoTokenKeyGenerationRestRequest {
 
+    @ApiModelProperty(value = "Key pair alias", example = "signKey")
     private String keyPairAlias;
+    @ApiModelProperty(value = "Key algorithm", example = "RSA")
     private String keyAlg;
+    @ApiModelProperty(value = "Key specification", example = "4096")
     private String keySpec;
     
     public CryptoTokenKeyGenerationRestRequest() {}

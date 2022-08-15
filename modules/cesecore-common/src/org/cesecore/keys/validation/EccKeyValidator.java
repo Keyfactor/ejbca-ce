@@ -47,7 +47,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     private static final Logger log = Logger.getLogger(EccKeyValidator.class);
 
     /** The key validator type. */
-    private static final String TYPE_IDENTIFIER = "ECC_KEY_VALIDATOR";
+    protected static final String TYPE_IDENTIFIER = "ECC_KEY_VALIDATOR";
 
     protected static final String CURVES = "ecCurves";
 

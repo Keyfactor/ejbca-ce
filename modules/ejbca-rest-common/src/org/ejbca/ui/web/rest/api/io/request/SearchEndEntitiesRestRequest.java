@@ -39,9 +39,11 @@ import java.util.List;
  */
 public class SearchEndEntitiesRestRequest {
 
+    @ApiModelProperty(value = "Maximum number of results", example = "10")
     @ValidSearchEndEntityMaxNumberOfResults
     private Integer maxNumberOfResults;
-    
+
+    @ApiModelProperty(value = "Current page number", example = "0")
     private int currentPage;
     
     @ApiModelProperty(value = "A List of search criteria." )
