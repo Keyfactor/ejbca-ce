@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
  * the extendedRequiredValidator.
  * 
  * Example usage:
-<h:inputText value="#{someBean.componentForWhichValidationIsNotAllwaysRequired}">
+<h:inputText value="#{someBean.componentForWhichValidationIsNotAlwaysRequired}">
     <f:validator validatorId="extendedRequiredValidator" />
     <f:attribute name="_required" value="true" />
     <f:ajax event="change" execute="@this" listener="#{someBean.someMethodThatDoesntValidateRequired}"
