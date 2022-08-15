@@ -104,7 +104,7 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
         }        
     }
 
-    private void initSlot(Properties properties) throws NoSuchSlotException {
+    private void initSlot(Properties properties) throws NoSuchSlotException, CryptoTokenOfflineException {
         final Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(getSlotLabel(PKCS11CryptoToken.SLOT_LABEL_TYPE, properties));
         final String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
         final String libraryFileDir = sharedLibrary.substring(0, sharedLibrary.lastIndexOf("/") + 1);
@@ -115,16 +115,21 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
                     ", libraryFileDir=" + libraryFileDir +
                     ", libraryFileName=" + libraryFileName);
         }
-       final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libraryFileName, libraryFileDir, true);
-        device.getSlots();
-        if (slotLabelType == Pkcs11SlotLabelType.SLOT_NUMBER) {
-            slot = device.getSlot(Long.valueOf(sSlotLabel));
-        } else if (slotLabelType == Pkcs11SlotLabelType.SLOT_INDEX) {
-            // Removing 'i' e.g. from 'i0'
-            final String slotIndex = sSlotLabel.substring(1);
-            slot = device.getSlotByIndex(Integer.valueOf(slotIndex));
-        } else {
-            slot = device.getSlotByLabel(sSlotLabel);
+        try {
+            final CryptokiDevice device = CryptokiManager.getInstance().getDevice(libraryFileName, libraryFileDir, true);
+            device.getSlots();
+            if (slotLabelType == Pkcs11SlotLabelType.SLOT_NUMBER) {
+                slot = device.getSlot(Long.valueOf(sSlotLabel));
+            } else if (slotLabelType == Pkcs11SlotLabelType.SLOT_INDEX) {
+                // Removing 'i' e.g. from 'i0'
+                final String slotIndex = sSlotLabel.substring(1);
+                slot = device.getSlotByIndex(Integer.valueOf(slotIndex));
+            } else {
+                slot = device.getSlotByLabel(sSlotLabel);
+            }
+        } catch (RuntimeException | LinkageError e) {
+            log.error("Failed to load PKCS#11 library: " + e.getMessage(), e);
+            throw new CryptoTokenOfflineException(e);
         }
         
         if (slot == null) {
@@ -298,11 +303,11 @@ public class Pkcs11NgCryptoToken extends BaseCryptoToken implements P11SlotUser 
             } else if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final String oidString = AlgorithmTools.getEcKeySpecOidFromBcName(keySpec);
                 if (!StringUtils.equals(oidString, keySpec)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(oidString), alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED25519)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed25519.getId()), alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
                 } else if (keySpec.equals(AlgorithmConstants.KEYALGORITHM_ED448)) {
-                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed448.getId()), alias, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap());
+                    slot.generateEccKeyPair(new ASN1ObjectIdentifier(EdECObjectIdentifiers.id_Ed448.getId()), alias, true, keyGenParams.getPublicAttributesMap(), keyGenParams.getPrivateAttributesMap(), null, false);
                 } else {
                     throw new InvalidAlgorithmParameterException("The elliptic curve " + keySpec + " is not supported.");
                 }
