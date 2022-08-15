@@ -22,15 +22,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.SystemConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.apache.commons.configuration2.CompositeConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.SystemConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.log4j.Logger;
 
 /**
@@ -73,7 +78,7 @@ public final class ConfigurationHolder {
             defaultValues = new CompositeConfiguration();
             final URL defaultConfigUrl = ConfigurationHolder.class.getResource(DEFAULT_CONFIG_FILE);
             try {
-                defaultValues.addConfiguration(new PropertiesConfiguration(defaultConfigUrl));
+                defaultValues.addConfiguration(loadProperties(defaultConfigUrl));
             } catch (ConfigurationException e) {
                 log.error("Error encountered when loading default properties. Could not load configuration from " + defaultConfigUrl, e);
             }
@@ -83,7 +88,7 @@ public final class ConfigurationHolder {
             try {
                 final URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
                 if (url != null) {
-                    final PropertiesConfiguration pc = new PropertiesConfiguration(url);
+                    final PropertiesConfiguration pc = loadProperties(url);
                     allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
                     log.info("Allow external re-configuration: " + allowexternal);
                 }
@@ -103,9 +108,7 @@ public final class ConfigurationHolder {
                     File f = null;
                     try {
                         f = new File("conf" + File.separator + CONFIG_FILES[i]);
-                        final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-                        pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-                        config.addConfiguration(pc);
+                        config.addConfiguration(loadReloadingProperties(f));
                         log.info("Added file to configuration source: " + f.getAbsolutePath());
                     } catch (ConfigurationException e) {
                         log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -116,9 +119,7 @@ public final class ConfigurationHolder {
                     File f = null;
                     try {
                         f = new File("/etc/cesecore/conf/" + CONFIG_FILES[i]);
-                        final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-                        pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-                        config.addConfiguration(pc);
+                        config.addConfiguration(loadReloadingProperties(f));
                         log.info("Added file to configuration source: " + f.getAbsolutePath());
                     } catch (ConfigurationException e) {
                         log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -134,8 +135,7 @@ public final class ConfigurationHolder {
             try {
                 final URL url = ConfigurationHolder.class.getResource("/internal.properties");
                 if (url != null) {
-                    final PropertiesConfiguration pc = new PropertiesConfiguration(url);
-                    config.addConfiguration(pc);
+                    config.addConfiguration(loadProperties(url));
                     log.debug("Added url to configuration source: " + url);
                 }
             } catch (ConfigurationException e) {
@@ -171,9 +171,7 @@ public final class ConfigurationHolder {
         File f = null;
         try {
             f = new File(filename);
-            final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-            pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-            addConfiguration(pc);
+            addConfiguration(loadReloadingProperties(f));
             log.info("Added file to configuration source: " + f.getAbsolutePath());
         } catch (ConfigurationException e) {
             log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -192,8 +190,7 @@ public final class ConfigurationHolder {
         try {
             final URL url = ConfigurationHolder.class.getResource(resourcename);
             if (url != null) {
-                final PropertiesConfiguration pc = new PropertiesConfiguration(url);
-                addConfiguration(pc);
+                config.addConfiguration(loadProperties(url));
                 if (log.isDebugEnabled()) {
                     log.debug("Added url to configuration source: " + url);
                 }
@@ -407,5 +404,47 @@ public final class ConfigurationHolder {
     public static boolean updateConfigurationWithoutBackup(final String key, final String value) {
         config.setProperty(key, value);
         return true;
+    }
+    
+    /**
+     * Loads properties by URL.
+     * 
+     * @param url the URL to the properties file (usually from within the EAB file).
+     * @return the properties configuration for the given file or an empty properties configuration.
+     * 
+     * @throws ConfigurationException if the configuration exists and could not be loaded.
+     */
+    public static final PropertiesConfiguration loadProperties(final URL url) throws ConfigurationException {
+        final FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
+                new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
+                .configure(new Parameters().properties().setURL(url)
+                    .setThrowExceptionOnMissing(false)
+                    .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
+                    .setIncludesAllowed(false));
+        final PropertiesConfiguration config = builder.getConfiguration();
+        return config;
+    }
+    
+    /**
+     * Loads reloading properties by file.
+     * 
+     * @param file the properties file (external file, effective if allow.external-dynamic.configuration=true).
+     * @return the properties configuration for the given file or an empty properties configuration.
+     * 
+     * @throws ConfigurationException if the configuration exists and could not be loaded.
+     */
+    public static final PropertiesConfiguration loadReloadingProperties(final File file) throws ConfigurationException {
+        final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = 
+                new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
+                .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false)
+                        .setFile(file)
+                        .setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
+        
+        final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
+            null, 1, TimeUnit.MINUTES);
+        trigger.start();
+        
+        final PropertiesConfiguration config = builder.getConfiguration();
+        return config;
     }
 }

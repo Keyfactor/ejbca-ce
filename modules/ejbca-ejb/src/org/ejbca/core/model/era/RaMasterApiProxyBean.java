@@ -94,6 +94,7 @@ import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -116,6 +117,8 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.ws.rs.core.Response;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -970,7 +973,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
-
+    
     @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         final IdNameHashMap<CAInfo> ret = new IdNameHashMap<>();
@@ -1013,6 +1016,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return ret;
+    }
+    
+    @Override
+    public RaCertificateProfileResponseV2 getCertificateProfileInfo(AuthenticationToken authenticationToken, String profileName) {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getCertificateProfileInfo(authenticationToken, profileName);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -3162,6 +3179,44 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        EndEntityProfileNotFoundException endentityProfileNotFoundException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
+                try {
+                    return raMasterApi.getEndEntityProfile(authenticationToken, profileName);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Authorization was denied to access the End Entity Profile with name " + profileName + " for proxied request on CA. " + e.getMessage());
+                    }
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                }  catch (EndEntityProfileNotFoundException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("End Entity Profile with name " + profileName +  " could not be found for proxied request on CA. " + e.getMessage());
+                    }
+                    if (endentityProfileNotFoundException == null) {
+                        endentityProfileNotFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+            }
+        }
+        if (endentityProfileNotFoundException != null) {
+            throw endentityProfileNotFoundException;
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
+
+    @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcReq)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             EjbcaException, WaitingForApprovalException, CertificateExpiredException, CesecoreException {
@@ -3313,6 +3368,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.getAcmeAuthorizationsByAccountId(accountId);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                try {
+                    return raMasterApi.getAcmePreAuthorizationsByAccountIdAndIdentifiers(accountId, identifiers);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

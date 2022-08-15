@@ -127,6 +127,8 @@ public interface CACommon extends IUpgradeableData {
     /** @return the CAs token reference. */
     CAToken getCAToken();
 
+    public boolean nonNullCaToken();
+
     /** Sets the CA token. */
     void setCAToken(CAToken catoken) throws InvalidAlgorithmException;
 
