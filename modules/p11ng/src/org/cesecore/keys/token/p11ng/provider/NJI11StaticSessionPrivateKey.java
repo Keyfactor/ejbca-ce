@@ -22,17 +22,19 @@ public class NJI11StaticSessionPrivateKey extends NJI11Object implements Key, Pr
     private static final long serialVersionUID = -1393340200834353434L;
 
     private final NJI11Session session;
+    private final String algorithm;
     private final boolean removalOnRelease;
 
-    public NJI11StaticSessionPrivateKey(NJI11Session session, long object, CryptokiDevice.Slot slot, boolean removalOnRelease) {
+    public NJI11StaticSessionPrivateKey(NJI11Session session, long object, String algorithm, CryptokiDevice.Slot slot, boolean removalOnRelease) {
         super(object, slot);
         this.session = session;
+        this.algorithm = algorithm;
         this.removalOnRelease = removalOnRelease;
     }
     
     @Override
     public String getAlgorithm() {
-        return "RSA";
+        return algorithm;
     }
 
     @Override

@@ -43,6 +43,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.KeyToValueHolder;
+import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.EnrollMakeNewRequestBean.KeyPairGeneration;
@@ -145,6 +146,12 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
                 endEntityInformation.setPassword(getEnrollmentCode());
             }
             setEndEntityInformation(endEntityInformation);
+            if (username.equals("superadmin")) {
+                RaCertificateSearchResponse raCertificateSearchResponse = raMasterApiProxyBean.searchForCertificatesByUsername(raAuthenticationBean.getAuthenticationToken(), username);
+                if (raCertificateSearchResponse.getCdws().size() == 0) {
+                    setDeletePublicAccessRoleRendered(true);
+                }
+            }
         }
     }
 
