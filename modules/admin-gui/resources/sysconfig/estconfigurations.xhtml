@@ -45,7 +45,7 @@
           </h:panelGroup>
 
           <h:panelGroup>
-            <h:selectOneListbox styleClass="select-list" name="selectaliases"
+            <h:selectOneListbox id="estConfigurationList" styleClass="select-list" name="selectaliases"
                                 value="#{estConfigMBean.selectedAlias}" style="width: 55em" size="15">
               <f:selectItems value="#{estConfigMBean.estConfigAliasesSeletItemList}"/>
             </h:selectOneListbox>
@@ -97,7 +97,7 @@
           <h:outputText id="deleteEstAliasName" value="#{estConfigMBean.selectedAlias}"/>
           <h:panelGroup/>
           <h:panelGroup>
-            <h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{estConfigMBean.deleteEstAlias}"/>
+            <h:commandButton id="confirmAliasDeleteButton" value="#{web.text.DELETE_CONFIRM}" action="#{estConfigMBean.deleteEstAlias}"/>
             <h:commandButton value="#{web.text.CANCEL}" action="#{estConfigMBean.actionCancel}"/>
           </h:panelGroup>
         </h:panelGrid>

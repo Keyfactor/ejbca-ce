@@ -83,6 +83,7 @@ import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -460,6 +461,12 @@ public interface RaMasterApi {
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     CertificateProfile getCertificateProfile(int id);
+    
+    /**
+     * @param ProfileName Name of the certificate profile
+     * @return Certificate profile info for profile with specified name
+     */
+    RaCertificateProfileResponseV2 getCertificateProfileInfo(AuthenticationToken authenticationToken, String profileName);
 
     /**
      * Adds (end entity) user.
@@ -1362,6 +1369,15 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
 
     /**
+     * Fetches the end entity profile for REST API.
+     *
+     * @param profileName the end entity profile name.
+     * @return  end entity profile as rest response object.
+     * @since RA Master API version 4 (EJBCA 7.10.0)
+     */
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, final String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException;
+
+    /**
      * Fetches the certificate profile by ID in XML format.
      *
      * @param profileId the certificate profile ID.
@@ -1492,7 +1508,15 @@ public interface RaMasterApi {
      * @param accountId a related account id
      * @return the list of sought AcmeAuthorizations or null if not found
      */
-  List<AcmeAuthorization> getAcmeAuthorizationsByAccountId (final String accountId);
+  List<AcmeAuthorization> getAcmeAuthorizationsByAccountId (String accountId);
+
+    /**
+     * Get not expired AcmeAuthorizations by accountId and identifiers.
+     * @param accountId a related account id
+     * @param identifiers the list of ACME identifiers
+     * @return the list of sought AcmeAuthorizations or null if not found
+     */
+     List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers);
 
     /**
      * Create or update the AcmeAuthorization.

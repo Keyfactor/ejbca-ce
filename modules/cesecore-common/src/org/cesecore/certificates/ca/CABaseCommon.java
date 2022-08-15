@@ -46,6 +46,8 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 
+import static java.util.Objects.nonNull;
+
 /**
  * Implementation of operations common for all CA types
  */
@@ -372,6 +374,10 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
             caToken = ret;
         }
         return caToken;
+    }
+
+    public boolean nonNullCaToken() {
+        return nonNull(caToken);
     }
 
     /** Sets the CA token. */

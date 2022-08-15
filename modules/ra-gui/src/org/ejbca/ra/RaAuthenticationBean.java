@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionEvent;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;

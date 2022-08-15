@@ -75,7 +75,7 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -315,8 +315,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                     final CAInfo caInfo = caSession.getCAInfoInternal(caId);
                     if (caInfo == null || caInfo.getCAType() == CAInfo.CATYPE_CVC
-                            || caInfo.getCAType() == CAInfo.CATYPE_CITS) {
-                        // Bravely ignore OCSP for CVC CAs
+                            || caInfo.getCAType() == CAInfo.CATYPE_CITS || caInfo.getCAType() == CAInfo.CATYPE_PROXY) {
+                        // Bravely ignore OCSP for CVC CAs and PROXY CAs
                         continue;
                     }
 

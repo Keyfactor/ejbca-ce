@@ -61,6 +61,8 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         setPublishToActiveDirectory(false);
     }
 
+
+
     // Getters and Setters
     public boolean isUsed() {
         return isUsed;
@@ -189,7 +191,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     public void setIncludeObjectGuidInSubjectSAN(boolean includeObjectGuidInSubjectSAN) {
         this.includeObjectGuidInSubjectSAN = includeObjectGuidInSubjectSAN;
     }
-
+    
     public String getAdditionalSubjectDNAttributes() {
         return additionalSubjectDNAttributes;
     }
@@ -227,10 +229,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
             return false;
         }
         MSAutoEnrollmentSettingsTemplate other = (MSAutoEnrollmentSettingsTemplate) obj;
-        if (!oid.equals(other.oid)) {
-            return false;
-        }
-        return true;
+        return !oid.equals(other.oid);
     }
 
     @Override
@@ -246,7 +245,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         "\nIncludeSPNInSubjectSAN: " + isIncludeSPNInSubjectSAN() + 
         "\nIncludeNetBiosInSubjectSAN: " + isIncludeNetBiosInSubjectSAN() + 
         "\nIncludeDomainInSubjectSAN: " + isIncludeDomainInSubjectSAN() + 
-        "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() + 
+        "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() +
         "\nAdditionalSubjectDNAttributes: " + getAdditionalSubjectDNAttributes() + 
         "\nPublishToActiveDirectory: " + isPublishToActiveDirectory();
     }
