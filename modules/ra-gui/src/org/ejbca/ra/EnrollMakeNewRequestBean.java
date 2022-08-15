@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -1128,8 +1129,20 @@ public class EnrollMakeNewRequestBean implements Serializable {
         getSubjectDn().update();
         getSubjectAlternativeName().update();
         getSubjectDirectoryAttributes().update();
-
-        //Fill End Entity information
+        
+        // Workaround.
+        // Corrections for SAN rfc822name and UPN (which might be a valid e-mail)
+        for (EndEntityProfile.FieldInstance field : getSubjectAlternativeName().getOptionalFieldInstances()) {
+            // An optional and modifiable SAN rfc822name or UPN field with a domain or list of domains can be left blank.
+            if(field.isUpnRfc() && field.isSelectableValuesUpnRfcDomainOnly() && field.getSelectableValuesUpnRfc().contains(field.getValue())) {
+                field.setValue("");
+            }
+            // An optional (or modifiable) SAN rfc822name and UPN using the EE e-mail can be disabled.  
+            if(field.isUpnRfc() && field.isUsed() && !field.getRfcEmailUsed()) {
+                field.setValue("");
+            }
+        }
+        
         final EndEntityInformation endEntityInformation = getEndEntityInformation();
 
         endEntityInformation.setCAId(getCAInfo().getCAId());
@@ -1382,20 +1395,57 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return Base64.encodeBase64String(commonName.getBytes());
     }
 
+    private void updateRfcAltNameField(final UIInput input) {
+        // If triggered with check box e-mail field, updates on field.
+        // Split the clientId on ':', the second to last substring is the loop index
+        final String[] split = input.getClientId().split(":");
+        final int index = Integer.parseInt(split[split.length - 2]);
+    
+        EndEntityProfile.FieldInstance rfc822Name = null;
+        if (input.getClientId().startsWith("requestInfoForm:subjectAlternativeNameOptional")) {
+            List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getOptionalFieldInstances();
+            if (index >= 0 && index < fi.size()) {
+                rfc822Name = fi.get(index); 
+            }
+        } else {
+            List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
+            if (index >= 0 && index < fi.size()) {
+                rfc822Name = fi.get(index); 
+            }
+        }
+        if (rfc822Name != null) {
+            final String email = getEndEntityInformation().getEmail();
+            if (rfc822Name.getRfcEmailUsed() && email != null) {
+                rfc822Name.setValue(email);
+                return;
+            }
+            rfc822Name.setValue("");
+        }
+    }
+    
     /**
      * Update RFC822NAME with value from end entity email
      */
-    public void updateRfcAltName() {
-        EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
-        if (rfc822Name != null) {
-            if (rfc822Name.getRfcEmailUsed()) {
-                String email = getEndEntityInformation().getEmail();
-                if (email != null) {
-                    rfc822Name.setValue(email);
-                    return;
+    public void updateRfcAltName(AjaxBehaviorEvent event) {
+        final UIComponent components = event.getComponent();
+        final UIInput emailInput = (UIInput) components.findComponent("upnRfcEmail");
+        final UIInput emailInput2 = (UIInput) components.findComponent("upnRfcEmail2");
+        if (emailInput != null) {
+            updateRfcAltNameField(emailInput);
+        } else if (emailInput2 != null) {
+        	// Workaround to render an unmodifiable e-mail as h:outputtext 
+            updateRfcAltNameField(emailInput2);
+        } else {
+            // If triggered with releasing focus on the EE e-mail field, updates all
+            final String email = getEndEntityInformation().getEmail();
+            if (email != null) {
+                final Map<Integer,FieldInstance> map = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME);
+                for (FieldInstance fi : map.values()) {
+                    if (fi.isRfcUseEmail()) {
+                        fi.setValue(email);
+                    }
                 }
             }
-            rfc822Name.setValue("");
         }
     }
 
@@ -1464,6 +1514,38 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (!password.equals(confirmPassword)) {
                 fc.addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_passwords_are_not_equal"));
                 fc.renderResponse();
+            }
+        }
+    }
+    
+    public final void validateUpnRfcEmail(ComponentSystemEvent event) {
+        final FacesContext fc = FacesContext.getCurrentInstance();
+        final UIComponent components = event.getComponent();
+        UIInput field = (UIInput) components.findComponent("upnRfcEmail");
+        // Workaround to render an unmodifiable e-mail field in SAN.
+        if (field == null || field.getLocalValue() == null || field.getLocalValue().toString().isEmpty()) {
+            field = (UIInput) components.findComponent("upnRfcEmail2");
+        }
+        final String value = field.getLocalValue() == null ? "" : field.getLocalValue().toString().trim();
+        if (!value.isEmpty()) {
+            final UIComponent domainField = (UIComponent) components.findComponent("upnRfcDomain");
+            if (domainField != null && domainField.isRendered()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Validate SAN rfc822name e-mail user part: " + value);
+                }
+                if (!StringTools.isValidEmailUserPart(value)) {
+                    fc.addMessage(field.getClientId(fc), raLocaleBean.getFacesMessage("enroll_san_email_user_part_invalid"));
+                    fc.renderResponse();
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Validate SAN rfc822name e-mail: " + value);
+                }
+                if (!StringTools.isValidEmail(value)) {
+                    field.setValue(value);
+                    fc.addMessage(field.getClientId(fc), raLocaleBean.getFacesMessage("enroll_san_email_invalid"));
+                    fc.renderResponse();
+                }
             }
         }
     }
@@ -2641,26 +2723,52 @@ public class EnrollMakeNewRequestBean implements Serializable {
         UIComponent components = event.getComponent();
         UIInput emailInput = (UIInput) components.findComponent("upnRfcEmail");
         UIInput domainInput = (UIInput) components.findComponent("upnRfcDomain");
+        // Workaround to render an unmodifiable e-mail field in SAN.
+        if ((domainInput == null || domainInput != null && !domainInput.isRendered()) & (emailInput == null || (emailInput != null && !emailInput.isRendered()))) {
+            UIInput emailInput2 = (UIInput) components.findComponent("upnRfcEmail2");
+            if (emailInput2 != null) {
+                emailInput = emailInput2;
+            }
+        }
         int index = -1;
         String email = "";
         if (emailInput != null) {
-            email = emailInput.getValue().toString();
             // Split the clientId on ':', the second to last substring is the loop index
             String[] split = emailInput.getClientId().split(":");
             index = Integer.parseInt(split[split.length - 2]);
+            // log.debug("Index " + index + " for clientId '" + emailInput.getClientId() + "'.");
+        }
+        if (emailInput != null && emailInput.getValue() != null) {
+            email = emailInput.getValue().toString();
+            log.debug("Index " + index + " mail part '" + email + "'.");
         }
         String domain = "";
-        if (domainInput != null) {
+        if (domainInput != null && domainInput.getValue() != null) {
             domain = domainInput.getValue().toString();
+            log.debug("Index " + index + " domain part '" + domain + "'.");
         }
         String concatenated = "";
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
             concatenated = email + "@" + domain;
+        } else if (email.trim().isEmpty() && !domain.trim().isEmpty()) {
+            // Field layout changed: drop-down box for the domain part contains entire e-mail. 
+            concatenated = domain;
+        } else if (!email.trim().isEmpty() && domain.trim().isEmpty()) {
+            // Field layout changed: text-field for email contains entire e-mail. 
+            concatenated = email;
         }
-        List<EndEntityProfile.FieldInstance> fieldInstances = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
-        if (index >= 0 && index < fieldInstances.size()) {
-            fieldInstances.get(index).setValue(concatenated);
+        if (emailInput.getClientId().startsWith("requestInfoForm:subjectAlternativeNameOptional")) {
+            List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getOptionalFieldInstances();
+            if (index >= 0 && index < fi.size()) {
+                fi.get(index).setValue(concatenated);
+            }
+        } else {
+            List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
+            if (index >= 0 && index < fi.size()) {
+                fi.get(index).setValue(concatenated);
+            }
         }
+        log.debug("Index " + index + " set to rfc822mail '" + email + "' / domain '" + domain + "' / conc. " + concatenated + ".");
     }
 
     /**

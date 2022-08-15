@@ -88,7 +88,6 @@ public class LDAPAttributeHelper {
         // Set Name Flags
         final Long nameFlag = Long.valueOf(certificateNameFlag);
         msaeTemplate.setIncludeNetBiosInSubjectSAN((nameFlag & CT_FLAG_SUBJECT_ALT_REQUIRE_DOMAIN_DNS) != 0);
-        msaeTemplate.setInclueFQDNInSubjectSAN((nameFlag & CT_FLAG_SUBJECT_ALT_REQUIRE_DOMAIN_DNS) != 0);
         msaeTemplate.setIncludeDomainInSubjectSAN((nameFlag & CT_FLAG_SUBJECT_ALT_REQUIRE_DNS) != 0);
         msaeTemplate.setIncludeObjectGuidInSubjectSAN((nameFlag & CT_FLAG_SUBJECT_ALT_REQUIRE_DIRECTORY_GUID) != 0);
         msaeTemplate.setIncludeUPNInSubjectSAN((nameFlag & CT_FLAG_SUBJECT_ALT_REQUIRE_UPN) != 0);
