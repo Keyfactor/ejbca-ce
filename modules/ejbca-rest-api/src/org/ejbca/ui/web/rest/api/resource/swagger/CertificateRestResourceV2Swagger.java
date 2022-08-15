@@ -21,6 +21,7 @@ import io.swagger.annotations.SwaggerDefinition.Scheme;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
+import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
@@ -32,6 +33,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -83,4 +85,18 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException, CertificateParsingException {
         return super.searchCertificates(requestContext, searchCertificatesRestRequest);
     }
+    
+    @GET
+    @Path("/profile/{profile_name}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Get Certificate Profile Info.",
+            response = CertificateProfileInfoRestResponseV2.class)
+    public Response getCertificateProfileInfo(
+            @Context HttpServletRequest requestContext,
+            @PathParam("profile_name") String certProfileName
+            ) throws AuthorizationDeniedException, RestException {
+        return super.getCertificateProfileInfo(requestContext, certProfileName);
+    }
+    
 }
