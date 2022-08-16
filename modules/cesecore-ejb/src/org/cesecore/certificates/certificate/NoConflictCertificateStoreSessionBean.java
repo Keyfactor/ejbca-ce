@@ -191,7 +191,12 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         }
         // If not found, take most recent certificate from NoConflictCertificateData
         final Collection<NoConflictCertificateData> certDatas = noConflictCertificateDataSession.findByFingerprint(fingerprint);
-        return new CertificateDataWrapper(filterMostRecentCertData(certDatas));
+        final NoConflictCertificateData mostRecent = filterMostRecentCertData(certDatas);
+        if (mostRecent == null) {
+            // Not found in either CertificateData or NoConflictCertificateData.
+            return null;
+        }
+        return new CertificateDataWrapper(mostRecent);
     }
     
     @Override
