@@ -23,6 +23,7 @@ import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.junit.Test;
 
@@ -181,6 +182,7 @@ public class StringToolsTest {
         log.trace(">test05Strip()");
         final Object originalValue = ConfigurationHolder.instance().getProperty(FORBIDDEN_CHARS_KEY);
         try {
+            assertEquals("\n\r;!\u0000%`?$~", new String(CesecoreConfiguration.getForbiddenCharacters()));
             final String input =  "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|\\<|\\>|\\\"|\\\\";
             final String defaultOutput = "|/|/|/|foo bar|/|/|/|/|/|/|\\<|\\>|\\\"|\\\\";
             forbiddenTest(null, input, defaultOutput);
