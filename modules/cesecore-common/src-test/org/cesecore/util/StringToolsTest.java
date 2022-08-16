@@ -223,10 +223,10 @@ public class StringToolsTest {
         assertEquals("foo123qw", deobfif);
         assertEquals("foo123qwe", StringTools.deobfuscateIf("foo123qwe"));
         // Non-ASCII should be handled
-        String obf2 = StringTools.obfuscate("euro€.");
+        String obf2 = StringTools.obfuscate("euro\u20ac.");
         assertEquals("OBF:1i9i1l1k1c6n1uh8390y2qkv2zhy1i6g", obf2);
         String deobf2 = StringTools.deobfuscate(obf2);
-        assertEquals("euro€.", deobf2);
+        assertEquals("euro\u20ac.", deobf2);
         // Empty String should be handled
         assertEquals("", StringTools.obfuscate(""));
         assertEquals("", StringTools.deobfuscateIf("OBF:"));
@@ -238,7 +238,7 @@ public class StringToolsTest {
 
     @Test
     public void testObfuscateEmoji() throws Exception {
-        String obf = StringTools.obfuscate("euro€emoji🧑🏿.");
+        String obf = StringTools.obfuscate("euro\u20acemoji\uD83E\uDDD1\uD83C\uDFFF.");
         String deobf = StringTools.deobfuscate(obf);
         assertEquals("euro\u20ACemoji\uD83E\uDDD1\uD83C\uDFFF.", deobf);
     }
@@ -250,9 +250,9 @@ public class StringToolsTest {
         assertEquals("aabc", deobf);
         assertNotEquals(obf.substring(0, 4), obf.substring(4, 8));
 
-        obf = StringTools.obfuscate("€€€€aabc");
+        obf = StringTools.obfuscate("\u20ac\u20ac\u20ac\u20acaabc");
         deobf = StringTools.deobfuscate(obf);
-        assertEquals("€€€€aabc", deobf);
+        assertEquals("\u20ac\u20ac\u20ac\u20acaabc", deobf);
         obf = obf.substring(4);
         assertNotEquals(obf.substring(0, 12), obf.substring(12, 24));
         assertEquals(obf.substring(24, 36), obf.substring(36, 48));
