@@ -93,7 +93,7 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
 
     
     /** @return return the query results as a Collection<RevokedCertInfo>. */
-    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, int crlPartitionIndex, long lastbasecrldate);
+    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate);
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateWithLimit(long expireDate, int maxNumberOfResults);
