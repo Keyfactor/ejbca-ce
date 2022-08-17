@@ -66,6 +66,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.cvc.AuthorizationField;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.util.HTMLTools;
 
 /**
  * UI representation of a certificate from the back end.
@@ -306,7 +307,7 @@ public class RaCertificateDetails {
     /** @return the Subject DN string of the current certificate in unescaped RDN format */
     public final String getSubjectDnUnescapedValue() {
         if (StringUtils.isNotEmpty(subjectDn)) {
-            return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
+            return org.ietf.ldap.LDAPDN.unescapeRDN(HTMLTools.htmlEscapeWithLanguageConsideration(subjectDn));
         } else {
             return subjectDn;
         }

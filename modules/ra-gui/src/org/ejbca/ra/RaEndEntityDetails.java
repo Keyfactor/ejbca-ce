@@ -49,6 +49,7 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.util.HTMLTools;
 
 /**
  * UI representation of a result set item from the back end.
@@ -138,7 +139,7 @@ public class RaEndEntityDetails {
      */
     public final String getSubjectDnUnescapedValue() {
         if (StringUtils.isNotEmpty(subjectDn)) {
-            return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
+            return org.ietf.ldap.LDAPDN.unescapeRDN(HTMLTools.htmlEscapeWithLanguageConsideration(subjectDn));
         } else {
             return subjectDn;
         }
