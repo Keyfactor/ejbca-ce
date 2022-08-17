@@ -191,7 +191,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
          */
 
         // Get number of last CRL
-        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, -1);
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, -1);
         log.debug("Number of revoked certificates=" + revfp.size());
         crl = getLastCrl(testx509ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
@@ -318,7 +318,6 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             caInfo.setAcceptRevocationNonExistingEntry(true);
             caInfo.setUseNoConflictCertificateData(true);
             caInfo.setDefaultCertificateProfileId(certificateProfileId);
-            caInfo.setKeepExpiredCertsOnCRL(true); // will disable later on
             caSession.editCA(alwaysAllowToken, caInfo);
 
             // Generate a certificate that is expired from the get go
@@ -346,51 +345,49 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             X509CRL crl = getLastX509Crl(testx509ca.getSubjectDN(), false);
             assertFalse("Certificate should not be present on the CRL", crl.isRevoked(certificate));
 
-            // Revoke the certificate, it should now be on the CRL
+            // Revoke the certificate
             internalCertificateStoreSession.setRevokeStatus(alwaysAllowToken, certificate, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
             // We need to sleep because the revocation date, expiry date (assigned based on certificate profile) and CRL generation dates are compared
             Thread.sleep(2000);
+
+            // Create two delta CRLs to verify that expired revoked certificates are always added to delta CRLs till a base one in created
+            publishingCrlSessionRemote.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
+            publishingCrlSessionRemote.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
+            crl = getLastX509Crl(testx509ca.getSubjectDN(), true);
+            assertTrue("Certificate should be present on the delta CRL", crl.isRevoked(certificate));
+
+            // Create a base CRL. The expired revoked certificate should still appear on the next base CRL
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
             crl = getLastX509Crl(testx509ca.getSubjectDN(), false);
-            assertTrue("Certificate should be present on the CRL", crl.isRevoked(certificate));
+            assertTrue("Certificate should be present on the base CRL", crl.isRevoked(certificate));
 
-            // And two more times, to make sure that it doesn't disappear, since we use keepExpiredCertsOnCRL
+            // Also verify that ExpiredCertsOnCRL CRL extension is not on the CRL
+            Set<String> extensions = crl.getNonCriticalExtensionOIDs();
+            assertFalse("CRL contains the ExpiredCertsOnCRL extension, even though KeepExpiredCertsOnCRL is set to false", extensions.contains("2.5.29.60"));
+
+            // Check that following CRLs do not include the expired revoked certificate
+            Thread.sleep(1000);
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            crl = getLastX509Crl(testx509ca.getSubjectDN(), false);
+            assertFalse("Certificate should not be present on the CRL", crl.isRevoked(certificate));
+
+            // Change CA to keep expired certificates on CRL
+            caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
+            caInfo.setKeepExpiredCertsOnCRL(true);
+            caSession.editCA(alwaysAllowToken, caInfo);
+
+            // Check that the expired & revoked certificate is no longer excluded from CRLs
             final BigInteger previousCrlNumber = CrlExtensions.getCrlNumber(crl);
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            Thread.sleep(1000);
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
             crl = getLastX509Crl(testx509ca.getSubjectDN(), false);
             assertTrue("Certificate should be present on the CRL", crl.isRevoked(certificate));
             assertFalse("Forced CRL generation did nothing", CrlExtensions.getCrlNumber(crl).equals(previousCrlNumber));
 
-            // Also verify that the ExpiredCertsOnCRL CRL extension is on this CRL
-            Set<String> extensions = crl.getNonCriticalExtensionOIDs();
-            assertTrue("CRL does not contain the ExpiredCertsOnCRL extension, even though KeepExpiredCertsOnCRL is set to true", extensions.contains("2.5.29.60"));
-
-            // Change CA to not keep expired certificates on CRL
-            caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testx509ca.getCAId());
-            caInfo.setKeepExpiredCertsOnCRL(false);
-            caSession.editCA(alwaysAllowToken, caInfo);
-
-            // The expired certificate should still appear on the next base CRL, then an entry with ARCHIVED status will be created
-            // in the append-only NoConflictCertificateData table and the expired, revoked certificate excluded from future CRLs.
-
-            // Generate a full CRL, this will trigger archiving of the expired certificate
-            Collection<RevokedCertInfo> revokedCertInfos = noConflictCertificateStoreSession.listRevokedCertInfo(caInfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, -1);
-            assertFalse("Certificate should be on the REVOKED list before generating a CRL", revokedCertInfos.isEmpty());
-            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-            crl = getLastX509Crl(testx509ca.getSubjectDN(), false);
-            assertTrue("Certificate should be present on the CRL", crl.isRevoked(certificate));
-
-            // Also verify that the ExpiredCertsOnCRL CRL extension is no longer on the CRL
+            // Also verify that the ExpiredCertsOnCRL CRL extension is now on the CRL
             extensions = crl.getNonCriticalExtensionOIDs();
-            assertFalse("CRL contains the ExpiredCertsOnCRL extension, even though KeepExpiredCertsOnCRL is set to false", extensions.contains("2.5.29.60"));
-
-            // Finally check that following CRLs do not include the ARCHIVED certificate
-            revokedCertInfos = noConflictCertificateStoreSession.listRevokedCertInfo(caInfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, -1);
-            assertTrue("Certificate should not be on the REVOKED list after an ARCHIVED entry was created", revokedCertInfos.isEmpty());
-            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-            crl = getLastX509Crl(testx509ca.getSubjectDN(), false);
-            assertFalse("Certificate should not be present on the CRL", crl.isRevoked(certificate));
+            assertTrue("CRL does not contain the ExpiredCertsOnCRL extension, even though KeepExpiredCertsOnCRL is set to true", extensions.contains("2.5.29.60"));
         } finally {
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, THROWAWAY_CA_CERT_PROFILE);
             internalCertificateStoreSession.removeCertificate(fingerprint);
