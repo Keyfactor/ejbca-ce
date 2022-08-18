@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.audit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
+import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -83,6 +85,35 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
             LOG.debug(e.getMessage());
         }
         LOG.trace("<testAuthorization");
+    }
+    
+    private String getLongString() {
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<400; i++) {
+            sb.append(i%10);
+        }
+        return sb.toString();
+    }
+    
+    @Test
+    public void testAuthorizationBigName() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException {
+        LOG.trace(">testAuthorizationBigName");
+        String upn = "EjbcaAuditorSessionBeanTest" + getLongString();
+        AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(upn));
+        final Role roleAuditor = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
+        roleAuditor.getAccessRules().put(AuditLogRules.CONFIGURE.resource(), Role.STATE_ALLOW);
+        roleSession.persistRole(alwaysAllowToken, roleAuditor);
+        final List<Object> params = new ArrayList<Object>();
+        params.add(EventTypes.ACCESS_CONTROL.toString());
+        List<? extends AuditLogEntry> entries = 
+                ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 1, "a.eventType != ?0", "a.timeStamp DESC", params);
+        
+        assertEquals("Authtoken was not trimmed where subject is too big.", 
+                entries.get(0).getAuthToken(), "[trimmed] " + upn.substring(0, 235));
+        assertEquals("Authtoken is not part of additional details when subject is too big.", 
+                                   entries.get(0).getMapAdditionalDetails().get("authToken"), upn);
+        
+        LOG.trace("<testAuthorizationBigName");
     }
 
     @Test

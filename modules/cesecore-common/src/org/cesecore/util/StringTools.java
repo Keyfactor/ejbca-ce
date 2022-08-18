@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -674,27 +675,32 @@ public final class StringTools {
         if (StringUtils.isEmpty(s)) {
             return s;
         }
-        final StringBuilder buf = new StringBuilder("OBF:");
+        final StringBuilder buf = new StringBuilder(32);
+        buf.append("OBF:");
         final byte[] b = s.getBytes();
 
         for (int i = 0; i < b.length; i++) {
-            final byte b1 = b[i];
-            final byte b2 = b[s.length() - (i + 1)];
+            final int b1 = b[i] & 0xff;
+            // If both bytes are ASCII, they are just converted to an unsigned int. If b2 is higher than ASCII, it is
+            // wrapped around after 128. If b1 is higher than ASCII, 128 is added to b2. This makes sure that i2 stays
+            // between 0 - 256.
+            final int b2 = b[b.length - (i + 1)] & 0x7f | (b1 & 0x80);
+            
             final int i1 = b1 + b2 + 127;
             final int i2 = b1 - b2 + 127;
             final int i0 = i1 * 256 + i2;
-            final String x = Integer.toString(i0, 36);
-
-            switch (x.length()) {
-            case 1:
-            case 2:
-            case 3:
-                buf.append('0');
-                break;
-            default:
-                buf.append(x);
-                break;
+            if (i0 < 0) {
+                throw new IllegalStateException("Negative number " + i0);
             }
+            final String x = Integer.toString(i0, 36);
+            if (x.length() > 4) {
+                throw new IllegalStateException("Too long integer " + x);
+            }
+            // Pad with leading zeros
+            for (int j = 0; j < 4 - x.length(); j++) {
+                buf.append('0');
+            }
+            buf.append(x);
         }
         return buf.toString();
 
@@ -715,7 +721,7 @@ public final class StringTools {
      * Retrieves the clear text from a string obfuscated with the obfuscate methods
      *
      * @param in obfuscated string, usually (but not necessarily) starts with OBF:
-     * @return plain text string, or original if it was empty
+     * @return plain text string, UTF-8 encoded, or original if it was empty
      */
     public static String deobfuscate(final String in) {
         String s = in;
@@ -734,8 +740,7 @@ public final class StringTools {
             final int i2 = (i0 % 256);
             b[l++] = (byte) ((i1 + i2 - 254) / 2);
         }
-
-        return new String(b, 0, l);
+        return new String(b, 0, l, Charset.forName("UTF-8"));
     }
 
     private static String getEncryptionVersion() {

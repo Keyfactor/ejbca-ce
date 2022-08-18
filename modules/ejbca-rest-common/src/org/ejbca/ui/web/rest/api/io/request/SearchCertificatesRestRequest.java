@@ -40,6 +40,7 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest
  */
 public class SearchCertificatesRestRequest implements SearchCertificateCriteriaRequest {
 
+    @ApiModelProperty(value = "Maximum number of results", example = "10")
     @ValidSearchCertificateMaxNumberOfResults
     private Integer maxNumberOfResults;
     @ApiModelProperty(value = "A List of search criteria." )

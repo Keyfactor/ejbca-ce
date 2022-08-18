@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * A class representing the status information of a REST resource.
  *
@@ -19,10 +21,12 @@ package org.ejbca.ui.web.rest.api.io.response;
  */
 public class RestResourceStatusRestResponse {
 
+    @ApiModelProperty(value = "Status", example = "OK")
     private String status;
+    @ApiModelProperty(value = "Resource version", example = "1.0")
     private String version;
+    @ApiModelProperty(value = "Application revision", example = "EJBCA 1.0.0 Enterprise")
     private String revision;
-    // TODO Possible extra info: Authentication info, token information, token validity and etc.
 
     public RestResourceStatusRestResponse() {
     }
