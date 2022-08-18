@@ -278,6 +278,8 @@ public abstract class CertTools {
     public static final String id_pda_countryOfResidence = id_pda + ".5";
     /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
+    /** OID used for creating Microsoft szOID_NTDS_CA_SECURITY_EXT for ADCS vuln. CVE-2022-26931 */
+    public static final String OID_MS_SZ_OID_NTDS_CA_SEC_EXT = "1.3.6.1.4.1.311.25.2";
     /** extended key usage OID Intel AMT (out of band) network management */
     public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
     

@@ -42,6 +42,8 @@ public class LDAPAttributeHelper {
     private static final int CT_FLAG_USER_INTERACTION_REQUIRED = 256;
     private static final int CT_FLAG_REMOVE_INVALID_CERTIFICATE_FROM_PERSONAL_STORE = 1024;
     private static final int CT_FLAG_ENABLE_KEY_REUSE_ON_NT_TOKEN_KEYSET_STORAGE_FULL = 8192;
+    // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-winerrata/6898053e-8726-4209-ade2-37f8b0474c99
+    private static final int CT_FLAG_NO_SECURITY_EXTENSION = 0x00080000;
     
     // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/1522b774-6464-41a3-87a5-1e5633c3fbbb
     private static final String AD_ACCESS_TYPE_ENROLL = "0e10c968-78fb-11d2-90d4-00c04f79dc55";
@@ -85,6 +87,8 @@ public class LDAPAttributeHelper {
         // Set Publish To AD
         final Long adEnrollment = Long.valueOf(enrollmentFlag);
         msaeTemplate.setPublishToActiveDirectory((adEnrollment & CT_FLAG_PUBLISH_TO_DS) != 0);
+        // if set, then skip adding security extension
+        msaeTemplate.setExcludeObjectSidInNtdsSecurityExtension((adEnrollment & CT_FLAG_NO_SECURITY_EXTENSION) != 0);
         // Set Name Flags
         final Long nameFlag = Long.valueOf(certificateNameFlag);
         msaeTemplate.setIncludeNetBiosInSubjectSAN((nameFlag & CT_FLAG_SUBJECT_ALT_REQUIRE_DOMAIN_DNS) != 0);
