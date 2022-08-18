@@ -13,22 +13,22 @@
 
 package org.cesecore.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.apache.commons.configuration2.CompositeConfiguration;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Tests the ConfigurationHolder class
@@ -104,7 +104,7 @@ public class ConfigurationHolderTest {
                 .configure(new Parameters().properties()
                     .setFile(file)
                     .setThrowExceptionOnMissing(false)
-                    .setListDelimiterHandler(new DefaultListDelimiterHandler(';'))
+                    .setListDelimiterHandler(new LegacyListDelimiterHandler(';'))
                     .setIncludesAllowed(false));
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;

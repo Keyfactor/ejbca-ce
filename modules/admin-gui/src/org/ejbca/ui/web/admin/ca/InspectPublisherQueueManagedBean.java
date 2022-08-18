@@ -100,6 +100,8 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 if (isAuthorizedToViewCertificate(certificateInfo)) {
                     return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CERTIFICATE_DESCRIPTION", false,
                             certificateInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
+                } else if (certificateInfo == null) {
+                    return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NONEXISTENT_ENTRY");
                 } else {
                     return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
                 }
@@ -108,6 +110,8 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 if (isAuthorizedToViewCrl(crlInfo)) {
                     return StringUtils.abbreviate(getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_CRL_DESCRIPTION", false,
                             crlInfo.getLastCRLNumber(), crlInfo.getSubjectDN()), DESCRIPTION_MAX_LENGTH);
+                } else if (crlInfo == null) {
+                    return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NONEXISTENT_ENTRY");
                 } else {
                     return getEjbcaWebBean().getText("INSPECT_PUBLISHER_QUEUE_NOT_AUTHORIZED");
                 }
