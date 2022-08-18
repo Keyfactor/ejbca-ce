@@ -12,6 +12,21 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Random;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -19,19 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.security.InvalidKeyException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
-import java.util.Collections;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.config.ConfigurationHolder;
-import org.junit.Test;
 
 /**
  * Tests the StringTools class.
@@ -180,6 +182,7 @@ public class StringToolsTest {
         log.trace(">test05Strip()");
         final Object originalValue = ConfigurationHolder.instance().getProperty(FORBIDDEN_CHARS_KEY);
         try {
+            assertEquals("\n\r;!\u0000%`?$~", new String(CesecoreConfiguration.getForbiddenCharacters()));
             final String input =  "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|\\<|\\>|\\\"|\\\\";
             final String defaultOutput = "|/|/|/|foo bar|/|/|/|/|/|/|\\<|\\>|\\\"|\\\\";
             forbiddenTest(null, input, defaultOutput);
@@ -211,12 +214,19 @@ public class StringToolsTest {
     @Test
     public void testObfuscate() throws Exception {
         String obf = StringTools.obfuscate("foo123");
+        assertEquals("OBF:1jg21l181ku51kqp1kxu1jd8", obf);
         String deobf = StringTools.deobfuscate(obf);
         assertEquals("foo123", deobf);
         String obfif = StringTools.obfuscate("foo123qw");
+        assertEquals("OBF:1wtq1xfh1l8b18qm18qo1l4z1xfl1wuo", obfif);
         String deobfif = StringTools.deobfuscate(obfif);
         assertEquals("foo123qw", deobfif);
         assertEquals("foo123qwe", StringTools.deobfuscateIf("foo123qwe"));
+        // Non-ASCII should be handled
+        String obf2 = StringTools.obfuscate("euro\u20ac.");
+        assertEquals("OBF:1i9i1l1k1c6n1uh8390y2qkv2zhy1i6g", obf2);
+        String deobf2 = StringTools.deobfuscate(obf2);
+        assertEquals("euro\u20ac.", deobf2);
         // Empty String should be handled
         assertEquals("", StringTools.obfuscate(""));
         assertEquals("", StringTools.deobfuscateIf("OBF:"));
@@ -226,6 +236,60 @@ public class StringToolsTest {
         assertNull(StringTools.obfuscate(null));
     }
 
+    @Test
+    public void testObfuscateEmoji() throws Exception {
+        String obf = StringTools.obfuscate("euro\u20acemoji\uD83E\uDDD1\uD83C\uDFFF.");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("euro\u20ACemoji\uD83E\uDDD1\uD83C\uDFFF.", deobf);
+    }
+    
+    @Test
+    public void testObfuscateNoRepeat() throws Exception {
+        String obf = StringTools.obfuscate("aabc");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("aabc", deobf);
+        assertNotEquals(obf.substring(0, 4), obf.substring(4, 8));
+
+        obf = StringTools.obfuscate("\u20ac\u20ac\u20ac\u20acaabc");
+        deobf = StringTools.deobfuscate(obf);
+        assertEquals("\u20ac\u20ac\u20ac\u20acaabc", deobf);
+        obf = obf.substring(4);
+        assertNotEquals(obf.substring(0, 12), obf.substring(12, 24));
+        assertEquals(obf.substring(24, 36), obf.substring(36, 48));
+    }
+    
+    @Test
+    public void testObfuscateFuzz() throws Exception {
+        Random random = new Random(1);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 99999; i++) {
+            builder.setLength(0);
+            int length = 40 + random.nextInt(50);
+            for (int j = 0; j < length; j++) {
+                int codePoint = random.nextInt(Character.MAX_CODE_POINT + 1);
+                if (!Character.isDefined(codePoint) || Character.isSurrogate((char)codePoint)) {
+                    continue;
+                }
+                builder.appendCodePoint(codePoint);
+                codePoint = random.nextInt(500);
+                if (codePoint < 128) {
+                    builder.appendCodePoint(codePoint);
+                }
+            }
+            String input = builder.toString();
+            String obf = StringTools.obfuscate(input);
+            String deobf = StringTools.deobfuscate(obf);
+            assertEquals(input, deobf);
+        }
+    }
+
+    @Test
+    public void testObfuscateNuls() throws Exception {
+        String obf = StringTools.obfuscate("a\0\0\0\0\0\0\0c");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("a\0\0\0\0\0\0\0c", deobf);
+    }
+    
     @Test
     public void testPbe() throws Exception {
         CryptoProviderTools.installBCProvider();
