@@ -470,7 +470,13 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         try {
             final Certificate cacert = getCaCertificate(cainfo);
             // DN from the CA issuing the CRL to be used when searching for the CRL in the database.
-            final String caCertSubjectDN = cacert==null ? null : CertTools.getSubjectDN(cacert);
+            final String caCertSubjectDN = cacert == null ? null : CertTools.getSubjectDN(cacert);
+            final Date now = new Date();
+            final Date lastBaseCrlCreationDate = lastBaseCrlInfo == null ? new Date(-1) : lastBaseCrlInfo.getCreateDate();
+            final boolean keepExpiredCertsOnCrl = ca.getCAType() == CAInfo.CATYPE_X509 && cainfo.getKeepExpiredCertsOnCRL();
+            if (keepExpiredCertsOnCrl) {
+                log.info("KeepExpiredCertsOnCRL is enabled, we will not archive expired certificates, but will keep them on the CRL (for ever growing): " + keepExpiredCertsOnCrl);
+            }
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE )  {
                 // Find all revoked certificates for a complete CRL
@@ -478,7 +484,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     final long freeMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
                     log.debug("Listing revoked certificates. Free memory=" + freeMemory);
                 }
-                revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, crlPartitionIndex, -1);
+                revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, false,
+                        crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl);
 
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -493,7 +500,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
                                 log.info("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
-                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, crlPartitionIndex, -1);
+                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN,
+                                        false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl);
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
@@ -525,18 +533,12 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 //  the revocation notice MUST be included in all subsequent delta CRLs
                 //  until the revocation notice is included on at least one explicitly
                 //  issued complete CRL for this scope
-                final Date now = new Date();
-                final Date lastCrlCreationDate = lastBaseCrlInfo==null ? now : lastBaseCrlInfo.getCreateDate();
                 final AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
-                final boolean keepexpiredcertsoncrl = ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CAInfo) cainfo).getKeepExpiredCertsOnCRL();
-                if (keepexpiredcertsoncrl) {
-                    log.info("KeepExpiredCertsOnCRL is enabled, we will not archive expired certificate but will keep them on the CRL (for ever growing): " + keepexpiredcertsoncrl);
-                }
                 for (final RevokedCertInfo revokedCertInfo : revokedCertificates) {
-                    // We want to include certificates that was revoked after the last CRL was issued, but before this one
+                    // We want to include certificates that were revoked after the last CRL was issued, but before this one
                     // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
                     // If chosen to keep expired certificates on CRL, we will NOT do this but keep them (ISO 9594-8 par. 8.5.2.12)
-                    if ( !keepexpiredcertsoncrl && revokedCertInfo.getExpireDate() != null && revokedCertInfo.getExpireDate().before(lastCrlCreationDate) ) {
+                    if ( !keepExpiredCertsOnCrl && revokedCertInfo.getExpireDate() != null && revokedCertInfo.getExpireDate().before(lastBaseCrlCreationDate) ) {
                         // Certificate has expired, set status to archived in the database
                         if (log.isDebugEnabled()) {
                             final long freeMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
@@ -566,7 +568,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 if (crlBytes != null) {
                     ret = CertTools.getFingerprintAsString(crlBytes);
                 }
-                // This debug logging is very very heavy if you have large CRLs. Please don't use it :-)
+                // This debug logging is very, very heavy if you have large CRLs. Please don't use it :-)
                 //              if (log.isDebugEnabled()) {
                 //              X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
                 //              debug("Created CRL with expire date: "+crl.getNextUpdate());
@@ -636,7 +638,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE ) {
                 // Find all revoked certificates
-                revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime());
+                revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime(), true);
 
                 // if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -656,7 +658,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                     log.debug("Collecting revocation information for renewed certificate '" + renewedCertificateSubjectDN + "' and merging them with ones for " + caCertSubjectDN);
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
-                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, crlPartitionIndex, -1);
+                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, crlPartitionIndex, -1, true);
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
