@@ -200,16 +200,16 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, int crlPartitionIndex, long lastbasecrldate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl) {
         if (log.isTraceEnabled()) {
-            log.trace(">listRevokedCertInfo('" + issuerdn + "', " + crlPartitionIndex + ", " + lastbasecrldate + ")");
+            log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ")");
         }
-        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, crlPartitionIndex, lastbasecrldate);
-        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerdn, crlPartitionIndex, lastbasecrldate);
+        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate);
+        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate, keepExpiredCertsOnCrl);
         if (log.isDebugEnabled()) {
             log.debug("listRevokedCertInfo: Got " + revokedInCertData.size() + " entries from CertificateData and " + revokedInNoConflictData.size() + " entries from NoConflictCertificateData");
         }
-        return RevokedCertInfo.mergeByDateAndStatus(revokedInCertData, revokedInNoConflictData, lastbasecrldate);
+        return RevokedCertInfo.mergeByDateAndStatus(revokedInCertData, revokedInNoConflictData, lastBaseCrlDate);
     }
     
     /**
@@ -282,6 +282,11 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     public boolean setStatus(final AuthenticationToken admin, final String fingerprint, final int status) throws AuthorizationDeniedException {
         if (!certificateStoreSession.setStatus(admin, fingerprint, status)) {
             // Perhaps stored in NoConflictCertificateData
+
+            // Don't create a redundant entry with status ARCHIVED in NoConflictCertificateData table
+            if (status == CertificateConstants.CERT_ARCHIVED){
+                return true;
+            }
             final List<NoConflictCertificateData> certDatas = noConflictCertificateDataSession.findByFingerprint(fingerprint);
             NoConflictCertificateData certData = filterMostRecentCertData(certDatas);
             if (certData != null) {
