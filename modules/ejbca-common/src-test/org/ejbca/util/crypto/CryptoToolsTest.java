@@ -170,16 +170,19 @@ public class CryptoToolsTest {
             IOException, InvalidKeyException, OperatorCreationException, CertificateException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
-        final String alias = "alias";
+        final String encAlias = "encAlias";
+        final String signAlias = "signAlias";
         // key pair to encrypt decrypt keys
-        cryptoToken.generateKeyPair(KeyGenParams.builder("secp384r1").build(), alias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsTest", 1, "0.0", cryptoToken.getPrivateKey(alias),
-                cryptoToken.getPublicKey(alias), AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, false);
+        cryptoToken.generateKeyPair(KeyGenParams.builder("secp384r1").build(), encAlias);
+        // then the standard keys, which will be used in the certificate
+        cryptoToken.generateKeyPair(KeyGenParams.builder("secp384r1").build(), signAlias);
+        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsTest", 1, "0.0", cryptoToken.getPrivateKey(signAlias),
+                cryptoToken.getPublicKey(signAlias), AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, false);
 
         final KeyPair endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, endEntityKeypair);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
-        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias),
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(encAlias),
                 endEntityKeypair.getPublic(), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
         
