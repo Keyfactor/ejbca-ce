@@ -531,7 +531,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
+    public List<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException {
         final CAInfo info = getCAInfo(authenticationToken, caName);
         if(info == null) {
