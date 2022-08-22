@@ -286,12 +286,13 @@ public class KeyRecoveryTest extends CaTestCase {
         } catch (InvalidAlgorithmException e) {
             throw new IllegalArgumentException("Could not create CA.", e);
         }
-        
+             
         X509Certificate endEntityCertificate = null;
         String certificateFingerprint = null;
         final String username = "testAddAndRemoveKeyPairECEncryptWithECCDH";
+      
         try {
-            KeyPair endEntityKeypair = null;
+          KeyPair endEntityKeypair = null;
             try {
                 if (!endEntityManagementSession.existsUser(username)) {
                     endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
@@ -309,25 +310,33 @@ public class KeyRecoveryTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
+          
+            
             // Save the keys as key recovery data in the database 
             assertTrue("Key recovery data already exists in database.",
-                    keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate), user, EJBTools.wrap(endEntityKeypair)));
+                    keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate), username, EJBTools.wrap(endEntityKeypair)));
             assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
-            assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
-            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, endEntityCertificate);
-            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(username));
+            
+            //Perform the decryption operation through the ssb
+ 
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, endEntityCertificate);
+            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username));
+            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(internalAdmin, username, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             assertNotNull("Couldn't recover keys from database", data);
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), endEntityKeypair.getPrivate().getEncoded()));
+                   
         } finally {
             // Only clean up left.
+
             if (endEntityCertificate != null) {
                 keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate));
                 assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
             }
             internalCertStoreSession.removeCertificate(certificateFingerprint);
             endEntityManagementSession.deleteUser(internalAdmin, username);
+
             CaTestUtils.removeCa(internalAdmin, caName, caName);
         }
     }

@@ -173,7 +173,7 @@ public class CryptoTools {
         JceKeyAgreeRecipientInfoGenerator keyAgreeRecipientInfoGenerator;
         try {
             keyAgreeRecipientInfoGenerator = new JceKeyAgreeRecipientInfoGenerator(CMSAlgorithm.ECCDH_SHA256KDF, cryptoToken.getPrivateKey(alias),
-                    cryptoToken.getPublicKey(alias), CMSAlgorithm.AES256_WRAP).addRecipient(caCertificate).setProvider(providerName);
+                   caCertificate.getPublicKey(), CMSAlgorithm.AES256_WRAP).addRecipient(caCertificate).setProvider(providerName);
             JcaPKIArchiveControlBuilder pkIArchiveControlBuilder = new JcaPKIArchiveControlBuilder(endEntityKeyPair.getPrivate(),
                     caCertificate.getSubjectX500Principal());
             pkIArchiveControlBuilder.addRecipientGenerator(keyAgreeRecipientInfoGenerator);
@@ -335,7 +335,7 @@ public class CryptoTools {
             final RecipientInformationStore recipients = ed.getRecipientInfos();
             final RecipientInformation recipient = recipients.getRecipients().iterator().next();
             final JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
-            rec.setProvider(cryptoToken.getEncProviderName());
+            rec.setProvider(cryptoToken.getEncProviderName()); 
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
             // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
             // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known

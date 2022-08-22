@@ -1308,8 +1308,31 @@ public class CAInterfaceBean implements Serializable {
     public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
         final List<String> aliases = new ArrayList<>();
         for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                aliases.add(cryptoTokenKeyPairInfo.getAlias());
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm))
+                    .equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                //Only P256, P384 and P512 are available for ECCDH
+                if (cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_ECDSA)
+                        || cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_EC)) {
+                    switch (cryptoTokenKeyPairInfo.getKeySpecification()) {
+                    case "prime256v1":
+                    case "secp256r1":
+                    case "P-256":
+                    case "prime384v1":
+                    case "secp384r1":
+                    case "P-384":
+                    case "prime521v1":
+                    case "secp521r1":
+                    case "P-521":
+                        aliases.add(cryptoTokenKeyPairInfo.getAlias());
+                        break;
+                    default:
+                        break;
+                    }
+                } else {
+                    //Or in case of RSA
+                    aliases.add(cryptoTokenKeyPairInfo.getAlias());
+                }
+
             }
         }
         return aliases;

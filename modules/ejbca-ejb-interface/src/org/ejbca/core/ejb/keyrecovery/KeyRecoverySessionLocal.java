@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.keyrecovery;
 
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.ejb.Local;
 
@@ -80,4 +81,13 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
      * @return true if flag was set in database successfully
      */
     boolean markAsRecoverableInternal(AuthenticationToken admin, CertificateWrapper certificate, String username);
+    
+    /** @return return the query results as a List. */
+    List<KeyRecoveryData> findByUserMark(final String usermark);
+    
+    /** @return the found entity instance or null if the entity does not exist */
+    KeyRecoveryData findByPK(final KeyRecoveryDataPK pk);
+    
+    /** @return return the query results as a List. */
+    List<KeyRecoveryData> findByUsername(final String username);
 }

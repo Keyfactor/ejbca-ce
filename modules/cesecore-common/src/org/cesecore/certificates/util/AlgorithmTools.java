@@ -12,43 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.util;
 
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.anssi.ANSSINamedCurves;
-import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
-import org.bouncycastle.asn1.cryptopro.ECGOST3410NamedCurves;
-import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
-import org.bouncycastle.asn1.gm.GMNamedCurves;
-import org.bouncycastle.asn1.nist.NISTNamedCurves;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
-import org.bouncycastle.asn1.sec.SECNamedCurves;
-import org.bouncycastle.asn1.teletrust.TeleTrusTNamedCurves;
-import org.bouncycastle.asn1.ua.UAObjectIdentifiers;
-import org.bouncycastle.asn1.x9.X962NamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.crypto.params.ECDomainParameters;
-import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
-import org.bouncycastle.jcajce.util.MessageDigestUtils;
-import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.bouncycastle.math.ec.ECCurve;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.StringTools;
-import org.ejbca.cvc.AlgorithmUtil;
-import org.ejbca.cvc.CVCPublicKey;
-import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.OIDField;
-
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
@@ -80,6 +43,42 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.anssi.ANSSINamedCurves;
+import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
+import org.bouncycastle.asn1.cryptopro.ECGOST3410NamedCurves;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.asn1.gm.GMNamedCurves;
+import org.bouncycastle.asn1.nist.NISTNamedCurves;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
+import org.bouncycastle.asn1.sec.SECNamedCurves;
+import org.bouncycastle.asn1.teletrust.TeleTrusTNamedCurves;
+import org.bouncycastle.asn1.ua.UAObjectIdentifiers;
+import org.bouncycastle.asn1.x9.X962NamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
+import org.bouncycastle.jcajce.util.MessageDigestUtils;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
+import org.bouncycastle.math.ec.ECCurve;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.StringTools;
+import org.ejbca.cvc.AlgorithmUtil;
+import org.ejbca.cvc.CVCPublicKey;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.OIDField;
 
 /**
  * Various helper methods for handling the mappings between different key and
@@ -654,7 +653,7 @@ public abstract class AlgorithmTools {
 
     /**
      * Gets the algorithm to use for encryption given a specific signature algorithm.
-     * Some signature algorithms (i.e. DSA and ECDSA) can not be used for
+     * Some signature algorithms (i.e. DSA) can not be used for
      * encryption so they are instead substituted with RSA with equivalent hash
      * algorithm.
      * @param signatureAlgorithm to find a encryption algorithm for
@@ -663,36 +662,26 @@ public abstract class AlgorithmTools {
      */
     public static String getEncSigAlgFromSigAlg(final String signatureAlgorithm) {
         String encSigAlg = signatureAlgorithm;
-        if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA)) {
-            // Even though SHA384 is used for ECDSA, play it safe and use SHA256 for RSA since we do not trust all PKCS#11 implementations
-            // to be so new to support SHA384WithRSA
-            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA)) {
+        switch (signatureAlgorithm) {
+        case AlgorithmConstants.SIGALG_SHA1_WITH_DSA:
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_DSA)) {
+            break;
+        case AlgorithmConstants.SIGALG_SHA256_WITH_DSA:
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+            break;
+        case AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410:
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
+            break;
+        case AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145:
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_ED25519)) {
+            break;
+        case AlgorithmConstants.SIGALG_ED25519:
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_ED448)) {
+        break;
+        case AlgorithmConstants.SIGALG_ED448:
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        default:
+            break;
         }
         return encSigAlg;
     }

@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.keyrecovery;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -31,7 +32,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 
 /**
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyRecoveryProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -113,6 +113,21 @@ public class KeyRecoveryProxySessionBean implements KeyRecoveryProxySessionRemot
     @Override
     public boolean markAsRecoverableInternal(AuthenticationToken admin, CertificateWrapper certificate, String username) {
         return keyRecoverySession.markAsRecoverableInternal(admin, certificate, username);
+    }
+
+    @Override
+    public List<KeyRecoveryData> findByUserMark(String usermark) {
+        return keyRecoverySession.findByUserMark(usermark);
+    }
+
+    @Override
+    public KeyRecoveryData findByPK(KeyRecoveryDataPK pk) {
+        return keyRecoverySession.findByPK(pk);
+    }
+
+    @Override
+    public List<KeyRecoveryData> findByUsername(String username) {
+        return keyRecoverySession.findByUsername(username);
     }
 
 }
