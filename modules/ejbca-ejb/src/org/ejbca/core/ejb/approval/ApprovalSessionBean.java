@@ -53,7 +53,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -130,8 +129,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
-    private RoleSessionLocal roleSession;
-    @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     
     private ApprovalSessionLocal approvalSession;
@@ -164,7 +161,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-                sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData, false);
+                sendApprovalNotifications(approvalRequest, approvalProfile, approvalData, false);
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", requestId);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -609,7 +606,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void sendApprovalNotifications(final AuthenticationToken admin, final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
+    public void sendApprovalNotifications(final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
             final ApprovalData approvalData, final boolean expired) {
         try {
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
