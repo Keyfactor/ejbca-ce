@@ -22,6 +22,8 @@ import java.util.Set;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
 import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleInformation;
+import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PositiveIntegerValidator;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -39,6 +41,9 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     private static final long serialVersionUID = 6432620040542676563L;
     
     private static final InternalResources intres = InternalResources.getInstance();
+    
+    public static final RoleInformation ANYBODY = RoleInformation.fromRoleMembers(-1, null, "Anybody", new ArrayList<RoleMember>());
+
 
     /**
      * Note: do not change, may cause problems in deployed installations.
@@ -169,13 +174,28 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
     
     @Override
+    public boolean canAnyoneViewPartition(final ApprovalPartition approvalPartition) {
+        // Anyone can allow (given that their role has the needed access rules)
+        return true;
+    }
+    
+    @Override
     public List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition) {
         return new ArrayList<>();
     }
     
     @Override
-    public List<String> getAllowedRoleNamesForViewingPartition(final ApprovalPartition approvalPartition) {
-        return new ArrayList<>();
+    public List<Integer> getAllowedRoleIds(final ApprovalPartition approvalPartition) {
+        List<Integer> ids = new ArrayList<>();
+        ids.add(ANYBODY.getIdentifier());
+        return ids;
+    }
+    
+    @Override
+    public List<Integer> getAllowedRoleIdsForViewingPartition(final ApprovalPartition approvalPartition) {
+        List<Integer> ids = new ArrayList<>();
+        ids.add(ANYBODY.getIdentifier());
+        return ids;
     }
 
     @Override
