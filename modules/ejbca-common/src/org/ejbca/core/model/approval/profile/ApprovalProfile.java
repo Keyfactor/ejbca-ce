@@ -293,6 +293,13 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      * @return true if any admin is allowed
      */
     boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition);
+    
+    /**
+     * Returns true if the given partition has been configured to allow any administrator to view it.
+     * @param approvalPartition the approval partition.
+     * @return true if any admin is allowed
+     */
+    boolean canAnyoneViewPartition(final ApprovalPartition approvalPartition);
 
     /**
      * Returns the list of roles which have been configured in the given partition to be allowed to approve it.
@@ -302,11 +309,18 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
     List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition);
     
     /**
-     * Returns the list of roles which have been configured in the given partition to be allowed to view it.
+     * Returns the list of roles (in the form of ids) which have been configured in the given partition to be allowed to approve it.
      * @param approvalPartition the approval partition.
-     * @return list of names of administrator roles. May return an empty list if canAnyoneApprovePartition returns true.
+     * @return list of ids of administrator roles.
      */
-    List<String> getAllowedRoleNamesForViewingPartition(final ApprovalPartition approvalPartition);
+    List<Integer> getAllowedRoleIds(final ApprovalPartition approvalPartition);
+    
+    /**
+     * Returns the list of roles (in the form of ids) which have been configured in the given partition to be allowed to view it.
+     * @param approvalPartition the approval partition.
+     * @return list of names of administrator roles.
+     */
+    List<Integer> getAllowedRoleIdsForViewingPartition(final ApprovalPartition approvalPartition);
 
     /**
      * @return a set of properties to hide at the approval screen.
