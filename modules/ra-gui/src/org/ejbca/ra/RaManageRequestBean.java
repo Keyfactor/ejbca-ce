@@ -248,19 +248,26 @@ public class RaManageRequestBean implements Serializable {
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
                     boolean canApprove = false;
                     boolean canView = false;
-                    List<String> roleNamesWhichCanApprove = approvalProfile.getAllowedRoleNames(approvalPartition);
-                    List<String> roleNamesWhichCanView = approvalProfile.getAllowedRoleNamesForViewingPartition(approvalPartition);
-                    for (Role role: roles) {
-                        if (roleNamesWhichCanApprove.contains(role.getName()) || roleNamesWhichCanApprove.contains("Anybody")) {
-                            canApprove = true;
-                            break;
-                        }
-                        if (roleNamesWhichCanView.contains(role.getName())) {
-                            canView = true;
+                    if (approvalProfile.canAnyoneApprovePartition(approvalPartition)) {
+                        canApprove = true;
+                    }
+                    if (approvalProfile.canAnyoneViewPartition(approvalPartition)) {
+                        canView = true;
+                    }
+                    if (canApprove == false) {
+                        List<Integer> roleIdsWhichCanApprove = approvalProfile.getAllowedRoleIds(approvalPartition);
+                        List<Integer> roleIdsWhichCanView = approvalProfile.getAllowedRoleIdsForViewingPartition(approvalPartition);
+                        for (Role role: roles) {
+                            if (roleIdsWhichCanApprove.contains(role.getRoleId())) {
+                                canApprove = true;
+                                break;
+                            }
+                            if (roleIdsWhichCanView.contains(role.getRoleId())) {
+                                canView = true;
+                            }
                         }
                     }
-
-                    if (canView || canApprove) {
+                    if (canApprove || canView) {
                         ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject =
                                 new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepIdentifier(),
                                 approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition),
