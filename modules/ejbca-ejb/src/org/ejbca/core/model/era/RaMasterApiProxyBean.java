@@ -438,7 +438,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public List<Role> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
         final Map<Integer, Role> roleMap = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
                 try {
                     for (final Role role : raMasterApi.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
                         roleMap.put(role.getRoleId(), role);
