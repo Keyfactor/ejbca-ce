@@ -71,7 +71,6 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
     }
     
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(UpgradeBean.class);
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
