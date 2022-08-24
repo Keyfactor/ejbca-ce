@@ -30,11 +30,11 @@
 	<ui:define name="content">
 		<h:panelGroup layout="block" class="header" id="title">
 			<h1>
-				<h:outputText value="#{msg.renewcertificate_page_title}" />
+				<h:outputText value="#{raAccessBean.authorizedToRenewClientCertificate eq true? msg.renewcertificate_page_title : msg.renewcertificate_page_role_not_authorized }" />
 			</h1>
 		</h:panelGroup>
 
-		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.clientCertificateUser and raAccessBean.authorizedToRenewClientCertificate}">
+		<h:form id="renewForm" styleClass="pure-form pure-form-aligned" rendered="#{raAuthenticationBean.certificateInRequest and raAccessBean.authorizedToRenewClientCertificate}">
 			<h:panelGroup layout="block" id="renewContentBody"
 				styleClass="content-body">
 

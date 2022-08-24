@@ -46,6 +46,7 @@ import org.cesecore.util.QueryResultWrapper;
 public class IntegrityProtectedLoggerSessionBean implements IntegrityProtectedLoggerSessionLocal {
 
     private static final Logger log = Logger.getLogger(IntegrityProtectedLoggerSessionBean.class);
+    private static final int MAX_AUTH_TOKEN_SIZE = 250;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -82,7 +83,7 @@ public class IntegrityProtectedLoggerSessionBean implements IntegrityProtectedLo
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     // Always persist audit log
     public void log(final TrustedTime trustedTime, final EventType eventType, final EventStatus eventStatus, final ModuleType module,
-            final ServiceType service, final String authToken, final String customId, final String searchDetail1, final String searchDetail2,
+            final ServiceType service, String authToken, final String customId, final String searchDetail1, final String searchDetail2,
             final Map<String, Object> additionalDetails, final Properties properties) throws AuditRecordStorageException {
         if (log.isTraceEnabled()) {
             log.trace(String.format(">log:%s:%s:%s:%s:%s:%s", eventType, eventStatus, module, service, authToken, additionalDetails));
@@ -92,6 +93,10 @@ public class IntegrityProtectedLoggerSessionBean implements IntegrityProtectedLo
             // Make sure to use the Node Identifier that this log sequence was initialized with (for example hostnames reported by the system could change)
             final String nodeId = NodeSequenceHolder.INSTANCE.getNodeId();
             final Long timeStamp = trustedTime.getTime().getTime();
+            if(authToken.length() > MAX_AUTH_TOKEN_SIZE) {
+                additionalDetails.put("authToken", authToken);
+                authToken = "[trimmed] " + authToken.substring(0, MAX_AUTH_TOKEN_SIZE - 15);
+            }
             final AuditRecordData auditRecordData = new AuditRecordData(nodeId, sequenceNumber, timeStamp, eventType, eventStatus, authToken,
                     service, module, customId, searchDetail1, searchDetail2, additionalDetails);
             entityManager.persist(auditRecordData);
