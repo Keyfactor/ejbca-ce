@@ -12,11 +12,15 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,13 +41,16 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
+import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -69,6 +76,7 @@ public class RaEndEntityBean implements Serializable {
     private static final Logger log = Logger.getLogger(RaEndEntityBean.class);
     private static final String MISSING_PERMITTED_NAME_CONSTRAINTS = "enroll_name_constraint_permitted_required";
     private static final String MISSING_EXCLUDED_NAME_CONSTRAINTS = "enroll_name_constraint_excluded_required";
+    private static final String MISSING_CABF_ORGANIZATION_IDENTIFIER = "editendentity_cabf_organizationidentifier_required";
     private static final String INVALID_PERMITTED_NAME_CONSTRAINTS = "enroll_invalid_permitted_name_constraints";
     private static final String INVALID_EXCLUDED_NAME_CONSTRAINTS = "enroll_invalid_excluded_name_constraints";
 
@@ -123,6 +131,7 @@ public class RaEndEntityBean implements Serializable {
     private SubjectDn subjectDistinguishNames = null;
     private SubjectAlternativeName subjectAlternativeNames = null;
     private SubjectDirectoryAttributes subjectDirectoryAttributes = null;
+    private String extensionData;
     private Map<Integer, String> endEntityProfiles;
     private boolean deleted = false;
     private List<String> nameConstraintsPermitted;
@@ -134,6 +143,10 @@ public class RaEndEntityBean implements Serializable {
     private boolean keyRecoverable;
     private boolean viewEndEntityMode = false;
     private Boolean sendNotification;
+    private String psd2NcaName;
+    private String psd2NcaId;
+    private List<String> selectedPsd2PspRoles;
+    private String cabfOrganizationIdentifier;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -190,12 +203,17 @@ public class RaEndEntityBean implements Serializable {
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
+                extensionData = raEndEntityDetails.getExtensionData(endEntityInformation.getExtendedInformation());
                 keyRecoverable = raEndEntityDetails.getEndEntityInformation().getKeyRecoverable();
                 resetMaxFailedLogins();
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
                 if (email == null || email.length == 1)
                     email = new String[] {"", ""};
                 sendNotification = endEntityInformation.getSendNotification();
+                psd2NcaName = raEndEntityDetails.getPsd2NcaName();
+                psd2NcaId = raEndEntityDetails.getPsd2NcaId();
+                selectedPsd2PspRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
+                cabfOrganizationIdentifier = raEndEntityDetails.getCabfOrganizationIdentifier();
             }
         }
         issuedCerts = null;
@@ -370,6 +388,10 @@ public class RaEndEntityBean implements Serializable {
             }
         }
 
+        if (extendedInformation != null && extensionData != null) {
+            editExtensionData(extendedInformation);
+            changed = true;
+        }
         if (extendedInformation != null && maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
             endEntityInformation.getExtendedInformation().setMaxLoginAttempts(maxFailedLogins);
             changed = true;
@@ -431,6 +453,39 @@ public class RaEndEntityBean implements Serializable {
             endEntityInformation.setKeyRecoverable(keyRecoverable);
             changed = true;
         }
+        if (eep.isPsd2QcStatementUsed()){
+            if (endEntityInformation.getExtendedInformation() == null){
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            if (!StringUtils.equals(psd2NcaName, endEntityInformation.getExtendedInformation().getQCEtsiPSD2NCAName())) {
+                endEntityInformation.getExtendedInformation().setQCEtsiPSD2NcaName(StringUtils.trimToNull(psd2NcaName));
+                changed = true;
+            }
+            if (!StringUtils.equals(psd2NcaId, endEntityInformation.getExtendedInformation().getQCEtsiPSD2NCAId())) {
+                endEntityInformation.getExtendedInformation().setQCEtsiPSD2NcaId(StringUtils.trimToNull(psd2NcaId));
+                changed = true;
+            }
+            if (psd2PspRoleSelectionChanged()) {
+                final List<PSD2RoleOfPSPStatement> psd2RoleOfPSPStatements = new ArrayList<>();
+                for (String role : selectedPsd2PspRoles) {
+                    psd2RoleOfPSPStatements.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
+                }
+                endEntityInformation.getExtendedInformation().setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
+                changed = true;
+            }
+        }
+        if (eep.isCabfOrganizationIdentifierUsed()){
+            if (!verifyCabfOrganizationIdentifier()) {
+                return;
+            }
+            if (endEntityInformation.getExtendedInformation() == null){
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            if (!StringUtils.equals(cabfOrganizationIdentifier, endEntityInformation.getExtendedInformation().getCabfOrganizationIdentifier())){
+                endEntityInformation.getExtendedInformation().setCabfOrganizationIdentifier(StringUtils.trimToNull(cabfOrganizationIdentifier));
+                changed = true;
+            }
+        }
 
         boolean isClearPwd = false;
         if (eep.getUse(EndEntityProfile.CLEARTEXTPASSWORD, 0)) {
@@ -465,6 +520,44 @@ public class RaEndEntityBean implements Serializable {
             }
         }
         editEditEndEntityCancel();
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void editExtensionData(ExtendedInformation extendedInformation) {
+        Properties properties = new Properties();
+        try {
+            properties.load(new StringReader(extensionData));
+        } catch (IOException ex) {
+            // Should not happen as we are only reading from a String.
+            throw new RuntimeException(ex);
+        }
+
+        // Remove old extensiondata
+        Map data = (Map) extendedInformation.getData();
+        // We have to use an iterator in order to remove an item while iterating, if we try to remove an object from
+        // the map while looping over keys we will get a ConcurrentModificationException
+        Iterator it = data.keySet().iterator();
+        while (it.hasNext()) {
+            Object o = it.next();
+            if (o instanceof String) {
+                String key = (String) o;
+                if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
+                    //it.remove() will delete the item from the map
+                    it.remove();
+                }
+            }
+        }
+
+        // Add new extensiondata
+        for (Object o : properties.keySet()) {
+            if (o instanceof String) {
+                String key = (String) o;
+                data.put(ExtendedInformation.EXTENSIONDATA + key, properties.getProperty(key));
+            }
+        }
+
+        // Updated ExtendedInformation to use the new data
+        extendedInformation.loadData(data);
     }
 
     /**
@@ -1094,6 +1187,21 @@ public class RaEndEntityBean implements Serializable {
     }
     
     /**
+     * @return extensionData currently typed in edit mode
+     */
+    public String getExtensionData() {
+        return extensionData;
+    }
+    
+    /**
+     * Set extensionData
+     * @param extensionData the String value of extensionData
+     */
+    public void setExtensionData(String extensionData) {
+        this.extensionData = extensionData;
+    }
+    
+    /**
      * @return true if keyRecoverable
      */
     public boolean getKeyRecoverable() {
@@ -1204,6 +1312,107 @@ public class RaEndEntityBean implements Serializable {
 
     public void setSendNotification(Boolean sendNotification) {
         this.sendNotification = sendNotification;
+    }
+
+    /**
+     * @return the National Competent Authority (NCA) Name of PSD2 Qualified Certificate Statement
+     */
+    public String getPsd2NcaName() {
+        return psd2NcaName;
+    }
+
+    /**
+     * Set the National Competent Authority (NCA) Name of PSD2 Qualified Certificate Statement
+     */
+    public void setPsd2NcaName(String psd2NcaName) {
+        this.psd2NcaName = StringUtils.trim(psd2NcaName);
+    }
+
+    /**
+     * @return the National Competent Authority (NCA) Identifier of PSD2 Qualified Certificate Statement
+     */
+    public String getPsd2NcaId() {
+        return psd2NcaId;
+    }
+
+    /**
+     * Set the National Competent Authority (NCA) Identifier of PSD2 Qualified Certificate Statement
+     */
+    public void setPsd2NcaId(String psd2NcaId) {
+        this.psd2NcaId = StringUtils.trim(psd2NcaId);
+    }
+
+    /**
+     * @return selected roles of PSD2 third party Payment Service Providers (PSPs)
+     */
+    public List<String> getSelectedPsd2PspRoles() {
+        return selectedPsd2PspRoles == null ? new ArrayList<>() : selectedPsd2PspRoles;
+    }
+
+    /**
+     * Set selected roles of PSD2 third party Payment Service Providers (PSPs)
+     */
+    public void setSelectedPsd2PspRoles(List<String> roles) {
+        selectedPsd2PspRoles = new ArrayList<>(roles);
+    }
+
+    /**
+     * @return true if PSD2 PSP role selection differs from roles saved in End Entity
+     */
+    private boolean psd2PspRoleSelectionChanged(){
+        final List<String> oldRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
+        final List<String> roleDiff = new ArrayList<>(oldRoles);
+        roleDiff.removeAll(getSelectedPsd2PspRoles());
+        if (oldRoles.size() != getSelectedPsd2PspRoles().size() || !roleDiff.isEmpty()){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return the CA/B Forum Organization Identifier
+     */
+    public String getCabfOrganizationIdentifier() {
+        return cabfOrganizationIdentifier;
+    }
+
+    /**
+     * Set CA/B Forum Organization Identifier
+     */
+    public void setCabfOrganizationIdentifier(final String cabfOrganizationIdentifier) {
+        this.cabfOrganizationIdentifier = StringUtils.trim(cabfOrganizationIdentifier);
+    }
+
+    /**
+     * @return true if CA/B Forum Organization Identifier in required in the selected End Entity profile
+     */
+    public boolean isCabfOrganizationIdentifierRequired() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isCabfOrganizationIdentifierRequired();
+    }
+
+    /**
+     * @return true if CA/B Forum Organization Identifier field can be modified in the selected End Entity profile
+     */
+    public boolean isCabfOrganizationIdentifierModifiable() {
+        return raEndEntityDetailsCallbacks.getEndEntityProfile(eepId).isCabfOrganizationIdentifierModifiable();
+    }
+
+    /**
+     * @return validation regex for the CA/B Forum Organization Identifier field
+     */
+    public String getCabfOrganizationIdentifierRegex() {
+        return CabForumOrganizationIdentifier.VALIDATION_REGEX;
+    }
+
+    /**
+     * @return true if required CA/B Forum Organization Identifier is not empty, otherwise set an error message and return false
+     */
+    private boolean verifyCabfOrganizationIdentifier(){
+        if (isCabfOrganizationIdentifierRequired() && StringUtils.isEmpty(cabfOrganizationIdentifier)){
+            raLocaleBean.addMessageError(MISSING_CABF_ORGANIZATION_IDENTIFIER);
+            return false;
+        }
+        return true;
     }
 
     private boolean isDnEmail(EndEntityProfile.FieldInstance instance) {

@@ -24,7 +24,6 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>

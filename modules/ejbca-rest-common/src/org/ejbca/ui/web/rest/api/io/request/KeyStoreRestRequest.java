@@ -21,13 +21,13 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class KeyStoreRestRequest {
 
+    @ApiModelProperty(value = "Username", example = "JohnDoe")
     private String username;
+    @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Key algorithm used for enrollment",
-        example = "RSA, DSA, ECDSA")
+    @ApiModelProperty(value = "Key algorithm used for enrollment", example = "RSA")
     private String keyAlg;
-    @ApiModelProperty(value = "Key specification to use",
-        example = "1024, 2048, secp256r1 (for ECDSA)")
+    @ApiModelProperty(value = "Key specification to use", example = "4096")
     private String keySpec;
     
     public KeyStoreRestRequest() {}
