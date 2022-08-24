@@ -179,7 +179,7 @@ public class CryptoTools {
             pkIArchiveControlBuilder.addRecipientGenerator(keyAgreeRecipientInfoGenerator);
             //We can use BC for the symmetric key since this doesn't happen in the HSM 
             PKIArchiveControl pkiArchiveControl = pkIArchiveControlBuilder
-                    .build(new JceCMSContentEncryptorBuilder(new ASN1ObjectIdentifier(CMSEnvelopedDataGenerator.AES128_CBC))
+                    .build(new JceCMSContentEncryptorBuilder(new ASN1ObjectIdentifier(CMSEnvelopedDataGenerator.AES256_CBC))
                             .setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
             CMSEnvelopedData cmsEnvelopedData = pkiArchiveControl.getEnvelopedData();
             return cmsEnvelopedData.getEncoded();

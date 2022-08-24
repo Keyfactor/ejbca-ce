@@ -2747,20 +2747,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             keystore.setKeyEntry(CAToken.SOFTPRIVATESIGNKEYALIAS, privatekey, null, certchain);
 
-            // generate enc keys.
-            // Encryption keys must be RSA still
-            final String encryptionAlgorithm = AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm);
-            keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(encryptionAlgorithm);
-            final String enckeyspec = "2048";
             final KeyPair enckeys;
             if (publicEncryptionKey == null || privateEncryptionKey == null) {
-                enckeys = KeyTools.genKeys(enckeyspec, keyAlg);
+                //Use the same key spec as for the signing keys if no encryption keys are provided
+                enckeys = KeyTools.genKeys(null, KeyTools.getKeyGenSpec(publickey), keyAlg);
             } else {
                 enckeys = new KeyPair(publicEncryptionKey, privateEncryptionKey);
             }
             // generate dummy certificate
             certchain[0] = CertTools.genSelfCert("CN=EncryptionKeyHolder", 36500, null, enckeys.getPrivate(), enckeys.getPublic(),
-                    encryptionAlgorithm, true);
+                    AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm, enckeys.getPublic()), true);
             keystore.setKeyEntry(CAToken.SOFTPRIVATEDECKEYALIAS, enckeys.getPrivate(), null, certchain);
 
             // Set the token properties
@@ -2794,12 +2790,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.error("Can not get sequence from holderRef in CV certificate, using default sequence.");
                 }
             }
-            log.debug("Setting sequence " + sequence);
+            if(log.isDebugEnabled()) {
+                log.debug("Setting sequence " + sequence);
+            }
             catoken.setKeySequence(sequence);
-            log.debug("Setting default sequence format " + StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            if(log.isDebugEnabled()) {
+                log.debug("Setting default sequence format " + StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            }
             catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
             catoken.setSignatureAlgorithm(signatureAlgorithm);
-            catoken.setEncryptionAlgorithm(encryptionAlgorithm);
+            catoken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm, enckeys.getPublic()));
             return catoken;
         } catch (KeyStoreException | NoSuchProviderException | CertificateException | InvalidAlgorithmParameterException | NoSuchAlgorithmException | IllegalStateException | CryptoTokenOfflineException | IOException e) {
             throw new IllegalCryptoTokenException(e);
@@ -2836,8 +2836,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         log.debug("Setting default sequence format " + StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catoken.setSignatureAlgorithm(signatureAlgorithm);
-        // Encryption keys must be RSA still
-        String encryptionAlgorithm = AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm);
+        String encryptionAlgorithm = AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm,
+                cryptoTokenSession.getCryptoToken(cryptoTokenId).getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)));
         catoken.setEncryptionAlgorithm(encryptionAlgorithm);
         // Identify the key algorithms for extended CA services, OCSP, CMS
         String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(cacert.getPublicKey());
