@@ -29,10 +29,5 @@ public class ExtendedCAServiceTypes {
 	public static final int TYPE_HARDTOKENENCEXTENDEDSERVICE = 4;
 	
 	public static final int TYPE_KEYRECOVERYEXTENDEDSERVICE = 5;
-	
-	public static final int TYPE_KEYRECOVERY_ENCRYPTION_EXTENDEDSERVICE = 6;
-	
-	public static final int TYPE_KEYRECOVERY_DECRYPTION_EXTENDEDSERVICE = 7;
-
 
 }
