@@ -73,6 +73,11 @@ class CryptokiWithoutCache implements CryptokiFacade {
     }
 
     @Override
+    public void generateKey(long session, CKM mechanism, CKA[] secretKeyTemplate, LongRef secretKey) {
+        api.GenerateKey(session, mechanism, secretKeyTemplate, secretKey);
+    }
+
+    @Override
     public long createObject(long session, CKA... template) {
         return api.CreateObject(session, template);
     }

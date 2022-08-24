@@ -20,12 +20,11 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.SystemConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.apache.commons.configuration2.CompositeConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.SystemConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
 
@@ -79,7 +78,7 @@ public final class EjbcaConfigurationHolder {
 			try {
 				final URL url = EjbcaConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
 				if (url != null) {
-					final PropertiesConfiguration pc = new PropertiesConfiguration(url);
+					final PropertiesConfiguration pc = ConfigurationHolder.loadProperties(url);
 					allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
 					if (allowexternal) {
 					    log.info("Allow external re-configuration: " + allowexternal);
@@ -101,9 +100,7 @@ public final class EjbcaConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("conf"+File.separator+CONFIG_FILES[i]);
-						final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-						pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-						config.addConfiguration(pc);
+						config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
 						log.info("Added file to configuration source: "+f.getAbsolutePath());
 					} catch (ConfigurationException e) {
 						log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -114,9 +111,7 @@ public final class EjbcaConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("/etc/ejbca/conf/" + CONFIG_FILES[i]);
-						final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-						pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-						config.addConfiguration(pc);
+						config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
 						log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
 					} catch (ConfigurationException e) {
 						log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -132,8 +127,7 @@ public final class EjbcaConfigurationHolder {
 			try {
 				final URL url = EjbcaConfigurationHolder.class.getResource("/internal.properties");
 				if (url != null) {
-					final PropertiesConfiguration pc = new PropertiesConfiguration(url);
-					config.addConfiguration(pc);
+				    config.addConfiguration(ConfigurationHolder.loadProperties(url));
 					log.debug("Added url to configuration source: " + url);
 				}
 			} catch (ConfigurationException e) {
@@ -152,9 +146,7 @@ public final class EjbcaConfigurationHolder {
 		File f = null;
 		try {
 			f = new File(filename);
-			final PropertiesConfiguration pc = new PropertiesConfiguration(f);
-			pc.setReloadingStrategy(new FileChangedReloadingStrategy());
-			config.addConfiguration(pc);
+			config.addConfiguration(ConfigurationHolder.loadReloadingProperties(f));
 			log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
 		} catch (ConfigurationException e) {
 			log.error("Failed to load configuration from file " + f.getAbsolutePath());
@@ -170,8 +162,7 @@ public final class EjbcaConfigurationHolder {
 		try {
 			final URL url = EjbcaConfigurationHolder.class.getResource("/conf/" + resourcename);
 			if (url != null) {
-				final PropertiesConfiguration pc = new PropertiesConfiguration(url);
-				config.addConfiguration(pc);
+			    config.addConfiguration(ConfigurationHolder.loadProperties(url));
 				log.debug("Added url to configuration source: " + url);
 			}
 		} catch (ConfigurationException e) {

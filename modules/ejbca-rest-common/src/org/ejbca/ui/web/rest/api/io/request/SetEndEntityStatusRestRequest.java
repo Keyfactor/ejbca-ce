@@ -27,12 +27,13 @@ import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
 @ValidEndEntityStatusRestRequest
 public class SetEndEntityStatusRestRequest {
 
+    @ApiModelProperty(value = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Token type property",
+    @ApiModelProperty(value = "Token type property", example = "USERGENERATED",
             allowableValues = "USERGENERATED, P12, BCFKS, JKS, PEM"
     )
     private String token;
-    @ApiModelProperty(value = "End entity status property",
+    @ApiModelProperty(value = "End entity status property", example = "NEW",
             allowableValues = "NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL"
     )
     private String status;

@@ -26,6 +26,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.Rdn;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,12 +47,15 @@ public class EndEntityInformationFiller {
     private static final Logger log = Logger.getLogger(EndEntityInformationFiller.class.getName());
     public static final String SUBJECT_DN = "subject DN";
     public static final String SUBJECT_ALTERNATIVE_NAME = "subject alternative name";
+    private static final int AVERAGE_RDN_PER_FIELD = 16;
     
     private static final Map<String, String> BC_STYLE_PARAMETERS;
     
     private static final String REPLACED_ESCAPABLE_CHARS = "Replaced_Dn_Chars_";
     
-    private static final Map<String, String> ESCAPED_CHARS;    
+    private static final Map<String, String> ESCAPED_CHARS;  
+    
+    private static final Set<String> NESTED_DN_FIELDS;  
     
     static {
         BC_STYLE_PARAMETERS = new HashMap<>();
@@ -64,6 +68,9 @@ public class EndEntityInformationFiller {
         ESCAPED_CHARS.put("+", "plus");
         ESCAPED_CHARS.put("=", "equal");
         ESCAPED_CHARS.put(",", "comma");
+        
+        NESTED_DN_FIELDS = new HashSet<>();
+        NESTED_DN_FIELDS.add(DnComponents.DIRECTORYNAME);
     }
 
     /** This method fill user data with the default values from the specified profile.
@@ -206,7 +213,6 @@ public class EndEntityInformationFiller {
             }
         }
         
-        final int averageRdnsPerDnField = 16;
         final int numberofDnfields;
         if(entityType.equals(SUBJECT_DN)) {
             numberofDnfields = profile.getSubjectDNFieldOrderLength();
@@ -231,82 +237,20 @@ public class EndEntityInformationFiller {
         
         Map<String, Integer> emptyFieldsForDntype = new HashMap<>();
         int[] fielddata = null;
+        String parameter;
         String value;
+        
         LinkedHashSet<Rdn> orderedRdns;
         LinkedHashSet<Rdn> orderedModifiableRdns;
         LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<>();        
-        
-        //Build user DN, all DN types are validated
-        String[] userDnParts = splitEscaped(userDnString, ",");
-        String[] dnParts;
-        String parameter;
-        for (String curDn: userDnParts) {
-            currentDnTypeUserRdns.clear();
-            dnParts = splitEscaped(curDn, "=");            
-            if(dnParts.length==1) {
-                // skip processing empty DN values as they will be ignored at the end
-                continue;
-            }
-            
-            parameter = dnParts[0].toUpperCase(Locale.ROOT).trim();
-            parameter = getBcNameStyle(parameter, entityType);
-            if(!isValidDnType(parameter, entityType)) {
-                throw new IllegalArgumentException("Invalid DN type: " + parameter);
-            }
-            
-            if(dnParts.length==2) {
-                value = dnParts[1].trim();
-                if(StringUtils.isEmpty(value)) {
-                    throw new IllegalArgumentException("Invalid DN component value in: " + curDn);
-                }
-                
-                Rdn rdn = convertToRdn(parameter, value);
-                if(!userRdns.containsKey(parameter)){
-                    orderedRdns = new LinkedHashSet<Rdn>(averageRdnsPerDnField);
-                    userRdns.put(parameter, orderedRdns);
-                } else {
-                    orderedRdns = userRdns.get(parameter);
-                }
-                orderedRdns.add(rdn);
-            } else {
-                
-                String []currentDnParts = splitEscaped(curDn, "+");
-                for(String currentDnPart: currentDnParts) {
-                    dnParts = splitEscaped(currentDnPart, "=");
-                    parameter = dnParts[0].toUpperCase(Locale.ROOT).trim();
-                    parameter = getBcNameStyle(parameter, entityType);
-                    if(!isValidDnType(parameter, entityType)) {
-                        throw new IllegalArgumentException("Invalid DN component: " + parameter);
-                    }
-                    
-                    if(dnParts.length!=2 || StringUtils.isEmpty(dnParts[1])) {
-                        throw new IllegalArgumentException(
-                                "Invalid DN component detected during processing multi-valued rdn: " + curDn);
-                    }
-                    
-                    Rdn rdn = convertToRdn(curDn);
-                    curDn = ""; 
-                    // we only add the value against first dnType
-                    // for rest null is added, but dnType is tracked to validate 
-                    // against number of fields allowed in profile
-                    if(!userRdns.containsKey(parameter)){
-                        orderedRdns = new LinkedHashSet<Rdn>(averageRdnsPerDnField);
-                        userRdns.put(parameter, orderedRdns);
-                    } else {
-                        orderedRdns = userRdns.get(parameter);
-                    }
-                    
-                    orderedRdns.add(rdn);
-                }
-            }
-            
-        }
+
+        parseUserDnString(userDnString, entityType, userRdns);
         
         //Build profile's DN
         LinkedHashMap<String, LinkedHashSet<Rdn>> groupedModifiableProfileRdns = 
-                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
+                new LinkedHashMap<>(numberofDnfields/AVERAGE_RDN_PER_FIELD);
         LinkedHashMap<String, LinkedHashSet<Rdn>> groupedAllProfileRdns = 
-                new LinkedHashMap<>(numberofDnfields/averageRdnsPerDnField);
+                new LinkedHashMap<>(numberofDnfields/AVERAGE_RDN_PER_FIELD);
         
         boolean isModifiable;
         for (int i = 0; i < numberofDnfields; i++) {
@@ -345,10 +289,10 @@ public class EndEntityInformationFiller {
             }
             
             if(!groupedAllProfileRdns.containsKey(parameter)){
-                orderedRdns = new LinkedHashSet<>(averageRdnsPerDnField);
+                orderedRdns = new LinkedHashSet<>(AVERAGE_RDN_PER_FIELD);
                 groupedAllProfileRdns.put(parameter, orderedRdns);
 
-                orderedModifiableRdns = new LinkedHashSet<Rdn>(averageRdnsPerDnField);
+                orderedModifiableRdns = new LinkedHashSet<Rdn>(AVERAGE_RDN_PER_FIELD);
                 groupedModifiableProfileRdns.put(parameter, orderedModifiableRdns);
                 emptyFieldsForDntype.put(parameter, 0);
                 
@@ -370,15 +314,6 @@ public class EndEntityInformationFiller {
                 }
             }
             
-        }
-        
-        Set<String> userDnTypes = new HashSet<>(userRdns.keySet());
-        userDnTypes.removeAll(groupedAllProfileRdns.keySet());
-        if(!userDnTypes.isEmpty()){
-            // user contains un-allowed DN types
-            String error = "Not allowed " + entityType + " type(s): " + userDnTypes;
-            log.debug(error);
-            throw new IllegalArgumentException(error);
         }
         
         int currentDnTypeModifiedDns;
@@ -434,10 +369,20 @@ public class EndEntityInformationFiller {
                     appendDn(result, dn);
                 }
             }
+            
+            for(Entry<String, LinkedHashSet<Rdn>> dnType: userRdns.entrySet()) {
+                // also add custom DNs or DNs having equivalent names in EJBCA e.g. uri, uniformResourceId etc
+                if(!groupedAllProfileRdns.containsKey(dnType.getKey())) {
+                    for(Rdn dn: dnType.getValue()) {
+                        appendDn(result, dn);
+                    }
+                }
+            }
+            
         } else {
             String[] forwardOrderedDnTypes = DnComponents.getDnObjects(true);
             for(String currentDnType: forwardOrderedDnTypes) {
-                currentDnType = currentDnType.toUpperCase();
+                currentDnType = currentDnType.toUpperCase(Locale.ROOT);
                 if(!groupedAllProfileRdns.containsKey(currentDnType)) {
                     continue;
                 }
@@ -450,6 +395,14 @@ public class EndEntityInformationFiller {
                 
                 for(Rdn dn: groupedAllProfileRdns.get(currentDnType)) {
                     appendDn(result, dn);
+                }
+            }
+            
+            for(Entry<String, LinkedHashSet<Rdn>> dnType: userRdns.entrySet()) {
+                if(!groupedAllProfileRdns.containsKey(dnType.getKey())) {
+                    for(Rdn dn: dnType.getValue()) {
+                        appendDn(result, dn);
+                    }
                 }
             }
         }
@@ -467,27 +420,149 @@ public class EndEntityInformationFiller {
         return mergedDn;
     }
     
+    public static String getDnEntriesUniqueOnly(String userDnString, String entityType) {
+        
+        if(StringUtils.isEmpty(userDnString)) {
+            return "";
+        }
+        
+        userDnString = escapeSpecialChars(userDnString);
+        LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns = new LinkedHashMap<>();
+        parseUserDnString(userDnString, entityType, userRdns);
+         
+        StringBuilder result = new StringBuilder(userRdns.size()*10);
+        for(Entry<String, LinkedHashSet<Rdn>> dnType: userRdns.entrySet()) {
+            for(Rdn dn: dnType.getValue()) {
+                appendDn(result, dn, true);
+            }
+        }
+        
+        String mergedDn = result.toString();
+        mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
+        mergedDn = unEscapeSpecialChars(mergedDn);
+        log.debug("merged dn: " + mergedDn);
+        
+        return mergedDn;
+    }
+    
+    private static void parseUserDnString(String userDnString, String entityType, 
+            LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns) {
+        
+        LinkedHashSet<Rdn> orderedRdns;
+        LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<>();
+        
+        //Build user DN, all DN types are validated
+        String[] userDnParts = splitEscaped(userDnString, ",");
+        String[] dnParts;
+        String parameter;
+        String value;
+        LinkedHashMap<String, HashSet<String>> userRdnValues = new LinkedHashMap<String, HashSet<String>>();
+        
+        for (String curDn: userDnParts) {
+            currentDnTypeUserRdns.clear();
+            dnParts = splitEscaped(curDn, "=");            
+            if(dnParts.length==1) {
+                // skip processing empty DN values as they will be ignored at the end
+                continue;
+            }
+            
+            parameter = dnParts[0].trim();
+            parameter = getBcNameStyle(parameter, entityType);
+            
+            if(dnParts.length==2 || !curDn.contains("+") ||
+                    startsWithIgnoreCase(curDn, DnComponents.UNIFORMRESOURCEID) ||
+                    startsWithIgnoreCase(curDn, CertTools.URI1)) {
+                // multi-valued RDN must have unescaped + in them
+                // URI may contain unescaped + as part of query string
+                value = curDn.substring(dnParts[0].length()+1).trim();
+                if(StringUtils.isEmpty(value)) {
+                    throw new IllegalArgumentException("Invalid DN component value in: " + curDn);
+                }
+                
+                Rdn rdn = convertToRdn(parameter, value);
+                if(!userRdns.containsKey(parameter)){
+                    orderedRdns = new LinkedHashSet<Rdn>(AVERAGE_RDN_PER_FIELD);
+                    userRdns.put(parameter, orderedRdns);
+                    if(!userRdnValues.containsKey(parameter.toUpperCase(Locale.ROOT))) {
+                        userRdnValues.put(parameter.toUpperCase(Locale.ROOT), new HashSet<String>(AVERAGE_RDN_PER_FIELD));
+                    }
+                } else {
+                    orderedRdns = userRdns.get(parameter);
+                }
+                if(userRdnValues.get(parameter.toUpperCase(Locale.ROOT)).contains(value)) {
+                    continue;
+                }
+                orderedRdns.add(rdn);
+                userRdnValues.get(parameter.toUpperCase(Locale.ROOT)).add(value);
+            } else {
+                
+                String []currentDnParts = splitEscaped(curDn, "+");
+                for(String currentDnPart: currentDnParts) {
+                    dnParts = splitEscaped(currentDnPart, "=");
+                    parameter = dnParts[0].toUpperCase(Locale.ROOT).trim();
+                    parameter = getBcNameStyle(parameter, entityType);
+                    
+                    if(dnParts.length!=2 || StringUtils.isEmpty(dnParts[1])) {
+                        throw new IllegalArgumentException(
+                                "Invalid DN component detected during processing multi-valued rdn: " + curDn);
+                    }
+                    
+                    Rdn rdn = convertToRdn(curDn);
+                    curDn = ""; 
+                    // we only add the value against first dnType
+                    // for rest null is added, but dnType is tracked to validate 
+                    // against number of fields allowed in profile
+                    if(!userRdns.containsKey(parameter)){
+                        orderedRdns = new LinkedHashSet<Rdn>(AVERAGE_RDN_PER_FIELD);
+                        userRdns.put(parameter, orderedRdns);
+                        if(!userRdnValues.containsKey(parameter.toUpperCase(Locale.ROOT))) {
+                            userRdnValues.put(parameter.toUpperCase(Locale.ROOT), new HashSet<String>(AVERAGE_RDN_PER_FIELD));
+                        }
+                    } else {
+                        orderedRdns = userRdns.get(parameter);
+                    }
+                    
+                    if(StringUtils.isNotEmpty(curDn) && userRdnValues.get(parameter.toUpperCase(Locale.ROOT)).contains(curDn)) {
+                        continue;
+                    }
+                    
+                    orderedRdns.add(rdn);
+                    if(StringUtils.isNotEmpty(curDn)) {
+                        userRdnValues.get(parameter.toUpperCase(Locale.ROOT)).add(curDn);
+                    }
+                }
+            }
+            
+        }
+    }
+    
     private static String getBcNameStyle(String parameter, String entityType) {
         if(entityType.equals(SUBJECT_ALTERNATIVE_NAME)) {
             return parameter;
         }
-        return BC_STYLE_PARAMETERS.getOrDefault(parameter.toUpperCase(), parameter.toUpperCase());
+        return BC_STYLE_PARAMETERS.getOrDefault(parameter.toUpperCase(Locale.ROOT), parameter.toUpperCase(Locale.ROOT));
     }
 
     private static void appendDn(StringBuilder buffer, Rdn rdn) {
+        appendDn(buffer, rdn, false);
+    }
+    
+    private static void appendDn(StringBuilder buffer, Rdn rdn, boolean normalizeDnValue) {
         if(rdn==null||StringUtils.isEmpty((String) rdn.getValue())) {
             return;
         }
-        buffer.append(rdn.toString());
-        buffer.append(",");
-    }
-    
-    private static boolean isValidDnType(String dnType, String entityType) {
-        if(entityType.equals(SUBJECT_DN)) {
-            return DnComponents.getDnIdFromDnName(dnType) != null;
+        if(rdn.size()>1) {
+            buffer.append(rdn.toString());
         } else {
-            return DnComponents.getDnIdFromAltName(dnType) != null;
+            if(normalizeDnValue && NESTED_DN_FIELDS.contains(rdn.getType())) {
+                String value = rdn.getType() + "=" + rdn.getValue();
+                value = value.replace(REPLACED_ESCAPABLE_CHARS + ESCAPED_CHARS.get("="), "=");
+                buffer.append(value);
+            } else {
+                buffer.append(rdn.getType() + "=" + rdn.getValue());
+            }
         }
+        buffer.append(",");
     }
     
     private static Rdn convertToRdn(String parameter, String value) {
@@ -534,6 +609,10 @@ public class EndEntityInformationFiller {
             rdnString = rdnString.replace(REPLACED_ESCAPABLE_CHARS + entry.getValue(), "\\" + entry.getKey());
         }
           return rdnString;
-      }
+    }
+    
+    private static boolean startsWithIgnoreCase(String input, String pattern) {
+       return input.substring(0, pattern.length()).equalsIgnoreCase(pattern);
+    }
     
 }

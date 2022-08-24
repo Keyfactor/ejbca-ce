@@ -35,7 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
@@ -191,7 +191,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             removeCertificateProfileIfExist(TEST_CP_NAME);
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
             tearDownRemoveRole();
         }
         log.trace("<tearDown()");

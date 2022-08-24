@@ -1278,13 +1278,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().isRunningEnterprise();
     }
 
-    /** @return true if REST is enabled. Should be false for EJBCA CE */
-    public boolean isRestAvailable() {
+    /** @return true if ACME is enabled. Should be false for EJBCA CE */
+    public boolean isAcmeAvailable() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
 
-    /** @return true if ACME is enabled. Should be false for EJBCA CE */
-    public boolean isAcmeAvailable() {
+    /** @return true if running Enterprise Edition */
+    public boolean isRunningEnterprise() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
 
@@ -1302,7 +1302,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public ProtocolGuiInfo(String protocol, boolean enabled) {
             this.protocol = protocol;
             this.enabled = enabled;
-            this.url = AvailableProtocols.getContextPathByName(protocol);
+            this.url = AvailableProtocols.getContextPathByName(protocol, isRunningEnterprise());
             this.available = true;
         }
 
@@ -1329,22 +1329,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.MSAE.getName()) && !isMSAESettingsAvailable()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_CRYPTOTOKEN_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getName()) && !isRestAvailable()) {
-                available = false;
-            }
-            if (protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getName()) && !isRestAvailable()) {
+            if (protocol.equals(AvailableProtocols.REST_SSH_V1.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.ACME.getName()) && !isAcmeAvailable()) {

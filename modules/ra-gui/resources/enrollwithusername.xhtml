@@ -130,7 +130,13 @@
 									</h:commandButton>
 								    </h:panelGroup>
 							</h:panelGroup>
-							
+						<!-- Render delete Public access role after initial superadmin enrollment-->
+						<h:panelGroup id="deletePublicAccessRole" layout="block" styleClass="pure-control-group"
+									  rendered="#{enrollWithUsernameBean.deletePublicAccessRoleRendered}">
+							<h:outputLabel for="deletePublicRole" value="#{msg.enroll_delete_public_role}"/>
+							<h:selectBooleanCheckbox id="deletePublicRole" value="#{enrollWithUsernameBean.deletePublicAccessRole}" />
+						</h:panelGroup>
+
 							<!-- Render different buttons depending on if we enroll for a server generated keystore or a user generated with CSR-->
 							<h:panelGroup id="requestIdButtons" layout="block" styleClass="keygeneration-button-group">
 								<h:commandButton id="generatePem"

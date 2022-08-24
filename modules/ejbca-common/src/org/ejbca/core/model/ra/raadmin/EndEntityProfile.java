@@ -149,6 +149,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * enabled in the CA (by default it is)
      */
     public static final String ALLOWEDREQUESTS    = "ALLOWEDREQUESTS";
+    /**
+     * If not null, issuance for end-entities with existing certificates
+     * is allowed if the certificate will expire within the given number of days.
+     */
+    private static final String RENEWDAYSBEFOREEXPIRATION  = "RENEWDAYSBEFOREEXPIRATION";
+    /** Default value for RENEWDAYSBEFOREEXPIRATION (after it has been enabled) */
+    private static int RENEWDAYSBEFOREEXPIRATION_DEFAULT = 7;
     /** A revocation reason that will be applied immediately to certificates issued to a user. With this we can issue
      * a certificate that is "on hold" directly when the user gets the certificate.
      */
@@ -202,6 +209,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(NAMECONSTRAINTS_PERMITTED, 89);
     	DATA_CONSTANTS.put(NAMECONSTRAINTS_EXCLUDED, 88);
     	DATA_CONSTANTS.put(CABFORGANIZATIONIDENTIFIER, 87);
+        DATA_CONSTANTS.put(RENEWDAYSBEFOREEXPIRATION, 86);
 
     	DATA_CONSTANTS.put(SSH_PRINCIPAL, SSH_PRINCIPAL_FIELD_NUMBER);
     	DATA_CONSTANTS.put(SSH_CRITICAL_OPTION_FORCE_COMMAND, SSH_CRITICAL_OPTION_FORCE_COMMAND_FIELD_NUMBER);
@@ -346,6 +354,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setRequired(NAMECONSTRAINTS_EXCLUDED,0,false);
         	setRequired(NAMECONSTRAINTS_PERMITTED,0,false);
         	setRequired(CABFORGANIZATIONIDENTIFIER,0,false);
+            setRequired(RENEWDAYSBEFOREEXPIRATION,0,false);
         	setValue(DEFAULTCERTPROFILE,0, CONST_DEFAULTCERTPROFILE);
         	setValue(AVAILCERTPROFILES,0, CONST_AVAILCERTPROFILES1);
         	setValue(DEFKEYSTORE,0, CONST_DEFKEYSTORE);
@@ -365,6 +374,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(NAMECONSTRAINTS_PERMITTED,0,false);
         	setUse(NAMECONSTRAINTS_EXCLUDED,0,false);
         	setUse(CABFORGANIZATIONIDENTIFIER,0,false);
+            setUse(RENEWDAYSBEFOREEXPIRATION,0,false);
         } else {
         	// initialize profile data
         	addFieldWithDefaults(USERNAME, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
@@ -391,6 +401,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	addFieldWithDefaults(NAMECONSTRAINTS_PERMITTED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(NAMECONSTRAINTS_EXCLUDED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(CABFORGANIZATIONIDENTIFIER, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+            addFieldWithDefaults(RENEWDAYSBEFOREEXPIRATION, String.valueOf(RENEWDAYSBEFOREEXPIRATION_DEFAULT), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
         }
     }
 
@@ -1213,6 +1224,29 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setValue(ALLOWEDREQUESTS, 0, String.valueOf(allowedRequests));
     }
 
+    public boolean isRenewDaysBeforeExpirationUsed() {
+        return getUse(RENEWDAYSBEFOREEXPIRATION, 0);
+    }
+
+    public void setRenewDaysBeforeExpirationUsed(final boolean use) {
+        setUse(RENEWDAYSBEFOREEXPIRATION, 0, use);
+    }
+
+    public int getRenewDaysBeforeExpiration() {
+        if (!isRenewDaysBeforeExpirationUsed()) {
+            return -1;
+        }
+        final String value = getValue(RENEWDAYSBEFOREEXPIRATION, 0);
+        if (StringUtils.isEmpty(value)) {
+            return RENEWDAYSBEFOREEXPIRATION_DEFAULT;
+        }
+        return Integer.parseInt(value);
+    }
+
+    public void setRenewDaysBeforeExpiration(final int allowedRequests) {
+        setValue(RENEWDAYSBEFOREEXPIRATION, 0, String.valueOf(allowedRequests));
+    }
+
     public boolean isMaxFailedLoginsUsed() {
         return getUse(MAXFAILEDLOGINS, 0);
     }
@@ -1883,7 +1917,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (ei != null) {
     		allowedRequests = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
     	}
-    	if ((allowedRequests != null) && !getUse(ALLOWEDREQUESTS, 0)) {
+        if ((allowedRequests != null) && !isAllowedRequestsUsed()) {
     		throw new EndEntityProfileValidationException("Allowed requests used, but not permitted by profile.");
     	}
     	// Check initial issuance revocation reason
@@ -2060,7 +2094,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                                     // Try to match with all possible values
                                     String[] fixedValues = getValue(profileID, l).split(SPLITCHAR);
                                     for (String fixedValue : fixedValues) {
-                                        if (subjectsToProcess[m] != null && subjectsToProcess[m].equals(fixedValue)) {
+                                        if (subjectsToProcess[m] != null && subjectsToProcess[m].trim().equals(fixedValue.trim())) {
                                             // Remove matched pair
                                             subjectsToProcess[m] = null;
                                             profileCrossOffList[l] = MATCHED_FIELD;
@@ -2977,7 +3011,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.name = name;
             this.number = number;
             this.defaultValue = EndEntityProfile.this.getValue(name, number);
-            this.value = isSelectable() ? getSelectableValues().get(0) : defaultValue;
+            this.value = (defaultValue != null && defaultValue.split(";").length > 1) ? defaultValue.split(";")[0] : defaultValue;
             this.profileId = EndEntityProfile.DATA_CONSTANTS.get(name);
             this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
             this.dnsCopyCheckbox = name.equals(DnComponents.DNSNAME) && isCopy();
@@ -2992,8 +3026,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isRequired() { return EndEntityProfile.this.isRequired(name, number); }
         public boolean isModifiable() { return EndEntityProfile.this.isModifyable(name, number); }
         public boolean isRegexPatternRequired() { return getRegexPattern() != null; }
-        public boolean isUnModifiableUpnRfc() {
-            return !isModifiable() && (name.equals("RFC822NAME") || name.equals("UPN"));
+        public boolean isUpnRfc() {
+            return name.equals("RFC822NAME") || name.equals("UPN");
+        }
+        public boolean isDnEmail() {
+            return name.equals(DnComponents.DNEMAILADDRESS);
         }
         public boolean isRfcUseEmail() {
             return name.equals("RFC822NAME") && isUsed();
@@ -3011,11 +3048,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public String getValue(){ return value; }
         public void setValue(String value) { this.value = value; }
+        
+        public String getUpnRfcEmailNonModifiableField() {
+            final List<String> list = getSelectableValuesUpnRfc();
+            if (list.size() > 0) {
+                return list.get(0);
+            }
+            return "";
+        }
+        public void setUpnRfcEmailNonModifiableField(String value) {} // NOOP
+        
         public String getDefaultValue() { return defaultValue; }
         public void setDefaultValue(String value) { this.defaultValue = value; }
 		public boolean isUseDataFromEmailField() { return useDataFromEmailField; }
 		public void setUseDataFromEmailField(boolean useDataFromEmailField) { this.useDataFromEmailField = useDataFromEmailField; }
 		public String getName() { return name; }
+		public void setName(String name) { /* NOOP. Inly required for JSF template hidden field which stores the type of the field for post event validation. */ }
         public String getRegexPattern() { return regexPattern; }
         public int getNumber() { return number; }
         public boolean isSelectable() {
@@ -3026,6 +3074,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public List<String> getSelectableValuesUpnRfc() {
             return Arrays.asList(defaultValue.split(";"));
+        }
+        public boolean isSelectableValuesUpnRfcDomainOnly() {
+            return defaultValue.length() > 0 && !defaultValue.contains("@");
         }
         @Override
         public int hashCode() { return name.hashCode(); }
