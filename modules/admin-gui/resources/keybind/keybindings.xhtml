@@ -237,7 +237,7 @@
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="enableOcspTransactionLogging"
 											 value="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"
-											 disabled="#{not internalKeyBindingMBean.inEditMode}">
+											 disabled="#{not internalKeyBindingMBean.allowedToEdit}">
 						<f:ajax render="ocspLoggingSettings"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="enableOcspTransactionLogging" value="#{web.text.OCSP_LOGGING_ENABLE_TRANSACTION_LOGGING}"/>
@@ -247,14 +247,14 @@
 							   rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
 				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
 					<h:inputText value="#{internalKeyBindingMBean.ocspTransactionLogPattern}"
-								 disabled="#{not internalKeyBindingMBean.inEditMode}" size="80"/>
+								 disabled="#{not internalKeyBindingMBean.allowedToEdit}" size="80"/>
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_PATTERN_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
 				<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_VALUES}" rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
 				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
 					<h:inputTextarea value="#{internalKeyBindingMBean.ocspTransactionLogValues}"
-									 disabled="#{not internalKeyBindingMBean.inEditMode}" rows="5" cols="80" />
+									 disabled="#{not internalKeyBindingMBean.allowedToEdit}" rows="5" cols="80" />
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_VALUES_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
@@ -272,7 +272,7 @@
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="enableOcspAuditLogging"
 											 value="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"
-											 disabled="#{not internalKeyBindingMBean.inEditMode}">
+											 disabled="#{not internalKeyBindingMBean.allowedToEdit}">
 						<f:ajax render="ocspLoggingSettings"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="enableOcspAuditLogging" value="#{web.text.OCSP_LOGGING_ENABLE_AUDIT_LOGGING}"/>
@@ -281,14 +281,14 @@
 				<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_PATTERN}" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
 				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}">
 					<h:inputText value="#{internalKeyBindingMBean.ocspAuditLogPattern}"
-								 disabled="#{not internalKeyBindingMBean.inEditMode}" size="80" />
+								 disabled="#{not internalKeyBindingMBean.allowedToEdit}" size="80" />
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_PATTERN_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
 				<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_VALUES}" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}"/>
 				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled}">
 					<h:inputTextarea value="#{internalKeyBindingMBean.ocspAuditLogValues}"
-									 disabled="#{not internalKeyBindingMBean.inEditMode}" rows="5" cols="80" />
+									 disabled="#{not internalKeyBindingMBean.allowedToEdit}" rows="5" cols="80" />
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_VALUES_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
@@ -306,7 +306,7 @@
 				<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT}" rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled or internalKeyBindingMBean.isOcspTransactionLoggingEnabled}"/>
 				<h:panelGroup rendered="#{internalKeyBindingMBean.isOcspAuditLoggingEnabled or internalKeyBindingMBean.isOcspTransactionLoggingEnabled}">
 					<h:inputText value="#{internalKeyBindingMBean.ocspLoggingDateFormat}"
-								 disabled="#{not internalKeyBindingMBean.inEditMode}" size="80" />
+								 disabled="#{not internalKeyBindingMBean.allowedToEdit}" size="80" />
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
