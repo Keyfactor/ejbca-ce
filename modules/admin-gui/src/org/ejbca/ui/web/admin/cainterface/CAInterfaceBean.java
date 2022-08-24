@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -479,8 +480,9 @@ public class CAInterfaceBean implements Serializable {
             throw new Exception("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
-        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam()));
-
+        PublicKey encryptionKey = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
+                
         if (caInfoDto.getSignKeySpec() == null || caInfoDto.getSignKeySpec().length() == 0) {
             throw new Exception("No extended CA service key specification supplied.");
         }
@@ -1308,33 +1310,18 @@ public class CAInterfaceBean implements Serializable {
     public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
         final List<String> aliases = new ArrayList<>();
         for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm))
-                    .equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                //Only P256, P384 and P512 are available for ECCDH
-                if (cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_ECDSA)
-                        || cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_EC)) {
-                    switch (cryptoTokenKeyPairInfo.getKeySpecification()) {
-                    case "prime256v1":
-                    case "secp256r1":
-                    case "P-256":
-                    case "prime384v1":
-                    case "secp384r1":
-                    case "P-384":
-                    case "prime521v1":
-                    case "secp521r1":
-                    case "P-521":
-                        aliases.add(cryptoTokenKeyPairInfo.getAlias());
-                        break;
-                    default:
-                        break;
-                    }
-                } else {
-                    //Or in case of RSA
+            if (cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_ECDSA)
+                    || cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_EC)) {
+                //Only a limited subset of EC curves are available for ECCDH
+                if (AlgorithmConstants.ECCDH_PERMITTED_CURVES.contains(cryptoTokenKeyPairInfo.getKeySpecification())) {
                     aliases.add(cryptoTokenKeyPairInfo.getAlias());
                 }
-
+            } else {
+                //Or in case of RSA
+                aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
         }
+        
         return aliases;
     }
 

@@ -44,6 +44,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.persistence.criteria.CriteriaBuilder.Case;
+
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -90,7 +92,6 @@ import org.ejbca.cvc.OIDField;
  * @see AlgorithmConstants
  * @see KeyTools#getKeyLength
  *
- * @version $Id$
  */
 public abstract class AlgorithmTools {
 
@@ -651,17 +652,55 @@ public abstract class AlgorithmTools {
         return ret;
     }
 
+    
     /**
-     * Gets the algorithm to use for encryption given a specific signature algorithm.
-     * Some signature algorithms (i.e. DSA) can not be used for
-     * encryption so they are instead substituted with RSA with equivalent hash
-     * algorithm.
-     * @param signatureAlgorithm to find a encryption algorithm for
-     * @return an other encryption algorithm or same as signature algorithm if it
-     * can be used for encryption
+     * Assumes input in the state of the signature algorithms declared in {@link AlgorithmConstants}, and extracts the basic hash algorithms from there within. 
+     * 
+     * @param signatureAlgorithm a signature algorithm 
+     * @return a basic hash algorithm
      */
-    public static String getEncSigAlgFromSigAlg(final String signatureAlgorithm) {
+    public static String getHashAlgorithm(final String signatureAlgorithm) {
+        final String result;
+        if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA1)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA1;
+        }  else if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA224)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA224;
+        } else if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA256)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA256;
+        } else if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA384)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA384;
+        } else if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA512)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA512;
+        } else if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA3_256)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA3_256;
+        } else if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA3_384)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA3_384;
+        } else if(signatureAlgorithm.contains(AlgorithmConstants.HASHALGORITHM_SHA3_512)) {
+            result = AlgorithmConstants.HASHALGORITHM_SHA3_512;
+        }       
+        else {
+            result = signatureAlgorithm;
+        }
+        
+        return result;
+    }
+    
+    
+    /**
+     * Gets the algorithm to use for encryption given a specific signature algorithm, adapted to the cipher type used by the encryption keys. 
+     * Some cipher algorithms (i.e. DSA) can not be used for encryption so they are instead substituted with RSA with equivalent hash algorithm.
+     * 
+     * 
+     * @param signatureAlgorithm to extract the encryption algorithm for
+     * @param publicKey a public key to derive the cipher from
+     * @return an other encryption algorithm or same as signature algorithm if it can be used for encryption
+     */
+    public static String getEncSigAlgFromSigAlg(final String signatureAlgorithm, final PublicKey publicKey ) {
+       
         String encSigAlg = signatureAlgorithm;
+       
+
+        //The below rather sad construction is needed on the legacy assumption that only RSA keys would ever be used for encryption. 
         switch (signatureAlgorithm) {
         case AlgorithmConstants.SIGALG_SHA1_WITH_DSA:
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
@@ -677,12 +716,82 @@ public abstract class AlgorithmTools {
             break;
         case AlgorithmConstants.SIGALG_ED25519:
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        break;
+            break;
         case AlgorithmConstants.SIGALG_ED448:
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        default:
             break;
+        default:
+            //Find the hash algoritihm 
+            final String hashAlgo = getHashAlgorithm(signatureAlgorithm);
+            if(publicKey instanceof RSAPublicKey) {
+                if(signatureAlgorithm.contains("MGF1")) {
+                    encSigAlg = signatureAlgorithm;
+                } else {
+                    switch (hashAlgo) {
+                    case AlgorithmConstants.HASHALGORITHM_SHA1:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+                        break;
+                    case AlgorithmConstants.HASHALGORITHM_SHA224:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+                        break;
+                    case AlgorithmConstants.HASHALGORITHM_SHA256:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+                        break;
+                    case AlgorithmConstants.HASHALGORITHM_SHA384:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA384_WITH_RSA;
+                        break;
+                    case AlgorithmConstants.HASHALGORITHM_SHA512:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA512_WITH_RSA;
+                        break;
+                    case AlgorithmConstants.HASHALGORITHM_SHA3_256:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
+                        break;
+                    case AlgorithmConstants.HASHALGORITHM_SHA3_384:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA;
+                        break;
+                    case AlgorithmConstants.HASHALGORITHM_SHA3_512:
+                        encSigAlg = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
+                        break;
+                    default:
+                        encSigAlg = signatureAlgorithm;
+                        break;
+                    }
+                }
+            } else if(publicKey instanceof ECPublicKey) {
+                switch(hashAlgo) {
+                case AlgorithmConstants.HASHALGORITHM_SHA1:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
+                    break;
+                case AlgorithmConstants.HASHALGORITHM_SHA224:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA;
+                    break;
+                case AlgorithmConstants.HASHALGORITHM_SHA256:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+                    break;
+                case AlgorithmConstants.HASHALGORITHM_SHA384:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA;
+                    break;
+                case AlgorithmConstants.HASHALGORITHM_SHA512:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
+                    break;
+                case AlgorithmConstants.HASHALGORITHM_SHA3_256:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA;
+                    break;
+                case AlgorithmConstants.HASHALGORITHM_SHA3_384:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA;
+                    break;
+                case AlgorithmConstants.HASHALGORITHM_SHA3_512:
+                    encSigAlg = AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA;
+                    break;
+                default:
+                    encSigAlg = signatureAlgorithm;
+                    break;
+                }
+            } else {
+                encSigAlg = signatureAlgorithm;
+            }       
         }
+
         return encSigAlg;
     }
 

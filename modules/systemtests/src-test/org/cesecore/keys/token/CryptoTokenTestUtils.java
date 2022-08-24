@@ -85,12 +85,12 @@ public class CryptoTokenTestUtils {
         return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec);
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
             String tokenName, String signKeySpec) {
-        return createCryptoTokenForCA(authenticationToken, pin, genenrateKeys, pkcs11, tokenName, signKeySpec, signKeySpec, false);
+        return createCryptoTokenForCA(authenticationToken, pin, generateKeys, pkcs11, tokenName, signKeySpec, signKeySpec, false);
     }
 
-    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean genenrateKeys, boolean pkcs11,
+    public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
             String tokenName, String signKeySpec, String encKeySpec, boolean pkcs11ng) {
         if (authenticationToken == null) {
             authenticationToken = alwaysAllowToken;
@@ -144,7 +144,7 @@ public class CryptoTokenTestUtils {
         try {
             cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName,
                     cryptoTokenProperties, null, pin);
-            if (genenrateKeys) {
+            if (generateKeys) {
                 try {
                     cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, 
                             CAToken.SOFTPRIVATESIGNKEYALIAS, 
