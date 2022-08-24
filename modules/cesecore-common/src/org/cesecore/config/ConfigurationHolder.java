@@ -33,7 +33,7 @@ import org.apache.commons.configuration2.SystemConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.log4j.Logger;
@@ -419,7 +419,7 @@ public final class ConfigurationHolder {
                 new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
                 .configure(new Parameters().properties().setURL(url)
                     .setThrowExceptionOnMissing(false)
-                    .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
+                    .setListDelimiterHandler(new LegacyListDelimiterHandler(','))
                     .setIncludesAllowed(false));
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;
@@ -438,7 +438,7 @@ public final class ConfigurationHolder {
                 new ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
                 .configure(new Parameters().fileBased().setThrowExceptionOnMissing(false)
                         .setFile(file)
-                        .setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
+                        .setListDelimiterHandler(new LegacyListDelimiterHandler(',')));
         
         final PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
             null, 1, TimeUnit.MINUTES);
