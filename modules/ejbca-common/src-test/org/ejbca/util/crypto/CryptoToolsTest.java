@@ -163,37 +163,73 @@ public class CryptoToolsTest {
         assertNotNull("Encoded private key should not be null", encodedPrivateKey);
     }
     
-    /** Test that we can encrypt and decrypt a P256 KeyPair but this time using Elliptic Curve Cofactor Diffie Hellman
+    /** Test that we can encrypt and decrypt a keypair but this time using Elliptic Curve Cofactor Diffie Hellman, and with P224
      */
     @Test
-    public void testEncryptDecryptP256KeyPairWithEccDh() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException {
+    public void testEncryptDecryptKeyPairWithEccDhP224() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException {   
+        final String curveName = "secp224r1";
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
         final String encAlias = "encAlias";
         final String signAlias = "signAlias";
         // key pair to encrypt decrypt keys
-        cryptoToken.generateKeyPair(KeyGenParams.builder("secp384r1").build(), encAlias);
+        cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), encAlias);
         // then the standard keys, which will be used in the certificate
-        cryptoToken.generateKeyPair(KeyGenParams.builder("secp384r1").build(), signAlias);
+        cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), signAlias);
         final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsTest", 1, "0.0", cryptoToken.getPrivateKey(signAlias),
                 cryptoToken.getPublicKey(signAlias), AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, false);
-
         final KeyPair endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(encAlias),
                 endEntityKeypair.getPublic(), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
-        
         assertEquals("The same private key was not returned.", endEntityKeypair.getPrivate(), keys.getPrivate());
-        
-        try  {
-        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
-        } catch(InvalidKeyException e) {
+        try {
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
+        } catch (InvalidKeyException e) {
             fail("Signature was not correctly verified.");
         }
-
+        byte[] encodedPublicKey = keys.getPublic().getEncoded();
+        assertEquals("org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey", keys.getPublic().getClass().getName());
+        assertEquals("X.509", keys.getPublic().getFormat());
+        assertEquals("EC", keys.getPublic().getAlgorithm());
+        assertNotNull("Encoded public key should not be null", encodedPublicKey);
+        byte[] encodedPrivateKey = keys.getPrivate().getEncoded();
+        assertEquals("org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey", keys.getPrivate().getClass().getName());
+        assertEquals("PKCS#8", keys.getPrivate().getFormat());
+        assertNotNull("Encoded private key should not be null", encodedPrivateKey);
+    }
+    
+    /** Test that we can encrypt and decrypt a keypair but this time using Elliptic Curve Cofactor Diffie Hellman, and with P384
+     */
+    @Test
+    public void testEncryptDecryptKeyPairWithEccDhP384() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException {   
+        final String curveName = "secp384r1";
+        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
+                "Soft CryptoToken");
+        final String encAlias = "encAlias";
+        final String signAlias = "signAlias";
+        // key pair to encrypt decrypt keys
+        cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), encAlias);
+        // then the standard keys, which will be used in the certificate
+        cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), signAlias);
+        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsTest", 1, "0.0", cryptoToken.getPrivateKey(signAlias),
+                cryptoToken.getPublicKey(signAlias), AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, false);
+        final KeyPair endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
+        assertNotNull("Encrypted key pair should not be null", encryptedBytes);
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(encAlias),
+                endEntityKeypair.getPublic(), encryptedBytes);
+        assertNotNull("Decrypted key pair should not be null", keys);
+        assertEquals("The same private key was not returned.", endEntityKeypair.getPrivate(), keys.getPrivate());
+        try {
+            KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
+        } catch (InvalidKeyException e) {
+            fail("Signature was not correctly verified.");
+        }
         byte[] encodedPublicKey = keys.getPublic().getEncoded();
         assertEquals("org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey", keys.getPublic().getClass().getName());
         assertEquals("X.509", keys.getPublic().getFormat());
