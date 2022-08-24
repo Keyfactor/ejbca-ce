@@ -83,6 +83,7 @@ import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -394,6 +395,13 @@ public interface RaMasterApi {
     RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
 
     /**
+     * Searches for end entities and sorts them. Remote end entities take precedence over local ones.
+     * @return list of end entities from the specified search criteria and sorted accordingly
+     * @since Initial RA Master API version (EJBCA 7.10.0)
+     */
+    RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken, RaEndEntitySearchRequestV2 raEndEntitySearchRequestV2);
+
+    /**
      * Searches for roles that the given authentication token has access to.
      * @param authenticationToken administrator (affects the search results)
      * @param raRoleSearchRequest Object specifying the search criteria.
@@ -453,6 +461,12 @@ public interface RaMasterApi {
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
     CertificateProfile getCertificateProfile(int id);
+    
+    /**
+     * @param ProfileName Name of the certificate profile
+     * @return Certificate profile info for profile with specified name
+     */
+    RaCertificateProfileResponseV2 getCertificateProfileInfo(AuthenticationToken authenticationToken, String profileName);
 
     /**
      * Adds (end entity) user.
@@ -703,6 +717,17 @@ public interface RaMasterApi {
      * @since RA Master API version 13 (EJBCA 7.9.0)
      */
     EndEntityInformation searchUserWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, String username);
+
+    /**
+     * Checks whether the status of an end entity allows enrollment.
+     * This method takes into account whether renewal before expiration is allowed.
+     *
+     * @param authenticationToken Authentication token
+     * @param username Username of end entity
+     * @return true if the end entity is in a state that allows enrollment. false if not, or if not authorized.
+     * @since RA Master API version 14 (EJBCA 7.10.0)
+     */
+    boolean canEndEntityEnroll(AuthenticationToken authenticationToken, String username);
 
     /**
      * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.
@@ -1344,6 +1369,15 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
 
     /**
+     * Fetches the end entity profile for REST API.
+     *
+     * @param profileName the end entity profile name.
+     * @return  end entity profile as rest response object.
+     * @since RA Master API version 4 (EJBCA 7.10.0)
+     */
+    public RaEndEntityProfileResponse getEndEntityProfile(AuthenticationToken authenticationToken, final String profileName) throws EndEntityProfileNotFoundException, AuthorizationDeniedException;
+
+    /**
      * Fetches the certificate profile by ID in XML format.
      *
      * @param profileId the certificate profile ID.
@@ -1474,7 +1508,15 @@ public interface RaMasterApi {
      * @param accountId a related account id
      * @return the list of sought AcmeAuthorizations or null if not found
      */
-  List<AcmeAuthorization> getAcmeAuthorizationsByAccountId (final String accountId);
+  List<AcmeAuthorization> getAcmeAuthorizationsByAccountId (String accountId);
+
+    /**
+     * Get not expired AcmeAuthorizations by accountId and identifiers.
+     * @param accountId a related account id
+     * @param identifiers the list of ACME identifiers
+     * @return the list of sought AcmeAuthorizations or null if not found
+     */
+     List<AcmeAuthorization> getAcmePreAuthorizationsByAccountIdAndIdentifiers(String accountId, List<AcmeIdentifier> identifiers);
 
     /**
      * Create or update the AcmeAuthorization.
