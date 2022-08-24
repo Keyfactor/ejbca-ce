@@ -59,6 +59,7 @@ import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -89,6 +90,7 @@ import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -1724,6 +1726,29 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "No Crypto Token exists when trying to create a new Key Binding with name "
                             + getCurrentName(), null));
         } else {
+            //Make sure that the crypto token actually has keys
+            CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(currentCryptoToken);
+            try {
+                if(cryptoToken.getAliases().isEmpty()) {
+                    // Should not happen
+                    FacesContext.getCurrentInstance().addMessage(
+                            null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Selected crypto token contains no keys", null));
+                    return;
+                }
+            } catch (KeyStoreException e) {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Selected crypto token has not been initialized.", null));
+                return;
+            } catch (CryptoTokenOfflineException e1) {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Selected crypto token is offline.", null));
+                return;
+            }
+            
+            
             try {
                 final Map<String, Serializable> dataMap = new HashMap<>();
                 final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
@@ -1841,7 +1866,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentInternalKeyBindingId = String
                     .valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(getCurrentName() + " saved"));
-        } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException | InternalKeyBindingNonceConflictException e) {
+        } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException | InternalKeyBindingNonceConflictException | IllegalArgumentException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
     }

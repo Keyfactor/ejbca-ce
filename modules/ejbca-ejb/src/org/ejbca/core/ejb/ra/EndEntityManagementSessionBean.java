@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -817,7 +817,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final EndEntityInformation originalCopy = userData.toEndEntityInformation();
         
         // Merge all DN and SAN values from previously saved end entity
-        if( profile.getAllowMergeDn()) {
+        if (profile.getAllowMergeDn()) {
             try {
                 // SubjectDN is not mandatory so
                 if (dn == null) {
@@ -829,7 +829,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
                               
                 dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
-                dn = EndEntityInformationFiller.mergeDnString(dn, profile, EndEntityInformationFiller.SUBJECT_DN, null);
+                dn = EndEntityInformationFiller.getDnEntriesUniqueOnly(dn, EndEntityInformationFiller.SUBJECT_DN);
+
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject DN when merging '"+dn+"' with '"+userData.getSubjectDnNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
@@ -846,14 +847,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
                 }
                 altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
-                altName = EndEntityInformationFiller.mergeDnString(altName, profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);                
+                altName = EndEntityInformationFiller.getDnEntriesUniqueOnly(altName, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME);
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject AN when merging '"+altName+"' with '"+userData.getSubjectAltNameNeverNull()+"'. Setting it to empty. Exception was: " + e.getMessage());
                 }
                 altName = "";
             }
-            
+
         }
         
         altName = getAddDnsFromCnToAltName(dn, altName, profile);
@@ -2256,7 +2257,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final EndEntityProfile prof = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         String value = null;
         if (prof != null) {
-            if (prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+            if (prof.isAllowedRequestsUsed()) {
                 value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
             }
         } else {
