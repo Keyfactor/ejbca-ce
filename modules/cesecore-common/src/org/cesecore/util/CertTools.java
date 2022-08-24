@@ -190,6 +190,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -277,6 +278,8 @@ public abstract class CertTools {
     public static final String id_pda_countryOfResidence = id_pda + ".5";
     /** OID used for creating MS Templates certificate extension */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
+    /** OID used for creating Microsoft szOID_NTDS_CA_SECURITY_EXT for ADCS vuln. CVE-2022-26931 */
+    public static final String OID_MS_SZ_OID_NTDS_CA_SEC_EXT = "1.3.6.1.4.1.311.25.2";
     /** extended key usage OID Intel AMT (out of band) network management */
     public static final String Intel_amt = "2.16.840.1.113741.1.2.3";
     
@@ -4723,7 +4726,7 @@ public abstract class CertTools {
                 for (GeneralName sangn : subjectAltName.getNames()) {
                     try {
                         validator.checkPermitted(sangn);
-                        if (isAllDNSNamesExcluded(excluded)) {
+                        if (sangn.getTagNo() == 2 && isAllDNSNamesExcluded(excluded)) {
                             final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
                                     NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
                             throw new IllegalNameException(msg);
@@ -4738,11 +4741,13 @@ public abstract class CertTools {
             }
         }
     }
-    
-
 
     // Check if we should exclude all dns names
     private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
+        if (Objects.isNull(excluded)) {
+            return false;
+        }
+        
         for (int i = 0; i < excluded.length; i++) {
             if (excluded[i].getBase().toString().equals("2: ")) {
                 return true;
