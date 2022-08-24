@@ -101,7 +101,7 @@ public final class AlgorithmConstants {
     
     //The following curves may be used for ECCDH: P-224, P-256, P-384, P-521, K-233, K-283, K-409, K-571, B-233, B-283, B-409, B-571
     //See https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-ecc-sp800-56ar3.html#name-ecc-cdh-component-test
-    public static final List<String> ECCDH_PERMITTED_CURVES = Arrays.asList("P-224", "prime256v1", "secp256r1", "P-256", "prime384v1", "secp384r1",
+    public static final List<String> ECCDH_PERMITTED_CURVES = Arrays.asList("secp224r1", "P-224", "prime256v1", "secp256r1", "P-256", "prime384v1", "secp384r1",
             "P-384", "prime521v1", "secp521r1", "P-521", "sect233k1", "K-233", "sect283k1", "K-283", "sect409k1", "K-409", "sect571k1", "K-571",
             "sect233r1", "B-233", "sect283r1", "B-283", "sect309r1", "B-409", "sect571r1", "B-571"
 
