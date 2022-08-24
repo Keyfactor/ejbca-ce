@@ -2186,6 +2186,19 @@
                     <h:outputText styleClass="help"
                         value=" #{web.text.EXT_MS_TEMPLATENAME_HELP}" />
                 </h:panelGroup>
+                
+                <!-- MS ObjectSid security extension -->
+                <h:outputLabel for="checkUseMsObjectSidSecurityExtensionGroup"
+                    value="#{web.text.EXT_MS_OBJECT_SID_EXTN}" />
+                <h:panelGroup id="checkUseMsObjectSidSecurityExtensionGroup">
+                    <h:selectBooleanCheckbox id="checkUseMsObjectSidSecurityExtension"
+                        styleClass="checkBoxOverlay"
+                        value="#{certProfileBean.certificateProfile.useMsObjectSidSecurityExtension}"
+                        disabled="#{certProfileBean.viewOnly}">
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel for="checkUseMsObjectSidSecurityExtension"
+                        value="#{web.text.USE}" />
+                </h:panelGroup>
 
                 <!-- SEIS Card Number extension -->
                 <h:panelGroup rendered="#{!certProfileBean.typeCA}">
