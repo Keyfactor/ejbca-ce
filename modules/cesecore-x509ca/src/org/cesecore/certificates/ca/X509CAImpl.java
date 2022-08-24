@@ -1516,7 +1516,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
             }
         }
+
         if (!requestOids.isEmpty()) {
+            log.debug("No match found for requested OIDs: " + requestOids);
             // All requested OIDs must match a CCE configuration
             throw new CertificateCreateException(ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR,
                     "Request contained custom certificate extensions which couldn't match any configuration");

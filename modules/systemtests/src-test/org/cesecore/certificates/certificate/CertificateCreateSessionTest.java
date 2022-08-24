@@ -153,6 +153,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         // Now add the test CA so it is available in the tests
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         caSession.addCA(alwaysAllowToken, testx509ca);
+        
+        testx509ca.getCAInfo().setDoEnforceUniquePublicKeys(false);
+        caSession.editCA(roleMgmgToken, testx509ca.getCAInfo());
     }
 
     @After
@@ -162,7 +165,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
             CaTestUtils.removeCa(alwaysAllowToken, testx509ca.getCAInfo());
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
         	super.tearDownRemoveRole();
         }
     }
@@ -474,9 +477,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
         boolean enforceuniquesubjectdn = cainfo.isDoEnforceUniqueDistinguishedName();
         // We don't want to use this for simplicity of the test
-        boolean enforceuniquekey = cainfo.isDoEnforceUniquePublicKeys();
         cainfo.setDoEnforceUniqueDistinguishedName(true);
-        cainfo.setDoEnforceUniquePublicKeys(false);
         String fp1 = null;
         String fp2 = null;
         try {
@@ -509,7 +510,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             } catch (CesecoreException e) {
                 assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
             }
-
+            
             // Make the same test but have some empty fields in the DN to get ECA-1841 DNs in userdata
             // Set a different DN, EJBCA should detect this as "non unique DN" even though there is an empty OU=
             user1.setDN("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE");
@@ -532,16 +533,37 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             } catch (CesecoreException e) {
                 assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
             }
+            
+            user1.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+            user1.setUsername("uniqueEmptyDn001");
+            user1.setDN("");
+            user2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+            user2.setUsername("uniqueEmptyDn002");
+            user2.setDN("");
+            // create first cert
+            req = new SimpleRequestMessage(keys.getPublic(), "certcreatereq", "foo123");
+            req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
+            resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user1, req,
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+            assertNotNull("Failed to create cert", resp);
+            fp1 = CertTools.getFingerprintAsString(resp.getCertificate());
+            // Create second cert, should not work with the same DN
+            try {
+                resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user2, req,
+                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+                
+            } catch (CesecoreException e) {
+                fail("Should have worked to create empty DN with another username");
+            }
         } finally {
             // Finally configure the CA as it was before the test
             cainfo.setDoEnforceUniqueDistinguishedName(enforceuniquesubjectdn);
-            cainfo.setDoEnforceUniquePublicKeys(enforceuniquekey);
             caSession.editCA(roleMgmgToken, cainfo);
             internalCertStoreSession.removeCertificate(fp1);
             internalCertStoreSession.removeCertificate(fp2);
         }
     }
-        
+    
     @Test
     public void testInvalidSignatureAlg() throws CertificateProfileExistsException, AuthorizationDeniedException,
             CustomCertificateSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException,
@@ -824,9 +846,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         // Make sure that the CA requires unique subject DN, but not unique public keys
         CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
         boolean enforceuniquesubjectdn = cainfo.isDoEnforceUniqueDistinguishedName();
-        boolean enforceuniquekey = cainfo.isDoEnforceUniquePublicKeys();
         cainfo.setDoEnforceUniqueDistinguishedName(true);
-        cainfo.setDoEnforceUniquePublicKeys(false);
         caSession.editCA(roleMgmgToken, cainfo);
         // Use certificate profile that allows DN override
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -911,7 +931,6 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
         } finally {
             cainfo.setDoEnforceUniqueDistinguishedName(enforceuniquesubjectdn);
-            cainfo.setDoEnforceUniquePublicKeys(enforceuniquekey);
             caSession.editCA(roleMgmgToken, cainfo);
             certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
             internalCertStoreSession.removeCertificate(fp1);

@@ -29,9 +29,9 @@ public class EndEntityProfileResponse {
     @ApiModelProperty(value = "List of available Certificate Profiles",position = 1, example = "[ “ENDUSER“ ]")
     private List<String> availableCertificateProfiles;
     @ApiModelProperty(value = "List of Subject DN Attributes", example = "[ “CN“ ]")
-    private List<String> subjectDomainNameFields;
+    private List<String> subjectDistinguishedNameFields;
     @ApiModelProperty(value = "List of Subject Alternative Name fields", example = "[ “RFC822NAME“ ]")
-    private List<String> subjectAltNameFields;
+    private List<String> subjectAlternativeNameFields;
 
     public EndEntityProfileResponse() {
     }
@@ -40,8 +40,8 @@ public class EndEntityProfileResponse {
         this.endEntityProfileName = eepName;
         this.availableCAs = availableCAs;
         this.availableCertificateProfiles = availableCertificateProfiles;
-        this.subjectDomainNameFields = sDNFields;
-        this.subjectAltNameFields = sANFields;
+        this.subjectDistinguishedNameFields = sDNFields;
+        this.subjectAlternativeNameFields = sANFields;
     }
 
     public String getEndEntityProfileName() {
@@ -56,12 +56,12 @@ public class EndEntityProfileResponse {
         return availableCertificateProfiles;
     }
 
-    public List<String> getSubjectDomainNameFields() {
-        return subjectDomainNameFields;
+    public List<String> getSubjectDistinguishedNameFields() {
+        return subjectDistinguishedNameFields;
     }
 
-    public List<String> getSubjectAltNameFields() {
-        return subjectAltNameFields;
+    public List<String> getSubjectAlternativeNameFields() {
+        return subjectAlternativeNameFields;
     }
 
     /**
