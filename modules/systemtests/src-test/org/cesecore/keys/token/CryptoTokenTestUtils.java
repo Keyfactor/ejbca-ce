@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.security.InvalidKeyException;
 import java.security.Security;
 import java.util.Properties;
@@ -33,9 +35,6 @@ import org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken;
 import org.cesecore.keys.token.p11ng.provider.JackNJI11Provider;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
