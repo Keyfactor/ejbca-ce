@@ -14,6 +14,7 @@ package org.ejbca.core.model.era;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import java.io.Serializable;
@@ -86,7 +87,14 @@ public class RaEndEntityProfileResponse  implements Serializable {
         private List<String> getListOfNamesFromMap(Map<Integer, String> idToNameMap,  List<Integer> availableIds) {
             List<String> list = new ArrayList<>();
             for (Integer id : availableIds) {
-                list.add(idToNameMap.get(id));
+                String name = idToNameMap.get(id);
+                if (name != null) {
+                    list.add(name);
+                } else {
+                    if (id == SecConst.ALLCAS) {
+                        list.add("ANY CA");
+                    }
+                }
             }
             return list;
         }

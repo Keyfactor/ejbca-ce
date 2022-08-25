@@ -78,8 +78,23 @@
                         </script>
                     </h:panelGroup>
                 </h:panelGroup>
-                 <h:panelGroup id="log" styleClass="" layout="block" rendered="#{upgradeBean.postUpgradeInProgress}">
-                    <h3><h:outputText value="#{web.text.UPGRADE_LOGGED_TITLE}"/></h3>
+                
+                <h:panelGroup id="log" styleClass="" layout="block" rendered="#{upgradeBean.postUpgradeInProgress or not empty upgradeBean.logged}">
+                    <h2><h:outputText value="#{web.text.UPGRADE_LOGGED_TITLE}"/></h2>
+                    <h:outputText rendered="#{empty upgradeBean.logged}" value="#{web.text.UPGRADE_LOGGED_NONE}"/>
+                    <h:dataTable rendered="#{not empty upgradeBean.logged}" value="#{upgradeBean.logged}" var="logEvent">
+                        <h:column>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt;" value="#{logEvent.time}"/>
+                        </h:column>
+                        <h:column>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt; color: #000000;" value="#{logEvent.level}" rendered="#{logEvent.levelInfo}"/>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt; color: #ffa500;" value="#{logEvent.level}" rendered="#{logEvent.levelWarning}"/>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt; color: #ff0000;" value="#{logEvent.level}" rendered="#{logEvent.levelError}"/>
+                        </h:column>
+                        <h:column>
+                            <h:outputText styleClass="monospace" style="font-size: 8pt;" value="#{logEvent.message}"/>
+                        </h:column>
+                    </h:dataTable>
                 </h:panelGroup>
             </h:form>
         </ui:define>

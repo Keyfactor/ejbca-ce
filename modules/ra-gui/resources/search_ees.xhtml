@@ -214,9 +214,9 @@
                                     </h:commandButton>
                                 </f:facet>
                                 <h:panelGrid columns="1" styleClass="nopadding noborder">
-                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectDnUnescapedValue.length() gt 100 ? raSearchEndEntity.subjectDnUnescapedValue.substring(0,97).concat('&lt;br/&gt;...')  : raSearchEndEntity.subjectDnUnescapedValue}" escape="false"/>
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectDnUnescapedValue.length() gt 100 ? raSearchEndEntity.subjectDnUnescapedValue.substring(0,95).concat('.....')  : raSearchEndEntity.subjectDnUnescapedValue}"/>
 	                                <ui:fragment rendered="#{raSearchEndEntity.subjectAn.length() gt 0}"><hr /></ui:fragment>
-                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectAn.length() gt 100 ? raSearchEndEntity.subjectAn.substring(0,97).concat('&lt;br/&gt;...') : raSearchEndEntity.subjectAn}" escape="false"/>
+                                    <h:outputText styleClass="fineprintMono" value="#{raSearchEndEntity.subjectAn.length() gt 100 ? raSearchEndEntity.subjectAn.substring(0,95).concat('.....') : raSearchEndEntity.subjectAn}"/>
                                 </h:panelGrid>
                             </h:column>
                             <h:column>

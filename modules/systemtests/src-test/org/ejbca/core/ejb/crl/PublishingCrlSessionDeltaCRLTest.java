@@ -112,7 +112,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         try {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         } finally {
-            // Be sure to to this, even if the above fails
+            // Be sure to do this, even if the above fails
             tearDownRemoveRole();
         }
     }
@@ -174,7 +174,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         // Get number of last CRL
-        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, x509crl.getThisUpdate().getTime());
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), false, CertificateConstants.NO_CRL_PARTITION, x509crl.getThisUpdate().getTime());
         log.debug("Number of revoked certificates=" + revfp.size());
         crl = getLastCrl(testx509ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
